@@ -1,0 +1,180 @@
+.winbox {
+    .__winbox_window {
+        // Submenus
+        &.__winbox_menu-dropdown {
+            border: 0.0625rem solid black;
+            width: auto !important;
+            height: auto !important;
+            box-shadow: 0.0625rem 0.0625rem 0 0 lightgrey;
+
+            ol {
+                width: auto;
+                height: auto;
+                user-select: none;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+
+                li {
+                    display: block;
+                    user-select: none;
+                    position: relative;
+                    width: auto;
+                    list-style: none;
+
+                    &.__winbox_menu_separator {
+                        height: 0.375rem !important;
+                        box-shadow: inset 0px 0.125rem 0px 0px #fff, inset 0px 0.1875rem 0px 0px #000;
+                    }
+
+                    > button {
+                        left: auto !important;
+                        top: auto !important;
+                        width: 100% !important;
+                        height: 100% !important;
+                        border: none;
+                        position: relative;
+                        background: none;
+                        border: none;
+                        height: 100%;
+                        text-align: left;
+                        align-items: normal;
+                        padding: 0 0.75rem;
+                        border-radius: 0;
+
+                        > span.__winbox_window.__winbox_label {
+                            position: static;
+
+                            > span {
+                                user-select: none;
+
+                                > img {
+                                    user-select: none;
+                                    pointer-events: none;
+                                }
+                            }
+                        }
+
+                        &::after {
+                            content: none;
+                        }
+
+                        &::before {
+                            content: none;
+                        }
+
+                        &:focus {
+                            border: none;
+                            outline: none;
+                        }
+
+                        &.__winbox_focused,
+                        &.__winbox_button_active {
+                            padding: 0 0.75rem;
+                            border: none;
+                            outline: none;
+                            background-color: #a6cbf3;
+
+                            > span {
+                                border-color: transparent;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Main menus
+        .__winbox_container {
+            nav.__winbox_window.__winbox_menu {
+                user-select: none;
+                border-bottom: 0.0625rem solid black;
+                box-sizing: border-box;
+                display: block;
+                background-color: white;
+
+                ol {
+                    user-select: none;
+                    width: 100%;
+                    position: absolute;
+                    height: 100%;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    margin: 0;
+                    padding: 0;
+
+                    li.__winbox_window.__winbox_menu {
+                        user-select: none;
+                        display: inline-block;
+                        position: relative;
+                        width: auto;
+                        list-style: none;
+
+                        > button {
+                            left: auto !important;
+                            top: auto !important;
+                            width: auto !important;
+                            height: 100% !important;
+                            border: none;
+                            position: relative;
+                            background: none;
+                            border: none;
+                            height: 100%;
+                            padding: 0 0.5rem;
+                            border-radius: 0;
+
+                            > span.__winbox_window.__winbox_label {
+                                position: static;
+
+                                > span {
+                                    user-select: none;
+
+                                    > img {
+                                        user-select: none;
+                                        pointer-events: none;
+                                    }
+                                }
+                            }
+
+                            &::after {
+                              content: none;
+                            }
+
+                            &::before {
+                              content: none;
+                            }
+
+                            &:focus {
+                                border: none;
+                                outline: none;
+
+                                &::after {
+                                    border: none;
+                                }
+                            }
+
+                            &.__winbox_focused,
+                            &.__winbox_button_active {
+                                padding: 0 0.5rem;
+                                border: none;
+                                outline: none;
+                                background-color: #a6cbf3;
+
+                                > span {
+                                    border-color: transparent;
+                                }
+
+                                &::after {
+                                    border: none;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

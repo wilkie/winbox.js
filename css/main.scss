@@ -1,0 +1,30 @@
+/**
+ * Stylesheets for SetupSimulator.
+ */
+
+/* Workspace */
+@import "./space.scss";
+
+/* Window */
+@import "./window.scss";
+
+/* Button Control */
+@import "./controls/button.scss";
+
+/* Label Control */
+@import "./controls/label.scss";
+
+/* TextBox Control */
+@import "./controls/text-box.scss";
+
+/* Menu Control */
+@import "./controls/menu.scss";
+
+/* CheckBox Control */
+@import "./controls/check-box.scss";
+
+/* OptionButton Control */
+@import "./controls/option-button.scss";
+
+/* PictureBox Control */
+@import "./controls/picture-box.scss";

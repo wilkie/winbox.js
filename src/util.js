@@ -1,0 +1,83 @@
+"use strict";
+
+export class Util {
+    /**
+     * This will change the tag for the given element.
+     *
+     * @param {HTMLElement} element The existing element.
+     * @param {string} tagName The new tag.
+     *
+     * @returns {HTMLElement} The new element.
+     */
+    static replaceTag(element, tagName) {
+        let newElement = document.createElement(tagName);
+
+        Array.prototype.slice.call(element.attributes).forEach( (attribute) => {
+            newElement.setAttribute(attribute.name, attribute.value);
+        });
+
+        let childrenLength = element.children.length;
+        for (var i = 0; i < childrenLength; i++) {
+            newElement.appendChild(element.children[0]);
+        }
+
+        if (element.parentNode) {
+            element.parentNode.replaceChild(newElement, element);
+        }
+
+        return newElement;
+    }
+
+    static readString(data, offset, length = -1) {
+        let ret = "";
+        let maxLength = length;
+        if (length == -1) {
+            maxLength = 100;
+        }
+
+        for (var i = 0; i < maxLength; i++) {
+            let o = offset + i;
+            let c = String.fromCharCode(data.getUint8(o));
+            if (c === "\0") {
+                break;
+            }
+            ret = ret + c;
+        }
+        return ret;
+    }
+
+    static readStructure(data, struct, offset, littleEndian = true) {
+        let ret = {};
+
+        Object.keys(struct).forEach( (key) => {
+            let size = struct[key][1];
+
+            if (typeof size === "string") {
+                let length = parseInt(size);
+                ret[key] = Util.readString(data, offset + struct[key][0], length);
+            }
+            else if (size == 1) {
+                ret[key] = data.getUint8(offset + struct[key][0]);
+            }
+            else if (size == 2) {
+                ret[key] = data.getUint16(offset + struct[key][0], littleEndian);
+            }
+            else if (size == 4) {
+                ret[key] = data.getUint32(offset + struct[key][0], littleEndian);
+            }
+            else if (size == -1) {
+                ret[key] = data.getInt8(offset + struct[key][0]);
+            }
+            else if (size == -2) {
+                ret[key] = data.getInt16(offset + struct[key][0], littleEndian);
+            }
+            else if (size == -4) {
+                ret[key] = data.getInt32(offset + struct[key][0], littleEndian);
+            }
+        });
+
+        return ret;
+    }
+}
+
+export default Util;
