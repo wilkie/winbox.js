@@ -1,0 +1,29 @@
+"use strict";
+
+/**
+ * The **LocalFree** function frees the given local memory object (if the
+ * object is not locked) and invalidates its handle.
+ *
+ * An application cannot use the **LocalFree** function to free a locked
+ * memory object-- that is, a memory object with a lock count greater than zero.
+ *
+ * After freeing the handle of the memory object, an application cannot use the
+ * handle again. An attempt to free the same memory object more than once can
+ * cause the system to terminate abnormally.
+ *
+ * **See also**:
+ * {@link Kernel.LocalFlags LocalFlags}
+ * {@link Kernel.LocalLock LocalLock}
+ *
+ * @static
+ * @function LocalFree
+ * @memberof Kernel
+ *
+ * @param {Types.HLOCAL} hloc - Identifies the local memory object to be freed.
+ *
+ * @returns {number} The return value is `NULL` if the function is successful.
+ *                   Otherwise, it is equal to the `hloc` parameter.
+ */
+export function LocalFree(hloc) {
+    console.log("LocalFree:", hloc);
+}

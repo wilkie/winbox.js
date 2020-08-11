@@ -6,6 +6,7 @@ import { Loader } from './loader.js';
 import { Kernel } from './win16/kernel.js';
 import { Gdi } from './win16/gdi.js';
 import { User } from './win16/user.js';
+import { Types } from './win16/types.js';
 
 /**
  * This represents the Windows 16-bit Operating System emulation.
@@ -41,6 +42,10 @@ export class Win16 {
 
     get task() {
         return this._currentTask;
+    }
+    
+    get machine() {
+        return this._machine;
     }
 
     /**
@@ -174,9 +179,8 @@ export class Win16 {
         this._machine.cpu.push16(retIP);
 
         // We then return to the program...
-        // And return the Program Segment
-        // TODO: program segment
-        return 0x88;
+        // And return 1 for success
+        return 1;
     }
 
     /**
@@ -352,26 +356,18 @@ export class Win16 {
                 tuple = [module.stub, "Unknown", 0];
             }
 
-            let ordl = (ordinal & 0xff);
-            let ordh = (ordinal >> 0xff) & 0xff;
-
             let pop = tuple[2] || 0;
             let popl = (pop & 0xff);
             let poph = (pop >> 0xff) & 0xff;
 
-            // MOV AX, ordinal
-            code[position + 0] = 0xb8;
-            code[position + 1] = ordl;
-            code[position + 2] = ordh;
-
             // INT 0x80
-            code[position + 3] = 0xcd;
-            code[position + 4] = 0x80;
+            code[position + 0] = 0xcd;
+            code[position + 1] = 0x80;
 
             // RETF bytes
-            code[position + 5] = 0xca;
-            code[position + 6] = popl;
-            code[position + 7] = poph;
+            code[position + 2] = 0xca;
+            code[position + 3] = popl;
+            code[position + 4] = poph;
 
             // We still skip when there is no implementation.
             position += loadedModule.step;
@@ -464,9 +460,46 @@ export class Win16 {
 
         console.log("Calling", module.instance.name, module.instance.exports[ip][1]);
 
-        let implementation = module.instance.exports[ip][0];
-        // TODO: some functions may preserve AX if they don't return...
-        this._machine.cpu.ax = implementation.bind(this)();
+        let functionDefinition = module.instance.exports[ip];
+
+        let implementation = functionDefinition[0];
+        let returnType = functionDefinition[4];
+
+        // Craft the arguments from the stack
+        let args = functionDefinition[3] || [];
+        let offset = 4; // Account for CS:IP on stack
+        args = args.map( (argType) => {
+            if (Types.sizeof(argType) <= 2) {
+                let read16 = this._memory.read16.bind(this._memory);
+                if (Types.signed(argType)) {
+                    read16 = this._memory.readSigned16.bind(this._memory);
+                }
+
+                let ret = read16(
+                    this._machine.cpu.ss,
+                    this._machine.cpu.sp + offset
+                );
+                offset += 2;
+
+                if (argType == Types.LPCSTR) {
+                    // Read string at ds:[ret]
+                    ret = this._memory.readCString(this._machine.cpu.ds, ret);
+                }
+                return ret;
+            }
+        }).reverse();
+
+        // Call normal function
+        let result = implementation.bind(this).apply(null, args);
+        if (returnType !== undefined) {
+            // Place top value in DX
+            if (Types.sizeof(returnType) > 2) {
+                this._machine.cpu.dx = (result >> 16) & 0xffff;
+            }
+
+            // Place low-word in AX
+            this._machine.cpu.ax = result & 0xffff;
+        }
     }
 }
 

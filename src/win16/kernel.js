@@ -1,5 +1,32 @@
 "use strict";
 
+/** @namespace Kernel */
+
+import { BYTE, UBYTE, INT, UINT,
+         DWORD, HLOCAL, HGLOBAL,
+         BOOL, NEARPTR, LPCSTR, HWND } from './types.js';
+
+import { GetVersion } from './kernel/GetVersion.js';
+import { InitTask } from './kernel/InitTask.js';
+import { LocalAlloc } from './kernel/LocalAlloc.js';
+import { LocalCompact } from './kernel/LocalCompact.js';
+import { LocalFlags } from './kernel/LocalFlags.js';
+import { LocalFree } from './kernel/LocalFree.js';
+import { LocalHandle } from './kernel/LocalHandle.js';
+import { LocalInit } from './kernel/LocalInit.js';
+import { LocalLock } from './kernel/LocalLock.js';
+import { LocalReAlloc } from './kernel/LocalReAlloc.js';
+import { LocalSize } from './kernel/LocalSize.js';
+import { LocalUnlock } from './kernel/LocalUnlock.js';
+import { LockSegment } from './kernel/LockSegment.js';
+import { OutputDebugString } from './kernel/OutputDebugString.js';
+import { UnlockSegment } from './kernel/UnlockSegment.js';
+
+/**
+ * The Win16 Kernel library.
+ *
+ * @memberof Win16
+ */
 export class Kernel {
     static get name() {
         return "KERNEL";
@@ -11,18 +38,18 @@ export class Kernel {
             null,
             [Kernel.stub, "FatalExit", 2],
             [Kernel.stub, "ExitKernel", 2],
-            [Kernel.stub, "GetVersion", 0],
-            [Kernel.stub, "LocalInit", 6],
-            [Kernel.stub, "LocalAlloc", 4],
-            [Kernel.stub, "LocalReAlloc", 6],
-            [Kernel.stub, "LocalFree", 2],
-            [Kernel.stub, "LocalLock", 2],
-            [Kernel.stub, "LocalUnlock", 2],
+            [GetVersion, "GetVersion", 0, [], DWORD],
+            [LocalInit, "LocalInit", 6, [UINT, UINT, UINT], BOOL],
+            [LocalAlloc, "LocalAlloc", 4, [UINT, UINT], HLOCAL],
+            [LocalReAlloc, "LocalReAlloc", 6, [HLOCAL, UINT, UINT], HLOCAL],
+            [LocalFree, "LocalFree", 2, [HLOCAL], HLOCAL],
+            [LocalLock, "LocalLock", 2, [HLOCAL], NEARPTR],
+            [LocalUnlock, "LocalUnlock", 2, [HLOCAL], BOOL],
             // 10 //
-            [Kernel.stub, "LocalSize", 2],
-            [Kernel.stub, "LocalHandle", 2],
-            [Kernel.stub, "LocalFlags", 2],
-            [Kernel.stub, "LocalCompact", 2],
+            [LocalSize, "LocalSize", 2, [HLOCAL], UINT],
+            [LocalHandle, "LocalHandle", 2, [NEARPTR], HLOCAL],
+            [LocalFlags, "LocalFlags", 2, [HLOCAL], UINT],
+            [LocalCompact, "LocalCompact", 2, [UINT], UINT],
             [Kernel.stub, "LocalNotify", 4],
             [Kernel.stub, "GlobalAlloc", 6],
             [Kernel.stub, "GlobalReAlloc", 8],
@@ -33,8 +60,8 @@ export class Kernel {
             [Kernel.stub, "GlobalSize", 2],
             [Kernel.stub, "GlobalHandle", 2],
             [Kernel.stub, "GlobalFlags", 2],
-            [Kernel.stub, "LockSegment", 2],
-            [Kernel.stub, "UnlockSegment", 2],
+            [LockSegment, "LockSegment", 2, [UINT], HGLOBAL],
+            [UnlockSegment, "UnlockSegment", 2, [UINT]],
             [Kernel.stub, "GlobalCompact", 4],
             [Kernel.stub, "GlobalFreeAll", 2],
             [Kernel.stub, "unknown"],
@@ -108,7 +135,7 @@ export class Kernel {
             [Kernel.stub, "LSTRCAT", 4],
             // 90 //
             [Kernel.stub, "LSTRLEN, 4"],
-            [Kernel.InitTask, "InitTask", 0],
+            [InitTask, "InitTask", 0, [], UINT],
             [Kernel.stub, "GetTempDrive", 2],
             [Kernel.stub, "GetCodeHandle", 4],
             [Kernel.stub, "DefineHandleTable", 2],
@@ -134,7 +161,7 @@ export class Kernel {
             [Kernel.stub, "GlobalUnwire", 2],
             [Kernel.stub, "__AHSHIFT"],
             [Kernel.stub, "__AHINCR"],
-            [Kernel.stub, "OutputDebugString", 2],
+            [OutputDebugString, "OutputDebugString", 2, [LPCSTR]],
             [Kernel.stub, "InitLib", 2],
             [Kernel.stub, "OldYield", 6],
             [Kernel.stub, "GetTaskQueueDS", 6],
@@ -316,16 +343,123 @@ export class Kernel {
     static stub() {
         console.log("Stub called!");
     }
-
-    static FatalExit() {
-    }
-
-    static ExitKernel() {
-    }
-
-    static InitTask() {
-        return this.initTask();
-    }
 }
+
+/**
+ * Allocates fixed memory.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.LMEM_FIXED = 0x0000;
+
+/**
+ * Allocates moveable memory.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.LMEM_MOVEABLE = 0x0002;
+
+/**
+ * Does not compact or discard memory to satisfy the allocation request.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.LMEM_NOCOMPACT = 0x0010;
+
+/**
+ * Does not discard memory to satisfy the allocation request.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.LMEM_NODISCARD = 0x0020;
+
+/**
+ * Initializes memory contents to zero.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.LMEM_ZEROINIT = 0x0040;
+
+/**
+ * When specified, will modify the attributes of the memory object.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.LMEM_MODIFY = 0x0080;
+
+/**
+ * Allocates discardable memory.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.LMEM_DISCARDABLE = 0x0f00;
+
+/**
+ * Combines LMEM_FIXED and LMEM_ZEROINIT.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.LPTR = Kernel.LMEM_FIXED | Kernel.LMEM_ZEROINIT;
+
+/**
+ * Combines LMEM_MOVEABLE and LMEM_ZEROINIT.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.LHND = Kernel.LMEM_MOVEABLE | Kernel.LMEM_ZEROINIT;
+
+/**
+ * Same as LMEM_MOVEABLE.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.NONZEROLHND = Kernel.LMEM_MOVEABLE;
+
+/**
+ * Same as LMEM_FIXED.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.NONZEROLPTR = Kernel.LMEM_FIXED;
+
+/**
+ * A flag set when the associated object has been discarded.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.LMEM_DISCARDED = 0x4000;
+
+/**
+ * A mask to retrieve the lock count from the object flags.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.LMEM_LOCKCOUNT = 0x00ff;
 
 export default Kernel;

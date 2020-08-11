@@ -1,5 +1,8 @@
 "use strict";
 
+/**
+ * A set of utility functions that are generically useful.
+ */
 export class Util {
     /**
      * This will change the tag for the given element.

@@ -128,6 +128,26 @@ export class Memory {
     }
 
     /**
+     * Reads the null terminated string at the given address.
+     */
+    readCString(segment, offset) {
+        let ret = "";
+
+        let limit = 0;
+        let current = null;
+        do {
+            current = this.read8(segment, offset);
+            if (current) {
+                ret = ret + String.fromCharCode(current);
+            }
+            offset++;
+            limit++;
+        } while(limit < 1000 && current != 0);
+
+        return ret;
+    }
+
+    /**
      * Writes an integer value to our memory.
      *
      * @param {number} segment - The segment selector index.

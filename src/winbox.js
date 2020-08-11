@@ -3,7 +3,6 @@
 import { Ditherer } from "./ditherer.js";
 import { Color } from "./color.js";
 import { ProgressWindow } from "./progress-window.js";
-import { ResizeBox } from "./resize-box.js";
 import { Win16 } from "./win16.js";
 
 export class WinBox {
