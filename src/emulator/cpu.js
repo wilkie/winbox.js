@@ -1,5 +1,7 @@
 "use strict";
 
+import { ALU } from './alu.js';
+
 /**
  * This class represents the CPU emulation.
  */
@@ -8,10 +10,18 @@ export class CPU {
         this._memory = memory;
         this._registers = new Array(8);
         this._segmentRegisters = new Array(4);
+        this._alu = new ALU(this);
 
         this._interruptHandlers = new Array(128);
 
         this.reset();
+    }
+
+    /**
+     * Retrieves the ALU for this CPU.
+     */
+    get alu() {
+        return this._alu;
     }
 
     /**
@@ -571,25 +581,25 @@ export class CPU {
         switch (instruction.opcode) {
             // Prefixes (recursively decode)
             case 0x26:    // ES Override Prefix
-                console.log("es     es=", this.es);
+                //console.log("es     es=", this.es);
                 instruction = this.decode();
                 instruction.segment = this.es;
                 return instruction;
 
             case 0x2e:    // CS Override Prefix
-                console.log("cs     cs=", this.cs);
+                //console.log("cs     cs=", this.cs);
                 instruction = this.decode();
                 instruction.segment = this.cs;
                 return instruction;
 
             case 0x36:    // SS Override Prefix
-                console.log("ss     ss=", this.ss);
+                //console.log("ss     ss=", this.ss);
                 instruction = this.decode();
                 instruction.segment = this.ss;
                 return instruction;
 
             case 0x3e:    // DS Override Prefix
-                console.log("ds     ds=", this.ds);
+                //console.log("ds     ds=", this.ds);
                 instruction = this.decode();
                 instruction.segment = this.ds;
                 return instruction;
@@ -1041,7 +1051,7 @@ export class CPU {
 
             // Unknown Sinkhole
             default:      // Unimplemented
-                console.log("error: decoded unknown opcode", instruction);
+                //console.log("error: decoded unknown opcode", instruction);
                 break;
         }
 
@@ -1230,621 +1240,10 @@ export class CPU {
     }
 
     /**
-     * Returns the signed 8-bit value for the given unsigned value.
-     *
-     * @param {number} value - The unsigned value;
-     *
-     * @returns {number} The signed result.
-     */
-    toSigned8(value) {
-        return value >= 0x80 ? value | ~0xff : value;
-    }
-
-    /**
-     * Returns the signed 16-bit value for the given unsigned value.
-     *
-     * @param {number} value - The unsigned value;
-     *
-     * @returns {number} The signed result.
-     */
-    toSigned16(value) {
-        return value >= 0x8000 ? value | ~0xffff : value;
-    }
-
-    /**
-     * Executes an 8-bit CBW instruction.
-     *
-     * This returns a 16-bit unsigned value that is the sign-extended form of
-     * the given unsigned 8-bit value.
-     */
-    cbw8(value) {
-        value = this.toSigned8(value & 0xff);
-        return value & 0xffff;
-    }
-
-    /**
-     * Executes a 16-bit CWD instruction.
-     *
-     * This returns a 32-bit unsigned value that is the sign-extended form of
-     * the given unsigned 16-bit value.
-     */
-    cwd16(value) {
-        value = this.toSigned16(value & 0xffff);
-        return value & 0xffffffff;
-    }
-
-    /**
-     * Executes an 8-bit ADD instruction.
-     *
-     * @param {number} a - First argument.
-     * @param {number} b - Second argument.
-     *
-     * @return {number} The result.
-     */
-    add8(a, b) {
-        // TODO: set flags
-        let result = (a + b) & 0x1ff;
-        this._flags.carry = result > 0xff;
-        this._flags.auxiliaryCarry = ((a ^ b ^ result) & 0x10) != 0;
-        a = result & 0xff;
-        this._flags.zero = a == 0;
-        this._flags.signed = a >= 0x80;
-        this._flags.parity = CPU.PARITY[a & 0xff];
-        return a;
-    }
-
-    /**
-     * Executes a 16-bit ADD instruction.
-     *
-     * @param {number} a - First argument.
-     * @param {number} b - Second argument.
-     *
-     * @return {number} The result.
-     */
-    add16(a, b) {
-        // TODO: set flags
-        let result = (a + b) & 0x1ffff;
-        this._flags.carry = result > 0xffff;
-        this._flags.auxiliaryCarry = ((a ^ b ^ result) & 0x10) != 0;
-        a = result & 0xffff;
-        this._flags.zero = a == 0;
-        this._flags.signed = a >= 0x8000;
-        this._flags.parity = CPU.PARITY[a & 0xff];
-        return a;
-    }
-
-    adc8(a, b) {
-        return this.add8(a, b + (this._flags.carry ? 1 : 0));
-    }
-
-    adc16(a, b) {
-        return this.add16(a, b + (this._flags.carry ? 1 : 0));
-    }
-
-    sub8(a, b) {
-        return this.add8(a, (~b) + 1);
-    }
-
-    sub16(a, b) {
-        return this.add16(a, (~b) + 1);
-    }
-
-    and8(a, b) {
-        a = (a & b) & 0xff;
-        this._flags.overflow = false;
-        this._flags.carry = false;
-        this._flags.zero = a == 0;
-        this._flags.signed = a >= 0x80;
-        this._flags.parity = CPU.PARITY[a & 0xff];
-        return a;
-    }
-
-    and16(a, b) {
-        a = (a & b) & 0xffff;
-        this._flags.overflow = false;
-        this._flags.carry = false;
-        this._flags.zero = a == 0;
-        this._flags.signed = a >= 0x8000;
-        this._flags.parity = CPU.PARITY[a & 0xff];
-        return a;
-    }
-
-    or8(a, b) {
-        a = (a | b) & 0xff;
-        this._flags.overflow = false;
-        this._flags.carry = false;
-        this._flags.zero = a == 0;
-        this._flags.signed = a >= 0x80;
-        this._flags.parity = CPU.PARITY[a & 0xff];
-        return a;
-    }
-
-    or16(a, b) {
-        a = (a | b) & 0xffff;
-        this._flags.overflow = false;
-        this._flags.carry = false;
-        this._flags.zero = a == 0;
-        this._flags.signed = a >= 0x8000;
-        this._flags.parity = CPU.PARITY[a & 0xff];
-        return a;
-    }
-
-    xor8(a, b) {
-        a = (a ^ b) & 0xff;
-        this._flags.overflow = false;
-        this._flags.carry = false;
-        this._flags.zero = a == 0;
-        this._flags.signed = a >= 0x80;
-        this._flags.parity = CPU.PARITY[a & 0xff];
-        return a;
-    }
-
-    xor16(a, b) {
-        a = (a ^ b) & 0xffff;
-        this._flags.overflow = false;
-        this._flags.carry = false;
-        this._flags.zero = a == 0;
-        this._flags.signed = a >= 0x8000;
-        this._flags.parity = CPU.PARITY[a & 0xff];
-        return a;
-    }
-
-    neg8(a) {
-        let result = this.sub8(0, a);
-        this._flags.carry = a != 0;
-        return result;
-    }
-
-    neg16(a) {
-        let result = this.sub16(0, a);
-        this._flags.carry = a != 0;
-        return result;
-    }
-
-    not8(a) {
-        return (~a) & 0xff;
-    }
-
-    not16(a) {
-        return (~a) & 0xffff;
-    }
-
-    /**
-     * Performs the 8-bit MUL signed multiplication instruction.
-     *
-     * Multiplies two unsigned 8-bit values resulting in one unsigned 16-bit
-     * product.
-     *
-     * Carry and overflow flags are cleared if high half is a sign-extension
-     * of the lower half. They are set otherwise.
-     *
-     * @param {number} a - First argument.
-     * @param {number} b - Second argument.
-     *
-     * @return {number} The unsigned result.
-     */
-    mul8(a, b) {
-        let result = ((a & 0xff) * (b & 0xff)) & 0xffff;
-        this._flags.carry = result > 0xff;
-        this._flags.overflow = this._flags.carry;
-        return result;
-    }
-
-    /**
-     * Performs the 16-bit MUL signed multiplication instruction.
-     *
-     * Multiplies two unsigned 16-bit values resulting in one unsigned 32-bit
-     * product.
-     *
-     * Carry and overflow flags are cleared if high half is a sign-extension
-     * of the lower half. They are set otherwise.
-     *
-     * @param {number} a - First argument.
-     * @param {number} b - Second argument.
-     *
-     * @return {number} The unsigned result.
-     */
-    mul16(a, b) {
-        let result = ((a & 0xffff) * (b & 0xffff)) & 0xffffffff;
-        this._flags.carry = result > 0xffff;
-        this._flags.overflow = this._flags.carry;
-        return result;
-    }
-
-    /**
-     * Performs the 8-bit IMUL signed multiplication instruction.
-     *
-     * Multiplies two signed 8-bit values resulting in one unsigned 16-bit
-     * product.
-     *
-     * Carry and overflow flags are cleared if high half is a sign-extension
-     * of the lower half. They are set otherwise.
-     *
-     * @param {number} a - First argument.
-     * @param {number} b - Second argument.
-     *
-     * @return {number} The unsigned result.
-     */
-    imul8(a, b) {
-        let result = (this.toSigned8(a) * this.toSigned8(b)) & 0xffff;
-        this._flags.carry = (result >> 7) == 0x1ff ||
-                            (result >> 7) == 0x000;
-        this._flags.carry = result > 0xff;
-        this._flags.overflow = this._flags.carry;
-        return result;
-    }
-
-    /**
-     * Performs the 16-bit IMUL signed multiplication instruction.
-     *
-     * Multiplies two signed 16-bit values resulting in one unsigned 32-bit
-     * product.
-     *
-     * Carry and overflow flags are cleared if high half is a sign-extension
-     * of the lower half. They are set otherwise.
-     *
-     * @param {number} a - First argument.
-     * @param {number} b - Second argument.
-     *
-     * @return {number} The unsigned result.
-     */
-    imul16(a, b) {
-        let result = (this.toSigned16(a) * this.toSigned16(b)) & 0xffffffff;
-        this._flags.carry = (result >> 15) == 0x1ffff ||
-                            (result >> 15) == 0x00000;
-        this._flags.overflow = this._flags.carry;
-        return result;
-    }
-
-    /**
-     * Performs the 8-bit DIV unsigned division instruction.
-     *
-     * Divides two unsigned 8-bit values resulting in one unsigned 16-bit
-     * quotient.
-     *
-     * This does not set any flags and leaves most undefined.
-     *
-     * @param {number} a - First argument.
-     * @param {number} b - Second argument.
-     *
-     * @return {number} The unsigned result. The high half is the remainder.
-     */
-    div8(a, b) {
-        return ((a & 0xff) / (b & 0xff)) & 0xff |
-               ((((a & 0xff) % (b & 0xff)) & 0xff) << 8);
-    }
-
-    /**
-     * Performs the 16-bit DIV unsigned division instruction.
-     *
-     * Divides two unsigned 16-bit values resulting in one unsigned 32-bit
-     * quotient.
-     *
-     * This does not set any flags and leaves most undefined.
-     *
-     * @param {number} a - First argument.
-     * @param {number} b - Second argument.
-     *
-     * @return {number} The unsigned result. The high half is the remainder.
-     */
-    div16(a, b) {
-        return ((a & 0xffff) / (b & 0xffff)) & 0xffff |
-               ((((a & 0xffff) % (b & 0xffff)) & 0xffff) << 16);
-    }
-
-    /**
-     * Performs the 8-bit IDIV signed division instruction.
-     *
-     * Divides two signed 8-bit values resulting in one unsigned 16-bit
-     * quotient.
-     *
-     * This does not set any flags and leaves most undefined.
-     *
-     * @param {number} a - First argument.
-     * @param {number} b - Second argument.
-     *
-     * @return {number} The unsigned result. The high half is the remainder.
-     */
-    idiv8(a, b) {
-        return (this.toSigned8(a) / this.toSigned8(b)) & 0xff |
-               (((this.toSigned8(a) % this.toSigned8(b)) & 0xff) << 8);
-    }
-
-    /**
-     * Performs the 16-bit IDIV signed division instruction.
-     *
-     * Divides two signed 16-bit values resulting in one unsigned 32-bit
-     * quotient.
-     *
-     * This does not set any flags and leaves most undefined.
-     *
-     * @param {number} a - First argument.
-     * @param {number} b - Second argument.
-     *
-     * @return {number} The unsigned result. The high half is the remainder.
-     */
-    idiv16(a, b) {
-        return (this.toSigned16(a) / this.toSigned16(b)) & 0xffff |
-               (((this.toSigned16(a) % this.toSigned16(b)) & 0xffff) << 16);
-    }
-
-    /**
-     * Performs the 8-bit DEC instruction.
-     *
-     * This just performs an add with -1.
-     *
-     * @param {number} a - First argument.
-     * @param {number} b - Second argument.
-     *
-     * @return {number} The unsigned result.
-     */
-    dec8(a) {
-        return this.add8(a, -1);
-    }
-
-    /**
-     * Performs the 16-bit DEC instruction.
-     *
-     * This just performs an add with 1.
-     *
-     * @param {number} a - First argument.
-     * @param {number} b - Second argument.
-     *
-     * @return {number} The unsigned result.
-     */
-    dec16(a) {
-        return this.add16(a, -1);
-    }
-
-    /**
-     * Performs the 8-bit INC instruction.
-     *
-     * This just performs an add with 1.
-     *
-     * @param {number} a - First argument.
-     * @param {number} b - Second argument.
-     *
-     * @return {number} The unsigned result.
-     */
-    inc8(a) {
-        return this.add8(a, 1);
-    }
-
-    /**
-     * Performs the 16-bit INC instruction.
-     *
-     * This just performs an add with 1.
-     *
-     * @param {number} a - First argument.
-     * @param {number} b - Second argument.
-     *
-     * @return {number} The unsigned result.
-     */
-    inc16(a) {
-        return this.add16(a, 1);
-    }
-
-    ror8(a, b) {
-        a &= 0xff;
-        if (!(b & 0x7)) { // Some result (rotates around)
-            if (b & 0x18) { // Rotates just once!
-                this._flags.carry = (a >> 7) != 0;
-                this._flags.overflow = ((a >> 7) ^ ((a >> 6) & 0x1)) != 0;
-            }
-            return a;
-        }
-        a = (a >> b) | (a << (8 - b));
-        this._flags.carry = (a & 0x80) != 0;
-        this._flags.overflow = ((a ^ (a << 1)) & 0x80) != 0;
-        return a;
-    }
-
-    ror16(a, b) {
-        a &= 0xffff;
-        if (!(b & 0xf)) { // Some result (rotates around)
-            if (b & 0x10) { // Rotates just once!
-                this._flags.carry = (a >> 15) != 0;
-                this._flags.overflow = ((a >> 15) ^ ((a >> 14) & 0x1)) != 0;
-            }
-            return a;
-        }
-        a = (a >> b) | (a << (16 - b));
-        this._flags.carry = (a & 0x8000) != 0;
-        this._flags.overflow = ((a ^ (a << 1)) & 0x8000) != 0;
-        return a;
-    }
-
-    rol8(a, b) {
-        a &= 0xff;
-        if (!(b & 0x7)) { // Some result (rotates around)
-            if (b & 0x18) { // Rotates just once!
-                this._flags.carry = (a & 0x1) != 0;
-                this._flags.overflow = ((a & 0x1) ^ ((a >> 7))) != 0;
-            }
-            return a;
-        }
-        b &= 0x7;
-        a = (a << b) | (a >> (8 - b));
-        this._flags.carry = (a & 0x1) != 0;
-        this._flags.overflow = ((a & 0x1) ^ ((a >> 7))) != 0;
-        return a;
-    }
-
-    rol16(a, b) {
-        a &= 0xffff;
-        if (!(b & 0xf)) { // Some result (rotates around)
-            if (b & 0x10) { // Rotates just once!
-                this._flags.carry = (a & 0x1) != 0;
-                this._flags.overflow = ((a & 0x1) ^ ((a >> 15))) != 0;
-            }
-            return a;
-        }
-        b &= 0xf;
-        a = (a << b) | (a >> (16 - b));
-        this._flags.carry = (a & 0x1) != 0;
-        this._flags.overflow = ((a & 0x1) ^ ((a >> 15))) != 0;
-        return a;
-    }
-
-    rcl8(a, b) {
-        if ((b % 9) == 0) {
-            return a;
-        }
-
-        a &= 0xff;
-        b %= 9;
-        let result = (a << b) |
-                     ((this._flags.carry ? 1 : 0) << (b - 1)) |
-                     (a >> (9 - b));
-        this._flags.carry = (a >> (16 - b)) & 0x1;
-        this._flags.overflow = (this._flags.carry ? 1 : 0) ^ (result >> 7);
-        return a & 0xff;
-    }
-
-    rcl16(a, b) {
-        if ((b % 17) == 0) {
-            return a;
-        }
-
-        a &= 0xffff;
-        b %= 17;
-        let result = (a << b) |
-                     ((this._flags.carry ? 1 : 0) << (b - 1)) |
-                     (a >> (17 - b));
-        this._flags.carry = (a >> (16 - b)) & 0x1;
-        this._flags.overflow = (this._flags.carry ? 1 : 0) ^ (result >> 15);
-        return result & 0xffff;
-    }
-
-    rcr8(a, b) {
-        if (b % 9 == 0) {
-            return a;
-        }
-
-        a &= 0xff;
-        b %= 9;
-        let result = (a >> b) |
-                     ((this._flags.carry ? 1 : 0) << (8 - b)) |
-                     (a << (9 - b));
-
-        this._flags.carry = ((a >> (b - 1)) & 0x1) != 0;
-        this._flags.overflow = ((result ^ (result << 1)) & 0x80) != 0;
-
-        return result & 0xff;
-    }
-
-    rcr16(a, b) {
-        if (b % 17 == 0) {
-            return a;
-        }
-
-        a &= 0xffff;
-        b %= 17;
-        let result = (a >> b) |
-                     ((this._flags.carry ? 1 : 0) << (16 - b)) |
-                     (a << (17 - b));
-
-        this._flags.carry = ((a >> (b - 1)) & 0x1) != 0;
-        this._flags.overflow = ((result ^ (result << 1)) & 0x8000) != 0;
-
-        return result & 0xffff;
-    }
-
-    shl8(a, b) {
-        let result = a <<= b;
-        this._flags.overflow = ((result ^ a) & 0x80) != 0;
-        this._flags.carry = ((a >> (8 - b)) & 0x1) != 0;
-        if (b > 8) {
-            this._flags.carry = false;
-        }
-
-        return result & 0xff;
-    }
-
-    shl16(a, b) {
-        let result = a << b;
-        this._flags.overflow = ((result ^ a) & 0x8000) != 0;
-        this._flags.carry = ((a >> (16 - b)) & 0x1) != 0;
-        if (b > 16) {
-            this._flags.carry = false;
-        }
-
-        return result & 0xffff;
-    }
-
-    sar8(a, b) {
-        if (b > 8) {
-            b = 8;
-        }
-
-        let result = a >> b;
-        if (b & 0x80) {
-            result = a >> b | (0xff << (8 - b));
-        }
-
-        this._flags.carry = ((a >> (b - 1)) & 0x1) != 0;
-        this._flags.overflow = false;
-        return result & 0xff;
-    }
-
-    sar16(a, b) {
-        if (b > 16) {
-            b = 16;
-        }
-
-        let result = a >> b;
-        if (b & 0x8000) {
-            result = a >> b | (0xffff << (16 - b));
-        }
-
-        this._flags.carry = ((a >> (b - 1)) & 0x1) != 0;
-        this._flags.overflow = false;
-        return result & 0xffff;
-    }
-
-    shr8(a, b) {
-        if (b == 0) {
-            return a;
-        }
-
-        let result = a >> b;
-
-        if ((b & 0x1f) == 1) {
-            this._flags.overflow = a > 0x80;
-        }
-        else {
-            this._flags.overflow = false;
-        }
-
-        this._flags.carry = ((a >> (b - 1)) & 0x1) != 0;
-
-        return result & 0xff;
-    }
-
-    shr16(a, b) {
-        if (b == 0) {
-            return a;
-        }
-
-        let result = a >> b;
-
-        if ((b & 0x1f) == 1) {
-            this._flags.overflow = a > 0x8000;
-        }
-        else {
-            this._flags.overflow = false;
-        }
-
-        this._flags.carry = ((a >> (b - 1)) & 0x1) != 0;
-
-        return result & 0xffff;
-    }
-
-    /**
      * Executes the instruction.
      */
     execute(instruction) {
-        console.log(this.cs.toString(16) + ":" + this.ip.toString(16));
+        //console.log(this.cs.toString(16) + ":" + this.ip.toString(16));
 
         // Get the internal opcode
         let opcode = (instruction.opcode || 0xffff) || (instruction.subOpcode || 0);
@@ -1856,22 +1255,22 @@ export class CPU {
         // Execute the opcode
         switch(opcode) {
             case 0x00:    // ADD eb,rb
-                operation = operation || this.add8.bind(this);
+                operation = operation || this.alu.add8.bind(this.alu);
             case 0x08:    // OR eb,rb
-                operation = operation || this.or8.bind(this);
+                operation = operation || this.alu.or8.bind(this.alu);
             case 0x10:    // ADC eb,rb
-                operation = operation || this.adc8.bind(this);
+                operation = operation || this.alu.adc8.bind(this.alu);
             case 0x18:    // SBB eb,rb (Integer Subtraction With Borrow)
-                operation = operation || this.sbb8.bind(this);
+                operation = operation || this.alu.sbb8.bind(this.alu);
             case 0x20:    // AND eb,rb
-                operation = operation || this.and8.bind(this);
+                operation = operation || this.alu.and8.bind(this.alu);
             case 0x28:    // SUB eb,rb
-                operation = operation || this.sub8.bind(this);
+                operation = operation || this.alu.sub8.bind(this.alu);
             case 0x30:    // XOR eb,rb
-                operation = operation || this.xor8.bind(this);
+                operation = operation || this.alu.xor8.bind(this.alu);
 
-                console.log([['add', 'adc', 'and', 'xor'],
-                             ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0x8 ? 1 : 0][opcode >> 4] + '   eb,rb');
+                //console.log([['add', 'adc', 'and', 'xor'],
+                //             ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0x8 ? 1 : 0][opcode >> 4] + '   eb,rb');
 
                 this.writeOperand8(instruction, operation(
                     this.readOperand8(instruction),
@@ -1881,22 +1280,22 @@ export class CPU {
                 break;
 
             case 0x01:    // ADD ew,rw
-                operation = operation || this.add16.bind(this);
+                operation = operation || this.alu.add16.bind(this.alu);
             case 0x09:    // OR ew,rw
-                operation = operation || this.or16.bind(this);
+                operation = operation || this.alu.or16.bind(this.alu);
             case 0x11:    // ADC ew,rw
-                operation = operation || this.adc16.bind(this);
+                operation = operation || this.alu.adc16.bind(this.alu);
             case 0x19:    // SBB ew,rw (Integer Subtraction With Borrow)
-                operation = operation || this.sbb16.bind(this);
+                operation = operation || this.alu.sbb16.bind(this.alu);
             case 0x21:    // AND ew,rw
-                operation = operation || this.and16.bind(this);
+                operation = operation || this.alu.and16.bind(this.alu);
             case 0x29:    // SUB ew,rw
-                operation = operation || this.sub16.bind(this);
+                operation = operation || this.alu.sub16.bind(this.alu);
             case 0x31:    // XOR ew,rw
-                operation = operation || this.xor16.bind(this);
+                operation = operation || this.alu.xor16.bind(this.alu);
 
-                console.log([['add', 'adc', 'and', 'xor'],
-                             ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0x9 ? 1 : 0][opcode >> 4] + '   ew,rw');
+                //console.log([['add', 'adc', 'and', 'xor'],
+                //             ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0x9 ? 1 : 0][opcode >> 4] + '   ew,rw');
 
                 this.writeOperand16(instruction, operation(
                     this.readOperand16(instruction),
@@ -1905,22 +1304,22 @@ export class CPU {
                 break;
 
             case 0x02:    // ADD rb,eb
-                operation = operation || this.add8.bind(this);
+                operation = operation || this.alu.add8.bind(this.alu);
             case 0x0a:    // OR rb,eb
-                operation = operation || this.or8.bind(this);
+                operation = operation || this.alu.or8.bind(this.alu);
             case 0x12:    // ADC rb,eb
-                operation = operation || this.adc8.bind(this);
+                operation = operation || this.alu.adc8.bind(this.alu);
             case 0x1a:    // SBB rb,eb (Integer Subtraction With Borrow)
-                operation = operation || this.sbb8.bind(this);
+                operation = operation || this.alu.sbb8.bind(this.alu);
             case 0x22:    // AND rb,eb
-                operation = operation || this.and8.bind(this);
+                operation = operation || this.alu.and8.bind(this.alu);
             case 0x2a:    // SUB rb,eb
-                operation = operation || this.sub8.bind(this);
+                operation = operation || this.alu.sub8.bind(this.alu);
             case 0x32:    // XOR rb,eb
-                operation = operation || this.xor8.bind(this);
+                operation = operation || this.alu.xor8.bind(this.alu);
 
-                console.log([['add', 'adc', 'and', 'xor'],
-                             ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0xa ? 1 : 0][opcode >> 4] + '   rb,eb');
+                //console.log([['add', 'adc', 'and', 'xor'],
+                //             ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0xa ? 1 : 0][opcode >> 4] + '   rb,eb');
 
                 this.writeRegister8(instruction.sourceRegister, operation(
                     this.readRegister8(instruction.sourceRegister),
@@ -1929,22 +1328,22 @@ export class CPU {
                 break;
 
             case 0x03:    // ADD rw,ew
-                operation = operation || this.add16.bind(this);
+                operation = operation || this.alu.add16.bind(this.alu);
             case 0x0b:    // OR rw,ew
-                operation = operation || this.or16.bind(this);
+                operation = operation || this.alu.or16.bind(this.alu);
             case 0x13:    // ADC rw,ew
-                operation = operation || this.adc16.bind(this);
+                operation = operation || this.alu.adc16.bind(this.alu);
             case 0x1b:    // SBB rw,ew (Integer Subtraction With Borrow)
-                operation = operation || this.sbb16.bind(this);
+                operation = operation || this.alu.sbb16.bind(this.alu);
             case 0x23:    // AND rw,ew
-                operation = operation || this.and16.bind(this);
+                operation = operation || this.alu.and16.bind(this.alu);
             case 0x2b:    // SUB rw,ew
-                operation = operation || this.sub16.bind(this);
+                operation = operation || this.alu.sub16.bind(this.alu);
             case 0x33:    // XOR rw,ew
-                operation = operation || this.xor16.bind(this);
+                operation = operation || this.alu.xor16.bind(this.alu);
 
-                console.log([['add', 'adc', 'and', 'xor'],
-                             ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0xb ? 1 : 0][opcode >> 4] + '   rw,ew');
+                //console.log([['add', 'adc', 'and', 'xor'],
+                //             ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0xb ? 1 : 0][opcode >> 4] + '   rw,ew');
 
                 this.writeRegister16(instruction.sourceRegister, operation(
                     this.readRegister16(instruction.sourceRegister),
@@ -1953,22 +1352,22 @@ export class CPU {
                 break;
 
             case 0x04:    // ADD AL,db
-                operation = operation || this.add8.bind(this);
+                operation = operation || this.alu.add8.bind(this.alu);
             case 0x0c:    // OR AL,db
-                operation = operation || this.or8.bind(this);
+                operation = operation || this.alu.or8.bind(this.alu);
             case 0x14:    // ADC AL,db
-                operation = operation || this.adc8.bind(this);
+                operation = operation || this.alu.adc8.bind(this.alu);
             case 0x1c:    // SBB AL,db (Integer Subtraction With Borrow)
-                operation = operation || this.sbb8.bind(this);
+                operation = operation || this.alu.sbb8.bind(this.alu);
             case 0x24:    // AND AL,db
-                operation = operation || this.and8.bind(this);
+                operation = operation || this.alu.and8.bind(this.alu);
             case 0x2c:    // SUB AL,db
-                operation = operation || this.sub8.bind(this);
+                operation = operation || this.alu.sub8.bind(this.alu);
             case 0x34:    // XOR AL,db
-                operation = operation || this.xor8.bind(this);
+                operation = operation || this.alu.xor8.bind(this.alu);
 
-                console.log([['add', 'adc', 'and', 'xor'],
-                             ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0xc ? 1 : 0][opcode >> 4] + '   AL,db');
+                //console.log([['add', 'adc', 'and', 'xor'],
+                //             ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0xc ? 1 : 0][opcode >> 4] + '   AL,db');
 
                 this.writeRegister8(CPU.REGISTER_AL, operation(
                     this.readRegister8(CPU.REGISTER_AL),
@@ -1977,22 +1376,22 @@ export class CPU {
                 break;
 
             case 0x05:    // ADD AX,dw
-                operation = operation || this.add16.bind(this);
+                operation = operation || this.alu.add16.bind(this.alu);
             case 0x0d:    // OR AX,dw
-                operation = operation || this.or16.bind(this);
+                operation = operation || this.alu.or16.bind(this.alu);
             case 0x15:    // ADC AX,dw
-                operation = operation || this.adc16.bind(this);
+                operation = operation || this.alu.adc16.bind(this.alu);
             case 0x1d:    // SBB AX,dw (Integer Subtraction With Borrow)
-                operation = operation || this.sbb16.bind(this);
+                operation = operation || this.alu.sbb16.bind(this.alu);
             case 0x25:    // AND AX,dw
-                operation = operation || this.and16.bind(this);
+                operation = operation || this.alu.and16.bind(this.alu);
             case 0x2d:    // SUB AX,dw
-                operation = operation || this.sub16.bind(this);
+                operation = operation || this.alu.sub16.bind(this.alu);
             case 0x35:    // XOR AX,dw
-                operation = operation || this.xor16.bind(this);
+                operation = operation || this.alu.xor16.bind(this.alu);
 
-                console.log([['add', 'adc', 'and', 'xor'],
-                             ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0xd ? 1 : 0][opcode >> 4] + '   AX,dw');
+                //console.log([['add', 'adc', 'and', 'xor'],
+                //             ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0xd ? 1 : 0][opcode >> 4] + '   AX,dw');
 
 
                 this.writeRegister16(CPU.REGISTER_AX, operation(
@@ -2002,17 +1401,17 @@ export class CPU {
                 break;
 
             case 0x06:    // PUSH ES
-                console.log('push   es   ');
+                //console.log('push   es   ');
                 this.push16(this.es);
                 break;
 
             case 0x07:    // POP ES
-                console.log('pop    es   ');
+                //console.log('pop    es   ');
                 this.es = this.pop16();
                 break;
 
             case 0x0e:    // PUSH CS
-                console.log('push   cs   ');
+                //console.log('push   cs   ');
                 this.push16(this.cs);
                 break;
 
@@ -2020,7 +1419,7 @@ export class CPU {
                 // Only valid when the immediate is 0x06
                 if (instruction.immediate == 0x06) {
                     // TODO: implement CLTS (privileged mode)
-                    console.log('clts        ');
+                    //console.log('clts        ');
                 }
                 else {
                     // Invalid opcode
@@ -2029,22 +1428,22 @@ export class CPU {
                 break;
 
             case 0x16:    // PUSH SS
-                console.log('push   ss   ');
+                //console.log('push   ss   ');
                 this.push16(this.ss);
                 break;
 
             case 0x17:    // POP SS
-                console.log('pop    ss   ');
+                //console.log('pop    ss   ');
                 this.ss = this.pop16();
                 break;
 
             case 0x1e:    // PUSH DS
-                console.log('push   ds   ');
+                //console.log('push   ds   ');
                 this.push16(this.ds);
                 break;
 
             case 0x1f:    // POP DS
-                console.log('pop    ds   ');
+                //console.log('pop    ds   ');
                 this.ds = this.pop16();
                 break;
 
@@ -2061,57 +1460,57 @@ export class CPU {
                 break;
 
             case 0x38:    // CMP eb,rb
-                operation = operation || this.sub8.bind(this);
+                operation = operation || this.alu.sub8.bind(this.alu);
             case 0x84:    // TEST eb,rb / TEST rb,eb
-                operation = operation || this.and8.bind(this);
+                operation = operation || this.alu.and8.bind(this.alu);
 
-                console.log((opcode == 0x38 ? 'cmp ' : 'test') + '   eb,rb');
+                //console.log((opcode == 0x38 ? 'cmp ' : 'test') + '   eb,rb');
 
                 operation(this.readOperand8(instruction),
                           this.readRegister8(instruction.sourceRegister));
                 break;
 
             case 0x39:    // CMP ew,rw
-                operation = operation || this.sub16.bind(this);
+                operation = operation || this.alu.sub16.bind(this.alu);
             case 0x85:    // TEST ew,rw / TEST rw,ew
-                operation = operation || this.and16.bind(this);
+                operation = operation || this.alu.and16.bind(this.alu);
 
-                console.log((opcode == 0x39 ? 'cmp ' : 'test') + '   ew,rw');
+                //console.log((opcode == 0x39 ? 'cmp ' : 'test') + '   ew,rw');
 
                 operation(this.readOperand16(instruction),
                           this.readRegister16(instruction.sourceRegister));
                 break;
 
             case 0x3a:    // CMP rb,eb
-                console.log('cmp    rb,eb');
-                this.sub8(this.readRegister8(instruction.sourceRegister),
-                          this.readOperand8(instruction));
+                //console.log('cmp    rb,eb');
+                this.alu.sub8(this.readRegister8(instruction.sourceRegister),
+                              this.readOperand8(instruction));
                 break;
 
             case 0x3b:    // CMP rw,ew
-                console.log('cmp    rw,ew');
-                this.sub16(this.readRegister16(instruction.sourceRegister),
-                           this.readOperand16(instruction));
+                //console.log('cmp    rw,ew');
+                this.alu.sub16(this.readRegister16(instruction.sourceRegister),
+                               this.readOperand16(instruction));
 
                 break;
 
             case 0x3c:    // CMP AL,db
-                operation = operation || this.sub8.bind(this);
+                operation = operation || this.alu.sub8.bind(this.alu);
             case 0xa8:    // TEST AL,db
-                operation = operation || this.and8.bind(this);
+                operation = operation || this.alu.and8.bind(this.alu);
 
-                console.log((opcode == 0x3c ? 'cmp ' : 'test') + '   AL,db');
+                //console.log((opcode == 0x3c ? 'cmp ' : 'test') + '   AL,db');
 
                 operation(this.readRegister8(CPU.REGISTER_AL),
                           instruction.immediate);
                 break;
 
             case 0x3d:    // CMP AX,dw
-                operation = operation || this.sub16.bind(this);
+                operation = operation || this.alu.sub16.bind(this.alu);
             case 0xa9:    // TEST AX,dw
-                operation = operation || this.and16.bind(this);
+                operation = operation || this.alu.and16.bind(this.alu);
 
-                console.log((opcode == 0x3d ? 'cmp ' : 'test') + '   AX,dw');
+                //console.log((opcode == 0x3d ? 'cmp ' : 'test') + '   AX,dw');
 
                 operation(this.readRegister16(CPU.REGISTER_AX),
                           instruction.immediate);
@@ -2129,10 +1528,10 @@ export class CPU {
             case 0x45:    // INC BP
             case 0x46:    // INC SI
             case 0x47:    // INC DI
-                console.log('inc    +R   ');
+                //console.log('inc    +R   ');
                 let incDestination = opcode - 0x40;
 
-                this.writeRegister16(incDestination, this.inc16(
+                this.writeRegister16(incDestination, this.alu.inc16(
                     this.readRegister16(incDestination)));
                 break;
 
@@ -2144,10 +1543,10 @@ export class CPU {
             case 0x4d:    // DEC BP
             case 0x4e:    // DEC SI
             case 0x4f:    // DEC DI
-                console.log('dec    +R   ');
+                //console.log('dec    +R   ');
                 let decDestination = opcode - 0x48;
 
-                this.writeRegister16(decDestination, this.dec16(
+                this.writeRegister16(decDestination, this.alu.dec16(
                     this.readRegister16(decDestination)));
                 break;
 
@@ -2159,7 +1558,7 @@ export class CPU {
             case 0x55:    // PUSH BP
             case 0x56:    // PUSH SI
             case 0x57:    // PUSH DI
-                console.log('push   +R   ');
+                //console.log('push   +R   ');
                 let pushDestination = opcode - 0x50;
 
                 this.push16(this.readRegister16(pushDestination));
@@ -2173,14 +1572,14 @@ export class CPU {
             case 0x5d:    // POP BP
             case 0x5e:    // POP SI
             case 0x5f:    // POP DI
-                console.log('pop    +R   ');
+                //console.log('pop    +R   ');
                 let popDestination = opcode - 0x50;
 
                 this.writeRegister16(popDestination, this.pop16());
                 break;
 
             case 0x60:    // PUSHA
-                console.log('pusha       ');
+                //console.log('pusha       ');
                 let sp = this.sp;
                 this.push16(this.ax);
                 this.push16(this.cx);
@@ -2193,7 +1592,7 @@ export class CPU {
                 break;
 
             case 0x61:    // POPA
-                console.log('popa        ');
+                //console.log('popa        ');
                 this.di = this.pop();
                 this.si = this.pop();
                 this.bp = this.pop();
@@ -2213,7 +1612,7 @@ export class CPU {
                 break;
 
             case 0x68:    // PUSH dw
-                console.log('push   dw   ');
+                //console.log('push   dw   ');
                 this.push16(instruction.immediate);
                 break;
 
@@ -2222,7 +1621,7 @@ export class CPU {
                 break;
 
             case 0x6a:    // PUSH db
-                console.log('push   db   ');
+                //console.log('push   db   ');
                 this.push16(instruction.immediate);
                 break;
 
@@ -2258,82 +1657,82 @@ export class CPU {
 
                 switch(jumpCondition) {
                     case 0x0:   // OF == 1
-                        console.log('jo     cb   ');
+                        //console.log('jo     cb   ');
                         jump = this._flags.overflow;
                         break;
 
                     case 0x1:   // OF == 0
-                        console.log('jno    cb   ');
+                        //console.log('jno    cb   ');
                         jump = !this._flags.overflow;
                         break;
 
                     case 0x2:   // CF == 1
-                        console.log('jb     cb   ');
+                        //console.log('jb     cb   ');
                         jump = this._flags.carry;
                         break;
 
                     case 0x3:   // CF == 0
-                        console.log('jae    cb   ');
+                        //console.log('jae    cb   ');
                         jump = !this._flags.carry;
                         break;
 
                     case 0x4:   // ZF == 1
-                        console.log('je     cb   ');
+                        //console.log('je     cb   ');
                         jump = this._flags.zero;
                         break;
 
                     case 0x5:   // ZF == 0
-                        console.log('jne    cb   ');
+                        //console.log('jne    cb   ');
                         jump = !this._flags.zero;
                         break;
 
                     case 0x6:   // CF == 1 || ZF == 1
-                        console.log('jbe    cb   ');
+                        //console.log('jbe    cb   ');
                         jump = this._flags.carry || this._flags.zero;
                         break;
 
                     case 0x7:   // CF == 0 && ZF == 0
-                        console.log('ja     cb   ');
+                        //console.log('ja     cb   ');
                         jump = !this._flags.carry && !this._flags.zero;
                         break;
 
                     case 0x8:   // SF == 1
-                        console.log('js     cb   ');
+                        //console.log('js     cb   ');
                         jump = this._flags.signed;
                         break;
 
                     case 0x9:   // SF == 0
-                        console.log('jns    cb   ');
+                        //console.log('jns    cb   ');
                         jump = !this._flags.signed;
                         break;
 
                     case 0xa:   // PF == 1
-                        console.log('jp     cb   ');
+                        //console.log('jp     cb   ');
                         jump = this._flags.parity;
                         break;
 
                     case 0xb:   // PF == 0
-                        console.log('jnp    cb   ');
+                        //console.log('jnp    cb   ');
                         jump = !this._flags.parity;
                         break;
 
                     case 0xc:   // SF != OF
-                        console.log('jl     cb   ');
+                        //console.log('jl     cb   ');
                         jump = this._flags.signed != this._flags.overflow;
                         break;
 
                     case 0xd:   // SF == OF
-                        console.log('jge    cb   ');
+                        //console.log('jge    cb   ');
                         jump = this._flags.signed == this._flags.overflow;
                         break;
 
                     case 0xe:   // ZF == 1 || SF != OF
-                        console.log('jle    cb   ');
+                        //console.log('jle    cb   ');
                         jump = this._flags.zero || (this._flags.signed != this._flags.overflow);
                         break;
 
                     case 0xf:   // ZF == 0 && SF == OF
-                        console.log('jg     cb   ');
+                        //console.log('jg     cb   ');
                         jump = !this._flags.zero && (this._flags.signed == this._flags.overflow);
                         break;
                 }
@@ -2349,22 +1748,22 @@ export class CPU {
                           // OR eb,db / SBB eb,db / SUB eb,db / XOR eb,db
                 switch (instruction.modifier) {
                     case 0x0:   // ADD eb,db
-                        operation = operation || this.add8.bind(this);
+                        operation = operation || this.alu.add8.bind(this.alu);
                     case 0x1:   // OR eb,db
-                        operation = operation || this.or8.bind(this);
+                        operation = operation || this.alu.or8.bind(this.alu);
                     case 0x2:   // ADC eb,db
-                        operation = operation || this.adc8.bind(this);
+                        operation = operation || this.alu.adc8.bind(this.alu);
                     case 0x3:   // SBB eb,db
-                        operation = operation || this.sbb8.bind(this);
+                        operation = operation || this.alu.sbb8.bind(this.alu);
                     case 0x4:   // AND eb,db
-                        operation = operation || this.and8.bind(this);
+                        operation = operation || this.alu.and8.bind(this.alu);
                     case 0x5:   // SUB eb,db
-                        operation = operation || this.sub8.bind(this);
+                        operation = operation || this.alu.sub8.bind(this.alu);
                     case 0x6:   // XOR eb,db
-                        operation = operation || this.xor8.bind(this);
+                        operation = operation || this.alu.xor8.bind(this.alu);
 
-                        console.log(['add', 'or ', 'adc', 'sbb',
-                                     'and', 'sub', 'xor', 'unk'][instruction.modifier] + '   eb,db');
+                        //console.log(['add', 'or ', 'adc', 'sbb',
+                        //             'and', 'sub', 'xor', 'unk'][instruction.modifier] + '   eb,db');
 
                         this.writeOperand8(instruction, operation(
                             this.readOperand8(instruction),
@@ -2373,8 +1772,8 @@ export class CPU {
                         break;
 
                     case 0x7:   // CMP eb,db
-                        this.sub8(this.readOperand8(instruction),
-                                  instruction.immediate);
+                        this.alu.sub8(this.readOperand8(instruction),
+                                      instruction.immediate);
                         break;
                 }
 
@@ -2386,22 +1785,22 @@ export class CPU {
                           // SUB ew,db
                 switch (instruction.modifier) {
                     case 0x0:   // ADD ew,dw
-                        operation = operation || this.add16.bind(this);
+                        operation = operation || this.alu.add16.bind(this.alu);
                     case 0x1:   // OR ew,dw
-                        operation = operation || this.or16.bind(this);
+                        operation = operation || this.alu.or16.bind(this.alu);
                     case 0x2:   // ADC ew,dw
-                        operation = operation || this.adc16.bind(this);
+                        operation = operation || this.alu.adc16.bind(this.alu);
                     case 0x3:   // SBB ew,dw
-                        operation = operation || this.sbb16.bind(this);
+                        operation = operation || this.alu.sbb16.bind(this.alu);
                     case 0x4:   // AND ew,dw
-                        operation = operation || this.and16.bind(this);
+                        operation = operation || this.alu.and16.bind(this.alu);
                     case 0x5:   // SUB ew,dw
-                        operation = operation || this.sub16.bind(this);
+                        operation = operation || this.alu.sub16.bind(this.alu);
                     case 0x6:   // XOR ew,dw
-                        operation = operation || this.xor16.bind(this);
+                        operation = operation || this.alu.xor16.bind(this.alu);
 
-                        console.log(['add', 'or ', 'adc', 'sbb',
-                                     'and', 'sub', 'xor', 'unk'][instruction.modifier] + '   ew,dw');
+                        //console.log(['add', 'or ', 'adc', 'sbb',
+                        //             'and', 'sub', 'xor', 'unk'][instruction.modifier] + '   ew,dw');
 
                         this.writeOperand16(instruction, operation(
                             this.readOperand16(instruction),
@@ -2410,76 +1809,92 @@ export class CPU {
                         break;
 
                     case 0x7:   // CMP ew,dw
-                        this.sub16(this.readOperand16(instruction),
-                                   instruction.immediate);
+                        this.alu.sub16(this.readOperand16(instruction),
+                                       instruction.immediate);
                         break;
                 }
                 break;
 
             case 0x86:    // XCHG eb,rb / XCHG rb,eb
-                console.log('xchg   eb,rb');
+                //console.log('xchg   eb,rb');
                 let xchgByteTemp = this.readOperand8(instruction);
-                this.writeOperand8(instruction, this.readRegister8(
-                    instruction.sourceRegister));
+                this.writeOperand8(
+                    instruction,
+                    this.readRegister8(
+                        instruction.sourceRegister
+                    )
+                );
                 this.writeRegister8(instruction.sourceRegister, xchgByteTemp);
                 break;
 
             case 0x87:    // XCHG ew,rw / XCHG rw,ew
-                console.log('xchg   ew,rw');
+                //console.log('xchg   ew,rw');
                 let xchgWordTemp = this.readOperand16(instruction);
-                this.writeOperand16(instruction, this.readRegister16(
-                    instruction.sourceRegister));
+                this.writeOperand16(
+                    instruction,
+                    this.readRegister16(
+                        instruction.sourceRegister
+                    )
+                );
                 this.writeRegister16(instruction.sourceRegister, xchgWordTemp);
                 break;
 
             case 0x88:    // MOV eb,rb
-                console.log('mov    eb,rb');
-                this.writeOperand8(instruction, this.readRegister8(
-                    instruction.sourceRegister));
+                //console.log('mov    eb,rb');
+                this.writeOperand8(
+                    instruction,
+                    this.readRegister8(
+                        instruction.sourceRegister
+                    )
+                );
                 break;
 
             case 0x89:    // MOV ew,rw
-                console.log('mov    ew,rw');
-                this.writeOperand16(instruction, this.readRegister16(
-                    instruction.sourceRegister));
+                //console.log('mov    ew,rw');
+                this.writeOperand16(
+                    instruction,
+                    this.readRegister16(
+                        instruction.sourceRegister
+                    )
+                );
                 break;
 
             case 0x8a:    // MOV rb,eb
-                console.log('mov    rb,eb');
+                //console.log('mov    rb,eb');
                 this.writeRegister8(instruction.sourceRegister,
                                     this.readOperand8(instruction));
                 break;
 
             case 0x8b:    // MOV rw,ew
-                console.log('mov    rw,ew');
+                //console.log('mov    rw,ew');
                 this.writeRegister16(instruction.sourceRegister,
                                      this.readOperand16(instruction));
                 break;
 
             case 0x8c:    // MOV ew,ES / MOV ew,CS / MOV ew,SS / MOV ew,DS
-                console.log('mov    ew,+S');
+                //console.log('mov    ew,+S');
                 let movSource = instruction.modifier;
                 if (movSource >= 4) {
                     // Invalid
                     throw new InvalidInstruction(instruction);
                 }
 
-                //console.log("writing from segment", movSource, this._segmentRegisters[movSource], "to", instruction);
+                ////console.log("writing from segment", movSource, this._segmentRegisters[movSource], "to", instruction);
                 this.writeOperand16(instruction,
                                     this._segmentRegisters[movSource]);
                 break;
 
             case 0x8d:    // LEA
-                console.log('lea         ');
+                //console.log('lea         ');
                 this.writeRegister16(instruction.sourceRegister,
                                      instruction.offset);
                 break;
 
             case 0x8e:    // MOV ES,mw / MOV ES,rw / MOV SS,mw / MOV SS,rw /
                           // MOV DS,mw / MOV DS,rw
-                console.log('mov    +S,rm');
+                //console.log('mov    +S,rm');
                 let movDestination = instruction.modifier;
-                console.log(instruction, movDestination, this.readOperand16(instruction));
+                //console.log(instruction, movDestination, this.readOperand16(instruction));
                 if (movDestination >= 4) {
                     // Invalid
                     throw new InvalidInstruction(instruction);
@@ -2489,7 +1904,7 @@ export class CPU {
                 break;
 
             case 0x8f:    // POP mw
-                console.log('pop    mw   ');
+                //console.log('pop    mw   ');
                 if (instruction.modifier != 0) {
                     // Invalid
                     throw new InvalidInstruction(instruction);
@@ -2500,7 +1915,7 @@ export class CPU {
 
             case 0x90:    // NOP (No Operation) / XCHG AX,AX
             case 0xf0:    // LOCK Prefix
-                console.log('lock        ');
+                //console.log('lock        ');
                 break;
 
             case 0x91:    // XCHG AX,CX / XCHG CX,AX
@@ -2510,7 +1925,7 @@ export class CPU {
             case 0x95:    // XCHG AX,BP / XCHG BP,AX
             case 0x96:    // XCHG AX,SI / XCHG SI,AX
             case 0x97:    // XCHG AX,DI / XCHG DI,AX
-                console.log('xchg   +R,AX');
+                //console.log('xchg   +R,AX');
                 let xchgRegister = opcode - 0x90;
                 let temp = this.ax;
 
@@ -2519,19 +1934,19 @@ export class CPU {
                 break;
 
             case 0x98:    // CBW (Convert Byte into Word)
-                console.log('cbw         ');
-                this.ax = this.cbw8(this.al);
+                //console.log('cbw         ');
+                this.ax = this.alu.cbw8(this.al);
                 break;
 
             case 0x99:    // CWD (Convert Word to Double-Word)
-                console.log('cwd         ');
-                let cwdValue = this.cwd16(this.ax);
+                //console.log('cwd         ');
+                let cwdValue = this.alu.cwd16(this.ax);
                 this.dx = (cwdValue >> 16) & 0xffff;
                 this.ax = cwdValue & 0xffff;
                 break;
 
             case 0x9a:    // CALL far cd
-                console.log('callf  cd   ');
+                //console.log('callf  cd   ');
                 // Push CS
                 this.push16(this.cs);
 
@@ -2539,29 +1954,29 @@ export class CPU {
                 this.push16(this.ip);
 
                 // Move to absolute address
-                //console.log('calling from', "0x" + this.cs.toString(16), ":", "0x" + this.ip.toString(16), this.ss, this.sp);
+                ////console.log('calling from', "0x" + this.cs.toString(16), ":", "0x" + this.ip.toString(16), this.ss, this.sp);
                 this.ip = instruction.immediate;
                 this.cs = instruction.targetCS;
-                //console.log('calling', "0x" + this.cs.toString(16), ":", "0x" + this.ip.toString(16));
+                ////console.log('calling', "0x" + this.cs.toString(16), ":", "0x" + this.ip.toString(16));
                 break;
 
             case 0x9b:    // WAIT
-                console.log('wait        ');
+                //console.log('wait        ');
                 // TODO: implement (it is ok if it does nothing)
                 break;
 
             case 0x9c:    // PUSHF
-                console.log('pushf       ');
+                //console.log('pushf       ');
                 this.push16(this.f);
                 break;
 
             case 0x9d:    // POPF
-                console.log('popf        ');
+                //console.log('popf        ');
                 this.f = this.pop16();
                 break;
 
             case 0x9e:    // SAHF (Store AH into Flags)
-                console.log('sahf        ');
+                //console.log('sahf        ');
                 let sahfValue = this.ax;
                 this._flags.carry = (sahfValue & 0x1) != 0;
                 this._flags.parity = (sahfValue & 0x4) != 0;
@@ -2571,7 +1986,7 @@ export class CPU {
                 break;
 
             case 0x9f:    // LAHF (Load Flags into AH)
-                console.log('lahf        ');
+                //console.log('lahf        ');
                 let lahfValue = 0;
                 lahfValue = this._flags.carry ? (lahfValue | 0x1) : lahfValue;
                 lahfValue = this._flags.parity ? (lahfValue | 0x4) : lahfValue;
@@ -2582,7 +1997,7 @@ export class CPU {
                 break;
 
             case 0xa0:    // MOV AL,xb
-                console.log('mov    AL,xb');
+                //console.log('mov    AL,xb');
                 this.writeRegister8(CPU.REGISTER_AL,
                     this._memory.read8(
                         instruction.segment || this.ds,
@@ -2592,7 +2007,7 @@ export class CPU {
                 break;
 
             case 0xa1:    // MOV AX,xw
-                console.log('mov    AX,xw');
+                //console.log('mov    AX,xw');
                 this.writeRegister16(
                     CPU.REGISTER_AX,
                     this._memory.read16(
@@ -2603,7 +2018,7 @@ export class CPU {
                 break;
 
             case 0xa2:    // MOV xb,AL
-                console.log('mov    xb,AL');
+                //console.log('mov    xb,AL');
                 this._memory.write8(
                     instruction.segment || this.ds, instruction.immediate,
                     this.readRegister8(CPU.REGISTER_AL)
@@ -2611,7 +2026,7 @@ export class CPU {
                 break;
 
             case 0xa3:    // MOV xw,AX
-                console.log('mov    xw,AX');
+                //console.log('mov    xw,AX');
                 this._memory.write16(
                     instruction.segment || this.ds, instruction.immediate,
                     this.ax
@@ -2620,7 +2035,7 @@ export class CPU {
 
             case 0xa4:    // MOVS mb,mb / MOVSB
             case 0xa5:    // MOVS mw,mw / MOVSW
-                console.log('movs   mb/mw');
+                //console.log('movs   mb/mw');
                 do {
                     // No segment overrides are allowed.
                     if (instruction.opcode == 0xa4) {
@@ -2659,11 +2074,11 @@ export class CPU {
 
             case 0xa6:    // CMPSB (Compare String Bytes)
             case 0xa7:    // CMPSW (Compare String Words)
-                console.log('cmps   mb/mw');
+                //console.log('cmps   mb/mw');
                 do {
                     // No segment overrides are allowed. (but we allow them??)
                     if (instruction.opcode == 0xa6) {
-                        this.sub8(
+                        this.alu.sub8(
                             this.memory.read8(
                                 instruction.segment || this.ds,
                                 this.si
@@ -2674,7 +2089,7 @@ export class CPU {
                         this.si += this._flags.direction ? -1 : 1;
                     }
                     else {
-                        this.sub16(
+                        this.alu.sub16(
                             this.memory.read16(
                                 instruction.segment || this.ds,
                                 this.si
@@ -2703,7 +2118,7 @@ export class CPU {
 
             case 0xaa:    // STOS mb / STOSB (Store String Data)
             case 0xab:    // STOS mw / STOSW (Store String Data)
-                console.log('stos   mb/mw');
+                //console.log('stos   mb/mw');
                 do {
                     // No segment overrides are allowed.
                     if (instruction.opcode == 0xaa) {
@@ -2726,7 +2141,7 @@ export class CPU {
 
             case 0xac:    // LODS mb / LODSB (Load String Operand)
             case 0xad:    // LODS mw / LODSW (Load String Operand)
-                console.log('lods   mb/mw');
+                //console.log('lods   mb/mw');
                 do {
                     if (instruction.opcode == 0xac) {
                         this.al = this.memory.read8(
@@ -2751,15 +2166,15 @@ export class CPU {
 
             case 0xae:    // SCAS mb / SCASB (Compare String Data)
             case 0xaf:    // SCAS mw / SCASW (Compare String Data)
-                console.log('scas   mb/mw');
+                //console.log('scas   mb/mw');
                 do {
                     // No segment overrides are allowed.
                     if (instruction.opcode == 0xae) {
-                        this.sub8(this.al, this.memory.read8(this.es, this.di));
+                        this.alu.sub8(this.al, this.memory.read8(this.es, this.di));
                         this.di += this._flags.direction ? -1 : 1;
                     }
                     else {
-                        this.sub16(this.ax, this.memory.read16(this.es, this.di));
+                        this.alu.sub16(this.ax, this.memory.read16(this.es, this.di));
                         this.di += this._flags.direction ? -2 : 2;
                     }
 
@@ -2787,7 +2202,7 @@ export class CPU {
             case 0xb5:    // MOV CH,db
             case 0xb6:    // MOV DH,db
             case 0xb7:    // MOV BH,db
-                console.log('mov    +r,db');
+                //console.log('mov    +r,db');
                 let movByteDestination = opcode - 0xb0;
                 this.writeRegister8(movByteDestination, instruction.immediate);
                 break;
@@ -2800,7 +2215,7 @@ export class CPU {
             case 0xbd:    // MOV BP,dw
             case 0xbe:    // MOV SI,dw
             case 0xbf:    // MOV DI,dw
-                console.log('mov    +R,dw');
+                //console.log('mov    +R,dw');
                 let movWordDestination = opcode - 0xb8;
                 this.writeRegister16(movWordDestination, instruction.immediate);
                 break;
@@ -2816,23 +2231,23 @@ export class CPU {
                 shiftAmount = shiftAmount == null ?
                     this.readRegister8(CPU.REGISTER_CL) : shiftAmount;
 
-                console.log('shift  eb/..');
+                //console.log('shift  eb/..');
 
                 switch (instruction.modifier) {
                     case 0x0:   // ROL eb,db (Rotate 8-bit Eb left)
-                        operation = operation || this.rol8.bind(this);
+                        operation = operation || this.alu.rol8.bind(this.alu);
                     case 0x1:   // ROR eb,db (Rotate 8-bit Eb right)
-                        operation = operation || this.ror8.bind(this);
+                        operation = operation || this.alu.ror8.bind(this.alu);
                     case 0x2:   // RCL eb,db (Rotate 9-bits (CF,Eb) left)
-                        operation = operation || this.rcl8.bind(this);
+                        operation = operation || this.alu.rcl8.bind(this.alu);
                     case 0x3:   // RCR eb,db (Rotate 9-bits (CF,Eb) right)
-                        operation = operation || this.rcr8.bind(this);
+                        operation = operation || this.alu.rcr8.bind(this.alu);
                     case 0x4:   // SAL eb,db / SHL eb,db
-                        operation = operation || this.shl8.bind(this);
+                        operation = operation || this.alu.shl8.bind(this.alu);
                     case 0x5:   // SHR eb,db
-                        operation = operation || this.shr8.bind(this);
+                        operation = operation || this.alu.shr8.bind(this.alu);
                     case 0x7:   // SAR eb,db
-                        operation = operation || this.sar8.bind(this);
+                        operation = operation || this.alu.sar8.bind(this.alu);
                         break;
                     default:
                         // Invalid
@@ -2855,23 +2270,23 @@ export class CPU {
                           // SAL ew,CL / SAR ew,CL / SHL ew,CL / SHR ew,CL
                 shiftAmount = shiftAmount == null ?
                     this.readRegister8(CPU.REGISTER_CL) : shiftAmount;
-                console.log('shift  ew/..');
+                //console.log('shift  ew/..');
 
                 switch (instruction.modifier) {
                     case 0x0:   // ROL ew,shamt (Rotate 16-bit Ew left)
-                        operation = operation || this.rol16.bind(this);
+                        operation = operation || this.alu.rol16.bind(this.alu);
                     case 0x1:   // ROR ew,shamt (Rotate 16-bit Ew right)
-                        operation = operation || this.ror16.bind(this);
+                        operation = operation || this.alu.ror16.bind(this.alu);
                     case 0x2:   // RCL ew,shamt (Rotate 17-bits (CF,Ew) left)
-                        operation = operation || this.rcl16.bind(this);
+                        operation = operation || this.alu.rcl16.bind(this.alu);
                     case 0x3:   // RCR ew,shamt (Rotate 17-bits (CF,Ew) right)
-                        operation = operation || this.rcr16.bind(this);
+                        operation = operation || this.alu.rcr16.bind(this.alu);
                     case 0x4:   // SAL ew,shamt / SHL ew,shamt
-                        operation = operation || this.shl16.bind(this);
+                        operation = operation || this.alu.shl16.bind(this.alu);
                     case 0x5:   // SHR ew,shamt
-                        operation = operation || this.shr16.bind(this);
+                        operation = operation || this.alu.shr16.bind(this.alu);
                     case 0x7:   // SAR ew,shamt
-                        operation = operation || this.sar16.bind(this);
+                        operation = operation || this.alu.sar16.bind(this.alu);
                         break;
                     default:
                         // Invalid
@@ -2885,19 +2300,19 @@ export class CPU {
                 break;
 
             case 0xc2:    // RET dw
-                console.log('ret    dw   ');
+                //console.log('ret    dw   ');
                 this.ip = this.pop16();
                 this.sp = this.sp + instruction.immediate;
                 break;
 
             case 0xc3:    // RET
-                console.log('ret         ');
+                //console.log('ret         ');
                 this.ip = this.pop16();
                 break;
 
             case 0xc4:    // LES rw,ed (Load EA dword into DS/rw)
             case 0xc5:    // LDS rw,ed (Load EA dword into DS/rw)
-                console.log('le/ds  rw,eb');
+                //console.log('le/ds  rw,eb');
                 if (!instruction.segment) {
                     throw new InvalidInstruction(instruction);
                 }
@@ -2916,17 +2331,17 @@ export class CPU {
                 break;
 
             case 0xc6:    // MOV eb,db
-                console.log('mov    eb,db');
+                //console.log('mov    eb,db');
                 this.writeOperand8(instruction, instruction.immediate);
                 break;
 
             case 0xc7:    // MOV ew,dw
-                console.log('mov    ew,dw');
+                //console.log('mov    ew,dw');
                 this.writeOperand16(instruction, instruction.immediate);
                 break;
 
             case 0xc8:    // ENTER dw,db
-                console.log('enter  dw,db');
+                //console.log('enter  dw,db');
                 // Push BP
                 this.push16(this.bp);
 
@@ -2960,43 +2375,43 @@ export class CPU {
                 break;
 
             case 0xc9:    // LEAVE
-                console.log('leave       ');
+                //console.log('leave       ');
                 this.sp = this.bp;
                 this.bp = this.pop16();
                 break;
 
             case 0xca:    // RET far dw
-                console.log('retf   dw   ');
+                //console.log('retf   dw   ');
                 this.ip = this.pop16();
                 this.cs = this.pop16();
                 this.sp = this.sp + instruction.immediate;
                 break;
 
             case 0xcb:    // RET
-                console.log('ret         ');
+                //console.log('ret         ');
                 this.ip = this.pop16();
                 this.cs = this.pop16();
                 break;
 
             case 0xcc:    // INT 3
-                console.log('int 3       ');
+                //console.log('int 3       ');
                 this.raiseInterrupt(3);
                 break;
 
             case 0xcd:    // INT db
-                console.log('int         ');
+                //console.log('int         ');
                 this.raiseInterrupt(instruction.immediate);
                 break;
 
             case 0xce:    // INTO
-                console.log('into        ');
+                //console.log('into        ');
                 if (this._flags.overflow) {
                     this.raiseInterrupt(4);
                 }
                 break;
 
             case 0xcf:    // IRET
-                console.log('iret        ');
+                //console.log('iret        ');
                 this.ip = this.pop16();
                 this.cs = this.pop16();
                 this.f = this.pop16();
@@ -3011,7 +2426,7 @@ export class CPU {
                 break;
 
             case 0xd7:    // XLAT mb / XLATB
-                console.log('xlat   mb');
+                //console.log('xlat   mb');
                 this.al = this.memory.read8(
                     instruction.segment || this.ds,
                     (this.bx + this.al) & 0xffff
@@ -3025,7 +2440,7 @@ export class CPU {
                 break;
 
             case 0xe3:    // JCXZ cb
-                console.log('jcxz   cb   cx=', this.cx);
+                //console.log('jcxz   cb   cx=', this.cx);
                 if (this.cx == 0) {
                     this.ip += instruction.immediate;
                 }
@@ -3048,7 +2463,7 @@ export class CPU {
                 break;
 
             case 0xe8:    // CALL cw
-                console.log('call   cw   ');
+                //console.log('call   cw   ');
                 // Push IP
                 this.push16(this.ip);
 
@@ -3057,28 +2472,28 @@ export class CPU {
 
             case 0xe9:    // JMP cw
             case 0xeb:    // JMP cb
-                console.log('jmp    cw/cb');
+                //console.log('jmp    cw/cb');
                 this.ip += instruction.immediate;
                 break;
 
             case 0xea:    // JMP far cd
-                console.log('jmpf   cd   ');
+                //console.log('jmpf   cd   ');
                 this.ip = instruction.immediate;
                 this.cs = instruction.targetCS;
                 break;
 
             case 0xf2:    // REPNE Prefix
             case 0xf3:    // REP / REPE Prefix
-                console.log('rep[ne]     ');
+                //console.log('rep[ne]     ');
                 break;
 
             case 0xf4:    // HLT (Halt)
                 // TODO: halt machine
-                console.log('hlt         ');
+                //console.log('hlt         ');
                 break;
 
             case 0xf5:    // CMC (Complement Carry Flag)
-                console.log('cmc         ');
+                //console.log('cmc         ');
                 this._flags.carry = !this._flags.carry;
                 break;
 
@@ -3089,34 +2504,34 @@ export class CPU {
                     case 0x1:   // Also not implemented
                         throw new InvalidInstruction(instruction);
                     case 0x2:   // NOT eb
-                        console.log('not    eb   ');
+                        //console.log('not    eb   ');
                         this.writeOperand8(instruction,
-                            this.not8(this.readOperand8(instruction)));
+                            this.alu.not8(this.readOperand8(instruction)));
                         break;
                     case 0x3:   // NEG eb
-                        console.log('neg    eb   ');
+                        //console.log('neg    eb   ');
                         this.writeOperand8(instruction,
-                            this.neg8(this.readOperand8(instruction)));
+                            this.alu.neg8(this.readOperand8(instruction)));
                         break;
                     case 0x4:   // MUL eb
-                        console.log('mul    eb   ');
-                        this.ax = this.mul8(this.al,
-                                            this.readOperand8(instruction));
+                        //console.log('mul    eb   ');
+                        this.ax = this.alu.mul8(this.al,
+                                                this.readOperand8(instruction));
                         break;
                     case 0x5:   // IMUL eb
-                        console.log('imul   eb   ');
-                        this.ax = this.imul8(this.al,
-                                             this.readOperand8(instruction));
+                        //console.log('imul   eb   ');
+                        this.ax = this.alu.imul8(this.al,
+                                                 this.readOperand8(instruction));
                         break;
                     case 0x6:   // DIV eb
-                        console.log('div    eb   ');
-                        this.ax = this.div8(this.al,
-                                            this.readOperand8(instruction));
+                        //console.log('div    eb   ');
+                        this.ax = this.alu.div8(this.al,
+                                                this.readOperand8(instruction));
                         break;
                     case 0x7:   // IDIV eb
-                        console.log('idev   eb   ');
-                        this.ax = this.idiv8(this.al,
-                                             this.readOperand8(instruction));
+                        //console.log('idev   eb   ');
+                        this.ax = this.alu.idiv8(this.al,
+                                                 this.readOperand8(instruction));
                         break;
                 }
                 break;
@@ -3129,36 +2544,36 @@ export class CPU {
                     case 0x1:   // Also not implemented
                         throw new InvalidInstruction(instruction);
                     case 0x2:   // NOT ew
-                        console.log('not    ew   ');
+                        //console.log('not    ew   ');
                         this.writeOperand16(instruction,
-                            this.not16(aluWordOperand));
+                            this.alu.not16(aluWordOperand));
                         break;
                     case 0x3:   // NEG ew
-                        console.log('neg    ew   ');
+                        //console.log('neg    ew   ');
                         this.writeOperand16(instruction,
-                            this.neg16(aluWordOperand));
+                            this.alu.neg16(aluWordOperand));
                         break;
                     case 0x4:   // MUL ew
-                        console.log('mul    ew   ');
-                        let mulResult = this.mul16(this.ax, aluWordOperand);
+                        //console.log('mul    ew   ');
+                        let mulResult = this.alu.mul16(this.ax, aluWordOperand);
                         this.dx = (mulResult >> 16) & 0xffff;
                         this.ax = mulResult & 0xffff;
                         break;
                     case 0x5:   // IMUL ew
-                        console.log('imul   ew   ');
-                        let imulResult = this.imul16(this.ax, aluWordOperand);
+                        //console.log('imul   ew   ');
+                        let imulResult = this.alu.imul16(this.ax, aluWordOperand);
                         this.dx = (imulResult >> 16) & 0xffff;
                         this.ax = imulResult & 0xffff;
                         break;
                     case 0x6:   // DIV ew
-                        console.log('div    ew   ');
-                        let divResult = this.div16(this.ax, aluWordOperand);
+                        //console.log('div    ew   ');
+                        let divResult = this.alu.div16(this.ax, aluWordOperand);
                         this.dx = (divResult >> 16) & 0xffff;
                         this.ax = divResult & 0xffff;
                         break;
                     case 0x7:   // IDIV ew
-                        console.log('idiv   ew   ');
-                        let idivResult = this.idiv16(this.ax, aluWordOperand);
+                        //console.log('idiv   ew   ');
+                        let idivResult = this.alu.idiv16(this.ax, aluWordOperand);
                         this.dx = (idivResult >> 16) & 0xffff;
                         this.ax = idivResult & 0xffff;
                         break;
@@ -3166,69 +2581,73 @@ export class CPU {
                 break;
 
             case 0x2f6:    // TEST eb,db
-                console.log('test   eb,db');
-                this.and8(this.readOperand8(instruction),
-                          instruction.immediate);
+                //console.log('test   eb,db');
+                this.alu.and8(this.readOperand8(instruction),
+                              instruction.immediate);
                 break;
 
             case 0x4f7:    // TEST ew,dw
-                console.log('test   ew,dw');
-                this.and16(this.readOperand16(instruction),
-                           instruction.immediate);
+                //console.log('test   ew,dw');
+                this.alu.and16(this.readOperand16(instruction),
+                               instruction.immediate);
                 break;
 
             case 0xf8:    // CLC (Clear Carry Flag)
-                console.log('clc      ');
+                //console.log('clc      ');
                 this._flags.carry = false;
                 break;
 
             case 0xf9:    // STC (Set Carry Flag)
-                console.log('stc      ');
+                //console.log('stc      ');
                 this._flags.carry = true;
                 break;
 
             case 0xfa:    // CLI (Clear Interrupt Flag)
-                console.log('cli      ');
+                //console.log('cli      ');
                 this._flags.interruptEnable = false;
                 break;
 
             case 0xfb:    // STI (Set Interrupt Flag)
-                console.log('sti      ');
+                //console.log('sti      ');
                 this._flags.interruptEnable = true;
                 break;
 
             case 0xfc:    // CLD (Clear Direction Flag)
-                console.log('cld      ');
+                //console.log('cld      ');
                 this._flags.direction = false;
                 break;
 
             case 0xfd:    // STD (Set Direction Flag)
-                console.log('std      ');
+                //console.log('std      ');
                 this._flags.direction = true;
                 break;
 
             case 0xfe:    // INC eb
-                console.log('inc    eb');
-                this.writeOperand8(instruction,
-                    this.inc8(this.readOperand8(instruction)));
+                //console.log('inc    eb');
+                this.writeOperand8(
+                    instruction,
+                    this.alu.inc8(this.readOperand8(instruction))
+                );
                 break;
 
             case 0xff:    // CALL ew / CALL far ed / DEC ew / INC ew /
                           // JMP ew / JMP far ed / PUSH mw
                 switch (instruction.modifier) {
                     case 0x0:   // INC ew
-                        console.log('inc    ew');
-                        operation = operation | this.inc16.bind(this);
+                        //console.log('inc    ew');
+                        operation = operation | this.alu.inc16.bind(this.alu);
                     case 0x1:   // DEC ew
-                        console.log('dec    ew');
-                        operation = operation | this.dec16.bind(this);
+                        //console.log('dec    ew');
+                        operation = operation | this.alu.dec16.bind(this.alu);
 
-                        this.writeOperand16(instruction,
-                            operation(this.readOperand16(instruction)));
+                        this.writeOperand16(
+                            instruction,
+                            operation(this.readOperand16(instruction))
+                        );
                         break;
 
                     case 0x2:   // CALL ew
-                        console.log('call   ew');
+                        //console.log('call   ew');
                         // Push IP
                         this.push16(this.ip);
 
@@ -3237,7 +2656,7 @@ export class CPU {
                         break;
 
                     case 0x3:   // CALL far ed
-                        console.log('callf  ed');
+                        //console.log('callf  ed');
                         if (!instruction.segment) {
                             throw new InvalidInstruction(instruction);
                         }
@@ -3257,14 +2676,14 @@ export class CPU {
                         break;
 
                     case 0x4:   // JMP ew
-                        console.log('jmp    ew');
+                        //console.log('jmp    ew');
                         this.ip = this.readOperand16(instruction);
                         break;
 
                     case 0x5:   // JMP far ed
-                        console.log('jmpf   ed');
-                        console.log(instruction);
-                        console.log(this.memory);
+                        //console.log('jmpf   ed');
+                        //console.log(instruction);
+                        //console.log(this.memory);
                         if (!instruction.segment) {
                             throw new InvalidInstruction(instruction);
                         }
@@ -3278,7 +2697,7 @@ export class CPU {
                         break;
 
                     case 0x6:   // PUSH mw
-                        console.log('push   mw');
+                        //console.log('push   mw');
                         this.push16(this.readOperand16(instruction));
                         break;
 
@@ -3290,7 +2709,7 @@ export class CPU {
 
             default:
                 // Unknown
-                console.log("error: executing unknown opcode", instruction);
+                //console.log("error: executing unknown opcode", instruction);
                 throw new InvalidInstruction(instruction);
         }
     }
@@ -3326,42 +2745,6 @@ CPU.REGISTER_DS = 3;
 CPU.REGISTERS_G16 = ['ax', 'cx', 'dx', 'bx', 'sp', 'bp', 'si', 'di'];
 CPU.REGISTERS_G8 = ['al', 'cl', 'dl', 'bl', 'ah', 'ch', 'dh', 'bh'];
 CPU.REGISTERS_S = ['es', 'cs', 'ss', 'ds'];
-
-// Parity bit lookup table.
-CPU.PARITY = [
-    false,true,true,false,true,false,false,true,
-    true,false,false,true,false,true,true,false,
-    true,false,false,true,false,true,true,false,
-    false,true,true,false,true,false,false,true,
-    true,false,false,true,false,true,true,false,
-    false,true,true,false,true,false,false,true,
-    false,true,true,false,true,false,false,true,
-    true,false,false,true,false,true,true,false,
-    true,false,false,true,false,true,true,false,
-    false,true,true,false,true,false,false,true,
-    false,true,true,false,true,false,false,true,
-    true,false,false,true,false,true,true,false,
-    false,true,true,false,true,false,false,true,
-    true,false,false,true,false,true,true,false,
-    true,false,false,true,false,true,true,false,
-    false,true,true,false,true,false,false,true,
-    true,false,false,true,false,true,true,false,
-    false,true,true,false,true,false,false,true,
-    false,true,true,false,true,false,false,true,
-    true,false,false,true,false,true,true,false,
-    false,true,true,false,true,false,false,true,
-    true,false,false,true,false,true,true,false,
-    true,false,false,true,false,true,true,false,
-    false,true,true,false,true,false,false,true,
-    false,true,true,false,true,false,false,true,
-    true,false,false,true,false,true,true,false,
-    true,false,false,true,false,true,true,false,
-    false,true,true,false,true,false,false,true,
-    true,false,false,true,false,true,true,false,
-    false,true,true,false,true,false,false,true,
-    false,true,true,false,true,false,false,true,
-    true,false,false,true,false,true,true,false
-];
 
 export class InvalidInstruction {
     constructor(instruction) {

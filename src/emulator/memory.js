@@ -9,7 +9,15 @@ export class Memory {
      */
     constructor(options = {}) {
         // Create every possible segment.
+        // They are not mapped to any actual memory.
         this._segments = new Array(8192);
+    }
+
+    /**
+     * Retrieves the raw memory in segments.
+     */
+    get segments() {
+        return this._segments;
     }
 
     /**

@@ -62,3 +62,51 @@ searchable version of the project documentation.
 
 This documentation is all parsed from the comment blocks that start with a slash
 and two asterisks (`/**`) and are all already accessible in the code themselves.
+
+## Testing
+
+To run the test suite, assuming you have installed and built the project using
+the steps above, you can invoke karma with:
+
+```shell
+npm run test
+```
+
+This will also require a web-browser to be installed on your system. It will
+start that browser and automatically run every test script found in the `test`
+directory.
+
+These tests are written with [Jasmine](https://jasmine.github.io/index.html).
+This is a behavior-driven testing framework for JavaScript.
+
+You can alternatively start a server and use your own web browser to see the
+running test suite. This can offer a chance to debug the tests and the code
+more naturally. To do so, you will start the test suite in its active mode:
+
+```
+npm run test-server
+```
+
+After it starts, it will report the port it is running on. It will say something
+like `open http://localhost:9876/`, which is the moment you can open that URL
+in your local web-browser.
+
+### Filtering Tests
+
+To run only specific tests, edit a test file and replace the word `describe` or `it` with `fdescribe` and/or `fit` respectively.
+Then run the test suite as specified in the previous section.
+
+One useful method of writing the tests is to start a test server that automatically runs new content.
+Start a karma server using this command:
+
+```
+npm run test-server
+```
+
+Or alternatively:
+
+```
+npx karma start --auto-watch --no-single-run
+```
+
+This will run the tests when it sees any test file get written to, which allow you to implement tests incrementally.
