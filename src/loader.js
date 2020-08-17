@@ -166,10 +166,10 @@ export class Loader {
 
         let autoDataSegmentIndex = this.header.autoDataSegmentIndex;
 
-        this._CS = this.header.entryPointCS;
-        this._DS = autoDataSegmentIndex;
+        this._CS = (this.header.entryPointCS << 3) | 0x3;
+        this._DS = (autoDataSegmentIndex << 3) | 0x3;
         this._IP = this.header.entryPointIP;
-        this._SS = this.header.initialStackPointerSS;
+        this._SS = (this.header.initialStackPointerSS << 3) | 0x3;
         this._SP = this.header.initialStackPointerSP;
 
         this.readResidentEntries();

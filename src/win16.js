@@ -2,11 +2,17 @@
 
 import { Loader } from './loader.js';
 
+// Subsystems
+import { Allocator } from './win16/allocator.js';
+
 // The various OS modules
 import { Kernel } from './win16/kernel.js';
 import { Gdi } from './win16/gdi.js';
 import { User } from './win16/user.js';
 import { Types } from './win16/types.js';
+
+// Kernel calls
+import { LocalInit } from './win16/kernel/LocalInit.js';
 
 /**
  * This represents the Windows 16-bit Operating System emulation.
@@ -18,7 +24,8 @@ export class Win16 {
      * The operating system manages the system memory and loads executables
      * and libraries.
      */
-    constructor(machine, options = {}) {
+    constructor(machine, desktop, options = {}) {
+        this._desktop = desktop;
         this._machine = machine;
         this._memory = machine.memory;
 
@@ -38,14 +45,36 @@ export class Win16 {
 
         // And the special system segments
         this._segments = {};
+
+        // And the system memory allocator
+        this._allocator = new Allocator(this.machine.memory);
     }
 
+    /**
+     * Returns the current running task.
+     *
+     * @return {Task} The current running task.
+     */
     get task() {
         return this._currentTask;
     }
-    
+
+    /**
+     * Returns the current machine.
+     *
+     * @return {Machine} The current machine.
+     */
     get machine() {
         return this._machine;
+    }
+
+    /**
+     * Returns the current memory allocator.
+     *
+     * @return {Allocator} The current memory allocator.
+     */
+    get allocator() {
+        return this._allocator;
     }
 
     /**
@@ -64,14 +93,19 @@ export class Win16 {
 
         // Allocate a stack to the data segment
         let stack = new Uint8Array(executable.neHeader.initialStackSize);
-        this._machine.memory.map(loader.ds, new DataView(stack.buffer));
+        this._machine.memory.map(loader.ds >> 3, new DataView(stack.buffer));
+
+        // Allocate a heap to the data segment
+        let heapStart = this._machine.memory.sizeOf(loader.ds >> 3);
+        let heapEnd = heapStart + executable.neHeader.initialLocalHeapSize;
+        LocalInit.bind(this)(loader.ds, heapStart, heapEnd);
 
         return task;
     }
 
     run(task) {
         this._currentTask = task;
-        let dataSegment = task.loader.segments[task.loader.ds - 1];
+        let dataSegment = task.loader.segments[(task.loader.ds >> 3) - 1];
 
         // We need to allocate an interrupt descriptor table
         let idtSegment = 0xfff0;
@@ -127,7 +161,7 @@ export class Win16 {
         this._machine.cpu.cx = task.executable.neHeader.initialLocalHeapSize;
         this._machine.cpu.di = 0x88; // hModule
         this._machine.cpu.si = 0;
-        this._machine.cpu.es = programSegment;
+        this._machine.cpu.es = (programSegment << 3) | 0x3;
 
         let timer = window.setInterval( () => {
             try {
@@ -156,11 +190,11 @@ export class Win16 {
 
         // Get data segment
         let loader = this.task.loader;
-        let dataSegment = loader.segments[loader.ds - 1];
+        let dataSegment = loader.segments[(loader.ds >> 3) - 1];
 
         this._machine.cpu.ds = loader.ds;
         this._machine.cpu.bx = 0x81; //
-        this._machine.cpu.es = this.task.programSegment; // TODO: Points to the program segment
+        this._machine.cpu.es = (this.task.programSegment << 3) | 0x3;
         this._machine.cpu.cx = dataSegment.length; // The limit for the stack.
         this._machine.cpu.di = 0x88; // hModule
 
@@ -207,6 +241,7 @@ export class Win16 {
                 nextOffset = this._memory.read16(destinationSegment, thisOffset)
 
                 // Rewrite the code segment
+                console.log("writing", value.toString(16), "to", thisOffset.toString(16));
                 this._memory.write16(destinationSegment, thisOffset, value);
 
                 limit--;
@@ -242,6 +277,7 @@ export class Win16 {
                 nextOffset = this._memory.read16(destinationSegment, thisOffset)
 
                 // Rewrite the code segment
+                console.log("writing", segment.toString(16), ":", offset.toString(16), "to", thisOffset.toString(16));
                 this._memory.write16(destinationSegment, thisOffset, offset);
                 this._memory.write16(destinationSegment, thisOffset + 2, segment);
 
@@ -272,7 +308,27 @@ export class Win16 {
                     if (module) {
                         module = this.loadModule(module);
                         if (relocation.ordinal) {
-                            this.writeRelocation32(relocation, segmentIndex, module.segment, module.step * relocation.ordinal);
+                            let segment = module.segment;
+                            let offset = module.step * relocation.ordinal;
+
+                            if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_SEGMENT) {
+                                this.writeRelocation16(
+                                    relocation, segmentIndex,
+                                    (segment << 3) | 0x3
+                                );
+                            }
+                            else if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_FARADDR) {
+                                this.writeRelocation32(
+                                    relocation, segmentIndex,
+                                    (segment << 3) | 0x3, offset
+                                );
+                            }
+                            else if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_OFFSET) {
+                                this.writeRelocation16(
+                                    relocation, segmentIndex,
+                                    offset
+                                );
+                            }
                         }
                         else {
                             console("HMM");
@@ -286,19 +342,36 @@ export class Win16 {
                     // Internal relocation
                     console.log("RELOCATION?", "0x" + relocation.offset.toString(16), relocation);
 
-                    // Get the entrypoint for that ordinal
-                    let entryPoint = task.executable.entryPoints[relocation.ordinal];
+                    // Get the segment:offset that should be written (if fixed)
+                    let segment = relocation.segment;
+                    let offset = relocation.targetOffset;
+
+                    // Get the entrypoint for that ordinal (if movable)
+                    if (relocation.ordinal) {
+                        let entryPoint = task.executable.entryPoints[relocation.ordinal];
+                        segment = entryPoint.segment;
+                        offset = entryPoint.offset;
+                    }
 
                     // TODO: lookup appropriate segment number
 
                     if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_SEGMENT) {
-                        this.writeRelocation16(relocation, segmentIndex, entryPoint.segment);
+                        this.writeRelocation16(
+                            relocation, segmentIndex,
+                            (segment << 3) | 0x3
+                        );
                     }
                     else if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_FARADDR) {
-                        this.writeRelocation32(relocation, segmentIndex, entryPoint.segment, entryPoint.offset);
+                        this.writeRelocation32(
+                            relocation, segmentIndex,
+                            (segment << 3) | 0x3, offset
+                        );
                     }
                     else if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_OFFSET) {
-                        this.writeRelocation16(relocation, segmentIndex, entryPoint.offset);
+                        this.writeRelocation16(
+                            relocation, segmentIndex,
+                            offset
+                        );
                     }
                 }
             });
@@ -448,17 +521,27 @@ export class Win16 {
     }
 
     syscallInvoke() {
-        console.log("invoke! called from:", this._machine.cpu.cs, this._machine.cpu.ip);
+        //console.log("invoke! called from:", this._machine.cpu.cs, this._machine.cpu.ip);
 
         // Get the module from the CS
-        let cs = this._machine.cpu.cs;
-        let module = this._segments[cs];
+        let segment = this._machine.cpu.cs >> 3;
+        let module = this._segments[segment];
 
         // Get the ordinal from the step
         let ip = this._machine.cpu.ip & ~(module.step - 1);
         ip = (ip / module.step);
 
-        console.log("Calling", module.instance.name, module.instance.exports[ip][1]);
+        let callerIP = this._memory.read16(
+            this._machine.cpu.ss >> 3,
+            this._machine.cpu.sp
+        );
+
+        let callerCS = this._memory.read16(
+            this._machine.cpu.ss >> 3,
+            this._machine.cpu.sp + 2
+        );
+
+        console.log("Calling", module.instance.name, module.instance.exports[ip][1], callerCS.toString(16), ":", callerIP.toString(16));
 
         let functionDefinition = module.instance.exports[ip];
 
@@ -468,7 +551,7 @@ export class Win16 {
         // Craft the arguments from the stack
         let args = functionDefinition[3] || [];
         let offset = 4; // Account for CS:IP on stack
-        args = args.map( (argType) => {
+        args = args.reverse().map( (argType) => {
             if (Types.sizeof(argType) <= 2) {
                 let read16 = this._memory.read16.bind(this._memory);
                 if (Types.signed(argType)) {
@@ -476,16 +559,38 @@ export class Win16 {
                 }
 
                 let ret = read16(
-                    this._machine.cpu.ss,
+                    this._machine.cpu.ss >> 3,
                     this._machine.cpu.sp + offset
                 );
                 offset += 2;
+                return ret;
+            }
+            else if (Types.sizeof(argType) == 4) {
+                let lo = this._memory.read16(
+                    this._machine.cpu.ss >> 3,
+                    this._machine.cpu.sp + offset
+                );
+
+                let hi = this._memory.read16(
+                    this._machine.cpu.ss >> 3,
+                    this._machine.cpu.sp + offset + 2
+                );
+
+                offset += 4;
 
                 if (argType == Types.LPCSTR) {
-                    // Read string at ds:[ret]
-                    ret = this._memory.readCString(this._machine.cpu.ds, ret);
+                    // Read string at [ret-hi]:[ret-lo]
+                    if (hi == 0 && lo == 0) {
+                        // null string
+                        return null;
+                    }
+
+                    let ret = this._memory.readCString(hi >> 3, lo);
+                    console.log("reading string", hi >> 3, lo, ret);
+                    return ret;
                 }
-                return ret;
+
+                return (hi << 16) | (lo & 0xffff);
             }
         }).reverse();
 

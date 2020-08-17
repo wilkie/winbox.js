@@ -8,8 +8,8 @@ import { ALU } from './alu.js';
 export class CPU {
     constructor(memory, options = {}) {
         this._memory = memory;
-        this._registers = new Array(8);
-        this._segmentRegisters = new Array(4);
+        this._registers = new Array(0, 0, 0, 0, 0, 0, 0, 0);
+        this._segmentRegisters = new Array(0, 0, 0, 0);
         this._alu = new ALU(this);
 
         this._interruptHandlers = new Array(128);
@@ -61,6 +61,7 @@ export class CPU {
      */
     set cs(value) {
         // TODO: check that the segment is executable and raise interrupt if not
+        // TODO: check that IOPL matches
         this._segmentRegisters[CPU.REGISTER_CS] = value;
     }
 
@@ -490,8 +491,13 @@ export class CPU {
      * Performs a CPU step.
      */
     step() {
+        //console.log(this.cs, this.ip, this.bp);
+        //console.log((this.cs >> 3).toString(16), ":", this.ip.toString(16), this.sp.toString(16), this.bp.toString(16));
+
         // Fetch / Decode
         let instruction = this.decode();
+
+        //console.log(instruction);
 
         // Execute
         this.execute(instruction);
@@ -504,10 +510,13 @@ export class CPU {
      * Decodes the next instruction.
      */
     decode() {
-        let instruction = {}
+        let instruction = {
+            cs: this.cs,
+            ip: this.ip
+        };
 
         // Read a 8-bit byte from memory at the current instruction pointer
-        instruction.opcode = this._memory.read8(this.cs, this.ip);
+        instruction.opcode = this._memory.read8(this.cs >> 3, this.ip);
         this.ip++;
 
         // Number of immediate bytes to read (to be determined)
@@ -529,7 +538,7 @@ export class CPU {
                           // LAR  (Load Access Rights Byte) /
                           // VERR ew / VERW ew (Verify Read/Write of Segment)
                 // Read the next byte
-                instruction.immediate = this._memory.read8(this.cs, this.ip);
+                instruction.immediate = this._memory.read8(this.cs >> 3, this.ip);
 
                 if (instruction.immediate == 0x00 ||
                     instruction.immediate == 0x01 ||
@@ -550,7 +559,7 @@ export class CPU {
             case 0xf6:    // TEST eb,db
             case 0xf7:    // TEST ew,dw
                 // Read the next byte as a ModRM value
-                let modRM = this._memory.read8(this.cs, this.ip);
+                let modRM = this._memory.read8(this.cs >> 3, this.ip);
 
                 // The R field is what we check
                 let r = (modRM >> 3) & 0x7;
@@ -583,36 +592,36 @@ export class CPU {
             case 0x26:    // ES Override Prefix
                 //console.log("es     es=", this.es);
                 instruction = this.decode();
-                instruction.segment = this.es;
+                instruction.segment = this.es >> 3;
                 return instruction;
 
             case 0x2e:    // CS Override Prefix
                 //console.log("cs     cs=", this.cs);
                 instruction = this.decode();
-                instruction.segment = this.cs;
+                instruction.segment = this.cs >> 3;
                 return instruction;
 
             case 0x36:    // SS Override Prefix
                 //console.log("ss     ss=", this.ss);
                 instruction = this.decode();
-                instruction.segment = this.ss;
+                instruction.segment = this.ss >> 3;
                 return instruction;
 
             case 0x3e:    // DS Override Prefix
                 //console.log("ds     ds=", this.ds);
                 instruction = this.decode();
-                instruction.segment = this.ds;
+                instruction.segment = this.ds >> 3;
                 return instruction;
 
             case 0x66:    // Operand-size/Precision-size override Prefix
-                let operandSizeOverride = this._memory.read8(this.cs, this.ip);
+                let operandSizeOverride = this._memory.read8(this.cs >> 3, this.ip);
                 this.ip++;
                 instruction = this.decode();
                 instruction.operandSizeOverride = operandSizeOverride;
                 return instruction;
 
             case 0x67:    // Address-size override Prefix
-                let addressSizeOverride = this._memory.read8(this.cs, this.ip);
+                let addressSizeOverride = this._memory.read8(this.cs >> 3, this.ip);
                 this.ip++;
                 instruction = this.decode();
                 instruction.addressSizeOverride = addressSizeOverride;
@@ -712,7 +721,7 @@ export class CPU {
             case 0xaf:    // SCAS mw / SCASW (Compare String Data)
             case 0xc3:    // RET
             case 0xc9:    // LEAVE
-            case 0xcb:    // RET
+            case 0xcb:    // RET far
             case 0xcc:    // INT 3
             case 0xce:    // INTO
             case 0xcf:    // IRET
@@ -780,7 +789,7 @@ export class CPU {
             case 0xe7:    // OUT db,AX
             case 0xeb:    // JMP cb
                 // Read byte
-                instruction.immediate = this._memory.read8(this.cs, this.ip);
+                instruction.immediate = this._memory.read8(this.cs >> 3, this.ip);
                 this.ip++;
                 break;
 
@@ -811,26 +820,26 @@ export class CPU {
             case 0xca:    // RET far dw
             case 0xe8:    // CALL cw
             case 0xe9:    // JMP cw
-                instruction.immediate = this._memory.readSigned16(this.cs, this.ip);
+                instruction.immediate = this._memory.readSigned16(this.cs >> 3, this.ip);
                 this.ip += 2;
                 break;
 
             // Word, Byte argument instructions
             case 0xc8:    // ENTER dw,db
-                instruction.immediate = this._memory.read16(this.cs, this.ip);
+                instruction.immediate = this._memory.read16(this.cs >> 3, this.ip);
                 this.ip += 2;
 
-                instruction.level = this._memory.read8(this.cs, this.ip);
+                instruction.level = this._memory.read8(this.cs >> 3, this.ip);
                 this.ip++;
                 break;
 
             // Double-word argument instructions
             case 0x9a:    // CALL far cd
             case 0xea:    // JMP far cd
-                instruction.immediate = this._memory.read16(this.cs, this.ip);
+                instruction.immediate = this._memory.read16(this.cs >> 3, this.ip);
                 this.ip += 2;
 
-                instruction.targetCS = this._memory.read16(this.cs, this.ip);
+                instruction.targetCS = this._memory.read16(this.cs >> 3, this.ip);
                 this.ip += 2;
                 break;
 
@@ -931,7 +940,7 @@ export class CPU {
                 // Read the 'ModRM' byte. This contains both a register operand
                 // and an effective address operand. Then, it is followed by a
                 // possible immediate and displacement field (via Intel docs.)
-                let modRM = this._memory.read8(this.cs, this.ip);
+                let modRM = this._memory.read8(this.cs >> 3, this.ip);
                 this.ip++;
 
                 // Top two bits are the 'mod' value.
@@ -958,21 +967,21 @@ export class CPU {
                     // In this particular case, the effective address is given
                     // by the unsigned displacement and not computed.
                     instruction.segment = instruction.segment !== undefined ?
-                                          instruction.segment : this.ds;
-                    instruction.offset = this._memory.read16(this.cs, this.ip);
+                                          instruction.segment : (this.ds >> 3);
+                    instruction.offset = this._memory.read16(this.cs >> 3, this.ip);
                     this.ip += 2;
                 }
                 else if (mod == 1) {
                     // When mod is 1, the displacement is 1 byte sign-extended.
                     instruction.displacement = this._memory.readSigned8(
-                        this.cs, this.ip
+                        this.cs >> 3, this.ip
                     );
                     this.ip++;
                 }
                 else if (mod == 2) {
                     // When mod is 2, the displacement is a 16-bit value.
                     instruction.displacement = this._memory.readSigned16(
-                        this.cs, this.ip
+                        this.cs >> 3, this.ip
                     );
                     this.ip += 2;
                 }
@@ -983,11 +992,11 @@ export class CPU {
 
                 // Read immediate
                 if (immediateBytes == 1) {
-                    instruction.immediate = this._memory.readSigned8(this.cs, this.ip);
+                    instruction.immediate = this._memory.readSigned8(this.cs >> 3, this.ip);
                     this.ip++;
                 }
                 else if (immediateBytes == 2) {
-                    instruction.immediate = this._memory.readSigned16(this.cs, this.ip);
+                    instruction.immediate = this._memory.readSigned16(this.cs >> 3, this.ip);
                     this.ip += 2;
                 }
 
@@ -996,49 +1005,49 @@ export class CPU {
                     switch (rm) {
                         case 0:       // (BX) + (SI) + DISP
                             instruction.segment = instruction.segment !== undefined ?
-                                                  instruction.segment : this.ds;
+                                                  instruction.segment : (this.ds >> 3);
                             instruction.offset = this.bx + this.si
                                                + instruction.displacement;
                             break;
                         case 1:       // (BX) + (DI) + DISP
                             instruction.segment = instruction.segment !== undefined ?
-                                                  instruction.segment : this.ds;
+                                                  instruction.segment : (this.ds >> 3);
                             instruction.offset = this.bx + this.di
                                                + instruction.displacement;
                             break;
                         case 2:       // (BP) + (SI) + DISP
                             instruction.segment = instruction.segment !== undefined ?
-                                                  instruction.segment : this.ss;
+                                                  instruction.segment : (this.ss >> 3);
                             instruction.offset = this.bp + this.si
                                                + instruction.displacement;
                             break;
                         case 3:       // (BP) + (DI) + DISP
                             instruction.segment = instruction.segment !== undefined ?
-                                                  instruction.segment : this.ss;
+                                                  instruction.segment : (this.ss >> 3);
                             instruction.offset = this.bp + this.di
                                                + instruction.displacement;
                             break;
                         case 4:       // (SI) + DISP
                             instruction.segment = instruction.segment !== undefined ?
-                                                  instruction.segment : this.ds;
+                                                  instruction.segment : (this.ds >> 3);
                             instruction.offset = this.si
                                                + instruction.displacement;
                             break;
                         case 5:       // (DI) + DISP
                             instruction.segment = instruction.segment !== undefined ?
-                                                  instruction.segment : this.ds;
+                                                  instruction.segment : (this.ds >> 3);
                             instruction.offset = this.di
                                                + instruction.displacement;
                             break;
                         case 6:       // (BP) + DISP
                             instruction.segment = instruction.segment !== undefined ?
-                                                  instruction.segment : this.ss;
+                                                  instruction.segment : (this.ss >> 3);
                             instruction.offset = this.bp
                                                + instruction.displacement;
                             break;
                         case 7:       // (BX) + DISP
                             instruction.segment = instruction.segment !== undefined ?
-                                                  instruction.segment : this.ds;
+                                                  instruction.segment : (this.ds >> 3);
                             instruction.offset = this.bx
                                                + instruction.displacement;
                             break;
@@ -1079,7 +1088,7 @@ export class CPU {
      */
     push16(value) {
         this.sp = this.sp - 2;
-        this._memory.write16(this.ss, this.sp, value);
+        this._memory.write16(this.ss >> 3, this.sp, value);
     }
 
     /**
@@ -1093,7 +1102,7 @@ export class CPU {
      * Pops a 16-bit value from the stack.
      */
     pop16() {
-        let ret = this._memory.read16(this.ss, this.sp);
+        let ret = this._memory.read16(this.ss >> 3, this.sp);
         this.sp = this.sp + 2;
         return ret;
     }
@@ -1246,7 +1255,7 @@ export class CPU {
         //console.log(this.cs.toString(16) + ":" + this.ip.toString(16));
 
         // Get the internal opcode
-        let opcode = (instruction.opcode || 0xffff) || (instruction.subOpcode || 0);
+        let opcode = (instruction.opcode || 0xffff) | (instruction.subOpcode || 0);
 
         // Some placeholder values
         let operation = null;
@@ -1572,8 +1581,8 @@ export class CPU {
             case 0x5d:    // POP BP
             case 0x5e:    // POP SI
             case 0x5f:    // POP DI
-                //console.log('pop    +R   ');
-                let popDestination = opcode - 0x50;
+                let popDestination = opcode - 0x58;
+                //console.log('pop    ' + CPU.REGISTERS_G16[popDestination]);
 
                 this.writeRegister16(popDestination, this.pop16());
                 break;
@@ -1739,7 +1748,7 @@ export class CPU {
 
                 if (jump) {
                     // Perform the jump
-                    this.ip += instruction.immediate;
+                    this.ip += this.alu.toSigned8(instruction.immediate);
                 }
 
                 break;
@@ -1954,10 +1963,11 @@ export class CPU {
                 this.push16(this.ip);
 
                 // Move to absolute address
-                ////console.log('calling from', "0x" + this.cs.toString(16), ":", "0x" + this.ip.toString(16), this.ss, this.sp);
+                //console.log('calling from', "0x" + this.cs.toString(16), ":", "0x" + this.ip.toString(16), this.ss, this.sp);
                 this.ip = instruction.immediate;
                 this.cs = instruction.targetCS;
-                ////console.log('calling', "0x" + this.cs.toString(16), ":", "0x" + this.ip.toString(16));
+                //console.log('calling', "0x" + this.cs.toString(16), ":", "0x" + this.ip.toString(16));
+                //console.log('bp:', this.bp.toString(16));
                 break;
 
             case 0x9b:    // WAIT
@@ -2011,7 +2021,7 @@ export class CPU {
                 this.writeRegister16(
                     CPU.REGISTER_AX,
                     this._memory.read16(
-                        instruction.segment || this.ds,
+                        instruction.segment || (this.ds >> 3),
                         instruction.immediate
                     )
                 );
@@ -2020,7 +2030,7 @@ export class CPU {
             case 0xa2:    // MOV xb,AL
                 //console.log('mov    xb,AL');
                 this._memory.write8(
-                    instruction.segment || this.ds, instruction.immediate,
+                    instruction.segment || (this.ds >> 3), instruction.immediate,
                     this.readRegister8(CPU.REGISTER_AL)
                 );
                 break;
@@ -2028,7 +2038,7 @@ export class CPU {
             case 0xa3:    // MOV xw,AX
                 //console.log('mov    xw,AX');
                 this._memory.write16(
-                    instruction.segment || this.ds, instruction.immediate,
+                    instruction.segment || (this.ds >> 3), instruction.immediate,
                     this.ax
                 );
                 break;
@@ -2040,7 +2050,7 @@ export class CPU {
                     // No segment overrides are allowed.
                     if (instruction.opcode == 0xa4) {
                         this.memory.write8(
-                            CPU.REGISTER_ES,
+                            this.es >> 3,
                             this.di,
                             this.memory.read8(
                                 instruction.segment || this.ds,
@@ -2052,10 +2062,10 @@ export class CPU {
                     }
                     else {
                         this.memory.write16(
-                            CPU.REGISTER_ES,
+                            this.es >> 3,
                             this.di,
                             this.memory.read16(
-                                instruction.segment || this.ds,
+                                instruction.segment || (this.ds >> 3),
                                 this.si
                             )
                         );
@@ -2080,7 +2090,7 @@ export class CPU {
                     if (instruction.opcode == 0xa6) {
                         this.alu.sub8(
                             this.memory.read8(
-                                instruction.segment || this.ds,
+                                instruction.segment || (this.ds >> 3),
                                 this.si
                             ),
                             this.memory.read8(this.es, this.di)
@@ -2091,10 +2101,10 @@ export class CPU {
                     else {
                         this.alu.sub16(
                             this.memory.read16(
-                                instruction.segment || this.ds,
+                                instruction.segment || (this.ds >> 3),
                                 this.si
                             ),
-                            this.memory.read16(this.es, this.di)
+                            this.memory.read16(this.es >> 3, this.di)
                         );
                         this.di += this._flags.direction ? -2 : 2;
                         this.si += this._flags.direction ? -2 : 2;
@@ -2145,14 +2155,14 @@ export class CPU {
                 do {
                     if (instruction.opcode == 0xac) {
                         this.al = this.memory.read8(
-                            instruction.segment || this.ds,
+                            instruction.segment || (this.ds >> 3),
                             this.si
                         );
                         this.si += this._flags.direction ? -1 : 1;
                     }
                     else {
                         this.ax = this.memory.read16(
-                            instruction.segment || this.ds,
+                            instruction.segment || (this.ds >> 3),
                             this.si
                         );
                         this.si += this._flags.direction ? -2 : 2;
@@ -2170,11 +2180,11 @@ export class CPU {
                 do {
                     // No segment overrides are allowed.
                     if (instruction.opcode == 0xae) {
-                        this.alu.sub8(this.al, this.memory.read8(this.es, this.di));
+                        this.alu.sub8(this.al, this.memory.read8(this.es >> 3, this.di));
                         this.di += this._flags.direction ? -1 : 1;
                     }
                     else {
-                        this.alu.sub16(this.ax, this.memory.read16(this.es, this.di));
+                        this.alu.sub16(this.ax, this.memory.read16(this.es >> 3, this.di));
                         this.di += this._flags.direction ? -2 : 2;
                     }
 
@@ -2303,11 +2313,13 @@ export class CPU {
                 //console.log('ret    dw   ');
                 this.ip = this.pop16();
                 this.sp = this.sp + instruction.immediate;
+                //console.log('bp:', this.bp.toString(16));
                 break;
 
             case 0xc3:    // RET
                 //console.log('ret         ');
                 this.ip = this.pop16();
+                //console.log('bp:', this.bp.toString(16));
                 break;
 
             case 0xc4:    // LES rw,ed (Load EA dword into DS/rw)
@@ -2360,7 +2372,7 @@ export class CPU {
                         this.bp = this.bp - 2;
 
                         // Push the word at that address
-                        this.push16(this._memory.read16(this.ss, this.bp));
+                        this.push16(this._memory.read16(this.ss >> 3, this.bp));
 
                         // Decrease our nesting level
                         instruction.level--;
@@ -2385,12 +2397,14 @@ export class CPU {
                 this.ip = this.pop16();
                 this.cs = this.pop16();
                 this.sp = this.sp + instruction.immediate;
+                //console.log('bp:', this.bp.toString(16));
                 break;
 
-            case 0xcb:    // RET
-                //console.log('ret         ');
+            case 0xcb:    // RET far
+                //console.log('retf        ');
                 this.ip = this.pop16();
                 this.cs = this.pop16();
+                //console.log('bp:', this.bp.toString(16));
                 break;
 
             case 0xcc:    // INT 3
@@ -2468,6 +2482,7 @@ export class CPU {
                 this.push16(this.ip);
 
                 this.ip += instruction.immediate;
+                //console.log('bp:', this.bp.toString(16));
                 break;
 
             case 0xe9:    // JMP cw
@@ -2653,6 +2668,7 @@ export class CPU {
 
                         // Set IP to the given operand
                         this.ip = this.readOperand16(instruction);
+                        //console.log('bp:', this.bp.toString(16));
                         break;
 
                     case 0x3:   // CALL far ed
@@ -2673,6 +2689,7 @@ export class CPU {
                         // Set CS to the following word
                         this.cs = this._memory.read16(instruction.segment,
                                                       instruction.offset + 2);
+                        //console.log('bp:', this.bp.toString(16));
                         break;
 
                     case 0x4:   // JMP ew

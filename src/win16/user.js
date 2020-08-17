@@ -1,5 +1,13 @@
 "use strict";
 
+import { BYTE, UBYTE, INT, UINT,
+         DWORD, HLOCAL, HGLOBAL, HANDLE,
+         HMENU, HINSTANCE,
+         BOOL, NEARPTR, FARPTR, LPCSTR, HWND } from './types.js';
+
+import { CreateWindow } from './user/CreateWindow.js';
+import { InitApp } from './user/InitApp.js';
+
 export class User {
     static get name() {
         return "USER";
@@ -13,7 +21,7 @@ export class User {
             [User.stub, "OldExitWindows", 0],
             [User.stub, "EnableOEMLayer", 0],
             [User.stub, "DisableOEMLayer", 0],
-            [User.stub, "InitApp", 2],
+            [InitApp, "InitApp", 2, [HANDLE], BOOL],
             [User.stub, "PostQuitMessage", 0],
             [User.stub, "ExitWindows", 6],
             [User.stub, "Unknown"],
@@ -53,7 +61,7 @@ export class User {
             [User.stub, "BeginPaint", 6],
             // 40 //
             [User.stub, "EndPaint", 6],
-            [User.stub, "CreateWindow", 30],
+            [CreateWindow, "CreateWindow", 30, [LPCSTR, LPCSTR, DWORD, INT, INT, INT, INT, HWND, HMENU, HINSTANCE, FARPTR], HWND],
             [User.stub, "ShowWindow", 4],
             [User.stub, "CloseWindow", 2],
             [User.stub, "OpenIcon", 2],

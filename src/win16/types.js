@@ -55,6 +55,15 @@ export var HLOCAL = 4;
 export var NEARPTR = 5;
 
 /**
+ * A 32-bit pointer to memory.
+ *
+ * @static
+ * @typedef {number} FARPTR
+ * @memberof Types
+ */
+export var FARPTR = 14;
+
+/**
  * A 16-bit pointer to a C-string.
  *
  * @static
@@ -94,6 +103,10 @@ export var HGLOBAL = 8;
 
 export var HWND = 9;
 
+export var HANDLE = 11;
+export var HMENU  = 12;
+export var HINSTANCE = 13;
+
 /**
  * Contains the various types used throughout the API.
  */
@@ -115,13 +128,17 @@ export class Types {
             case INT:
             case UINT:
             case HLOCAL:
+            case HINSTANCE:
+            case HMENU:
+            case HANDLE:
             case HGLOBAL:
             case NEARPTR:
-            case LPCSTR:
+            case HWND:
                 return 2;
 
             case DWORD:
-            case HWND:
+            case LPCSTR:
+            case FARPTR:
                 return 4;
 
             default:
@@ -139,8 +156,12 @@ export class Types {
             case UBYTE:
             case UINT:
             case HLOCAL:
+            case HINSTANCE:
+            case HMENU:
+            case HANDLE:
             case HGLOBAL:
             case NEARPTR:
+            case FARPTR:
             case LPCSTR:
             case DWORD:
             case HWND:
@@ -157,7 +178,10 @@ Types.UBYTE = UBYTE;
 Types.INT = INT;
 Types.UINT = UINT;
 Types.HLOCAL = HLOCAL;
+Types.HANDLE = HANDLE;
 Types.HWND = HWND;
+Types.HMENU = HMENU;
+Types.HINSTANCE = HINSTANCE;
 Types.NEARPTR = NEARPTR;
 Types.LPCSTR = LPCSTR;
 Types.BOOL = BOOL;

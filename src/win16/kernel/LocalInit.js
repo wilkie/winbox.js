@@ -1,5 +1,7 @@
 "use strict";
 
+import { TRUE, FALSE } from '../consts.js';
+
 /**
  * The **LocalInit** function initializes a local heap in the specified segment.
  *
@@ -27,4 +29,32 @@
  */
 export function LocalInit(uSegment, uStartAddr, uEndAddr) {
     console.log("LocalInit:", uSegment, uStartAddr, uEndAddr);
+
+    // Apparently, if the uSegment is 0, they *mean* the current DS.
+    uSegment = uSegment || this.machine.cpu.ds;
+
+    // Also, apparently, if the start address is less than 16, it gets set
+    // to 16.
+    if (uStartAddr < 16) {
+        uStartAddr = 16;
+    }
+
+    // Get the selector index
+    let segment = uSegment >> 3;
+
+    // If the heap is already allocated, we fail out
+    if (this.allocator.heapOf(segment)) {
+        return FALSE;
+    }
+
+    // Allocate a heap
+    let size = uEndAddr - uStartAddr;
+    let heap = this.allocator.heapInitialize(segment, uStartAddr, size);
+
+    console.log("allocated a heap", heap);
+    if (heap) {
+        return TRUE;
+    }
+
+    return FALSE;
 }

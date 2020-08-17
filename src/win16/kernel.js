@@ -3,9 +3,11 @@
 /** @namespace Kernel */
 
 import { BYTE, UBYTE, INT, UINT,
-         DWORD, HLOCAL, HGLOBAL,
+         DWORD, HLOCAL, HGLOBAL, HANDLE,
          BOOL, NEARPTR, LPCSTR, HWND } from './types.js';
 
+import { FatalAppExit } from './kernel/FatalAppExit.js';
+import { FatalExit } from './kernel/FatalExit.js';
 import { GetVersion } from './kernel/GetVersion.js';
 import { InitTask } from './kernel/InitTask.js';
 import { LocalAlloc } from './kernel/LocalAlloc.js';
@@ -21,6 +23,7 @@ import { LocalUnlock } from './kernel/LocalUnlock.js';
 import { LockSegment } from './kernel/LockSegment.js';
 import { OutputDebugString } from './kernel/OutputDebugString.js';
 import { UnlockSegment } from './kernel/UnlockSegment.js';
+import { WaitEvent } from './kernel/WaitEvent.js';
 
 /**
  * The Win16 Kernel library.
@@ -36,7 +39,7 @@ export class Kernel {
         return [
             // 0 //
             null,
-            [Kernel.stub, "FatalExit", 2],
+            [FatalExit, "FatalExit", 2, [INT]],
             [Kernel.stub, "ExitKernel", 2],
             [GetVersion, "GetVersion", 0, [], DWORD],
             [LocalInit, "LocalInit", 6, [UINT, UINT, UINT], BOOL],
@@ -68,7 +71,7 @@ export class Kernel {
             [Kernel.stub, "GlobalMasterHandle", 0],
             [Kernel.stub, "Yield", 0],
             // 30 //
-            [Kernel.stub, "WaitEvent", 2],
+            [WaitEvent, "WaitEvent", 2, [HANDLE], BOOL],
             [Kernel.stub, "PostEvent", 2],
             [Kernel.stub, "SetPriority", 4],
             [Kernel.stub, "LockCurrentTask", 2],
@@ -161,7 +164,7 @@ export class Kernel {
             [Kernel.stub, "GlobalUnwire", 2],
             [Kernel.stub, "__AHSHIFT"],
             [Kernel.stub, "__AHINCR"],
-            [OutputDebugString, "OutputDebugString", 2, [LPCSTR]],
+            [OutputDebugString, "OutputDebugString", 4, [LPCSTR]],
             [Kernel.stub, "InitLib", 2],
             [Kernel.stub, "OldYield", 6],
             [Kernel.stub, "GetTaskQueueDS", 6],
@@ -185,7 +188,7 @@ export class Kernel {
             [Kernel.stub, "GetWindowsDirectory", 4],
             [Kernel.stub, "GetSystemDirectory", 4],
             [Kernel.stub, "GetDriveType", 4],
-            [Kernel.stub, "FatalAppExit", 4],
+            [FatalAppExit, "FatalAppExit", 6, [UINT, LPCSTR]],
             [Kernel.stub, "GetHeapSpaces", 12],
             [Kernel.stub, "DoSignal", 2],
             // 140 //

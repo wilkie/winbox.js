@@ -1,5 +1,7 @@
 "use strict";
 
+import { NULL } from '../consts.js';
+
 /**
  * The **LocalAlloc** function allocates the specified number of bytes from the
  * local heap.
@@ -62,4 +64,27 @@
  */
 export function LocalAlloc(fuAllocFlags, fuAlloc) {
     console.log("LocalAlloc:", fuAllocFlags, fuAlloc);
+
+    // LocalAlloc allocates to the heap of the current sgement selected via DS.
+    let segment = this.machine.cpu.ds >> 3;
+
+    // We can negotiate flags.
+    // TODO: flags
+    let options = {};
+
+    // Get the local heap.
+    let heap = this.allocator.heapOf(segment);
+    if (!heap) {
+        // No heap initialized
+        return NULL;
+    }
+
+    console.log("allocating to heap:", fuAlloc, "bytes", heap);
+
+    let handle = heap.allocate(segment, fuAlloc, options);
+    if (handle === null) {
+        return NULL;
+    }
+
+    return handle;
 }
