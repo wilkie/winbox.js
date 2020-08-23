@@ -18,6 +18,27 @@ export class CPU {
     }
 
     /**
+     * Retrieves the register state.
+     */
+    get state() {
+        return {
+            cs: this.cs,
+            ds: this.ds,
+            es: this.es,
+            ss: this.ss,
+            ax: this.ax,
+            cx: this.cx,
+            dx: this.dx,
+            bx: this.bx,
+            sp: this.sp,
+            bp: this.bp,
+            si: this.si,
+            di: this.di,
+            ip: this.ip
+        }
+    }
+
+    /**
      * Retrieves the ALU for this CPU.
      */
     get alu() {
@@ -1088,6 +1109,7 @@ export class CPU {
      */
     push16(value) {
         this.sp = this.sp - 2;
+        //console.log("writing value to stack", value, this.sp);
         this._memory.write16(this.ss >> 3, this.sp, value);
     }
 
@@ -2349,6 +2371,7 @@ export class CPU {
 
             case 0xc7:    // MOV ew,dw
                 //console.log('mov    ew,dw');
+                //console.log(instruction.immediate, instruction.offset);
                 this.writeOperand16(instruction, instruction.immediate);
                 break;
 
@@ -2404,7 +2427,7 @@ export class CPU {
                 //console.log('retf        ');
                 this.ip = this.pop16();
                 this.cs = this.pop16();
-                //console.log('bp:', this.bp.toString(16));
+                //console.log('sp:', this.sp.toString(16));
                 break;
 
             case 0xcc:    // INT 3
@@ -2486,9 +2509,13 @@ export class CPU {
                 break;
 
             case 0xe9:    // JMP cw
+                //console.log('jmp    cw');
+                this.ip += this.alu.toSigned16(instruction.immediate);
+                break;
+
             case 0xeb:    // JMP cb
                 //console.log('jmp    cw/cb');
-                this.ip += instruction.immediate;
+                this.ip += this.alu.toSigned8(instruction.immediate);
                 break;
 
             case 0xea:    // JMP far cd
@@ -2650,10 +2677,10 @@ export class CPU {
                 switch (instruction.modifier) {
                     case 0x0:   // INC ew
                         //console.log('inc    ew');
-                        operation = operation | this.alu.inc16.bind(this.alu);
+                        operation = operation || this.alu.inc16.bind(this.alu);
                     case 0x1:   // DEC ew
                         //console.log('dec    ew');
-                        operation = operation | this.alu.dec16.bind(this.alu);
+                        operation = operation || this.alu.dec16.bind(this.alu);
 
                         this.writeOperand16(
                             instruction,

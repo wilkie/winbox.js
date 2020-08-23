@@ -450,8 +450,33 @@ export class Window extends EventComponent {
         }
     }
 
+    get visible() {
+        return this.element.style.display !== 'none';
+    }
+
+    get maximized() {
+        return this.element.classList.contains("__winbox_window-maximized");
+    }
+
+    maximize() {
+        this.element.classList.add("__winbox_window-maximized");
+    }
+
+    get minimized() {
+        return this.element.classList.contains("__winbox_window-minimized");
+    }
+
+    minimize() {
+        this.element.classList.add("__winbox_window-minimize");
+    }
+
+    restore() {
+        this.element.classList.remove("__winbox_window-minimize");
+        this.element.classList.remove("__winbox_window-maximize");
+    }
+
     show() {
-        this.element.style.display = "block";
+        this.element.style.display = "";
         this.element.setAttribute("aria-hidden", "false");
     }
 
@@ -597,6 +622,7 @@ export class Window extends EventComponent {
         if (this._eventsBound) {
             return;
         }
+
         this._eventsBound = true;
         this.element.addEventListener('mousedown', this.mouseDownEvent.bind(this));
         this.element.addEventListener('mousemove', this.mouseMoveEvent.bind(this));
@@ -749,6 +775,11 @@ export class Window extends EventComponent {
             x: event.offsetX,
             y: event.offsetY,
             clicks: 1,
+            button: event.button,
+            buttons: event.buttons,
+            shift: event.shiftKey,
+            control: event.controlKey,
+            alt: event.altKey
         };
 
         if (this._lastMouseEvent) {
@@ -784,6 +815,60 @@ export class Window extends EventComponent {
 
         this.trigger("mousedown", data);
         this._clientEvent("mousedown", data);
+
+        this._startX = this.x;
+        this._startY = this.y;
+
+        this.focus();
+    }
+
+    nonClientMouseDownEvent(event) {
+        event.stopPropagation();
+
+        let data = {
+            x: event.offsetX,
+            y: event.offsetY,
+            clicks: 1,
+            button: event.button,
+            buttons: event.buttons,
+            shift: event.shiftKey,
+            control: event.controlKey,
+            alt: event.altKey
+        };
+
+        if (this._lastMouseEvent) {
+            if (data.x >= this._lastMouseEvent.x - 3 &&
+                data.y >= this._lastMouseEvent.y - 3 &&
+                data.x <= this._lastMouseEvent.x + 3 &&
+                data.y <= this._lastMouseEvent.y + 3) {
+
+                if (event.timeStamp - this._lastMouseEventTime < 500) {
+                    data.clicks = this._lastMouseEvent.clicks + 1;
+                }
+            }
+        }
+
+        this._lastMouseEvent = Object.assign({}, data);
+        this._lastMouseEventTime = event.timeStamp;
+
+        if (this.callbacksFor("drag")) {
+            if (this.root) {
+                this.root._draggablePlane.track(event,
+                    this.moveDragEvent.bind(this),
+                    this.moveDragEndEvent.bind(this));
+            }
+        }
+        else {
+            // Don't allow other events outside bounds (and ignore drag events)
+            let box = this.element.getBoundingClientRect();
+            if (this.root) {
+                this.root._draggablePlane.mask(box,
+                    this.moveDragEndEvent.bind(this));
+            }
+        }
+
+        this.trigger("nonclient-mousedown", data);
+        this._nonClientEvent("mousedown", data);
 
         this._startX = this.x;
         this._startY = this.y;

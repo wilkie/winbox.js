@@ -104,7 +104,12 @@ export class SizableWindow extends FixedWindow {
         });
 
         this.maximizeButton.on("click", () => {
-            this.element.classList.toggle("__winbox_window-maximized");
+            if (this.maximized) {
+                this.restore();
+            }
+            else {
+                this.maximize();
+            }
         });
 
         this.systemMenu.items.forEach( (item) => {

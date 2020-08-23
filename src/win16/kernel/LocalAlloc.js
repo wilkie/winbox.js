@@ -2,6 +2,8 @@
 
 import { NULL } from '../consts.js';
 
+import { Kernel } from '../kernel.js';
+
 /**
  * The **LocalAlloc** function allocates the specified number of bytes from the
  * local heap.
@@ -65,12 +67,32 @@ import { NULL } from '../consts.js';
 export function LocalAlloc(fuAllocFlags, fuAlloc) {
     console.log("LocalAlloc:", fuAllocFlags, fuAlloc);
 
-    // LocalAlloc allocates to the heap of the current sgement selected via DS.
+    // LocalAlloc allocates to the heap of the current segment selected via DS.
     let segment = this.machine.cpu.ds >> 3;
 
     // We can negotiate flags.
     // TODO: flags
     let options = {};
+
+    if (fuAllocFlags & Kernel.LMEM_MOVEABLE) {
+        options.movable = true;
+    }
+
+    if (fuAllocFlags & Kernel.LMEM_NOCOMPACT) {
+        options.noCompact = true;
+    }
+
+    if (fuAllocFlags & Kernel.LMEM_NODISCARD) {
+        options.noDiscard = true;
+    }
+
+    if (fuAllocFlags & Kernel.LMEM_ZEROINIT) {
+        options.zeroInit = true;
+    }
+
+    if (fuAllocFlags & Kernel.LMEM_DISCARDABLE) {
+        options.discardable = true;
+    }
 
     // Get the local heap.
     let heap = this.allocator.heapOf(segment);

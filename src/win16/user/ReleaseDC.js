@@ -1,0 +1,30 @@
+"use strict";
+
+import { TRUE, FALSE } from '../consts.js';
+
+/**
+ * The **ReleaseDC** function releases the given device context freeing it for
+ * use by other applications.
+ *
+ * The effect of **ReleaseDC** depends on the type of device context. It frees
+ * only common and window device contexts. It has no effect on class or private
+ * device contexts.
+ *
+ * The application must call the **ReleaseDC** function for each call to the
+ * {@link User.GetWindowDC GetWindowDC} function and for each call to the
+ * {@link User.GetDC GetDC} function that retrieves a common device context.
+ *
+ * @static
+ * @function GetDC
+ * @memberof User
+ *
+ * @param {Types.HWND} hwnd - Identifies the window whose device context is to
+ *                            be released.
+ * @param {Types.HDC} hdc - Identifies the device context to be released.
+ *
+ * @returns {Types.INT} The return value is 1 if the function is successful.
+ *                      Otherwise, it is 0.
+ */
+export function ReleaseDC(hwnd, hdc) {
+    return FALSE;
+}

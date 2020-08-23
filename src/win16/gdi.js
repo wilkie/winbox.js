@@ -1,5 +1,13 @@
 "use strict";
 
+import { BYTE, UBYTE, INT, UINT, LONG, ULONG,
+         DWORD, HLOCAL, HGLOBAL, HANDLE, ATOM, LRESULT,
+         HMENU, HINSTANCE, WPARAM, LPARAM, HDC,
+         HBRUSH, HICON, HCURSOR, WNDPROC,
+         BOOL, NEARPTR, FARPTR, LPCSTR, HWND, Struct } from './types.js';
+
+import { GetDeviceCaps } from './gdi/GetDeviceCaps.js';
+
 export class Gdi {
     static get name() {
         return "GDI";
@@ -96,7 +104,7 @@ export class Gdi {
             [Gdi.stub, "GetCurrentPosition", 2],
             [Gdi.stub, "GetDCOrg", 2],
             // 80 //
-            [Gdi.stub, "GetDeviceCaps", 4],
+            [GetDeviceCaps, "GetDeviceCaps", 4, [HDC, INT], INT],
             [Gdi.stub, "GetMapMode", 2],
             [Gdi.stub, "GetObject", 8],
             [Gdi.stub, "GetPixel", 6],
@@ -478,5 +486,35 @@ export class Gdi {
         console.log("Stub called!");
     }
 }
+
+// GetDeviceCaps constants
+Gdi.DRIVERVERSION = 0x0;
+Gdi.TECHNOLOGY = 0x2;
+Gdi.HORTSIZE = 0x4;
+Gdi.VERTSIZE = 0x6;
+Gdi.HORZRES = 0x8;
+Gdi.VERTRES = 0xa;
+Gdi.BITSPIXEL = 0xc;
+Gdi.PLANES = 0xe;
+Gdi.NUMBRUSHES = 0x10;
+Gdi.NUMPENS = 0x12;
+Gdi.NUMMARKERS = 0x14;
+Gdi.NUMFONTS = 0x16;
+Gdi.NUMCOLORS = 0x18;
+Gdi.PDEVICESIZE = 0x1a;
+Gdi.CURVECAPS = 0x1c;
+Gdi.LINECAPS = 0x1e;
+Gdi.POLYGONALCAPS = 0x20;
+Gdi.TEXTCAPS = 0x22;
+Gdi.CLIPCAPS = 0x24;
+Gdi.RASTERCAPS = 0x26;
+Gdi.ASPECTX = 0x28;
+Gdi.ASPECTY = 0x2a;
+Gdi.ASPECTXY = 0x2c;
+Gdi.LOGPIXELSX = 0x58;
+Gdi.LOGPIXELSY = 0x5a;
+Gdi.SIZEPALETTE = 0x68;
+Gdi.NUMRESERVED = 0x6a;
+Gdi.COLORRES = 0x6c;
 
 export default Gdi;

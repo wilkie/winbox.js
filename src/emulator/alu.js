@@ -125,6 +125,14 @@ export class ALU {
         return this.add16(a, (~b) + 1);
     }
 
+    sbb8(a, b) {
+        return this.add8(a, (~b) + 1, this._cpu._flags.carry ? 1 : 0);
+    }
+
+    sbb16(a, b) {
+        return this.add16(a, (~b) + 1, this._cpu._flags.carry ? 1 : 0);
+    }
+
     and8(a, b) {
         a = (a & b) & 0xff;
         this._cpu._flags.overflow = false;

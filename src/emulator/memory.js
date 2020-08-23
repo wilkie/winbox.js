@@ -234,6 +234,20 @@ export class Memory {
     }
 
     /**
+     * Writes a null terminated string to the given address.
+     */
+    writeCString(segment, offset, string) {
+        for (let i = 0; i < string.length; i++) {
+            let chr = string.charCodeAt(i);
+            this.write8(segment, offset, chr);
+            offset++;
+        }
+
+        // Write null-terminator
+        this.write8(segment, offset, 0);
+    }
+
+    /**
      * Writes an integer value to our memory.
      *
      * @param {number} segment - The segment selector index.

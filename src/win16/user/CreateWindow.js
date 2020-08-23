@@ -2,6 +2,9 @@
 
 import { NULL } from '../consts.js';
 
+import { User } from '../user.js';
+
+import { Window } from '../../window.js';
 import { FixedWindow } from '../../windows/fixed-window.js';
 import { SizableWindow } from '../../windows/sizable-window.js';
 
@@ -22,7 +25,7 @@ import { SizableWindow } from '../../windows/sizable-window.js';
 export function CreateWindow(lpszClassName, lpszWindowName,
                              dwStyle, x, y, nWidth, nHeight,
                              hwndParent, hmenu, hinst, lpvParam) {
-    console.log("Creating window", lpszClassName, lpszWindowName);
+    console.log("Creating window", arguments);
 
     // Look up the parent (if NULL, we create a window in the desktop space)
     let parentWindow = null;
@@ -30,19 +33,51 @@ export function CreateWindow(lpszClassName, lpszWindowName,
         parentWindow = this._desktop;
     }
     else {
-        // TODO: lookup window by handle
+        parentWindow = this.retrieveWindow(hwndParent);
+    }
+
+    let windowClassType = Window;
+
+    if (dwStyle & User.WS_THICKFRAME) {
+        windowClassType = SizableWindow;
+    }
+    else if (dwStyle & User.WS_OVERLAPPED) {
+        windowClassType = FixedWindow;
     }
 
     // Create a window inside the given parent
-    let dialog = new SizableWindow({
+    let dialog = new windowClassType({
         caption: lpszWindowName
     });
 
-    dialog.resize(300, 300);
     dialog.center();
+    dialog.resize(300, 300);
+    dialog.show();
 
     parentWindow.append(dialog);
 
-    // Return a error for now :)
-    return NULL;
+    if (x != User.CW_USEDEFAULT) {
+        dialog.move(x, dialog.y);
+    }
+
+    if (y != User.CW_USEDEFAULT) {
+        dialog.move(dialog.x, y);
+    }
+
+    if (nWidth != User.CW_USEDEFAULT) {
+        dialog.resize(nWidth, dialog.height);
+        console.log("resized to", dialog.width, dialog.height);
+    }
+
+    if (nHeight != User.CW_USEDEFAULT) {
+        dialog.resize(dialog.width, nHeight);
+        console.log("resized to", dialog.width, dialog.height);
+    }
+
+    dialog.hide();
+
+    let windowClass = this.retrieveClass(lpszClassName);
+
+    let hWnd = this.registerWindow(dialog, windowClass);
+    return hWnd;
 }

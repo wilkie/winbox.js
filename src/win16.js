@@ -8,11 +8,12 @@ import { Allocator } from './win16/allocator.js';
 // The various OS modules
 import { Kernel } from './win16/kernel.js';
 import { Gdi } from './win16/gdi.js';
-import { User } from './win16/user.js';
-import { Types } from './win16/types.js';
+import { User, MSG } from './win16/user.js';
+import { Types, Struct } from './win16/types.js';
 
 // Kernel calls
 import { LocalInit } from './win16/kernel/LocalInit.js';
+import { GetTickCount } from './win16/user/GetTickCount.js';
 
 /**
  * This represents the Windows 16-bit Operating System emulation.
@@ -28,17 +29,25 @@ export class Win16 {
         this._desktop = desktop;
         this._machine = machine;
         this._memory = machine.memory;
+        this._startTime = (new Date).getTime();
+
+        // Keep track of all window instances.
+        // The '0' index window is the desktop.
+        this._windows = [];
+        this._windows.push([this._desktop, null]);
+
+        this._classes = {};
 
         // Register system calls
         machine.cpu.onInterrupt(0x21, this.syscallDOS.bind(this));
         machine.cpu.onInterrupt(0x80, this.syscallInvoke.bind(this));
+        machine.cpu.onInterrupt(0x81, this.syscallCallbackReturn.bind(this));
 
         // Register modules
         this._modules = {};
         this.register(Kernel);
         this.register(Gdi);
         this.register(User);
-        console.log(this._modules);
 
         // Keep track of the tasks in memory
         this._loaded = {};
@@ -48,6 +57,13 @@ export class Win16 {
 
         // And the system memory allocator
         this._allocator = new Allocator(this.machine.memory);
+    }
+
+    /**
+     * Returns the local time when the system was started.
+     */
+    get startTime() {
+        return this._startTime;
     }
 
     /**
@@ -163,21 +179,12 @@ export class Win16 {
         this._machine.cpu.si = 0;
         this._machine.cpu.es = (programSegment << 3) | 0x3;
 
-        let timer = window.setInterval( () => {
-            try {
-                if (this.task.stopped) {
-                    window.clearInterval(timer);
-                }
-                else {
-                    this._machine.cpu.step();
-                }
-            }
-            catch (e) {
-                console.log("error", e);
-                window.clearInterval(timer);
-            }
-        }, 10);
+        // Set initial context
+        task.context = this._machine.cpu.state;
+        this.resume(task);
     }
+
+
 
     /**
      * Initializes the task. The program calls this function.
@@ -186,8 +193,6 @@ export class Win16 {
      * task is currently scheduled.
      */
     initTask() {
-        console.log("INIT", this);
-
         // Get data segment
         let loader = this.task.loader;
         let dataSegment = loader.segments[(loader.ds >> 3) - 1];
@@ -197,6 +202,7 @@ export class Win16 {
         this._machine.cpu.es = (this.task.programSegment << 3) | 0x3;
         this._machine.cpu.cx = dataSegment.length; // The limit for the stack.
         this._machine.cpu.di = 0x88; // hModule
+        this._machine.cpu.dx = User.SW_SHOWNORMAL; // Show the main window
 
         // Set up the base frame
         this._machine.cpu.bp = this._machine.cpu.sp;
@@ -241,7 +247,6 @@ export class Win16 {
                 nextOffset = this._memory.read16(destinationSegment, thisOffset)
 
                 // Rewrite the code segment
-                console.log("writing", value.toString(16), "to", thisOffset.toString(16));
                 this._memory.write16(destinationSegment, thisOffset, value);
 
                 limit--;
@@ -277,7 +282,6 @@ export class Win16 {
                 nextOffset = this._memory.read16(destinationSegment, thisOffset)
 
                 // Rewrite the code segment
-                console.log("writing", segment.toString(16), ":", offset.toString(16), "to", thisOffset.toString(16));
                 this._memory.write16(destinationSegment, thisOffset, offset);
                 this._memory.write16(destinationSegment, thisOffset + 2, segment);
 
@@ -291,7 +295,6 @@ export class Win16 {
      */
     link(task) {
         // Go through the relocations and link/load imported modules
-        console.log("Linking...");
 
         // Link each segment relocations
         task.loader.segments.forEach( (segment, i) => {
@@ -309,7 +312,7 @@ export class Win16 {
                         module = this.loadModule(module);
                         if (relocation.ordinal) {
                             let segment = module.segment;
-                            let offset = module.step * relocation.ordinal;
+                            let offset = module.step * (relocation.ordinal + 1);
 
                             if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_SEGMENT) {
                                 this.writeRelocation16(
@@ -340,7 +343,6 @@ export class Win16 {
                 }
                 else {
                     // Internal relocation
-                    console.log("RELOCATION?", "0x" + relocation.offset.toString(16), relocation);
 
                     // Get the segment:offset that should be written (if fixed)
                     let segment = relocation.segment;
@@ -385,8 +387,217 @@ export class Win16 {
         this._modules[module.name] = module;
     }
 
+    /**
+     * Registers a window class.
+     */
+    registerClass(name, windowClass) {
+        this._classes[name] = windowClass;
+    }
+
+    /**
+     * Retrieves the class description based on the given name.
+     */
+    retrieveClass(name) {
+        return this._classes[name];
+    }
+
+    /**
+     * Registers a window.
+     */
+    registerWindow(windowInstance, windowClass) {
+        this._windows.push([windowInstance, windowClass]);
+
+        let task = this.task;
+        let hWnd = this._windows.length - 1;
+
+        // Capture events
+        console.log("registering window");
+        console.log(windowInstance);
+        ['client-mousedown'].forEach( (event) => {
+            windowInstance.on(event, (data) => {
+                this.createMessage(task, hWnd, event, data);
+            });
+        });
+
+        // TODO: We probably want a unique id every time in case a window closes.
+        return hWnd;
+    }
+
+    retrieveWindow(hWnd) {
+        return this._windows[hWnd][0];
+    }
+
+    retrieveClassFor(hWnd) {
+        return this._windows[hWnd][1];
+    }
+
+    /**
+     * Crafts a message for the given event and pushes it to the given task.
+     */
+    createMessage(task, hWnd, event, data) {
+        let msg = new MSG();
+        msg.hwnd = hWnd;
+
+        if (event === 'client-mousedown' ||
+            event === 'client-mouseup') {
+
+            // Get the proper message
+            if (event === 'client-mousedown') {
+                if (data.clicks == 2) {
+                    msg.message = [
+                        User.WM_LBUTTONDBLCLK,
+                        User.WM_MBUTTONDBLCLK,
+                        User.WM_RBUTTONDBLCLK
+                    ][data.button];
+                }
+                else {
+                    msg.message = [
+                        User.WM_LBUTTONDOWN,
+                        User.WM_MBUTTONDOWN,
+                        User.WM_RBUTTONDOWN
+                    ][data.button];
+                }
+            }
+            else {
+                msg.message = [
+                    User.WM_LBUTTONUP,
+                    User.WM_MBUTTONUP,
+                    User.WM_RBUTTONUP
+                ][data.button];
+            }
+
+            // Set flags
+            if (data.buttons & 1) {
+                msg.wParam |= User.MK_LBUTTON;
+            }
+            if (data.buttons & 2) {
+                msg.wParam |= User.MK_RBUTTON;
+            }
+            if (data.buttons & 4) {
+                msg.wParam |= User.MK_MBUTTON;
+            }
+            if (data.shift) {
+                msg.wParam |= User.MK_SHIFT;
+            }
+            if (data.control) {
+                msg.wParam |= User.MK_CONTROL;
+            }
+
+            // Set position
+            msg.lParam = (data.x & 0xffff) | ((data.y & 0xffff) << 16)
+        }
+
+        // If we have a new message, post it
+        if (msg.message != 0) {
+            msg.time = GetTickCount.bind(this)();
+            task.push(msg);
+            this.resume(task);
+        }
+    }
+
     moduleFromName(name) {
         return this._modules[name];
+    }
+
+    /**
+     * The current task yields to the system.
+     */
+    yield() {
+        console.log("Yielding");
+
+        // Stop execution
+        this.task.halt();
+
+        // Save context
+        this.task.context = this._machine.cpu.state;
+
+        // Reset the return value
+        this.task.returnValue = null;
+    }
+
+    /**
+     * The current task halts.
+     */
+    halt() {
+        this.task.halt();
+    }
+
+    /**
+     * Resumes execution of the given task.
+     */
+    resume(task) {
+        this.task.halt();
+        this._currentTask = task;
+        this.task.run();
+
+        function step(elapsed) {
+            try {
+                for (let i = 0; i < 1000; i++) {
+                    if (this._currentTask.stopped) {
+                        break;
+                    }
+                    this._machine.cpu.step();
+                }
+
+                if (!this._currentTask.stopped) {
+                    window.requestAnimationFrame(step.bind(this));
+                }
+            }
+            catch (e) {
+                console.log("error", e);
+                return;
+            }
+        }
+
+        window.requestAnimationFrame(step.bind(this));
+    }
+
+    /**
+     * Sends a message to the given window.
+     */
+    send() {
+    }
+
+    /**
+     * Calls into the VM from the given module.
+     */
+    call(module, segment, offset, args) {
+        // Get the memory space for the module
+        let loadedModule = this._loaded[module.name];
+        let moduleSegment = loadedModule.segment;
+
+        // Write new immediate for the call
+        this.machine.memory.write16(moduleSegment, 1, offset);
+        this.machine.memory.write16(moduleSegment, 3, (segment << 3) | 0x3);
+
+        // Keep track of the current CS:IP by halting the task
+        this.task.halt();
+
+        // Preserve context
+        this.task.context = this.machine.cpu.state;
+
+        // Set up stack
+        args.forEach( (arg) => {
+            let argType = arg[1];
+            let value = arg[0];
+
+            if (Types.sizeof(argType) <= 2) {
+                this._machine.cpu.push16(value);
+            }
+            else if (Types.sizeof(argType) == 4) {
+                let lo = (value >> 16) & 0xffff;
+                let hi = value & 0xffff;
+
+                this._machine.cpu.push16(lo);
+                this._machine.cpu.push16(hi);
+            }
+        });
+
+        // Call
+        this.machine.cpu.cs = (moduleSegment << 3) | 0x3;
+        this.machine.cpu.ip = 0;
+
+        return 'call';
     }
 
     loadModule(module) {
@@ -409,10 +620,9 @@ export class Win16 {
 
         // Craft code stubs for each function.
         // Win16 functions are far-called from the running program.
-        // So our craft code needs to move the ordinal into a register
-        // and fire an interrupt.
+        // So our craft code fires an interrupt and the position of the
+        // instruction pointer tells us the ordinal.
         //
-        // mov  ax, 0x42    // AX contains the function to call.
         // int  0x80        // Interrupt
         // retf 0x12        // Return. We need to know the arguments.
 
@@ -421,7 +631,22 @@ export class Win16 {
 
         let code = new Uint8Array(1000 * loadedModule.step);
 
-        let position = 0;
+        // We start after the callback function
+        let position = 8;
+
+        // The callback thunk
+
+        // callf
+        code[0] = 0x9a; // callf
+        code[1] = 0x00; // ip lo
+        code[2] = 0x00; // ip hi
+        code[3] = 0xff; // cs lo
+        code[4] = 0xff; // cs hi
+
+        // int
+        code[5] = 0xcd;
+        code[6] = 0x81;
+        code[7] = 0x00;
 
         for (let ordinal = 0; ordinal < 1000; ordinal++) {
             let tuple = module.exports[ordinal];
@@ -531,6 +756,9 @@ export class Win16 {
         let ip = this._machine.cpu.ip & ~(module.step - 1);
         ip = (ip / module.step);
 
+        // We need to subtract 1 since the first ordinal is the callback thunk
+        ip--;
+
         let callerIP = this._memory.read16(
             this._machine.cpu.ss >> 3,
             this._machine.cpu.sp
@@ -540,8 +768,6 @@ export class Win16 {
             this._machine.cpu.ss >> 3,
             this._machine.cpu.sp + 2
         );
-
-        console.log("Calling", module.instance.name, module.instance.exports[ip][1], callerCS.toString(16), ":", callerIP.toString(16));
 
         let functionDefinition = module.instance.exports[ip];
 
@@ -578,7 +804,26 @@ export class Win16 {
 
                 offset += 4;
 
-                if (argType == Types.LPCSTR) {
+                let pointer = false;
+                if (argType instanceof Array) {
+                    // This is a pointer of the type inside the array
+                    pointer = true;
+                    argType = argType[0];
+                }
+
+                if (argType.prototype instanceof Struct) {
+                    // This is a pointer to a struct
+                    if (hi == 0 && lo == 0) {
+                        // null pointer
+                        return null;
+                    }
+
+                    // Read in the struct data
+                    let struct = new argType();
+                    struct.loadFromMemory(this._memory, hi >> 3, lo);
+                    return struct;
+                }
+                else if (argType == Types.LPCSTR) {
                     // Read string at [ret-hi]:[ret-lo]
                     if (hi == 0 && lo == 0) {
                         // null string
@@ -586,7 +831,6 @@ export class Win16 {
                     }
 
                     let ret = this._memory.readCString(hi >> 3, lo);
-                    console.log("reading string", hi >> 3, lo, ret);
                     return ret;
                 }
 
@@ -595,8 +839,33 @@ export class Win16 {
         }).reverse();
 
         // Call normal function
+        console.log("Calling", module.instance.name, module.instance.exports[ip][1], callerCS.toString(16), ":", callerIP.toString(16), args);
+
         let result = implementation.bind(this).apply(null, args);
-        if (returnType !== undefined) {
+        console.log("result", result, typeof result === 'function');
+        if (result === 'call') {
+            // We make the callback and postpone the return until the callback
+            // returns. The callback is responsible for setting return values.
+            this.resume(this.task);
+        }
+        else if (typeof result === 'function') {
+            // We yield and postpone the return until the program starts again.
+            this.yield();
+            this.task.returnValue = () => {
+                let bound = result.bind(this)();
+
+                if (returnType !== undefined) {
+                    // Place top value in DX
+                    if (Types.sizeof(returnType) > 2) {
+                        this._machine.cpu.dx = (bound >> 16) & 0xffff;
+                    }
+
+                    // Place low-word in AX
+                    this._machine.cpu.ax = bound & 0xffff;
+                }
+            };
+        }
+        else if (returnType !== undefined) {
             // Place top value in DX
             if (Types.sizeof(returnType) > 2) {
                 this._machine.cpu.dx = (result >> 16) & 0xffff;
@@ -606,6 +875,30 @@ export class Win16 {
             this._machine.cpu.ax = result & 0xffff;
         }
     }
+
+    /**
+     * This system call happens when a callback completes.
+     *
+     * Generally, this will yield back to the normal execution of the current
+     * task.
+     */
+    syscallCallbackReturn() {
+        console.log("callback return");
+
+        // Get the CS:IP from the task
+        let context = this.task.context;
+
+        // Stop execution
+        this.task.halt();
+
+        // Reset CS:IP to the point after the syscall
+        console.log("back to", context.cs.toString(16), context.ip.toString(16));
+        this.machine.cpu.cs = context.cs;
+        this.machine.cpu.ip = context.ip;
+
+        // Resume the task
+        this.resume(this.task);
+    }
 }
 
 class Task {
@@ -613,6 +906,20 @@ class Task {
         this._executable = executable;
         this._loader = loader;
         this._stopped = false;
+        this._messages = [];
+        this._context = null;
+    }
+
+    get context() {
+        return this._context;
+    }
+
+    set context(value) {
+        this._context = value;
+    }
+
+    set returnValue(procedure) {
+        this._returnValue = procedure;
     }
 
     get executable() {
@@ -635,8 +942,48 @@ class Task {
         this._programSegment = value;
     }
 
+    run() {
+        if (this._returnValue) {
+            // Call the return value procedure
+            this._returnValue();
+            this._returnValue = null;
+        }
+
+        this._stopped = false;
+    }
+
     halt() {
         this._stopped = true;
+    }
+
+    /**
+     * Pushes a window message to the message queue.
+     */
+    push(message) {
+        this._messages.push(message);
+    }
+
+    /**
+     * Returns the next message in the queue or null if empty.
+     */
+    peek() {
+        if (this._messages.length == 0) {
+            return null;
+        }
+
+        return this._messages[0];
+    }
+
+    /**
+     * Pulls the oldest message from the queue or returns null if empty.
+     */
+    pull() {
+        if (this._messages.length == 0) {
+            return null;
+        }
+
+        let ret = this._messages.splice(0, 1)[0];
+        return ret;
     }
 }
 

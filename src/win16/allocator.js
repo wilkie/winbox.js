@@ -100,7 +100,7 @@ export class Allocator {
         this.memory.allocate(segment, size);
 
         // And keep track of it
-        this._heaps[segment] = new Heap(view);
+        this._heaps[segment] = new Heap(view, start);
 
         // Return the heap instance
         return this._heaps[segment];

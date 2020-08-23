@@ -26,4 +26,19 @@
  */
 export function LocalFree(hloc) {
     console.log("LocalFree:", hloc);
+
+    // LocalFree deallocates from the heap of the current segment selected via DS.
+    let segment = this.machine.cpu.ds >> 3;
+
+    // Get the local heap
+    let heap = this.allocator.heapOf(segment);
+    if (!heap) {
+        // No heap initialized
+        return hloc;
+    }
+
+    // Free the memory object from the heap
+    heap.free(hloc);
+
+    return NULL;
 }

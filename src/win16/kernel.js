@@ -2,7 +2,7 @@
 
 /** @namespace Kernel */
 
-import { BYTE, UBYTE, INT, UINT,
+import { BYTE, UBYTE, INT, UINT, FARPTR,
          DWORD, HLOCAL, HGLOBAL, HANDLE,
          BOOL, NEARPTR, LPCSTR, HWND } from './types.js';
 
@@ -10,6 +10,7 @@ import { FatalAppExit } from './kernel/FatalAppExit.js';
 import { FatalExit } from './kernel/FatalExit.js';
 import { GetVersion } from './kernel/GetVersion.js';
 import { InitTask } from './kernel/InitTask.js';
+import { lstrcpy } from './kernel/lstrcpy.js';
 import { LocalAlloc } from './kernel/LocalAlloc.js';
 import { LocalCompact } from './kernel/LocalCompact.js';
 import { LocalFlags } from './kernel/LocalFlags.js';
@@ -134,7 +135,7 @@ export class Kernel {
             [Kernel.stub, "_LOPEN", 6],
             [Kernel.stub, "_LWRITE", 8],
             [Kernel.stub, "Reserved5", 4],
-            [Kernel.stub, "LSTRCPY", 4],
+            [lstrcpy, "LSTRCPY", 8, [FARPTR, FARPTR], FARPTR],
             [Kernel.stub, "LSTRCAT", 4],
             // 90 //
             [Kernel.stub, "LSTRLEN, 4"],

@@ -19,5 +19,7 @@
  */
 export function FatalExit(nErrCode) {
     console.log("FatalExit:", nErrCode);
+
     // TODO: spawn a message box and pause the application until it closes.
+    this.halt();
 }

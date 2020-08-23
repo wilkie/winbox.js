@@ -1,12 +1,26 @@
 "use strict";
 
-import { BYTE, UBYTE, INT, UINT,
-         DWORD, HLOCAL, HGLOBAL, HANDLE,
-         HMENU, HINSTANCE,
-         BOOL, NEARPTR, FARPTR, LPCSTR, HWND } from './types.js';
+import { BYTE, UBYTE, INT, UINT, LONG, ULONG,
+         DWORD, HLOCAL, HGLOBAL, HANDLE, ATOM, LRESULT,
+         HMENU, HINSTANCE, WPARAM, LPARAM, HDC,
+         HBRUSH, HICON, HCURSOR, WNDPROC,
+         BOOL, NEARPTR, FARPTR, LPCSTR, HWND, Struct } from './types.js';
 
 import { CreateWindow } from './user/CreateWindow.js';
+import { DefWindowProc } from './user/DefWindowProc.js';
+import { DispatchMessage } from './user/DispatchMessage.js';
+import { FindWindow } from './user/FindWindow.js';
+import { GetDC } from './user/GetDC.js';
+import { GetMessage } from './user/GetMessage.js';
+import { GetTickCount } from './user/GetTickCount.js';
 import { InitApp } from './user/InitApp.js';
+import { PeekMessage } from './user/PeekMessage.js';
+import { RegisterClass } from './user/RegisterClass.js';
+import { ReleaseDC } from './user/ReleaseDC.js';
+import { SetWindowText } from './user/SetWindowText.js';
+import { ShowWindow } from './user/ShowWindow.js';
+import { TranslateMessage } from './user/TranslateMessage.js';
+import { UpdateWindow } from './user/UpdateWindow.js';
 
 export class User {
     static get name() {
@@ -30,7 +44,7 @@ export class User {
             [User.stub, "SetTimer", 10],
             [User.stub, "Bear11", 10],
             [User.stub, "KillTimer", 4],
-            [User.stub, "GetTickCount", 0],
+            [GetTickCount, "GetTickCount", 0, [], DWORD],
             [User.stub, "GetTimerResolution", 0],
             [User.stub, "GetCurrentTime", 0],
             [User.stub, "ClipCursor", 4],
@@ -56,13 +70,13 @@ export class User {
             [User.stub, "EnableWindow", 4],
             [User.stub, "IsWindowEnabled", 0],
             [User.stub, "GetWindowText", 8],
-            [User.stub, "SetWindowText", 6],
+            [SetWindowText, "SetWindowText", 6, [HWND, LPCSTR]],
             [User.stub, "GetWindowTextLength", 2],
             [User.stub, "BeginPaint", 6],
             // 40 //
             [User.stub, "EndPaint", 6],
             [CreateWindow, "CreateWindow", 30, [LPCSTR, LPCSTR, DWORD, INT, INT, INT, INT, HWND, HMENU, HINSTANCE, FARPTR], HWND],
-            [User.stub, "ShowWindow", 4],
+            [ShowWindow, "ShowWindow", 4, [HWND, INT], BOOL],
             [User.stub, "CloseWindow", 2],
             [User.stub, "OpenIcon", 2],
             [User.stub, "BringWindowToTop", 2],
@@ -71,14 +85,14 @@ export class User {
             [User.stub, "IsChild", 0],
             [User.stub, "IsWindowVisible", 0],
             // 50 //
-            [User.stub, "FindWindow", 8],
+            [FindWindow, "FindWindow", 8, [LPCSTR, LPCSTR], HWND],
             [User.stub, "Bear51", 2],
             [User.stub, "AnyPopUp", 0],
             [User.stub, "DestroyWindow", 2],
             [User.stub, "EnumWindows", 8],
             [User.stub, "EnumChildWindows", 10],
             [User.stub, "MoveWindow", 12],
-            [User.stub, "RegisterClass", 4],
+            [RegisterClass, "RegisterClass", 4, [WNDCLASS], ATOM],
             [User.stub, "GetClassName", 8],
             [User.stub, "SetActiveWindow", 2],
             // 60 //
@@ -88,9 +102,9 @@ export class User {
             [User.stub, "GetScrollPos", 4],
             [User.stub, "SetScrollRange", 10],
             [User.stub, "GetScrollRange", 12],
-            [User.stub, "GetDC", 2],
+            [GetDC, "GetDC", 2, [HWND], HDC],
             [User.stub, "GetWindowDC", 2],
-            [User.stub, "ReleaseDC", 4],
+            [ReleaseDC, "ReleaseDC", 4, [HWND, HDC], INT],
             [User.stub, "SetCursor", 2],
             // 70 //
             [User.stub, "SetCursorPos", 0],
@@ -133,15 +147,15 @@ export class User {
             [User.stub, "MessageBeep", 2],
             [User.stub, "FlashWindow", 4],
             [User.stub, "GetKeyState", 0],
-            [User.stub, "DefWindowProc", 10],
-            [User.stub, "GetMessage", 10],
-            [User.stub, "PeekMessage", 12],
+            [DefWindowProc, "DefWindowProc", 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
+            [GetMessage, "GetMessage", 10, [[MSG], HWND, UINT, UINT], BOOL],
+            [PeekMessage, "PeekMessage", 12, [[MSG], HWND, UINT, UINT, UINT], BOOL],
             // 110 //
             [User.stub, "PostMessage", 10],
             [User.stub, "SendMessage", 10],
             [User.stub, "WaitMessage", 0],
-            [User.stub, "TranslateMessage", 4],
-            [User.stub, "DispatchMessage", 4],
+            [TranslateMessage, "TranslateMessage", 4, [[MSG]], BOOL],
+            [DispatchMessage, "DispatchMessage", 4, [[MSG]], LONG],
             [User.stub, "ReplyMessage", 4],
             [User.stub, "PostAppMessage", 10],
             [User.stub, "Unknown"],
@@ -152,7 +166,7 @@ export class User {
             [User.stub, "SetWindowsHook", 6],
             [User.stub, "CallWindowProc", 14],
             [User.stub, "CallMsgFilter", 6],
-            [User.stub, "UpdateWindow", 2],
+            [UpdateWindow, "UpdateWindow", 2, [HWND]],
             [User.stub, "InvalidateRect", 8],
             [User.stub, "InvalidateRgn", 6],
             [User.stub, "ValidateRect", 6],
@@ -599,5 +613,131 @@ export class User {
         console.log("Stub called!");
     }
 }
+
+/**
+ * The **POINT** structure defines the x- and y-coordinates of a point.
+ */
+export class POINT extends Struct {
+    constructor() {
+        super([
+            ['x', INT],
+            ['y', INT]
+        ]);
+    }
+}
+
+/**
+ * The **MSG** structure contains information from the system's application queue.
+ */
+export class MSG extends Struct {
+    constructor() {
+        super([
+            ['hwnd', HWND],
+            ['message', UINT],
+            ['wParam', WPARAM],
+            ['lParam', LPARAM],
+            ['time', DWORD],
+            ['pt', POINT]
+        ]);
+    }
+}
+
+export class WNDCLASS extends Struct {
+    constructor() {
+        super([
+            ['style', UINT],
+            ['lpfnWndProc', WNDPROC],
+            ['cbClsExtra', INT],
+            ['cbWndExtra', INT],
+            ['hInstance', HINSTANCE],
+            ['hIcon', HICON],
+            ['hCursor', HCURSOR],
+            ['hbrBackground', HBRUSH],
+            ['lpszMenuName', LPCSTR],
+            ['lpszClassName', LPCSTR],
+        ]);
+    }
+}
+
+// Messages
+User.WM_PAINT = 0x000f;
+User.WM_ERASEBKGND = 0x0014;
+User.WM_ICONERASEBKGND = 0x0027;
+User.WM_MOUSEMOVE = 0x0200;
+User.WM_LBUTTONDOWN = 0x0201;
+User.WM_LBUTTONUP = 0x0202;
+User.WM_LBUTTONDBLCLK = 0x0203;
+User.WM_RBUTTONDOWN = 0x0204;
+User.WM_RBUTTONUP = 0x0205;
+User.WM_RBUTTONDBLCLK = 0x0206;
+User.WM_MBUTTONDOWN = 0x0207;
+User.WM_MBUTTONUP = 0x0208;
+User.WM_MBUTTONDBLCLK = 0x0209;
+
+// Key/Mouse States
+User.MK_LBUTTON = 0x0001;
+User.MK_RBUTTON = 0x0002;
+User.MK_SHIFT = 0x0004;
+User.MK_CONTROL = 0x0008;
+User.MK_MBUTTON = 0x0010;
+
+// ShowWindow flags
+User.SW_HIDE = 0x0000;
+User.SW_SHOWNORMAL = 0x0001;
+User.SW_NORMAL = 0x0001;
+User.SW_SHOWMINIMIZED = 0x0002;
+User.SW_SHOWMAXIMIZED = 0x0003;
+User.SW_MAXIMIZED = 0x0003;
+User.SW_SHOWNOACTIVATE = 0x0004;
+User.SW_SHOW = 0x0005;
+User.SW_MINIMIZE = 0x0006;
+User.SW_SHOWMINNOACTIVE = 0x0007;
+User.SW_SHOWNA = 0x0008;
+User.SW_RESTORE = 0x0009;
+
+// CreateWindow flags
+User.CW_USEDEFAULT = 0x8000;
+
+// Window Styles
+User.WS_OVERLAPPED = 0x00000000;
+User.WS_POPUP = 0x80000000;
+User.WS_CHILD = 0x40000000;
+User.WS_CLIPSIBLINGS = 0x04000000;
+User.WS_CLIPCHILDREN = 0x02000000;
+User.WS_VISIBLE = 0x10000000;
+User.WS_DISABLED = 0x08000000;
+User.WS_MINIMIZE = 0x20000000;
+User.WS_MAXIMIZE = 0x01000000;
+User.WS_CAPTION = 0x00c00000;
+User.WS_BORDER = 0x00800000;
+User.WS_DLGFRAME = 0x00400000;
+User.WS_VSCROLL = 0x00200000;
+User.WS_HSCROLL = 0x00100000;
+User.WS_SYSMENU = 0x00080000;
+User.WS_THICKFRAME = 0x00040000;
+User.WS_MINIMIZEBOX = 0x00020000;
+User.WS_MAXIMIZEBOX = 0x00010000;
+User.WS_GROUP = 0x00020000;
+User.WS_TABSTOP = 0x00010000;
+User.WS_OVERLAPPEDWINDOW = User.WS_OVERLAPPED | User.WS_CAPTION |
+                           User.WS_SYSMENU | User.WS_THICKFRAME |
+                           User.WS_MINIMIZEBOX | User.WS_MAXIMIZEBOX;
+User.WS_POPUPWINDOW = User.WS_POPUP | User.WS_BORDER | User.WS_SYSMENU;
+User.WS_CHILDWINDOW = User.WS_CHILD;
+User.WS_EX_DLGMODALFRAME = 0x00000001;
+User.WS_EX_NOPARENTNOTIFY = 0x00000004;
+User.WS_EX_TOPMOST = 0x00000008;
+User.WS_EX_ACCEPTFILES = 0x00000010;
+User.WS_EX_TRANSPARENT = 0x00000020;
+
+User.WS_TILED = User.WS_OVERLAPPED;
+User.WS_ICONIC = User.WS_MINIMIZE;
+User.WS_SIZEBOX = User.WS_THICKFRAME;
+User.WS_TILEDWINDOW = User.WS_OVERLAPPEDWINDOW;
+
+// PeekMessage flags
+User.PM_NOREMOVE = 0x0000;
+User.PM_REMOVE = 0x0001;
+User.PM_NOYIELD = 0x0002;
 
 export default User;

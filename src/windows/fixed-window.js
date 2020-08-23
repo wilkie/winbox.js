@@ -233,12 +233,11 @@ export class FixedWindow extends Window {
             } 
         });
 
-        this.on("mousedown", (data) => {
-            if (!this._titleBarClicked) {
-                super.trigger(name, data);
-            }
-            else if (this.movable) {
-                this.trigger("move-start", data);
+        this.on("nonclient-mousedown", (data) => {
+            if (this._titleBarClicked) {
+                if (this.movable) {
+                    this.trigger("move-start", data);
+                }
             }
         });
 
@@ -259,10 +258,8 @@ export class FixedWindow extends Window {
             }
         });
 
-        this.on("mouseup", (event) => {
-            if (this._titleBarClicked) {
-                this._titleBarClicked = false;
-            }
+        this.on("nonclient-mouseup", (event) => {
+            this._titleBarClicked = false;
         });
     }
 
@@ -278,6 +275,7 @@ export class FixedWindow extends Window {
         this._titleBar.addEventListener('mousedown', (event) => {
             // Remember that the title bar was clicked
             this._titleBarClicked = true;
+            this.nonClientMouseDownEvent(event);
         });
 
         this._closeButton.on("mousedown", (event) => {
@@ -285,11 +283,11 @@ export class FixedWindow extends Window {
                 this.destroy();
             }
             this._closeButton._ncMouseDown = true;
-            this.trigger("nonclient-mousedown", event);
+            this.nonClientMouseDownEvent(event);
         });
 
         this._closeButton.on("mouseup", (event) => {
-            this.trigger("nonclient-mouseup", event);
+            this.nonClientMouseDownEvent(event);
         });
     }
 }

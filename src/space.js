@@ -76,7 +76,7 @@ export class Space extends EventComponent {
         header.classList.add("__winbox_header");
         header.textContent = this._options.title;
         header.style.font = this._options.font;
-        container.appendChild(header);
+        //container.appendChild(header);
 
         this._container = container;
 
@@ -96,8 +96,8 @@ export class Space extends EventComponent {
 
         this._containingWindow = new SizableWindow();
 
-        this._window.append(this._fixedWindow);
-        this._window.append(this._progressWindow);
+        //this._window.append(this._fixedWindow);
+        //this._window.append(this._progressWindow);
 
         this._progressWindow.move(200, 50);
         this._progressWindow.focus();
@@ -134,6 +134,14 @@ export class Space extends EventComponent {
      * Redraws the background of the space.
      */
     drawBackground() {
+    }
+
+    get width() {
+        return this._window.width;
+    }
+
+    get height() {
+        return this._window.height;
     }
 }
 
