@@ -2,6 +2,8 @@
 
 import { TRUE, FALSE } from '../consts.js';
 
+import { RedrawWindow } from './RedrawWindow.js';
+
 import { User } from '../user.js';
 
 /**
@@ -51,11 +53,9 @@ import { User } from '../user.js';
 export function ShowWindow(hwnd, nCmdShow) {
     console.log("ShowWindow", hwnd, nCmdShow);
 
-    // Get the window/class for the handle
-    let windowClass = this.retrieveClassFor(hwnd);
-
     // Get the window itself
-    let dialog = this.retrieveWindow(hwnd);
+    let dialog = this.handles.resolve(hwnd);
+    console.log("dialog", dialog);
 
     // What is the current state?
     let visible = dialog.visible;
@@ -75,6 +75,23 @@ export function ShowWindow(hwnd, nCmdShow) {
         case User.WM_MINIMIZE:
             dialog.minimize();
             break;
+    }
+
+    let timesShown = dialog.options.timesShown;
+
+    if (dialog.visible) {
+        timesShown++;
+        dialog.options = Object.assign({}, dialog.options, {
+            timesShown: timesShown
+        });
+
+        if (timesShown == 1) {
+            // The first time the window has been shown
+            // We post WM_PAINT / WM_ERASEBKGND
+            console.log("invalidate and repaint");
+            let flags = User.RDW_ERASE;
+            RedrawWindow.bind(this)(hwnd, null, null, flags);
+        }
     }
 
     if (visible) {

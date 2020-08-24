@@ -1,6 +1,6 @@
 "use strict";
 
-export class Raster {
+export class Draw {
     static _drawCircle(ctx, x, y, dx, dy, style = 0) {
         let imageData = ctx.getImageData(x, y, dx, dy);
         let data = imageData.data;
@@ -70,15 +70,15 @@ export class Raster {
     }
 
     static drawCircle(ctx, x, y, dx, dy) {
-        Raster._drawCircle(ctx, x, y, dx, dy, 0);
+        Draw._drawCircle(ctx, x, y, dx, dy, 0);
     }
 
     static fillCircle(ctx, x, y, dx, dy) {
-        Raster._drawCircle(ctx, x, y, dx, dy, 1);
+        Draw._drawCircle(ctx, x, y, dx, dy, 1);
     }
 
     static drawLine(ctx, x, y, x2, y2) {
     }
 }
 
-export default Raster;
+export default Draw;

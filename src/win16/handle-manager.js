@@ -1,0 +1,136 @@
+"use strict";
+
+// The implementations of each system object:
+import { Surface } from '../raster/surface.js';
+import { Window } from '../window.js';
+import { Brush } from '../raster/brush.js';
+import { Pen } from '../raster/pen.js';
+import { Task } from './task.js';
+import { Module } from './module.js';
+
+/**
+ * This manages all of the handles of resources throughout the system.
+ */
+export class HandleManager {
+    constructor() {
+        this._handles = {};
+        this._names = {};
+    }
+
+    allocate(item) {
+        let handle = null;
+
+        if (item instanceof Surface) {
+            // Allocates an HDC
+            handle = this.find(HandleManager.TAGS.HDC + 1, 0xffe);
+        }
+        else if (item instanceof Window) {
+            // Allocates an HWND
+            handle = this.find(HandleManager.TAGS.HWND + 1, 0xffe);
+        }
+        else if (item instanceof Brush) {
+            // Allocates an HBRUSH
+            handle = this.find(HandleManager.TAGS.HBRUSH + 1, 0xffe);
+        }
+        else if (item instanceof Pen) {
+            // Allocates an HPEN
+            handle = this.find(HandleManager.TAGS.HPEN + 1, 0xffe);
+        }
+        else if (item instanceof Task) {
+            // Allocates an HINSTANCE
+            handle = this.find(HandleManager.TAGS.HINSTANCE + 1, 0xffe);
+        }
+        else if (item && (item instanceof Module || item.prototype instanceof Module)) {
+            // Allocates an HMODULE
+            handle = this.find(HandleManager.TAGS.HMODULE + 1, 0xffe);
+        }
+        else {
+            // Allocates an ATOM
+            handle = this.find(HandleManager.TAGS.ATOM + 1, 0xffe);
+        }
+
+        if (handle) {
+            this.assign(handle, item);
+        }
+
+        return handle;
+    }
+
+    find(start, length) {
+        let end = start + length;
+
+        // Scans handles for a free handle
+        while (this._handles[start] && start <= end) {
+            start++;
+        }
+
+        if (start > end) {
+            return null;
+        }
+
+        return start;
+    }
+
+    assign(handle, item) {
+        this._handles[handle] = {
+            instance: item,
+        };
+    }
+
+    free(handle) {
+        let item = this._handles[handle];
+
+        delete this._handles[handle];
+
+        if (item && item.name) {
+            delete this._names[item.name];
+        }
+
+        return item;
+    }
+
+    retrieve(name) {
+        console.log(name, this._names);
+        let handle = this._names[name];
+
+        if (!handle) {
+            return null;
+        }
+
+        return this.resolve(handle);
+    }
+
+    resolve(handle) {
+        return (this._handles[handle] || {}).instance;
+    }
+
+    isGDI(handle) {
+        return (handle >= HandleManager.TAGS.HRGN);
+    }
+
+    register(handle, name) {
+        if (this._handles[handle]) {
+            this._handles[handle].name = name;
+            this._names[name] = handle;
+        }
+    }
+}
+
+HandleManager.TAGS = {
+    // GDI Objects //
+    HPEN: 0xf000,
+    HBRUSH: 0xe000,
+    HBITMAP: 0xd000,
+    HFONT: 0xc000,
+    HPALETTE: 0xb000,
+    HRGN: 0xa000,
+    // Other Objects //
+    HDC: 0x9000,
+    HINSTANCE: 0x8000,
+    HMODULE: 0x7000,
+    HWND: 0x6000,
+    HCURSOR: 0x5000,
+    HICON: 0x4000,
+    HMETAFILE: 0x3000,
+    ATOM: 0x2000,
+};

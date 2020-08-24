@@ -2,6 +2,8 @@
 
 /** @namespace Kernel */
 
+import { Module } from './module.js';
+
 import { BYTE, UBYTE, INT, UINT, FARPTR,
          DWORD, HLOCAL, HGLOBAL, HANDLE,
          BOOL, NEARPTR, LPCSTR, HWND } from './types.js';
@@ -11,6 +13,8 @@ import { FatalExit } from './kernel/FatalExit.js';
 import { GetVersion } from './kernel/GetVersion.js';
 import { InitTask } from './kernel/InitTask.js';
 import { lstrcpy } from './kernel/lstrcpy.js';
+import { lstrcat } from './kernel/lstrcat.js';
+import { lstrlen } from './kernel/lstrlen.js';
 import { LocalAlloc } from './kernel/LocalAlloc.js';
 import { LocalCompact } from './kernel/LocalCompact.js';
 import { LocalFlags } from './kernel/LocalFlags.js';
@@ -31,7 +35,7 @@ import { WaitEvent } from './kernel/WaitEvent.js';
  *
  * @memberof Win16
  */
-export class Kernel {
+export class Kernel extends Module {
     static get name() {
         return "KERNEL";
     }
@@ -136,9 +140,9 @@ export class Kernel {
             [Kernel.stub, "_LWRITE", 8],
             [Kernel.stub, "Reserved5", 4],
             [lstrcpy, "LSTRCPY", 8, [FARPTR, FARPTR], FARPTR],
-            [Kernel.stub, "LSTRCAT", 4],
+            [lstrcat, "LSTRCAT", 4, [FARPTR, FARPTR], FARPTR],
             // 90 //
-            [Kernel.stub, "LSTRLEN, 4"],
+            [lstrlen, "LSTRLEN", 4, [FARPTR], UINT],
             [InitTask, "InitTask", 0, [], UINT],
             [Kernel.stub, "GetTempDrive", 2],
             [Kernel.stub, "GetCodeHandle", 4],

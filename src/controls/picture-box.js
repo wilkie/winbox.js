@@ -1,7 +1,7 @@
 "use strict";
 
 import { Window } from "../window.js";
-import { Color } from "../color.js";
+import { Color } from "../raster/color.js";
 
 export class PictureBox extends Window {
     initialize() {

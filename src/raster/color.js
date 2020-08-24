@@ -146,6 +146,15 @@ export class Color {
         return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
+    static colorToBgr(color) {
+        return {
+            a: (color >> 24) & 0xff,
+            b: (color >> 16) & 0xff,
+            g: (color >> 8)  & 0xff,
+            r: (color >> 0)  & 0xff,
+        };
+    }
+
     static colorToRgb(color) {
         return {
             a: (color >> 24) & 0xff,

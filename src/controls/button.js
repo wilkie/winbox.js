@@ -3,7 +3,7 @@
 import { Window } from "../window.js";
 import { PictureBox } from "./picture-box.js";
 import { Label } from "./label.js";
-import { Color } from "../color.js";
+import { Color } from "../raster/color.js";
 
 export class Button extends Window {
     constructor(options = {}) {

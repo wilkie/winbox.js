@@ -1,8 +1,8 @@
 "use strict";
 
 import { EventComponent } from "./event-component.js";
-import { Ditherer } from "./ditherer.js";
-import { Color } from "./color.js";
+import { Ditherer } from "./raster/ditherer.js";
+import { Color } from "./raster/color.js";
 import { ProgressWindow } from "./progress-window.js";
 import { SizableWindow } from "./windows/sizable-window.js";
 import { FixedWindow } from "./windows/fixed-window.js";

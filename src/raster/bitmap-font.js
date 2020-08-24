@@ -1,16 +1,16 @@
 "use strict";
 
-import { Util } from "./util.js";
-import { Executable } from "./executable.js";
+import { Util } from "../util.js";
+import { Executable } from "../executable.js";
 import { Color } from "./color.js";
 
 /**
- * A single raster font entry from a raster font.
+ * A single bitmap font entry from a bitmap font.
  *
- * Generally, this depicts a raster font of a particular style or size that
+ * Generally, this depicts a bitmap font of a particular style or size that
  * is contained among many within a single font file or resource.
  */
-export class RasterFontEntry {
+export class BitmapFontEntry {
     constructor(data, options = {}) {
         this._view = new DataView(data);
 
@@ -20,7 +20,7 @@ export class RasterFontEntry {
 
     get header() {
         if (!this._header) {
-            this._header = Util.readStructure(this._view, RasterFont.FNTHeader, 0, true);
+            this._header = Util.readStructure(this._view, BitmapFont.FNTHeader, 0, true);
         }
 
         return this._header;
@@ -65,7 +65,7 @@ export class RasterFontEntry {
     }
 
     /**
-     * The point size of this raster font.
+     * The point size of this bitmap font.
      */
     get size() {
         return this.header.dfPoints;
@@ -75,7 +75,7 @@ export class RasterFontEntry {
     }
 
     /**
-     * Draws the raster font to the given 2d canvas context.
+     * Draws the bitmap font to the given 2d canvas context.
      */
     draw(ctx, x, y, text, options = {}) {
         let color = options.color || 0x0;
@@ -292,10 +292,10 @@ export class RasterFontEntry {
 
             let entrySize = 6; // 3.x fonts
             let headerSize = 148;
-            let entryDefinition = RasterFont.FNT3CharacterEntry;
+            let entryDefinition = BitmapFont.FNT3CharacterEntry;
             if (this.header.dfVersion <= 0x200) {
                 entrySize = 4; // 2.x fonts
-                entryDefinition = RasterFont.FNT2CharacterEntry;
+                entryDefinition = BitmapFont.FNT2CharacterEntry;
                 headerSize = 118;
             }
 
@@ -336,30 +336,30 @@ export class RasterFontEntry {
 }
 
 /**
- * Loads one or more raster fonts from a given font resource.
+ * Loads one or more bitmap fonts from a given font resource.
  */
-export class RasterFont {
+export class BitmapFont {
     /**
      * Asynchronously loads the font at the given url.
      */
     static load(url, options = {}) {
-        if (!RasterFont._promiseCache[url]) {
-            RasterFont._promiseCache[url] = new Promise( async (resolve, reject) => {
-                if (!RasterFont._cache[url]) {
+        if (!BitmapFont._promiseCache[url]) {
+            BitmapFont._promiseCache[url] = new Promise( async (resolve, reject) => {
+                if (!BitmapFont._cache[url]) {
                     fetch(url).then( (response) => {
                         return response.arrayBuffer();
                     }).then( (data) => {
-                        RasterFont._cache[url] = new RasterFont(data, options);
-                        resolve(RasterFont._cache[url]);
+                        BitmapFont._cache[url] = new BitmapFont(data, options);
+                        resolve(BitmapFont._cache[url]);
                     });
                 }
                 else {
-                    resolve(RasterFont._cache[url]);
+                    resolve(BitmapFont._cache[url]);
                 }
             });
         }
 
-        return RasterFont._promiseCache[url];
+        return BitmapFont._promiseCache[url];
     }
 
     constructor(data, options = {}) {
@@ -375,7 +375,7 @@ export class RasterFont {
                 if (resourceType.id == Executable.RESOURCES.Font) {
                     resourceType.entries.forEach( (resource) => {
                         let subData = executable.readResource(resource);
-                        let font = new RasterFontEntry(subData, options);
+                        let font = new BitmapFontEntry(subData, options);
                         this._entries.push(font);
                     });
                 }
@@ -383,12 +383,12 @@ export class RasterFont {
         }
         else {
             // Likely its own font
-            this._entries.push(new RasterFontEntry(data, options));
+            this._entries.push(new BitmapFontEntry(data, options));
         }
     }
 
     /**
-     * Retrieves a list of RasterFontEntry objects for each contained font.
+     * Retrieves a list of BitmapFontEntry objects for each contained font.
      */
     get entries() {
         return this._entries.slice();
@@ -409,12 +409,12 @@ export class RasterFont {
     }
 }
 
-RasterFont._promiseCache = {};
-RasterFont._cache = {};
+BitmapFont._promiseCache = {};
+BitmapFont._cache = {};
 
 // https://www.undocprint.org/formats/font_formats
 
-RasterFont.FNTHeader = {
+BitmapFont.FNTHeader = {
     dfVersion:         [0,   2],
     dfSize:            [2,   4],
     dfCopyright:       [6,   "60"],
@@ -456,7 +456,7 @@ RasterFont.FNTHeader = {
 /**
  * Character entry for a 2.x font.
  */
-RasterFont.FNT2CharacterEntry = {
+BitmapFont.FNT2CharacterEntry = {
     width:  [0, 2],
     offset: [2, 2],
 };
@@ -464,9 +464,9 @@ RasterFont.FNT2CharacterEntry = {
 /**
  * Character entry for a 3.x font.
  */
-RasterFont.FNT3CharacterEntry = {
+BitmapFont.FNT3CharacterEntry = {
     width:  [0, 2],
     offset: [2, 4],
 };
 
-export default RasterFont;
+export default BitmapFont;

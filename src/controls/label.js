@@ -1,7 +1,7 @@
 "use strict";
 
 import { Window } from "../window.js";
-import { RasterFont } from "../raster-font.js";
+import { BitmapFont } from "../raster/bitmap-font.js";
 
 export class Label extends Window {
     constructor(options = {}) {
@@ -139,7 +139,7 @@ export class Label extends Window {
 
         if (this._options.font &&
             this._options.font.toLowerCase().endsWith(".fon")) {
-            RasterFont.load(this._options.font).then( (fonts) => {
+            BitmapFont.load(this._options.font).then( (fonts) => {
                 this._caption.style.display = "none";
                 this._captionImageSpan.style.display = "inline";
                 let font = fonts.fontFor(this._options.size || 10);

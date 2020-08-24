@@ -38,8 +38,12 @@ import { User } from '../user.js';
 export function DispatchMessage(lpmsg) {
     console.log("DispatchMessage", lpmsg);
 
+    // Get the window itself
+    let dialog = this.handles.resolve(lpmsg.hwnd);
+
     // Get the window/class for the handle
-    let windowClass = this.retrieveClassFor(lpmsg.hwnd);
+    let windowClass = this.handles.retrieve(dialog.options.windowClass);
+    console.log(windowClass);
 
     // Get the function to call and craft that function call and return to the
     // current CS:IP

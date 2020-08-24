@@ -28,7 +28,7 @@ export function SetWindowText(hwnd, lpsz) {
     console.log("SetWindowText", hwnd, lpsz);
 
     // Get window
-    let dialog = this.retrieveWindow(hwnd);
+    let dialog = this.handles.resolve(hwnd);
 
     let options = dialog.options;
     options.caption = lpsz;

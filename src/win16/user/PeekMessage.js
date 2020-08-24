@@ -82,10 +82,10 @@ import { User } from '../user.js';
  *                      Otherwise, it is zero.
  */
 export function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuRemove) {
-    let msg = this.task.peek();
+    let msg = this.scheduler.task.peek();
 
     if (fuRemove & User.PM_REMOVE) {
-        msg = this.task.pull();
+        msg = this.scheduler.task.pull();
     }
 
     if (msg) {
@@ -107,6 +107,8 @@ export function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuRemove)
         return TRUE;
     }
     else {
-        return FALSE;
+        return () => {
+            return TRUE;
+        };
     }
 }

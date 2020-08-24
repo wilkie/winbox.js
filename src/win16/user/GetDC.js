@@ -1,5 +1,7 @@
 "use strict";
 
+import { NULL } from '../consts.js';
+
 /**
  * The **GetDC** function retrieves the handle of a device context for the
  * client area of the given window. The device context can be used in
@@ -39,5 +41,20 @@
  *                      successful. Otherwise, it is `NULL`.
  */
 export function GetDC(hwnd) {
-    return 1;
+    let dc = 1;
+    if (hwnd == NULL) {
+        // Gets the desktop context
+    }
+    else {
+        // Get the window
+        let dialog = this.handles.resolve(hwnd);
+
+        // Get the surface
+        let surface = dialog.surface;
+
+        // Allocate a DC
+        dc = this.handles.allocate(surface);
+    }
+
+    return dc;
 }

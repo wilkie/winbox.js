@@ -38,9 +38,13 @@ import { User } from '../user.js';
  *                      successful or zero if an error occurs.
  */
 export function RegisterClass(lpwc) {
-    console.log("RegisterClass", lpwc);
+    // Create an ATOM for the class
+    let handle = this.handles.allocate(lpwc);
+    if (handle) {
+        // Register a name for the ATOM
+        this.handles.register(handle, lpwc.lpszClassName);
+    }
 
-    this.registerClass(lpwc.lpszClassName, lpwc);
-
-    return TRUE;
+    // Return the ATOM handle
+    return handle;
 }

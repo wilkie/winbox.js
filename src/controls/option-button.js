@@ -1,6 +1,6 @@
 "use strict";
 
-import { Raster } from "../raster.js";
+import { Draw } from "../raster/draw.js";
 import { Window } from "../window.js";
 import { CheckBox } from "./check-box.js";
 
@@ -23,7 +23,7 @@ export class OptionButton extends CheckBox {
             canvas.setAttribute("height", 13);
 
             let ctx = canvas.getContext('2d');
-            Raster.drawCircle(ctx, 0, 0, 13, 13);
+            Draw.drawCircle(ctx, 0, 0, 13, 13);
             OptionButton.__unselectedImage = canvas.toDataURL("image/png");
 
             canvas = document.createElement("canvas");
@@ -31,8 +31,8 @@ export class OptionButton extends CheckBox {
             canvas.setAttribute("height", 13);
 
             ctx = canvas.getContext('2d');
-            Raster.drawCircle(ctx, 0, 0, 13, 13);
-            Raster.fillCircle(ctx, 3, 3, 7, 7);
+            Draw.drawCircle(ctx, 0, 0, 13, 13);
+            Draw.fillCircle(ctx, 3, 3, 7, 7);
             OptionButton.__selectedImage = canvas.toDataURL("image/png");
         }
 

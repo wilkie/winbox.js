@@ -1,6 +1,6 @@
 "use strict";
 
-import { Util } from './util.js';
+import { Util } from '../util.js';
 
 /**
  * Represents the operating system executable loader.
@@ -23,14 +23,6 @@ export class Loader {
         this._isApp = false;
 
         this.parseHeaders();
-
-        /*console.log("header offset:", this.executable.headerOffset);
-        console.log("name:", this.name);
-        console.log("description:", this.description);
-        console.log("residentEntries:", this.residentEntries);
-        console.log("nonResidentEntries:", this.nonResidentEntries);
-        console.log("moduleReferenceEntries:", this.moduleReferenceEntries);
-        console.log("header", this.header);*/
 
         this.segments.forEach( (segment, i) => {
             let view = new DataView(

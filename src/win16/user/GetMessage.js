@@ -62,7 +62,7 @@ import { TRUE, FALSE } from '../consts.js';
 export function GetMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax) {
     return () => {
         // Get message
-        let msg = this.task.pull();
+        let msg = this.scheduler.task.pull();
 
         // Copy message to memory
         lpmsg.hwnd = msg.hwnd;

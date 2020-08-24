@@ -1,14 +1,26 @@
 "use strict";
 
+/** @namespace Gdi */
+
+import { Module } from './module.js';
+
 import { BYTE, UBYTE, INT, UINT, LONG, ULONG,
          DWORD, HLOCAL, HGLOBAL, HANDLE, ATOM, LRESULT,
-         HMENU, HINSTANCE, WPARAM, LPARAM, HDC,
-         HBRUSH, HICON, HCURSOR, WNDPROC,
+         HMENU, HINSTANCE, WPARAM, LPARAM, HDC, HGDIOBJ,
+         HBRUSH, HICON, HCURSOR, WNDPROC, COLORREF,
          BOOL, NEARPTR, FARPTR, LPCSTR, HWND, Struct } from './types.js';
 
+import { CreateSolidBrush } from './gdi/CreateSolidBrush.js';
+import { DeleteObject } from './gdi/DeleteObject.js';
 import { GetDeviceCaps } from './gdi/GetDeviceCaps.js';
+import { TextOut } from './gdi/TextOut.js';
 
-export class Gdi {
+/**
+ * The Win16 GDI library.
+ *
+ * @memberof Win16
+ */
+export class Gdi extends Module {
     static get name() {
         return "GDI";
     }
@@ -52,7 +64,7 @@ export class Gdi {
             [Gdi.stub, "SaveDC", 2],
             [Gdi.stub, "SetPixel", 10],
             [Gdi.stub, "OffsetClipRgn", 6],
-            [Gdi.stub, "TextOut", 12],
+            [TextOut, "TextOut", 12, [HDC, INT, INT, LPCSTR, INT], BOOL],
             [Gdi.stub, "BitBlt", 20],
             [Gdi.stub, "StretchBlt", 24],
             [Gdi.stub, "Polygon", 8],
@@ -88,10 +100,10 @@ export class Gdi {
             [Gdi.stub, "CreatePolygonRgn", 8],
             [Gdi.stub, "CreateRectRgn", 8],
             [Gdi.stub, "CreateRectRgnIndirect", 4],
-            [Gdi.stub, "CreateSolidBrush", 4],
+            [CreateSolidBrush, "CreateSolidBrush", 4, [COLORREF], HBRUSH],
             [Gdi.stub, "DPToLP", 8],
             [Gdi.stub, "DeleteDC", 2],
-            [Gdi.stub, "DeleteObject", 2],
+            [DeleteObject, "DeleteObject", 2, [HGDIOBJ], BOOL],
             // 70 //
             [Gdi.stub, "EnumFonts", 14],
             [Gdi.stub, "EnumObjects", 12],

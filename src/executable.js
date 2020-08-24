@@ -475,7 +475,7 @@ Executable.RESOURCES = {
     MessageTable:   0x800b,
     PlugAndPlay:    0x8013,
     RawData:        0x800a, // RC_DATA
-    "String":       0x8006,
+    StringTable:    0x8006,
     Version:        0x8010,
     VXD:            0x8014,
 };

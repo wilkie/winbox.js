@@ -1,8 +1,7 @@
 "use strict";
 
-import { Ditherer } from "./ditherer.js";
-import { Color } from "./color.js";
-import { ProgressWindow } from "./progress-window.js";
+import { Ditherer } from "./raster/ditherer.js";
+import { Color } from "./raster/color.js";
 import { Win16 } from "./win16.js";
 
 export class WinBox {
@@ -55,22 +54,6 @@ export class WinBox {
             amount = Math.min(currentY / (height - barHeight * 2), 1.0);
             currentColor = startColor.mix(endColor, amount);
         }
-
-        // Position text
-        let header = document.createElement("h1");
-        header.classList.add("__winbox_header");
-        header.textContent = this._options.title;
-        container.appendChild(header);
-
-        // Create a progress window
-        this._progressWindow = new ProgressWindow();
-
-        this._containingWindow = new ResizableWindow();
-        //this._containingWindow.append(this._progressWindow);
-
-        this._container = container;
-
-        //this.append(this._progressWindow);
     }
     
     /**

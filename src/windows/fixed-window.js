@@ -3,7 +3,7 @@
 import { Window } from "../window.js";
 import { Button } from "../controls/button.js";
 import { SubMenu, Menu } from "../controls/menu.js";
-import { RasterFont } from "../raster-font.js";
+import { BitmapFont } from "../raster/bitmap-font.js";
 
 export class SystemSubMenu extends SubMenu {
 }
@@ -99,7 +99,7 @@ export class FixedWindow extends Window {
 
         if (this._options.font &&
             this._options.font.toLowerCase().endsWith(".fon")) {
-            RasterFont.load(this._options.font).then( (font) => {
+            BitmapFont.load(this._options.font).then( (font) => {
                 caption.style.display = "none";
                 captionImageSpan.style.display = "block";
                 captionImage.src = font.fontFor(this._options.size || 10).dataFor(this._options.caption);
@@ -124,6 +124,10 @@ export class FixedWindow extends Window {
 
     get container() {
         return this._container;
+    }
+
+    get canvas() {
+        return this._containerCanvas;
     }
 
     /**
@@ -222,6 +226,9 @@ export class FixedWindow extends Window {
         // Create window content container
         this._container = document.createElement("div");
         this._container.classList.add("__winbox_container");
+        this._containerCanvas = document.createElement("canvas");
+        this._containerCanvas.classList.add("__winbox_canvas");
+        this._container.appendChild(this._containerCanvas);
 
         // Append to document
         this._element.appendChild(this._container);

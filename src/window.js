@@ -4,7 +4,9 @@ import { EventComponent } from "./event-component.js";
 import { Util } from "./util.js";
 import { ResizeBox } from "./screen/resize-box.js";
 import { DraggablePlane } from "./screen/draggable-plane.js";
-import { Color } from "./color.js";
+import { Color } from "./raster/color.js";
+import { Surface } from "./raster/surface.js";
+import { BitmapFont } from "./raster/bitmap-font.js";
 
 /**
  * This creates an element that emulates a Windows 3.1 window.
@@ -42,11 +44,6 @@ export class Window extends EventComponent {
         // Initialize
         this.initialize();
         this.bindEvents();
-
-        if (this.options.value) {
-            console.log("HERE WE GO", Object.assign({}, this.options));
-        }
-        this.options = this.options;
     }
 
     /**
@@ -141,6 +138,33 @@ export class Window extends EventComponent {
 
     get container() {
         return this.element;
+    }
+
+    get canvas() {
+        return this._canvas;
+    }
+
+    get nonClientCanvas() {
+        return this._canvas;
+    }
+
+    get surface() {
+        let surface = new Surface(this.canvas);
+        console.log(this.options);
+        let fontName = this.options.font;
+        console.log("FONT!!!", fontName);
+        if (fontName && fontName.toLowerCase().endsWith(".fon")) {
+            // A bitmap font
+            BitmapFont.load(fontName).then( (font) => {
+                surface.font = font;
+            });
+        }
+
+        return surface;
+    }
+
+    get nonClientSurface() {
+        return new Surface(this.nonClientCanvas);
     }
 
     /**
@@ -478,6 +502,11 @@ export class Window extends EventComponent {
     show() {
         this.element.style.display = "";
         this.element.setAttribute("aria-hidden", "false");
+
+        if (this.canvas) {
+            this.canvas.setAttribute("width", this.canvas.clientWidth);
+            this.canvas.setAttribute("height", this.canvas.clientHeight);
+        }
     }
 
     hide() {
@@ -572,9 +601,15 @@ export class Window extends EventComponent {
             this.docked != Window.Docked.Bottom) {
             this.element.style.width = (0.0625 * width) + "rem";
         }
+
         if (this.docked != Window.Docked.Left &&
             this.docked != Window.Docked.Right) {
             this.element.style.height = (0.0625 * height) + "rem";
+        }
+
+        if (this.canvas) {
+            this.canvas.setAttribute("width", this.canvas.clientWidth);
+            this.canvas.setAttribute("height", this.canvas.clientHeight);
         }
 
         this.trigger("resize");
@@ -588,6 +623,11 @@ export class Window extends EventComponent {
         // Create the window element
         this._element = document.createElement("div");
         this._element.classList.add("__winbox_window");
+
+        // Create the canvas element for the client area
+        this._canvas = document.createElement("canvas");
+        this._canvas.classList.add("__winbox_canvas");
+        this._element.appendChild(this._canvas);
 
         // Move
         this.move(0, 0);

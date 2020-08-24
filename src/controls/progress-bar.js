@@ -2,7 +2,7 @@
 
 import { Window } from "../window.js";
 import { Label } from "./label.js";
-import { Color } from "../color.js";
+import { Color } from "../raster/color.js";
 
 export class ProgressBar extends Window {
     constructor(options = {}) {

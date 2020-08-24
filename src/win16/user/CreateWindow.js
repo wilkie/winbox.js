@@ -33,7 +33,12 @@ export function CreateWindow(lpszClassName, lpszWindowName,
         parentWindow = this._desktop;
     }
     else {
-        parentWindow = this.retrieveWindow(hwndParent);
+        parentWindow = this.handles.resolve(hwndParent);
+
+        // Error if the parent window is not known
+        if (!parentWindow) {
+            return NULL;
+        }
     }
 
     let windowClassType = Window;
@@ -47,16 +52,19 @@ export function CreateWindow(lpszClassName, lpszWindowName,
 
     // Create a window inside the given parent
     let dialog = new windowClassType({
-        caption: lpszWindowName
+        caption: lpszWindowName,
+        timesShown: 0,
+        windowClass: lpszClassName
     });
 
+    dialog.show();
     dialog.center();
     dialog.resize(300, 300);
-    dialog.show();
 
     parentWindow.append(dialog);
 
     if (x != User.CW_USEDEFAULT) {
+        console.log(x, User.CW_USEDEFAULT);
         dialog.move(x, dialog.y);
     }
 
@@ -66,18 +74,21 @@ export function CreateWindow(lpszClassName, lpszWindowName,
 
     if (nWidth != User.CW_USEDEFAULT) {
         dialog.resize(nWidth, dialog.height);
-        console.log("resized to", dialog.width, dialog.height);
     }
 
     if (nHeight != User.CW_USEDEFAULT) {
         dialog.resize(dialog.width, nHeight);
-        console.log("resized to", dialog.width, dialog.height);
     }
 
     dialog.hide();
 
-    let windowClass = this.retrieveClass(lpszClassName);
+    let windowClass = this.handles.retrieve(lpszClassName);
 
-    let hWnd = this.registerWindow(dialog, windowClass);
+    let hWnd = this.handles.allocate(dialog);
+
+    let taskHandle = this.scheduler.active;
+    let task = this.handles.resolve(taskHandle);
+
+    this.windows.register(taskHandle, task, hWnd, dialog);
     return hWnd;
 }

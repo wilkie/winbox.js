@@ -1,6 +1,6 @@
 "use strict";
 
-import { TRUE, FALSE } from '../consts.js';
+import { NULL, TRUE, FALSE } from '../consts.js';
 
 /**
  * The **ReleaseDC** function releases the given device context freeing it for
@@ -15,7 +15,7 @@ import { TRUE, FALSE } from '../consts.js';
  * {@link User.GetDC GetDC} function that retrieves a common device context.
  *
  * @static
- * @function GetDC
+ * @function ReleaseDC
  * @memberof User
  *
  * @param {Types.HWND} hwnd - Identifies the window whose device context is to
@@ -26,5 +26,28 @@ import { TRUE, FALSE } from '../consts.js';
  *                      Otherwise, it is 0.
  */
 export function ReleaseDC(hwnd, hdc) {
-    return FALSE;
+    let dc = 1;
+    if (hwnd == NULL) {
+        // The desktop context... do nothing
+    }
+    else {
+        // Get the window
+        let dialog = this.handles.resolve(hwnd);
+
+        // Get the surface
+        let surface = dialog.surface;
+
+        // Resolve the DC
+        let compare = this.handles.resolve(hdc);
+
+        // If this surface does not belong to the window, fail
+        if (compare !== surface) {
+            return FALSE;
+        }
+
+        // Free the handle
+        this.handles.free(hdc);
+    }
+
+    return TRUE;
 }

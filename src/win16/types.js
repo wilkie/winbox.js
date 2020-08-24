@@ -134,6 +134,7 @@ export var HANDLE = 11;
 export var HMENU = 12;
 export var HINSTANCE = 13;
 export var HBRUSH = 20;
+export var HRGN = 26;
 export var HICON = 21;
 export var HCURSOR = 22;
 export var WNDPROC = 23;
@@ -143,6 +144,10 @@ export var LPARAM = 16;
 
 export var LRESULT = 24;
 export var HDC = 25;
+
+export var VARIADIC = 26;
+export var COLORREF = 27;
+export var HGDIOBJ = 28;
 
 /**
  * Contains the various types used throughout the API.
@@ -178,6 +183,8 @@ export class Types {
             case HLOCAL:
             case HINSTANCE:
             case HBRUSH:
+            case HGDIOBJ:
+            case HRGN:
             case HCURSOR:
             case HICON:
             case HMENU:
@@ -197,6 +204,7 @@ export class Types {
             case WNDPROC:
             case LONG:
             case ULONG:
+            case COLORREF:
                 return 4;
 
             default:
@@ -229,6 +237,8 @@ export class Types {
             case HLOCAL:
             case HINSTANCE:
             case HBRUSH:
+            case HGDIOBJ:
+            case HRGN:
             case HCURSOR:
             case HICON:
             case WNDPROC:
@@ -244,6 +254,7 @@ export class Types {
             case LRESULT:
             case DWORD:
             case HWND:
+            case COLORREF:
                 return false;
 
             default:
@@ -468,9 +479,12 @@ Types.LPARAM = LPARAM;
 Types.LONG = LONG;
 Types.ULONG = ULONG;
 Types.HBRUSH = HBRUSH;
+Types.HRGN = HRGN;
 Types.HICON = HICON;
 Types.HCURSOR = HCURSOR;
 Types.WNDPROC = WNDPROC;
 Types.LRESULT = LRESULT;
+Types.COLOREF = COLORREF;
+Types.HGDIOBJ = HGDIOBJ;
 
 export default Types;

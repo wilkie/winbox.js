@@ -2470,10 +2470,26 @@ export class CPU {
                 );
                 break;
 
-            //case 0xe0:    // LOOPNE cb / LOOPNZ cb
-            //case 0xe1:    // LOOPE cb / LOOPZ cb
-            //case 0xe2:    // LOOP cb
-                // TODO: implement
+            case 0xe0:    // LOOPNE cb / LOOPNZ cb
+                this.cx--;
+
+                if (this.cx != 0 && !this._flags.zero) {
+                    this.ip += this.alu.toSigned8(instruction.immediate);
+                }
+                break;
+            case 0xe1:    // LOOPE cb / LOOPZ cb
+                this.cx--;
+
+                if (this.cx != 0 && this._flags.zero) {
+                    this.ip += this.alu.toSigned8(instruction.immediate);
+                }
+                break;
+            case 0xe2:    // LOOP cb
+                this.cx--;
+
+                if (this.cx != 0) {
+                    this.ip += this.alu.toSigned8(instruction.immediate);
+                }
                 break;
 
             case 0xe3:    // JCXZ cb

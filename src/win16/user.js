@@ -1,28 +1,44 @@
 "use strict";
 
+/** @namespace User */
+
+import { Module } from './module.js';
+
 import { BYTE, UBYTE, INT, UINT, LONG, ULONG,
          DWORD, HLOCAL, HGLOBAL, HANDLE, ATOM, LRESULT,
-         HMENU, HINSTANCE, WPARAM, LPARAM, HDC,
-         HBRUSH, HICON, HCURSOR, WNDPROC,
+         HMENU, HINSTANCE, WPARAM, LPARAM, HDC, HRGN,
+         HBRUSH, HICON, HCURSOR, WNDPROC, VARIADIC,
          BOOL, NEARPTR, FARPTR, LPCSTR, HWND, Struct } from './types.js';
 
 import { CreateWindow } from './user/CreateWindow.js';
 import { DefWindowProc } from './user/DefWindowProc.js';
 import { DispatchMessage } from './user/DispatchMessage.js';
+import { FillRect } from './user/FillRect.js';
 import { FindWindow } from './user/FindWindow.js';
 import { GetDC } from './user/GetDC.js';
 import { GetMessage } from './user/GetMessage.js';
 import { GetTickCount } from './user/GetTickCount.js';
+import { GetClientRect } from './user/GetClientRect.js';
+import { GetWindowRect } from './user/GetWindowRect.js';
 import { InitApp } from './user/InitApp.js';
+import { LoadString } from './user/LoadString.js';
+import { MessageBox } from './user/MessageBox.js';
 import { PeekMessage } from './user/PeekMessage.js';
 import { RegisterClass } from './user/RegisterClass.js';
+import { RedrawWindow } from './user/RedrawWindow.js';
 import { ReleaseDC } from './user/ReleaseDC.js';
 import { SetWindowText } from './user/SetWindowText.js';
 import { ShowWindow } from './user/ShowWindow.js';
 import { TranslateMessage } from './user/TranslateMessage.js';
 import { UpdateWindow } from './user/UpdateWindow.js';
+import { wsprintf } from './user/wsprintf.js';
 
-export class User {
+/**
+ * The Win16 User library.
+ *
+ * @memberof Win16
+ */
+export class User extends Module {
     static get name() {
         return "USER";
     }
@@ -31,7 +47,7 @@ export class User {
         return [
             // 0 //
             null,
-            [User.stub, "MessageBox", 12],
+            [MessageBox, "MessageBox", 12, [HWND, LPCSTR, LPCSTR, UINT], INT],
             [User.stub, "OldExitWindows", 0],
             [User.stub, "EnableOEMLayer", 0],
             [User.stub, "DisableOEMLayer", 0],
@@ -65,8 +81,8 @@ export class User {
             // 30 //
             [User.stub, "WindowFromPoint", 4],
             [User.stub, "IsIconic", 0],
-            [User.stub, "GetWindowRect", 6],
-            [User.stub, "GetClientRect", 6],
+            [GetWindowRect, "GetWindowRect", 6, [HWND, [RECT]]],
+            [GetClientRect, "GetClientRect", 6, [HWND, [RECT]]],
             [User.stub, "EnableWindow", 4],
             [User.stub, "IsWindowEnabled", 0],
             [User.stub, "GetWindowText", 8],
@@ -119,7 +135,7 @@ export class User {
             [User.stub, "IntersectRect", 12],
             // 80 //
             [User.stub, "UnionRect", 12],
-            [User.stub, "FillRect", 8],
+            [FillRect, "FillRect", 8, [HDC, [RECT], HBRUSH], INT],
             [User.stub, "InvertRect", 6],
             [User.stub, "FrameRect", 8],
             [User.stub, "DrawIcon", 8],
@@ -223,7 +239,7 @@ export class User {
             [User.stub, "LoadCursor", 6],
             [User.stub, "LoadIcon", 6],
             [User.stub, "LoadBitmap", 6],
-            [User.stub, "LoadString", 10],
+            [LoadString, "LoadString", 10, [HINSTANCE, UINT, FARPTR, INT], INT],
             [User.stub, "LoadAccelerators", 6],
             [User.stub, "TranslateAccelerator", 8],
             [User.stub, "GetSystemMetrics", 2],
@@ -349,7 +365,7 @@ export class User {
             [User.stub, "GetMessageExtraInfo", 0],
             [User.stub, "Keybd_Event", 0],
             // 290 //
-            [User.stub, "RedrawWindow", 10],
+            [RedrawWindow, "RedrawWindow", 10, [HWND, [RECT], HRGN, UINT], BOOL],
             [User.stub, "SetWindowsHookEx", 10],
             [User.stub, "UnhookWindowsHookEx", 4],
             [User.stub, "CallNextHookEx", 12],
@@ -482,8 +498,8 @@ export class User {
             [User.stub, "SetMenuItemBitmaps", 10],
             [User.stub, "Unknown"],
             // 420 //
-            [User.stub, "_WSPRINTF", 0],
-            [User.stub, "WVSPRINTF", 12],
+            [wsprintf, "_WSPRINTF", 0, [FARPTR, LPCSTR, VARIADIC], INT],
+            [wsprintf, "WVSPRINTF", 12, [FARPTR, LPCSTR, FARPTR], INT],
             [User.stub, "DlgDirSelectEx", 10],
             [User.stub, "DlgDirSelectComboBoxEx", 10],
             [User.stub, "Unknown"],
@@ -627,6 +643,21 @@ export class POINT extends Struct {
 }
 
 /**
+ * The **RECT** structure defines the coordinates of the upper-left and lower-
+ * right corners of a rectangle.
+ */
+export class RECT extends Struct {
+    constructor() {
+        super([
+            ['left', INT],
+            ['top', INT],
+            ['right', INT],
+            ['bottom', INT]
+        ]);
+    }
+}
+
+/**
  * The **MSG** structure contains information from the system's application queue.
  */
 export class MSG extends Struct {
@@ -696,7 +727,7 @@ User.SW_SHOWNA = 0x0008;
 User.SW_RESTORE = 0x0009;
 
 // CreateWindow flags
-User.CW_USEDEFAULT = 0x8000;
+User.CW_USEDEFAULT = -32768
 
 // Window Styles
 User.WS_OVERLAPPED = 0x00000000;
@@ -739,5 +770,56 @@ User.WS_TILEDWINDOW = User.WS_OVERLAPPEDWINDOW;
 User.PM_NOREMOVE = 0x0000;
 User.PM_REMOVE = 0x0001;
 User.PM_NOYIELD = 0x0002;
+
+// RedrawWindow flags
+User.RDW_INVALIDATE = 0x0001;
+User.RDW_INTERNALPAINT = 0x0002;
+User.RDW_ERASE = 0x0004;
+User.RDW_VALIDATE = 0x0008;
+User.RDW_NOINTERNALPAINT = 0x0010;
+User.RDW_NOERASE = 0x0020;
+User.RDW_NOCHILDREN = 0x0040;
+User.RDW_ALLCHILDREN = 0x0080;
+User.RDW_UPDATENOW = 0x0100;
+User.RDW_ERASENOW = 0x0200;
+User.RDW_FRAME = 0x0400;
+User.RDW_NOFRAME = 0x0800;
+
+// MessageBox Values
+User.IDOK = 0x1;
+User.IDCANCEL = 0x2;
+User.IDABORT = 0x3;
+User.IDRETRY = 0x4;
+User.IDIGNORE = 0x5;
+User.IDYES = 0x6;
+User.IDNO = 0x7;
+
+User.MB_OK = 0x0000;
+User.MB_OKCANCEL = 0x0001;
+User.MB_ABORTRETRYIGNORE = 0x0002;
+User.MB_YESNOCANCEL = 0x0003;
+User.MB_YESNO = 0x0004;
+User.MB_RETRYCANCEL = 0x0005;
+User.MB_TYPEMASK = 0x000f;
+
+User.MB_ICONHAND = 0x0010;
+User.MB_ICONQUESTION = 0x0020;
+User.MB_ICONEXCLAMATION = 0x0030;
+User.MB_ICONASTERISK = 0x0040;
+User.MB_ICONMASK = 0x00f0;
+
+User.MB_ICONINFORMATION = User.MB_ICONASTERISK;
+User.MB_ICONSTOP = User.MB_ICONHAND;
+
+User.MB_DEFBUTTON1 = 0x0000;
+User.MB_DEFBUTTON2 = 0x0100;
+User.MB_DEFBUTTON3 = 0x0200;
+User.MB_DEFMASK = 0x0f00;
+
+User.MB_APPLMODAL = 0x0000;
+User.MB_SYSTEMMODAL = 0x1000;
+User.MB_TASKMODAL = 0x2000;
+
+User.MB_NOFOCUS = 0x8000;
 
 export default User;
