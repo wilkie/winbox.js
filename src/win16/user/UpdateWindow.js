@@ -21,4 +21,5 @@
  * @param {Types.HWND} hwnd - Identifies the window to be updated.
  */
 export function UpdateWindow(hwnd) {
+    // TODO: implement
 }

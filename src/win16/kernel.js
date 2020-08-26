@@ -469,5 +469,3 @@ Kernel.LMEM_DISCARDED = 0x4000;
  * @memberof Kernel
  */
 Kernel.LMEM_LOCKCOUNT = 0x00ff;
-
-export default Kernel;

@@ -65,8 +65,6 @@ import { Kernel } from '../kernel.js';
  *                         successful. Otherwise it is NULL.
  */
 export function LocalAlloc(fuAllocFlags, fuAlloc) {
-    console.log("LocalAlloc:", fuAllocFlags, fuAlloc);
-
     // LocalAlloc allocates to the heap of the current segment selected via DS.
     let segment = this.machine.cpu.ds >> 3;
 
@@ -103,7 +101,7 @@ export function LocalAlloc(fuAllocFlags, fuAlloc) {
 
     console.log("allocating to heap:", fuAlloc, "bytes", heap);
 
-    let handle = heap.allocate(segment, fuAlloc, options);
+    let handle = heap.allocate(fuAlloc, options);
     if (handle === null) {
         return NULL;
     }

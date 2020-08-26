@@ -5,6 +5,7 @@ import { Surface } from '../raster/surface.js';
 import { Window } from '../window.js';
 import { Brush } from '../raster/brush.js';
 import { Pen } from '../raster/pen.js';
+import { Bitmap } from '../raster/bitmap.js';
 import { Task } from './task.js';
 import { Module } from './module.js';
 
@@ -27,6 +28,10 @@ export class HandleManager {
         else if (item instanceof Window) {
             // Allocates an HWND
             handle = this.find(HandleManager.TAGS.HWND + 1, 0xffe);
+        }
+        else if (item instanceof Bitmap) {
+            // Allocates an HBRUSH
+            handle = this.find(HandleManager.TAGS.HBITMAP + 1, 0xffe);
         }
         else if (item instanceof Brush) {
             // Allocates an HBRUSH

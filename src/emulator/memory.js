@@ -67,6 +67,9 @@ export class Memory {
      * It will append data to the end of the existing segment which is used to
      * provide allocations.
      *
+     * It will also set the 'segment' and 'offset' property on the given data
+     * object to the assigned segment and its byte offset within that segment.
+     *
      * @param {number} segment - The segment selector index.
      * @param {DataView} data - The byte data to append.
      * @param {Object} options - Access flags for the segment selector.
@@ -77,6 +80,10 @@ export class Memory {
           executable: options.executable || false,
           writable: options.writable || false
         };
+
+        // Remember the position of this data
+        data.segment = segment;
+        data.offset = this.sizeOf(segment);
 
         // Append the data to the end of the segment
         this._segments[segment].data.push(data);

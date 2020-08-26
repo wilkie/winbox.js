@@ -161,6 +161,7 @@ Space.defaultOptions = {
         }
     },
     window: {
+        //font: "1rem Times",
         font: "VGASYS.FON",
         size: 10,
         weight: 400,

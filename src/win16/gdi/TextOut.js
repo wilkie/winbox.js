@@ -47,7 +47,7 @@ export function TextOut(hdc, nXStart, nYStart, lpszString, cbString) {
     // Wait until the font is loaded before continuing?
 
     // Draw the text
-    surface.drawText(nXStart, nYStart, lpszString.slice(0, cbString));
+    surface.fillText(nXStart, nYStart, lpszString.slice(0, cbString));
 
     return TRUE;
 }

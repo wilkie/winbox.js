@@ -159,6 +159,9 @@ export class Window extends EventComponent {
                 surface.font = font;
             });
         }
+        else {
+            surface.font = fontName;
+        }
 
         return surface;
     }

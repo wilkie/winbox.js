@@ -2,7 +2,7 @@
 
 import { NULL } from '../consts.js';
 
-import { User } from '../user.js';
+import { User, MSG } from '../user.js';
 
 import { Window } from '../../window.js';
 import { FixedWindow } from '../../windows/fixed-window.js';
@@ -90,5 +90,18 @@ export function CreateWindow(lpszClassName, lpszWindowName,
     let task = this.handles.resolve(taskHandle);
 
     this.windows.register(taskHandle, task, hWnd, dialog);
+
+    // Add a WM_NCCREATE message
+    let msg = new MSG();
+    msg.hwnd = hWnd;
+    msg.message = User.WM_NCCREATE;
+    this.scheduler.task.push(msg);
+
+    // Add a WM_CREATE message
+    msg = new MSG();
+    msg.hwnd = hWnd;
+    msg.message = User.WM_CREATE;
+    this.scheduler.task.push(msg);
+
     return hWnd;
 }

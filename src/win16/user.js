@@ -7,20 +7,24 @@ import { Module } from './module.js';
 import { BYTE, UBYTE, INT, UINT, LONG, ULONG,
          DWORD, HLOCAL, HGLOBAL, HANDLE, ATOM, LRESULT,
          HMENU, HINSTANCE, WPARAM, LPARAM, HDC, HRGN,
-         HBRUSH, HICON, HCURSOR, WNDPROC, VARIADIC,
+         HBRUSH, HICON, HCURSOR, WNDPROC, VARIADIC, HBITMAP,
          BOOL, NEARPTR, FARPTR, LPCSTR, HWND, Struct } from './types.js';
 
+import { BeginPaint } from './user/BeginPaint.js';
 import { CreateWindow } from './user/CreateWindow.js';
 import { DefWindowProc } from './user/DefWindowProc.js';
 import { DispatchMessage } from './user/DispatchMessage.js';
+import { EndPaint } from './user/EndPaint.js';
 import { FillRect } from './user/FillRect.js';
 import { FindWindow } from './user/FindWindow.js';
+import { FrameRect } from './user/FrameRect.js';
 import { GetDC } from './user/GetDC.js';
 import { GetMessage } from './user/GetMessage.js';
 import { GetTickCount } from './user/GetTickCount.js';
 import { GetClientRect } from './user/GetClientRect.js';
 import { GetWindowRect } from './user/GetWindowRect.js';
 import { InitApp } from './user/InitApp.js';
+import { LoadBitmap } from './user/LoadBitmap.js';
 import { LoadString } from './user/LoadString.js';
 import { MessageBox } from './user/MessageBox.js';
 import { PeekMessage } from './user/PeekMessage.js';
@@ -88,9 +92,9 @@ export class User extends Module {
             [User.stub, "GetWindowText", 8],
             [SetWindowText, "SetWindowText", 6, [HWND, LPCSTR]],
             [User.stub, "GetWindowTextLength", 2],
-            [User.stub, "BeginPaint", 6],
+            [BeginPaint, "BeginPaint", 6, [HWND, [PAINTSTRUCT]], HDC],
             // 40 //
-            [User.stub, "EndPaint", 6],
+            [EndPaint, "EndPaint", 6, [HWND, [PAINTSTRUCT]]],
             [CreateWindow, "CreateWindow", 30, [LPCSTR, LPCSTR, DWORD, INT, INT, INT, INT, HWND, HMENU, HINSTANCE, FARPTR], HWND],
             [ShowWindow, "ShowWindow", 4, [HWND, INT], BOOL],
             [User.stub, "CloseWindow", 2],
@@ -137,7 +141,7 @@ export class User extends Module {
             [User.stub, "UnionRect", 12],
             [FillRect, "FillRect", 8, [HDC, [RECT], HBRUSH], INT],
             [User.stub, "InvertRect", 6],
-            [User.stub, "FrameRect", 8],
+            [FrameRect, "FrameRect", 8, [HDC, [RECT], HBRUSH], INT],
             [User.stub, "DrawIcon", 8],
             [User.stub, "DrawText", 14],
             [User.stub, "Bear86", 0],
@@ -238,7 +242,7 @@ export class User extends Module {
             [User.stub, "SwitchToThisWindow", 4],
             [User.stub, "LoadCursor", 6],
             [User.stub, "LoadIcon", 6],
-            [User.stub, "LoadBitmap", 6],
+            [LoadBitmap, "LoadBitmap", 6, [HINSTANCE, DWORD], HBITMAP],
             [LoadString, "LoadString", 10, [HINSTANCE, UINT, FARPTR, INT], INT],
             [User.stub, "LoadAccelerators", 6],
             [User.stub, "TranslateAccelerator", 8],
@@ -673,6 +677,9 @@ export class MSG extends Struct {
     }
 }
 
+/**
+ * The **WNDCLASS** structure contains window class information.
+ */
 export class WNDCLASS extends Struct {
     constructor() {
         super([
@@ -690,10 +697,90 @@ export class WNDCLASS extends Struct {
     }
 }
 
+/**
+ * The **PAINTSTRUCT** structure contains information for an application. This
+ * information can be used to paint the client area of a window owned by that
+ * application.
+ */
+export class PAINTSTRUCT extends Struct {
+    constructor() {
+        super([
+            ['hdc', HDC],
+            ['fErase', BOOL],
+            ['rcPaint', RECT],
+            ['fRestore', BOOL],
+            ['fIncUpdate', BOOL],
+            ['rgbReserved0', DWORD],
+            ['rgbReserved1', DWORD],
+            ['rgbReserved2', DWORD],
+            ['rgbReserved3', DWORD]
+        ]);
+    }
+}
+
 // Messages
+User.WM_CREATE = 0x0001;
+User.WM_DESTROY = 0x0002;
+User.WM_MOVE = 0x0003;
+User.WM_SIZE = 0x0005;
+User.WM_ACTIVATE = 0x0006;
+User.WM_SETFOCUS = 0x0007;
+User.WM_KILLFOCUS = 0x0008;
+User.WM_SETREDRAW = 0x0008;
+User.WM_ENABLE = 0x000a;
+User.WM_SETTEXT = 0x000c;
+User.WM_GETTEXT = 0x000d;
+User.WM_GETTEXTLENGTH = 0x000e;
 User.WM_PAINT = 0x000f;
+User.WM_CLOSE = 0x0010;
+User.WM_QUERYOPEN = 0x0013;
 User.WM_ERASEBKGND = 0x0014;
+User.WM_SHOWWINDOW = 0x0018;
+User.WM_ACTIVATEAPP = 0x001c;
+User.WM_MOUSEACTIVATE = 0x0021;
+User.WM_GETMINMAXINFO = 0x0024;
 User.WM_ICONERASEBKGND = 0x0027;
+User.WM_DRAWITEM = 0x0028;
+User.WM_MEASUREITEM = 0x002c;
+User.WM_DELETEITEM = 0x002d;
+User.WM_SETFONT = 0x0030;
+User.WM_GETFONT = 0x0031;
+User.WM_QUERYDRAGICON = 0x0037;
+User.WM_COMPAREITEM = 0x0039;
+User.WM_WINDOWPOSCHANGING = 0x0046;
+User.WM_WINDOWPOSCHANGED = 0x0047;
+User.WM_NCCREATE = 0x0081;
+User.WM_NCDESTROY = 0x0082;
+User.WM_NCCALCSIZE = 0x0083;
+User.WM_NCHITTEST = 0x0084;
+User.WM_NCPAINT = 0x0085;
+User.WM_NCACTIVATE = 0x0086;
+User.WM_NCMOUSEMOVE = 0x00a0;
+User.WM_NCLBUTTONDOWN = 0x00a1;
+User.WM_NCLBUTTONUP = 0x00a2;
+User.WM_NCLBUTTONDBLCLK = 0x00a3;
+User.WM_NCRBUTTONDOWN = 0x00a4;
+User.WM_NCRBUTTONUP = 0x00a5;
+User.WM_NCRBUTTONDBLCLK = 0x00a6;
+User.WM_NCMBUTTONDOWN = 0x00a7;
+User.WM_NCMBUTTONUP = 0x00a8;
+User.WM_NCMBUTTONUP = 0x00a9;
+User.WM_KEYDOWN = 0x0100;
+User.WM_KEYUP = 0x0101;
+User.WM_CHAR = 0x0102;
+User.WM_DEADCHAR = 0x0103;
+User.WM_SYSKEYDOWN = 0x0104;
+User.WM_SYSKEYUP = 0x0105;
+User.WM_SYSCHAR = 0x0106;
+User.WM_SYSDEADCHAR = 0x0107;
+User.WM_SYSCOMMAND = 0x0112;
+User.WM_INITMENU = 0x0116;
+User.WM_INITMENUPOPUP = 0x0117;
+User.WM_MENUSELECT = 0x011f;
+User.WM_MENUCHAR = 0x0120;
+User.WM_COMMAND = 0x0111;
+User.WM_HSCROLL = 0x0114;
+User.WM_VSCROLL = 0x0115;
 User.WM_MOUSEMOVE = 0x0200;
 User.WM_LBUTTONDOWN = 0x0201;
 User.WM_LBUTTONUP = 0x0202;
@@ -704,6 +791,42 @@ User.WM_RBUTTONDBLCLK = 0x0206;
 User.WM_MBUTTONDOWN = 0x0207;
 User.WM_MBUTTONUP = 0x0208;
 User.WM_MBUTTONDBLCLK = 0x0209;
+User.WM_MDICREATE = 0x0220;
+User.WM_MDIDESTROY = 0x0221;
+User.WM_MDIACTIVATE = 0x0222;
+User.WM_MDIRESTORE = 0x0223;
+User.WM_MDINEXT = 0x0224;
+User.WM_MDIMAXIMIZE = 0x0225;
+User.WM_MDITILE = 0x0226;
+User.WM_MDICASCADE = 0x0227;
+User.WM_MDIICONARRANGE = 0x0228;
+User.WM_MDIGETACTIVE = 0x0229;
+User.WM_MDISETMENU = 0x0230;
+User.WM_DROPFILES = 0x0233;
+User.WM_CUT = 0x300;
+User.WM_COPY = 0x301;
+User.WM_PASTE = 0x302;
+User.WM_CLEAR = 0x303;
+User.WM_UNDO = 0x304;
+User.WM_RENDERFORMAT = 0x0305;
+User.WM_RENDERALLFORMATS = 0x0306;
+User.WM_DESTROYCLIPBOARD = 0x0307;
+// TODO: Clipboard viewer messages
+
+// WM_KEYUP/DOWN/CHAR HIWORD(lParam) flags
+User.KF_EXTENDED = 0x0100;
+User.KF_DLGMODE = 0x0800;
+User.KF_MENUMODE = 0x1000;
+User.KF_ALTDOWN = 0x2000;
+User.KF_REPEAT = 0x4000;
+User.KF_UP = 0x8000;
+
+// WM_SIZE message wParam values
+User.SIZE_RESTORED = 0;
+User.SIZE_MINIMIZED = 1;
+User.SIZE_MAXIMIZED = 2;
+User.SIZE_MAXSHOW = 3;
+User.SIZE_MAXHIDE = 4;
 
 // Key/Mouse States
 User.MK_LBUTTON = 0x0001;
@@ -725,6 +848,12 @@ User.SW_MINIMIZE = 0x0006;
 User.SW_SHOWMINNOACTIVE = 0x0007;
 User.SW_SHOWNA = 0x0008;
 User.SW_RESTORE = 0x0009;
+
+// ShowWindow wParam codes (WM_SHOWWINDOW)
+User.SW_PARENTCLOSING = 1;
+User.SW_OTHERMAXIMIZED = 2;
+User.SW_PARENTOPENING = 3;
+User.SW_OTHERRESTORED = 4;
 
 // CreateWindow flags
 User.CW_USEDEFAULT = -32768
@@ -821,5 +950,3 @@ User.MB_SYSTEMMODAL = 0x1000;
 User.MB_TASKMODAL = 0x2000;
 
 User.MB_NOFOCUS = 0x8000;
-
-export default User;

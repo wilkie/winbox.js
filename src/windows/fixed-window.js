@@ -106,6 +106,8 @@ export class FixedWindow extends Window {
                 captionImage.setAttribute("alt", caption.textContent);
             });
         }
+
+        this._caption.textContent = this._options.caption;
     }
 
     get controlBox() {

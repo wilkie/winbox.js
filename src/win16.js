@@ -249,10 +249,10 @@ export class Win16 {
         let dataSegment = loader.segments[(loader.ds >> 3) - 1];
 
         this._machine.cpu.ds = loader.ds;
-        this._machine.cpu.bx = 0x81; //
+        this._machine.cpu.bx = 0x81; // Offset to the command line in the PSP
         this._machine.cpu.es = (task.programSegment << 3) | 0x3;
         this._machine.cpu.cx = dataSegment.length; // The limit for the stack.
-        this._machine.cpu.di = 0x88; // hModule
+        this._machine.cpu.di = taskHandle; // the HINSTANCE
         this._machine.cpu.dx = User.SW_SHOWNORMAL; // Show the main window
 
         // Set up the base frame
@@ -317,7 +317,6 @@ export class Win16 {
         }
 
         let task = this.handles.resolve(handle);
-        console.log(handle, task);
         if (!task) {
             return;
         }
@@ -340,9 +339,6 @@ export class Win16 {
         // Get the memory space for the module
         let loadedModule = this.modules.instanceFor(module.name);
         let moduleSegment = loadedModule.segment;
-
-        console.log(loadedModule);
-        console.log(moduleSegment);
 
         // Write new immediate for the call
         this.machine.memory.write16(moduleSegment, 1, offset);
@@ -478,7 +474,13 @@ export class Win16 {
         // Craft the arguments from the stack
         let argList = functionDefinition[3] || [];
         let offset = 4; // Account for CS:IP on stack
-        let args = argList.reverse().map( (argType) => {
+        if (argList[argList.length - 1] != VARIADIC) {
+            // If it is not a variadic, calling conventions reverse the push
+            // order on the stack.
+            argList.reverse();
+        }
+
+        let args = argList.map( (argType) => {
             if (argType == VARIADIC) {
                 // Ignore this for now
             }
@@ -540,13 +542,16 @@ export class Win16 {
 
                 return (hi << 16) | (lo & 0xffff);
             }
-        }).reverse();
+        });
 
-        if (argList[0] == VARIADIC) {
+        if (argList[argList.length - 1] == VARIADIC) {
             // Add a pointer to the stack
-            let hi = this._machine.cpu.ss >> 3;
+            let hi = this._machine.cpu.ss;
             let lo = this._machine.cpu.sp + offset;
-            args[args.length - 1] = (lo << 16) | hi;
+            args[args.length - 1] = (hi << 16) | lo;
+        }
+        else {
+            args.reverse();
         }
 
         // Call normal function
@@ -600,7 +605,7 @@ export class Win16 {
      * task.
      */
     syscallCallbackReturn() {
-        console.log("callback return");
+        console.log("Callback return");
 
         // Get the CS:IP from the task
         let context = this.scheduler.task.context;
@@ -609,7 +614,6 @@ export class Win16 {
         this.scheduler.task.halt();
 
         // Reset CS:IP to the point after the syscall
-        console.log("back to", context.cs.toString(16), context.ip.toString(16));
         this.machine.cpu.cs = context.cs;
         this.machine.cpu.ip = context.ip;
 

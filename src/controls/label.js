@@ -166,6 +166,23 @@ export class Label extends Window {
         }
         else {
             this._caption.textContent = textValue;
+
+            let captionClone = this._caption.cloneNode(true);
+            document.body.appendChild(captionClone);
+
+            captionClone.style.position = "absolute";
+            captionClone.style.whiteSpace = "nowrap";
+
+            this._measuredText = {
+                width: captionClone.clientWidth + 2,
+                height: captionClone.clientHeight,
+            };
+
+            captionClone.remove();
+
+            if (this.fitted) {
+                this.fit();
+            }
         }
 
         if (this.fitted) {

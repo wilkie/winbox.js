@@ -7,12 +7,19 @@ import { Module } from './module.js';
 import { BYTE, UBYTE, INT, UINT, LONG, ULONG,
          DWORD, HLOCAL, HGLOBAL, HANDLE, ATOM, LRESULT,
          HMENU, HINSTANCE, WPARAM, LPARAM, HDC, HGDIOBJ,
-         HBRUSH, HICON, HCURSOR, WNDPROC, COLORREF,
+         HBRUSH, HICON, HCURSOR, WNDPROC, COLORREF, HBITMAP,
          BOOL, NEARPTR, FARPTR, LPCSTR, HWND, Struct } from './types.js';
 
+import { BitBlt } from './gdi/BitBlt.js';
+import { CreateBitmap } from './gdi/CreateBitmap.js';
+import { CreateCompatibleBitmap } from './gdi/CreateCompatibleBitmap.js';
+import { CreateCompatibleDC } from './gdi/CreateCompatibleDC.js';
 import { CreateSolidBrush } from './gdi/CreateSolidBrush.js';
 import { DeleteObject } from './gdi/DeleteObject.js';
 import { GetDeviceCaps } from './gdi/GetDeviceCaps.js';
+import { GetObject } from './gdi/GetObject.js';
+import { GetStockObject } from './gdi/GetStockObject.js';
+import { SelectObject } from './gdi/SelectObject.js';
 import { TextOut } from './gdi/TextOut.js';
 
 /**
@@ -65,7 +72,7 @@ export class Gdi extends Module {
             [Gdi.stub, "SetPixel", 10],
             [Gdi.stub, "OffsetClipRgn", 6],
             [TextOut, "TextOut", 12, [HDC, INT, INT, LPCSTR, INT], BOOL],
-            [Gdi.stub, "BitBlt", 20],
+            [BitBlt, "BitBlt", 20, [HDC, INT, INT, INT, INT, HDC, INT, INT, DWORD], BOOL],
             [Gdi.stub, "StretchBlt", 24],
             [Gdi.stub, "Polygon", 8],
             [Gdi.stub, "Polyline", 8],
@@ -77,15 +84,15 @@ export class Gdi extends Module {
             [Gdi.stub, "InvertRgn", 4],
             [Gdi.stub, "PaintRgn", 4],
             [Gdi.stub, "SelectClipRgn", 4],
-            [Gdi.stub, "SelectObject", 4],
+            [SelectObject, "SelectObject", 4, [HDC, HGDIOBJ], HGDIOBJ],
             [Gdi.stub, "unknown"],
             [Gdi.stub, "CombineRgn", 8],
-            [Gdi.stub, "CreateBitmap", 12],
+            [CreateBitmap, "CreateBitmap", 12, [INT, INT, UINT, UINT, FARPTR], HBITMAP],
             [Gdi.stub, "CreateBitmapIndirect", 4],
             // 50 //
             [Gdi.stub, "CreateBrushIndirect", 4],
-            [Gdi.stub, "CreateCompatibleBitmap", 6],
-            [Gdi.stub, "CreateCompatibleDC", 2],
+            [CreateCompatibleBitmap, "CreateCompatibleBitmap", 6, [HDC, INT, INT], HBITMAP],
+            [CreateCompatibleDC, "CreateCompatibleDC", 2, [HDC], HDC],
             [Gdi.stub, "CreateDC", 16],
             [Gdi.stub, "CreateEllipticRgn", 8],
             [Gdi.stub, "CreateEllipticRgnIndirect", 4],
@@ -118,12 +125,12 @@ export class Gdi extends Module {
             // 80 //
             [GetDeviceCaps, "GetDeviceCaps", 4, [HDC, INT], INT],
             [Gdi.stub, "GetMapMode", 2],
-            [Gdi.stub, "GetObject", 8],
+            [GetObject, "GetObject", 8, [HGDIOBJ, INT, FARPTR], INT],
             [Gdi.stub, "GetPixel", 6],
             [Gdi.stub, "GetPolyfillMode", 2],
             [Gdi.stub, "GetRop2", 2],
             [Gdi.stub, "GetRelAbs", 2],
-            [Gdi.stub, "GetStockObject", 2],
+            [GetStockObject, "GetStockObject", 2, [INT], HGDIOBJ],
             [Gdi.stub, "GetStretchBltMode", 2],
             [Gdi.stub, "GetTextCharacterExtra", 2],
             // 90 //
@@ -499,6 +506,24 @@ export class Gdi extends Module {
     }
 }
 
+/**
+ * The **BITMAP** structure defines the height, width, color format, and bit
+ * values of a logical bitmap.
+ */
+export class BITMAP extends Struct {
+    constructor() {
+        super([
+            ['bmType', INT],
+            ['bmWidth', INT],
+            ['bmHeight', INT],
+            ['bmWidthBytes', INT],
+            ['bmPlanes', BYTE],
+            ['bmBitsPixel', BYTE],
+            ['bmBits', FARPTR]
+        ]);
+    }
+}
+
 // GetDeviceCaps constants
 Gdi.DRIVERVERSION = 0x0;
 Gdi.TECHNOLOGY = 0x2;
@@ -529,4 +554,38 @@ Gdi.SIZEPALETTE = 0x68;
 Gdi.NUMRESERVED = 0x6a;
 Gdi.COLORRES = 0x6c;
 
-export default Gdi;
+// GetStockObject types
+Gdi.WHITE_BRUSH = 0x0;
+Gdi.LTGRAY_BRUSH = 0x1;
+Gdi.GRAY_BRUSH = 0x2;
+Gdi.DKGRAY_BRUSH = 0x3;
+Gdi.BLACK_BRUSH = 0x4;
+Gdi.NULL_BRUSH = 0x5;
+Gdi.HOLLOW_BRUSH = Gdi.NULL_BRUSH;
+Gdi.WHITE_PEN = 0x6;
+Gdi.BLACK_PEN = 0x7;
+Gdi.NULL_PEN = 0x8;
+Gdi.OEM_FIXED_FONT = 0x10;
+Gdi.ANSI_FIXED_FONT = 0x11;
+Gdi.ANSI_VAR_FONT = 0x12;
+Gdi.SYSTEM_FONT = 0x13;
+Gdi.DEVICE_DEFAULT_FONT = 0x14;
+Gdi.DEFAULT_PALETTE = 0x15;
+Gdi.SYSTEM_FIXED_FONT = 0x16;
+
+// BitBlt flags
+Gdi.SRCCOPY = 0xcc0020;
+Gdi.SRCPAINT = 0xee0086;
+Gdi.SRCAND = 0x8800c6;
+Gdi.SRCINVERT = 0x660046;
+Gdi.SRCERASE = 0x440328;
+Gdi.NOTSRCCOPY = 0x330008;
+Gdi.NOTSRCERASE = 0x1100a6;
+Gdi.MERGECOPY = 0xc000ca;
+Gdi.MERGEPAINT = 0xbb0226;
+Gdi.PATCOPY = 0xf00021;
+Gdi.PATPAINT = 0xfb0a09;
+Gdi.PATINVERT = 0x5a0049;
+Gdi.DSTINVERT = 0x550009;
+Gdi.BLACKNESS = 0x000042;
+Gdi.WHITENESS = 0xff0062;

@@ -1109,7 +1109,7 @@ export class CPU {
      */
     push16(value) {
         this.sp = this.sp - 2;
-        //console.log("writing value to stack", value, this.sp);
+        //console.log("writing value to stack", value.toString(16), this.sp);
         this._memory.write16(this.ss >> 3, this.sp, value);
     }
 
@@ -2640,12 +2640,14 @@ export class CPU {
 
             case 0x2f6:    // TEST eb,db
                 //console.log('test   eb,db');
+                //console.log(this.readOperand8(instruction), instruction.immediate);
                 this.alu.and8(this.readOperand8(instruction),
                               instruction.immediate);
                 break;
 
             case 0x4f7:    // TEST ew,dw
                 //console.log('test   ew,dw');
+                //console.log(this.readOperand16(instruction));
                 this.alu.and16(this.readOperand16(instruction),
                                instruction.immediate);
                 break;

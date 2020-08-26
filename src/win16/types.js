@@ -148,6 +148,7 @@ export var HDC = 25;
 export var VARIADIC = 26;
 export var COLORREF = 27;
 export var HGDIOBJ = 28;
+export var HBITMAP = 29;
 
 /**
  * Contains the various types used throughout the API.
@@ -187,6 +188,7 @@ export class Types {
             case HRGN:
             case HCURSOR:
             case HICON:
+            case HBITMAP:
             case HMENU:
             case HDC:
             case HANDLE:
@@ -241,6 +243,7 @@ export class Types {
             case HRGN:
             case HCURSOR:
             case HICON:
+            case HBITMAP:
             case WNDPROC:
             case HMENU:
             case HDC:
@@ -482,6 +485,7 @@ Types.HBRUSH = HBRUSH;
 Types.HRGN = HRGN;
 Types.HICON = HICON;
 Types.HCURSOR = HCURSOR;
+Types.HBITMAP = HBITMAP;
 Types.WNDPROC = WNDPROC;
 Types.LRESULT = LRESULT;
 Types.COLOREF = COLORREF;

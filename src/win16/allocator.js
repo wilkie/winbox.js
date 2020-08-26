@@ -96,11 +96,12 @@ export class Allocator {
         let bytes = new Uint8Array(size);
         let view = new DataView(bytes.buffer);
 
-        // Now we can append the heap data
-        this.memory.allocate(segment, size);
-
         // And keep track of it
-        this._heaps[segment] = new Heap(view, start);
+        let heap = new Heap(size);
+        this._heaps[segment] = heap;
+
+        // Now we can append the heap data
+        this.memory.map(segment, heap);
 
         // Return the heap instance
         return this._heaps[segment];
