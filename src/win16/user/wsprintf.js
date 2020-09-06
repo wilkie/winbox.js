@@ -100,13 +100,18 @@ export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
                                 value = value | memory.read16(argvSegment, argvOffset);
                                 argvOffset += 2;
                             }
-                            // Unsigned integer
+                            else {
+                                // Ensure it is signed 32-bit
+                                value = value >= 0x8000 ? value | ~0xffff : value;
+                            }
 
-                            let string = "";
+                            // Unsigned integer
                             if (chr == 'u') {
                                 value = value >>> 0;
                                 chr = 'd';
                             }
+
+                            let string = "";
 
                             if (chr == 'd') {
                                 string = value.toString(10);
