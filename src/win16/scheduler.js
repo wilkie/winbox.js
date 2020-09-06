@@ -115,7 +115,7 @@ export class Scheduler {
                     }
 
                     let i = 0;
-                    for ( ; i < 1000; i++) {
+                    for ( ; i < 50; i++) {
                         if (currentTask.stopped || currentTask.yield) {
                             break;
                         }
