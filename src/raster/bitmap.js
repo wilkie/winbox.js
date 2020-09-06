@@ -178,13 +178,13 @@ export class Bitmap {
         // Determine the operation we wish to perform on each pixel pair
         let opFunc = null;
         if (operation == Bitmap.OPERATIONS.OR) {
-            opFunc = (a, b) => { a | b };
+            opFunc = (a, b) => { return a | b; };
         }
         else if (operation == Bitmap.OPERATIONS.AND) {
-            opFunc = (a, b) => { a & b };
+            opFunc = (a, b) => { return a & b; };
         }
         else if (operation == Bitmap.OPERATIONS.XOR) {
-            opFunc = (a, b) => { a ^ b };
+            opFunc = (a, b) => { return a ^ b; };
         }
         else if (operation == Bitmap.OPERATIONS.COPY) {
             // No operation (d = s or d = ~s)
