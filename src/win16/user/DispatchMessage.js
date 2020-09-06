@@ -1,7 +1,5 @@
 "use strict";
 
-import { HWND, WPARAM, LPARAM, UINT } from '../types.js';
-
 import { NULL } from '../consts.js';
 
 import { User } from '../user.js';
@@ -36,28 +34,13 @@ import { User } from '../user.js';
  *                      ignored.
  */
 export function DispatchMessage(lpmsg) {
-    console.log("DispatchMessage", lpmsg);
-
     // Get the window itself
     let dialog = this.handles.resolve(lpmsg.hwnd);
 
     // Get the window/class for the handle
     let windowClass = this.handles.retrieve(dialog.options.windowClass);
-    console.log(windowClass);
 
-    // Get the function to call and craft that function call and return to the
-    // current CS:IP
-    let newCS = (windowClass.lpfnWndProc >> 16) & 0xffff;
-    let newIP = windowClass.lpfnWndProc & 0xffff;
-
-    newCS = newCS >> 3;
-
-    console.log("we need to call", newCS, ":", newIP);
-
-    let args = [
-        [lpmsg.hwnd, HWND], [lpmsg.message, UINT],
-        [lpmsg.wParam, WPARAM], [lpmsg.lParam, LPARAM]
+    return [
+        ['callWndProc', windowClass, lpmsg.hwnd, lpmsg.message, lpmsg.wParam, lpmsg.lParam]
     ];
-
-    return this.call(User, newCS, newIP, args);
 }

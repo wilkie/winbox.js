@@ -35,10 +35,10 @@ export function FrameRect(hdc, lprc, hbr) {
     let surface = this.handles.resolve(hdc);
 
     // Stroke a rect in that surface
-    surface.brush = brush;
+    surface.pen = brush;
     let width = lprc.right - lprc.left;
     let height = lprc.bottom - lprc.top;
-    surface.strokeRect(lprc.left, lprc.top, width, height);
+    surface.strokeRect(lprc.left, lprc.top, width - 1, height - 1);
 
     // Return the... uh... meaningless value.
     return 0;

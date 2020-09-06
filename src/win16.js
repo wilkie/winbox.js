@@ -13,12 +13,14 @@ import { Scheduler } from './win16/scheduler.js'
 import { ModuleManager } from './win16/module-manager.js';
 import { HandleManager } from './win16/handle-manager.js';
 import { WindowManager } from './win16/window-manager.js';
+import { FontManager } from './win16/font-manager.js';
 
 // The various OS modules
 import { Kernel } from './win16/kernel.js';
 import { Gdi } from './win16/gdi.js';
 import { User, MSG } from './win16/user.js';
-import { Types, Struct, VARIADIC } from './win16/types.js';
+import { Types, Struct, VARIADIC,
+         HWND, WPARAM, LPARAM, UINT } from './win16/types.js';
 
 // Kernel calls
 import { LocalInit } from './win16/kernel/LocalInit.js';
@@ -37,13 +39,18 @@ export class Win16 {
         this._desktop = desktop;
         this._machine = machine;
         this._memory = machine.memory;
+
+        // Remember the time the machine starts
         this._startTime = (new Date).getTime();
 
-        this._scheduler = new Scheduler(this._machine);
+        // Create a handle manager
+        this._handles = new HandleManager();
 
-        // Keep track of all window instances.
-        // The '0' index window is the desktop.
-        this._windows = new WindowManager(this._scheduler);
+        // Register modules
+        this._modules = new ModuleManager(this._memory);
+        this._modules.register(Kernel);
+        this._modules.register(Gdi);
+        this._modules.register(User);
 
         this._classes = {};
 
@@ -52,20 +59,23 @@ export class Win16 {
         machine.cpu.onInterrupt(0x80, this.syscallInvoke.bind(this));
         machine.cpu.onInterrupt(0x81, this.syscallCallbackReturn.bind(this));
 
-        // Register modules
-        this._modules = new ModuleManager(this._memory);
-        this._modules.register(Kernel);
-        this._modules.register(Gdi);
-        this._modules.register(User);
-
-        // Create a handle manager
-        this._handles = new HandleManager();
-
         // Create a Linker
         this._linker = new Linker(this._memory, this._modules);
 
         // And the system memory allocator
         this._allocator = new Allocator(this.machine.memory);
+
+        // Load system fonts
+        this._fonts = new FontManager();
+        this._fonts.add("VGASYS.FON");  // System
+        this._fonts.add("VGAOEM.FON");  // Terminal
+
+        // The task scheduler
+        this._scheduler = new Scheduler(this._machine, this._modules);
+
+        // Keep track of all window instances.
+        // The '0' index window is the desktop.
+        this._windows = new WindowManager(this._scheduler, this._handles);
     }
 
     /**
@@ -91,6 +101,15 @@ export class Win16 {
      */
     get machine() {
         return this._machine;
+    }
+
+    /**
+     * Returns the font manager.
+     *
+     * @return {FontManager} The font manager.
+     */
+    get fonts() {
+        return this._fonts;
     }
 
     /**
@@ -278,20 +297,7 @@ export class Win16 {
      * The current task yields to the system.
      */
     yield() {
-        console.log("Yielding");
-
-        let task = this.scheduler.task;
-
-        // Stop execution
-        if (task) {
-            task.halt();
-
-            // Save context
-            task.context = this._machine.cpu.state;
-
-            // Reset the return value
-            task.returnValue = null;
-        }
+        this.scheduler.yield();
     }
 
     /**
@@ -321,57 +327,9 @@ export class Win16 {
             return;
         }
 
-        this.scheduler.queue(handle);
-        task.run();
-        this.scheduler.run();
-    }
-
-    /**
-     * Sends a message to the given window.
-     */
-    send() {
-    }
-
-    /**
-     * Calls into the VM from the given module.
-     */
-    call(module, segment, offset, args) {
-        // Get the memory space for the module
-        let loadedModule = this.modules.instanceFor(module.name);
-        let moduleSegment = loadedModule.segment;
-
-        // Write new immediate for the call
-        this.machine.memory.write16(moduleSegment, 1, offset);
-        this.machine.memory.write16(moduleSegment, 3, (segment << 3) | 0x3);
-
-        // Keep track of the current CS:IP by halting the task
-        this.scheduler.task.halt();
-
-        // Preserve context
-        this.scheduler.task.context = this.machine.cpu.state;
-
-        // Set up stack
-        args.forEach( (arg) => {
-            let argType = arg[1];
-            let value = arg[0];
-
-            if (Types.sizeof(argType) <= 2) {
-                this._machine.cpu.push16(value);
-            }
-            else if (Types.sizeof(argType) == 4) {
-                let lo = (value >> 16) & 0xffff;
-                let hi = value & 0xffff;
-
-                this._machine.cpu.push16(lo);
-                this._machine.cpu.push16(hi);
-            }
+        this._fonts.wait().then( () => {
+            this.scheduler.resume(handle);
         });
-
-        // Call
-        this.machine.cpu.cs = (moduleSegment << 3) | 0x3;
-        this.machine.cpu.ip = 0;
-
-        return 'call';
     }
 
     syscallDOS() {
@@ -430,7 +388,8 @@ export class Win16 {
                 break;
 
             case 0x4c:  // Exit
-                this.task.halt();
+                console.log("Exit. Task halted.");
+                this.scheduler.task.halt();
                 break;
 
             default:
@@ -536,7 +495,9 @@ export class Win16 {
                         return null;
                     }
 
-                    let ret = this._memory.readCString(hi >> 3, lo);
+                    let ret = new String(this._memory.readCString(hi >> 3, lo));
+                    ret.segment = hi >> 3;
+                    ret.offset = lo;
                     return ret;
                 }
 
@@ -555,47 +516,12 @@ export class Win16 {
         }
 
         // Call normal function
-        console.log("Calling", module.instance.name, module.instance.exports[ip][1], callerCS.toString(16), ":", callerIP.toString(16), args);
+        //console.log("Calling", module.instance.name, module.instance.exports[ip][1], callerCS.toString(16), ":", (callerIP - 5).toString(16), args);
 
         let result = implementation.bind(this).apply(null, args);
-        console.log("result", result, typeof result === 'function');
-        if (result === 'call') {
-            // We make the callback and postpone the return until the callback
-            // returns. The callback is responsible for setting return values.
-            this.resume(this.scheduler.active);
-        }
-        else if (typeof result === 'function') {
-            // We yield and postpone the return until the program starts again.
-            this.yield();
-            this.scheduler.task.returnValue = () => {
-                let bound = result.bind(this)();
+        //console.log("result", result, typeof result === 'function');
 
-                if (returnType !== undefined) {
-                    // Place top value in DX
-                    if (Types.sizeof(returnType) > 2) {
-                        this._machine.cpu.dx = (bound >> 16) & 0xffff;
-                    }
-
-                    // Place low-word in AX
-                    this._machine.cpu.ax = bound & 0xffff;
-                }
-            };
-
-            // If there is a pending message, just start the task
-            // TODO: create a scheduler to schedule the next task
-            if (this.scheduler.task.peek()) {
-                this.resume(this.scheduler.active);
-            }
-        }
-        else if (returnType !== undefined) {
-            // Place top value in DX
-            if (Types.sizeof(returnType) > 2) {
-                this._machine.cpu.dx = (result >> 16) & 0xffff;
-            }
-
-            // Place low-word in AX
-            this._machine.cpu.ax = result & 0xffff;
-        }
+        this.scheduler.interpretReturnValue(result, returnType);
     }
 
     /**
@@ -605,20 +531,7 @@ export class Win16 {
      * task.
      */
     syscallCallbackReturn() {
-        console.log("Callback return");
-
-        // Get the CS:IP from the task
-        let context = this.scheduler.task.context;
-
-        // Stop execution
-        this.scheduler.task.halt();
-
-        // Reset CS:IP to the point after the syscall
-        this.machine.cpu.cs = context.cs;
-        this.machine.cpu.ip = context.ip;
-
-        // Resume the task
-        this.resume(this.scheduler.active);
+        this.scheduler.callReturn();
     }
 }
 

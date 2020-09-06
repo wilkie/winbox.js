@@ -277,12 +277,17 @@ export class Struct {
         this._memory = null;
         this._offset = null;
         this._segment = null;
+        this._size = 0;
 
         // For each one, define a getter for it
         this._items.forEach( (item, i) => {
             this._data[i] = 0;
             if (item[1].prototype instanceof Struct) {
                 this._data[i] = new item[1];
+                this._size += this._data[i].structSize;
+            }
+            else {
+                this._size += Types.sizeof(item[1]);
             }
             this._offsets[i] = 0;
 
@@ -303,6 +308,10 @@ export class Struct {
         });
     }
 
+    get structSize() {
+        return this._size;
+    }
+
     get structItems() {
         return this._items;
     }
@@ -315,7 +324,7 @@ export class Struct {
         this._items.forEach( (_, i) => {
             let itemSize = this.storeItemToMemory(i, memory, segment, offset)
             size += itemSize;
-            offset += offset;
+            offset += itemSize;
         });
         return size;
     }
@@ -341,20 +350,17 @@ export class Struct {
         if (argType.prototype instanceof Struct) {
             // An internal struct
             let innerSize = value.storeToMemory(memory, segment, offset);
-            offset += innerSize;
             size += innerSize;
         }
         else if (itemSize == 1) {
             write8(segment, offset, value);
 
-            // Word alignment should mean that we move to the next word
-            offset += 2;
-            size += 2;
+            // Byte packed (most of the time?)
+            size += 1;
         }
         else if (itemSize == 2) {
             write16(segment, offset, value);
 
-            offset += 2;
             size += 2;
         }
         else if (itemSize == 4) {
@@ -374,13 +380,14 @@ export class Struct {
             }
             else {
                 // Write the value
-                write16(segment, offset + 2, (value >> 16) & 0xffff);
                 write16(segment, offset, value & 0xffff);
+                write16(segment, offset + 2, (value >> 16) & 0xffff);
             }
 
-            offset += 4;
             size += 4;
         }
+        
+        return size;
     }
 
     loadFromMemory(memory, segment, offset) {
@@ -421,9 +428,9 @@ export class Struct {
                     value = read8(segment, offset);
                 }
 
-                // Word alignment should mean that we move to the next word
-                offset += 2;
-                size += 2;
+                // Byte packed (most of the time?)
+                offset += 1;
+                size += 1;
             }
             else if (Types.sizeof(argType) == 2) {
                 if (Types.signed(argType)) {

@@ -25,7 +25,5 @@
  *                         processing and depends on the message sent.
  */
 export function DefWindowProc(hwnd, uMsg, wParam, lParam) {
-    console.log("DefWindowProc", hwnd, uMsg, wParam, lParam);
-
     return 0;
 }

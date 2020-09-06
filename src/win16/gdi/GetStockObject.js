@@ -3,6 +3,7 @@
 import { Brush } from '../../raster/brush.js';
 import { Pen } from '../../raster/pen.js';
 import { Color } from '../../raster/color.js';
+import { Font } from '../../raster/font.js';
 
 import { Gdi } from '../gdi.js';
 
@@ -109,7 +110,14 @@ export function GetStockObject(fnObject) {
             );
             break;
         case Gdi.OEM_FIXED_FONT:
-            console.log("GetStockObject: IMPLEMENTATION REQUIRED");
+            {
+                // Get the 'Terminal' font
+                let font = this.fonts.lookup("Terminal");
+                handle = this.handles.lookup(font);
+                if (!handle) {
+                    handle = this.handles.allocate(font);
+                }
+            }
             break;
         case Gdi.ANSI_FIXED_FONT:
             console.log("GetStockObject: IMPLEMENTATION REQUIRED");
@@ -118,7 +126,14 @@ export function GetStockObject(fnObject) {
             console.log("GetStockObject: IMPLEMENTATION REQUIRED");
             break;
         case Gdi.SYSTEM_FONT:
-            console.log("GetStockObject: IMPLEMENTATION REQUIRED");
+            // Get the 'System' font
+            {
+                let font = this.fonts.lookup("System");
+                handle = this.handles.lookup(font);
+                if (!handle) {
+                    handle = this.handles.allocate(font);
+                }
+            }
             break;
         case Gdi.DEVICE_DEFAULT_FONT:
             console.log("GetStockObject: IMPLEMENTATION REQUIRED");

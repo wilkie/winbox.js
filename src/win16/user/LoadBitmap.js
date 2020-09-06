@@ -3,7 +3,8 @@
 import { Util } from '../../util.js';
 import { Executable } from '../../executable.js';
 
-import { Bitmap} from '../../raster/bitmap.js';
+import { Palette } from '../../raster/palette.js';
+import { Bitmap } from '../../raster/bitmap.js';
 
 import { NULL } from '../consts.js';
 
@@ -164,35 +165,80 @@ export function LoadBitmap(hinst, lpszBitmap) {
                             biClrImportant: [36, 4],
                         }, 0, true);
 
-                        let bitmapData = data.slice(bitmapHeader.biSize);
+                        let colors = 1 << bitmapHeader.biBitCount;
+                        let paletteSize = 4 * colors;
+
+                        let paletteData = data.slice(bitmapHeader.biSize);
+                        let paletteView = new DataView(paletteData);
+                        let bitmapPalette = new Uint32Array(colors);
+                        let realPalette = new Palette(Palette.PALETTEWIN16);
+
+                        for (let i = 0; i < colors; i++) {
+                            // These colors are in ARGB
+                            bitmapPalette[i] = paletteView.getUint32(i * 4, true) | 0xff000000;
+
+                            if (colors == 16) {
+                                // Windows 3.1 converts 16 color bitmaps to a
+                                // 16-color palette even in 256 color mode.
+                                bitmapPalette[i] = realPalette.nearestColor(bitmapPalette[i]).color;
+                            }
+
+                            // Convert to RGBA
+                            bitmapPalette[i] = (bitmapPalette[i] << 8 & 0xffffff00) |
+                                               ((bitmapPalette[i] >> 24) & 0xff);
+                        }
+
+                        let bitmapData = data.slice(bitmapHeader.biSize + paletteSize);
+
+                        // Bitmaps are stored last row first, so we have to invert them
+                        let bitmapRealData = new Uint8Array(bitmapData.byteLength);
+
+                        let bpRow = bitmapHeader.biBitCount * bitmapHeader.biWidth;
                         let bitmapView = new DataView(bitmapData);
+                        bpRow = (bpRow + (8 - 1)) & ~(8 - 1);
+                        let widthBytes = ((bpRow >> 3) + (4 - 1)) & ~(4 - 1);
+
+                        // Flip bitmap vertically
+                        let offset = 0;
+                        for (let y = bitmapHeader.biHeight - 1; y >= 0; y--) {
+                            for (let x = 0; x < widthBytes; x++) {
+                                bitmapRealData[y * widthBytes + x] = bitmapView.getUint8(offset + x);
+                            }
+                            offset += widthBytes;
+                        }
+
+                        // Get a view of the bitmap data
+                        bitmapView = new DataView(bitmapRealData.buffer);
 
                         // Get the local heap.
                         let segment = this.machine.cpu.ds >> 3;
                         let heap = this.allocator.heapOf(segment);
-
-                        // Place the bitmap into system memory
-                        heap.insert(bitmapView);
 
                         // Create the Bitmap object
                         let bitmap = new Bitmap(
                             bitmapHeader.biWidth,
                             bitmapHeader.biHeight,
                             bitmapHeader.biBitCount,
-                            Bitmap.ABGR,
-                            bitmapView
+                            Bitmap.RGBA,
+                            bitmapView,
+                            bitmapPalette,
                         );
+                        
+                        let start = (new Date).getTime();
+                        // Convert to our screen color depth
+                        bitmap = bitmap.convert(8, Palette.PALETTEWIN256);
+
+                        // Place the bitmap into system memory
+                        heap.insert(bitmap.view);
 
                         // Allocate a handle to it
                         ret = this.handles.allocate(bitmap);
                     }
-
-                    console.log(bitmapHeader);
                 }
             });
         }
     });
 
-    // If we could not find the string, ret remains 01
+    // If we could not find the string, ret remains NULL.
     return ret;
 }

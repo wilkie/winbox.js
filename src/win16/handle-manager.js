@@ -8,6 +8,7 @@ import { Pen } from '../raster/pen.js';
 import { Bitmap } from '../raster/bitmap.js';
 import { Task } from './task.js';
 import { Module } from './module.js';
+import { Font } from '../raster/font.js';
 
 /**
  * This manages all of the handles of resources throughout the system.
@@ -16,6 +17,7 @@ export class HandleManager {
     constructor() {
         this._handles = {};
         this._names = {};
+        this._lookup = new Map();
     }
 
     allocate(item) {
@@ -29,17 +31,21 @@ export class HandleManager {
             // Allocates an HWND
             handle = this.find(HandleManager.TAGS.HWND + 1, 0xffe);
         }
-        else if (item instanceof Bitmap) {
+        else if (this.isBitmap(item)) {
             // Allocates an HBRUSH
             handle = this.find(HandleManager.TAGS.HBITMAP + 1, 0xffe);
         }
-        else if (item instanceof Brush) {
+        else if (this.isBrush(item)) {
             // Allocates an HBRUSH
             handle = this.find(HandleManager.TAGS.HBRUSH + 1, 0xffe);
         }
-        else if (item instanceof Pen) {
+        else if (this.isPen(item)) {
             // Allocates an HPEN
             handle = this.find(HandleManager.TAGS.HPEN + 1, 0xffe);
+        }
+        else if (this.isFont(item)) {
+            // Allocates an HFONT
+            handle = this.find(HandleManager.TAGS.HFONT + 1, 0xffe);
         }
         else if (item instanceof Task) {
             // Allocates an HINSTANCE
@@ -61,6 +67,10 @@ export class HandleManager {
         return handle;
     }
 
+    lookup(item) {
+        return this._lookup.get(item);
+    }
+
     find(start, length) {
         let end = start + length;
 
@@ -80,6 +90,7 @@ export class HandleManager {
         this._handles[handle] = {
             instance: item,
         };
+        this._lookup.set(item, handle);
     }
 
     free(handle) {
@@ -91,11 +102,14 @@ export class HandleManager {
             delete this._names[item.name];
         }
 
+        if (item && this._lookup.has(item)) {
+            this._lookup.delete(item);
+        }
+
         return item;
     }
 
     retrieve(name) {
-        console.log(name, this._names);
         let handle = this._names[name];
 
         if (!handle) {
@@ -111,6 +125,22 @@ export class HandleManager {
 
     isGDI(handle) {
         return (handle >= HandleManager.TAGS.HRGN);
+    }
+
+    isBitmap(item) {
+        return item instanceof Bitmap;
+    }
+
+    isBrush(item) {
+        return item instanceof Brush;
+    }
+
+    isPen(item) {
+        return item instanceof Pen;
+    }
+
+    isFont(item) {
+        return item instanceof Font;
     }
 
     register(handle, name) {

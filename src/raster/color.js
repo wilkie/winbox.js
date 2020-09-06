@@ -71,6 +71,15 @@ export class Color {
         return Color.rgbToHsl(rgb.r, rgb.g, rgb.b);
     }
 
+    /**
+     * Returns a new Color representing the current color inverted.
+     *
+     * It retains the alpha value.
+     */
+    invert() {
+        return new Color((~this.value) | (this.value & 0xff000000));
+    }
+
     // From https://stackoverflow.com/questions/36721830/convert-hsl-to-rgb-and-hex
 
     /**

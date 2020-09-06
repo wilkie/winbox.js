@@ -1,5 +1,6 @@
 "use strict";
 
+import { Palette } from '../../raster/palette.js';
 import { Bitmap } from '../../raster/bitmap.js';
 
 import { NULL } from '../consts.js';
@@ -7,32 +8,48 @@ import { NULL } from '../consts.js';
 export function CreateBitmap(nWidth, nHeight, cbPlanes, cbBits, lpvBits) {
     let memory = this.machine.memory;
 
-    let segment = ((lpvBits >> 16) & 0xffff) >> 3;
-    let offset = lpvBits & 0xffff;
+    let srcSegment = ((lpvBits >> 16) & 0xffff) >> 3;
+    let srcOffset = lpvBits & 0xffff;
 
     // Get bitmap data
-    // TODO: we need to align by the width with padding
-    let size = ((cbBits * nWidth * nHeight) / 8) >>> 0;
+    let bpRow = cbBits * nWidth;
+    bpRow = (bpRow + (8 - 1)) & ~(8 - 1);
+    let widthBytes = ((bpRow >> 3) + (4 - 1)) & ~(4 - 1);
 
-    // We also need to allocate some room for the palette, if there is one
-    if (cbBits <= 8) {
-        size += (1 << cbBits) * 4;
+    let copied = 0;
+    let size = widthBytes * nHeight;
+
+    // We also need to determine a palette
+    let palette = null;
+    if (cbBits == 1) {
+        palette = Palette.PALETTE2;
+    }
+    else if (cbBits == 4) {
+        palette = Palette.PALETTEWIN16;
+    }
+    else if (cbBits == 8) {
+        palette = Palette.PALETTEWIN256;
     }
 
     let data = new Uint8Array(size);
 
     for (let i = 0; i < size; i++) {
-        data[i] = memory.read8(segment, offset);
-        offset++;
+        data[i] = memory.read8(srcSegment, srcOffset);
+        srcOffset++;
     }
 
     // Create the view
     let view = new DataView(data.buffer);
 
+    // Get the local heap.
+    let segment = this.machine.cpu.ds >> 3;
+    let heap = this.allocator.heapOf(segment);
+
     // Allocate the bitmap in memory
+    heap.insert(view);
  
     // Create a bitmap.
-    let bitmap = new Bitmap(nWidth, nHeight, cbBits, Bitmap.ABGR, view);
+    let bitmap = new Bitmap(nWidth, nHeight, cbBits, Bitmap.RGBA, view, palette);
     let handle = this.handles.allocate(bitmap);
 
     return handle;

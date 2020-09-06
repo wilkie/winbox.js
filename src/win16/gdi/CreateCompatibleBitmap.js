@@ -1,5 +1,6 @@
 "use strict";
 
+import { Palette } from '../../raster/palette.js';
 import { Bitmap } from '../../raster/bitmap.js';
 
 import { NULL } from '../consts.js';
@@ -19,14 +20,28 @@ export function CreateCompatibleBitmap(hdc, nWidth, nHeight) {
         return NULL;
     }
 
+    // TODO: Get the bpp from the device
+    let bpp = 8;
+
+    // Each row has to be a multiple of 4 bytes
+    let bpRow = bpp * nWidth;
+    bpRow = (bpRow + (8 - 1)) & ~(8 - 1);
+    let widthBytes = ((bpRow >> 3) + (4 - 1)) & ~(4 - 1);
+
     // Create the bitmap data
-    let data = new Uint8Array(nWidth * nHeight);
+    let data = new Uint8Array(widthBytes * nHeight);
     let view = new DataView(data.buffer);
 
+    // Get the local heap.
+    let segment = this.machine.cpu.ds >> 3;
+    let heap = this.allocator.heapOf(segment);
+
+    // Allocate the bitmap in memory
+    heap.insert(view);
+
     // Create a bitmap that works for the given HDC.
-    let bitmap = new Bitmap(nWidth, nHeight, 4, Bitmap.ABGR, view);
+    let bitmap = new Bitmap(nWidth, nHeight, bpp, Bitmap.RGBA, view, Palette.PALETTEWIN256);
 
     let handle = this.handles.allocate(bitmap);
-
     return handle;
 }

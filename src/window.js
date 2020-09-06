@@ -149,21 +149,10 @@ export class Window extends EventComponent {
     }
 
     get surface() {
-        let surface = new Surface(this.canvas);
-        console.log(this.options);
-        let fontName = this.options.font;
-        console.log("FONT!!!", fontName);
-        if (fontName && fontName.toLowerCase().endsWith(".fon")) {
-            // A bitmap font
-            BitmapFont.load(fontName).then( (font) => {
-                surface.font = font;
-            });
+        if (!this._surface) {
+            this._surface = new Surface(this.canvas);
         }
-        else {
-            surface.font = fontName;
-        }
-
-        return surface;
+        return this._surface;
     }
 
     get nonClientSurface() {
@@ -982,7 +971,21 @@ export class Window extends EventComponent {
     }
 
     mouseMoveEvent(event) {
-        this.trigger("mousemove", event);
+        if (event.stopPropagation) {
+            event.stopPropagation();
+        }
+
+        let data = {
+            x: event.offsetX,
+            y: event.offsetY,
+            button: event.button,
+            buttons: event.buttons,
+            shift: event.shiftKey,
+            control: event.controlKey,
+            alt: event.altKey
+        };
+
+        this.trigger("mousemove", data);
     }
 
     /**

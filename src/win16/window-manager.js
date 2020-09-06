@@ -3,15 +3,17 @@
 import { User, MSG } from './user.js';
 
 import { GetTickCount } from './user/GetTickCount.js';
+import { SetFocus } from './user/SetFocus.js';
 
 export class WindowManager {
-    constructor(scheduler) {
+    constructor(scheduler, handles) {
         this._scheduler = scheduler;
+        this._handles = handles;
     }
 
     register(taskHandle, task, hWnd, windowInstance) {
         // Capture events
-        ['client-mousedown'].forEach( (event) => {
+        ['client-mousedown', 'mousemove', 'focus'].forEach( (event) => {
             windowInstance.on(event, (data) => {
                 this.createMessage(taskHandle, task, hWnd, event, data);
             });
@@ -22,11 +24,46 @@ export class WindowManager {
      * Crafts a message for the given event and pushes it to the given task.
      */
     createMessage(taskHandle, task, hWnd, event, data) {
-        let msg = new MSG();
-        msg.hwnd = hWnd;
+        let messages = [];
 
-        if (event === 'client-mousedown' ||
-            event === 'client-mouseup') {
+        // Get the window itself
+        let dialog = this._handles.resolve(hWnd);
+
+        // Get the window/class for the handle
+        let windowClass = this._handles.retrieve(dialog.options.windowClass);
+
+        if (event === 'mousemove') {
+            let msg = new MSG();
+            msg.hwnd = hWnd;
+            msg.message = User.WM_MOUSEMOVE;
+
+            // Set flags
+            if (data.buttons & 1) {
+                msg.wParam |= User.MK_LBUTTON;
+            }
+            if (data.buttons & 2) {
+                msg.wParam |= User.MK_RBUTTON;
+            }
+            if (data.buttons & 4) {
+                msg.wParam |= User.MK_MBUTTON;
+            }
+            if (data.shift) {
+                msg.wParam |= User.MK_SHIFT;
+            }
+            if (data.control) {
+                msg.wParam |= User.MK_CONTROL;
+            }
+
+            // Set position
+            msg.lParam = (data.x & 0xffff) | ((data.y & 0xffff) << 16)
+
+            messages.push(msg);
+        }
+        else if (event === 'client-mousedown' ||
+                 event === 'client-mouseup') {
+
+            let msg = new MSG();
+            msg.hwnd = hWnd;
 
             // Get the proper message
             if (event === 'client-mousedown') {
@@ -72,15 +109,20 @@ export class WindowManager {
 
             // Set position
             msg.lParam = (data.x & 0xffff) | ((data.y & 0xffff) << 16)
+
+            messages.push(msg);
+        }
+        else if (event === 'focus') {
+            //SetFocus.bind(this._win16)(hWnd);
         }
 
-        // If we have a new message, post it
-        if (msg.message != 0) {
-            msg.time = GetTickCount.bind(this)();
+        // If we have a new message, post it to the queue.
+        messages.forEach( (msg) => {
+            msg.time = 1;//GetTickCount();
             task.push(msg);
             this._scheduler.queue(taskHandle);
             task.run();
             this._scheduler.run();
-        }
+        });
     }
 }

@@ -1,10 +1,13 @@
 "use strict";
 
-import { TRUE, FALSE } from '../consts.js';
+import { TRUE, FALSE, NULL } from '../consts.js';
 
+import { BOOL } from '../types.js';
+
+import { SetFocus } from './SetFocus.js';
 import { RedrawWindow } from './RedrawWindow.js';
 
-import { User } from '../user.js';
+import { User, MSG, WINDOWPOS } from '../user.js';
 
 /**
  * The **ShowWindow** function sets the given window's visibility state.
@@ -51,52 +54,106 @@ import { User } from '../user.js';
  *                      visible. It is zero if the window was previously hidden.
  */
 export function ShowWindow(hwnd, nCmdShow) {
-    console.log("ShowWindow", hwnd, nCmdShow);
-
     // Get the window itself
     let dialog = this.handles.resolve(hwnd);
-    console.log("dialog", dialog);
+
+    // Get the window/class for the handle
+    let windowClass = this.handles.retrieve(dialog.options.windowClass);
 
     // What is the current state?
     let visible = dialog.visible;
 
-    switch (nCmdShow) {
-        case User.SW_HIDE:
-            dialog.hide();
-            break;
-        case User.SW_NORMAL:
-            dialog.restore();
-        case User.SW_SHOW:
-            dialog.show();
-            break;
-        case User.SW_MAXIMIZE:
-            dialog.maximize();
-            break;
-        case User.WM_MINIMIZE:
-            dialog.minimize();
-            break;
-    }
-
-    let timesShown = dialog.options.timesShown;
-
-    if (dialog.visible) {
-        timesShown++;
-        dialog.options = Object.assign({}, dialog.options, {
-            timesShown: timesShown
-        });
-
-        if (timesShown == 1) {
-            // The first time the window has been shown
-            // We post WM_PAINT / WM_ERASEBKGND
-            console.log("invalidate and repaint");
-            let flags = User.RDW_ERASE;
-            RedrawWindow.bind(this)(hwnd, null, null, flags);
-        }
-    }
-
+    // Determine the ultimate return value.
+    let ret = FALSE;
     if (visible) {
-        return TRUE;
+        ret = TRUE;
     }
 
-    return FALSE;
+    // The wParam is TRUE if the window is being shown, FALSE if being hidden
+    // The lParam is 0 if WM_SHOWWINDOW is generated from ShowWindow
+    return [
+        ['callWndProc', windowClass, hwnd, User.WM_SHOWWINDOW, dialog.visible ? TRUE : FALSE, 0, () => {
+            // We send a WM_WINDOWPOSCHANGING
+            let windowPos = new WINDOWPOS();
+            windowPos.hwnd = hwnd;
+            windowPos.hwndInsertAfter = NULL;
+            windowPos.x = dialog.x;
+            windowPos.y = dialog.y;
+            windowPos.cx = dialog.width;
+            windowPos.cy = dialog.height;
+            windowPos.flags = User.SWP_SHOWWINDOW | User.SWP_NOSIZE | User.SWP_NOMOVE;
+
+            return [
+                ['callWndProc', windowClass, hwnd, User.WM_WINDOWPOSCHANGING, 0, [windowPos], () => {
+                    if (!(windowPos.flags & User.SWP_NOSIZE)) {
+                        dialog.width = windowPos.cx;
+                        dialog.height = windowPos.cy;
+                    }
+
+                    if (!(windowPos.flags & User.SWP_NOMOVE)) {
+                        dialog.x = windowPos.x;
+                        dialog.y = windowPos.y;
+                    }
+
+                    if (windowPos.flags & User.SWP_SHOWWINDOW) {
+                        switch (nCmdShow) {
+                            case User.SW_HIDE:
+                                dialog.hide();
+                                break;
+                            case User.SW_NORMAL:
+                                dialog.restore();
+                            case User.SW_SHOW:
+                                dialog.show();
+                                break;
+                            case User.SW_MAXIMIZE:
+                                dialog.maximize();
+                                break;
+                            case User.WM_MINIMIZE:
+                                dialog.minimize();
+                                break;
+                        }
+
+                        let timesShown = dialog.options.timesShown;
+
+                        if (dialog.visible) {
+                            timesShown++;
+                            dialog.options = Object.assign({}, dialog.options, {
+                                timesShown: timesShown
+                            });
+
+                            // Focus on the window
+                            let callStack = SetFocus.bind(this)(hwnd);
+
+                            // Remove the return from the SetFocus
+                            callStack.splice(callStack.length - 1, 1);
+
+                            // WM_SIZE
+                            let wmSizeLParam = (dialog.width & 0xffff) | ((dialog.height & 0xffff) << 16);
+                            callStack.push([
+                                'callWndProc', windowClass, hwnd, User.WM_SIZE, 0, wmSizeLParam
+                            ]);
+
+                            // WM_MOVE
+                            let wmMoveLParam = (dialog.x & 0xffff) | ((dialog.y & 0xffff) << 16);
+                            callStack.push([
+                                'callWndProc', windowClass, hwnd, User.WM_MOVE, 0, wmMoveLParam
+                            ]);
+
+                            // WM_PAINT
+                            let msg = new MSG();
+                            msg.hwnd = hwnd;
+                            msg.message = User.WM_PAINT;
+                            this.scheduler.task.push(msg);
+                            //callStack.push([
+                            //    'callWndProc', windowClass, hwnd, User.WM_PAINT, 0, 0
+                            //]);
+
+                            return callStack;
+                        }
+                    }
+                }],
+            ];
+        }],
+        [BOOL, ret]
+    ];
 }

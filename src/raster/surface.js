@@ -17,6 +17,40 @@ export class Surface {
         // TODO: what are the default pen/brush?
         this.brush = new Brush(new Color(0xff, 0xff, 0xff));
         this.pen = new Pen(new Color(0x00, 0x00, 0x00));
+
+        // We start stale
+        this._stale = true;
+    }
+
+    update() {
+        this.context.putImageData(this.data, 0, 0);
+    }
+
+    get data() {
+        // If we are stale, pull the image data
+        if (this._stale) {
+            this._data = this.context.getImageData(0, 0, this.width, this.height);
+            this._view = new DataView(this._data.data.buffer);
+            this._stale = false;
+        }
+
+        return this._data;
+    }
+
+    get view() {
+        // Ensure that the view is created
+        this.data;
+
+        // Return the view
+        return this._view;
+    }
+
+    get width() {
+        return parseInt(this._canvas.getAttribute('width'));
+    }
+
+    get height() {
+        return parseInt(this._canvas.getAttribute('height'));
     }
 
     get canvas() {
@@ -57,30 +91,46 @@ export class Surface {
         this._font = value;
     }
 
+    get bitmap() {
+        return this._bitmap;
+    }
+
+    set bitmap(value) {
+        this._bitmap = value;
+
+        // This defines the canvas size
+        this._canvas.setAttribute('width', value.width);
+        this._canvas.setAttribute('height', value.height);
+
+        // Tell the bitmap that it should update this surface
+        value.surface = this;
+    }
+
     fillRect(x, y, width, height) {
-        this._ditherer.fill(this.context, x, y, width, height, this._brush.color.value);
+        this.context.fillRect(x, y, width, height);
+        // TODO: improve performance of the ditherer and enable it
+        //this._ditherer.fill(this.context, x, y, width, height, this._brush.color.value);
+        this._stale = true;
     }
 
     strokeRect(x, y, width, height) {
-        this.context.strokeStyle = this.brush.color.css;
-        this.context.strokeRect(x, y, width, height);
+        this.context.strokeStyle = this.pen.color.css;
+        this.context.strokeRect(x, y, width + 0.5, height + 0.5);
+        this._stale = true;
     }
 
     fillText(x, y, text) {
         // TODO: backcolor
-        console.log(this._font);
         if (this._font instanceof BitmapFont) {
             // A bitmap font
-            this._font.draw(this.context, x, y, text);
+            this._font.fontFor(12).draw(this.context, x, y, text);
         }
         else {
             // Normal text draw
-            console.log("DRAW?", text, x, y);
             this.context.font = this._font;
 
             this.context.textBaseline = "top";
             let measured = this.context.measureText(text);
-            console.log(measured);
             let textWidth = measured.actualBoundingBoxRight +
                             measured.actualBoundingBoxLeft;
             let textHeight = measured.actualBoundingBoxDescent -
@@ -90,6 +140,35 @@ export class Surface {
 
             this.context.fillStyle = "black";
             this.context.fillText(text, x, y);
+        }
+        this._stale = true;
+    }
+
+    /**
+     * Returns the dimensions of the given string using the current font.
+     *
+     * @param {String} text - The text to measure.
+     */
+    measureText(text) {
+        if (this._font instanceof BitmapFont) {
+            // A bitmap font
+            return this._font.fontFor(12).measure(text);
+        }
+        else {
+            // Normal text draw
+            this.context.font = this._font;
+
+            this.context.textBaseline = "top";
+            let measured = this.context.measureText(text);
+            let textWidth = measured.actualBoundingBoxRight +
+                            measured.actualBoundingBoxLeft;
+            let textHeight = measured.actualBoundingBoxDescent -
+                             measured.actualBoundingBoxAscent;
+
+            return {
+                width: textWidth,
+                height: textHeight
+            };
         }
     }
 }

@@ -1,5 +1,7 @@
 "use strict";
 
+import { TRUE, NULL } from '../consts.js';
+
 /**
  * The **SelectObject** function selects an object into the given device
  * context. The new object replaces the previous object of the same type.
@@ -77,5 +79,37 @@
  *                         context.
  */
 export function SelectObject(hdc, hgdiobj) {
-    return 1;
+    // Gather the surface we are 'emulating'
+    let surface = null;
+    if (hdc == NULL) {
+        // The screen device
+        //surface = this._desktop.surface;
+        return NULL;
+    }
+    else {
+        surface = this.handles.resolve(hdc);
+    }
+
+    // Resolve the provided handle
+    let item = this.handles.resolve(hgdiobj);
+    let ret = NULL;
+
+    if (this.handles.isBitmap(item)) {
+        ret = this.handles.lookup(surface.bitmap) || TRUE;
+        surface.bitmap = item;
+    }
+    else if (this.handles.isPen(item)) {
+        ret = this.handles.lookup(surface.pen) || TRUE;
+        surface.pen = item;
+    }
+    else if (this.handles.isFont(item)) {
+        ret = this.handles.lookup(surface.font) || TRUE;
+        surface.font = item;
+    }
+    else if (this.handles.isBrush(item)) {
+        ret = this.handles.lookup(surface.brush) || TRUE;
+        surface.brush = item;
+    }
+
+    return ret;
 }

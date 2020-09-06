@@ -1,5 +1,7 @@
 "use strict";
 
+import { User } from '../user.js';
+
 import { TRUE, FALSE } from '../consts.js';
 
 /**
@@ -73,7 +75,12 @@ export function GetMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax) {
         lpmsg.pt.x = msg.pt.x;
         lpmsg.pt.y = msg.pt.y;
 
-        console.log("returning", lpmsg);
-        return TRUE;
+        //console.log("returning", lpmsg);
+        if (msg.message == User.WM_QUIT) {
+            return FALSE;
+        }
+        else {
+            return TRUE;
+        }
     };
 }

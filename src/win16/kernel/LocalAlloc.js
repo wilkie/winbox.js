@@ -99,8 +99,6 @@ export function LocalAlloc(fuAllocFlags, fuAlloc) {
         return NULL;
     }
 
-    console.log("allocating to heap:", fuAlloc, "bytes", heap);
-
     let handle = heap.allocate(fuAlloc, options);
     if (handle === null) {
         return NULL;

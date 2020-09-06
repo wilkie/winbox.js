@@ -25,7 +25,7 @@ import { TRUE } from '../consts.js';
  * {@link Gdi.DeleteObject DeleteObject}
  *
  * @static
- * @function CreateSolidBrush
+ * @function TextOut
  * @memberof Gdi
  *
  * @param {Types.HDC} hdc - Identifies the device context.
@@ -41,10 +41,9 @@ import { TRUE } from '../consts.js';
  *                      successful. Otherwise, it is zero.
  */
 export function TextOut(hdc, nXStart, nYStart, lpszString, cbString) {
+    //console.log("textout", lpszString, cbString, nXStart, nYStart);
     // Get the surface instance
     let surface = this.handles.resolve(hdc);
-
-    // Wait until the font is loaded before continuing?
 
     // Draw the text
     surface.fillText(nXStart, nYStart, lpszString.slice(0, cbString));

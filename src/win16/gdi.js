@@ -16,10 +16,15 @@ import { CreateCompatibleBitmap } from './gdi/CreateCompatibleBitmap.js';
 import { CreateCompatibleDC } from './gdi/CreateCompatibleDC.js';
 import { CreateSolidBrush } from './gdi/CreateSolidBrush.js';
 import { DeleteObject } from './gdi/DeleteObject.js';
+import { GetBitmapBits } from './gdi/GetBitmapBits.js';
 import { GetDeviceCaps } from './gdi/GetDeviceCaps.js';
 import { GetObject } from './gdi/GetObject.js';
+import { GetTextExtent } from './gdi/GetTextExtent.js';
+import { GetTextMetrics } from './gdi/GetTextMetrics.js';
 import { GetStockObject } from './gdi/GetStockObject.js';
+import { PatBlt } from './gdi/PatBlt.js';
 import { SelectObject } from './gdi/SelectObject.js';
+import { SetBitmapBits } from './gdi/SetBitmapBits.js';
 import { TextOut } from './gdi/TextOut.js';
 
 /**
@@ -66,7 +71,7 @@ export class Gdi extends Module {
             [Gdi.stub, "Pie", 18],
             [Gdi.stub, "Rectangle", 10],
             [Gdi.stub, "RoundRect", 14],
-            [Gdi.stub, "PatBlt", 14],
+            [PatBlt, "PatBlt", 14, [HDC, INT, INT, INT, INT, DWORD], BOOL],
             // 30 //
             [Gdi.stub, "SaveDC", 2],
             [Gdi.stub, "SetPixel", 10],
@@ -116,7 +121,7 @@ export class Gdi extends Module {
             [Gdi.stub, "EnumObjects", 12],
             [Gdi.stub, "EqualRgn", 4],
             [Gdi.stub, "ExcludeVisRect", 10],
-            [Gdi.stub, "GetBitmapBits", 10],
+            [GetBitmapBits, "GetBitmapBits", 10, [HBITMAP, LONG, FARPTR], LONG],
             [Gdi.stub, "GetBkColor", 2],
             [Gdi.stub, "GetBkMode", 2],
             [Gdi.stub, "GetClipBox", 6],
@@ -135,9 +140,9 @@ export class Gdi extends Module {
             [Gdi.stub, "GetTextCharacterExtra", 2],
             // 90 //
             [Gdi.stub, "GetTextColor", 2],
-            [Gdi.stub, "GetTextExtent", 8],
+            [GetTextExtent, "GetTextExtent", 8, [HDC, LPCSTR, INT], DWORD],
             [Gdi.stub, "GetTextFace", 8],
-            [Gdi.stub, "GetTextMetrics", 6],
+            [GetTextMetrics, "GetTextMetrics", 6, [HDC, [TEXTMETRIC]], BOOL],
             [Gdi.stub, "GetViewportExt", 2],
             [Gdi.stub, "GetViewportOrg", 2],
             [Gdi.stub, "GetWindowExt", 2],
@@ -151,7 +156,7 @@ export class Gdi extends Module {
             [Gdi.stub, "PtVisible", 6],
             [Gdi.stub, "RectVisible", 6],
             [Gdi.stub, "SelectVisRgn", 4],
-            [Gdi.stub, "SetBitmapBits", 10],
+            [SetBitmapBits, "SetBitmapBits", 10, [HBITMAP, DWORD, FARPTR], LONG],
             [Gdi.stub, "unknown"],
             [Gdi.stub, "unknown"],
             [Gdi.stub, "unknown"],
@@ -524,6 +529,39 @@ export class BITMAP extends Struct {
     }
 }
 
+/**
+ * The **TEXTMETRIC** structure contains basic information about a physical
+ * font. For system versions 3.1 and later, the {@link Gdi.EnumFonts EnumFonts}
+ * and {@link Gdi.EnumFontFamilies EnumFontFamilies} functions return
+ * information about TrueType fonts in a NEWTEXTMETRIC structure.
+ */
+export class TEXTMETRIC extends Struct {
+    constructor() {
+        super([
+            ['tmHeight', INT],
+            ['tmAscent', INT],
+            ['tmDescent', INT],
+            ['tmInternalLeading', INT],
+            ['tmExternalLeading', INT],
+            ['tmAveCharWidth', INT],
+            ['tmMaxCharWidth', INT],
+            ['tmWeight', INT],
+            ['tmItalic', BYTE],
+            ['tmUnderlined', BYTE],
+            ['tmStruckOut', BYTE],
+            ['tmFirstChar', BYTE],
+            ['tmLastChar', BYTE],
+            ['tmDefaultChar', BYTE],
+            ['tmBreakChar', BYTE],
+            ['tmPitchAndFamily', BYTE],
+            ['tmCharSet', BYTE],
+            ['tmOverhang', INT],
+            ['tmDigitizedAspectX', INT],
+            ['tmDigitizedAspectY', INT],
+        ]);
+    }
+}
+
 // GetDeviceCaps constants
 Gdi.DRIVERVERSION = 0x0;
 Gdi.TECHNOLOGY = 0x2;
@@ -565,13 +603,13 @@ Gdi.HOLLOW_BRUSH = Gdi.NULL_BRUSH;
 Gdi.WHITE_PEN = 0x6;
 Gdi.BLACK_PEN = 0x7;
 Gdi.NULL_PEN = 0x8;
-Gdi.OEM_FIXED_FONT = 0x10;
-Gdi.ANSI_FIXED_FONT = 0x11;
-Gdi.ANSI_VAR_FONT = 0x12;
-Gdi.SYSTEM_FONT = 0x13;
-Gdi.DEVICE_DEFAULT_FONT = 0x14;
-Gdi.DEFAULT_PALETTE = 0x15;
-Gdi.SYSTEM_FIXED_FONT = 0x16;
+Gdi.OEM_FIXED_FONT = 0xa;
+Gdi.ANSI_FIXED_FONT = 0xb;
+Gdi.ANSI_VAR_FONT = 0xc;
+Gdi.SYSTEM_FONT = 0xd;
+Gdi.DEVICE_DEFAULT_FONT = 0xe;
+Gdi.DEFAULT_PALETTE = 0xf;
+Gdi.SYSTEM_FIXED_FONT = 0x10;
 
 // BitBlt flags
 Gdi.SRCCOPY = 0xcc0020;

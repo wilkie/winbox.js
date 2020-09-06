@@ -2,8 +2,12 @@
 
 import { NULL } from '../consts.js';
 
-import { User, MSG } from '../user.js';
+import { HWND } from '../types.js';
 
+import { User, MSG, MINMAXINFO, CREATESTRUCT } from '../user.js';
+
+import { Bitmap } from '../../raster/bitmap.js';
+import { Palette } from '../../raster/palette.js';
 import { Window } from '../../window.js';
 import { FixedWindow } from '../../windows/fixed-window.js';
 import { SizableWindow } from '../../windows/sizable-window.js';
@@ -25,7 +29,7 @@ import { SizableWindow } from '../../windows/sizable-window.js';
 export function CreateWindow(lpszClassName, lpszWindowName,
                              dwStyle, x, y, nWidth, nHeight,
                              hwndParent, hmenu, hinst, lpvParam) {
-    console.log("Creating window", arguments);
+    //console.log("Creating window", arguments);
 
     // Look up the parent (if NULL, we create a window in the desktop space)
     let parentWindow = null;
@@ -57,20 +61,20 @@ export function CreateWindow(lpszClassName, lpszWindowName,
         windowClass: lpszClassName
     });
 
+    // Set default font
+    //dialog.surface.font = this.fonts.lookup
+
     dialog.show();
-    dialog.center();
     dialog.resize(300, 300);
 
     parentWindow.append(dialog);
 
-    if (x != User.CW_USEDEFAULT) {
-        console.log(x, User.CW_USEDEFAULT);
-        dialog.move(x, dialog.y);
-    }
-
-    if (y != User.CW_USEDEFAULT) {
-        dialog.move(dialog.x, y);
-    }
+    //*
+    x = User.CW_USEDEFAULT;
+    y = User.CW_USEDEFAULT;
+    nWidth = 580;
+    nHeight = 580;
+    //*/
 
     if (nWidth != User.CW_USEDEFAULT) {
         dialog.resize(nWidth, dialog.height);
@@ -79,6 +83,21 @@ export function CreateWindow(lpszClassName, lpszWindowName,
     if (nHeight != User.CW_USEDEFAULT) {
         dialog.resize(dialog.width, nHeight);
     }
+
+    dialog.center();
+
+    if (x != User.CW_USEDEFAULT) {
+        dialog.move(x, dialog.y);
+    }
+
+    if (y != User.CW_USEDEFAULT) {
+        dialog.move(dialog.x, y);
+    }
+
+    // Set default bitmap (8bpp)
+    let bitmapData = new Uint8Array(dialog.innerWidth * dialog.innerHeight);
+    let bitmapView = new DataView(bitmapData.buffer);
+    dialog.surface.bitmap = new Bitmap(dialog.innerWidth, dialog.innerHeight, 8, Bitmap.RGBA, bitmapView, Palette.PALETTEWIN256);
 
     dialog.hide();
 
@@ -91,17 +110,49 @@ export function CreateWindow(lpszClassName, lpszWindowName,
 
     this.windows.register(taskHandle, task, hWnd, dialog);
 
-    // Add a WM_NCCREATE message
-    let msg = new MSG();
-    msg.hwnd = hWnd;
-    msg.message = User.WM_NCCREATE;
-    this.scheduler.task.push(msg);
+    // TODO: GETMINMAXINFO structure
+    // TODO: WM_NCCREATE params
+    // TODO: WM_NCCALCSIZE params
+    // TODO: WM_CREATE params
 
-    // Add a WM_CREATE message
-    msg = new MSG();
-    msg.hwnd = hWnd;
-    msg.message = User.WM_CREATE;
-    this.scheduler.task.push(msg);
+    let mmi = new MINMAXINFO();
+    let createstruct = new CREATESTRUCT();
+    createstruct.lpCreateParams = lpvParam;
+    createstruct.hInstance = hinst;
+    createstruct.hwndParent = hwndParent;
+    createstruct.hMenu = hmenu;
+    createstruct.cy = nHeight;
+    createstruct.cx = nWidth;
+    createstruct.x = x;
+    createstruct.y = y;
+    createstruct.style = dwStyle;
+    createstruct.lpszName = (lpszWindowName.segment << 16) | lpszWindowName.offset;
+    createstruct.lpszClass = (lpszClassName.segment << 16) | lpszClassName.offset;
+    createstruct.dwExStyle = 0;
+    //console.log("create struct???", createstruct.cy, createstruct.cx);
 
-    return hWnd;
+    // We asynchronously halt and call the window message procedure for the
+    // initialization messages:
+    let ret = [
+        ['callWndProc', windowClass, hWnd, User.WM_GETMINMAXINFO, 0, [mmi]],
+        ['callWndProc', windowClass, hWnd, User.WM_NCCREATE, 0, 0],
+        ['callWndProc', windowClass, hWnd, User.WM_NCCALCSIZE, 0, 0],
+        ['callWndProc', windowClass, hWnd, User.WM_CREATE, 0, [createstruct]],
+    ];
+
+    // If we have a parent, we notify it of the WM_CREATE
+    if (hwndParent) {
+        // lo-word is hWnd of child
+        // hi-word is identifier of child
+        let notifyParam = hWnd & 0xffff;
+        ret.push([
+            'callWndProc', windowClass, hWnd,
+            User.WM_PARENTNOTIFY, User.WM_CREATE, notifyParam
+        ]);
+    }
+
+    // Push return value of CreateWindow
+    ret.push([HWND, hWnd]);
+
+    return ret;
 }

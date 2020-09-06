@@ -1,5 +1,7 @@
 "use strict";
 
+import { NULL } from '../consts.js';
+
 import { BITMAP } from '../gdi.js';
 
 import { HandleManager } from '../handle-manager.js';
@@ -17,17 +19,21 @@ export function GetObject(hgdiobj, cbBuffer, lpvObject) {
     }
 
     // What kind of item is it?
-    if (hgdiobj & HandleManager.TAGS.HBITMAP) {
+    if (cbBuffer >= 14 && this.handles.isBitmap(item)) {
         let bitmapInfo = new BITMAP();
-        let ptr = ((item.view.segment << 19) | 0x3) | item.view.offset;
+
+        let bpRow = item.bpp * item.width;
+        bpRow = (bpRow + (8 - 1)) & ~(8 - 1);
+        let widthBytes = ((bpRow >> 3) + (4 - 1)) & ~(4 - 1);
+
         bitmapInfo.loadFromMemory(memory, srcSegment, srcOffset);
         bitmapInfo.bmType = 0;
         bitmapInfo.bmWidth = item.width;
         bitmapInfo.bmHeight = item.height;
-        bitmapInfo.bmWidthBytes = ((item.width * item.bpp) / 8) >>> 0;
+        bitmapInfo.bmWidthBytes = widthBytes;
         bitmapInfo.bmPlanes = 1;
         bitmapInfo.bmBitsPixel = item.bpp;
-        bitmapInfo.bmBits = ptr;
+        bitmapInfo.bmBits = NULL; // The bits are retrieved with GetBitmapBits
 
         return 14;
     }

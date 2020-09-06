@@ -1,5 +1,9 @@
 "use strict";
 
+import { Gdi } from '../gdi.js';
+
+import { Bitmap } from '../../raster/bitmap.js';
+
 import { TRUE, FALSE } from '../consts.js';
 
 /**
@@ -57,9 +61,9 @@ import { TRUE, FALSE } from '../consts.js';
  * @param {Types.INT} nYDest - Specifies the logical y-coordinate of the upper-
  *                             left corner of the destination rectangle.
  * @param {Types.INT} nWidth - Specifies the width, in logical units, of the
- *                             destination rectangle and source bitmap;
+ *                             destination rectangle and source bitmap.
  * @param {Types.INT} nHeight - Specifies the height, in logical units, of the
- *                              destination rectangle and source bitmap;
+ *                              destination rectangle and source bitmap.
  * @param {Types.HDC} hdcSrc - Identifies the device context from which the
  *                             bitmap will be copied. This parameter must be
  *                             `NULL` if the *`dwRop`* parameter specifies a
@@ -108,5 +112,96 @@ import { TRUE, FALSE } from '../consts.js';
  */
 export function BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight,
                        hdcSrc, nXSrc, nYSrc, dwRop) {
+    // Resolve the source DC handle
+    let source = this.handles.resolve(hdcSrc);
+
+    // Bail if we cannot find the source DC
+    if (!source) {
+        return FALSE;
+    }
+
+    // Resolve the bitmap attached to the device
+    let sourceBitmap = source.bitmap;
+    let sourceView = sourceBitmap.view;
+
+    // Resolve the destination DC handle
+    let destination = this.handles.resolve(hdcDest);
+
+    // Bail if we cannot find the destination DC
+    if (!destination) {
+        return FALSE;
+    }
+
+    // Resolve the bitmap attached to the device
+    let destinationBitmap = destination.bitmap;
+    let destinationView = destinationBitmap.view;
+
+    // TODO: Check width/height and bounds of bitmaps (otherwise we crash)
+    //console.log("bitblt", sourceBitmap, destinationBitmap);
+
+    // Perform the operation
+    let invert = false;
+    switch (dwRop) {
+        case Gdi.NOTSRCCOPY:
+            //console.log("NOT");
+            invert = true;
+            // fall through
+        case Gdi.SRCCOPY:
+            //console.log("SRCCOPY");
+            destinationBitmap.blit(Bitmap.OPERATIONS.COPY, nXDest, nYDest, nWidth, nHeight, sourceBitmap, nXSrc, nYSrc, nWidth, nHeight, invert);
+            break;
+
+        case Gdi.SRCPAINT:
+            destinationBitmap.blit(Bitmap.OPERATIONS.OR, nXDest, nYDest, nWidth, nHeight, sourceBitmap, nXSrc, nYSrc, nWidth, nHeight, invert);
+            break;
+
+        case Gdi.SRCAND:
+            destinationBitmap.blit(Bitmap.OPERATIONS.AND, nXDest, nYDest, nWidth, nHeight, sourceBitmap, nXSrc, nYSrc, nWidth, nHeight, invert);
+            break;
+
+        case Gdi.SRCINVERT:
+            console.log("SRCINVERT");
+            break;
+
+        case Gdi.NOTSRCERASE:
+            console.log("NOT");
+            invert = true;
+            // fall through
+        case Gdi.SRCERASE:
+            console.log("SRCERASE");
+            break;
+
+        case Gdi.MERGECOPY:
+            console.log("MERGECOPY");
+            break;
+
+        case Gdi.MERGEPAINT:
+            console.log("MERGEPAINT");
+            break;
+
+        case Gdi.PATCOPY:
+            console.log("PATCOPY");
+            break;
+
+        case Gdi.PATPAINT:
+            console.log("PATPAINT");
+            break;
+
+        case Gdi.DSTINVERT:
+            console.log("DSTINVERT");
+            break;
+
+        case Gdi.BLACKNESS:
+            console.log("BLACKNESS");
+            break;
+
+        case Gdi.WHITENESS:
+            console.log("WHITENESS");
+            break;
+
+        default:
+            break;
+    }
+
     return TRUE;
 }

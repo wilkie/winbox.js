@@ -3,6 +3,7 @@
 import { Util } from "../util.js";
 import { Executable } from "../executable.js";
 import { Color } from "./color.js";
+import { Font } from "./font.js";
 
 /**
  * A single bitmap font entry from a bitmap font.
@@ -338,7 +339,7 @@ export class BitmapFontEntry {
 /**
  * Loads one or more bitmap fonts from a given font resource.
  */
-export class BitmapFont {
+export class BitmapFont extends Font {
     /**
      * Asynchronously loads the font at the given url.
      */
@@ -363,6 +364,8 @@ export class BitmapFont {
     }
 
     constructor(data, options = {}) {
+        super();
+
         this._view = new DataView(data);
         this._entries = [];
 

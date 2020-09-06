@@ -27,10 +27,12 @@ import { InitApp } from './user/InitApp.js';
 import { LoadBitmap } from './user/LoadBitmap.js';
 import { LoadString } from './user/LoadString.js';
 import { MessageBox } from './user/MessageBox.js';
+import { MoveWindow } from './user/MoveWindow.js';
 import { PeekMessage } from './user/PeekMessage.js';
 import { RegisterClass } from './user/RegisterClass.js';
 import { RedrawWindow } from './user/RedrawWindow.js';
 import { ReleaseDC } from './user/ReleaseDC.js';
+import { SetFocus } from './user/SetFocus.js';
 import { SetWindowText } from './user/SetWindowText.js';
 import { ShowWindow } from './user/ShowWindow.js';
 import { TranslateMessage } from './user/TranslateMessage.js';
@@ -74,7 +76,7 @@ export class User extends Module {
             // 20 //
             [User.stub, "SetDoubleClickTime", 0],
             [User.stub, "GetDoubleClickTime", 0],
-            [User.stub, "SetFocus", 2],
+            [SetFocus, "SetFocus", 2, [HWND], HWND],
             [User.stub, "GetFocus", 0],
             [User.stub, "RemoveProp", 6],
             [User.stub, "GetProp", 6],
@@ -111,7 +113,7 @@ export class User extends Module {
             [User.stub, "DestroyWindow", 2],
             [User.stub, "EnumWindows", 8],
             [User.stub, "EnumChildWindows", 10],
-            [User.stub, "MoveWindow", 12],
+            [MoveWindow, "MoveWindow", 12, [HWND, INT, INT, INT, INT, BOOL], BOOL],
             [RegisterClass, "RegisterClass", 4, [WNDCLASS], ATOM],
             [User.stub, "GetClassName", 8],
             [User.stub, "SetActiveWindow", 2],
@@ -678,6 +680,63 @@ export class MSG extends Struct {
 }
 
 /**
+ * The **CREATESTRUCT** structure contains information from the system's application queue.
+ */
+export class CREATESTRUCT extends Struct {
+    constructor() {
+        super([
+            ['lpCreateParams', FARPTR],
+            ['hInstance', HINSTANCE],
+            ['hMenu', HMENU],
+            ['hwndParent', HWND],
+            ['cy', INT],
+            ['cx', INT],
+            ['y', INT],
+            ['x', INT],
+            ['style', LONG],
+            ['lpszName', FARPTR],
+            ['lpszClass', FARPTR],
+            ['dwExStyle', DWORD]
+        ]);
+    }
+}
+
+/**
+ * The **MINMAXINFO** structure contains information about a window's maximized
+ * size and its minimum and maximum tracking size.
+ *
+ * @memberof User
+ */
+export class MINMAXINFO extends Struct {
+    constructor() {
+        super([
+            ['ptReserved', POINT],
+            ['ptMaxSize', POINT],
+            ['ptMaxPosition', POINT],
+            ['ptMinTrackSize', POINT],
+            ['ptMaxTrackSize', POINT]
+        ]);
+    }
+}
+
+/**
+ * The **MSG** structure contains information from the system's application queue.
+ */
+export class WINDOWPOS extends Struct {
+    constructor() {
+        super([
+            ['hwnd', HWND],
+            ['hwndInsertAfter', HWND],
+            ['x', INT],
+            ['y', INT],
+            ['cx', INT],
+            ['cy', INT],
+            ['flags', UINT]
+        ]);
+    }
+}
+
+/**
  * The **WNDCLASS** structure contains window class information.
  */
 export class WNDCLASS extends Struct {
@@ -773,14 +832,15 @@ User.WM_SYSKEYDOWN = 0x0104;
 User.WM_SYSKEYUP = 0x0105;
 User.WM_SYSCHAR = 0x0106;
 User.WM_SYSDEADCHAR = 0x0107;
+User.WM_COMMAND = 0x0111;
 User.WM_SYSCOMMAND = 0x0112;
+User.WM_TIMER = 0x0113;
+User.WM_HSCROLL = 0x0114;
+User.WM_VSCROLL = 0x0115;
 User.WM_INITMENU = 0x0116;
 User.WM_INITMENUPOPUP = 0x0117;
 User.WM_MENUSELECT = 0x011f;
 User.WM_MENUCHAR = 0x0120;
-User.WM_COMMAND = 0x0111;
-User.WM_HSCROLL = 0x0114;
-User.WM_VSCROLL = 0x0115;
 User.WM_MOUSEMOVE = 0x0200;
 User.WM_LBUTTONDOWN = 0x0201;
 User.WM_LBUTTONUP = 0x0202;
@@ -791,6 +851,7 @@ User.WM_RBUTTONDBLCLK = 0x0206;
 User.WM_MBUTTONDOWN = 0x0207;
 User.WM_MBUTTONUP = 0x0208;
 User.WM_MBUTTONDBLCLK = 0x0209;
+User.WM_PARENTNOTIFY = 0x0210;
 User.WM_MDICREATE = 0x0220;
 User.WM_MDIDESTROY = 0x0221;
 User.WM_MDIACTIVATE = 0x0222;
@@ -812,6 +873,9 @@ User.WM_RENDERFORMAT = 0x0305;
 User.WM_RENDERALLFORMATS = 0x0306;
 User.WM_DESTROYCLIPBOARD = 0x0307;
 // TODO: Clipboard viewer messages
+User.WM_QUERYNEWPALETTE = 0x030f;
+User.WM_PALETTEISCHANGING = 0x0310;
+User.WM_PALETTECHANGED = 0x0311;
 
 // WM_KEYUP/DOWN/CHAR HIWORD(lParam) flags
 User.KF_EXTENDED = 0x0100;
@@ -950,3 +1014,30 @@ User.MB_SYSTEMMODAL = 0x1000;
 User.MB_TASKMODAL = 0x2000;
 
 User.MB_NOFOCUS = 0x8000;
+
+// SetWindowPos / WINDOWPOS flags
+User.SWP_NOSIZE = 0x0001;
+User.SWP_NOMOVE = 0x0002;
+User.SWP_NOZORDER = 0x0004;
+User.SWP_NOREDRAW = 0x0008;
+User.SWP_NOACTIVATE = 0x0010;
+User.SWP_FRAMECHANGED = 0x0020;
+User.SWP_SHOWWINDOW = 0x0040;
+User.SWP_HIDEWINDOW = 0x0080;
+User.SWP_NOCOPYBITS = 0x0100;
+User.SWP_NOOWNERZORDER = 0x0200;
+User.SWP_DRAWFRAME = User.SWP_FRAMECHANGED;
+User.SWP_NOREPOSITION = User.SWP_NOOWNERZORDER;
+User.SWP_NOSENDCHANGING = 0x0400;
+User.SWP_DEFERERASE = 0x2000;
+
+// SetWindowPos hwndInsertAfter field values
+User.HWND_TOP = 0x0;
+User.HWND_BOTTOM = 0x1;
+User.HWND_TOPMOST = 0xffff; // -1
+User.HWND_NOTOPMOST = 0xfffe; // -2
+
+// WM_ACTIVATE state values
+User.WA_INACTIVE = 0x0;
+User.WA_ACTIVE = 0x1;
+User.WA_CLICKACTIVE = 0x2;

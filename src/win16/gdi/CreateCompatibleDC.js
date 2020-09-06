@@ -32,5 +32,6 @@ export function CreateCompatibleDC(hdc) {
     // Technically, the surface is dimension-less and needs a bitmap created.
     // But, what can you do, we have the canvas there already.
     let handle = this.handles.allocate(newSurface);
+
     return handle;
 }

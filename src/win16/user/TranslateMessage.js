@@ -50,8 +50,6 @@ import { User } from '../user.js';
  *                      Otherwise, the return value is zero.
  */
 export function TranslateMessage(lpmsg) {
-    console.log("TranslateMessage", lpmsg);
-
     if (lpmsg.message === User.WM_KEYDOWN ||
         lpmsg.message === User.WM_KEYUP ||
         lpmsg.message === User.WM_SYSKEYUP ||

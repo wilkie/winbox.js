@@ -14,6 +14,8 @@ export class CPU {
 
         this._interruptHandlers = new Array(128);
 
+        this._instruction = {};
+
         this.reset();
     }
 
@@ -36,6 +38,22 @@ export class CPU {
             di: this.di,
             ip: this.ip
         }
+    }
+
+    set state(value) {
+        this.cs = value.cs;
+        this.ds = value.ds;
+        this.es = value.es;
+        this.ss = value.ss;
+        this.ax = value.ax;
+        this.cx = value.cx;
+        this.dx = value.dx;
+        this.bx = value.bx;
+        this.sp = value.sp;
+        this.bp = value.bp;
+        this.si = value.si;
+        this.di = value.di;
+        this.ip = value.ip;
     }
 
     /**
@@ -513,10 +531,10 @@ export class CPU {
      */
     step() {
         //console.log(this.cs, this.ip, this.bp);
-        //console.log((this.cs >> 3).toString(16), ":", this.ip.toString(16), this.sp.toString(16), this.bp.toString(16));
+        //console.log((this.cs >> 3).toString(16), ":", this.ip.toString(16), 'sp:', this.sp.toString(16), 'bp:', this.bp.toString(16), 'ax:', this.ax.toString(16), 'bx:', this.bx.toString(16), 'cx:', this.cx.toString(16), 'dx:', this.dx.toString(16));
 
         // Fetch / Decode
-        let instruction = this.decode();
+        let instruction = this.decode(this._instruction);
 
         //console.log(instruction);
 
@@ -530,11 +548,13 @@ export class CPU {
     /**
      * Decodes the next instruction.
      */
-    decode() {
-        let instruction = {
-            cs: this.cs,
-            ip: this.ip
-        };
+    decode(instruction) {
+        instruction.cs = this.cs;
+        instruction.ip = this.ip;
+        instruction.segment = undefined;
+        instruction.offset = undefined;
+        instruction.operandRegister = undefined;
+        instruction.subOpcode = undefined;
 
         // Read a 8-bit byte from memory at the current instruction pointer
         instruction.opcode = this._memory.read8(this.cs >> 3, this.ip);
@@ -612,55 +632,55 @@ export class CPU {
             // Prefixes (recursively decode)
             case 0x26:    // ES Override Prefix
                 //console.log("es     es=", this.es);
-                instruction = this.decode();
+                instruction = this.decode(instruction);
                 instruction.segment = this.es >> 3;
                 return instruction;
 
             case 0x2e:    // CS Override Prefix
                 //console.log("cs     cs=", this.cs);
-                instruction = this.decode();
+                instruction = this.decode(instruction);
                 instruction.segment = this.cs >> 3;
                 return instruction;
 
             case 0x36:    // SS Override Prefix
                 //console.log("ss     ss=", this.ss);
-                instruction = this.decode();
+                instruction = this.decode(instruction);
                 instruction.segment = this.ss >> 3;
                 return instruction;
 
             case 0x3e:    // DS Override Prefix
                 //console.log("ds     ds=", this.ds);
-                instruction = this.decode();
+                instruction = this.decode(instruction);
                 instruction.segment = this.ds >> 3;
                 return instruction;
 
             case 0x66:    // Operand-size/Precision-size override Prefix
                 let operandSizeOverride = this._memory.read8(this.cs >> 3, this.ip);
                 this.ip++;
-                instruction = this.decode();
+                instruction = this.decode(instruction);
                 instruction.operandSizeOverride = operandSizeOverride;
                 return instruction;
 
             case 0x67:    // Address-size override Prefix
                 let addressSizeOverride = this._memory.read8(this.cs >> 3, this.ip);
                 this.ip++;
-                instruction = this.decode();
+                instruction = this.decode(instruction);
                 instruction.addressSizeOverride = addressSizeOverride;
                 return instruction;
 
             case 0xf0:    // LOCK Prefix
-                instruction = this.decode();
+                instruction = this.decode(instruction);
                 instruction.lock = true;
                 return instruction;
 
             case 0xf2:    // REPNE Prefix
-                instruction = this.decode();
+                instruction = this.decode(instruction);
                 instruction.repeatNE = true;
                 instruction.repeat = true;
                 return instruction;
 
             case 0xf3:    // REP / REPE Prefix
-                instruction = this.decode();
+                instruction = this.decode(instruction);
                 instruction.repeatE = true;
                 instruction.repeat = true;
                 return instruction;
@@ -954,7 +974,7 @@ export class CPU {
                           // NEG eb / NOT eb
             case 0xf7:    // DIV ew / IDIV ew / IMUL ew / MUL ew /
                           // NEG ew / NOT ew
-            case 0xfe:    // INC eb
+            case 0xfe:    // INC eb / DEC eb
             case 0xff:    // CALL ew / CALL far ed / DEC ew / INC ew /
                           // JMP ew / JMP far ed / PUSH mw
             case 0x100:   // Special case for R-Type options of two-byte opcodes
@@ -1108,8 +1128,7 @@ export class CPU {
      * Pushes a 16-bit value to the stack.
      */
     push16(value) {
-        this.sp = this.sp - 2;
-        //console.log("writing value to stack", value.toString(16), this.sp);
+        this.sp -= 2;
         this._memory.write16(this.ss >> 3, this.sp, value);
     }
 
@@ -1506,7 +1525,7 @@ export class CPU {
             case 0x85:    // TEST ew,rw / TEST rw,ew
                 operation = operation || this.alu.and16.bind(this.alu);
 
-                //console.log((opcode == 0x39 ? 'cmp ' : 'test') + '   ew,rw');
+                //console.log((opcode == 0x39 ? 'cmp ' : 'test') + '   ew,rw', this.readOperand16(instruction), this.readRegister16(instruction.sourceRegister));
 
                 operation(this.readOperand16(instruction),
                           this.readRegister16(instruction.sourceRegister));
@@ -2682,12 +2701,24 @@ export class CPU {
                 this._flags.direction = true;
                 break;
 
-            case 0xfe:    // INC eb
+            case 0xfe:    // INC eb / DEC eb
                 //console.log('inc    eb');
-                this.writeOperand8(
-                    instruction,
-                    this.alu.inc8(this.readOperand8(instruction))
-                );
+                switch (instruction.modifier) {
+                    case 0:
+                        this.writeOperand8(
+                            instruction,
+                            this.alu.inc8(this.readOperand8(instruction))
+                        );
+                        break;
+                    case 1:
+                        this.writeOperand8(
+                            instruction,
+                            this.alu.dec8(this.readOperand8(instruction))
+                        );
+                        break;
+                    default:
+                        throw new InvalidInstruction(instruction);
+                }
                 break;
 
             case 0xff:    // CALL ew / CALL far ed / DEC ew / INC ew /
@@ -2774,6 +2805,12 @@ export class CPU {
                 //console.log("error: executing unknown opcode", instruction);
                 throw new InvalidInstruction(instruction);
         }
+
+        // Reset prefix flags
+        instruction.lock = false;
+        instruction.repeat = false;
+        instruction.repeatE = false;
+        instruction.repeatNE = false;
     }
 }
 
