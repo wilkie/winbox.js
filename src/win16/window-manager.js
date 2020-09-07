@@ -6,14 +6,16 @@ import { GetTickCount } from './user/GetTickCount.js';
 import { SetFocus } from './user/SetFocus.js';
 
 export class WindowManager {
-    constructor(scheduler, handles) {
+    constructor(scheduler, handles, startTime) {
         this._scheduler = scheduler;
         this._handles = handles;
+        this._startTime = startTime;
     }
 
     register(taskHandle, task, hWnd, windowInstance) {
         // Capture events
-        ['client-mousedown', 'mousemove', 'focus'].forEach( (event) => {
+        ['client-mousedown', 'mousemove',
+         'focus', 'client-keydown', 'client-keyup'].forEach( (event) => {
             windowInstance.on(event, (data) => {
                 this.createMessage(taskHandle, task, hWnd, event, data);
             });
@@ -58,6 +60,41 @@ export class WindowManager {
             msg.lParam = (data.x & 0xffff) | ((data.y & 0xffff) << 16)
 
             messages.push(msg);
+        }
+        else if (event === 'client-keydown' ||
+                 event === 'client-keyup') {
+            let msg = new MSG();
+            msg.hwnd = hWnd;
+
+            // Get the proper message
+            if (event === 'client-keydown') {
+                msg.message = User.WM_KEYDOWN;
+            }
+            else {
+                msg.message = User.WM_KEYUP;
+            }
+
+            // Set keycode
+            let code = data.code;
+            if (code == 'Numpad5') {
+                if (data.key == 'Clear') {
+                    code = data.key;
+                }
+            }
+            else if (code >= 'KeyA' && code <= 'KeyZ') {
+                code = data.code.slice(3).charCodeAt(0);
+            }
+
+            // Translate the key
+            msg.wParam = User.VIRTUAL_KEY_TRANSLATE[code] || code;
+
+            // Set flags
+            msg.lParam = event.repeat & 0xffff;
+
+            if (msg.wParam) {
+                console.log("key event", msg);
+                messages.push(msg);
+            }
         }
         else if (event === 'client-mousedown' ||
                  event === 'client-mouseup') {
@@ -118,7 +155,7 @@ export class WindowManager {
 
         // If we have a new message, post it to the queue.
         messages.forEach( (msg) => {
-            msg.time = 1;//GetTickCount();
+            msg.time = (new Date).getTime() - this._startTime;
             task.push(msg);
             this._scheduler.queue(taskHandle);
             task.run();

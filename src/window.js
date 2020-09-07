@@ -767,6 +767,12 @@ export class Window extends EventComponent {
      */
     keyDownEvent(event) {
         event.stopPropagation();
+        if (event.repeat) {
+            this._keyRepeat++;
+        }
+        else {
+            this._keyRepeat = 0;
+        }
 
         let data = {
             key: event.key,
@@ -775,6 +781,7 @@ export class Window extends EventComponent {
             metaKey: event.metaKey,
             ctrlKey: event.ctrlKey,
             altKey: event.altKey,
+            repeat: this._keyRepeat,
         };
 
         this.trigger("keydown", data);

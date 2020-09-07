@@ -231,6 +231,10 @@ export class FixedWindow extends Window {
         this._containerCanvas = document.createElement("canvas");
         this._containerCanvas.classList.add("__winbox_canvas");
         this._container.appendChild(this._containerCanvas);
+        this._container.setAttribute('tabindex', '-1');
+
+        this._container.addEventListener('keydown', this.keyDownEvent.bind(this));
+        this._container.addEventListener('keyup', this.keyUpEvent.bind(this));
 
         // Append to document
         this._element.appendChild(this._container);

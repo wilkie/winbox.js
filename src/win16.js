@@ -75,7 +75,7 @@ export class Win16 {
 
         // Keep track of all window instances.
         // The '0' index window is the desktop.
-        this._windows = new WindowManager(this._scheduler, this._handles);
+        this._windows = new WindowManager(this._scheduler, this._handles, this._startTime);
     }
 
     /**
