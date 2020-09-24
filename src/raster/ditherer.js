@@ -30,8 +30,6 @@ export class Ditherer {
         // The distance between the requested color and each target color
         // determines the density of each color
 
-        let colors = this.nearestColors(color, 5);
-
         // Pixel size
         let pixel = 1;
 
@@ -64,62 +62,7 @@ export class Ditherer {
 
         for (let j = 0; j < h; j++) {
             for (let i = 0; i < w; i++) {
-                // First, we convert the color to the dither table's colorspace.
-                // The divisor is the maximum color value + 1
-                let quantizedR = Math.floor((r / 255.0) * (divisor + 1));
-                let quantizedG = Math.floor((g / 255.0) * (divisor + 1));
-                let quantizedB = Math.floor((b / 255.0) * (divisor + 1));
-
-                // We then get the normalized value in that colorspace.
-                let levelR = Math.floor(quantizedR / divisor);
-                let levelG = Math.floor(quantizedG / divisor);
-                let levelB = Math.floor(quantizedB / divisor);
-
-                // And then finally get the comparable value.
-                quantizedR -= Math.floor(levelR * divisor);
-                quantizedG -= Math.floor(levelG * divisor);
-                quantizedB -= Math.floor(levelB * divisor);
-
-                // The quantized{R,G,B} will be the color to switch to if we
-                // go over the threshold.
-
-                let threshold = table[j % stride][i % stride] + 1;
-
-                if (Ditherer.DEBUG) {
-                    console.debug("x:", i, "y:", j);
-                    console.debug("t:", threshold);
-                }
-
-                if (quantizedR >= threshold) {
-                    levelR++;
-                }
-                if (quantizedG >= threshold) {
-                    levelG++;
-                }
-                if (quantizedB >= threshold) {
-                    levelB++;
-                }
-
-                if (Ditherer.DEBUG) {
-                    console.debug("q:", quantizedR);
-                    console.debug("l:", levelR);
-                    console.debug("c:", (quantizedR >= threshold ? 1 : 0));
-                    console.debug("q:", quantizedG);
-                    console.debug("l:", levelG);
-                    console.debug("c:", (quantizedG >= threshold ? 1 : 0));
-                    console.debug("q:", quantizedB);
-                    console.debug("l:", levelB);
-                    console.debug("c:", (quantizedB >= threshold ? 1 : 0));
-                }
-
-                // Convert back to the normal colorspace
-                let newR = levelR * 255.0;
-                let newG = levelG * 255.0;
-                let newB = levelB * 255.0;
-
-                let newColor = new Color(newR, newG, newB);
-
-                let position = (j * w * pixel * pixel) * 4 + (i * pixel) * 4;
+                let newColor = null;
 
                 // Windows dither special cases
                 if (color == 0xc0c0c0) {
@@ -132,6 +75,64 @@ export class Ditherer {
                     // special case 0xc0c0c0 specifically.
                     newColor = new Color(0xc0, 0xc0, 0xc0);
                 }
+                else {
+                    // First, we convert the color to the dither table's colorspace.
+                    // The divisor is the maximum color value + 1
+                    let quantizedR = Math.floor((r / 255.0) * (divisor + 1));
+                    let quantizedG = Math.floor((g / 255.0) * (divisor + 1));
+                    let quantizedB = Math.floor((b / 255.0) * (divisor + 1));
+
+                    // We then get the normalized value in that colorspace.
+                    let levelR = Math.floor(quantizedR / divisor);
+                    let levelG = Math.floor(quantizedG / divisor);
+                    let levelB = Math.floor(quantizedB / divisor);
+
+                    // And then finally get the comparable value.
+                    quantizedR -= Math.floor(levelR * divisor);
+                    quantizedG -= Math.floor(levelG * divisor);
+                    quantizedB -= Math.floor(levelB * divisor);
+
+                    // The quantized{R,G,B} will be the color to switch to if we
+                    // go over the threshold.
+
+                    let threshold = table[j % stride][i % stride] + 1;
+
+                    if (Ditherer.DEBUG) {
+                        console.debug("x:", i, "y:", j);
+                        console.debug("t:", threshold);
+                    }
+
+                    if (quantizedR >= threshold) {
+                        levelR++;
+                    }
+                    if (quantizedG >= threshold) {
+                        levelG++;
+                    }
+                    if (quantizedB >= threshold) {
+                        levelB++;
+                    }
+
+                    if (Ditherer.DEBUG) {
+                        console.debug("q:", quantizedR);
+                        console.debug("l:", levelR);
+                        console.debug("c:", (quantizedR >= threshold ? 1 : 0));
+                        console.debug("q:", quantizedG);
+                        console.debug("l:", levelG);
+                        console.debug("c:", (quantizedG >= threshold ? 1 : 0));
+                        console.debug("q:", quantizedB);
+                        console.debug("l:", levelB);
+                        console.debug("c:", (quantizedB >= threshold ? 1 : 0));
+                    }
+
+                    // Convert back to the normal colorspace
+                    let newR = levelR * 255.0;
+                    let newG = levelG * 255.0;
+                    let newB = levelB * 255.0;
+
+                    newColor = new Color(newR, newG, newB);
+                }
+
+                let position = (j * w * pixel * pixel) * 4 + (i * pixel) * 4;
 
                 // It does seem grayscale colors get a different matrix?
                 // Or, perhaps, it uses a different matrix for certain

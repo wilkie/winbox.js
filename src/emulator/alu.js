@@ -214,7 +214,7 @@ export class ALU {
     }
 
     /**
-     * Performs the 8-bit MUL signed multiplication instruction.
+     * Performs the 8-bit MUL unsigned multiplication instruction.
      *
      * Multiplies two unsigned 8-bit values resulting in one unsigned 16-bit
      * product.
@@ -229,13 +229,13 @@ export class ALU {
      */
     mul8(a, b) {
         let result = ((a & 0xff) * (b & 0xff)) & 0xffff;
-        this._cpu._flags.carry = result > 0xff;
+        this._cpu._flags.carry = (result & 0xffffff00) != 0;
         this._cpu._flags.overflow = this._cpu._flags.carry;
         return result;
     }
 
     /**
-     * Performs the 16-bit MUL signed multiplication instruction.
+     * Performs the 16-bit MUL unsigned multiplication instruction.
      *
      * Multiplies two unsigned 16-bit values resulting in one unsigned 32-bit
      * product.
@@ -249,8 +249,8 @@ export class ALU {
      * @return {number} The unsigned result.
      */
     mul16(a, b) {
-        let result = ((a & 0xffff) * (b & 0xffff)) & 0xffffffff;
-        this._cpu._flags.carry = result > 0xffff;
+        let result = (((a & 0xffff) * (b & 0xffff)) & 0xffffffff) >>> 0;
+        this._cpu._flags.carry = (result & 0xffff0000) != 0;
         this._cpu._flags.overflow = this._cpu._flags.carry;
         return result;
     }
@@ -271,9 +271,7 @@ export class ALU {
      */
     imul8(a, b) {
         let result = (this.toSigned8(a) * this.toSigned8(b)) & 0xffff;
-        this._cpu._flags.carry = (result >> 7) == 0x1ff ||
-                            (result >> 7) == 0x000;
-        this._cpu._flags.carry = result > 0xff;
+        this._cpu._flags.carry = (result & 0xff) != result
         this._cpu._flags.overflow = this._cpu._flags.carry;
         return result;
     }
@@ -293,9 +291,8 @@ export class ALU {
      * @return {number} The unsigned result.
      */
     imul16(a, b) {
-        let result = (this.toSigned16(a) * this.toSigned16(b)) & 0xffffffff;
-        this._cpu._flags.carry = (result >> 15) == 0x1ffff ||
-                            (result >> 15) == 0x00000;
+        let result = ((this.toSigned16(a) * this.toSigned16(b)) >>> 0) & 0xffffffff;
+        this._cpu._flags.carry = (result & 0xffff) != result
         this._cpu._flags.overflow = this._cpu._flags.carry;
         return result;
     }
@@ -332,6 +329,10 @@ export class ALU {
      * @return {number} The unsigned result. The high half is the remainder.
      */
     div16(a, b) {
+        let ret = ((a & 0xffff) / (b & 0xffff)) & 0xffff;
+        if (this._cpu.ip == 0x52ff || this._cpu.ip == 0x52f8) {
+            //console.log(this._cpu.ip.toString(16), "div equals 400", a, b, this._cpu.ip.toString(16));
+        }
         return ((a & 0xffff) / (b & 0xffff)) & 0xffff |
                ((((a & 0xffff) % (b & 0xffff)) & 0xffff) << 16);
     }
@@ -350,8 +351,9 @@ export class ALU {
      * @return {number} The unsigned result. The high half is the remainder.
      */
     idiv8(a, b) {
-        return (this.toSigned8(a) / this.toSigned8(b)) & 0xff |
-               (((this.toSigned8(a) % this.toSigned8(b)) & 0xff) << 8);
+        a = this.toSigned8(a);
+        b = this.toSigned8(b);
+        return ((a / b) & 0xff) | (((a % b) & 0xff) << 8);
     }
 
     /**
@@ -368,8 +370,9 @@ export class ALU {
      * @return {number} The unsigned result. The high half is the remainder.
      */
     idiv16(a, b) {
-        return (this.toSigned16(a) / this.toSigned16(b)) & 0xffff |
-               (((this.toSigned16(a) % this.toSigned16(b)) & 0xffff) << 16);
+        a = this.toSigned16(a);
+        b = this.toSigned16(b);
+        return (((a / b) & 0xffff) | (((a % b) & 0xffff) << 16)) >>> 0;
     }
 
     /**
@@ -383,7 +386,10 @@ export class ALU {
      * @return {number} The unsigned result.
      */
     dec8(a) {
-        return this.add8(a, -1);
+        let oldCarry = this.cpu.flags.carry;
+        let result = this.sub8(a, 1);
+        this.cpu.flags.carry = oldCarry;
+        return result;
     }
 
     /**
@@ -397,7 +403,10 @@ export class ALU {
      * @return {number} The unsigned result.
      */
     dec16(a) {
-        return this.add16(a, -1);
+        let oldCarry = this.cpu.flags.carry;
+        let result = this.sub16(a, 1);
+        this.cpu.flags.carry = oldCarry;
+        return result;
     }
 
     /**
@@ -582,8 +591,8 @@ export class ALU {
         }
 
         let result = a >> b;
-        if (b & 0x80) {
-            result = a >> b | (0xff << (8 - b));
+        if (a & 0x80) {
+            result |= (0xff << (8 - b));
         }
 
         this._cpu._flags.carry = ((a >> (b - 1)) & 0x1) != 0;
@@ -597,8 +606,8 @@ export class ALU {
         }
 
         let result = a >> b;
-        if (b & 0x8000) {
-            result = a >> b | (0xffff << (16 - b));
+        if (a & 0x8000) {
+            result |= (0xffff << (16 - b));
         }
 
         this._cpu._flags.carry = ((a >> (b - 1)) & 0x1) != 0;

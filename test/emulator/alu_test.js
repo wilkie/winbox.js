@@ -945,4 +945,459 @@ describe('ALU', () => {
             expect(this.alu.cpu.f).toEqual(flags);
         });
     });
+
+    describe('#mul8', () => {
+        it ('should multiply two positive numbers', function() {
+            let a = Helper.randomInteger(0x00, 0x7f);
+            let b = Helper.randomInteger(0x00, 0x7f);
+            expect(this.alu.mul8(a, b)).toEqual(a * b);
+        });
+
+        it ('should multiply two negative numbers as unsigned', function() {
+            let a = Helper.randomInteger(0x80, 0xff);
+            let b = Helper.randomInteger(0x80, 0xff);
+            expect(this.alu.mul8(a, b)).toEqual(a * b);
+        });
+
+        it ('should detect carry when product requires 9 bits', function() {
+            let a = Helper.randomInteger(0x80, 0xff);
+            let b = Helper.randomInteger(0x80, 0xff);
+            this.alu.mul8(a, b);
+            expect(this.alu.cpu.flags.carry).toBeTrue();
+        });
+
+        it ('should clear carry when product requires only 8 bits', function() {
+            let a = Helper.randomInteger(0x00, 0x20);
+            let b = Helper.randomInteger(0x00, 0x03);
+            this.alu.mul8(a, b);
+            expect(this.alu.cpu.flags.carry).toBeFalse();
+        });
+
+        it ('should set overflow to the carry flag', function() {
+            let a = Helper.randomInteger(0x00, 0xff);
+            let b = Helper.randomInteger(0x00, 0xff);
+            this.alu.mul8(a, b);
+            expect(this.alu.cpu.flags.carry).toEqual(this.alu.cpu.flags.overflow)
+        });
+    });
+
+    describe('#mul16', () => {
+        it ('should multiply two positive numbers', function() {
+            let a = Helper.randomInteger(0x0000, 0x7fff);
+            let b = Helper.randomInteger(0x0000, 0x7fff);
+            expect(this.alu.mul16(a, b)).toEqual(a * b);
+        });
+
+        it ('should multiply two negative numbers as unsigned', function() {
+            let a = Helper.randomInteger(0x8000, 0xffff);
+            let b = Helper.randomInteger(0x8000, 0xffff);
+            expect(this.alu.mul16(a, b)).toEqual((a * b) >>> 0);
+        });
+
+        it ('should detect carry when product requires 17 bits', function() {
+            let a = Helper.randomInteger(0x8000, 0xffff);
+            let b = Helper.randomInteger(0x8000, 0xffff);
+            this.alu.mul16(a, b);
+            expect(this.alu.cpu.flags.carry).toBeTrue();
+        });
+
+        it ('should clear carry when product requires only 16 bits', function() {
+            let a = Helper.randomInteger(0x0000, 0x2000);
+            let b = Helper.randomInteger(0x0000, 0x0003);
+            this.alu.mul16(a, b);
+            expect(this.alu.cpu.flags.carry).toBeFalse();
+        });
+
+        it ('should set overflow to the carry flag', function() {
+            let a = Helper.randomInteger(0x0000, 0xffff);
+            let b = Helper.randomInteger(0x0000, 0xffff);
+            this.alu.mul16(a, b);
+            expect(this.alu.cpu.flags.carry).toEqual(this.alu.cpu.flags.overflow)
+        });
+    });
+
+    describe('#imul8', () => {
+        it ('should multiply two positive numbers', function() {
+            let a = Helper.randomInteger(0x00, 0x7f);
+            let b = Helper.randomInteger(0x00, 0x7f);
+            let result = this.alu.toSigned8(a) * this.alu.toSigned8(b);
+            expect(this.alu.imul8(a, b)).toEqual((result >>> 0) & 0xffff);
+        });
+
+        it ('should multiply two negative numbers', function() {
+            let a = Helper.randomInteger(0x80, 0xff);
+            let b = Helper.randomInteger(0x80, 0xff);
+            let result = this.alu.toSigned8(a) * this.alu.toSigned8(b);
+            expect(this.alu.imul8(a, b)).toEqual((result >>> 0) & 0xffff);
+        });
+
+        it ('should multiply one negative with one positive number', function() {
+            let a = Helper.randomInteger(0x00, 0x7f);
+            let b = Helper.randomInteger(0x80, 0xff);
+            let result = this.alu.toSigned8(a) * this.alu.toSigned8(b);
+            expect(this.alu.imul8(a, b)).toEqual((result >>> 0) & 0xffff);
+        });
+
+        it ('should detect carry when product requires 9 bits', function() {
+            let a = Helper.randomInteger(0x4f, 0x7f);
+            let b = Helper.randomInteger(0x4f, 0x7f);
+            this.alu.imul8(a, b);
+            expect(this.alu.cpu.flags.carry).toBeTrue();
+        });
+
+        it ('should clear carry when product requires only 8 bits', function() {
+            let a = Helper.randomInteger(0x00, 0x20);
+            let b = Helper.randomInteger(0x00, 0x03);
+            this.alu.imul8(a, b);
+            expect(this.alu.cpu.flags.carry).toBeFalse();
+        });
+
+        it ('should set overflow to the carry flag', function() {
+            let a = Helper.randomInteger(0x00, 0xff);
+            let b = Helper.randomInteger(0x00, 0xff);
+            this.alu.imul8(a, b);
+            expect(this.alu.cpu.flags.carry).toEqual(this.alu.cpu.flags.overflow)
+        });
+    });
+
+    describe('#imul16', () => {
+        it ('should multiply two positive numbers', function() {
+            let a = Helper.randomInteger(0x0000, 0x7fff);
+            let b = Helper.randomInteger(0x0000, 0x7fff);
+            let result = this.alu.toSigned16(a) * this.alu.toSigned16(b);
+            expect(this.alu.imul16(a, b)).toEqual((result >>> 0) & 0xffffffff);
+        });
+
+        it ('should multiply two negative numbers as unsigned', function() {
+            let a = Helper.randomInteger(0x8000, 0xffff);
+            let b = Helper.randomInteger(0x8000, 0xffff);
+            let result = this.alu.toSigned16(a) * this.alu.toSigned16(b);
+            expect(this.alu.imul16(a, b)).toEqual((result >>> 0) & 0xffffffff);
+        });
+
+        it ('should multiply one negative with one positive number', function() {
+            let a = Helper.randomInteger(0x0000, 0x7fff);
+            let b = Helper.randomInteger(0x8000, 0xffff);
+            let result = this.alu.toSigned16(a) * this.alu.toSigned16(b);
+            expect(this.alu.imul16(a, b)).toEqual((result >>> 0) & 0xffffffff);
+        });
+
+        it ('should detect carry when product requires 17 bits', function() {
+            let a = Helper.randomInteger(0x8000, 0xffff);
+            let b = Helper.randomInteger(0x8000, 0xffff);
+            this.alu.imul16(a, b);
+            expect(this.alu.cpu.flags.carry).toBeTrue();
+        });
+
+        it ('should clear carry when product requires only 16 bits', function() {
+            let a = Helper.randomInteger(0x0000, 0x2000);
+            let b = Helper.randomInteger(0x0000, 0x0003);
+            this.alu.imul16(a, b);
+            expect(this.alu.cpu.flags.carry).toBeFalse();
+        });
+
+        it ('should set overflow to the carry flag', function() {
+            let a = Helper.randomInteger(0x0000, 0xffff);
+            let b = Helper.randomInteger(0x0000, 0xffff);
+            this.alu.imul16(a, b);
+            expect(this.alu.cpu.flags.carry).toEqual(this.alu.cpu.flags.overflow)
+        });
+    });
+
+    describe('#div8', () => {
+        it ('should divide two positive numbers', function() {
+            let a = Helper.randomInteger(0x00, 0x7f);
+            let b = Helper.randomInteger(0x00, 0x7f);
+            let result = (a / b | ((a % b) << 8));
+            expect(this.alu.div8(a, b)).toEqual(result);
+        });
+
+        it ('should divide two negative numbers as unsigned', function() {
+            let a = Helper.randomInteger(0x80, 0xff);
+            let b = Helper.randomInteger(0x80, 0xff);
+            let result = (a / b | ((a % b) << 8));
+            expect(this.alu.div8(a, b)).toEqual(result);
+        });
+
+        it ('should divide one negative and one positive number', function() {
+            let a = Helper.randomInteger(0x00, 0x7f);
+            let b = Helper.randomInteger(0x80, 0xff);
+            let result = (a / b | ((a % b) << 8));
+            expect(this.alu.div8(a, b)).toEqual(result);
+        });
+    });
+
+    describe('#div16', () => {
+        it ('should divide two positive numbers', function() {
+            let a = Helper.randomInteger(0x0000, 0x7fff);
+            let b = Helper.randomInteger(0x0000, 0x7fff);
+            let result = (a / b | ((a % b) << 16));
+            expect(this.alu.div16(a, b)).toEqual(result);
+        });
+
+        it ('should divide two negative numbers as unsigned', function() {
+            let a = Helper.randomInteger(0x8000, 0xffff);
+            let b = Helper.randomInteger(0x8000, 0xffff);
+            let result = (a / b | ((a % b) << 16));
+            expect(this.alu.div16(a, b)).toEqual(result);
+        });
+
+        it ('should divide one negative and one positive number', function() {
+            let a = Helper.randomInteger(0x0000, 0x7fff);
+            let b = Helper.randomInteger(0x8000, 0xffff);
+            let result = (a / b | ((a % b) << 16));
+            expect(this.alu.div16(a, b)).toEqual(result);
+        });
+    });
+
+    describe('#idiv8', () => {
+        it ('should divide two positive numbers', function() {
+            let a = Helper.randomInteger(0x00, 0x7f);
+            let b = Helper.randomInteger(0x00, 0x7f);
+            let result = (a / b | ((a % b) << 8));
+            expect(this.alu.idiv8(a, b)).toEqual(result);
+        });
+
+        it ('should divide two negative numbers', function() {
+            let a = Helper.randomInteger(0x80, 0xff);
+            let b = Helper.randomInteger(0x80, 0xff);
+            let result = this.alu.toSigned8(a) / this.alu.toSigned8(b);
+            result = result & 0xff | (((this.alu.toSigned8(a) % this.alu.toSigned8(b)) & 0xff) << 8);
+            expect(this.alu.idiv8(a, b)).toEqual(result);
+        });
+
+        it ('should divide one negative and one positive number', function() {
+            let a = Helper.randomInteger(0x00, 0x7f);
+            let b = Helper.randomInteger(0x80, 0xff);
+            let result = this.alu.toSigned8(a) / this.alu.toSigned8(b);
+            result = result & 0xff | (((this.alu.toSigned8(a) % this.alu.toSigned8(b)) & 0xff) << 8);
+            expect(this.alu.idiv8(a, b)).toEqual(result);
+        });
+    });
+
+    describe('#idiv16', () => {
+        it ('should divide two positive numbers', function() {
+            let a = Helper.randomInteger(0x0000, 0x7fff);
+            let b = Helper.randomInteger(0x0000, 0x7fff);
+            let result = (this.alu.toSigned16(a) / this.alu.toSigned16(b)) & 0xffff;
+            result |= (((this.alu.toSigned16(a) % this.alu.toSigned16(b)) & 0xffff) << 16);
+            expect(this.alu.idiv16(a, b)).toEqual(result >>> 0);
+        });
+
+        it ('should divide two negative numbers', function() {
+            let a = Helper.randomInteger(0x8000, 0xffff);
+            let b = Helper.randomInteger(0x8000, 0xffff);
+            let result = (this.alu.toSigned16(a) / this.alu.toSigned16(b)) & 0xffff;
+            result |= (((this.alu.toSigned16(a) % this.alu.toSigned16(b)) & 0xffff) << 16);
+            expect(this.alu.idiv16(a, b)).toEqual(result >>> 0);
+        });
+
+        it ('should divide one negative and one positive number', function() {
+            let a = Helper.randomInteger(0x0000, 0x7fff);
+            let b = Helper.randomInteger(0x8000, 0xffff);
+            let result = (this.alu.toSigned16(a) / this.alu.toSigned16(b)) & 0xffff;
+            result |= (((this.alu.toSigned16(a) % this.alu.toSigned16(b)) & 0xffff) << 16);
+            expect(this.alu.idiv16(a, b)).toEqual(result >>> 0);
+        });
+    });
+
+    describe('#dec8', () => {
+        it ('should decrement a positive number', function() {
+            let a = Helper.randomInteger(0x01, 0x7f);
+            expect(this.alu.dec8(a)).toEqual(a - 1);
+        });
+
+        it ('should decrement a negative number', function() {
+            let a = Helper.randomInteger(0x81, 0xff);
+            expect(this.alu.dec8(a)).toEqual(a - 1);
+        });
+
+        it ('should detect overflow', function() {
+            let a = 0x80;
+            this.alu.dec8(a);
+            expect(this.alu.cpu.flags.overflow).toBeTrue();
+        });
+
+        it ('should not affect carry', function() {
+            let flag = !!Helper.randomInteger(0, 1);
+            this.alu.cpu.flags.carry = flag;
+            let a = Helper.randomInteger(0x00, 0xff);
+            this.alu.dec8(a);
+            expect(this.alu.cpu.flags.carry).toEqual(flag);
+        });
+
+        it ('should detect auxiliary carry', function() {
+            let a = Helper.randomInteger(0x00, 0xff) | 0xf;
+            this.alu.dec8(a);
+            expect(this.alu.cpu.flags.auxiliaryCarry).toBeTrue();
+        });
+
+        it ('should detect zero', function() {
+            let a = 0x01;
+            this.alu.dec8(a);
+            expect(this.alu.cpu.flags.zero).toBeTrue();
+        });
+
+        it ('should detect signed result', function() {
+            let a = Helper.randomInteger(0x81, 0xff);
+            this.alu.dec8(a);
+            expect(this.alu.cpu.flags.signed).toBeTrue();
+        });
+
+        it ('should detect 8-bit parity', function() {
+            let a = Helper.randomInteger(0x00, 0xff);
+            let result = this.alu.dec8(a);
+            expect(this.alu.cpu.flags.parity).toEqual(ALU.PARITY[result & 0xff]);
+        });
+    });
+
+    describe('#dec16', () => {
+        it ('should decrement a positive number', function() {
+            let a = Helper.randomInteger(0x0001, 0x7fff);
+            expect(this.alu.dec16(a)).toEqual(a - 1);
+        });
+
+        it ('should decrement a negative number', function() {
+            let a = Helper.randomInteger(0x8001, 0xffff);
+            expect(this.alu.dec16(a)).toEqual(a - 1);
+        });
+
+        it ('should detect overflow', function() {
+            let a = 0x8000;
+            this.alu.dec16(a);
+            expect(this.alu.cpu.flags.overflow).toBeTrue();
+        });
+
+        it ('should not affect carry', function() {
+            let flag = !!Helper.randomInteger(0, 1);
+            this.alu.cpu.flags.carry = flag;
+            let a = Helper.randomInteger(0x0000, 0xffff);
+            this.alu.dec16(a);
+            expect(this.alu.cpu.flags.carry).toEqual(flag);
+        });
+
+        it ('should detect auxiliary carry', function() {
+            let a = Helper.randomInteger(0x0000, 0xffff) | 0xf;
+            this.alu.dec16(a);
+            expect(this.alu.cpu.flags.auxiliaryCarry).toBeTrue();
+        });
+
+        it ('should detect zero', function() {
+            let a = 0x0001;
+            this.alu.dec16(a);
+            expect(this.alu.cpu.flags.zero).toBeTrue();
+        });
+
+        it ('should detect signed result', function() {
+            let a = Helper.randomInteger(0x8001, 0xffff);
+            this.alu.dec16(a);
+            expect(this.alu.cpu.flags.signed).toBeTrue();
+        });
+
+        it ('should detect 8-bit parity', function() {
+            let a = Helper.randomInteger(0x0000, 0xffff);
+            let result = this.alu.dec16(a);
+            expect(this.alu.cpu.flags.parity).toEqual(ALU.PARITY[result & 0xff]);
+        });
+    });
+
+    describe('#inc8', () => {
+        it ('should increment a positive number', function() {
+            let a = Helper.randomInteger(0x00, 0x7e);
+            expect(this.alu.inc8(a)).toEqual(a + 1);
+        });
+
+        it ('should increment a negative number', function() {
+            let a = Helper.randomInteger(0x80, 0xfe);
+            expect(this.alu.inc8(a)).toEqual(a + 1);
+        });
+
+        it ('should detect overflow', function() {
+            let a = 0x7f;
+            this.alu.inc8(a);
+            expect(this.alu.cpu.flags.overflow).toBeTrue();
+        });
+
+        it ('should not affect carry', function() {
+            let flag = !!Helper.randomInteger(0, 1);
+            this.alu.cpu.flags.carry = flag;
+            let a = Helper.randomInteger(0x00, 0xff);
+            this.alu.inc8(a);
+            expect(this.alu.cpu.flags.carry).toEqual(flag);
+        });
+
+        it ('should detect auxiliary carry', function() {
+            let a = Helper.randomInteger(0x00, 0xff) | 0xf;
+            this.alu.inc8(a);
+            expect(this.alu.cpu.flags.auxiliaryCarry).toBeTrue();
+        });
+
+        it ('should detect zero', function() {
+            let a = 0xff;
+            this.alu.inc8(a);
+            expect(this.alu.cpu.flags.zero).toBeTrue();
+        });
+
+        it ('should detect signed result', function() {
+            let a = Helper.randomInteger(0x80, 0xfe);
+            this.alu.inc8(a);
+            expect(this.alu.cpu.flags.signed).toBeTrue();
+        });
+
+        it ('should detect 8-bit parity', function() {
+            let a = Helper.randomInteger(0x00, 0xff);
+            let result = this.alu.inc8(a);
+            expect(this.alu.cpu.flags.parity).toEqual(ALU.PARITY[result & 0xff]);
+        });
+    });
+
+    describe('#inc16', () => {
+        it ('should increment a positive number', function() {
+            let a = Helper.randomInteger(0x0000, 0x7ffe);
+            expect(this.alu.inc16(a)).toEqual(a + 1);
+        });
+
+        it ('should increment a negative number', function() {
+            let a = Helper.randomInteger(0x8000, 0xfffe);
+            expect(this.alu.inc16(a)).toEqual(a + 1);
+        });
+
+        it ('should detect overflow', function() {
+            let a = 0x7fff;
+            this.alu.inc16(a);
+            expect(this.alu.cpu.flags.overflow).toBeTrue();
+        });
+
+        it ('should not affect carry', function() {
+            let flag = !!Helper.randomInteger(0, 1);
+            this.alu.cpu.flags.carry = flag;
+            let a = Helper.randomInteger(0x0000, 0xffff);
+            this.alu.inc16(a);
+            expect(this.alu.cpu.flags.carry).toEqual(flag);
+        });
+
+        it ('should detect auxiliary carry', function() {
+            let a = Helper.randomInteger(0x0000, 0xffff) | 0xf;
+            this.alu.inc16(a);
+            expect(this.alu.cpu.flags.auxiliaryCarry).toBeTrue();
+        });
+
+        it ('should detect zero', function() {
+            let a = 0xffff;
+            this.alu.inc16(a);
+            expect(this.alu.cpu.flags.zero).toBeTrue();
+        });
+
+        it ('should detect signed result', function() {
+            let a = Helper.randomInteger(0x8000, 0xfffe);
+            this.alu.inc16(a);
+            expect(this.alu.cpu.flags.signed).toBeTrue();
+        });
+
+        it ('should detect 8-bit parity', function() {
+            let a = Helper.randomInteger(0x0000, 0xffff);
+            let result = this.alu.inc16(a);
+            expect(this.alu.cpu.flags.parity).toEqual(ALU.PARITY[result & 0xff]);
+        });
+    });
 });

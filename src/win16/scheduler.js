@@ -16,7 +16,15 @@ export class Scheduler {
         this._machine = machine;
         this._modules = modules;
 
+        this._dirtySurfaces = [];
+
         this._currentTask = null;
+    }
+
+    pushDirty(surface) {
+        if (!this._dirtySurfaces.includes(surface)) {
+            this._dirtySurfaces.push(surface);
+        }
     }
 
     /**
@@ -121,6 +129,14 @@ export class Scheduler {
                         }
                         this._machine.cpu.step();
                     }
+
+                    this._dirtySurfaces.forEach( (surface) => {
+                        if (surface.dirty) {
+                            surface.update();
+                        }
+                    });
+                    this._dirtySurfaces = [];
+
                     /*
                     let now = (new Date).getTime();
                     let elapsed = now - last;

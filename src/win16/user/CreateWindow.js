@@ -65,15 +65,15 @@ export function CreateWindow(lpszClassName, lpszWindowName,
     //dialog.surface.font = this.fonts.lookup
 
     dialog.show();
-    dialog.resize(300, 300);
+    dialog.resize(400, 300);
 
     parentWindow.append(dialog);
 
     //*
     x = User.CW_USEDEFAULT;
     y = User.CW_USEDEFAULT;
-    nWidth = 580;
-    nHeight = 580;
+    nWidth = 500;
+    nHeight = 500;
     //*/
 
     if (nWidth != User.CW_USEDEFAULT) {

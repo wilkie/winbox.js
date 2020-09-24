@@ -97,6 +97,12 @@ import { User, MSG } from '../user.js';
  *                      successful. Otherwise, it is zero.
  */
 export function RedrawWindow(hwnd, lprcUpdate, hrgnUpdate, fuRedraw) {
+    let dialog = this.handles.resolve(hwnd);
+
+    if (!dialog) {
+        return 0;
+    }
+
     // Post a WM_PAINT and WM_ERASEBKGND message, as indicated
     let msg = new MSG();
     msg.hwnd = hwnd;

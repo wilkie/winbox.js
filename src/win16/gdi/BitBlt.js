@@ -203,5 +203,9 @@ export function BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight,
             break;
     }
 
+    if (destinationBitmap.surface) {
+        this.scheduler.pushDirty(destinationBitmap.surface);
+    }
+
     return TRUE;
 }

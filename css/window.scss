@@ -256,6 +256,7 @@
             border-top: none;
             position: relative;
             overflow: hidden;
+            outline: none !important;
 
             &.__winbox_docked-container {
                 flex: 0 0 auto;

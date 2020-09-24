@@ -6,6 +6,18 @@ import { Bitmap } from '../../raster/bitmap.js';
 import { NULL } from '../consts.js';
 
 export function CreateBitmap(nWidth, nHeight, cbPlanes, cbBits, lpvBits) {
+    /* UNDOCUMENTED FEATURE ALERT !!!
+     *
+     * Microsoft decided that CreateBitmap has "UINT" arguments but they are
+     * coerced to smaller 8-bit values. So you can pass 0xab01 to cbBits and it
+     * will create a monochrome bitmap. Makes sense. Seems good. Thanks a lot.
+     *
+     * SkiFree does this, for instance. All so it can save a byte by using a
+     * MOV AL, 0x1 instead of the MOV AX, I guess.
+     * */
+    cbBits = cbBits & 0xff;
+    cbPlanes = cbPlanes & 0xff;
+
     let memory = this.machine.memory;
 
     let srcSegment = ((lpvBits >> 16) & 0xffff) >> 3;
@@ -33,9 +45,11 @@ export function CreateBitmap(nWidth, nHeight, cbPlanes, cbBits, lpvBits) {
 
     let data = new Uint8Array(size);
 
-    for (let i = 0; i < size; i++) {
-        data[i] = memory.read8(srcSegment, srcOffset);
-        srcOffset++;
+    if (lpvBits) {
+        for (let i = 0; i < size; i++) {
+            data[i] = memory.read8(srcSegment, srcOffset);
+            srcOffset++;
+        }
     }
 
     // Create the view

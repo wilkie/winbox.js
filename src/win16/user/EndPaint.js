@@ -38,5 +38,10 @@ export function EndPaint(hwnd, lpps) {
     let referredSurface = this.handles.resolve(lpps.hdc);
     if (surface === referredSurface) {
         this.handles.free(lpps.hdc);
+
+        // Update window
+        if (surface && surface.dirty) {
+            surface.update();
+        }
     }
 }

@@ -454,6 +454,10 @@ export class Win16 {
                     this._machine.cpu.sp + offset
                 );
                 offset += 2;
+
+                if (Types.sizeof(argType) == 1) {
+                    ret = ret & 0xff;
+                }
                 return ret;
             }
             else if (Types.sizeof(argType) == 4) {

@@ -24,6 +24,15 @@ export class Surface {
 
     update() {
         this.context.putImageData(this.data, 0, 0);
+        this.dirty = false;
+    }
+
+    get dirty() {
+        return this._dirty;
+    }
+
+    set dirty(value) {
+        this._dirty = value;
     }
 
     get data() {
@@ -107,6 +116,7 @@ export class Surface {
     }
 
     fillRect(x, y, width, height) {
+        this.context.fillStyle = this.brush.color.css;
         this.context.fillRect(x, y, width, height);
         // TODO: improve performance of the ditherer and enable it
         //this._ditherer.fill(this.context, x, y, width, height, this._brush.color.value);
@@ -130,14 +140,6 @@ export class Surface {
             this.context.font = this._font;
 
             this.context.textBaseline = "top";
-            let measured = this.context.measureText(text);
-            let textWidth = measured.actualBoundingBoxRight +
-                            measured.actualBoundingBoxLeft;
-            let textHeight = measured.actualBoundingBoxDescent -
-                             measured.actualBoundingBoxAscent;
-            this.context.fillStyle = "white";
-            this.context.fillRect(x, y, textWidth, textHeight);
-
             this.context.fillStyle = "black";
             this.context.fillText(text, x, y);
         }

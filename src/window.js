@@ -656,6 +656,13 @@ export class Window extends EventComponent {
         }
 
         this._eventsBound = true;
+
+        // Disable browser context menu (right-click, usually) from popping up
+        this.element.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
+        });
+
+        // Add normal events
         this.element.addEventListener('mousedown', this.mouseDownEvent.bind(this));
         this.element.addEventListener('mousemove', this.mouseMoveEvent.bind(this));
         this.element.addEventListener('mouseup', this.mouseUpEvent.bind(this));

@@ -531,7 +531,16 @@ export class CPU {
      */
     step() {
         //console.log(this.cs, this.ip, this.bp);
-        //console.log((this.cs >> 3).toString(16), ":", this.ip.toString(16), 'sp:', this.sp.toString(16), 'bp:', this.bp.toString(16), 'ax:', this.ax.toString(16), 'bx:', this.bx.toString(16), 'cx:', this.cx.toString(16), 'dx:', this.dx.toString(16));
+        //if (this.ip == 0x542A) {
+            // The drawobject call
+            //console.log("Executing:", this.cs.toString(16), ":", this.ip.toString(16), 'sp:', this.sp.toString(16), 'bp:', this.bp.toString(16), 'ax:', this.ax.toString(16), 'bx:', this.bx.toString(16), 'cx:', this.cx.toString(16), 'dx:', this.dx.toString(16), 'si:', this.si.toString(16));//, this.memory.read16(this.ds >> 3, this.bp + 6).toString(16));
+        /*
+            let a = this.pop16();
+            let b = this.pop16();
+            this.push16(b);
+            this.push16(a);
+            console.log("from", a.toString(16), b.toString(16));
+        }*/
 
         // Fetch / Decode
         let instruction = this.decode(this._instruction);
@@ -579,12 +588,12 @@ export class CPU {
                           // LAR  (Load Access Rights Byte) /
                           // VERR ew / VERW ew (Verify Read/Write of Segment)
                 // Read the next byte
-                instruction.immediate = this._memory.read8(this.cs >> 3, this.ip);
+                let subCode = this._memory.read8(this.cs >> 3, this.ip);
 
-                if (instruction.immediate == 0x00 ||
-                    instruction.immediate == 0x01 ||
-                    instruction.immediate == 0x02 ||
-                    instruction.immediate == 0x03) {
+                if (subCode == 0x00 ||
+                    subCode == 0x01 ||
+                    subCode == 0x02 ||
+                    subCode == 0x03) {
                     // Consume that byte
                     this.ip++;
 
@@ -861,7 +870,7 @@ export class CPU {
             case 0xca:    // RET far dw
             case 0xe8:    // CALL cw
             case 0xe9:    // JMP cw
-                instruction.immediate = this._memory.readSigned16(this.cs >> 3, this.ip);
+                instruction.immediate = this._memory.read16(this.cs >> 3, this.ip);
                 this.ip += 2;
                 break;
 
@@ -1033,16 +1042,16 @@ export class CPU {
 
                 // Read immediate
                 if (immediateBytes == 1) {
-                    instruction.immediate = this._memory.readSigned8(this.cs >> 3, this.ip);
+                    instruction.immediate = this._memory.read8(this.cs >> 3, this.ip);
                     this.ip++;
                 }
                 else if (immediateBytes == 2) {
-                    instruction.immediate = this._memory.readSigned16(this.cs >> 3, this.ip);
+                    instruction.immediate = this._memory.read16(this.cs >> 3, this.ip);
                     this.ip += 2;
                 }
 
                 // Compute the effective address (if needed)
-                if ((!instruction.offset) && mod != 3) {
+                if ((instruction.offset === undefined) && mod != 3) {
                     switch (rm) {
                         case 0:       // (BX) + (SI) + DISP
                             instruction.segment = instruction.segment !== undefined ?
@@ -1092,6 +1101,11 @@ export class CPU {
                             instruction.offset = this.bx
                                                + instruction.displacement;
                             break;
+                    }
+
+                    // Address calculation overflows without applause.
+                    if (instruction.offset) {
+                        instruction.offset &= 0xffff;
                     }
                 }
 
@@ -1164,9 +1178,8 @@ export class CPU {
      */
     readRegister8(index) {
         let ret = this._registers[index % 4];
-        let low = index < 4;
 
-        if (!low) {
+        if (index >= 4) {
             ret >>= 8;
         }
 
@@ -1191,13 +1204,15 @@ export class CPU {
      * @param {number} value - The value to write.
      */
     writeRegister8(index, value) {
-        let low = index < 4;
-
+        let mask = 0xff00;
         value &= 0xff;
-        if (!low) {
+
+        if (index >= 4) {
             value <<= 8;
+            mask >>= 8;
         }
-        this._registers[index % 4] = value;
+
+        this._registers[index % 4] = (this._registers[index % 4] & mask) | value;
     }
 
     /**
@@ -2659,14 +2674,12 @@ export class CPU {
 
             case 0x2f6:    // TEST eb,db
                 //console.log('test   eb,db');
-                //console.log(this.readOperand8(instruction), instruction.immediate);
                 this.alu.and8(this.readOperand8(instruction),
                               instruction.immediate);
                 break;
 
             case 0x4f7:    // TEST ew,dw
                 //console.log('test   ew,dw');
-                //console.log(this.readOperand16(instruction));
                 this.alu.and16(this.readOperand16(instruction),
                                instruction.immediate);
                 break;

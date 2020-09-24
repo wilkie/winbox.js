@@ -99,6 +99,7 @@ export class WindowManager {
         else if (event === 'client-mousedown' ||
                  event === 'client-mouseup') {
 
+            console.log("MOUSE");
             let msg = new MSG();
             msg.hwnd = hWnd;
 

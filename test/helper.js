@@ -5,7 +5,7 @@ import '../dist/vendor.js';
 /**
  * Utility class for the test suite.
  */
-class Helper {
+export class Helper {
     /**
      * Returns a random integer between min (inclusive) and max (exclusive).
      */

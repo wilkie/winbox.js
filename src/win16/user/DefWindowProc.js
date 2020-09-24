@@ -25,5 +25,11 @@
  *                         processing and depends on the message sent.
  */
 export function DefWindowProc(hwnd, uMsg, wParam, lParam) {
+    let dialog = this.handles.resolve(hwnd);
+
+    if (!dialog) {
+        return 0;
+    }
+
     return 0;
 }

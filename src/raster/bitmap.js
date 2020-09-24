@@ -218,6 +218,10 @@ export class Bitmap {
             // For every pixel in the source bitmap
             for (let dX = destX, sX = srcX; dX < destX + srcWidth; dX++, sX++) {
                 // Determine the source value (s)
+                if (dX < 0 || dX > this.width) {
+                    continue;
+                }
+
                 let s = 0;
                 if (source instanceof Color) {
                     s = clr;
@@ -346,7 +350,7 @@ export class Bitmap {
         }
 
         if (this._surface) {
-            this._surface.update();
+            this._surface.dirty = true;
         }
     }
 
