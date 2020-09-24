@@ -17,6 +17,7 @@ test-chrome:
   before_script:
     - npm install --prefer-offline
   script:
+    - npm run build
     - npm run test
 
 test-firefox:
@@ -34,4 +35,5 @@ test-firefox:
   before_script:
     - npm install --prefer-offline
   script:
+    - npm run build
     - npm run test
