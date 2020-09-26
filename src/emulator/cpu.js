@@ -563,7 +563,7 @@ export class CPU {
         instruction.segment = undefined;
         instruction.offset = undefined;
         instruction.operandRegister = undefined;
-        instruction.subOpcode = undefined;
+        instruction.subOpcode = 0;
 
         // Read a 8-bit byte from memory at the current instruction pointer
         instruction.opcode = this._memory.read8(this.cs >> 3, this.ip);
@@ -1311,7 +1311,7 @@ export class CPU {
         //console.log(this.cs.toString(16) + ":" + this.ip.toString(16));
 
         // Get the internal opcode
-        let opcode = (instruction.opcode || 0xffff) | (instruction.subOpcode || 0);
+        let opcode = instruction.opcode | instruction.subOpcode;
 
         // Some placeholder values
         let operation = null;
@@ -2815,7 +2815,7 @@ export class CPU {
 
             default:
                 // Unknown
-                //console.log("error: executing unknown opcode", instruction);
+                console.log("error: executing unknown opcode", instruction);
                 throw new InvalidInstruction(instruction);
         }
 

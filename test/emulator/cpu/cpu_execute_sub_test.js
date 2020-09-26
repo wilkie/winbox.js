@@ -18,183 +18,9 @@ describe('CPU', () => {
             setupExecute.bind(this)();
         });
 
-        describe('cmp eb,db', function() {
+        describe('sub eb,rb', function() {
             it ('should execute the instruction with register source', function() {
-                this.memory.write8(this.segment, this.cpu.ip + 0, 0x80);
-                this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
-                let offset = this.writeModRM(this.cpu.ip + 1, 0x7);
-                offset = this.writeImm8(offset);
-
-                let a = Helper.randomInteger(0x00, 0xff);
-                let b = this.checkInstruction.immediate;
-
-                this.cpu.writeRegister8(this.checkInstruction.operandRegister, a);
-
-                // It should invoke the ALU 'sub' operation with the appropriate
-                // arguments.
-                let spy = spyOn(ALU.prototype, 'sub8').and.callThrough();
-
-                this.instruction = this.cpu.decode(this.instruction);
-                this.cpu.execute(this.instruction)
-
-                expect(this.cpu.alu.sub8).toHaveBeenCalledWith(a, b);
-            });
-
-            it ('should execute the instruction with memory source', function() {
-                this.memory.write8(this.segment, this.cpu.ip + 0, 0x80);
-                this.checkInstruction.operandRegister = -1;
-                let offset = this.writeModRM(this.cpu.ip + 1, 0x7);
-                offset = this.writeImm8(offset);
-
-                let a = Helper.randomInteger(0x00, 0xff);
-                let b = this.checkInstruction.immediate;
-
-                this.writeMemOperand8(a);
-
-                // It should invoke the ALU 'sub' operation with the appropriate
-                // arguments.
-                let spy = spyOn(ALU.prototype, 'sub8').and.callThrough();
-
-                this.instruction = this.cpu.decode(this.instruction);
-                this.cpu.execute(this.instruction)
-
-                expect(this.cpu.alu.sub8).toHaveBeenCalledWith(a, b);
-            });
-        });
-
-        describe('cmp ew,dw', function() {
-            it ('should execute the instruction with register source', function() {
-                this.memory.write8(this.segment, this.cpu.ip + 0, 0x81);
-                this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
-                let offset = this.writeModRM(this.cpu.ip + 1, 0x7);
-                offset = this.writeImm16(offset);
-
-                let a = Helper.randomInteger(0x0000, 0xffff);
-                let b = this.checkInstruction.immediate;
-
-                this.cpu.writeRegister16(this.checkInstruction.operandRegister, a);
-
-                // It should invoke the ALU 'sub' operation with the appropriate
-                // arguments.
-                let spy = spyOn(ALU.prototype, 'sub16').and.callThrough();
-
-                this.instruction = this.cpu.decode(this.instruction);
-                this.cpu.execute(this.instruction)
-
-                expect(this.cpu.alu.sub16).toHaveBeenCalledWith(a, b);
-            });
-
-            it ('should execute the instruction with memory source', function() {
-                this.memory.write8(this.segment, this.cpu.ip + 0, 0x81);
-                this.checkInstruction.operandRegister = -1;
-                let offset = this.writeModRM(this.cpu.ip + 1, 0x7);
-                offset = this.writeImm16(offset);
-
-                let a = Helper.randomInteger(0x0000, 0xffff);
-                let b = this.checkInstruction.immediate;
-
-                this.writeMemOperand16(a);
-
-                // It should invoke the ALU 'sub' operation with the appropriate
-                // arguments.
-                let spy = spyOn(ALU.prototype, 'sub16').and.callThrough();
-
-                this.instruction = this.cpu.decode(this.instruction);
-                this.cpu.execute(this.instruction)
-
-                expect(this.cpu.alu.sub16).toHaveBeenCalledWith(a, b);
-            });
-        });
-
-        describe('cmp ew,db', function() {
-            it ('should execute the instruction with register source', function() {
-                this.memory.write8(this.segment, this.cpu.ip + 0, 0x83);
-                this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
-                let offset = this.writeModRM(this.cpu.ip + 1, 0x7);
-                offset = this.writeImm8(offset);
-
-                let a = Helper.randomInteger(0x0000, 0xffff);
-                let b = this.checkInstruction.immediate;
-
-                this.cpu.writeRegister16(this.checkInstruction.operandRegister, a);
-
-                // It should invoke the ALU 'sub' operation with the appropriate
-                // arguments.
-                let spy = spyOn(ALU.prototype, 'sub16').and.callThrough();
-
-                this.instruction = this.cpu.decode(this.instruction);
-                this.cpu.execute(this.instruction)
-
-                expect(this.cpu.alu.sub16).toHaveBeenCalledWith(a, b);
-            });
-
-            it ('should execute the instruction with memory source', function() {
-                this.memory.write8(this.segment, this.cpu.ip + 0, 0x83);
-                this.checkInstruction.operandRegister = -1;
-                let offset = this.writeModRM(this.cpu.ip + 1, 0x7);
-                offset = this.writeImm8(offset);
-
-                let a = Helper.randomInteger(0x0000, 0xffff);
-                let b = this.checkInstruction.immediate;
-
-                this.writeMemOperand16(a);
-
-                // It should invoke the ALU 'sub' operation with the appropriate
-                // arguments.
-                let spy = spyOn(ALU.prototype, 'sub16').and.callThrough();
-
-                this.instruction = this.cpu.decode(this.instruction);
-                this.cpu.execute(this.instruction)
-
-                expect(this.cpu.alu.sub16).toHaveBeenCalledWith(a, b);
-            });
-        });
-
-        describe('cmp AL,db', function() {
-            it ('should execute the instruction', function() {
-                this.memory.write8(this.segment, this.cpu.ip + 0, 0x3c);
-                let offset = this.writeImm8(this.cpu.ip + 1);
-
-                let a = Helper.randomInteger(0x00, 0xff);
-                let b = this.checkInstruction.immediate;
-
-                this.cpu.writeRegister8(CPU.REGISTER_AL, a);
-
-                // It should invoke the ALU 'sub' operation with the appropriate
-                // arguments.
-                let spy = spyOn(ALU.prototype, 'sub8').and.callThrough();
-
-                this.instruction = this.cpu.decode(this.instruction);
-                this.cpu.execute(this.instruction)
-
-                expect(this.cpu.alu.sub8).toHaveBeenCalledWith(a, b);
-            });
-        });
-
-        describe('cmp AX,db', function() {
-            it ('should execute the instruction', function() {
-                this.memory.write8(this.segment, this.cpu.ip + 0, 0x3d);
-                let offset = this.writeImm16(this.cpu.ip + 1);
-
-                let a = Helper.randomInteger(0x0000, 0xffff);
-                let b = this.checkInstruction.immediate;
-
-                this.cpu.writeRegister16(CPU.REGISTER_AX, a);
-
-                // It should invoke the ALU 'sub' operation with the appropriate
-                // arguments.
-                let spy = spyOn(ALU.prototype, 'sub16').and.callThrough();
-
-                this.instruction = this.cpu.decode(this.instruction);
-                this.cpu.execute(this.instruction)
-
-                expect(this.cpu.alu.sub16).toHaveBeenCalledWith(a, b);
-            });
-        });
-
-        describe('cmp eb,rb', function() {
-            it ('should execute the instruction with register source', function() {
-                this.memory.write8(this.segment, this.cpu.ip + 0, 0x38);
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x28);
                 this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
                 let reg = Helper.randomInteger(0x0, 0x7);
                 let offset = this.writeModRM(this.cpu.ip + 1, reg);
@@ -217,7 +43,7 @@ describe('CPU', () => {
             });
 
             it ('should execute the instruction with memory source', function() {
-                this.memory.write8(this.segment, this.cpu.ip + 0, 0x38);
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x28);
                 this.checkInstruction.operandRegister = -1;
                 let reg = Helper.randomInteger(0x0, 0x7);
 
@@ -241,9 +67,9 @@ describe('CPU', () => {
             });
         });
 
-        describe('cmp rb,eb', function() {
+        describe('sub rb,eb', function() {
             it ('should execute the instruction with register source', function() {
-                this.memory.write8(this.segment, this.cpu.ip + 0, 0x3a);
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x2a);
                 this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
                 let reg = Helper.randomInteger(0x0, 0x7);
                 let offset = this.writeModRM(this.cpu.ip + 1, reg);
@@ -266,7 +92,7 @@ describe('CPU', () => {
             });
 
             it ('should execute the instruction with memory source', function() {
-                this.memory.write8(this.segment, this.cpu.ip + 0, 0x3a);
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x2a);
                 this.checkInstruction.operandRegister = -1;
                 let reg = Helper.randomInteger(0x0, 0x7);
 
@@ -290,9 +116,183 @@ describe('CPU', () => {
             });
         });
 
-        describe('cmp ew,rw', function() {
+        describe('sub AL,db', function() {
+            it ('should execute the instruction', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x2c);
+                let offset = this.writeImm8(this.cpu.ip + 1);
+
+                let a = Helper.randomInteger(0x00, 0xff);
+                let b = this.checkInstruction.immediate;
+
+                this.cpu.writeRegister8(CPU.REGISTER_AL, a);
+
+                // It should invoke the ALU 'sub' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'sub8').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.sub8).toHaveBeenCalledWith(a, b);
+            });
+        });
+
+        describe('sub AX,db', function() {
+            it ('should execute the instruction', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x2d);
+                let offset = this.writeImm16(this.cpu.ip + 1);
+
+                let a = Helper.randomInteger(0x0000, 0xffff);
+                let b = this.checkInstruction.immediate;
+
+                this.cpu.writeRegister16(CPU.REGISTER_AX, a);
+
+                // It should invoke the ALU 'sub' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'sub16').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.sub16).toHaveBeenCalledWith(a, b);
+            });
+        });
+
+        describe('sub ew,dw', function() {
             it ('should execute the instruction with register source', function() {
-                this.memory.write8(this.segment, this.cpu.ip + 0, 0x39);
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x81);
+                this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
+                let offset = this.writeModRM(this.cpu.ip + 1, 0x5);
+                offset = this.writeImm16(offset);
+
+                let a = Helper.randomInteger(0x0000, 0xffff);
+                let b = this.checkInstruction.immediate;
+
+                this.cpu.writeRegister16(this.checkInstruction.operandRegister, a);
+
+                // It should invoke the ALU 'sub' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'sub16').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.sub16).toHaveBeenCalledWith(a, b);
+            });
+
+            it ('should execute the instruction with memory source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x81);
+                this.checkInstruction.operandRegister = -1;
+                let offset = this.writeModRM(this.cpu.ip + 1, 0x5);
+                offset = this.writeImm16(offset);
+
+                let a = Helper.randomInteger(0x0000, 0xffff);
+                let b = this.checkInstruction.immediate;
+
+                this.writeMemOperand16(a);
+
+                // It should invoke the ALU 'sub' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'sub16').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.sub16).toHaveBeenCalledWith(a, b);
+            });
+        });
+
+        describe('sub ew,db', function() {
+            it ('should execute the instruction with register source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x83);
+                this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
+                let offset = this.writeModRM(this.cpu.ip + 1, 0x5);
+                offset = this.writeImm8(offset);
+
+                let a = Helper.randomInteger(0x0000, 0xffff);
+                let b = this.checkInstruction.immediate;
+
+                this.cpu.writeRegister16(this.checkInstruction.operandRegister, a);
+
+                // It should invoke the ALU 'sub' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'sub16').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.sub16).toHaveBeenCalledWith(a, b);
+            });
+
+            it ('should execute the instruction with memory source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x83);
+                this.checkInstruction.operandRegister = -1;
+                let offset = this.writeModRM(this.cpu.ip + 1, 0x5);
+                offset = this.writeImm8(offset);
+
+                let a = Helper.randomInteger(0x0000, 0xffff);
+                let b = this.checkInstruction.immediate;
+
+                this.writeMemOperand16(a);
+
+                // It should invoke the ALU 'sub' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'sub16').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.sub16).toHaveBeenCalledWith(a, b);
+            });
+        });
+
+        describe('sub eb,db', function() {
+            it ('should execute the instruction with register source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x80);
+                this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
+                let offset = this.writeModRM(this.cpu.ip + 1, 0x5);
+                offset = this.writeImm8(offset);
+
+                let a = Helper.randomInteger(0x00, 0xff);
+                let b = this.checkInstruction.immediate;
+
+                this.cpu.writeRegister8(this.checkInstruction.operandRegister, a);
+
+                // It should invoke the ALU 'sub' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'sub8').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.sub8).toHaveBeenCalledWith(a, b);
+            });
+
+            it ('should execute the instruction with memory source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x80);
+                this.checkInstruction.operandRegister = -1;
+                let offset = this.writeModRM(this.cpu.ip + 1, 0x5);
+                offset = this.writeImm8(offset);
+
+                let a = Helper.randomInteger(0x00, 0xff);
+                let b = this.checkInstruction.immediate;
+
+                this.writeMemOperand8(a);
+
+                // It should invoke the ALU 'sub' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'sub8').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.sub8).toHaveBeenCalledWith(a, b);
+            });
+        });
+
+        describe('sub ew,rw', function() {
+            it ('should execute the instruction with register source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x29);
                 this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
                 let reg = Helper.randomInteger(0x0, 0x7);
                 let offset = this.writeModRM(this.cpu.ip + 1, reg);
@@ -315,7 +315,7 @@ describe('CPU', () => {
             });
 
             it ('should execute the instruction with memory source', function() {
-                this.memory.write8(this.segment, this.cpu.ip + 0, 0x39);
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x29);
                 this.checkInstruction.operandRegister = -1;
                 let reg = Helper.randomInteger(0x0, 0x7);
 
@@ -339,9 +339,9 @@ describe('CPU', () => {
             });
         });
 
-        describe('cmp rw,ew', function() {
+        describe('sub rw,ew', function() {
             it ('should execute the instruction with register source', function() {
-                this.memory.write8(this.segment, this.cpu.ip + 0, 0x3b);
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x2b);
                 this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
                 let reg = Helper.randomInteger(0x0, 0x7);
                 let offset = this.writeModRM(this.cpu.ip + 1, reg);
@@ -364,7 +364,7 @@ describe('CPU', () => {
             });
 
             it ('should execute the instruction with memory source', function() {
-                this.memory.write8(this.segment, this.cpu.ip + 0, 0x3b);
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x2b);
                 this.checkInstruction.operandRegister = -1;
                 let reg = Helper.randomInteger(0x0, 0x7);
 

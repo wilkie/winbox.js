@@ -1,0 +1,391 @@
+"use strict";
+
+import { Helper } from '../../helper.js';
+
+import { ALU } from '../../../src/emulator/alu.js';
+import { CPU } from '../../../src/emulator/cpu.js';
+import { Memory } from '../../../src/emulator/memory.js';
+
+import { setup, setupExecute } from '../cpu_test.js';
+
+describe('CPU', () => {
+    beforeEach(function() {
+        setup.bind(this)();
+    });
+
+    describe('#execute', () => {
+        beforeEach(function() {
+            setupExecute.bind(this)();
+        });
+
+        describe('adc eb,rb', function() {
+            it ('should execute the instruction with register source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x10);
+                this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
+                let reg = Helper.randomInteger(0x0, 0x7);
+                let offset = this.writeModRM(this.cpu.ip + 1, reg);
+
+                let a = Helper.randomInteger(0x00, 0xff);
+                let b = Helper.randomInteger(0x00, 0xff);
+
+                this.cpu.writeRegister8(this.checkInstruction.operandRegister, a);
+                this.cpu.writeRegister8(reg, b);
+                a = this.cpu.readRegister8(this.checkInstruction.operandRegister);
+
+                // It should invoke the ALU 'adc' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'adc8').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.adc8).toHaveBeenCalledWith(a, b);
+            });
+
+            it ('should execute the instruction with memory source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x10);
+                this.checkInstruction.operandRegister = -1;
+                let reg = Helper.randomInteger(0x0, 0x7);
+
+                let a = Helper.randomInteger(0x00, 0xff);
+                let b = Helper.randomInteger(0x00, 0xff);
+
+                this.cpu.writeRegister8(reg, b);
+
+                let offset = this.writeModRM(this.cpu.ip + 1, reg);
+
+                this.writeMemOperand8(a);
+
+                // It should invoke the ALU 'adc' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'adc8').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.adc8).toHaveBeenCalledWith(a, b);
+            });
+        });
+
+        describe('adc rb,eb', function() {
+            it ('should execute the instruction with register source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x12);
+                this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
+                let reg = Helper.randomInteger(0x0, 0x7);
+                let offset = this.writeModRM(this.cpu.ip + 1, reg);
+
+                let a = Helper.randomInteger(0x00, 0xff);
+                let b = Helper.randomInteger(0x00, 0xff);
+
+                this.cpu.writeRegister8(this.checkInstruction.operandRegister, b);
+                this.cpu.writeRegister8(reg, a);
+                b = this.cpu.readRegister8(this.checkInstruction.operandRegister);
+
+                // It should invoke the ALU 'adc' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'adc8').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.adc8).toHaveBeenCalledWith(a, b);
+            });
+
+            it ('should execute the instruction with memory source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x12);
+                this.checkInstruction.operandRegister = -1;
+                let reg = Helper.randomInteger(0x0, 0x7);
+
+                let a = Helper.randomInteger(0x00, 0xff);
+                let b = Helper.randomInteger(0x00, 0xff);
+
+                this.cpu.writeRegister8(reg, a);
+
+                let offset = this.writeModRM(this.cpu.ip + 1, reg);
+
+                this.writeMemOperand8(b);
+
+                // It should invoke the ALU 'adc' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'adc8').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.adc8).toHaveBeenCalledWith(a, b);
+            });
+        });
+
+        describe('adc AL,db', function() {
+            it ('should execute the instruction', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x14);
+                let offset = this.writeImm8(this.cpu.ip + 1);
+
+                let a = Helper.randomInteger(0x00, 0xff);
+                let b = this.checkInstruction.immediate;
+
+                this.cpu.writeRegister8(CPU.REGISTER_AL, a);
+
+                // It should invoke the ALU 'adc' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'adc8').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.adc8).toHaveBeenCalledWith(a, b);
+            });
+        });
+
+        describe('adc AX,db', function() {
+            it ('should execute the instruction', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x15);
+                let offset = this.writeImm16(this.cpu.ip + 1);
+
+                let a = Helper.randomInteger(0x0000, 0xffff);
+                let b = this.checkInstruction.immediate;
+
+                this.cpu.writeRegister16(CPU.REGISTER_AX, a);
+
+                // It should invoke the ALU 'adc' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'adc16').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.adc16).toHaveBeenCalledWith(a, b);
+            });
+        });
+
+        describe('adc ew,dw', function() {
+            it ('should execute the instruction with register source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x81);
+                this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
+                let offset = this.writeModRM(this.cpu.ip + 1, 0x2);
+                offset = this.writeImm16(offset);
+
+                let a = Helper.randomInteger(0x0000, 0xffff);
+                let b = this.checkInstruction.immediate;
+
+                this.cpu.writeRegister16(this.checkInstruction.operandRegister, a);
+
+                // It should invoke the ALU 'adc' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'adc16').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.adc16).toHaveBeenCalledWith(a, b);
+            });
+
+            it ('should execute the instruction with memory source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x81);
+                this.checkInstruction.operandRegister = -1;
+                let offset = this.writeModRM(this.cpu.ip + 1, 0x2);
+                offset = this.writeImm16(offset);
+
+                let a = Helper.randomInteger(0x0000, 0xffff);
+                let b = this.checkInstruction.immediate;
+
+                this.writeMemOperand16(a);
+
+                // It should invoke the ALU 'adc' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'adc16').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.adc16).toHaveBeenCalledWith(a, b);
+            });
+        });
+
+        describe('adc ew,db', function() {
+            it ('should execute the instruction with register source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x83);
+                this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
+                let offset = this.writeModRM(this.cpu.ip + 1, 0x2);
+                offset = this.writeImm8(offset);
+
+                let a = Helper.randomInteger(0x0000, 0xffff);
+                let b = this.checkInstruction.immediate;
+
+                this.cpu.writeRegister16(this.checkInstruction.operandRegister, a);
+
+                // It should invoke the ALU 'adc' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'adc16').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.adc16).toHaveBeenCalledWith(a, b);
+            });
+
+            it ('should execute the instruction with memory source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x83);
+                this.checkInstruction.operandRegister = -1;
+                let offset = this.writeModRM(this.cpu.ip + 1, 0x2);
+                offset = this.writeImm8(offset);
+
+                let a = Helper.randomInteger(0x0000, 0xffff);
+                let b = this.checkInstruction.immediate;
+
+                this.writeMemOperand16(a);
+
+                // It should invoke the ALU 'adc' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'adc16').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.adc16).toHaveBeenCalledWith(a, b);
+            });
+        });
+
+        describe('adc eb,db', function() {
+            it ('should execute the instruction with register source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x80);
+                this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
+                let offset = this.writeModRM(this.cpu.ip + 1, 0x2);
+                offset = this.writeImm8(offset);
+
+                let a = Helper.randomInteger(0x00, 0xff);
+                let b = this.checkInstruction.immediate;
+
+                this.cpu.writeRegister8(this.checkInstruction.operandRegister, a);
+
+                // It should invoke the ALU 'adc' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'adc8').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.adc8).toHaveBeenCalledWith(a, b);
+            });
+
+            it ('should execute the instruction with memory source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x80);
+                this.checkInstruction.operandRegister = -1;
+                let offset = this.writeModRM(this.cpu.ip + 1, 0x2);
+                offset = this.writeImm8(offset);
+
+                let a = Helper.randomInteger(0x00, 0xff);
+                let b = this.checkInstruction.immediate;
+
+                this.writeMemOperand8(a);
+
+                // It should invoke the ALU 'adc' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'adc8').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.adc8).toHaveBeenCalledWith(a, b);
+            });
+        });
+
+        describe('adc ew,rw', function() {
+            it ('should execute the instruction with register source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x11);
+                this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
+                let reg = Helper.randomInteger(0x0, 0x7);
+                let offset = this.writeModRM(this.cpu.ip + 1, reg);
+
+                let a = Helper.randomInteger(0x0000, 0xffff);
+                let b = Helper.randomInteger(0x0000, 0xffff);
+
+                this.cpu.writeRegister16(this.checkInstruction.operandRegister, a);
+                this.cpu.writeRegister16(reg, b);
+                a = this.cpu.readRegister16(this.checkInstruction.operandRegister);
+
+                // It should invoke the ALU 'adc' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'adc16').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.adc16).toHaveBeenCalledWith(a, b);
+            });
+
+            it ('should execute the instruction with memory source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x11);
+                this.checkInstruction.operandRegister = -1;
+                let reg = Helper.randomInteger(0x0, 0x7);
+
+                let a = Helper.randomInteger(0x0000, 0xffff);
+                let b = Helper.randomInteger(0x0000, 0xffff);
+
+                this.cpu.writeRegister16(reg, b);
+
+                let offset = this.writeModRM(this.cpu.ip + 1, reg);
+
+                this.writeMemOperand16(a);
+
+                // It should invoke the ALU 'adc' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'adc16').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.adc16).toHaveBeenCalledWith(a, b);
+            });
+        });
+
+        describe('adc rw,ew', function() {
+            it ('should execute the instruction with register source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x13);
+                this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
+                let reg = Helper.randomInteger(0x0, 0x7);
+                let offset = this.writeModRM(this.cpu.ip + 1, reg);
+
+                let a = Helper.randomInteger(0x0000, 0xffff);
+                let b = Helper.randomInteger(0x0000, 0xffff);
+
+                this.cpu.writeRegister16(this.checkInstruction.operandRegister, b);
+                this.cpu.writeRegister16(reg, a);
+                b = this.cpu.readRegister16(this.checkInstruction.operandRegister);
+
+                // It should invoke the ALU 'adc' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'adc16').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.adc16).toHaveBeenCalledWith(a, b);
+            });
+
+            it ('should execute the instruction with memory source', function() {
+                this.memory.write8(this.segment, this.cpu.ip + 0, 0x13);
+                this.checkInstruction.operandRegister = -1;
+                let reg = Helper.randomInteger(0x0, 0x7);
+
+                let a = Helper.randomInteger(0x0000, 0xffff);
+                let b = Helper.randomInteger(0x0000, 0xffff);
+
+                this.cpu.writeRegister16(reg, a);
+
+                let offset = this.writeModRM(this.cpu.ip + 1, reg);
+
+                this.writeMemOperand16(b);
+
+                // It should invoke the ALU 'adc' operation with the appropriate
+                // arguments.
+                let spy = spyOn(ALU.prototype, 'adc16').and.callThrough();
+
+                this.instruction = this.cpu.decode(this.instruction);
+                this.cpu.execute(this.instruction)
+
+                expect(this.cpu.alu.adc16).toHaveBeenCalledWith(a, b);
+            });
+        });
+    });
+});
