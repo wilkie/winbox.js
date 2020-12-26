@@ -81,6 +81,7 @@ export class Allocator {
             return null;
         }
 
+        /*
         let segmentSize = this.memory.sizeOf(segment);
 
         // We need to allocate some space to memory to pad to the heap.
@@ -90,7 +91,7 @@ export class Allocator {
         else if (segmentSize > start) {
             throw "Overlapping heap and data segment???"
             return null;
-        }
+        }*/
 
         // Let us create our heap
         let bytes = new Uint8Array(size);
@@ -101,7 +102,7 @@ export class Allocator {
         this._heaps[segment] = heap;
 
         // Now we can append the heap data
-        this.memory.map(segment, heap);
+        this.memory.map((segment << 16) + start, heap);
 
         // Return the heap instance
         return this._heaps[segment];

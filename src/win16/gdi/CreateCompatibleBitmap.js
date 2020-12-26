@@ -6,7 +6,6 @@ import { Bitmap } from '../../raster/bitmap.js';
 import { NULL } from '../consts.js';
 
 export function CreateCompatibleBitmap(hdc, nWidth, nHeight) {
-
     // If the handle is NULL, fail
     if (hdc == NULL) {
         return NULL;

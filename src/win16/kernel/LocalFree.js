@@ -1,5 +1,7 @@
 "use strict";
 
+import { NULL } from '../consts.js';
+
 /**
  * The **LocalFree** function frees the given local memory object (if the
  * object is not locked) and invalidates its handle.

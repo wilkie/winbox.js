@@ -103,6 +103,13 @@ export function LoadBitmap(hinst, lpszBitmap) {
         // Resource ids that are integers have the high-bit set in the executable
         idResource |= 0x8000;
     }
+    else {
+        // We have a string resource
+        let idSegment = ((lpszBitmap >> 16) & 0xffff) >> 3;
+        let idOffset = lpszBitmap & 0xffff;
+
+        idResource = this.machine.memory.readCString(idSegment, idOffset);
+    }
 
     // Resolve the handle
     let module = this.handles.resolve(hinst);

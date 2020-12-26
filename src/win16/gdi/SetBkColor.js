@@ -6,8 +6,6 @@ import { Color } from '../../raster/color.js';
 import { Brush } from '../../raster/brush.js';
 import { Bitmap } from '../../raster/bitmap.js';
 
-import { TRUE, FALSE } from '../consts.js';
-
 /**
  * The **PatBlt** function creates a bit pattern on the specified device. The
  * pattern is a combination of the selected brush and the pattern already on the
@@ -56,7 +54,9 @@ import { TRUE, FALSE } from '../consts.js';
  * @return {Types.BOOL} The return value is nonzero if the function is
  *                      successful. Otherwise it is zero.
  */
-export function PatBlt(hdc, nLeftRect, nTopRect, nwidth, nheight, fdwRop) {
+export function SetBkColor(hdc, color) {
+    console.log("SetBkColor", arguments);
+
     // Resolve the destination DC handle
     let surface = this.handles.resolve(hdc);
 
@@ -65,36 +65,5 @@ export function PatBlt(hdc, nLeftRect, nTopRect, nwidth, nheight, fdwRop) {
         return FALSE;
     }
 
-    // Resolve the current brush
-    let brush = surface.brush;
-
-    // Fill the rectangle with the brush (depending on mode)
-    switch (fdwRop) {
-        case Gdi.PATCOPY:
-            // Fill using current brush.
-            surface.bitmap.blit(Bitmap.OPERATIONS.COPY, nLeftRect, nTopRect, nwidth, nheight, surface.brush.color, 0, 0, nwidth, nheight);
-            break;
-
-        case Gdi.PATINVERT:
-            surface.bitmap.blit(Bitmap.OPERATIONS.XOR, nLeftRect, nTopRect, nwidth, nheight, surface.brush.color, 0, 0, nwidth, nheight);
-            break;
-
-        case Gdi.PATPAINT:
-            surface.bitmap.blit(Bitmap.OPERATIONS.OR, nLeftRect, nTopRect, nwidth, nheight, surface.brush.color, 0, 0, nwidth, nheight);
-            break;
-
-        case Gdi.WHITENESS:
-            // Fill rectangle
-            surface.bitmap.blit(Bitmap.OPERATIONS.COPY, nLeftRect, nTopRect, nwidth, nheight, new Color(255, 255, 255, 255), 0, 0, nwidth, nheight);
-            break;
-
-        case Gdi.BLACKNESS:
-            // Fill rectangle with black
-            surface.bitmap.blit(Bitmap.OPERATIONS.COPY, nLeftRect, nTopRect, nwidth, nheight, new Color(0, 0, 0, 255), 0, 0, nwidth, nheight);
-            break;
-    }
-
-    this.scheduler.pushDirty(surface);
-
-    return TRUE;
+    return color;
 }

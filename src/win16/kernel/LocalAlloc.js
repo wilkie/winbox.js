@@ -66,7 +66,7 @@ import { Kernel } from '../kernel.js';
  */
 export function LocalAlloc(fuAllocFlags, fuAlloc) {
     // LocalAlloc allocates to the heap of the current segment selected via DS.
-    let segment = this.machine.cpu.ds >> 3;
+    let segment = this.machine.cpu.core.ds >> 3;
 
     // We can negotiate flags.
     // TODO: flags
@@ -103,6 +103,7 @@ export function LocalAlloc(fuAllocFlags, fuAlloc) {
     if (handle === null) {
         return NULL;
     }
+    console.log("allocated", handle);
 
     return handle;
 }

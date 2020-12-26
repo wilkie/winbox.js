@@ -22,14 +22,14 @@
  *                      Otherwise the return value is zero.
  */
 export function SetBitmapBits(hbmp, cbBuffer, lpvBits) {
-    let memory = this.machine.memory;
+    let cpu = this.machine.cpu.core;
     let item = this.handles.resolve(hbmp);
 
     if (!item) {
         return 0;
     }
 
-    let srcSegment = ((lpvBits >> 16) & 0xffff) >> 3;
+    let srcSegment = (lpvBits >> 16) & 0xffff;
     let srcOffset = lpvBits & 0xffff;
 
     let bpRow = item.bpp * item.width;
@@ -41,7 +41,7 @@ export function SetBitmapBits(hbmp, cbBuffer, lpvBits) {
 
     // Copy the bitmap to the bitmap's data view.
     for (let i = 0; i < size; i++) {
-        item.view.setUint8(i, memory.read8(srcSegment, srcOffset));
+        item.view.setUint8(i, cpu.read8(srcSegment, srcOffset));
     }
 
     return size;

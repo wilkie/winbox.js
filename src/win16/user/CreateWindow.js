@@ -73,7 +73,7 @@ export function CreateWindow(lpszClassName, lpszWindowName,
     x = User.CW_USEDEFAULT;
     y = User.CW_USEDEFAULT;
     nWidth = 500;
-    nHeight = 500;
+    nHeight = 1000;
     //*/
 
     if (nWidth != User.CW_USEDEFAULT) {
@@ -95,9 +95,9 @@ export function CreateWindow(lpszClassName, lpszWindowName,
     }
 
     // Set default bitmap (8bpp)
-    let bitmapData = new Uint8Array(dialog.innerWidth * dialog.innerHeight);
+    let bitmapData = new Uint8Array(dialog.surface.width * dialog.surface.height * 4);
     let bitmapView = new DataView(bitmapData.buffer);
-    dialog.surface.bitmap = new Bitmap(dialog.innerWidth, dialog.innerHeight, 8, Bitmap.RGBA, bitmapView, Palette.PALETTEWIN256);
+    dialog.surface.bitmap = new Bitmap(dialog.surface.width, dialog.surface.height, 32, Bitmap.RGBA, bitmapView, Palette.PALETTEWIN256);
 
     dialog.hide();
 
@@ -129,6 +129,8 @@ export function CreateWindow(lpszClassName, lpszWindowName,
     createstruct.lpszName = (lpszWindowName.segment << 16) | lpszWindowName.offset;
     createstruct.lpszClass = (lpszClassName.segment << 16) | lpszClassName.offset;
     createstruct.dwExStyle = 0;
+
+    dialog._createStruct = createstruct;
     //console.log("create struct???", createstruct.cy, createstruct.cx);
 
     // We asynchronously halt and call the window message procedure for the

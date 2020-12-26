@@ -24,21 +24,21 @@
  *                         function is successful.
  */
 export function lstrcat(lpszString1, lpszString2) {
-    let memory = this.machine.memory;
+    let cpu = this.machine.cpu.core;
 
     // TODO: how does a DBCS string work
 
-    let destSegment = ((lpszString1 >> 16) & 0xffff) >> 3;
+    let destSegment = (lpszString1 >> 16) & 0xffff;
     let destOffset = lpszString1 & 0xffff;
 
-    let srcSegment = ((lpszString2 >> 16) & 0xffff) >> 3;
+    let srcSegment = (lpszString2 >> 16) & 0xffff;
     let srcOffset = lpszString2 & 0xffff;
 
     // Go through the dest memory until we hit a null terminator
     let data = null;
     let count = 0;
     do {
-        data = memory.read8(destSegment, destOffset);
+        data = cpu.read8(destSegment, destOffset);
         destOffset++;
         count++;
     } while (data && count <= 0xffff)
@@ -51,8 +51,8 @@ export function lstrcat(lpszString1, lpszString2) {
     data = null;
     count = 0;
     do {
-        data = memory.read8(srcSegment, srcOffset);
-        memory.write8(destSegment, destOffset, data);
+        data = cpu.read8(srcSegment, srcOffset);
+        cpu.write8(destSegment, destOffset, data);
         srcOffset++;
         destOffset++;
         count++;

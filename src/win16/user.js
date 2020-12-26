@@ -23,6 +23,7 @@ import { GetMessage } from './user/GetMessage.js';
 import { GetTickCount } from './user/GetTickCount.js';
 import { GetClientRect } from './user/GetClientRect.js';
 import { GetWindowRect } from './user/GetWindowRect.js';
+import { GetWindowWord } from './user/GetWindowWord.js';
 import { InitApp } from './user/InitApp.js';
 import { LoadBitmap } from './user/LoadBitmap.js';
 import { LoadString } from './user/LoadString.js';
@@ -198,7 +199,7 @@ export class User extends Module {
             [User.stub, "SetClassWord", 6],
             [User.stub, "GetClassLong", 4],
             [User.stub, "SetClassLong", 8],
-            [User.stub, "GetWindowWord", 4],
+            [GetWindowWord, "GetWindowWord", 4, [HWND, INT], INT],
             [User.stub, "SetWindowWord", 6],
             [User.stub, "GetWindowLong", 4],
             [User.stub, "SetWindowLong", 8],

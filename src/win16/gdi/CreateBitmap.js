@@ -18,9 +18,7 @@ export function CreateBitmap(nWidth, nHeight, cbPlanes, cbBits, lpvBits) {
     cbBits = cbBits & 0xff;
     cbPlanes = cbPlanes & 0xff;
 
-    let memory = this.machine.memory;
-
-    let srcSegment = ((lpvBits >> 16) & 0xffff) >> 3;
+    let srcSegment = (lpvBits >> 16) & 0xffff;
     let srcOffset = lpvBits & 0xffff;
 
     // Get bitmap data
@@ -47,7 +45,7 @@ export function CreateBitmap(nWidth, nHeight, cbPlanes, cbBits, lpvBits) {
 
     if (lpvBits) {
         for (let i = 0; i < size; i++) {
-            data[i] = memory.read8(srcSegment, srcOffset);
+            data[i] = this.machine.cpu.core.read8(srcSegment, srcOffset);
             srcOffset++;
         }
     }

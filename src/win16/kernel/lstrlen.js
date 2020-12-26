@@ -19,11 +19,11 @@
  *                      is no error return.
  */
 export function lstrlen(lpszString) {
-    let memory = this.machine.memory;
+    let cpu = this.machine.cpu.core;
 
     // TODO: how does a DBCS string work
 
-    let srcSegment = ((lpszString >> 16) & 0xffff) >> 3;
+    let srcSegment = (lpszString >> 16) & 0xffff;
     let srcOffset = lpszString & 0xffff;
 
     // Go through the src memory until we hit a null terminator
@@ -31,7 +31,7 @@ export function lstrlen(lpszString) {
     let data = null;
     let count = 0;
     do {
-        data = memory.read8(srcSegment, srcOffset);
+        data = cpu.read8(srcSegment, srcOffset);
         srcOffset++;
         count++;
     } while (data && count <= 0xffff);

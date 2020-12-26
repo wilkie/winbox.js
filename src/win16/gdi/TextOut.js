@@ -44,6 +44,7 @@ export function TextOut(hdc, nXStart, nYStart, lpszString, cbString) {
     //console.log("textout", lpszString, cbString, nXStart, nYStart);
     // Get the surface instance
     let surface = this.handles.resolve(hdc);
+    console.log(lpszString, surface);
 
     // Draw background around the text
     let metrics = surface.measureText(lpszString.slice(0, cbString));

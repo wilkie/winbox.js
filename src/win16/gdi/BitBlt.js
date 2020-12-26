@@ -127,6 +127,8 @@ export function BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight,
     // Resolve the destination DC handle
     let destination = this.handles.resolve(hdcDest);
 
+    //console.log("BitBlt", source, destination.width, destination.bitmap.width);
+
     // Bail if we cannot find the destination DC
     if (!destination) {
         return FALSE;

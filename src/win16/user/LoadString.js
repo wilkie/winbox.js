@@ -1,5 +1,7 @@
 "use strict";
 
+import { NULL } from '../consts.js';
+
 import { Executable } from '../../executable.js';
 
 /**
@@ -41,7 +43,7 @@ export function LoadString(hinst, idResource, lpszBuffer, cbBuffer) {
         return NULL;
     }
 
-    let memory = this.machine.memory;
+    let cpu = this.machine.cpu.core;
 
     let executable = module.executable;
 
@@ -53,8 +55,10 @@ export function LoadString(hinst, idResource, lpszBuffer, cbBuffer) {
     // Resource ids that are integers have the high-bit set in the executable
     idResource |= 0x8000;
 
-    let destSegment = ((lpszBuffer >> 16) & 0xffff) >> 3;
+    let destSegment = (lpszBuffer >> 16) & 0xffff;
     let destOffset = lpszBuffer & 0xffff;
+
+    console.log("writing string to", destSegment.toString(16), destOffset.toString(16));
 
     let ret = 0;
     executable.resources.forEach( (resourceType) => {
@@ -74,12 +78,12 @@ export function LoadString(hinst, idResource, lpszBuffer, cbBuffer) {
                     let length = data[offset];
                     offset++;
                     for (let i = offset; i < offset + length; i++) {
-                        memory.write8(destSegment, destOffset, data[i]);
+                        cpu.write8(destSegment, destOffset, data[i]);
                         destOffset++;
                     }
 
                     // Write the null-terminator as well.
-                    memory.write8(destSegment, destOffset, 0);
+                    cpu.write8(destSegment, destOffset, 0);
 
                     // We will return the length of the string
                     ret = length;

@@ -24,11 +24,8 @@
  *                            members will contain the width and height of the
  *                            window.
  */
-export function GetClientRect(hwnd, lprc) {
+export function GetWindowWord(hwnd, nOffset) {
     let dialog = this.handles.resolve(hwnd);
 
-    lprc.left = 0;
-    lprc.top = 0;
-    lprc.right = dialog.innerWidth | 508;
-    lprc.bottom = dialog.innerHeight | 1000;
+    return dialog._createStruct.hInstance;
 }

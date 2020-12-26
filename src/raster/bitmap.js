@@ -168,6 +168,10 @@ export class Bitmap {
         return this._palette;
     }
 
+    fill(x, y, width, height, clr) {
+        this.blit(Bitmap.OPERATIONS.COPY, x, y, width, height, clr, 0, 0, width, height);
+    }
+
     /**
      * Performs the given operation using the given source bitmap.
      *
@@ -204,7 +208,10 @@ export class Bitmap {
         }
         else {
             // Source is a solid color
-            clr = (source.value >> 8);
+            // We must convert from ARGB to RGBA
+            clr = source.value & 0xffffff;
+            clr <<= 8;
+            clr = clr | 0xff;
             srcBPP = 32;
 
             if (invert) {
@@ -216,9 +223,9 @@ export class Bitmap {
         // For each line in the source bitmap
         for (let y = 0; y < srcHeight; y++) {
             // For every pixel in the source bitmap
-            for (let dX = destX, sX = srcX; dX < destX + srcWidth; dX++, sX++) {
+            for (let dX = destX, sX = srcX; dX < destX + srcWidth && dX < this.width; dX++, sX++) {
                 // Determine the source value (s)
-                if (dX < 0 || dX > this.width) {
+                if (dX < 0) {
                     continue;
                 }
 
@@ -231,6 +238,7 @@ export class Bitmap {
                     if (offset >= 0) {
                         s = source.view.getUint8(offset);
                         s = s >> (7 - (sX % 8));
+                        s = s & 0x1;
                     }
                 }
                 else if (srcBPP == 8) {
@@ -256,7 +264,8 @@ export class Bitmap {
                 let d = 0;
                 let cur = 0;
                 if (this.bpp == 1) {
-                    // TODO: compare against background color (brush color)
+                    //console.log("looking at s ==", s);
+                    // TODO: compare against background color
                     if (s == 0x0) {
                         s = 1;
                     }
@@ -285,14 +294,33 @@ export class Bitmap {
                         continue;
                     }
 
+                    if (source.bpp == 1) {
+                        // monochrome converts to the backcolor/forecolor
+                        if (s == 0) {
+                            s = 255;
+                        }
+                        else {
+                            s = 0;
+                        }
+                    }
+
                     if (opFunc) {
                         d = this.view.getUint8(offset);
                     }
                 }
                 else if (this.bpp == 32) {
                     // Resolve the source palette, if needed
-                    if (source.bpp < 32) {
-                        s = source.palette[s];
+                    if (source.bpp == 1) {
+                        // monochrome converts to the backcolor/forecolor
+                        if (s == 0) {
+                            s = 0xffffffff;
+                        }
+                        else {
+                            s = 0xff000000;
+                        }
+                    }
+                    else if (source.bpp < 32) {
+                        s = source.palette[s] >>> 0;
                     }
 
                     // Retrieve the current destination pixel (if necessary)
@@ -323,6 +351,7 @@ export class Bitmap {
                     else {
                         cur &= (~position) & 0xff;
                     }
+                    //console.log("ok, setting", dX, "to", cur, srcWidth);
                     this.view.setUint8(destOffset + ((dX / 8) >>> 0), cur);
                 }
                 else if (this.bpp == 8) {

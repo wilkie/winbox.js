@@ -40,7 +40,7 @@ export function LocalInit(uSegment, uStartAddr, uEndAddr) {
     }
 
     // Get the selector index
-    let segment = uSegment >> 3;
+    let segment = uSegment;
 
     // If the heap is already allocated, we fail out
     if (this.allocator.heapOf(segment)) {
@@ -51,7 +51,7 @@ export function LocalInit(uSegment, uStartAddr, uEndAddr) {
     let size = uEndAddr - uStartAddr;
     let heap = this.allocator.heapInitialize(segment, uStartAddr, size);
 
-    console.log("allocated a heap", heap);
+    console.log("allocated a heap", segment, heap);
     if (heap) {
         return TRUE;
     }

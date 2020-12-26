@@ -19,5 +19,7 @@
  *                        that have elapsed since the system was started.
  */
 export function GetTickCount() {
-    return (new Date).getTime() - this.startTime;
+    let ret = (new Date).getTime() - this.startTime;
+    ret = ret + 0xcc824915;
+    return ret;
 }

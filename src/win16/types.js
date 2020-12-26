@@ -353,13 +353,13 @@ export class Struct {
             size += innerSize;
         }
         else if (itemSize == 1) {
-            write8(segment, offset, value);
+            write8((segment << 16) + offset, value);
 
             // Byte packed (most of the time?)
             size += 1;
         }
         else if (itemSize == 2) {
-            write16(segment, offset, value);
+            write16((segment << 16) + offset, value);
 
             size += 2;
         }
@@ -367,8 +367,8 @@ export class Struct {
             if (argType == Types.LPCSTR) {
                 // Pointers... don't change... maybe
                 // But we read them so we can write to memory
-                let lo = memory.read16(segment, offset);
-                let hi = memory.read16(segment, offset + 2);
+                let lo = memory.read16((segment << 16) + offset);
+                let hi = memory.read16((segment << 16) + offset + 2);
 
                 // Write string at [ret-hi]:[ret-lo]
                 if (hi == 0 && lo == 0) {
@@ -380,8 +380,8 @@ export class Struct {
             }
             else {
                 // Write the value
-                write16(segment, offset, value & 0xffff);
-                write16(segment, offset + 2, (value >> 16) & 0xffff);
+                write16((segment << 16) + offset, value & 0xffff);
+                write16((segment << 16) + offset + 2, (value >> 16) & 0xffff);
             }
 
             size += 4;
@@ -404,9 +404,6 @@ export class Struct {
             // Gather the type for this item
             let argType = item[1];
 
-            // And its size
-            let size = Types.sizeof(argType);
-
             // Determine the value from memory
             let value = 0;
 
@@ -422,10 +419,10 @@ export class Struct {
             }
             else if (Types.sizeof(argType) == 1) {
                 if (Types.signed(argType)) {
-                    value = readSigned8(segment, offset);
+                    value = readSigned8((segment << 16) + offset);
                 }
                 else {
-                    value = read8(segment, offset);
+                    value = read8((segment << 16) + offset);
                 }
 
                 // Byte packed (most of the time?)
@@ -434,18 +431,18 @@ export class Struct {
             }
             else if (Types.sizeof(argType) == 2) {
                 if (Types.signed(argType)) {
-                    value = readSigned16(segment, offset);
+                    value = readSigned16((segment << 16) + offset);
                 }
                 else {
-                    value = read16(segment, offset);
+                    value = read16((segment << 16) + offset);
                 }
 
                 offset += 2;
                 size += 2;
             }
             else if (Types.sizeof(argType) == 4) {
-                let lo = read16(segment, offset);
-                let hi = read16(segment, offset + 2);
+                let lo = read16((segment << 16) + offset);
+                let hi = read16((segment << 16) + offset + 2);
 
                 offset += 4;
                 size += 4;
@@ -467,6 +464,8 @@ export class Struct {
             // Assign the value
             this._data[i] = value;
         });
+
+        return size;
     }
 }
 

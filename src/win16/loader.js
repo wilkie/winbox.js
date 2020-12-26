@@ -12,8 +12,8 @@ export class Loader {
      * Creates a loader that will place the given executable into the given
      * memory.
      */
-    constructor(executable, memory, options = {}) {
-        this._memory = memory;
+    constructor(executable, globalAllocator, options = {}) {
+        this._globalAllocator = globalAllocator;
         this._data = executable._data;
         this._view = new DataView(this._data);
         this._header = executable.neHeader;
@@ -31,7 +31,7 @@ export class Loader {
             );
 
             console.log("loading segment", i + 1, "with", view.byteLength, "bytes");
-            memory.map(i + 1, view);
+            this._globalAllocator.map(i + 1, view);
         });
     }
 
@@ -158,10 +158,10 @@ export class Loader {
 
         let autoDataSegmentIndex = this.header.autoDataSegmentIndex;
 
-        this._CS = (this.header.entryPointCS << 3) | 0x3;
-        this._DS = (autoDataSegmentIndex << 3) | 0x3;
+        this._CS = this.header.entryPointCS;
+        this._DS = autoDataSegmentIndex;
         this._IP = this.header.entryPointIP;
-        this._SS = (this.header.initialStackPointerSS << 3) | 0x3;
+        this._SS = this.header.initialStackPointerSS;
         this._SP = this.header.initialStackPointerSP;
 
         this.readResidentEntries();

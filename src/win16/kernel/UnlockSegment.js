@@ -47,7 +47,7 @@ export function UnlockSegment(uSegment) {
     }
 
     // Return the lock count
-    this.machine.cpu.cx = 0;
+    this.machine.cpu.core.cx = 0;
 
     console.log("UnlockSegment:", uSegment);
 }

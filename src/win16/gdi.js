@@ -25,6 +25,7 @@ import { GetStockObject } from './gdi/GetStockObject.js';
 import { PatBlt } from './gdi/PatBlt.js';
 import { SelectObject } from './gdi/SelectObject.js';
 import { SetBitmapBits } from './gdi/SetBitmapBits.js';
+import { SetBkColor } from './gdi/SetBkColor.js';
 import { TextOut } from './gdi/TextOut.js';
 
 /**
@@ -41,7 +42,7 @@ export class Gdi extends Module {
         return [
             // 0 //
             null,
-            [Gdi.stub, "SetBkColor", 6],
+            [SetBkColor, "SetBkColor", 6, [HDC, COLORREF], COLORREF],
             [Gdi.stub, "SetBkMode", 4],
             [Gdi.stub, "SetMapMode", 4],
             [Gdi.stub, "SetRop2", 4],

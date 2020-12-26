@@ -15,15 +15,19 @@ export class Surface {
         this._ditherer = new Ditherer();
 
         // TODO: what are the default pen/brush?
-        this.brush = new Brush(new Color(0xff, 0xff, 0xff));
-        this.pen = new Pen(new Color(0x00, 0x00, 0x00));
+        this.brush = new Brush(new Color(0xff, 0xff, 0xff, 0xff));
+        this.pen = new Pen(new Color(0x00, 0x00, 0x00, 0xff));
+        this.backcolor = new Color(0x00, 0x00, 0x00, 0xff);
+        this.forecolor = new Color(0xff, 0xff, 0xff, 0xff);
 
         // We start stale
         this._stale = true;
     }
 
     update() {
-        this.context.putImageData(this.data, 0, 0);
+        if (this.width != 0 && this.height != 0) {
+            this.context.putImageData(this.data, 0, 0);
+        }
         this.dirty = false;
     }
 
@@ -38,7 +42,9 @@ export class Surface {
     get data() {
         // If we are stale, pull the image data
         if (this._stale) {
-            this._data = this.context.getImageData(0, 0, this.width, this.height);
+            if (this.width != 0 && this.height != 0) {
+                this._data = this.context.getImageData(0, 0, this.width, this.height);
+            }
             this._view = new DataView(this._data.data.buffer);
             this._stale = false;
         }
@@ -82,6 +88,14 @@ export class Surface {
         this._brush = value;
         this.context.fillStyle = value.color.css;
     }
+    
+    get backcolor() {
+        return this._backcolor;
+    }
+
+    set backcolor(value) {
+        this._backcolor = value;
+    }
 
     get pen() {
         return this._pen;
@@ -90,6 +104,14 @@ export class Surface {
     set pen(value) {
         this._pen = value;
         this.context.strokeStyle = value.color.css;
+    }
+    
+    get forecolor() {
+        return this._forecolor;
+    }
+
+    set forecolor(value) {
+        this._forecolor = value;
     }
 
     get font() {
@@ -116,11 +138,16 @@ export class Surface {
     }
 
     fillRect(x, y, width, height) {
-        this.context.fillStyle = this.brush.color.css;
-        this.context.fillRect(x, y, width, height);
+        //this.context.fillStyle = this.brush.color.css;
+        //this.context.fillRect(x, y, width, height);
         // TODO: improve performance of the ditherer and enable it
         //this._ditherer.fill(this.context, x, y, width, height, this._brush.color.value);
         this._stale = true;
+
+        // Set the actual bitmap bits
+        if (this._bitmap) {
+            this._bitmap.fill(x, y, width, height, this.brush.color);
+        }
     }
 
     strokeRect(x, y, width, height) {

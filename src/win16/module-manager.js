@@ -4,7 +4,7 @@
  * This manages all loaded modules known to the system.
  */
 export class ModuleManager {
-    constructor(memory) {
+    constructor(globalAllocator) {
         // Keep track of the modules we know of
         this._modules = {};
 
@@ -15,7 +15,7 @@ export class ModuleManager {
         this._segments = {};
 
         // Retain memory
-        this._memory = memory;
+        this._globalAllocator = globalAllocator;
     }
 
     load(module) {
@@ -90,7 +90,7 @@ export class ModuleManager {
         }
 
         // Load the module's code segment
-        this._memory.map(loadedModule.segment, new DataView(code.buffer));
+        this._globalAllocator.map(loadedModule.segment, new DataView(code.buffer));
 
         return loadedModule;
     }

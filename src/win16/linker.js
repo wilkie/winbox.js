@@ -121,8 +121,8 @@ export class Linker {
     writeRelocation16(relocation, destinationSegment, value) {
         if (relocation.additive) {
             // Not a relocation chain... just add to the current value
-            offset += this._memory.read16(destinationSegment, relocation.offset);
-            this._memory.write16(destinationSegment, relocationOffset, value);
+            offset += this._memory.read16(destinationSegment << 16 + relocation.offset);
+            this._memory.write16(destinationSegment << 16 + relocationOffset, value);
         }
         else {
             let nextOffset = relocation.offset;
@@ -130,10 +130,10 @@ export class Linker {
             while (limit > 0 && nextOffset != 0xffff) {
                 // Get the next offset
                 let thisOffset = nextOffset;
-                nextOffset = this._memory.read16(destinationSegment, thisOffset)
+                nextOffset = this._memory.read16((destinationSegment << 16) + thisOffset)
 
                 // Rewrite the code segment
-                this._memory.write16(destinationSegment, thisOffset, value);
+                this._memory.write16((destinationSegment << 16) + thisOffset, value);
 
                 limit--;
             }
@@ -154,10 +154,10 @@ export class Linker {
     writeRelocation32(relocation, destinationSegment, segment, offset) {
         if (relocation.additive) {
             // Not a relocation chain... just add to the current values
-            offset += this._memory.read16(destinationSegment, relocation.offset);
-            segment += this._memory.read16(destinationSegment, relocation.offset + 2);
-            this._memory.write16(destinationSegment, relocation.offset, offset);
-            this._memory.write16(destinationSegment, relocation.offset + 2, segment);
+            offset += this._memory.read16((destinationSegment << 16) + relocation.offset);
+            segment += this._memory.read16((destinationSegment << 16) + relocation.offset + 2);
+            this._memory.write16((destinationSegment << 16) + relocation.offset, offset);
+            this._memory.write16((destinationSegment << 16) + relocation.offset + 2, segment);
         }
         else {
             let nextOffset = relocation.offset;
@@ -165,11 +165,11 @@ export class Linker {
             while (limit > 0 && nextOffset != 0xffff) {
                 // Get the next offset
                 let thisOffset = nextOffset;
-                nextOffset = this._memory.read16(destinationSegment, thisOffset)
+                nextOffset = this._memory.read16((destinationSegment << 16) + thisOffset)
 
                 // Rewrite the code segment
-                this._memory.write16(destinationSegment, thisOffset, offset);
-                this._memory.write16(destinationSegment, thisOffset + 2, segment);
+                this._memory.write16((destinationSegment << 16) + thisOffset, offset);
+                this._memory.write16((destinationSegment << 16) + thisOffset + 2, segment);
 
                 limit--;
             }

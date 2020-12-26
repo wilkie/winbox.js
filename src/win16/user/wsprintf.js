@@ -1,10 +1,10 @@
 export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
-    let memory = this.machine.memory;
+    let cpu = this.machine.cpu.core;
 
-    let argvSegment = ((lpvArgList >> 16) & 0xffff) >> 3;
+    let argvSegment = (lpvArgList >> 16) & 0xffff;
     let argvOffset = lpvArgList & 0xffff;
 
-    let destSegment = ((lpszOutput >> 16) & 0xffff) >> 3;
+    let destSegment = (lpszOutput >> 16) & 0xffff;
     let destOffset = lpszOutput & 0xffff;
 
     let origOffset = destOffset;
@@ -36,7 +36,7 @@ export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
                     // TODO: prefixes, width/precision, other types
                     case '%':
                         // Output a percent
-                        memory.write8(destSegment, destOffset, "%".charCodeAt(0));
+                        cpu.write8(destSegment, destOffset, "%".charCodeAt(0));
                         destOffset++;
                         chr = 0;
                         break;
@@ -57,9 +57,9 @@ export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
                         {
                             // Output string
                             // Retrieve string
-                            let offset = memory.read16(argvSegment, argvOffset);
+                            let offset = cpu.read16(argvSegment, argvOffset);
                             argvOffset += 2;
-                            let segment = memory.read16(argvSegment, argvOffset);
+                            let segment = cpu.read16(argvSegment, argvOffset);
                             segment = segment >> 3;
                             argvOffset += 2;
 
@@ -70,10 +70,10 @@ export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
                                     break;
                                 }
 
-                                data = memory.read8(segment, offset);
+                                data = cpu.read8(segment, offset);
 
                                 if (data != 0) {
-                                    memory.write8(destSegment, destOffset, data);
+                                    cpu.write8(destSegment, destOffset, data);
                                     destOffset++;
                                 }
 
@@ -93,11 +93,11 @@ export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
                     case 'u':
                     case 'd':
                         {
-                            let value = memory.read16(argvSegment, argvOffset);
+                            let value = cpu.read16(argvSegment, argvOffset);
                             argvOffset += 2;
                             if (longValue) {
                                 value <<= 16;
-                                value = value | memory.read16(argvSegment, argvOffset);
+                                value = value | cpu.read16(argvSegment, argvOffset);
                                 argvOffset += 2;
                             }
                             else {
@@ -152,7 +152,7 @@ export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
 
                             for (let j = 0; j < string.length; j++) {
                                 let subCode = string.charCodeAt(j);
-                                memory.write8(destSegment, destOffset, subCode);
+                                cpu.write8(destSegment, destOffset, subCode);
                                 destOffset++;
                             }
                         }
@@ -187,11 +187,11 @@ export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
             }
         }
         else {
-            memory.write8(destSegment, destOffset, code);
+            cpu.write8(destSegment, destOffset, code);
             destOffset++;
         }
     }
 
-    memory.write8(destSegment, destOffset, 0);
+    cpu.write8(destSegment, destOffset, 0);
     return destOffset - origOffset;
 }

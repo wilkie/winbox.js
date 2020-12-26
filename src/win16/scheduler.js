@@ -167,6 +167,7 @@ export class Scheduler {
     interpretReturnValue(result, returnType) {
         if (result instanceof Array) {
             //console.log("a call dispatch");
+
             // A call dispatch listing
             // If we are currently within a call, push that context to the
             // pending stack.
@@ -195,11 +196,11 @@ export class Scheduler {
                 if (returnType !== undefined) {
                     // Place top value in DX
                     if (Types.sizeof(returnType) > 2) {
-                        this._machine.cpu.dx = (bound >> 16) & 0xffff;
+                        this._machine.cpu.core.dx = (bound >> 16) & 0xffff;
                     }
 
                     // Place low-word in AX
-                    this._machine.cpu.ax = bound & 0xffff;
+                    this._machine.cpu.core.ax = bound & 0xffff;
                 }
             };
 
@@ -212,11 +213,11 @@ export class Scheduler {
         else if (returnType !== undefined) {
             // Place top value in DX
             if (Types.sizeof(returnType) > 2) {
-                this._machine.cpu.dx = (result >> 16) & 0xffff;
+                this._machine.cpu.core.dx = (result >> 16) & 0xffff;
             }
 
             // Place low-word in AX
-            this._machine.cpu.ax = result & 0xffff;
+            this._machine.cpu.core.ax = result & 0xffff;
         }
     }
 
@@ -227,17 +228,16 @@ export class Scheduler {
     callWndProc(windowClass, hwnd, message, wParam, lParam, callback, returnType) {
         // Get the function to call and craft that function call and return to the
         // current CS:IP
+        console.log(windowClass.lpfnWndProc.toString(16));
         let newCS = (windowClass.lpfnWndProc >> 16) & 0xffff;
         let newIP = windowClass.lpfnWndProc & 0xffff;
-
-        newCS = newCS >> 3;
 
         let args = [
             [hwnd, HWND], [message, UINT],
             [wParam, WPARAM], [lParam, LPARAM]
         ];
 
-        //console.log("we need to call", newCS.toString(16), ":", newIP.toString(16));
+        console.log("we need to call", newCS.toString(16), ":", newIP.toString(16));
 
         return this.call(User, newCS, newIP, args, callback, returnType);
     }
@@ -267,11 +267,11 @@ export class Scheduler {
     call(module, segment, offset, args, callback, returnType) {
         // Get the memory space for the module
         let loadedModule = this._modules.instanceFor(module.name);
-        let moduleSegment = loadedModule.segment;
+        let moduleSegment = (loadedModule.segment << 3) | 0x3;
 
         // Write new immediate for the call
-        this._machine.memory.write16(moduleSegment, 1, offset);
-        this._machine.memory.write16(moduleSegment, 3, (segment << 3) | 0x3);
+        this._machine.cpu.core.write16(moduleSegment, 1, offset);
+        this._machine.cpu.core.write16(moduleSegment, 3, segment);
 
         // Keep track of the current CS:IP by halting the task
         this.task.halt();
@@ -291,8 +291,8 @@ export class Scheduler {
         // TODO: should we also place calling context there?
 
         // Allocate context and metadata space
-        let stackOffset = this._machine.cpu.sp;
-        this._machine.cpu.sp -= 0x60;
+        let stackOffset = this._machine.cpu.core.sp;
+        this._machine.cpu.core.sp -= 0x60;
 
         args.forEach( (arg) => {
             let argType = arg[1];
@@ -305,9 +305,9 @@ export class Scheduler {
                 // into the parameter instead.
                 value = value[0];
                 stackOffset -= value.structSize;
-                let size = value.storeToMemory(this._machine.memory, this._machine.cpu.ss >> 3, stackOffset);
-                value.loadFromMemory(this._machine.memory, this._machine.cpu.ss >> 3, stackOffset);
-                arg[0] = ((this._machine.cpu.ss >> 3) << 16) | stackOffset;
+                let size = value.storeToMemory(this._machine.memory, this._machine.cpu.core.ss >> 3, stackOffset);
+                value.loadFromMemory(this._machine.memory, this._machine.cpu.core.ss >> 3, stackOffset);
+                arg[0] = ((this._machine.cpu.core.ss >> 3) << 16) | stackOffset;
             }
         });
 
@@ -316,20 +316,20 @@ export class Scheduler {
             let value = arg[0];
 
             if (Types.sizeof(argType) <= 2) {
-                this._machine.cpu.push16(value);
+                this._machine.cpu.core.push16(value);
             }
             else if (Types.sizeof(argType) == 4) {
                 let lo = (value >> 16) & 0xffff;
                 let hi = value & 0xffff;
 
-                this._machine.cpu.push16(lo);
-                this._machine.cpu.push16(hi);
+                this._machine.cpu.core.push16(lo);
+                this._machine.cpu.core.push16(hi);
             }
         });
 
         // Call
-        this._machine.cpu.cs = (moduleSegment << 3) | 0x3;
-        this._machine.cpu.ip = 0;
+        this._machine.cpu.core.cs = moduleSegment;
+        this._machine.cpu.core.ip = 0;
 
         // The task is stopped until it yields
         this.task.run();
