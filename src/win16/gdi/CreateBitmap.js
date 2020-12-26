@@ -54,7 +54,7 @@ export function CreateBitmap(nWidth, nHeight, cbPlanes, cbBits, lpvBits) {
     let view = new DataView(data.buffer);
 
     // Get the local heap.
-    let segment = this.machine.cpu.ds >> 3;
+    let segment = this.machine.cpu.core.ds >> 3;
     let heap = this.allocator.heapOf(segment);
 
     // Allocate the bitmap in memory

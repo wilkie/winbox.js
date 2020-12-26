@@ -218,7 +218,7 @@ export function LoadBitmap(hinst, lpszBitmap) {
                         bitmapView = new DataView(bitmapRealData.buffer);
 
                         // Get the local heap.
-                        let segment = this.machine.cpu.ds >> 3;
+                        let segment = this.machine.cpu.core.ds >> 3;
                         let heap = this.allocator.heapOf(segment);
 
                         // Create the Bitmap object

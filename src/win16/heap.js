@@ -310,6 +310,7 @@ export class Heap {
         view.offset = address;
 
         // Return the address of the usable, allocated space
+        console.log("allocated to", view.segment, view.offset);
         return address;
     }
 

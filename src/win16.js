@@ -493,7 +493,6 @@ export class Win16 {
                         return null;
                     }
 
-                    console.log("reading string", hi.toString(16), lo.toString(16), this._machine.cpu.core.translateAddress(hi, lo).toString());
                     let ret = new String(this._memory.readCString(this._machine.cpu.core.translateAddress(hi, lo)));
                     ret.segment = hi;
                     ret.offset = lo;
@@ -516,7 +515,7 @@ export class Win16 {
 
         // Call normal function
         if (module.instance.exports[ip][1] != "PeekMessage" && module.instance.exports[ip][1] != "GetTickCount") {
-            console.log("Calling", module.instance.name, module.instance.exports[ip][1], callerCS.toString(16), ":", (callerIP - 5).toString(16), args);
+            //console.log("Calling", module.instance.name, module.instance.exports[ip][1], callerCS.toString(16), ":", (callerIP - 5).toString(16), args);
         }
 
         let result = implementation.bind(this).apply(null, args);

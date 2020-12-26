@@ -103,7 +103,6 @@ export function LocalAlloc(fuAllocFlags, fuAlloc) {
     if (handle === null) {
         return NULL;
     }
-    console.log("allocated", handle);
 
     return handle;
 }

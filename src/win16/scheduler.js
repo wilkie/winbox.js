@@ -66,8 +66,6 @@ export class Scheduler {
      * task once more.
      */
     yield() {
-        console.log("Yielding");
-
         // Stop execution
         if (this.task) {
             this.task.halt();
@@ -228,7 +226,6 @@ export class Scheduler {
     callWndProc(windowClass, hwnd, message, wParam, lParam, callback, returnType) {
         // Get the function to call and craft that function call and return to the
         // current CS:IP
-        console.log(windowClass.lpfnWndProc.toString(16));
         let newCS = (windowClass.lpfnWndProc >> 16) & 0xffff;
         let newIP = windowClass.lpfnWndProc & 0xffff;
 
@@ -236,8 +233,6 @@ export class Scheduler {
             [hwnd, HWND], [message, UINT],
             [wParam, WPARAM], [lParam, LPARAM]
         ];
-
-        console.log("we need to call", newCS.toString(16), ":", newIP.toString(16));
 
         return this.call(User, newCS, newIP, args, callback, returnType);
     }

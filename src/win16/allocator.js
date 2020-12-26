@@ -100,6 +100,8 @@ export class Allocator {
         // And keep track of it
         let heap = new Heap(size);
         this._heaps[segment] = heap;
+        heap.segment = segment;
+        heap.offset = start;
 
         // Now we can append the heap data
         this.memory.map((segment << 16) + start, heap);

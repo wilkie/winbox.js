@@ -31,7 +31,7 @@ export function LocalInit(uSegment, uStartAddr, uEndAddr) {
     console.log("LocalInit:", uSegment, uStartAddr, uEndAddr);
 
     // Apparently, if the uSegment is 0, they *mean* the current DS.
-    uSegment = uSegment || this.machine.cpu.ds;
+    uSegment = uSegment || (this.machine.cpu.core.ds >> 3);
 
     // Also, apparently, if the start address is less than 16, it gets set
     // to 16.
@@ -51,7 +51,6 @@ export function LocalInit(uSegment, uStartAddr, uEndAddr) {
     let size = uEndAddr - uStartAddr;
     let heap = this.allocator.heapInitialize(segment, uStartAddr, size);
 
-    console.log("allocated a heap", segment, heap);
     if (heap) {
         return TRUE;
     }
