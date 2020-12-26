@@ -376,7 +376,7 @@ export class Struct {
                     return null;
                 }
 
-                memory.writeCString(hi >> 3, lo, value);
+                memory.writeCString(((hi >> 3) << 16) + lo, value);
             }
             else {
                 // Write the value
@@ -454,7 +454,7 @@ export class Struct {
                         return null;
                     }
 
-                    value = memory.readCString(hi >> 3, lo);
+                    value = memory.readCString(((hi >> 3) << 16) + lo);
                 }
                 else {
                     value = (hi << 16) | (lo & 0xffff);

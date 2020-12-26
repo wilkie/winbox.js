@@ -346,7 +346,6 @@ export class ALU {
      * @return {number} The unsigned result.
      */
     mul16(a, b) {
-        console.log("mul16", a, b);
         let result = (((a & 0xffff) * (b & 0xffff)) & 0xffffffff) >>> 0;
         this._cpu._flags.carry = (result & 0xffff0000) != 0;
         this._cpu._flags.overflow = this._cpu._flags.carry;
@@ -373,7 +372,6 @@ export class ALU {
         let result = ((a & 0xffffffffn) * (b & 0xffffffffn));
         this._cpu._flags.carry = (result & 0xffffffff00000000n) != 0;
         this._cpu._flags.overflow = this._cpu._flags.carry;
-        console.log("mul", a.toString(16), "*", b.toString(16), "=", result.toString(16));
         return result;
     }
 
@@ -392,7 +390,6 @@ export class ALU {
      * @return {number} The unsigned result.
      */
     imul8(a, b) {
-        console.log("imul8", a, b);
         let result = (this.toSigned8(a) * this.toSigned8(b)) & 0xffff;
         this._cpu._flags.carry = (result & 0xff) != result
         this._cpu._flags.overflow = this._cpu._flags.carry;
@@ -414,7 +411,6 @@ export class ALU {
      * @return {number} The unsigned result.
      */
     imul16(a, b) {
-        console.log("imul16", a, b);
         let result = ((this.toSigned16(a) * this.toSigned16(b)) >>> 0) & 0xffffffff;
         this._cpu._flags.carry = (result & 0xffff) != result
         this._cpu._flags.overflow = this._cpu._flags.carry;
@@ -495,7 +491,6 @@ export class ALU {
         b = BigInt(b);
         let result = (((a & 0xffffffffffffffffn) / (b & 0xffffffffn)) & 0xffffffffn) |
                      ((((a & 0xffffffffffffffffn) % (b & 0xffffffffn)) & 0xffffffffn) << 32n);
-        console.log("div", a.toString(16), "/", b.toString(16), "=", result.toString(16));
 
         return result;
     }
