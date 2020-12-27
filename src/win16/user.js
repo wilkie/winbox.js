@@ -190,7 +190,7 @@ export class User extends Module {
             [User.stub, "CallWindowProc", 14],
             [User.stub, "CallMsgFilter", 6],
             [UpdateWindow, "UpdateWindow", 2, [HWND]],
-            [User.stub, "InvalidateRect", 8],
+            [User.stub, "InvalidateRect", 8, [HWND, [RECT], BOOL]],
             [User.stub, "InvalidateRgn", 6],
             [User.stub, "ValidateRect", 6],
             [User.stub, "ValidateRgn", 4],

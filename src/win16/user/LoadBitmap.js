@@ -105,10 +105,10 @@ export function LoadBitmap(hinst, lpszBitmap) {
     }
     else {
         // We have a string resource
-        let idSegment = ((lpszBitmap >> 16) & 0xffff) >> 3;
+        let idSegment = (lpszBitmap >> 16) & 0xffff;
         let idOffset = lpszBitmap & 0xffff;
 
-        idResource = this.machine.memory.readCString(idSegment, idOffset);
+        idResource = this.machine.memory.readCString(this.machine.cpu.core.translateAddress(idSegment, idOffset));
     }
 
     // Resolve the handle
@@ -143,10 +143,6 @@ export function LoadBitmap(hinst, lpszBitmap) {
                         // We only have the BITMAPCOREHEADER
                         let bitmapData = data.slice(bitmapHeader.bcSize);
                         let bitmapView = new DataView(bitmapData);
-
-                        // TODO: Place the bitmap into memory
-                        // TODO: global heap that can allocate a handle and
-                        //       move around objects in place.
 
                         let bitmap = new Bitmap(
                             bitmapHeader.bcWidth,
@@ -217,10 +213,6 @@ export function LoadBitmap(hinst, lpszBitmap) {
                         // Get a view of the bitmap data
                         bitmapView = new DataView(bitmapRealData.buffer);
 
-                        // Get the local heap.
-                        let segment = this.machine.cpu.core.ds >> 3;
-                        let heap = this.allocator.heapOf(segment);
-
                         // Create the Bitmap object
                         let bitmap = new Bitmap(
                             bitmapHeader.biWidth,
@@ -234,9 +226,6 @@ export function LoadBitmap(hinst, lpszBitmap) {
                         let start = (new Date).getTime();
                         // Convert to our screen color depth
                         bitmap = bitmap.convert(8, Palette.PALETTEWIN256);
-
-                        // Place the bitmap into system memory
-                        heap.insert(bitmap.view);
 
                         // Allocate a handle to it
                         ret = this.handles.allocate(bitmap);

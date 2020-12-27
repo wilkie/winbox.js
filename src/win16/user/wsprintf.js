@@ -96,8 +96,7 @@ export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
                             let value = cpu.read16(argvSegment, argvOffset);
                             argvOffset += 2;
                             if (longValue) {
-                                value <<= 16;
-                                value = value | cpu.read16(argvSegment, argvOffset);
+                                value = value | (cpu.read16(argvSegment, argvOffset) << 16);
                                 argvOffset += 2;
                             }
                             else {
@@ -193,5 +192,6 @@ export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
     }
 
     cpu.write8(destSegment, destOffset, 0);
+
     return destOffset - origOffset;
 }

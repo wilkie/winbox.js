@@ -13,12 +13,23 @@ export class Heap {
         this._segment = 0;
         this._offset = 0;
 
+        // The address in memory this heap is located
+        this._address = 0;
+
         // The number of handles we have allocated
         this._handleCount = 0;
         this._handles = {};
 
         // We will cheat and keep track of allocations in our own memory
         this._allocations = [];
+    }
+
+    get address() {
+        return this._address;
+    }
+
+    set address(value) {
+        this._address = value;
     }
 
     /**
@@ -84,17 +95,17 @@ export class Heap {
     read(offset, length, signed = false, littleEndian = false) {
         for (let i = 0; i < this._allocations.length; i++) {
             let allocation = this._allocations[i];
-            let address = allocation[0] - this._offset;
+            let chunkOffset = allocation[0] - this.offset;
             let size = allocation[1];
 
-            if (offset >= address && offset < (address + size)) {
+            if (offset >= chunkOffset && offset < (chunkOffset + size)) {
                 // Get relative position within this allocation
-                offset = offset - address;
+                offset = offset - chunkOffset;
 
                 // Get the allocation data
                 let view = allocation[2];
 
-                if (!view || offset >= view.byteLength) {
+                if (!view || (offset >= view.byteLength)) {
                     if (view) {
                         offset -= view.byteLength;
                     }
@@ -118,8 +129,16 @@ export class Heap {
                         return view.getUint16(offset, littleEndian);
                     }
                 }
+                else if (length == 4) {
+                    if (signed) {
+                        return view.getInt32(offset, littleEndian);
+                    }
+                    else {
+                        return view.getUint32(offset, littleEndian);
+                    }
+                }
             }
-            else if (offset < address) {
+            else if (offset < chunkOffset) {
                 // Allocations are ordered by address
                 // So, let's bail
                 break;
@@ -279,6 +298,12 @@ export class Heap {
         // We want 2 more bytes to write the size
         let searchSize = size + 2;
         let address = this.find(searchSize);
+        if (address == 0) {
+            console.log("Local heap: out of memory attempting to allocate", searchSize);
+            throw "Out of Memory";
+        }
+
+        view.heap = this;
 
         // Create the metadata chunk
         let sizeData = new Uint8Array(2);
@@ -299,6 +324,8 @@ export class Heap {
 
             // Write the address to the handle
             this.setUint16(handle - this._offset, address, true);
+
+            view.handle = handle;
         }
 
         // Return a pointer to the new allocated space or handle
@@ -310,7 +337,6 @@ export class Heap {
         view.offset = address;
 
         // Return the address of the usable, allocated space
-        console.log("allocated to", view.segment, view.offset);
         return address;
     }
 
@@ -404,6 +430,7 @@ export class Heap {
             return last;
         }
 
+        // Could not fit!
         return 0;
     }
 

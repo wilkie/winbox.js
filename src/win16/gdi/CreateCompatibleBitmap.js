@@ -32,11 +32,11 @@ export function CreateCompatibleBitmap(hdc, nWidth, nHeight) {
     let view = new DataView(data.buffer);
 
     // Get the local heap.
-    let segment = this.machine.cpu.core.ds >> 3;
-    let heap = this.allocator.heapOf(segment);
+    //let segment = this.machine.cpu.core.ds >> 3;
+    //let heap = this.allocator.heapOf(segment);
 
-    // Allocate the bitmap in memory
-    heap.insert(view);
+    // Allocate the bitmap handle in memory?
+    //heap.insert(view);
 
     // Create a bitmap that works for the given HDC.
     let bitmap = new Bitmap(nWidth, nHeight, bpp, Bitmap.RGBA, view, Palette.PALETTEWIN256);

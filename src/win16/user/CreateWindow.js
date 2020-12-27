@@ -69,11 +69,11 @@ export function CreateWindow(lpszClassName, lpszWindowName,
 
     parentWindow.append(dialog);
 
-    /*
+    //*
     x = User.CW_USEDEFAULT;
     y = User.CW_USEDEFAULT;
     nWidth = 500;
-    nHeight = 1000;
+    nHeight = 500;
     //*/
 
     if (nWidth != User.CW_USEDEFAULT) {

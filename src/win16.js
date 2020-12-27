@@ -172,6 +172,7 @@ export class Win16 {
         // Allocate a heap to the data segment
         let heapStart = this._machine.memory.sizeOf(loader.ds >> 3);
         let heapEnd = heapStart + executable.neHeader.initialLocalHeapSize;
+        heapEnd = 0x10000 - heapStart;
         LocalInit.bind(this)(loader.ds, heapStart, heapEnd);
 
         let handle = this.handles.allocate(task);
@@ -516,6 +517,10 @@ export class Win16 {
         // Call normal function
         if (module.instance.exports[ip][1] != "PeekMessage" && module.instance.exports[ip][1] != "GetTickCount") {
             //console.log("Calling", module.instance.name, module.instance.exports[ip][1], callerCS.toString(16), ":", (callerIP - 5).toString(16), args);
+        }
+
+        if (implementation === module.instance.stub) {
+            console.log("Stub:", module.instance.name, module.instance.exports[ip][1], callerCS.toString(16), ":", (callerIP - 5).toString(16), args)
         }
 
         let result = implementation.bind(this).apply(null, args);

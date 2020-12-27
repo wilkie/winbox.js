@@ -183,8 +183,8 @@ export class Kernel extends Module {
             [Kernel.stub, "DisableKernel", 2],
             [Kernel.stub, "MemoryFreed", 0],
             [Kernel.stub, "GetPrivateProfileInt", 0],
-            [Kernel.stub, "GetPrivateProfileString", 10],
-            [Kernel.stub, "WritePrivateProfileString", 12],
+            [Kernel.stub, "GetPrivateProfileString", 22, [LPCSTR, LPCSTR, LPCSTR, FARPTR, INT, LPCSTR], INT],
+            [Kernel.stub, "WritePrivateProfileString", 16, [LPCSTR, LPCSTR, LPCSTR, LPCSTR], BOOL],
             // 130 //
             [Kernel.stub, "FileCdr"],
             [Kernel.stub, "GetDosEnvironment", 2],

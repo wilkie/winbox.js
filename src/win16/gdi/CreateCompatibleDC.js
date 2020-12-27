@@ -33,7 +33,5 @@ export function CreateCompatibleDC(hdc) {
     // But, what can you do, we have the canvas there already.
     let handle = this.handles.allocate(newSurface);
 
-    console.log("Created DC", handle);
-
     return handle;
 }

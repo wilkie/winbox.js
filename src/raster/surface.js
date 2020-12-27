@@ -138,16 +138,11 @@ export class Surface {
     }
 
     fillRect(x, y, width, height) {
-        //this.context.fillStyle = this.brush.color.css;
-        //this.context.fillRect(x, y, width, height);
+        this.context.fillStyle = this.brush.color.css;
+        this.context.fillRect(x, y, width, height);
         // TODO: improve performance of the ditherer and enable it
         //this._ditherer.fill(this.context, x, y, width, height, this._brush.color.value);
         this._stale = true;
-
-        // Set the actual bitmap bits
-        if (this._bitmap) {
-            this._bitmap.fill(x, y, width, height, this.brush.color);
-        }
     }
 
     strokeRect(x, y, width, height) {
