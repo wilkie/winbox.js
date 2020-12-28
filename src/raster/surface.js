@@ -26,7 +26,7 @@ export class Surface {
 
     update() {
         if (this.width != 0 && this.height != 0) {
-            this.context.putImageData(this.data, 0, 0);
+            //this.context.putImageData(this.data, 0, 0);
         }
         this.dirty = false;
     }
@@ -43,9 +43,9 @@ export class Surface {
         // If we are stale, pull the image data
         if (this._stale) {
             if (this.width != 0 && this.height != 0) {
-                this._data = this.context.getImageData(0, 0, this.width, this.height);
+                //this._data = this.context.getImageData(0, 0, this.width, this.height);
             }
-            this._view = new DataView(this._data.data.buffer);
+            //this._view = new DataView(this._data.data.buffer);
             this._stale = false;
         }
 
@@ -194,5 +194,24 @@ export class Surface {
                 height: textHeight
             };
         }
+    }
+
+    /**
+     * Pulls out a data view for the given dimensions.
+     */
+    lock(x, y, width, height) {
+        let data = this.context.getImageData(x, y, width, height);
+        let view = new DataView(data.data.buffer);
+        view._x = x;
+        view._y = y;
+        view._data = data;
+        return view;
+    }
+
+    /**
+     * Paints the updated pixel region back to the surface's device context.
+     */
+    unlock(view) {
+        this.context.putImageData(view._data, view._x, view._y);
     }
 }

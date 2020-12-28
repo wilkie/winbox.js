@@ -35,8 +35,6 @@ export function GetTextExtent(hdc, lpszString, cbString) {
     // Draw the text
     let metrics = surface.measureText(lpszString.slice(0, cbString));
 
-    console.log(metrics);
-
     // Return the DWORD consisting of the dimensions
     return (metrics.width & 0xffff) | ((metrics.height & 0xffff) << 16);
 }

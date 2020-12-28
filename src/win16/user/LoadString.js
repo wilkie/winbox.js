@@ -58,8 +58,6 @@ export function LoadString(hinst, idResource, lpszBuffer, cbBuffer) {
     let destSegment = (lpszBuffer >> 16) & 0xffff;
     let destOffset = lpszBuffer & 0xffff;
 
-    console.log("writing string to", destSegment.toString(16), destOffset.toString(16));
-
     let ret = 0;
     executable.resources.forEach( (resourceType) => {
         if (resourceType.id == Executable.RESOURCES.StringTable) {

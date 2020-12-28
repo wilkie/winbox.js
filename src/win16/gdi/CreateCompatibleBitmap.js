@@ -22,6 +22,10 @@ export function CreateCompatibleBitmap(hdc, nWidth, nHeight) {
     // TODO: Get the bpp from the device
     let bpp = 8;
 
+    if (surface.bitmap) {
+        bpp = surface.bitmap.bpp;
+    }
+
     // Each row has to be a multiple of 4 bytes
     let bpRow = bpp * nWidth;
     bpRow = (bpRow + (8 - 1)) & ~(8 - 1);

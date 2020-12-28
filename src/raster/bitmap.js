@@ -197,12 +197,40 @@ export class Bitmap {
             return false;
         }
 
+        if (source._surface && this._surface && source.bpp == 32 && this.bpp == 32 && operation == Bitmap.OPERATIONS.COPY) {
+            // Do a simple copy using the native method
+            this._surface.context.drawImage(source._surface.canvas, srcX, srcY, srcWidth, srcHeight, destX, destY, destWidth, destHeight);
+            return;
+        }
+        else if (source instanceof Color && this._surface && this.bpp == 32 && operation == Bitmap.OPERATIONS.COPY) {
+            // Do a simple fill
+            this._surface.context.fillStyle = source.css;
+            this._surface.context.fillRect(destX, destY, destWidth, destHeight);
+            return;
+        }
+
+        // Whether or not the source is a device bitmap (canvas)
+        let srcData = null;
+        if (source._surface && source.bpp == 32) {
+            srcData = source._surface.lock(srcX, srcY, srcWidth, srcHeight);
+        }
+
+        // Whether or not the destination is a device bitmap (canvas)
+        let destData = null;
+        if (this._surface && this.bpp == 32) {
+            destData = this._surface.lock(destX, destY, destWidth, destHeight);
+        }
+
         // Get the initial byte offsets to the first line for each bitmap
         let destOffset = destY * this.widthBytes;
         let srcOffset = -1;
         let srcBPP = 8;
         let clr = 0;
-        if (source instanceof Bitmap) {
+        if (srcData) {
+            srcOffset = 0;
+            srcBPP = 32;
+        }
+        else if (source instanceof Bitmap) {
             srcOffset = srcY * source.widthBytes;
             srcBPP = source.bpp;
         }
@@ -220,6 +248,10 @@ export class Bitmap {
             }
         }
 
+        if (destData) {
+            destOffset = 0;
+        }
+
         // For each line in the source bitmap
         for (let y = 0; y < srcHeight; y++) {
             // For every pixel in the source bitmap
@@ -232,6 +264,12 @@ export class Bitmap {
                 let s = 0;
                 if (source instanceof Color) {
                     s = clr;
+                }
+                else if (srcData) {
+                    if (srcOffset >= 0 && srcOffset < srcData.byteLength) {
+                        s = srcData.getUint32(srcOffset);
+                    }
+                    srcOffset += 4;
                 }
                 else if (srcBPP == 1) {
                     let offset = srcOffset + ((sX / 8) >>> 0);
@@ -264,7 +302,6 @@ export class Bitmap {
                 let d = 0;
                 let cur = 0;
                 if (this.bpp == 1) {
-                    //console.log("looking at s ==", s);
                     // TODO: compare against background color
                     if (s == 0x0) {
                         s = 1;
@@ -318,6 +355,10 @@ export class Bitmap {
                         else {
                             s = 0xff000000;
                         }
+
+                        if (destData) {
+                            s = ((s & 0xffffff) << 8) | 0xff;
+                        }
                     }
                     else if (source.bpp < 32) {
                         s = source.palette[s] >>> 0;
@@ -330,20 +371,30 @@ export class Bitmap {
                     }
 
                     if (opFunc) {
-                        d = this.view.getUint32(offset);
+                        if (destData) {
+                            d = destData.getUint32(destOffset);
+                        }
+                        else {
+                            d = this.view.getUint32(offset);
+                        }
                     }
                 }
 
                 // Perform operation
                 if (opFunc) {
-                    d = opFunc(s, d);
+                    d = (opFunc(s, d) >>> 0) | 0xff;
                 }
                 else {
                     d = s;
                 }
 
                 // Set value
-                if (this.bpp == 1) {
+                if (destData) {
+                    // Set the appropriate canvas bits
+                    destData.setUint32(destOffset, d);
+                    destOffset += 4;
+                }
+                else if (this.bpp == 1) {
                     let position = 1 << (7 - (dX % 8));
                     if (d) {
                         cur |= position;
@@ -351,7 +402,6 @@ export class Bitmap {
                     else {
                         cur &= (~position) & 0xff;
                     }
-                    //console.log("ok, setting", dX, "to", cur, srcWidth);
                     this.view.setUint8(destOffset + ((dX / 8) >>> 0), cur);
                 }
                 else if (this.bpp == 8) {
@@ -360,22 +410,19 @@ export class Bitmap {
                 else if (this.bpp == 32) {
                     this.view.setUint32(destOffset + (dX * 4), d);
                 }
-
-                if (this._surface) {
-                    if (this.bpp < 32) {
-                        d = this.palette[d];
-                    }
-
-                    // Set the appropriate canvas bits
-                    this._surface.view.setUint32((y + destY) * this._surface.width * 4 + dX * 4, d);
-                }
             }
 
             // Move to next line
-            destOffset += this.widthBytes;
-            if (srcOffset >= 0) {
+            if (!destData) {
+                destOffset += this.widthBytes;
+            }
+            if (!srcData && srcOffset >= 0) {
                 srcOffset += source.widthBytes;
             }
+        }
+
+        if (destData) {
+            this._surface.unlock(destData);
         }
 
         if (this._surface) {
