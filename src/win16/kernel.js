@@ -11,6 +11,7 @@ import { BYTE, UBYTE, INT, UINT, FARPTR,
 import { FatalAppExit } from './kernel/FatalAppExit.js';
 import { FatalExit } from './kernel/FatalExit.js';
 import { GetVersion } from './kernel/GetVersion.js';
+import { GetPrivateProfileString } from './kernel/GetPrivateProfileString.js';
 import { InitTask } from './kernel/InitTask.js';
 import { lstrcpy } from './kernel/lstrcpy.js';
 import { lstrcat } from './kernel/lstrcat.js';
@@ -29,6 +30,7 @@ import { LockSegment } from './kernel/LockSegment.js';
 import { OutputDebugString } from './kernel/OutputDebugString.js';
 import { UnlockSegment } from './kernel/UnlockSegment.js';
 import { WaitEvent } from './kernel/WaitEvent.js';
+import { WritePrivateProfileString } from './kernel/WritePrivateProfileString.js';
 
 /**
  * The Win16 Kernel library.
@@ -183,8 +185,8 @@ export class Kernel extends Module {
             [Kernel.stub, "DisableKernel", 2],
             [Kernel.stub, "MemoryFreed", 0],
             [Kernel.stub, "GetPrivateProfileInt", 0],
-            [Kernel.stub, "GetPrivateProfileString", 22, [LPCSTR, LPCSTR, LPCSTR, FARPTR, INT, LPCSTR], INT],
-            [Kernel.stub, "WritePrivateProfileString", 16, [LPCSTR, LPCSTR, LPCSTR, LPCSTR], BOOL],
+            [GetPrivateProfileString, "GetPrivateProfileString", 22, [LPCSTR, LPCSTR, LPCSTR, FARPTR, INT, LPCSTR], INT],
+            [WritePrivateProfileString, "WritePrivateProfileString", 16, [LPCSTR, LPCSTR, LPCSTR, LPCSTR], BOOL],
             // 130 //
             [Kernel.stub, "FileCdr"],
             [Kernel.stub, "GetDosEnvironment", 2],
