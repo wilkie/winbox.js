@@ -17,6 +17,14 @@ export class I286 {
         this._segmentRegisters = new Array(0, 0, 0, 0);
 
         this._instruction = {};
+
+        this._options = options;
+    }
+
+    debug(str) {
+        if (this._options.logInstructions) {
+            console.log("D:", ...arguments);
+        }
     }
 
     /**
@@ -1192,25 +1200,25 @@ export class I286 {
         switch (instruction.opcode) {
             // Prefixes (recursively decode)
             case 0x26:    // ES Override Prefix
-                //console.log("es     es=", this.es);
+                this.debug("es     es=", this.es);
                 instruction.segment = this.es;
                 instruction = this.decode(instruction);
                 return instruction;
 
             case 0x2e:    // CS Override Prefix
-                //console.log("cs     cs=", this.cs);
+                this.debug("cs     cs=", this.cs);
                 instruction.segment = this.cs;
                 instruction = this.decode(instruction);
                 return instruction;
 
             case 0x36:    // SS Override Prefix
-                //console.log("ss     ss=", this.ss);
+                this.debug("ss     ss=", this.ss);
                 instruction.segment = this.ss;
                 instruction = this.decode(instruction);
                 return instruction;
 
             case 0x3e:    // DS Override Prefix
-                //console.log("ds     ds=", this.ds);
+                this.debug("ds     ds=", this.ds);
                 instruction.segment = this.ds;
                 instruction = this.decode(instruction);
                 return instruction;
@@ -1543,7 +1551,7 @@ export class I286 {
 
             // Unknown Sinkhole
             default:      // Unimplemented
-                //console.log("error: decoded unknown opcode", instruction);
+                console.log("error: decoded unknown opcode", instruction);
                 break;
         }
 
@@ -1578,8 +1586,8 @@ export class I286 {
             case 0x30:    // XOR eb,rb
                 operation = operation || this._alu.xor8.bind(this._alu);
 
-                //console.log([['add', 'adc', 'and', 'xor'],
-                //             ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0x8 ? 1 : 0][opcode >> 4] + '   eb,rb');
+                this.debug([['add', 'adc', 'and', 'xor'],
+                            ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0x8 ? 1 : 0][opcode >> 4] + '   eb,rb');
 
                 this.writeOperand8(instruction, operation(
                     this.readOperand8(instruction),
@@ -1603,8 +1611,8 @@ export class I286 {
             case 0x31:    // XOR ew,rw
                 operation = operation || this._alu.xor16.bind(this._alu);
 
-                //console.log([['add', 'adc', 'and', 'xor'],
-                //             ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0x9 ? 1 : 0][opcode >> 4] + '   ew,rw');
+                this.debug([['add', 'adc', 'and', 'xor'],
+                            ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0x9 ? 1 : 0][opcode >> 4] + '   ew,rw');
 
                 this.writeOperand16(instruction, operation(
                     this.readOperand16(instruction),
@@ -1627,8 +1635,8 @@ export class I286 {
             case 0x32:    // XOR rb,eb
                 operation = operation || this._alu.xor8.bind(this._alu);
 
-                //console.log([['add', 'adc', 'and', 'xor'],
-                //             ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0xa ? 1 : 0][opcode >> 4] + '   rb,eb');
+                this.debug([['add', 'adc', 'and', 'xor'],
+                            ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0xa ? 1 : 0][opcode >> 4] + '   rb,eb');
 
                 this.writeRegister8(instruction.sourceRegister, operation(
                     this.readRegister8(instruction.sourceRegister),
@@ -1651,8 +1659,8 @@ export class I286 {
             case 0x33:    // XOR rw,ew
                 operation = operation || this._alu.xor16.bind(this._alu);
 
-                //console.log([['add', 'adc', 'and', 'xor'],
-                //             ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0xb ? 1 : 0][opcode >> 4] + '   rw,ew');
+                this.debug([['add', 'adc', 'and', 'xor'],
+                            ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0xb ? 1 : 0][opcode >> 4] + '   rw,ew');
 
                 this.writeRegister16(instruction.sourceRegister, operation(
                     this.readRegister16(instruction.sourceRegister),
@@ -1675,8 +1683,8 @@ export class I286 {
             case 0x34:    // XOR AL,db
                 operation = operation || this._alu.xor8.bind(this._alu);
 
-                //console.log([['add', 'adc', 'and', 'xor'],
-                //             ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0xc ? 1 : 0][opcode >> 4] + '   AL,db');
+                this.debug([['add', 'adc', 'and', 'xor'],
+                            ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0xc ? 1 : 0][opcode >> 4] + '   AL,db');
 
                 this.writeRegister8(I286.REGISTER_AL, operation(
                     this.readRegister8(I286.REGISTER_AL),
@@ -1699,8 +1707,8 @@ export class I286 {
             case 0x35:    // XOR AX,dw
                 operation = operation || this._alu.xor16.bind(this._alu);
 
-                //console.log([['add', 'adc', 'and', 'xor'],
-                //             ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0xd ? 1 : 0][opcode >> 4] + '   AX,dw');
+                this.debug([['add', 'adc', 'and', 'xor'],
+                            ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0xd ? 1 : 0][opcode >> 4] + '   AX,dw');
 
                 this.writeRegister16(I286.REGISTER_AX, operation(
                     this.readRegister16(I286.REGISTER_AX),
@@ -1709,24 +1717,24 @@ export class I286 {
                 break;
 
             case 0x06:    // PUSH ES
-                //console.log('push   es   ');
+                this.debug('push   es   ');
                 this.push16(this.es);
                 break;
 
             case 0x07:    // POP ES
-                //console.log('pop    es   ');
+                this.debug('pop    es   ');
                 this.es = this.pop16();
                 break;
 
             case 0x0e:    // PUSH CS
-                //console.log('push   cs   ');
+                this.debug('push   cs   ');
                 this.push16(this.cs);
                 break;
 
             case 0x0f:    // CLTS (Clear Task Switched Flag)
                 // Only valid when the immediate is 0x06
                 if (instruction.immediate == 0x06) {
-                    //console.log('clts        ');
+                    this.debug('clts        ');
                     if (this.cpl == 0) {
                         // TODO: implement CLTS (privileged mode)
                         // Clears the task switched flag in the MSW
@@ -1744,22 +1752,22 @@ export class I286 {
                 break;
 
             case 0x16:    // PUSH SS
-                //console.log('push   ss   ');
+                this.debug('push   ss   ');
                 this.push16(this.ss);
                 break;
 
             case 0x17:    // POP SS
-                //console.log('pop    ss   ');
+                this.debug('pop    ss   ');
                 this.ss = this.pop16();
                 break;
 
             case 0x1e:    // PUSH DS
-                //console.log('push   ds   ');
+                this.debug('push   ds   ');
                 this.push16(this.ds);
                 break;
 
             case 0x1f:    // POP DS
-                //console.log('pop    ds   ');
+                this.debug('pop    ds   ');
                 this.ds = this.pop16();
                 break;
 
@@ -1780,8 +1788,7 @@ export class I286 {
             case 0x84:    // TEST eb,rb / TEST rb,eb
                 operation = operation || this._alu.and8.bind(this._alu);
 
-                //console.log((opcode == 0x38 ? 'cmp ' : 'test') + '   eb,rb');
-                //console.log("CMP", this.readOperand8(instruction).toString(16), this.readRegister8(instruction.sourceRegister).toString(16));
+                this.debug((opcode == 0x38 ? 'cmp ' : 'test') + '   eb,rb');
 
                 operation(this.readOperand8(instruction),
                           this.readRegister8(instruction.sourceRegister));
@@ -1792,20 +1799,20 @@ export class I286 {
             case 0x85:    // TEST ew,rw / TEST rw,ew
                 operation = operation || this._alu.and16.bind(this._alu);
 
-                //console.log((opcode == 0x39 ? 'cmp ' : 'test') + '   ew,rw', instruction, this.readOperand16(instruction), this.readRegister16(instruction.sourceRegister));
+                this.debug((opcode == 0x39 ? 'cmp ' : 'test') + '   ew,rw', instruction, this.readOperand16(instruction), this.readRegister16(instruction.sourceRegister));
 
                 operation(this.readOperand16(instruction),
                           this.readRegister16(instruction.sourceRegister));
                 break;
 
             case 0x3a:    // CMP rb,eb
-                //console.log('cmp    rb,eb');
+                this.debug('cmp    rb,eb');
                 this._alu.sub8(this.readRegister8(instruction.sourceRegister),
                               this.readOperand8(instruction));
                 break;
 
             case 0x3b:    // CMP rw,ew
-                //console.log('cmp    rw,ew');
+                this.debug('cmp    rw,ew');
                 this._alu.sub16(this.readRegister16(instruction.sourceRegister),
                                this.readOperand16(instruction));
 
@@ -1816,7 +1823,7 @@ export class I286 {
             case 0xa8:    // TEST AL,db
                 operation = operation || this._alu.and8.bind(this._alu);
 
-                //console.log((opcode == 0x3c ? 'cmp ' : 'test') + '   AL,db');
+                this.debug((opcode == 0x3c ? 'cmp ' : 'test') + '   AL,db');
 
                 operation(this.readRegister8(I286.REGISTER_AL),
                           instruction.immediate);
@@ -1827,7 +1834,7 @@ export class I286 {
             case 0xa9:    // TEST AX,dw
                 operation = operation || this._alu.and16.bind(this._alu);
 
-                //console.log((opcode == 0x3d ? 'cmp ' : 'test') + '   AX,dw');
+                this.debug((opcode == 0x3d ? 'cmp ' : 'test') + '   AX,dw');
 
                 operation(this.readRegister16(I286.REGISTER_AX),
                           instruction.immediate);
@@ -1845,7 +1852,7 @@ export class I286 {
             case 0x45:    // INC BP
             case 0x46:    // INC SI
             case 0x47:    // INC DI
-                //console.log('inc    +R   ');
+                this.debug('inc    +R   ');
                 let incDestination = opcode - 0x40;
 
                 this.writeRegister16(incDestination, this._alu.inc16(
@@ -1860,7 +1867,7 @@ export class I286 {
             case 0x4d:    // DEC BP
             case 0x4e:    // DEC SI
             case 0x4f:    // DEC DI
-                //console.log('dec    +R   ');
+                this.debug('dec    +R   ');
                 let decDestination = opcode - 0x48;
 
                 this.writeRegister16(decDestination, this._alu.dec16(
@@ -1875,7 +1882,7 @@ export class I286 {
             case 0x55:    // PUSH BP
             case 0x56:    // PUSH SI
             case 0x57:    // PUSH DI
-                //console.log('push   +R   ');
+                this.debug('push   +R   ');
                 let pushDestination = opcode - 0x50;
 
                 this.push16(this.readRegister16(pushDestination));
@@ -1890,13 +1897,13 @@ export class I286 {
             case 0x5e:    // POP SI
             case 0x5f:    // POP DI
                 let popDestination = opcode - 0x58;
-                //console.log('pop    ' + I286.REGISTERS_G16[popDestination]);
+                this.debug('pop    ' + I286.REGISTERS_G16[popDestination]);
 
                 this.writeRegister16(popDestination, this.pop16());
                 break;
 
             case 0x60:    // PUSHA
-                //console.log('pusha       ');
+                this.debug('pusha       ');
                 let sp = this.sp;
                 this.push16(this.ax);
                 this.push16(this.cx);
@@ -1909,7 +1916,7 @@ export class I286 {
                 break;
 
             case 0x61:    // POPA
-                //console.log('popa        ');
+                this.debug('popa        ');
                 this.di = this.pop16();
                 this.si = this.pop16();
                 this.bp = this.pop16();
@@ -1929,7 +1936,7 @@ export class I286 {
                 break;
 
             case 0x68:    // PUSH dw
-                //console.log('push   dw   ');
+                this.debug('push   dw   ');
                 this.push16(instruction.immediate);
                 break;
 
@@ -1938,7 +1945,7 @@ export class I286 {
                 break;
 
             case 0x6a:    // PUSH db
-                //console.log('push   db   ');
+                this.debug('push   db   ');
                 this.push16(instruction.immediate);
                 break;
 
@@ -1974,82 +1981,82 @@ export class I286 {
 
                 switch(jumpCondition) {
                     case 0x0:   // OF == 1
-                        //console.log('jo     cb   ');
+                        this.debug('jo     cb   ');
                         jump = this._flags.overflow;
                         break;
 
                     case 0x1:   // OF == 0
-                        //console.log('jno    cb   ');
+                        this.debug('jno    cb   ');
                         jump = !this._flags.overflow;
                         break;
 
                     case 0x2:   // CF == 1
-                        //console.log('jb     cb   ');
+                        this.debug('jb     cb   ');
                         jump = this._flags.carry;
                         break;
 
                     case 0x3:   // CF == 0
-                        //console.log('jae    cb   ');
+                        this.debug('jae    cb   ');
                         jump = !this._flags.carry;
                         break;
 
                     case 0x4:   // ZF == 1
-                        //console.log('je     cb   ');
+                        this.debug('je     cb   ');
                         jump = this._flags.zero;
                         break;
 
                     case 0x5:   // ZF == 0
-                        //console.log('jne    cb   ');
+                        this.debug('jne    cb   ');
                         jump = !this._flags.zero;
                         break;
 
                     case 0x6:   // CF == 1 || ZF == 1
-                        //console.log('jbe    cb   ');
+                        this.debug('jbe    cb   ');
                         jump = this._flags.carry || this._flags.zero;
                         break;
 
                     case 0x7:   // CF == 0 && ZF == 0
-                        //console.log('ja     cb   ');
+                        this.debug('ja     cb   ');
                         jump = !this._flags.carry && !this._flags.zero;
                         break;
 
                     case 0x8:   // SF == 1
-                        //console.log('js     cb   ');
+                        this.debug('js     cb   ');
                         jump = this._flags.signed;
                         break;
 
                     case 0x9:   // SF == 0
-                        //console.log('jns    cb   ');
+                        this.debug('jns    cb   ');
                         jump = !this._flags.signed;
                         break;
 
                     case 0xa:   // PF == 1
-                        //console.log('jp     cb   ');
+                        this.debug('jp     cb   ');
                         jump = this._flags.parity;
                         break;
 
                     case 0xb:   // PF == 0
-                        //console.log('jnp    cb   ');
+                        this.debug('jnp    cb   ');
                         jump = !this._flags.parity;
                         break;
 
                     case 0xc:   // SF != OF
-                        //console.log('jl     cb   ');
+                        this.debug('jl     cb   ');
                         jump = this._flags.signed != this._flags.overflow;
                         break;
 
                     case 0xd:   // SF == OF
-                        //console.log('jge    cb   ');
+                        this.debug('jge    cb   ');
                         jump = this._flags.signed == this._flags.overflow;
                         break;
 
                     case 0xe:   // ZF == 1 || SF != OF
-                        //console.log('jle    cb   ');
+                        this.debug('jle    cb   ');
                         jump = this._flags.zero || (this._flags.signed != this._flags.overflow);
                         break;
 
                     case 0xf:   // ZF == 0 && SF == OF
-                        //console.log('jg     cb   ');
+                        this.debug('jg     cb   ');
                         jump = !this._flags.zero && (this._flags.signed == this._flags.overflow);
                         break;
                 }
@@ -2079,8 +2086,8 @@ export class I286 {
                     case 0x6:   // XOR eb,db
                         operation = operation || this._alu.xor8.bind(this._alu);
 
-                        //console.log(['add', 'or ', 'adc', 'sbb',
-                        //             'and', 'sub', 'xor', 'unk'][instruction.modifier] + '   eb,db');
+                        this.debug(['add', 'or ', 'adc', 'sbb',
+                                    'and', 'sub', 'xor', 'unk'][instruction.modifier] + '   eb,db');
 
                         this.writeOperand8(instruction, operation(
                             this.readOperand8(instruction),
@@ -2118,8 +2125,8 @@ export class I286 {
                     case 0x6:   // XOR ew,dw
                         operation = operation || this._alu.xor16.bind(this._alu);
 
-                        //console.log(['add', 'or ', 'adc', 'sbb',
-                        //             'and', 'sub', 'xor', 'unk'][instruction.modifier] + '   ew,dw');
+                        this.debug(['add', 'or ', 'adc', 'sbb',
+                                    'and', 'sub', 'xor', 'unk'][instruction.modifier] + '   ew,dw');
 
                         this.writeOperand16(instruction, operation(
                             this.readOperand16(instruction),
@@ -2128,7 +2135,7 @@ export class I286 {
                         break;
 
                     case 0x7:   // CMP ew,dw
-                        //console.log("CMP", this.readOperand16(instruction).toString(16), instruction.immediate.toString(16))
+                        this.debug('cmp    ew,dw');
                         this._alu.sub16(this.readOperand16(instruction),
                                         instruction.immediate);
                         break;
@@ -2136,7 +2143,7 @@ export class I286 {
                 break;
 
             case 0x86:    // XCHG eb,rb / XCHG rb,eb
-                //console.log('xchg   eb,rb');
+                this.debug('xchg   eb,rb');
                 let xchgByteTemp = this.readOperand8(instruction);
                 this.writeOperand8(
                     instruction,
@@ -2148,7 +2155,7 @@ export class I286 {
                 break;
 
             case 0x87:    // XCHG ew,rw / XCHG rw,ew
-                //console.log('xchg   ew,rw');
+                this.debug('xchg   ew,rw');
                 let xchgWordTemp = this.readOperand16(instruction);
                 this.writeOperand16(
                     instruction,
@@ -2160,8 +2167,7 @@ export class I286 {
                 break;
 
             case 0x88:    // MOV eb,rb
-                //console.log('mov    eb,rb');
-                //console.log("MOV", this.readRegister8(instruction.sourceRegister), instruction.segment, instruction.offset);
+                this.debug('mov    eb,rb');
                 this.writeOperand8(
                     instruction,
                     this.readRegister8(
@@ -2171,7 +2177,7 @@ export class I286 {
                 break;
 
             case 0x89:    // MOV ew,rw
-                //console.log('mov    ew,rw');
+                this.debug('mov    ew,rw');
                 this.writeOperand16(
                     instruction,
                     this.readRegister16(
@@ -2181,19 +2187,19 @@ export class I286 {
                 break;
 
             case 0x8a:    // MOV rb,eb
-                //console.log('mov    rb,eb');
+                this.debug('mov    rb,eb');
                 this.writeRegister8(instruction.sourceRegister,
                                     this.readOperand8(instruction));
                 break;
 
             case 0x8b:    // MOV rw,ew
-                //console.log('mov    rw,ew');
+                this.debug('mov    rw,ew');
                 this.writeRegister16(instruction.sourceRegister,
                                      this.readOperand16(instruction));
                 break;
 
             case 0x8c:    // MOV ew,ES / MOV ew,CS / MOV ew,SS / MOV ew,DS
-                //console.log('mov    ew,+S');
+                this.debug('mov    ew,+S');
                 let movSource = instruction.modifier;
                 if (movSource >= 4) {
                     // Invalid
@@ -2205,14 +2211,14 @@ export class I286 {
                 break;
 
             case 0x8d:    // LEA
-                //console.log('lea         ');
+                this.debug('lea         ');
                 this.writeRegister16(instruction.sourceRegister,
                                      instruction.offset);
                 break;
 
             case 0x8e:    // MOV ES,mw / MOV ES,rw / MOV SS,mw / MOV SS,rw /
                           // MOV DS,mw / MOV DS,rw
-                //console.log('mov    +S,rm');
+                this.debug('mov    +S,rm');
                 let movDestination = instruction.modifier;
                 console.log(instruction, movDestination, this.readOperand16(instruction));
                 if (movDestination >= 4 || movDestination == 1) {
@@ -2223,7 +2229,7 @@ export class I286 {
                 break;
 
             case 0x8f:    // POP mw
-                //console.log('pop    mw   ');
+                this.debug('pop    mw   ');
                 if (instruction.modifier != 0) {
                     // Invalid
                     throw new InvalidInstruction(instruction);
@@ -2234,7 +2240,7 @@ export class I286 {
 
             case 0x90:    // NOP (No Operation) / XCHG AX,AX
             case 0xf0:    // LOCK Prefix
-                //console.log('lock        ');
+                this.debug('lock        ');
                 break;
 
             case 0x91:    // XCHG AX,CX / XCHG CX,AX
@@ -2244,7 +2250,7 @@ export class I286 {
             case 0x95:    // XCHG AX,BP / XCHG BP,AX
             case 0x96:    // XCHG AX,SI / XCHG SI,AX
             case 0x97:    // XCHG AX,DI / XCHG DI,AX
-                //console.log('xchg   +R,AX');
+                this.debug('xchg   +R,AX');
                 let xchgRegister = opcode - 0x90;
                 let temp = this.ax;
 
@@ -2253,12 +2259,12 @@ export class I286 {
                 break;
 
             case 0x98:    // CBW (Convert Byte into Word)
-                //console.log('cbw         ');
+                this.debug('cbw         ');
                 this.ax = this._alu.cbw8(this.al);
                 break;
 
             case 0x99:    // CWD (Convert Word to Double-Word)
-                //console.log('cwd         ');
+                this.debug('cwd         ');
                 let cwdValue = this._alu.cwd16(this.ax);
                 this.dx = (cwdValue >> 16) & 0xffff;
                 this.ax = cwdValue & 0xffff;
@@ -2274,26 +2280,21 @@ export class I286 {
                 // Move to absolute address
                 this.ip = instruction.immediate;
                 this.cs = instruction.targetCS;
-                if (this.ip == 0x526e) {
-                    this.write16(this.ss, (this.sp + 4), 42000);
-                    let arg = this.read16(this.ss, (this.sp + 4));
-                    //console.log('srand(', arg.toString(16), ')');
-                }
-                //console.log('callf  cd   ', this.ip.toString(16));
+                this.debug('callf  cd   ', this.ip.toString(16));
                 break;
 
             case 0x9b:    // WAIT
-                //console.log('wait        ');
+                this.debug('wait        ');
                 // TODO: implement (it is ok if it does nothing)
                 break;
 
             case 0x9c:    // PUSHF
-                //console.log('pushf       ');
+                this.debug('pushf       ');
                 this.push16(this.f);
                 break;
 
             case 0x9d:    // POPF
-                //console.log('popf        ');
+                this.debug('popf        ');
                 {
                     let f = this.pop16();
 
@@ -2315,7 +2316,7 @@ export class I286 {
                 break;
 
             case 0x9e:    // SAHF (Store AH into Flags)
-                //console.log('sahf        ', this.ah.toString(16));
+                this.debug('sahf        ', this.ah.toString(16));
                 let sahfValue = this.ah;
                 this._flags.carry = (sahfValue & 0x1) != 0;
                 this._flags.parity = (sahfValue & 0x4) != 0;
@@ -2325,7 +2326,7 @@ export class I286 {
                 break;
 
             case 0x9f:    // LAHF (Load Flags into AH)
-                //console.log('lahf        ');
+                this.debug('lahf        ');
                 let lahfValue = 0;
                 lahfValue = this._flags.carry ? (lahfValue | 0x1) : lahfValue;
                 lahfValue = this._flags.parity ? (lahfValue | 0x4) : lahfValue;
@@ -2336,7 +2337,7 @@ export class I286 {
                 break;
 
             case 0xa0:    // MOV AL,xb
-                //console.log('mov    AL,xb');
+                this.debug('mov    AL,xb');
                 this.writeRegister8(I286.REGISTER_AL,
                     this.read8(
                         instruction.segment || this.ds,
@@ -2346,7 +2347,7 @@ export class I286 {
                 break;
 
             case 0xa1:    // MOV AX,xw
-                //console.log('mov    AX,xw');
+                this.debug('mov    AX,xw');
                 this.writeRegister16(
                     I286.REGISTER_AX,
                     this.read16(
@@ -2357,7 +2358,7 @@ export class I286 {
                 break;
 
             case 0xa2:    // MOV xb,AL
-                //console.log('mov    xb,AL');
+                this.debug('mov    xb,AL');
                 this.write8(
                     instruction.segment || this.ds, instruction.immediate,
                     this.readRegister8(I286.REGISTER_AL)
@@ -2365,7 +2366,7 @@ export class I286 {
                 break;
 
             case 0xa3:    // MOV xw,AX
-                //console.log('mov    xw,AX');
+                this.debug('mov    xw,AX');
                 this.write16(
                     instruction.segment || this.ds, instruction.immediate,
                     this.ax
@@ -2374,7 +2375,7 @@ export class I286 {
 
             case 0xa4:    // MOVS mb,mb / MOVSB
             case 0xa5:    // MOVS mw,mw / MOVSW
-                //console.log('movs   mb/mw');
+                this.debug('movs   mb/mw');
                 do {
                     // No segment overrides are allowed.
                     if (instruction.opcode == 0xa4) {
@@ -2414,7 +2415,7 @@ export class I286 {
 
             case 0xa6:    // CMPSB (Compare String Bytes)
             case 0xa7:    // CMPSW (Compare String Words)
-                //console.log('cmps   mb/mw');
+                this.debug('cmps   mb/mw');
                 do {
                     // No segment overrides are allowed. (but we allow them??)
                     if (instruction.opcode == 0xa6) {
@@ -2458,7 +2459,7 @@ export class I286 {
 
             case 0xaa:    // STOS mb / STOSB (Store String Data)
             case 0xab:    // STOS mw / STOSW (Store String Data)
-                //console.log('stos   mb/mw');
+                this.debug('stos   mb/mw');
                 do {
                     // No segment overrides are allowed.
                     if (instruction.opcode == 0xaa) {
@@ -2482,7 +2483,7 @@ export class I286 {
 
             case 0xac:    // LODS mb / LODSB (Load String Operand)
             case 0xad:    // LODS mw / LODSW (Load String Operand)
-                //console.log('lods   mb/mw');
+                this.debug('lods   mb/mw');
                 do {
                     if (instruction.opcode == 0xac) {
                         this.al = this.read8(
@@ -2507,7 +2508,7 @@ export class I286 {
 
             case 0xae:    // SCAS mb / SCASB (Compare String Data)
             case 0xaf:    // SCAS mw / SCASW (Compare String Data)
-                //console.log('scas   mb/mw');
+                this.debug('scas   mb/mw');
                 do {
                     // No segment overrides are allowed.
                     if (instruction.opcode == 0xae) {
@@ -2543,7 +2544,7 @@ export class I286 {
             case 0xb5:    // MOV CH,db
             case 0xb6:    // MOV DH,db
             case 0xb7:    // MOV BH,db
-                //console.log('mov    +r,db', instruction.immediate.toString(16));
+                this.debug('mov    +r,db', instruction.immediate.toString(16));
                 let movByteDestination = opcode - 0xb0;
                 this.writeRegister8(movByteDestination, instruction.immediate);
                 break;
@@ -2556,7 +2557,7 @@ export class I286 {
             case 0xbd:    // MOV BP,dw
             case 0xbe:    // MOV SI,dw
             case 0xbf:    // MOV DI,dw
-                //console.log('mov    +R,dw', instruction.immediate.toString(16));
+                this.debug('mov    +R,dw', instruction.immediate.toString(16));
                 let movWordDestination = opcode - 0xb8;
                 this.writeRegister16(movWordDestination, instruction.immediate);
                 break;
@@ -2572,7 +2573,7 @@ export class I286 {
                 shiftAmount = shiftAmount == null ?
                     this.readRegister8(I286.REGISTER_CL) : shiftAmount;
 
-                //console.log('shift  eb/..');
+                this.debug('shift  eb/..');
                 console.log(this._flags);
 
                 switch (instruction.modifier) {
@@ -2634,7 +2635,7 @@ export class I286 {
                           // SAL ew,CL / SAR ew,CL / SHL ew,CL / SHR ew,CL
                 shiftAmount = shiftAmount == null ?
                     this.readRegister8(I286.REGISTER_CL) : shiftAmount;
-                //console.log('shift  ew/..');
+                this.debug('shift  ew/..');
 
                 switch (instruction.modifier) {
                     case 0x0:   // ROL ew,shamt (Rotate 16-bit Ew left)
@@ -2664,19 +2665,14 @@ export class I286 {
                 break;
 
             case 0xc2:    // RET dw
-                if (this.ip == 0x2fd) {
-                    //console.log('rand (ret)', this.ax.toString(16));
-                }
-                //console.log('ret    dw   ', this.ax);
+                this.debug('ret    dw   ', this.ax);
                 this.ip = this.pop16();
                 this.sp = this.sp + instruction.immediate;
-                //console.log('bp:', this.bp.toString(16));
                 break;
 
             case 0xc3:    // RET
-                //console.log('ret         ', this.ax);
+                this.debug('ret         ', this.ax);
                 this.ip = this.pop16();
-                //console.log('bp:', this.bp.toString(16));
                 break;
 
             case 0xc4:    // LES rw,ed (Load EA dword into DS/rw)
@@ -2689,29 +2685,29 @@ export class I286 {
                                      this.readOperand16(instruction));
 
                 if (opcode == 0xc4) {
-                    //console.log('les    rw,eb');
+                    this.debug('les    rw,eb');
                     this.es = this.read16(instruction.segment,
                                           instruction.offset + 2);
                 }
                 else {
-                    //console.log('lds    rw,eb', instruction.segment.toString(16), instruction.offset.toString(16), this.readOperand16(instruction).toString(16), this.read16(instruction.segment, instruction.offset + 2).toString(16));
+                    this.debug('lds    rw,eb', instruction.segment.toString(16), instruction.offset.toString(16), this.readOperand16(instruction).toString(16), this.read16(instruction.segment, instruction.offset + 2).toString(16));
                     this.ds = this.read16(instruction.segment,
                                           instruction.offset + 2);
                 }
                 break;
 
             case 0xc6:    // MOV eb,db
-                //console.log('mov    eb,db');
+                this.debug('mov    eb,db');
                 this.writeOperand8(instruction, instruction.immediate);
                 break;
 
             case 0xc7:    // MOV ew,dw
-                //console.log('mov    ew,dw', instruction.immediate.toString(16), instruction.segment, this.di, instruction.offset);
+                this.debug('mov    ew,dw', instruction.immediate.toString(16), instruction.segment, this.di, instruction.offset);
                 this.writeOperand16(instruction, instruction.immediate);
                 break;
 
             case 0xc8:    // ENTER dw,db
-                //console.log('enter  dw,db');
+                this.debug('enter  dw,db');
                 // Push BP
                 this.push16(this.bp);
 
@@ -2745,43 +2741,43 @@ export class I286 {
                 break;
 
             case 0xc9:    // LEAVE
-                //console.log('leave       ');
+                this.debug('leave       ');
                 this.sp = this.bp;
                 this.bp = this.pop16();
                 break;
 
             case 0xca:    // RET far dw
-                //console.log('retf   dw   ', this.ax);
+                this.debug('retf   dw   ', 'ax=', this.ax);
                 this.ip = this.pop16();
                 this.cs = this.pop16();
                 this.sp = this.sp + instruction.immediate;
                 break;
 
             case 0xcb:    // RET far
-                //console.log('retf        ', this.ax);
+                this.debug('retf        ', this.ax);
                 this.ip = this.pop16();
                 this.cs = this.pop16();
                 break;
 
             case 0xcc:    // INT 3
-                //console.log('int 3       ');
+                this.debug('int 3       ');
                 this.raiseInterrupt(instruction, 3);
                 break;
 
             case 0xcd:    // INT db
-                //console.log('int         ');
+                this.debug('int         ');
                 this.raiseInterrupt(instruction, instruction.immediate);
                 break;
 
             case 0xce:    // INTO
-                //console.log('into        ');
+                this.debug('into        ');
                 if (this._flags.overflow) {
                     this.raiseInterrupt(instruction, 4);
                 }
                 break;
 
             case 0xcf:    // IRET
-                //console.log('iret        ');
+                this.debug('iret        ');
                 this.ip = this.pop16();
                 this.cs = this.pop16();
                 this.f = this.pop16();
@@ -2796,7 +2792,7 @@ export class I286 {
                 break;
 
             case 0xd7:    // XLAT mb / XLATB
-                //console.log('xlat   mb');
+                this.debug('xlat   mb');
                 this.al = this.read8(
                     instruction.segment || this.ds,
                     (this.bx + this.al) & 0xffff
@@ -2804,7 +2800,7 @@ export class I286 {
                 break;
 
             case 0xe0:    // LOOPNE cb / LOOPNZ cb
-                console.log("loopne cb");
+                this.debu("loopne cb");
                 this.cx--;
 
                 if (this.cx != 0 && !this._flags.zero) {
@@ -2812,7 +2808,7 @@ export class I286 {
                 }
                 break;
             case 0xe1:    // LOOPE cb / LOOPZ cb
-                console.log("loope  cb");
+                this.debug("loope  cb");
                 this.cx--;
 
                 if (this.cx != 0 && this._flags.zero) {
@@ -2820,7 +2816,7 @@ export class I286 {
                 }
                 break;
             case 0xe2:    // LOOP cb
-                //console.log("loop   cb   cx=", this.cx.toString(16));
+                this.debug("loop   cb   cx=", this.cx.toString(16));
                 this.cx--;
 
                 if (this.cx != 0) {
@@ -2829,7 +2825,7 @@ export class I286 {
                 break;
 
             case 0xe3:    // JCXZ cb
-                //console.log('jcxz   cb   cx=', this.cx.toString(16));
+                this.debug('jcxz   cb   cx=', this.cx.toString(16));
                 if (this.cx == 0) {
                     this.ip += this._alu.toSigned8(instruction.immediate);
                 }
@@ -2844,23 +2840,23 @@ export class I286 {
                 break;
 
             case 0xe6:    // OUT db,AL
-                console.log("OUT", this.immediate, this.al);
+                this.debug("OUT", this.immediate, this.al);
                 break;
 
             case 0xe7:    // OUT db,AX
-                console.log("OUT", this.immediate, this.ax);
+                this.debug("OUT", this.immediate, this.ax);
                 break;
 
             case 0xee:    // OUT DX,AL
-                console.log("OUT", this.dx, this.al);
+                this.debug("OUT", this.dx, this.al);
                 break;
 
             case 0xef:    // OUT DX,AX
-                console.log("OUT", this.dx, this.ax);
+                this.debug("OUT", this.dx, this.ax);
                 break;
 
             case 0xe8:    // CALL cw
-                //console.log('call   cw   ');
+                this.debug('call   cw   ');
                 // Push IP
                 this.push16(this.ip);
 
@@ -2868,24 +2864,24 @@ export class I286 {
                 break;
 
             case 0xe9:    // JMP cw
-                //console.log('jmp    cw');
+                this.debug('jmp    cw');
                 this.ip += this._alu.toSigned16(instruction.immediate);
                 break;
 
             case 0xeb:    // JMP cb
-                //console.log('jmp    cw/cb');
+                this.debug('jmp    cw/cb');
                 this.ip += this._alu.toSigned8(instruction.immediate);
                 break;
 
             case 0xea:    // JMP far cd
-                //console.log('jmpf   cd   ');
+                this.debug('jmpf   cd   ');
                 this.ip = instruction.immediate;
                 this.cs = instruction.targetCS;
                 break;
 
             case 0xf2:    // REPNE Prefix
             case 0xf3:    // REP / REPE Prefix
-                //console.log('rep[ne]     ');
+                this.debug('rep[ne]     ');
                 break;
 
             case 0xf4:    // HLT (Halt)
@@ -2902,7 +2898,7 @@ export class I286 {
                 break;
 
             case 0xf5:    // CMC (Complement Carry Flag)
-                //console.log('cmc         ');
+                this.debug('cmc         ');
                 this._flags.carry = !this._flags.carry;
                 break;
 
@@ -2913,32 +2909,32 @@ export class I286 {
                     case 0x1:   // Also not implemented
                         throw new InvalidInstruction(instruction);
                     case 0x2:   // NOT eb
-                        //console.log('not    eb   ');
+                        this.debug('not    eb   ');
                         this.writeOperand8(instruction,
                             this._alu.not8(this.readOperand8(instruction)));
                         break;
                     case 0x3:   // NEG eb
-                        //console.log('neg    eb   ');
+                        this.debug('neg    eb   ');
                         this.writeOperand8(instruction,
                             this._alu.neg8(this.readOperand8(instruction)));
                         break;
                     case 0x4:   // MUL eb
-                        //console.log('mul    eb   ');
+                        this.debug('mul    eb   ');
                         this.ax = this._alu.mul8(this.al,
                                                  this.readOperand8(instruction));
                         break;
                     case 0x5:   // IMUL eb
-                        //console.log('imul   eb   ');
+                        this.debug('imul   eb   ');
                         this.ax = this._alu.imul8(this.al,
                                                   this.readOperand8(instruction));
                         break;
                     case 0x6:   // DIV eb
-                        //console.log('div    eb   ');
+                        this.debug('div    eb   ');
                         this.ax = this._alu.div8(this.ax,
                                                  this.readOperand8(instruction));
                         break;
                     case 0x7:   // IDIV eb
-                        //console.log('idev   eb   ');
+                        this.debug('idev   eb   ');
                         this.ax = this._alu.idiv8(this.ax,
                                                   this.readOperand8(instruction));
                         break;
@@ -2953,36 +2949,36 @@ export class I286 {
                     case 0x1:   // Also not implemented
                         throw new InvalidInstruction(instruction);
                     case 0x2:   // NOT ew
-                        //console.log('not    ew   ');
+                        this.debug('not    ew   ');
                         this.writeOperand16(instruction,
                             this._alu.not16(aluWordOperand));
                         break;
                     case 0x3:   // NEG ew
-                        //console.log('neg    ew   ');
+                        this.debug('neg    ew   ');
                         this.writeOperand16(instruction,
                             this._alu.neg16(aluWordOperand));
                         break;
                     case 0x4:   // MUL ew
-                        //console.log('mul    ew   ');
+                        this.debug('mul    ew   ');
                         let mulResult = this._alu.mul16(this.ax, aluWordOperand);
                         this.dx = (mulResult >> 16) & 0xffff;
                         this.ax = mulResult & 0xffff;
                         break;
                     case 0x5:   // IMUL ew
-                        //console.log('imul   ew   ');
+                        this.debug('imul   ew   ');
                         let imulResult = this._alu.imul16(this.ax, aluWordOperand);
                         this.dx = (imulResult >> 16) & 0xffff;
                         this.ax = imulResult & 0xffff;
                         break;
                     case 0x6:   // DIV ew
-                        //console.log('div    ew   ');
+                        this.debug('div    ew   ');
                         let divOperand = (this.dx << 16) | this.ax;
                         let divResult = this._alu.div16(divOperand, aluWordOperand);
                         this.dx = (divResult >> 16) & 0xffff;
                         this.ax = divResult & 0xffff;
                         break;
                     case 0x7:   // IDIV ew
-                        //console.log('idiv   ew   ');
+                        this.debug('idiv   ew   ');
                         let idivResult = this._alu.idiv16(this.ax, aluWordOperand);
                         this.dx = (idivResult >> 16) & 0xffff;
                         this.ax = idivResult & 0xffff;
@@ -2991,29 +2987,29 @@ export class I286 {
                 break;
 
             case 0x2f6:    // TEST eb,db
-                //console.log('test   eb,db');
+                this.debug('test   eb,db');
                 this._alu.and8(this.readOperand8(instruction),
                               instruction.immediate);
                 break;
 
             case 0x4f7:    // TEST ew,dw
-                //console.log('test   ew,dw');
+                this.debug('test   ew,dw');
                 this._alu.and16(this.readOperand16(instruction),
                                instruction.immediate);
                 break;
 
             case 0xf8:    // CLC (Clear Carry Flag)
-                //console.log('clc      ');
+                this.debug('clc      ');
                 this._flags.carry = false;
                 break;
 
             case 0xf9:    // STC (Set Carry Flag)
-                //console.log('stc      ');
+                this.debug('stc      ');
                 this._flags.carry = true;
                 break;
 
             case 0xfa:    // CLI (Clear Interrupt Flag)
-                //console.log('cli      ');
+                this.debug('cli      ');
                 // We only change this if we have privilege
                 if (this.cpl <= this.iopl) {
                     this._flags.interruptEnable = false;
@@ -3025,7 +3021,7 @@ export class I286 {
                 break;
 
             case 0xfb:    // STI (Set Interrupt Flag)
-                //console.log('sti      ');
+                this.debug('sti      ');
                 // We only change this if we have privilege
                 if (this.cpl <= this.iopl) {
                     this._flags.interruptEnable = true;
@@ -3037,17 +3033,17 @@ export class I286 {
                 break;
 
             case 0xfc:    // CLD (Clear Direction Flag)
-                //console.log('cld      ');
+                this.debug('cld      ');
                 this._flags.direction = false;
                 break;
 
             case 0xfd:    // STD (Set Direction Flag)
-                //console.log('std      ');
+                this.debug('std      ');
                 this._flags.direction = true;
                 break;
 
             case 0xfe:    // INC eb / DEC eb
-                //console.log('inc    eb');
+                this.debug('inc    eb');
                 switch (instruction.modifier) {
                     case 0:
                         this.writeOperand8(
@@ -3070,10 +3066,10 @@ export class I286 {
                           // JMP ew / JMP far ed / PUSH mw
                 switch (instruction.modifier) {
                     case 0x0:   // INC ew
-                        //console.log('inc    ew');
+                        this.debug('inc    ew');
                         operation = operation || this._alu.inc16.bind(this._alu);
                     case 0x1:   // DEC ew
-                        //console.log('dec    ew');
+                        this.debug('dec    ew');
                         operation = operation || this._alu.dec16.bind(this._alu);
 
                         this.writeOperand16(
@@ -3088,11 +3084,11 @@ export class I286 {
 
                         // Set IP to the given operand
                         this.ip = this.readOperand16(instruction);
-                        //console.log('call   ew', this.ip.toString(16));
+                        this.debug('call   ew', this.ip.toString(16));
                         break;
 
                     case 0x3:   // CALL far ed
-                        //console.log('callf  ed');
+                        this.debug('callf  ed');
                         if (instruction.segment === undefined) {
                             throw new InvalidInstruction(instruction);
                         }
@@ -3105,7 +3101,7 @@ export class I286 {
 
                         // Set IP to the given operand
                         this.ip = this.readOperand16(instruction);
-                        //console.log('callf  ed', this.ip.toString(16));
+                        this.debug('callf  ed', this.ip.toString(16));
 
                         // Set CS to the following word
                         this.cs = this.read16(instruction.segment,
@@ -3113,14 +3109,14 @@ export class I286 {
                         break;
 
                     case 0x4:   // JMP ew
-                        //console.log('jmp    ew');
+                        this.debug('jmp    ew');
                         this.ip = this.readOperand16(instruction);
                         break;
 
                     case 0x5:   // JMP far ed
-                        //console.log('jmpf   ed');
-                        //console.log(instruction);
-                        //console.log(this.memory);
+                        this.debug('jmpf   ed');
+                        this.debug(instruction);
+                        this.debug(this.memory);
                         if (!instruction.segment) {
                             throw new InvalidInstruction(instruction);
                         }
@@ -3134,7 +3130,7 @@ export class I286 {
                         break;
 
                     case 0x6:   // PUSH mw
-                        //console.log('push   mw');
+                        this.debug('push   mw');
                         this.push16(this.readOperand16(instruction));
                         break;
 
@@ -3165,19 +3161,19 @@ export class I286 {
             case 0x101: // SGDT / SIDT / LIDT / LGDT / LMSW / SMSW
                 switch (instruction.modifier) {
                     case 0: // SGDT m
-                        console.log("sgdt");
+                        this.debug("sgdt");
 
                         this.writeOperand16(instruction, this.gdt);
                         break;
 
                     case 1: // SIDT m
-                        console.log("sidt");
+                        this.debug("sidt");
 
                         this.writeOperand16(instruction, this.idt);
                         break;
 
                     case 2: // LGDT m
-                        console.log("lgdt");
+                        this.debug("lgdt");
 
                         if (this.cpl == 0) {
                             // Read 16-bit word from memory at the effective address
@@ -3192,7 +3188,7 @@ export class I286 {
                         break;
 
                     case 3: // LIDT m
-                        console.log("lidt");
+                        this.debug("lidt");
 
                         if (this.cpl == 0) {
                             // Read 16-bit word from memory at the effective address

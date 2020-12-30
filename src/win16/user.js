@@ -25,6 +25,7 @@ import { GetClientRect } from './user/GetClientRect.js';
 import { GetWindowRect } from './user/GetWindowRect.js';
 import { GetWindowWord } from './user/GetWindowWord.js';
 import { InitApp } from './user/InitApp.js';
+import { InvalidateRect } from './user/InvalidateRect.js';
 import { LoadBitmap } from './user/LoadBitmap.js';
 import { LoadString } from './user/LoadString.js';
 import { MessageBox } from './user/MessageBox.js';
@@ -190,7 +191,7 @@ export class User extends Module {
             [User.stub, "CallWindowProc", 14],
             [User.stub, "CallMsgFilter", 6],
             [UpdateWindow, "UpdateWindow", 2, [HWND]],
-            [User.stub, "InvalidateRect", 8, [HWND, [RECT], BOOL]],
+            [InvalidateRect, "InvalidateRect", 8, [HWND, [RECT], BOOL]],
             [User.stub, "InvalidateRgn", 6],
             [User.stub, "ValidateRect", 6],
             [User.stub, "ValidateRgn", 4],

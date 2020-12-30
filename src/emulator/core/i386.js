@@ -669,6 +669,7 @@ export class I386 extends I286 {
             this._stackTrace[this._stackIndex] = [this.cs, this.ip];
             this._stackIndex = (this._stackIndex + 1) % 10;
             //console.log(this.cs.toString(16) + ":" + this.ip.toString(16));
+            this.debug(this.cs.toString(16) + ":" + this.ip.toString(16));
         }
 
         if (instruction.addressOverride === undefined && this.retrieveDescriptor(this.cs).addressSize) {
