@@ -166,13 +166,10 @@ export class Win16 {
         // Gather the initial data segment
         let dataSegment = loader.segments[loader.ds - 1];
 
-        // Allocate a stack to the data segment
-        let stack = new Uint8Array(executable.neHeader.initialStackSize);
-
-        // Allocate a heap to the data segment
-        let heapStart = this._machine.memory.sizeOf(loader.ds >> 3);
+        // Allocate a heap to the data segment (after data and before stack)
+        let heapStart = dataSegment.length;
         let heapEnd = heapStart + executable.neHeader.initialLocalHeapSize;
-        heapEnd = 0x10000 - heapStart;
+        heapEnd = 0x10000 - heapStart - executable.neHeader.initialStackSize;
         LocalInit.bind(this)(loader.ds, heapStart, heapEnd);
 
         let handle = this.handles.allocate(task);
@@ -233,7 +230,7 @@ export class Win16 {
 
         this._machine.cpu.core.ds = (task.loader.ds << 3) | 0x3;
         this._machine.cpu.core.ss = (task.loader.ss << 3) | 0x3;
-        this._machine.cpu.core.sp = dataSegment.length + task.executable.neHeader.initialStackSize;
+        this._machine.cpu.core.sp = 0x0000;
         this._machine.cpu.core.cs = (task.loader.cs << 3) | 0x3;
         this._machine.cpu.core.ip = task.loader.ip;
         this._machine.cpu.core.bx = task.executable.neHeader.initialStackSize;

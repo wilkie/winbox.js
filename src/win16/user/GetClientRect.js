@@ -29,6 +29,6 @@ export function GetClientRect(hwnd, lprc) {
 
     lprc.left = 0;
     lprc.top = 0;
-    lprc.right = dialog.innerWidth | 508;
-    lprc.bottom = dialog.innerHeight | 1000;
+    lprc.right = dialog.innerWidth;
+    lprc.bottom = dialog.innerHeight;
 }

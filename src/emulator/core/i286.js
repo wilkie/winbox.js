@@ -2463,7 +2463,6 @@ export class I286 {
                 do {
                     // No segment overrides are allowed.
                     if (instruction.opcode == 0xaa) {
-                        console.log("writing to", this.es, this.di, this.bx, this.al);
                         this.write8(this.es, this.di, this.al);
                         this.di += this._flags.direction ? -1 : 1;
                     }
@@ -2574,7 +2573,6 @@ export class I286 {
                     this.readRegister8(I286.REGISTER_CL) : shiftAmount;
 
                 this.debug('shift  eb/..');
-                console.log(this._flags);
 
                 switch (instruction.modifier) {
                     case 0x0:   // ROL eb,db (Rotate 8-bit Eb left)
@@ -2622,7 +2620,6 @@ export class I286 {
                         this._flags.overflow = this._flags.carry && ((this.readOperand8(instruction) & 0x80) != 0);
                     }
                 }
-                console.log(this.readOperand8(instruction), this._flags);
                 break;
 
             case 0xc1:    // RCL ew,db / RCR ew,db / ROL ew,db / ROR ew,db /

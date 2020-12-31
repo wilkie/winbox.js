@@ -29,8 +29,6 @@ import { SizableWindow } from '../../windows/sizable-window.js';
 export function CreateWindow(lpszClassName, lpszWindowName,
                              dwStyle, x, y, nWidth, nHeight,
                              hwndParent, hmenu, hinst, lpvParam) {
-    //console.log("Creating window", arguments);
-
     // Look up the parent (if NULL, we create a window in the desktop space)
     let parentWindow = null;
     if (hwndParent == NULL) {
