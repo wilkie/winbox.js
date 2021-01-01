@@ -32,6 +32,10 @@ export function GetTextMetrics(hdc, lptm) {
     // Get the surface instance
     let surface = this.handles.resolve(hdc);
 
+    if (!surface) {
+        return FALSE;
+    }
+
     // Get the current font
     let font = surface.font;
 

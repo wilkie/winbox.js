@@ -90,6 +90,10 @@ export function SelectObject(hdc, hgdiobj) {
         surface = this.handles.resolve(hdc);
     }
 
+    if (!surface) {
+        return NULL;
+    }
+
     // Resolve the provided handle
     let item = this.handles.resolve(hgdiobj);
     let ret = NULL;
