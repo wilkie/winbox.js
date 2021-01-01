@@ -155,12 +155,16 @@ export class Surface {
         // TODO: backcolor
         if (this._font instanceof BitmapFont) {
             // A bitmap font
-            this._font.fontFor(12).draw(this.context, x, y, text);
+            // Fill the rectangle behind it
+            let font = this._font.fontFor(12);
+            let metrics = font.measure(text);
+            this.context.fillStyle = "white";
+            this.context.fillRect(x, y, metrics.width, metrics.height);
+            font.draw(this.context, x, y, text);
         }
         else {
             // Normal text draw
             this.context.font = this._font;
-
             this.context.textBaseline = "top";
             this.context.fillStyle = "black";
             this.context.fillText(text, x, y);

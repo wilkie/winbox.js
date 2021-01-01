@@ -135,6 +135,9 @@ export class Bitmap {
     }
 
     get width() {
+        if (this._surface) {
+            return this._surface.width;
+        }
         return this._width;
     }
 
@@ -145,6 +148,9 @@ export class Bitmap {
     }
 
     get height() {
+        if (this._surface) {
+            return this._surface.height;
+        }
         return this._height;
     }
 
@@ -366,7 +372,7 @@ export class Bitmap {
 
                     // Retrieve the current destination pixel (if necessary)
                     let offset = destOffset + dX * 4;
-                    if (offset < 0 || offset >= this.view.byteLength) {
+                    if (!destData && (offset < 0 || offset >= this.view.byteLength)) {
                         continue;
                     }
 

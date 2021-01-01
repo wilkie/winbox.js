@@ -166,6 +166,8 @@ export class BitmapFontEntry {
         }
 
         ctx.putImageData(imageData, x, y);
+
+        return metrics;
     }
 
     /**

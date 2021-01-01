@@ -26,6 +26,7 @@ import { PatBlt } from './gdi/PatBlt.js';
 import { SelectObject } from './gdi/SelectObject.js';
 import { SetBitmapBits } from './gdi/SetBitmapBits.js';
 import { SetBkColor } from './gdi/SetBkColor.js';
+import { SetTextColor } from './gdi/SetTextColor.js';
 import { TextOut } from './gdi/TextOut.js';
 
 /**
@@ -50,7 +51,7 @@ export class Gdi extends Module {
             [Gdi.stub, "SetPolyFillMode", 4],
             [Gdi.stub, "SetStretchBltMode", 4],
             [Gdi.stub, "SetTextCharacterExtra", 4],
-            [Gdi.stub, "SetTextColor", 6],
+            [SetTextColor, "SetTextColor", 6, [HDC, COLORREF], COLORREF],
             // 10 //
             [Gdi.stub, "SetTextJustification", 6],
             [Gdi.stub, "SetWindowOrg", 6],

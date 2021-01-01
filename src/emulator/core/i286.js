@@ -1946,7 +1946,7 @@ export class I286 {
 
             case 0x6a:    // PUSH db
                 this.debug('push   db   ');
-                this.push16(instruction.immediate);
+                this.push16(this._alu.toSigned8(instruction.immediate));
                 break;
 
             //case 0x6b:    // IMUL rw,db / IMUL rw,ew,db

@@ -394,8 +394,6 @@ export class Win16 {
     }
 
     syscallInvoke() {
-        //console.log("invoke! called from:", this._machine.cpu.cs, this._machine.cpu.ip);
-
         // Get the module from the CS
         let segment = this._machine.cpu.core.cs >> 3;
         let module = this._modules.fromSegment(segment);

@@ -60,7 +60,7 @@ export function CreateWindow(lpszClassName, lpszWindowName,
     });
 
     // Set default font
-    //dialog.surface.font = this.fonts.lookup
+    dialog.surface.font = this.fonts.lookup("System");
 
     dialog.show();
     dialog.resize(400, 300);
