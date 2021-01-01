@@ -50,16 +50,6 @@ export class Bitmap {
 
         this._palette = palette;
 
-        // I'm gonna render it. don't stop me
-        if (bpp == 32 && format == Bitmap.RGBA) {
-            //this.render();
-        }
-        else if (bpp == 8) {
-            //if (width == 25 && height == 31) {
-            //this.convert(32);
-            //}
-        }
-
         // Whether or not we also maintain an offscreen copy.
         // This will also get modified by operations.
         // The point of the offscreen copy is to maintain a version that we
@@ -353,20 +343,7 @@ export class Bitmap {
                 }
                 else if (this.bpp == 32) {
                     // Resolve the source palette, if needed
-                    if (source.bpp == 1) {
-                        // monochrome converts to the backcolor/forecolor
-                        if (s == 0) {
-                            s = 0xffffffff;
-                        }
-                        else {
-                            s = 0xff000000;
-                        }
-
-                        if (destData) {
-                            s = ((s & 0xffffff) << 8) | 0xff;
-                        }
-                    }
-                    else if (source.bpp < 32) {
+                    if (source.bpp < 32) {
                         s = source.palette[s] >>> 0;
                     }
 

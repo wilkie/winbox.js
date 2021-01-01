@@ -138,8 +138,13 @@ export function BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight,
     let destinationBitmap = destination.bitmap;
     let destinationView = destinationBitmap.view;
 
+    // Determine the monochrome palette (for conversion)
+    if (sourceBitmap.bpp == 1) {
+        sourceBitmap.palette[0] = destination.forecolor.r8g8b8a8;
+        sourceBitmap.palette[1] = destination.backcolor.r8g8b8a8;
+    }
+
     // TODO: Check width/height and bounds of bitmaps (otherwise we crash)
-    //console.log("bitblt", sourceBitmap, destinationBitmap);
 
     // Perform the operation
     let invert = false;

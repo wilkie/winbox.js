@@ -21,6 +21,40 @@ export class Color {
         return this._value;
     }
 
+    /**
+     * Returns the A8R8G8B8 value for the current color.
+     */
+    get a8r8g8b8() {
+        return this._value;
+    }
+
+    /**
+     * Returns the A8B8G8R8 value for the current color.
+     */
+    get a8b8g8r8() {
+        return ((this._value & 0xff00ff00) |
+               ((this._value >> 16) & 0xff) |
+               ((this._value & 0xff) << 16)) >>> 0;
+    }
+
+    /**
+     * Returns the R8G8B8A8 value for the current color.
+     */
+    get r8g8b8a8() {
+        return (((this._value << 8) & 0xffffff00) |
+               ((this._value >> 24) & 0xff)) >>> 0;
+    }
+
+    /**
+     * Returns the B8G8R8A8 value for the current color.
+     */
+    get b8g8r8a8() {
+        return (((this._value << 8) & 0x00ff0000) |
+               ((this._value >> 8) & 0x0000ff00) |
+               ((this._value >> 24) & 0xff) |
+               ((this._value & 0xff) << 24)) >>> 0;
+    }
+
     get css() {
         return "rgba(" + [this.red, this.green, this.blue].join(",") + ", " + this.alpha + ")";
     }

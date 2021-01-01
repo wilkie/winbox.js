@@ -18,5 +18,5 @@
  * @param {string} lpszOutputString - The string to be displayed.
  */
 export function OutputDebugString(lpszOutputString) {
-    console.debug(lpszOutputString);
+    console.log(lpszOutputString.toString());
 }
