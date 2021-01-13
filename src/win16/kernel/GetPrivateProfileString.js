@@ -80,11 +80,28 @@ import { lstrcpy } from './lstrcpy.js';
 export function GetPrivateProfileString(lpszSection, lpszEntry, lpszDefault,
                                         lpszReturnBuffer, cbReturnBuffer,
                                         lpszFilename) {
+    // Open the file
+    let handle = this.dos.files.open(lpszFilename);
+    let file = this.dos.files.resolve(handle);
+    console.log(file);
 
-    console.log("GetPrivateProfileString", arguments);
+    let ret = null;
 
-    // Always return the default, for now.
-    // TODO: lstrcpy does not have a bounds
-    lstrcpy.bind(this)(lpszReturnBuffer, (lpszDefault.segment << 16) | lpszDefault.offset);
+    if (file) {
+        // Read INI data from file
+        // Find the section
+        // Find the entry
+        // Read the value
+    }
+
+    if (ret === null) {
+        // Always return the default, for now.
+        // TODO: lstrcpy does not have a bounds
+        lstrcpy.bind(this)(lpszReturnBuffer, (lpszDefault.segment << 16) | lpszDefault.offset);
+    }
+
+    if (handle) {
+        this.dos.files.close(handle);
+    }
     return 0;
 }

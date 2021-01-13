@@ -97,14 +97,12 @@ export class FixedWindow extends Window {
 
         this._closeButton.options = this._options.menu || this._options;
 
-        if (this._options.font &&
-            this._options.font.toLowerCase().endsWith(".fon")) {
-            BitmapFont.load(this._options.font).then( (font) => {
-                caption.style.display = "none";
-                captionImageSpan.style.display = "block";
-                captionImage.src = font.fontFor(this._options.size || 10).dataFor(this._options.caption);
-                captionImage.setAttribute("alt", caption.textContent);
-            });
+        if (this._options.font instanceof BitmapFont) {
+            let font = this._options.font;
+            caption.style.display = "none";
+            captionImageSpan.style.display = "block";
+            captionImage.src = font.fontFor(this._options.size || 10).dataFor(this._options.caption);
+            captionImage.setAttribute("alt", caption.textContent);
         }
 
         this._caption.textContent = this._options.caption;

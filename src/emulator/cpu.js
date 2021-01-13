@@ -131,6 +131,10 @@ export class CPU {
         if (this._interruptHandlers[index]) {
             this._interruptHandlers[index]();
         }
+        else {
+            // Unknown interrupt
+            throw "Unknown interrupt";
+        }
     }
 
     /**

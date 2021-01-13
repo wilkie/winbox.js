@@ -21,6 +21,19 @@ export function GetDeviceCaps(hdc, iCapability) {
             return this._desktop.width;
         case Gdi.VERTRES:
             return this._desktop.height;
+        case Gdi.NUMCOLORS:
+            // Size of the color palette.
+            // TODO: read from surface (32bpp... so lots of colors)
+            return 256;
+        case Gdi.RASTERCAPS:
+            // Raster capabilities
+            return 0;
+        case Gdi.NUMRESERVED:
+            // Number of palette entries reserved by the system.
+            return 16;
+        case Gdi.BITSPIXEL:
+            // The bits-per-pixel (bpp) of the device.
+            return 32;
     }
 
     return 0;

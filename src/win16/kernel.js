@@ -4,18 +4,33 @@
 
 import { Module } from './module.js';
 
-import { BYTE, UBYTE, INT, UINT, FARPTR,
-         DWORD, HLOCAL, HGLOBAL, HANDLE,
-         BOOL, NEARPTR, LPCSTR, HWND } from './types.js';
+import { BYTE, UBYTE, INT, UINT, FARPTR, HFILE,
+         DWORD, HLOCAL, HGLOBAL, HANDLE, HINSTANCE, LONG,
+         CHARARRAY, BOOL, NEARPTR, LPCSTR, HWND, Struct } from './types.js';
 
+import { _lclose } from './kernel/_lclose.js';
+import { _llseek } from './kernel/_llseek.js';
+import { _lread } from './kernel/_lread.js';
+import { Catch } from './kernel/Catch.js';
 import { FatalAppExit } from './kernel/FatalAppExit.js';
 import { FatalExit } from './kernel/FatalExit.js';
-import { GetVersion } from './kernel/GetVersion.js';
+import { GetDOSEnvironment } from './kernel/GetDOSEnvironment.js';
+import { GetFreeSpace } from './kernel/GetFreeSpace.js';
+import { GetModuleFilename } from './kernel/GetModuleFilename.js';
 import { GetPrivateProfileString } from './kernel/GetPrivateProfileString.js';
+import { GetProcAddress } from './kernel/GetProcAddress.js';
+import { GetVersion } from './kernel/GetVersion.js';
+import { GetWinFlags } from './kernel/GetWinFlags.js';
+import { GlobalAlloc } from './kernel/GlobalAlloc.js';
+import { GlobalFree } from './kernel/GlobalFree.js';
+import { GlobalLock } from './kernel/GlobalLock.js';
+import { GlobalSize } from './kernel/GlobalSize.js';
+import { GlobalUnlock } from './kernel/GlobalUnlock.js';
 import { InitTask } from './kernel/InitTask.js';
 import { lstrcpy } from './kernel/lstrcpy.js';
 import { lstrcat } from './kernel/lstrcat.js';
 import { lstrlen } from './kernel/lstrlen.js';
+import { LoadLibrary } from './kernel/LoadLibrary.js';
 import { LocalAlloc } from './kernel/LocalAlloc.js';
 import { LocalCompact } from './kernel/LocalCompact.js';
 import { LocalFlags } from './kernel/LocalFlags.js';
@@ -27,7 +42,9 @@ import { LocalReAlloc } from './kernel/LocalReAlloc.js';
 import { LocalSize } from './kernel/LocalSize.js';
 import { LocalUnlock } from './kernel/LocalUnlock.js';
 import { LockSegment } from './kernel/LockSegment.js';
+import { OpenFile } from './kernel/OpenFile.js';
 import { OutputDebugString } from './kernel/OutputDebugString.js';
+import { Throw } from './kernel/Throw.js';
 import { UnlockSegment } from './kernel/UnlockSegment.js';
 import { WaitEvent } from './kernel/WaitEvent.js';
 import { WritePrivateProfileString } from './kernel/WritePrivateProfileString.js';
@@ -40,6 +57,10 @@ import { WritePrivateProfileString } from './kernel/WritePrivateProfileString.js
 export class Kernel extends Module {
     static get name() {
         return "KERNEL";
+    }
+
+    static get path() {
+        return "C:\\WINDOWS\\SYSTEM\\KRNL286.EXE";
     }
 
     static get exports() {
@@ -61,15 +82,15 @@ export class Kernel extends Module {
             [LocalFlags, "LocalFlags", 2, [HLOCAL], UINT],
             [LocalCompact, "LocalCompact", 2, [UINT], UINT],
             [Kernel.stub, "LocalNotify", 4],
-            [Kernel.stub, "GlobalAlloc", 6],
+            [GlobalAlloc, "GlobalAlloc", 6, [UINT, DWORD], HGLOBAL],
             [Kernel.stub, "GlobalReAlloc", 8],
-            [Kernel.stub, "GlobalFree", 2],
-            [Kernel.stub, "GlobalLock", 2],
-            [Kernel.stub, "GlobalUnlock", 2],
+            [GlobalFree, "GlobalFree", 2, [HGLOBAL], HGLOBAL],
+            [GlobalLock, "GlobalLock", 2, [HGLOBAL], FARPTR],
+            [GlobalUnlock, "GlobalUnlock", 2, [HGLOBAL], FARPTR],
             // 20 //
-            [Kernel.stub, "GlobalSize", 2],
+            [GlobalSize, "GlobalSize", 2, [HGLOBAL], DWORD],
             [Kernel.stub, "GlobalHandle", 2],
-            [Kernel.stub, "GlobalFlags", 2],
+            [Kernel.stub, "GlobalFlags", 2, [HGLOBAL], UINT],
             [LockSegment, "LockSegment", 2, [UINT], HGLOBAL],
             [UnlockSegment, "UnlockSegment", 2, [UINT]],
             [Kernel.stub, "GlobalCompact", 4],
@@ -98,15 +119,15 @@ export class Kernel extends Module {
             [Kernel.stub, "FreeModule", 2],
             [Kernel.stub, "GetModuleHandle", 4],
             [Kernel.stub, "GetModuleUsage", 2],
-            [Kernel.stub, "GetModuleFilename", 8],
+            [GetModuleFilename, "GetModuleFilename", 8, [HINSTANCE, FARPTR, INT], INT],
             // 50 //
-            [Kernel.stub, "GetProcAddress", 6],
+            [GetProcAddress, "GetProcAddress", 6, [HINSTANCE, LPCSTR], FARPTR],
             [Kernel.stub, "MakeProcInstance", 6],
             [Kernel.stub, "FreeProcInstance", 4],
             [Kernel.stub, "CallProcInstance", 4],
             [Kernel.stub, "GetInstanceData", 6],
-            [Kernel.stub, "Catch", 4],
-            [Kernel.stub, "Throw", 10],
+            [Catch, "Catch", 4, [FARPTR], INT],
+            [Throw, "Throw", 6, [FARPTR, INT], INT], // Return value must match Catch
             [Kernel.stub, "GetProfileInt", 10],
             [Kernel.stub, "GetProfileString", 18],
             [Kernel.stub, "WriteProfileString", 12],
@@ -126,7 +147,7 @@ export class Kernel extends Module {
             [Kernel.stub, "DeleteAtom", 2],
             [Kernel.stub, "GetAtomName", 8],
             [Kernel.stub, "GetAtomHandle", 2],
-            [Kernel.stub, "OpenFile", 10],
+            [OpenFile, "OpenFile", 10, [LPCSTR, [OFSTRUCT], UINT], HFILE],
             [Kernel.stub, "OpenPathName", 6],
             [Kernel.stub, "DeletePathName", 6],
             [Kernel.stub, "Reserved1", 4],
@@ -134,22 +155,22 @@ export class Kernel extends Module {
             [Kernel.stub, "Reserved3", 4],
             // 80 //
             [Kernel.stub, "Reserved4", 4],
-            [Kernel.stub, "_LCLOSE", 2],
-            [Kernel.stub, "_LREAD", 8],
-            [Kernel.stub, "_LCREAT", 6],
-            [Kernel.stub, "_LLSEEK", 8],
-            [Kernel.stub, "_LOPEN", 6],
-            [Kernel.stub, "_LWRITE", 8],
+            [_lclose, "_lclose", 2, [HFILE], HFILE],
+            [_lread, "_lread", 8, [HFILE, FARPTR, UINT], UINT],
+            [Kernel.stub, "_lcreat", 6],
+            [_llseek, "_llseek", 8, [HFILE, LONG, INT], LONG],
+            [Kernel.stub, "_lopen", 6],
+            [Kernel.stub, "_lwrite", 8],
             [Kernel.stub, "Reserved5", 4],
-            [lstrcpy, "LSTRCPY", 8, [FARPTR, FARPTR], FARPTR],
-            [lstrcat, "LSTRCAT", 4, [FARPTR, FARPTR], FARPTR],
+            [lstrcpy, "lstrcpy", 8, [FARPTR, FARPTR], FARPTR],
+            [lstrcat, "lstrcat", 4, [FARPTR, FARPTR], FARPTR],
             // 90 //
-            [lstrlen, "LSTRLEN", 4, [FARPTR], UINT],
+            [lstrlen, "lstrlen", 4, [FARPTR], UINT],
             [InitTask, "InitTask", 0, [], UINT],
             [Kernel.stub, "GetTempDrive", 2],
             [Kernel.stub, "GetCodeHandle", 4],
             [Kernel.stub, "DefineHandleTable", 2],
-            [Kernel.stub, "LoadLibrary", 4],
+            [LoadLibrary, "LoadLibrary", 4, [LPCSTR], HINSTANCE],
             [Kernel.stub, "FreeLibrary", 2],
             [Kernel.stub, "GetTempFileName", 12],
             [Kernel.stub, "GetLastDiskChange", 0],
@@ -189,8 +210,8 @@ export class Kernel extends Module {
             [WritePrivateProfileString, "WritePrivateProfileString", 16, [LPCSTR, LPCSTR, LPCSTR, LPCSTR], BOOL],
             // 130 //
             [Kernel.stub, "FileCdr"],
-            [Kernel.stub, "GetDosEnvironment", 2],
-            [Kernel.stub, "GetWinFlags", 2],
+            [GetDOSEnvironment, "GetDOSEnvironment", 0, [], FARPTR],
+            [GetWinFlags, "GetWinFlags", 0, [], DWORD],
             [Kernel.stub, "GetExePtr", 4],
             [Kernel.stub, "GetWindowsDirectory", 4],
             [Kernel.stub, "GetSystemDirectory", 4],
@@ -230,7 +251,7 @@ export class Kernel extends Module {
             [Kernel.stub, "WinExec", 4],
             [Kernel.stub, "GetExpWinVer", 0],
             [Kernel.stub, "DirectResAlloc", 4],
-            [Kernel.stub, "GetFreeSpace", 4],
+            [GetFreeSpace, "GetFreeSpace", 2, [UINT], DWORD],
             // 170 //
             [Kernel.stub, "AllocCSToDSAlias", 2],
             [Kernel.stub, "AllocDSToCSAlias", 2],
@@ -356,6 +377,319 @@ export class Kernel extends Module {
 }
 
 /**
+ * The **OFSTRUCT** structure contains the file information which results from
+ * opening that file.
+ */
+export class OFSTRUCT extends Struct {
+    constructor() {
+        super([
+            ['cBytes', BYTE],
+            ['fFixedDisk', BYTE],
+            ['nErrCode', UINT],
+            ['reserved', DWORD],
+            ['szPathName', CHARARRAY + 128],
+        ]);
+    }
+}
+
+// OpenFile Constants
+// ------------------
+
+/**
+ * Indicates a file operation error.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.HFILE_ERROR = 0xffff;
+
+/**
+ * Indicates opening a file for reading.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.OF_READ = 0x0000;
+
+/**
+ * Indicates opening a file for writing.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.OF_WRITE = 0x0001;
+
+/**
+ * Indicates opening a file for reading and writing.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.OF_READWRITE = 0x0002;
+
+/**
+ * Indicates opening a file for sharing in compatibility mode.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.OF_SHARE_COMPAT = 0x0000;
+
+/**
+ * Indicates opening a file for sharing with read and write exclusivity.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.OF_SHARE_EXCLUSIVE = 0x0010;
+
+/**
+ * Indicates opening a file for sharing with write exclusivity.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.OF_SHARE_DENY_WRITE = 0x0020;
+
+/**
+ * Indicates opening a file for sharing with read exclusivity.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.OF_SHARE_DENY_READ = 0x0030;
+
+/**
+ * Indicates opening a file for sharing without exclusivity.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.OF_SHARE_DENY_NONE = 0x0040;
+
+/**
+ * Indicates only filling the OFSTRUCT for a file instead of opening.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.OF_PARSE = 0x0100;
+
+/**
+ * Indicates deleting an existing file.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.OF_DELETE = 0x0200;
+
+/**
+ * Indicates to compare file date with the given OFSTRUCT instead of opening.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.OF_VERIFY = 0x0400; /* Used with OF_REOPEN */
+
+/**
+ * Indicates to search in system directories even if a pull path is given.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.OF_SEARCH = 0x0400; /* Used without OF_REOPEN */
+
+/**
+ * Indicates the prompt dialog should contain a Cancel button.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.OF_CANCEL = 0x0800;
+
+/**
+ * Indicates creating or truncating the file when opening.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.OF_CREATE = 0x1000;
+
+/**
+ * Indicates prompting for the location of the file.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.OF_PROMPT = 0x2000;
+
+/**
+ * Indicates opening and then closing the file to test for its existence.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.OF_EXIST = 0x4000;
+
+/**
+ * Indicates reopening the file using the information provided.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.OF_REOPEN = 0x8000;
+
+// GlobalAlloc, etc, flags
+// -----------------------
+
+/**
+ * Allocates fixed memory, globally.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.GMEM_FIXED = 0x0000;
+
+/**
+ * Allocates moveable memory, globally.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.GMEM_MOVEABLE = 0x0002;
+
+/**
+ * Does not compact or discard memory to satisfy the allocation request.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.GMEM_NOCOMPACT = 0x0010;
+
+/**
+ * Does not discard memory to satisfy the allocation request.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.GMEM_NODISCARD = 0x0020;
+
+/**
+ * Initializes memory contents to zero.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.GMEM_ZEROINIT = 0x0040;
+
+/**
+ * When specified, will modify the attributes of the memory object.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.GMEM_MODIFY = 0x0080;
+
+/**
+ * Allocates discardable memory.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.GMEM_DISCARDABLE = 0x0100;
+
+/**
+ * Allocates non-banked memory.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.GMEM_NOT_BANKED = 0x1000;
+
+/**
+ * Allocates lower memory.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.GMEM_LOWER = 0x1000;
+
+/**
+ * Allocates shared memory.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.GMEM_SHARE = 0x2000;
+
+/**
+ * Allocates shared memory for DDE use.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.GMEM_DDESHARE = 0x2000;
+
+/**
+ * Notifies when the allocated block is discarded.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.GMEM_NOTIFY = 0x4000;
+
+/**
+ * Combines GMEM_FIXED and GMEM_ZEROINIT.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.GPTR = Kernel.GMEM_FIXED | Kernel.GMEM_ZEROINIT;
+
+/**
+ * Combines GMEM_MOVEABLE and GMEM_ZEROINIT.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.GHND = Kernel.GMEM_MOVEABLE | Kernel.GMEM_ZEROINIT;
+
+// LocalAlloc, etc, flags
+// ----------------------
+
+/**
  * Allocates fixed memory.
  *
  * @static
@@ -471,3 +805,103 @@ Kernel.LMEM_DISCARDED = 0x4000;
  * @memberof Kernel
  */
 Kernel.LMEM_LOCKCOUNT = 0x00ff;
+
+// GetWinFlags constants
+// ---------------------
+
+/**
+ * GetWinFlags flag when the system is using protected mode.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.WF_PMODE = 0x0001;
+
+/**
+ * GetWinFlags flag when the system in an 80286.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.WF_CPU286 = 0x0002;
+
+/**
+ * GetWinFlags flag when the system in an 80386.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.WF_CPU386 = 0x0004;
+
+/**
+ * GetWinFlags flag when the system in an 80486.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.WF_CPU486 = 0x0008;
+
+/**
+ * GetWinFlags flag when the system is running in a standard mode.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.WF_STANDARD = 0x0010;
+
+/**
+ * GetWinFlags flag when the system is running in a standard mode. (Same as
+ * `WF_STANDARD`)
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.WF_WIN286 = 0x0010;
+
+/**
+ * GetWinFlags flag when the system is running in an enhanced mode.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.WF_ENHANCED = 0x0020;
+
+/**
+ * GetWinFlags flag when the system is running in a standard mode. (Same as
+ * `WF_ENHANCED`)
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.WF_WIN386 = 0x0020;
+Kernel.WF_CPU086 = 0x0040;
+Kernel.WF_CPU186 = 0x0080;
+Kernel.WF_LARGEFRAME = 0x0100;
+Kernel.WF_SMALLFRAME = 0x0200;
+
+/**
+ * GetWinFlags flag when the system contains an Intel math coprocessor.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.WF_80x87 = 0x0400;
+
+/**
+ * GetWinFlags flag when the system is using a paged memory mode.
+ *
+ * @static
+ * @constant {number}
+ * @memberof Kernel
+ */
+Kernel.WF_PAGING = 0x0800;
+Kernel.WF_WLO = 0x8000;

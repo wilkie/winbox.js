@@ -34,7 +34,7 @@ import { Executable } from '../../executable.js';
  *                     into the buffer, if the function is successful. It is
  *                     zero if the string resource does not exist.
  */
-export function LoadString(hinst, idResource, lpszBuffer, cbBuffer) {
+export async function LoadString(hinst, idResource, lpszBuffer, cbBuffer) {
     // Resolve the handle
     let module = this.handles.resolve(hinst);
 
@@ -51,6 +51,7 @@ export function LoadString(hinst, idResource, lpszBuffer, cbBuffer) {
     let stringId = idResource;
     idResource = (idResource / 16) >>> 0;
     idResource++;
+    stringId = stringId - (16 * (idResource - 1));
 
     // Resource ids that are integers have the high-bit set in the executable
     idResource |= 0x8000;
@@ -59,12 +60,14 @@ export function LoadString(hinst, idResource, lpszBuffer, cbBuffer) {
     let destOffset = lpszBuffer & 0xffff;
 
     let ret = 0;
-    executable.resources.forEach( (resourceType) => {
+    for (let i = 0; i < executable.resources.length; i++) {
+        let resourceType = executable.resources[i];
         if (resourceType.id == Executable.RESOURCES.StringTable) {
-            resourceType.entries.forEach( (resource) => {
+            for (let j = 0; j < resourceType.entries.length; j++) {
+                let resource = resourceType.entries[j];
                 if (resource.id == idResource) {
                     let origOffset = destOffset;
-                    let data = new Int8Array(executable.readResource(resource));
+                    let data = new Uint8Array(await executable.readResource(resource));
 
                     // Now go through the string data for the appropriate string.
                     let offset = 0;
@@ -83,13 +86,15 @@ export function LoadString(hinst, idResource, lpszBuffer, cbBuffer) {
                     // Write the null-terminator as well.
                     cpu.write8(destSegment, destOffset, 0);
 
+                    console.log("loading string", destSegment, destOffset - length, this.machine.memory.readCString(cpu.translateAddress(destSegment, destOffset - length)), length);
+
                     // We will return the length of the string
                     ret = length;
                 }
-            });
+            }
         }
-    });
+    }
 
-    // If we could not find the string, ret remains 01
+    // If we could not find the string, ret remains 0.
     return ret;
 }

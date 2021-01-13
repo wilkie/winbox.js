@@ -1,4 +1,5 @@
 import { BitmapFont } from '../raster/bitmap-font.js';
+import { Stream } from "../stream.js";
 import { Font } from '../raster/font.js';
 
 export class FontManager {
@@ -18,21 +19,13 @@ export class FontManager {
         return this._waitPromise;
     }
 
-    add(url) {
-        if (url.toLowerCase().endsWith(".fon")) {
-            this._loading++;
-            BitmapFont.load(url).then( (font) => {
-                font.entries.forEach( (entry) => {
-                    //this._fonts[entry.name] = this._fonts[entry.name] || {};
-                    //this._fonts[entry.name][entry.size] = font;
-                    this._fonts[entry.name] = font;
-                });
-                this._loading--;
-                console.log(this._fonts);
+    async load(file) {
+        if (file.name.toLowerCase().endsWith(".fon")) {
+            let bitmapFont = new BitmapFont(file);
+            await bitmapFont.load();
 
-                if (this._loading == 0 && this._callback) {
-                    this._callback();
-                }
+            bitmapFont.entries.forEach( (entry) => {
+                this._fonts[entry.name] = bitmapFont;
             });
         }
         else {

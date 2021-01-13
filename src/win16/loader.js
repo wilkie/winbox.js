@@ -5,6 +5,11 @@ import { Util } from '../util.js';
 /**
  * Represents the operating system executable loader.
  *
+ * This represents the loaded executable in memory as a module. Relocations
+ * targetting this module (such as DLL usage) will be interpreted by this
+ * class instance. That is, when mapping the segment and offset of an imported
+ * procedure call to the place in memory the call is actually located.
+ *
  * This loader is specifically targetting Win16 NE executables.
  */
 export class Loader {
@@ -14,25 +19,34 @@ export class Loader {
      */
     constructor(executable, globalAllocator, options = {}) {
         this._globalAllocator = globalAllocator;
-        this._data = executable._data;
-        this._view = new DataView(this._data);
+        this._stream = executable._stream;
         this._header = executable.neHeader;
         this._executable = executable;
         this._segments = [];
         this._isDLL = false;
         this._isApp = false;
+        this._segmentMap = {};
+    }
 
-        this.parseHeaders();
+    async parse() {
+        await this.parseHeaders();
 
-        this.segments.forEach( (segment, i) => {
+        for (let i = 0; i < this.segments.length; i++) {
+            let segment = this.segments[i];
             let view = new DataView(
-                this._data.slice(segment.offset,
-                                 segment.offset + segment.length)
+                await this._stream.read(segment.offset, segment.length)
             );
 
-            console.log("loading segment", i + 1, "with", view.byteLength, "bytes");
-            this._globalAllocator.map(i + 1, view);
-        });
+            // Allocate a segment
+            let segmentIndex = this._globalAllocator.find();
+
+            // Retain knowledge about where the executable segment was loaded
+            this._segmentMap[i + 1] = segmentIndex;
+
+            console.log("loading segment", segmentIndex, "with", view.byteLength, "bytes");
+            console.log("let's take a look", view.getUint8(0).toString(16));
+            this._globalAllocator.map(segmentIndex, view);
+        }
     }
 
     /**
@@ -40,7 +54,11 @@ export class Loader {
      */
     get name() {
         // The 'module name' is the first resident name.
-        return this.residentEntries[0].name;
+        if (this.residentEntries.length > 0) {
+            return this.residentEntries[0].name;
+        }
+
+        return this._executable.name.split('.')[0];
     }
 
     /**
@@ -49,10 +67,6 @@ export class Loader {
     get description() {
         // The 'module description' is the first exported name.
         return this.nonResidentEntries[0].name;
-    }
-
-    get data() {
-        return this._data;
     }
 
     get header() {
@@ -118,7 +132,7 @@ export class Loader {
     /**
      * Parses the headers for information.
      */
-    parseHeaders() {
+    async parseHeaders() {
         let flags = this.header.flags;
         if (flags & 0x01) {
             // Flag bit 0: when set, the executable is SINGLEDATA.
@@ -164,16 +178,18 @@ export class Loader {
         this._SS = this.header.initialStackPointerSS;
         this._SP = this.header.initialStackPointerSP;
 
-        this.readResidentEntries();
-        this.readNonResidentEntries();
-        this.readModuleReferenceEntries();
-        this.readSegments();
+        console.log("ENTRY", this.cs.toString(16), ':',  this.ip.toString(16));
+
+        await this.readResidentEntries();
+        await this.readNonResidentEntries();
+        await this.readModuleReferenceEntries();
+        await this.readSegments();
     }
 
     /**
      * This function loads the segment information from the executable.
      */
-    readSegments() {
+    async readSegments() {
         let count = this.header.segmentCount;
         let offset = this.header.segmentTableOffset;
 
@@ -187,13 +203,13 @@ export class Loader {
             let segment = {};
 
             // This is a logical unit that lists the pages from start of file.
-            let segmentOffset = this._view.getUint16(offset, true);
+            let segmentOffset = await this._stream.read16(offset, true);
             // If pageSize is 0, shift 9 (512 bytes)
             segmentOffset <<= (this.header.pageSize || 9);
             // A length of 0 means 64K (2^16)
-            let segmentLength = this._view.getUint16(offset + 2, true) || 65536;
-            let segmentFlags = this._view.getUint16(offset + 4, true);
-            let segmentMinAllocation = this._view.getUint16(offset + 6, true);
+            let segmentLength = await this._stream.read16(offset + 2, true) || 65536;
+            let segmentFlags = await this._stream.read16(offset + 4, true);
+            let segmentMinAllocation = await this._stream.read16(offset + 6, true);
 
             if (segmentFlags & 0x1) {
                 // Bit 0 Set: Data segment, Clear: Code segment
@@ -269,18 +285,16 @@ export class Loader {
 
                 // Read the relocation data?
                 let relocationOffset = segmentOffset + segmentLength;
-                let relocationCount = this._view.getUint16(relocationOffset, true);
+                let relocationCount = await this._stream.read16(relocationOffset, true);
 
                 let importedNamesOffset = this.header.importedNamesOffset +
                                           this.executable.headerOffset;
 
                 relocationOffset += 2;
 
-                let imports = [];
-
                 for (var ri = 0; ri < relocationCount; ri++) {
-                    let addressType = this._view.getUint8(relocationOffset);
-                    let type = this._view.getUint8(relocationOffset + 1);
+                    let addressType = await this._stream.read8(relocationOffset);
+                    let type = await this._stream.read8(relocationOffset + 1);
 
                     // Get ADDITIVE flag
                     let additive = false;
@@ -289,7 +303,7 @@ export class Loader {
                         type &= ~0x4;
                     }
 
-                    let itemOffset = this._view.getUint16(relocationOffset + 2, true);
+                    let itemOffset = await this._stream.read16(relocationOffset + 2, true);
 
                     if (type == 0) {
                         // Internal reference
@@ -303,8 +317,8 @@ export class Loader {
                         // values are mutually exclusive.
                         //
                         // Thus, it might not hurt to be that conservative.
-                        let segmentNumber = this._view.getUint8(relocationOffset + 4);
-                        let sixth = this._view.getUint8(relocationOffset + 5);
+                        let segmentNumber = await this._stream.read8(relocationOffset + 4);
+                        let sixth = await this._stream.read8(relocationOffset + 5);
 
                         // Sixth byte should be zero.
                         if (sixth != 0x00) {
@@ -317,7 +331,7 @@ export class Loader {
                             // specifies the segment number, sixth byte is zero, and
                             // the seventh and eighth bytes specify an offset to the
                             // segment.
-                            let fixedSegmentOffset = this._view.getUint16(relocationOffset + 6, true);
+                            let fixedSegmentOffset = await this._stream.read16(relocationOffset + 6, true);
 
                             segment.relocations.push({
                                 type: Loader.RELOCATION_FIXED,
@@ -333,7 +347,7 @@ export class Loader {
                             // specifies 0FFh (255), the sixth byte is zero, and the
                             // seventh and eighth bytes specify an ordinal value
                             // found in the segment's entry table.
-                            let entryTableIndex = this._view.getUint16(relocationOffset + 6, true);
+                            let entryTableIndex = await this._stream.read16(relocationOffset + 6, true);
 
                             segment.relocations.push({
                                 type: Loader.RELOCATION_ORDINAL,
@@ -347,11 +361,11 @@ export class Loader {
                     else if (type == 1) {
                         // Imported by ordinal (index)
                         // This starts at '1'
-                        let importIndex = this._view.getUint16(relocationOffset + 4, true) - 1;
-                        let procedureOrdinal = this._view.getUint16(relocationOffset + 6, true);
+                        let importIndex = await this._stream.read16(relocationOffset + 4, true) - 1;
+                        let procedureOrdinal = await this._stream.read16(relocationOffset + 6, true);
 
                         //console.log("Imported from", this.moduleReferenceEntries[importIndex], "at", procedureOrdinal);
-                        imports.push({
+                        segment.relocations.push({
                             type: Loader.RELOCATION_IMPORT,
                             addressType: addressType,
                             offset: itemOffset,
@@ -359,14 +373,13 @@ export class Loader {
                             ordinal: procedureOrdinal,
                             additive: additive
                         });
-                        segment.relocations.push(imports[imports.length - 1]);
                     }
                     else if (type == 2) {
                         // Imported by name
                         // This starts at '1'
-                        let importIndex = this._view.getUint16(relocationOffset + 4, true) - 1;
-                        let importNameOffset = this._view.getUint16(relocationOffset + 6, true);
-                        imports.push({
+                        let importIndex = await this._stream.read16(relocationOffset + 4, true) - 1;
+                        let importNameOffset = await this._stream.read16(relocationOffset + 6, true);
+                        segment.relocations.push({
                             type: Loader.RELOCATION_IMPORT,
                             addressType: addressType,
                             offset: itemOffset,
@@ -374,7 +387,6 @@ export class Loader {
                             name: importNameOffset,
                             additive: additive
                         });
-                        segment.relocations.push(imports[imports.length - 1]);
                     }
                     else {
                         console.log("WHAT IS THIS");
@@ -382,8 +394,6 @@ export class Loader {
 
                     relocationOffset += 8;
                 }
-
-                //console.log("imports:", imports);
             }
 
             offset += 8;
@@ -408,7 +418,7 @@ export class Loader {
         return this._exports.slice();
     }
 
-    _readStringList(offset, count = -1) {
+    async _readStringList(offset, count = -1) {
         let nameLength = 0;
 
         // Set the maximum number of strings we feel like reading.
@@ -417,8 +427,8 @@ export class Loader {
         }
 
         let ret = [];
-        while (count > 0 && (nameLength = this._view.getUint8(offset))) {
-            let name = Util.readString(this._view, offset + 1, nameLength);
+        while (count > 0 && (nameLength = await this._stream.read8(offset))) {
+            let name = await Util.readAsyncString(this._stream, offset + 1, nameLength);
 
             offset += (nameLength + 1);
             ret.push({
@@ -430,20 +440,20 @@ export class Loader {
         return ret;
     }
 
-    _readStringTable(offset, size = -1) {
+    async _readStringTable(offset, size = -1) {
         // This offset, unlike others, is from the beginning of the dang file.
 
         let nameLength = 0;
 
-        let last = this._data.byteLength;
+        let last = this._stream.byteLength;
         if (size >= 0) {
             last = offset + size;
         }
 
         let ret = []
-        while (offset < last && (nameLength = this._view.getUint8(offset))) {
-            let name = Util.readString(this._view, offset + 1, nameLength);
-            let index = this._view.getUint16(offset + nameLength + 1, true);
+        while (offset < last && (nameLength = await this._stream.read8(offset))) {
+            let name = await Util.readAsyncString(this._stream, offset + 1, nameLength);
+            let index = await this._stream.read16(offset + nameLength + 1, true);
 
             offset += (nameLength + 3);
             ret.push({
@@ -455,30 +465,27 @@ export class Loader {
         return ret;
     }
 
-    readResidentEntries() {
+    async readResidentEntries() {
         let offset = this.header.residentNamesOffset;
         offset += this.executable.headerOffset;
 
-        this._residentEntries = this._readStringTable(offset);
+        this._residentEntries = await this._readStringTable(offset);
     }
 
-    readNonResidentEntries() {
+    async readNonResidentEntries() {
         // This offset, unlike others, is from the beginning of the dang file.
         let offset = this.header.nonresidentNamesOffset;
         let size = this.header.nonresidentNamesSize;
 
-        this._nonResidentEntries = this._readStringTable(offset, size);
+        this._nonResidentEntries = await this._readStringTable(offset, size);
 
         this._exports = new Array(this._nonResidentEntries.length);
         this._nonResidentEntries.forEach( (entry, i) => {
             this._exports[entry.index] = entry;
-
-            // Attempt to find the position of this ordinal
         });
-        console.log("exports", this._exports);
     }
 
-    readModuleReferenceEntries() {
+    async readModuleReferenceEntries() {
         let offset = this.header.moduleReferenceOffset;
         offset += this.executable.headerOffset;
 
@@ -489,16 +496,44 @@ export class Loader {
 
         this._moduleReferenceEntries = [];
         for (let mi = 0; mi < count; mi++) {
-            let nameOffset = this._view.getUint16(offset, true);
+            let nameOffset = await this._stream.read16(offset, true);
             offset += 2;
 
             nameOffset += importedNamesOffset;
-            let nameLength = this._view.getUint8(nameOffset);
-            let name = Util.readString(this._view, nameOffset + 1, nameLength);
+            let nameLength = await this._stream.read8(nameOffset);
+            let name = await Util.readAsyncString(this._stream, nameOffset + 1, nameLength);
             this._moduleReferenceEntries.push({
                 name: name
             });
         }
+    }
+
+    /**
+     * Returns information about where the requested data exists in memory.
+     *
+     * The segment and offset are returned for the given ordinal.
+     */
+    lookup(ordinal) {
+        // Get the original segment/offset for the ordiinal
+        let entryPoints = this.executable.entryPoints;
+        let entryPoint = entryPoints[ordinal];
+
+        if (entryPoint) {
+            // Map them
+            return {
+                segment: this._segmentMap[entryPoint.segment],
+                offset: entryPoint.offset
+            };
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns the real location of the given segmented address.
+     */
+    translate(segment) {
+        return this._segmentMap[segment];
     }
 }
 
@@ -519,8 +554,5 @@ Loader.RELOCATION_ADDRESSTYPE_FARADDR = 0x3;
 
 // A 16-bit pointer offset
 Loader.RELOCATION_ADDRESSTYPE_OFFSET = 0x5;
-
-class Segment {
-}
 
 export default Loader;

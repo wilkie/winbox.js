@@ -1,5 +1,7 @@
 "use strict";
 
+import { Loader } from './loader.js';
+
 /**
  * This manages all loaded modules known to the system.
  */
@@ -8,30 +10,48 @@ export class ModuleManager {
         // Keep track of the modules we know of
         this._modules = {};
 
+        // Keep track of handles of modules
+        this._handles = {};
+
         // Keep track of the modules in memory
         this._loaded = {};
 
         // And the special system segments
         this._segments = {};
 
-        // Retain memory
+        // We allocate a segment to pretend to be the module's code
+        // It contains interrupt thunks instead.
         this._globalAllocator = globalAllocator;
     }
 
     load(module) {
+        // If it is already loaded, return the loader
+        if (module instanceof Loader) {
+            return module;
+        }
+
+        // Now we load the 'fake' modules
+        // (Caching the ones we already know)
         if (this._loaded[module.name]) {
             return this._loaded[module.name];
         }
 
         let loadedModule = {
             instance: module,
+            name: module.name,
+            lookup: function(ordinal) {
+                return {
+                    segment: loadedModule.segment,
+                    offset: loadedModule.step * (ordinal + 1)
+                };
+            },
         };
 
         // Keep track of it
         this._loaded[module.name] = loadedModule;
 
         // Assign it a segment
-        loadedModule.segment = 4096 + Object.keys(this._loaded).length;
+        loadedModule.segment = this._globalAllocator.find(4096);
 
         console.log("loading", module.name, "@", loadedModule.segment, "with", module.exports.length);
         this._segments[loadedModule.segment] = loadedModule;
@@ -98,8 +118,9 @@ export class ModuleManager {
     /**
      * Register a module as a library.
      */
-    register(module) {
+    register(module, handle) {
         this._modules[module.name] = module;
+        this._handles[module.path] = handle;
     }
 
     /**
@@ -107,6 +128,10 @@ export class ModuleManager {
      */
     fromName(name) {
         return this._modules[name];
+    }
+
+    handleFromPath(path) {
+        return this._handles[path];
     }
 
     /**

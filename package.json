@@ -47,7 +47,7 @@
     "test": "karma start",
     "test-server": "karma start --auto-watch --no-single-run",
     "build": "webpack",
-    "build-docs": "documentation build src/winbox.js -c jsdoc.json -f html -o docs --theme node_modules/documentation-devseed-theme",
+    "build-docs": "documentation build src/winbox.js -c documentation.yml -f html -o docs --theme node_modules/documentation-devseed-theme",
     "build-css-docs": "kss --config kss-config.json",
     "lint": "stylelint \"stylesheets/**/*.scss\""
   },

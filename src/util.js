@@ -31,6 +31,24 @@ export class Util {
         return newElement;
     }
 
+    static async readAsyncString(stream, offset, length = -1) {
+        let ret = "";
+        let maxLength = length;
+        if (length == -1) {
+            maxLength = 100;
+        }
+
+        for (var i = 0; i < maxLength; i++) {
+            let o = offset + i;
+            let c = String.fromCharCode(await stream.read8(o));
+            if (c === "\0") {
+                break;
+            }
+            ret = ret + c;
+        }
+        return ret;
+    }
+
     static readString(data, offset, length = -1) {
         let ret = "";
         let maxLength = length;
@@ -46,6 +64,42 @@ export class Util {
             }
             ret = ret + c;
         }
+        return ret;
+    }
+
+    static async readAsyncStructure(stream, struct, offset, littleEndian = true) {
+        let ret = {};
+
+        let keys = Object.keys(struct);
+
+        for (let i = 0; i < keys.length; i++) {
+            let key = keys[i];
+            let size = struct[key][1];
+
+            if (typeof size === "string") {
+                let length = parseInt(size);
+                ret[key] = await Util.readAsyncString(stream, offset + struct[key][0], length);
+            }
+            else if (size == 1) {
+                ret[key] = await stream.read8(offset + struct[key][0]);
+            }
+            else if (size == 2) {
+                ret[key] = await stream.read16(offset + struct[key][0], littleEndian);
+            }
+            else if (size == 4) {
+                ret[key] = await stream.read32(offset + struct[key][0], littleEndian);
+            }
+            else if (size == -1) {
+                ret[key] = await stream.readSigned8(offset + struct[key][0]);
+            }
+            else if (size == -2) {
+                ret[key] = await stream.readSigned16(offset + struct[key][0], littleEndian);
+            }
+            else if (size == -4) {
+                ret[key] = await stream.readSigned32(offset + struct[key][0], littleEndian);
+            }
+        }
+
         return ret;
     }
 

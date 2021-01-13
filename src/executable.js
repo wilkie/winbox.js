@@ -1,5 +1,6 @@
 "use strict";
 
+import { Stream } from "./stream.js";
 import { Util } from "./util.js";
 
 /**
@@ -10,36 +11,23 @@ import { Util } from "./util.js";
  */
 export class Executable {
     /**
-     * Asynchronously loads the executable or resource data at the given url.
-     */
-    static load(url, options = {}) {
-        return new Promise( async (resolve, reject) => {
-            fetch(url).then( (response) => {
-                return response.arrayBuffer();
-            }).then( (data) => {
-                try {
-                    resolve(new Executable(data, options));
-                }
-                catch (e) {
-                    reject(e);
-                }
-            });
-        });
-    }
-
-    /**
      * Constructs an executable wrapper from the given executable data.
      *
-     * @param {TypedArray} data - The bytes that make up the executable.
+     * @param {TypedArray} stream - The bytes that make up the executable.
      * @param {Object} options - A set of options.
      */
-    constructor(data, options = {}) {
-        this._data = data;
-        this._view = new DataView(data);
+    constructor(name, path, stream, options = {}) {
+        this._name = name;
+        this._path = path;
+        this._stream = stream;
+    }
 
-        if (this.magic != Executable.TYPES.MZ) {
-            throw new Error("magic number is invalid");
-        }
+    get name() {
+        return this._name;
+    }
+
+    get path() {
+        return this._path;
     }
 
     /**
@@ -100,8 +88,8 @@ export class Executable {
         return this._peOptionalHeader;
     }
 
-    get data() {
-        return this._data;
+    get stream() {
+        return this._stream;
     }
 
     get magic() {
@@ -280,9 +268,48 @@ export class Executable {
         return this._resources;
     }
 
-    readResource(resourceEntry) {
-        return this._data.slice(resourceEntry.offset,
-                                resourceEntry.offset + resourceEntry.length);
+    /**
+     * Parses headers and ensures properties are loaded and available.
+     */
+    async parse() {
+        // Get a view containing the headers
+        let buffer = await this._stream.read(0, 1000);
+        this._view = new DataView(buffer);
+
+        // Ensure the executable is proper
+        if (this.magic != Executable.TYPES.MZ) {
+            throw new Error("magic number is invalid");
+        }
+
+        // Ensure we have enough for the header
+        if (this.headerOffset + 200 >= buffer.byteLength) {
+            buffer = await this._stream.read(0, this.headerOffset + 200);
+            this._view = new DataView(buffer);
+        }
+
+        // Parse the main header and make sure our view is big enough
+
+        // Determine the size of the resource table
+        let resourceMax = this.headerOffset + this.neHeader.residentNamesOffset;
+
+        // Determine the size of the entrypoint table
+        let entryPointMax = this.headerOffset + this.neHeader.entryTableOffset;
+        entryPointMax += this.neHeader.entryTableLength;
+
+        // Determine the byte range we need to have in our view
+        let max = Math.max(resourceMax, entryPointMax);
+
+        // Re-download.
+        // This view should be able to read all metadata.
+        buffer = await this._stream.read(0, max);
+        this._view = new DataView(buffer);
+    }
+
+    /**
+     * Reads resource data from the executable.
+     */
+    async readResource(resourceEntry) {
+        return await this._stream.read(resourceEntry.offset, resourceEntry.length);
     }
 }
 

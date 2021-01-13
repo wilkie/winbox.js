@@ -13,12 +13,14 @@ import { BYTE, UBYTE, INT, UINT, LONG, ULONG,
 import { BeginPaint } from './user/BeginPaint.js';
 import { CreateWindow } from './user/CreateWindow.js';
 import { DefWindowProc } from './user/DefWindowProc.js';
+import { DestroyWindow } from './user/DestroyWindow.js';
 import { DispatchMessage } from './user/DispatchMessage.js';
 import { EndPaint } from './user/EndPaint.js';
 import { FillRect } from './user/FillRect.js';
 import { FindWindow } from './user/FindWindow.js';
 import { FrameRect } from './user/FrameRect.js';
 import { GetDC } from './user/GetDC.js';
+import { GetDesktopWindow } from './user/GetDesktopWindow.js';
 import { GetMessage } from './user/GetMessage.js';
 import { GetTickCount } from './user/GetTickCount.js';
 import { GetClientRect } from './user/GetClientRect.js';
@@ -34,6 +36,7 @@ import { PeekMessage } from './user/PeekMessage.js';
 import { RegisterClass } from './user/RegisterClass.js';
 import { RedrawWindow } from './user/RedrawWindow.js';
 import { ReleaseDC } from './user/ReleaseDC.js';
+import { SendMessage } from './user/SendMessage.js';
 import { SetFocus } from './user/SetFocus.js';
 import { SetWindowText } from './user/SetWindowText.js';
 import { ShowWindow } from './user/ShowWindow.js';
@@ -49,6 +52,10 @@ import { wsprintf } from './user/wsprintf.js';
 export class User extends Module {
     static get name() {
         return "USER";
+    }
+
+    static get path() {
+        return "C:\\WINDOWS\\SYSTEM\\USER.EXE";
     }
 
     static get exports() {
@@ -112,7 +119,7 @@ export class User extends Module {
             [FindWindow, "FindWindow", 8, [LPCSTR, LPCSTR], HWND],
             [User.stub, "Bear51", 2],
             [User.stub, "AnyPopUp", 0],
-            [User.stub, "DestroyWindow", 2],
+            [DestroyWindow, "DestroyWindow", 2, [HWND], BOOL],
             [User.stub, "EnumWindows", 8],
             [User.stub, "EnumChildWindows", 10],
             [MoveWindow, "MoveWindow", 12, [HWND, INT, INT, INT, INT, BOOL], BOOL],
@@ -171,12 +178,12 @@ export class User extends Module {
             [User.stub, "MessageBeep", 2],
             [User.stub, "FlashWindow", 4],
             [User.stub, "GetKeyState", 0],
-            [DefWindowProc, "DefWindowProc", 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
+            [DefWindowProc, "DefWindowProc", 10, [HWND, UINT, WPARAM, LPARAM], LONG],
             [GetMessage, "GetMessage", 10, [[MSG], HWND, UINT, UINT], BOOL],
             [PeekMessage, "PeekMessage", 12, [[MSG], HWND, UINT, UINT, UINT], BOOL],
             // 110 //
             [User.stub, "PostMessage", 10],
-            [User.stub, "SendMessage", 10],
+            [SendMessage, "SendMessage", 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
             [User.stub, "WaitMessage", 0],
             [TranslateMessage, "TranslateMessage", 4, [[MSG]], BOOL],
             [DispatchMessage, "DispatchMessage", 4, [[MSG]], LONG],
@@ -368,7 +375,7 @@ export class User extends Module {
             [User.stub, "RealizePalette", 2],
             [User.stub, "GetFreeSystemResources", 2],
             [User.stub, "Bear285", 4],
-            [User.stub, "GetDesktopWindow", 0],
+            [GetDesktopWindow, "GetDesktopWindow", 0, [], HWND],
             [User.stub, "GetLastActivePopup", 2],
             [User.stub, "GetMessageExtraInfo", 0],
             [User.stub, "Keybd_Event", 0],

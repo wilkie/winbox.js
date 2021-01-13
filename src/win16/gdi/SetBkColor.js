@@ -35,6 +35,8 @@ import { Color } from '../../raster/color.js';
  *                          return value is `0x80000000` if an error occurs.
  */
 export function SetBkColor(hdc, clrref) {
+    console.log("SetBkColor", ...arguments);
+
     // Resolve the destination DC handle
     let surface = this.handles.resolve(hdc);
 

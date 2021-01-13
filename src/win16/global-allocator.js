@@ -10,6 +10,10 @@ export class GlobalAllocator {
     constructor(cpu, memory) {
         this._memory = memory;
         this._cpu = cpu;
+        this._usedMap = new Array(8192);
+
+        // Segment 0 is a system segment always
+        this._usedMap[0] = true;
 
         this.reset();
     }
@@ -18,7 +22,7 @@ export class GlobalAllocator {
         // Initialize the GDT
         this._cpu.core.gdtBase = 0xffff0000;
         this._cpu.core.gdtLimit = 0xffff;
-        this._memory.allocate(this._cpu.core.gdtBase, 8 * 8192);
+        this._memory.zero(this._cpu.core.gdtBase, 8 * 8192);
 
     }
 
@@ -42,6 +46,12 @@ export class GlobalAllocator {
      * We can provide initial data for the segment.
      */
     map(segment, data, options = {}) {
+        if (this._usedMap[segment]) {
+            console.log("OH NO. OVERWRITING SEGMENT.");
+        }
+
+        this._usedMap[segment] = true;
+
         // Modify the GDT to point to the segment
         let base = this._cpu.core.gdtBase
         base = base + (8 * segment);
@@ -62,13 +72,27 @@ export class GlobalAllocator {
 
         console.log("updating gdt at", segment.toString(16), base.toString(16));
 
-        // Allocate the memory into the segment
-        this._memory.map(segment << 16, data)
+        // Copy the memory into the segment
+        this._memory.write(segment << 16, data)
     }
 
     /**
-     * Finds an empty segment that can be allocated with the given options.
+     * Finds an unallocated segment or set of sequential unallocated segments.
      */
-    allocate(options = {}) {
+    find(start = 1, count = 1) {
+        for (let i = start; i < this._usedMap.length; i++) {
+            let j = 0;
+            for ( ; j < count; j++) {
+                if (this._usedMap[i + j]) {
+                    break;
+                }
+            }
+
+            if (j == count) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 }

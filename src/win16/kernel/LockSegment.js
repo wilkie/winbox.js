@@ -41,6 +41,5 @@ export function LockSegment(uSegment) {
         uSegment = -1;
     }
 
-    console.log("LockSegment:", uSegment);
     return uSegment;
 }

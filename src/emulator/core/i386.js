@@ -248,6 +248,7 @@ export class I386 extends I286 {
      * Pushes a 32-bit value to the stack.
      */
     push32(value) {
+        console.log("pushed32", value);
         this.esp -= 4;
         this.write32(this.ss, this.esp, value);
     }
@@ -319,7 +320,6 @@ export class I386 extends I286 {
     }
 
     read32(segment, offset) {
-        console.log("reading from", this.translateAddress(segment, offset), this._memory.read32(this.translateAddress(segment, offset)).toString(16));
         return this._memory.read32(this.translateAddress(segment, offset));
     }
 
@@ -328,7 +328,6 @@ export class I386 extends I286 {
     }
 
     write32(segment, offset, value) {
-        //console.log("writing to", this.translateAddress(segment, offset), value);
         return this._memory.write32(this.translateAddress(segment, offset), value);
     }
 
@@ -693,6 +692,24 @@ export class I386 extends I286 {
                 let subCode = this.read8(this.cs, this.ip);
 
                 switch (subCode) {
+                    case 0xa4: // SHLD
+                        // Read 8-bit immediate
+                        instruction.opcode = 0x300;
+                        instruction.subOpcode = subCode;
+
+                        // Consume that byte
+                        this.ip++;
+                        break;
+
+                    case 0xac: // SHRD
+                        // Read 8-bit immediate
+                        instruction.opcode = 0x300;
+                        instruction.subOpcode = subCode;
+
+                        // Consume that byte
+                        this.ip++;
+                        break;
+
                     case 0x80: // near JO
                     case 0x81: // near JNO
                     case 0x82: // near JB
@@ -719,9 +736,14 @@ export class I386 extends I286 {
 
                     case 0x20: // MOV rw,crw
                     case 0x22: // MOV crw,rw
+                    case 0xaf: // IMUL rw,mw
                     case 0xb2: // LSS
                     case 0xb4: // LFS
                     case 0xb5: // LGS
+                    case 0xbe: // MOVSX mb/rw
+                    case 0xbf: // MOVSX mw/rw
+                    case 0xb6: // MOVZX mb/rw
+                    case 0xb7: // MOVZX mw/rw
                         instruction.opcode = 0x100;
                         instruction.subOpcode = subCode;
 
@@ -751,8 +773,6 @@ export class I386 extends I286 {
                 case 0x68:    // PUSH dw
                 case 0xa0:    // MOV AL,xb
                 case 0xa1:    // MOV EAX,xw
-                case 0xa2:    // MOV xb,AX
-                case 0xa3:    // MOV xw,EAX
                 case 0xa9:    // TEST EAX,dw
                 case 0xb8:    // MOV EAX,dw
                 case 0xb9:    // MOV ECX,dw
@@ -781,7 +801,6 @@ export class I386 extends I286 {
                     break;
 
                 case 0x66: // Operand Override
-                    //console.log("operand override!");
                     instruction.operandOverride = !instruction.operandOverride;
                     instruction = this.decode(instruction);
                     break;
@@ -804,6 +823,16 @@ export class I386 extends I286 {
                     this.ip += 4;
                     break;
 
+                // R-Type, 8-bit immediate
+                case 0x6b:    // IMUL rw,db / IMUL rw,ew,db
+                case 0x300:   // Special cases
+                    this.readModRM(instruction);
+
+                    instruction.immediate = this.read8(this.cs, this.ip);
+                    this.ip++;
+                    break;
+
+                case 0xff:
                 case 0x100: // R-Type without immediate
                     this.readModRM(instruction);
                     break;
@@ -820,6 +849,11 @@ export class I386 extends I286 {
                     // Read 16 signed immediate
                     instruction.immediate = this.read16(this.cs, this.ip);
                     this.ip += 2;
+                    break;
+
+                case 0x200: // 8-bit immediate
+                    instruction.immediate = this.read8(this.cs, this.ip);
+                    this.ip++;
                     break;
 
                 case 0x100: // R-Type without immediate
@@ -863,6 +897,54 @@ export class I386 extends I286 {
         if (instruction.operandOverride) {
             // Decode wide instructions using the operand prefix
             switch(opcode) {
+                case 0x01:    // ADD ew,rw
+                    operation = operation || this._alu.add32.bind(this._alu);
+                case 0x09:    // OR ew,rw
+                    operation = operation || this._alu.or32.bind(this._alu);
+                case 0x11:    // ADC ew,rw
+                    operation = operation || this._alu.adc32.bind(this._alu);
+                case 0x19:    // SBB ew,rw (Integer Subtraction With Borrow)
+                    operation = operation || this._alu.sbb32.bind(this._alu);
+                case 0x21:    // AND ew,rw
+                    operation = operation || this._alu.and32.bind(this._alu);
+                case 0x29:    // SUB ew,rw
+                    operation = operation || this._alu.sub32.bind(this._alu);
+                case 0x31:    // XOR ew,rw
+                    operation = operation || this._alu.xor32.bind(this._alu);
+
+                    this.debug([['add', 'adc', 'and', 'xor'],
+                                ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0x9 ? 1 : 0][opcode >> 4] + '32 ew,rw');
+
+                    this.writeOperand32(instruction, operation(
+                        this.readOperand32(instruction),
+                        this.readRegister32(instruction.sourceRegister)
+                    ));
+                    break;
+
+                case 0x03:    // ADD rw,ew
+                    operation = operation || this._alu.add32.bind(this._alu);
+                case 0x0b:    // OR rw,ew
+                    operation = operation || this._alu.or32.bind(this._alu);
+                case 0x13:    // ADC rw,ew
+                    operation = operation || this._alu.adc32.bind(this._alu);
+                case 0x1b:    // SBB rw,ew (Integer Subtraction With Borrow)
+                    operation = operation || this._alu.sbb32.bind(this._alu);
+                case 0x23:    // AND rw,ew
+                    operation = operation || this._alu.and32.bind(this._alu);
+                case 0x2b:    // SUB rw,ew
+                    operation = operation || this._alu.sub32.bind(this._alu);
+                case 0x33:    // XOR rw,ew
+                    operation = operation || this._alu.xor32.bind(this._alu);
+
+                    this.debug([['add', 'adc', 'and', 'xor'],
+                                ['or ', 'sbb', 'sub', 'unk']][(opcode & 0xf) == 0xb ? 1 : 0][opcode >> 4] + '32 rw,ew');
+
+                    this.writeRegister32(instruction.sourceRegister, operation(
+                        this.readRegister32(instruction.sourceRegister),
+                        this.readOperand32(instruction)
+                    ));
+                    break;
+
                 case 0x05:    // ADD EAX,dw
                     operation = operation || this._alu.add32.bind(this._alu);
                 case 0x0d:    // OR EAX,dw
@@ -896,6 +978,13 @@ export class I386 extends I286 {
 
                     operation(this.readOperand32(instruction),
                               this.readRegister32(instruction.sourceRegister));
+                    break;
+
+                case 0x3b:    // CMP rw,ew
+                    this.debug('cmp32  rw,ew');
+                    this._alu.sub32(this.readRegister32(instruction.sourceRegister),
+                                    this.readOperand32(instruction));
+
                     break;
 
                 case 0x3d:    // CMP EAX,dw
@@ -982,9 +1071,45 @@ export class I386 extends I286 {
                     this.push32(instruction.immediate);
                     break;
 
+                case 0x69:    // IMUL rw,ew,dw
+                    {
+                        let imulResult = this._alu.imul32(this.readOperand32(instruction),
+                                                          this._alu.toSigned32(instruction.immediate));
+
+                        if (this._alu.toSigned32(imulResult) != this._alu.toSigned32(imulResult & 0xffffffff)) {
+                            this.flags.carry = true;
+                            this.flags.overflow = true;
+                        }
+                        else {
+                            this.flags.carry = false;
+                            this.flags.overflow = false;
+                        }
+
+                        this.writeRegister32(instruction.sourceRegister, imulResult);
+                    }
+                    break;
+
                 case 0x6a:    // PUSH db
                     //console.log('push32 db   ');
                     this.push32(instruction.immediate);
+                    break;
+
+                case 0x6b:    //IMUL rw,ew,db
+                    {
+                        let imulResult = this._alu.imul32(this.readOperand32(instruction),
+                                                          this._alu.toSigned8(instruction.immediate));
+
+                        if (this._alu.toSigned32(Number(imulResult)) != this._alu.toSigned32(Number(imulResult) & 0xffffffff)) {
+                            this.flags.carry = true;
+                            this.flags.overflow = true;
+                        }
+                        else {
+                            this.flags.carry = false;
+                            this.flags.overflow = false;
+                        }
+
+                        this.writeRegister32(instruction.sourceRegister, Number(imulResult & 0xffffffffn));
+                    }
                     break;
 
                 case 0x81:    // ADC ew,dw / ADD ew,dw / AND ew,dw / CMP ew,dw /
@@ -1035,6 +1160,12 @@ export class I386 extends I286 {
                     );
                     break;
 
+                case 0x8b:    // MOV rw,ew
+                    this.debug('mov32  rw,ew');
+                    this.writeRegister32(instruction.sourceRegister,
+                                         this.readOperand32(instruction));
+                    break;
+
                 case 0x8c:    // MOV ew,ES / MOV ew,CS / MOV ew,SS / MOV ew,DS / MOV ew,FS / MOV ew,GS
                     //console.log('mov    ew,+S');
                     let movSource = instruction.modifier;
@@ -1064,10 +1195,18 @@ export class I386 extends I286 {
                     this.writeSegmentRegister(movDestination, this.readOperand16(instruction));
                     break;
 
+                case 0xa3:    // MOV xw,EAX
+                    this.debug('mov    xw,EAX');
+                    this.write32(
+                        instruction.segment || this.ds, instruction.immediate,
+                        this.eax
+                    );
+                    break;
+
                 case 0xa4:    // MOVS mb,mb / MOVSB
                 case 0xa5:    // MOVS mw,mw / MOVSW
                     //console.log('movs32 mb/mw');
-                    do {
+                    while (!instruction.repeat || this.cx != 0) {
                         // No segment overrides are allowed.
                         if (instruction.opcode == 0xa4) {
                             //console.log("MOVS WRITE", this.es, this.di, instruction.segment || this.ds, this.si, this.read8(instruction.segment || this.ds, this.si));
@@ -1113,7 +1252,7 @@ export class I386 extends I286 {
                         else {
                             break;
                         }
-                    } while (instruction.repeat && this.cx != 0);
+                    }
                     break;
 
                 case 0x9a:    // CALL far cd
@@ -1133,7 +1272,7 @@ export class I386 extends I286 {
                 case 0xa6:    // CMPSB (Compare String Bytes)
                 case 0xa7:    // CMPSW (Compare String Words)
                     //console.log('cmps32 mb/mw');
-                    do {
+                    while (!instruction.repeat || this.cx != 0) {
                         // No segment overrides are allowed. (but we allow them??)
                         if (instruction.opcode == 0xa6) {
                             this._alu.sub8(
@@ -1187,13 +1326,13 @@ export class I386 extends I286 {
                         else {
                             break;
                         }
-                    } while (instruction.repeat && this.cx != 0);
+                    }
                     break;
 
                 case 0xaa:    // STOS mb / STOSB (Store String Data)
                 case 0xab:    // STOS mw / STOSW (Store String Data)
                     //console.log('stos32 mb/mw');
-                    do {
+                    while (!instruction.repeat || (instruction.addressOverride ? this.ecx : this.cx) != 0) {
                         // No segment overrides are allowed.
                         if (instruction.opcode == 0xaa) {
                             this.write8(this.es, instruction.addressOverride ?
@@ -1227,13 +1366,13 @@ export class I386 extends I286 {
                         else {
                             break;
                         }
-                    } while (instruction.repeat && (instruction.addressOverride ? this.ecx : this.cx) != 0);
+                    }
                     break;
 
                 case 0xac:    // LODS mb / LODSB (Load String Operand)
                 case 0xad:    // LODS mw / LODSW (Load String Operand)
                     //console.log('lods32 mb/mw');
-                    do {
+                    while (!instruction.repeat || (instruction.addressOverride ? this.ecx : this.cx) != 0) {
                         if (instruction.opcode == 0xac) {
                             this.al = this.read8(
                                 instruction.segment || this.ds,
@@ -1267,13 +1406,16 @@ export class I386 extends I286 {
                                 this.cx--;
                             }
                         }
-                    } while (instruction.repeat && (instruction.addressOverride ? this.ecx : this.cx) != 0);
+                        else {
+                            break;
+                        }
+                    }
                     break;
 
                 case 0xae:    // SCAS mb / SCASB (Compare String Data)
                 case 0xaf:    // SCAS mw / SCASW (Compare String Data)
                     //console.log('scas32 mb/mw');
-                    do {
+                    while (!instruction.repeat || (instruction.addressOverride ? this.ecx : this.cx) != 0) {
                         // No segment overrides are allowed.
                         if (instruction.opcode == 0xae) {
                             this._alu.sub8(this.al, this.read8(
@@ -1316,7 +1458,7 @@ export class I386 extends I286 {
                         else {
                             break;
                         }
-                    } while (instruction.repeat && (instruction.addressOverride ? this.ecx : this.cx) != 0);
+                    }
                     break;
 
                 case 0xb8:    // MOV EAX,dw
@@ -1568,7 +1710,7 @@ export class I386 extends I286 {
                             break;
 
                         case 0x6:   // PUSH mw
-                            //console.log('push   mw');
+                            console.log('push32 mw', this.ss.toString(16), this.sp.toString(16), instruction.segment.toString(16), instruction.offset.toString(16), this._memory.read32(this.translateAddress(instruction.segment, instruction.offset)).toString(16), this._memory.read16(this.translateAddress(instruction.segment, instruction.offset)).toString(16));
                             this.push32(this.readOperand32(instruction));
                             break;
 
@@ -1618,6 +1760,26 @@ export class I386 extends I286 {
                     }
                     break;
 
+                case 0x1af: // IMUL rw,mw
+                    {
+                        let imulResult = this._alu.imul32(this.readOperand32(instruction),
+                                                          this.readRegister32(instruction.sourceRegister));
+
+                        imulResult = Number(imulResult & 0xffffffffn);
+
+                        if (this._alu.toSigned32(imulResult) != this._alu.toSigned32(imulResult & 0xffff)) {
+                            this.flags.carry = true;
+                            this.flags.overflow = true;
+                        }
+                        else {
+                            this.flags.carry = false;
+                            this.flags.overflow = false;
+                        }
+
+                        this.writeRegister32(instruction.sourceRegister, imulResult);
+                    }
+                    break;
+
                 case 0x1b2: // LSS
                 case 0x1b4: // LFS
                 case 0x1b5: // LGS
@@ -1645,10 +1807,64 @@ export class I386 extends I286 {
                     }
                     break;
 
-                default:
-                    // Fall back to the i286 core
-                    super.execute(instruction);
+                case 0x1b6:   // MOVSZ mb,ew
+                    // Zero extends byte to r32
+                    console.log("movsz", this.readOperand8(instruction));
+                    this.writeRegister32(instruction.sourceRegister, this.readOperand8(instruction));
                     break;
+
+                case 0x1b7:   // MOVSZ mw,mw
+                    // Zero extends word to double-word
+                    console.log("movsz", this.readOperand16(instruction));
+                    this.writeRegister32(instruction.sourceRegister, this.readOperand16(instruction));
+                    break;
+
+                case 0x1be:   // MOVSX mb,ew
+                    // Sign extends byte to r32
+                    console.log("movsx", this._alu.toSigned8(this.readOperand8(instruction)));
+                    this.writeRegister32(instruction.sourceRegister, 
+                        this._alu.toSigned8(this.readOperand8(instruction))
+                    );
+                    break;
+
+                case 0x1bf:   // MOVSX mw,mw
+                    // Sign extends word to double-word
+                    console.log("movsx", this._alu.toSigned16(this.readOperand16(instruction)));
+                    this.writeRegister32(instruction.sourceRegister, 
+                        this._alu.toSigned16(this.readOperand16(instruction))
+                    );
+                    break;
+
+                case 0x3a4: // SHLD r/m32, r32, imm8
+                    // Form 64bit value from the two given registers
+                    // The destination operand is the low word and the
+                    // source register is the high word
+                    // The immediate is the number of bits to shift right.
+                    let shldLow = this.readOperand32(instruction);
+                    let shldHigh = this.readRegister32(instruction.sourceRegister);
+                    let shldCombined = (BigInt(shldHigh) << 32n) | BigInt(shldLow);
+                    let shldResult = this._alu.shl64(shldCombined, BigInt(instruction.immediate));
+                    console.log("SHLD", shldCombined, instruction.immediate, shldResult);
+                    this.writeOperand32(instruction, Number(shldResult & 0xffffffffn));
+                    break;
+
+                case 0x3ac: // SHRD r/m32, r32, imm8
+                    // Form 64bit value from the two given registers
+                    // The destination operand is the low word and the
+                    // source register is the high word
+                    // The immediate is the number of bits to shift right.
+                    let shrdLow = this.readOperand32(instruction);
+                    let shrdHigh = this.readRegister32(instruction.sourceRegister);
+                    let shrdCombined = (BigInt(shrdHigh) << 32n) | BigInt(shrdLow);
+                    let shrdResult = this._alu.shr64(shrdCombined, BigInt(instruction.immediate));
+                    console.log("SHRD", shrdCombined, instruction.immediate, shrdResult);
+                    this.writeOperand32(instruction, Number(shrdResult & 0xffffffffn));
+                    break;
+
+                default:
+                    // Unknown
+                    console.log("error: executing unknown opcode", instruction);
+                    throw new InvalidInstruction(instruction);
             }
         }
         else if (instruction.addressOverride) {
@@ -1804,6 +2020,22 @@ export class I386 extends I286 {
                         this.gs = this.read16(instruction.segment,
                                               instruction.offset + 2);
                     }
+                    break;
+
+                case 0x1be:   // MOVSX mb,ew
+                    // Sign extends byte to r16
+                    console.log("movsx mb", this._alu.toSigned8(this.readOperand8(instruction)));
+                    this.writeRegister16(instruction.sourceRegister, 
+                        this._alu.toSigned8(this.readOperand8(instruction))
+                    );
+                    break;
+
+                case 0x1bf:   // MOVSX mw,mw
+                    // Sign extends word to double-word
+                    console.log("movsx mw", this._alu.toSigned16(this.readOperand16(instruction)));
+                    this.writeRegister32(instruction.sourceRegister, 
+                        this._alu.toSigned16(this.readOperand16(instruction))
+                    );
                     break;
 
                 case 0x480:    // JO near cb

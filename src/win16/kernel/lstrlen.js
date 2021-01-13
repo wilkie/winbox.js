@@ -26,8 +26,9 @@ export function lstrlen(lpszString) {
     let srcSegment = (lpszString >> 16) & 0xffff;
     let srcOffset = lpszString & 0xffff;
 
+    console.log("lstrlen", this.machine.memory.readCString(cpu.translateAddress(srcSegment, srcOffset)));
+
     // Go through the src memory until we hit a null terminator
-    // Copying every byte to the destination as we go.
     let data = null;
     let count = 0;
     do {
@@ -37,5 +38,6 @@ export function lstrlen(lpszString) {
     } while (data && count <= 0xffff);
 
     count--;
+
     return count;
 }

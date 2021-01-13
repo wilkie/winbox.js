@@ -39,6 +39,10 @@ export class Gdi extends Module {
         return "GDI";
     }
 
+    static get path() {
+        return "C:\\WINDOWS\\SYSTEM\\GDI.EXE";
+    }
+
     static get exports() {
         return [
             // 0 //

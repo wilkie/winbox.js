@@ -34,7 +34,7 @@ export class I286 {
         if (code !== null) {
             this.push16(code);
         }
-        
+
         if (index >= 0x16) {
             return this._interruptCallback(index);
         }
@@ -1121,6 +1121,9 @@ export class I286 {
      * Decodes the next instruction.
      */
     decode(instruction) {
+        if (this.cs === 0x0) {
+            throw "FOO";
+        }
         instruction.cs = this.cs;
         instruction.ip = this.ip;
         instruction.subOpcode = 0;
@@ -1150,18 +1153,24 @@ export class I286 {
                 // Read the next byte
                 let subCode = this.read8(this.cs, this.ip);
 
-                if (subCode == 0x00 ||
-                    subCode == 0x01 ||
-                    subCode == 0x02 ||
-                    subCode == 0x03) {
-                    // Consume that byte
-                    this.ip++;
+                switch (subCode) {
+                    case 0x00:
+                    case 0x01:
+                    case 0x02:
+                    case 0x03:
+                    case 0xaf: // IMUL rw,mw
+                        // Consume that byte
+                        this.ip++;
 
-                    // Retain the real opcode
-                    instruction.subOpcode = subCode;
+                        // Retain the real opcode
+                        instruction.subOpcode = subCode;
 
-                    // Force to a special R-Type opcode, for internal decoding
-                    instruction.opcode = 0x100;
+                        // Force to a special R-Type opcode, for internal decoding
+                        instruction.opcode = 0x100;
+                        break;
+
+                    default:
+                        break;
                 }
 
                 break;
@@ -1191,6 +1200,7 @@ export class I286 {
                         instruction.opcode = 0x400;
                     }
                 }
+                break;
 
             default:
                 break;
@@ -1814,7 +1824,7 @@ export class I286 {
             case 0x3b:    // CMP rw,ew
                 this.debug('cmp    rw,ew');
                 this._alu.sub16(this.readRegister16(instruction.sourceRegister),
-                               this.readOperand16(instruction));
+                                this.readOperand16(instruction));
 
                 break;
 
@@ -1940,8 +1950,22 @@ export class I286 {
                 this.push16(instruction.immediate);
                 break;
 
-            //case 0x69:    // IMUL rw,ew,dw
-                // TODO: implement
+            case 0x69:    // IMUL rw,ew,dw
+                {
+                    let imulResult = this._alu.imul16(this.readOperand16(instruction),
+                                                      this._alu.toSigned16(instruction.immediate));
+
+                    if (this._alu.toSigned16(imulResult) != this._alu.toSigned16(imulResult & 0xffff)) {
+                        this.flags.carry = true;
+                        this.flags.overflow = true;
+                    }
+                    else {
+                        this.flags.carry = false;
+                        this.flags.overflow = false;
+                    }
+
+                    this.writeRegister16(instruction.sourceRegister, imulResult);
+                }
                 break;
 
             case 0x6a:    // PUSH db
@@ -1949,8 +1973,22 @@ export class I286 {
                 this.push16(this._alu.toSigned8(instruction.immediate));
                 break;
 
-            //case 0x6b:    // IMUL rw,db / IMUL rw,ew,db
-                // TODO: implement
+            case 0x6b:    // IMUL rw,db / IMUL rw,ew,db
+                {
+                    let imulResult = this._alu.imul16(this.readOperand16(instruction),
+                                                      this._alu.toSigned8(instruction.immediate));
+
+                    if (this._alu.toSigned16(imulResult) != this._alu.toSigned16(imulResult & 0xffff)) {
+                        this.flags.carry = true;
+                        this.flags.overflow = true;
+                    }
+                    else {
+                        this.flags.carry = false;
+                        this.flags.overflow = false;
+                    }
+
+                    this.writeRegister16(instruction.sourceRegister, imulResult);
+                }
                 break;
 
             //case 0x6c:    // INS eb,DX / INSB
@@ -2280,7 +2318,7 @@ export class I286 {
                 // Move to absolute address
                 this.ip = instruction.immediate;
                 this.cs = instruction.targetCS;
-                this.debug('callf  cd   ', this.ip.toString(16));
+                this.debug('callf  cd   ', this.ss.toString(16), this.sp.toString(16));
                 break;
 
             case 0x9b:    // WAIT
@@ -2376,10 +2414,10 @@ export class I286 {
             case 0xa4:    // MOVS mb,mb / MOVSB
             case 0xa5:    // MOVS mw,mw / MOVSW
                 this.debug('movs   mb/mw');
-                do {
+                while (!instruction.repeat || this.cx != 0) {
                     // No segment overrides are allowed.
                     if (instruction.opcode == 0xa4) {
-                        console.log("MOVS WRITE", this.es, this.di, instruction.segment || this.ds, this.si, this.read8(instruction.segment || this.ds, this.si));
+                        //console.log("MOVSB WRITE", this.cx, this.es.toString(16), this.di.toString(16), (instruction.segment || this.ds).toString(16), this.si.toString(16), this.read8(instruction.segment || this.ds, this.si).toString(16));
                         this.write8(
                             this.es,
                             this.di,
@@ -2392,6 +2430,7 @@ export class I286 {
                         this.si += this._flags.direction ? -1 : 1;
                     }
                     else {
+                        //console.log("MOVSW WRITE", this.cx, this.es.toString(16), this.di.toString(16), (instruction.segment || this.ds).toString(16), this.si.toString(16), this.read8(instruction.segment || this.ds, this.si).toString(16));
                         this.write16(
                             this.es,
                             this.di,
@@ -2410,13 +2449,13 @@ export class I286 {
                     else {
                         break;
                     }
-                } while (instruction.repeat && this.cx != 0);
+                }
                 break;
 
             case 0xa6:    // CMPSB (Compare String Bytes)
             case 0xa7:    // CMPSW (Compare String Words)
                 this.debug('cmps   mb/mw');
-                do {
+                while (!instruction.repeat || this.cx != 0) {
                     // No segment overrides are allowed. (but we allow them??)
                     if (instruction.opcode == 0xa6) {
                         this._alu.sub8(
@@ -2454,13 +2493,13 @@ export class I286 {
                     else {
                         break;
                     }
-                } while (instruction.repeat && this.cx != 0);
+                }
                 break;
 
             case 0xaa:    // STOS mb / STOSB (Store String Data)
             case 0xab:    // STOS mw / STOSW (Store String Data)
                 this.debug('stos   mb/mw');
-                do {
+                while (!instruction.repeat || this.cx != 0) {
                     // No segment overrides are allowed.
                     if (instruction.opcode == 0xaa) {
                         this.write8(this.es, this.di, this.al);
@@ -2477,13 +2516,13 @@ export class I286 {
                     else {
                         break;
                     }
-                } while (instruction.repeat && this.cx != 0);
+                }
                 break;
 
             case 0xac:    // LODS mb / LODSB (Load String Operand)
             case 0xad:    // LODS mw / LODSW (Load String Operand)
                 this.debug('lods   mb/mw');
-                do {
+                while (!instruction.repeat || this.cx != 0) {
                     if (instruction.opcode == 0xac) {
                         this.al = this.read8(
                             instruction.segment || this.ds,
@@ -2502,13 +2541,16 @@ export class I286 {
                     if (instruction.repeat) {
                         this.cx--;
                     }
-                } while (instruction.repeat && this.cx != 0);
+                    else {
+                        break;
+                    }
+                }
                 break;
 
             case 0xae:    // SCAS mb / SCASB (Compare String Data)
             case 0xaf:    // SCAS mw / SCASW (Compare String Data)
                 this.debug('scas   mb/mw');
-                do {
+                while (!instruction.repeat || this.cx != 0) {
                     // No segment overrides are allowed.
                     if (instruction.opcode == 0xae) {
                         this._alu.sub8(this.al, this.read8(this.es, this.di));
@@ -2532,7 +2574,7 @@ export class I286 {
                     else {
                         break;
                     }
-                } while (instruction.repeat && this.cx != 0);
+                }
                 break;
 
             case 0xb0:    // MOV AL,db
@@ -2751,7 +2793,7 @@ export class I286 {
                 break;
 
             case 0xcb:    // RET far
-                this.debug('retf        ', this.ax);
+                this.debug('retf        ', this.ss.toString(16), this.sp.toString(16), this.ax);
                 this.ip = this.pop16();
                 this.cs = this.pop16();
                 break;
@@ -2797,7 +2839,7 @@ export class I286 {
                 break;
 
             case 0xe0:    // LOOPNE cb / LOOPNZ cb
-                this.debu("loopne cb");
+                this.debug("loopne cb");
                 this.cx--;
 
                 if (this.cx != 0 && !this._flags.zero) {
@@ -3217,6 +3259,24 @@ export class I286 {
                     default:
                         throw new InvalidInstruction(instruction);
                         break;
+                }
+                break;
+
+            case 0x1af: // IMUL rw,mw
+                {
+                    let imulResult = this._alu.imul16(this.readOperand16(instruction),
+                                                      this.readRegister16(instruction.sourceRegister));
+
+                    if (this._alu.toSigned16(imulResult) != this._alu.toSigned16(imulResult & 0xffff)) {
+                        this.flags.carry = true;
+                        this.flags.overflow = true;
+                    }
+                    else {
+                        this.flags.carry = false;
+                        this.flags.overflow = false;
+                    }
+
+                    this.writeRegister16(instruction.sourceRegister, imulResult);
                 }
                 break;
 

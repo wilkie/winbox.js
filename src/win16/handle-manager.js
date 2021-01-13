@@ -9,6 +9,7 @@ import { Bitmap } from '../raster/bitmap.js';
 import { Task } from './task.js';
 import { Module } from './module.js';
 import { Font } from '../raster/font.js';
+import { File } from '../file-system.js';
 
 /**
  * This manages all of the handles of resources throughout the system.
@@ -31,8 +32,12 @@ export class HandleManager {
             // Allocates an HWND
             handle = this.find(HandleManager.TAGS.HWND + 1, 0xffe);
         }
+        else if (this.isFile(item)) {
+            // Allocates an HFILE
+            handle = this.find(HandleManager.TAGS.HFILE + 1, 0xffe);
+        }
         else if (this.isBitmap(item)) {
-            // Allocates an HBRUSH
+            // Allocates an HBITMAP
             handle = this.find(HandleManager.TAGS.HBITMAP + 1, 0xffe);
         }
         else if (this.isBrush(item)) {
@@ -143,6 +148,10 @@ export class HandleManager {
         return item instanceof Font;
     }
 
+    isFile(item) {
+        return item instanceof File;
+    }
+
     register(handle, name) {
         if (this._handles[handle]) {
             this._handles[handle].name = name;
@@ -168,4 +177,5 @@ HandleManager.TAGS = {
     HICON: 0x4000,
     HMETAFILE: 0x3000,
     ATOM: 0x2000,
+    HFILE: 0x1000,
 };

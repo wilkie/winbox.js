@@ -70,6 +70,23 @@ import { NULL, TRUE, FALSE } from '../consts.js';
  */
 export function WritePrivateProfileString(lpszSection, lpszEntry, lpszString,
                                           lpszFilename) {
-    console.log("WritePrivateProfileString", arguments);
+    // Open the file
+    let handle = this.dos.files.open(lpszFilename);
+    let file = this.dos.files.resolve(handle);
+    console.log(file);
+
+    let ret = null;
+
+    if (file) {
+        // Read INI data from file
+        // Find the section
+        // Find the entry
+        // Write the value
+    }
+
+    if (handle) {
+        this.dos.files.close(handle);
+    }
+
     return TRUE;
 }

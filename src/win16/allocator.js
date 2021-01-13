@@ -9,11 +9,15 @@ export class Allocator {
     /**
      * Constructs a new allocation manager for the given memory.
      */
-    constructor(memory, options = {}) {
+    constructor(memory, globalAllocator, options = {}) {
         this._memory = memory;
+        this._globalAllocator = globalAllocator;
 
         // Keep track of the local allocators
         this._heaps = {};
+
+        // Keep track of global memory objects
+        this._objects = {};
     }
 
     /**
@@ -21,6 +25,13 @@ export class Allocator {
      */
     get memory() {
         return this._memory;
+    }
+
+    /**
+     * Retrieves the global allocator associated with this allocator.
+     */
+    get globalAllocator() {
+        return this._globalAllocator;
     }
 
     /**
@@ -44,25 +55,42 @@ export class Allocator {
 
         // For each selector we are allocating, create the memory data
         // And then also map it into our machine memory.
-        let nextSelector = this.memory.findFirstFree(selectorCount, 100);
+        let nextSelector = this.globalAllocator.find(100, selectorCount);
         if (nextSelector < 0) {
             return null;
         }
 
+        // Record the memory object
+        this._objects[nextSelector] = {
+            size: size
+        };
+
+        // Map it in
         for (var i = nextSelector; i < nextSelector + selectorCount; i++) {
-            let amount = size;
-            if (amount > 0xffff) {
-                amount = 0x10000;
-            }
+            let amount = Math.min(size, 0x10000);
             size -= amount;
-            this.memory.allocate(i, amount, options);
+            let bytes = new Uint8Array(amount);
+            let view = new DataView(bytes.buffer);
+            this.globalAllocator.map(i, view);
         }
 
         return nextSelector;
     }
 
+    free(handle) {
+        return true;
+    }
+
+    sizeOf(handle) {
+        if (this._objects[handle]) {
+            return this._objects[handle].size;
+        }
+
+        return 0;
+    }
+
     /**
-     * Allocates a section of a selector to form a local heap.
+     * Allocates a section of an allocated segment to form a local heap.
      *
      * @param {number} segment - The segment selector index.
      * @param {number} start - The starting byte of that segment for the heap.
@@ -102,9 +130,6 @@ export class Allocator {
         this._heaps[segment] = heap;
         heap.segment = segment;
         heap.offset = start;
-
-        // Now we can append the heap data
-        this.memory.map((segment << 16) + start, heap);
 
         // Return the heap instance
         return this._heaps[segment];

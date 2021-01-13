@@ -86,7 +86,7 @@ import { NULL } from '../consts.js';
  *                         bitmap if the function is successful. Otherwise it is
  *                         `NULL`.
  */
-export function LoadBitmap(hinst, lpszBitmap) {
+export async function LoadBitmap(hinst, lpszBitmap) {
     // If the hinst is NULL, we are looking for a system bitmap
     if (hinst == NULL) {
     }
@@ -123,11 +123,13 @@ export function LoadBitmap(hinst, lpszBitmap) {
     let executable = this.scheduler.task.executable;
 
     let ret = NULL;
-    executable.resources.forEach( (resourceType) => {
+    for (let i = 0; i < executable.resources.length; i++) {
+        let resourceType = executable.resources[i];
         if (resourceType.id == Executable.RESOURCES.Bitmap) {
-            resourceType.entries.forEach( (resource) => {
+            for (let j = 0; j < resourceType.entries.length; j++) {
+                let resource = resourceType.entries[j];
                 if (resource.id == idResource) {
-                    let data = executable.readResource(resource);
+                    let data = await executable.readResource(resource);
                     let view = new DataView(data);
 
                     // Read the bitmap header
@@ -231,9 +233,11 @@ export function LoadBitmap(hinst, lpszBitmap) {
                         ret = this.handles.allocate(bitmap);
                     }
                 }
-            });
+            }
         }
-    });
+    }
+
+    console.log("returning", ret);
 
     // If we could not find the string, ret remains NULL.
     return ret;

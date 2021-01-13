@@ -150,6 +150,21 @@ export var COLORREF = 27;
 export var HGDIOBJ = 28;
 export var HBITMAP = 29;
 
+export var CHARARRAY = 0x8000000;
+export var BYTEARRAY = 0x10000000;
+export var INTARRAY = 0x20000000;
+export var UINTARRAY = 0x30000000;
+export var DWORDARRAY = 0x40000000;
+
+/**
+ * A 16-bit file handle.
+ *
+ * @static
+ * @typedef {number} HFILE
+ * @memberof Types
+ */
+export var HFILE = 30;
+
 /**
  * Contains the various types used throughout the API.
  */
@@ -193,6 +208,7 @@ export class Types {
             case HDC:
             case HANDLE:
             case HGLOBAL:
+            case HFILE:
             case NEARPTR:
             case WPARAM:
             case HWND:
@@ -210,7 +226,24 @@ export class Types {
                 return 4;
 
             default:
-                throw Error("unknown type");
+                // Array type
+                if (type >= DWORDARRAY) {
+                    return (type - DWORDARRAY) * Types.sizeof(DWORD);
+                }
+                else if (type >= UINTARRAY) {
+                    return (type - UINTARRAY) * Types.sizeof(UINT);
+                }
+                else if (type >= INTARRAY) {
+                    return (type - INTARRAY) * Types.sizeof(INT);
+                }
+                else if (type >= BYTEARRAY) {
+                    return type - BYTEARRAY;
+                }
+                else if (type >= CHARARRAY) {
+                    return type - CHARARRAY;
+                }
+
+                throw Error("unknown type: " + type);
         }
     }
 
@@ -249,6 +282,7 @@ export class Types {
             case HDC:
             case HANDLE:
             case HGLOBAL:
+            case HFILE:
             case NEARPTR:
             case FARPTR:
             case WPARAM:
@@ -261,7 +295,11 @@ export class Types {
                 return false;
 
             default:
-                throw Error("unknown type");
+                if (type >= CHARARRAY) {
+                    return false;
+                }
+
+                throw Error("unknown type: " + type);
         }
     }
 }
@@ -352,6 +390,57 @@ export class Struct {
             let innerSize = value.storeToMemory(memory, segment, offset);
             size += innerSize;
         }
+        else if (argType >= DWORDARRAY) {
+            // Write series of 32-bit words
+            // The item is an array of numbers
+            let len = argType - DWORDARRAY;
+            for (let i = 0; i < len; i++) {
+                write32((segment << 16) + offset, value[i]);
+                offset += 4;
+                size += 4;
+            }
+        }
+        else if (argType >= UINTARRAY) {
+            // Write series of 16-bit words
+            // The item is an array of numbers
+            let len = argType - UINTARRAY;
+            for (let i = 0; i < len; i++) {
+                write16((segment << 16) + offset, value[i]);
+                offset += 2;
+                size += 2;
+            }
+        }
+        else if (argType >= INTARRAY) {
+            // Write series of 16-bit words
+            // The item is an array of numbers
+            let len = argType - UINTARRAY;
+            for (let i = 0; i < len; i++) {
+                write16((segment << 16) + offset, value[i]);
+                offset += 2;
+                size += 2;
+            }
+        }
+        else if (argType >= BYTEARRAY) {
+            // Write series of 8-bit words
+            // The item is an array of numbers
+            let len = argType - BYTEARRAY;
+            for (let i = 0; i < len; i++) {
+                write8((segment << 16) + offset, value[i]);
+                offset++;
+                size++;
+            }
+        }
+        else if (argType >= CHARARRAY) {
+            // Write series of 8-bit words
+            // The item is a string
+            let len = argType - CHARARRAY;
+            if (item.length + 1 >= len) {
+                item = item.substring(0, len - 1);
+            }
+
+            memory.writeCString((segment << 16) + offset, value);
+            size += len;
+        }
         else if (itemSize == 1) {
             write8((segment << 16) + offset, value);
 
@@ -416,6 +505,57 @@ export class Struct {
                 let innerSize = value.loadFromMemory(memory, segment, offset);
                 offset += innerSize;
                 size += innerSize;
+            }
+            else if (argType >= DWORDARRAY) {
+                // Read series of 32-bit words
+                // The item is an array of numbers
+                value = [];
+                let len = argType - DWORDARRAY;
+                for (let i = 0; i < len; i++) {
+                    value.push(read32((segment << 16) + offset));
+                    offset += 4;
+                    size += 4;
+                }
+            }
+            else if (argType >= UINTARRAY) {
+                // Read series of 16-bit words
+                // The item is an array of numbers
+                value = [];
+                let len = argType - UINTARRAY;
+                for (let i = 0; i < len; i++) {
+                    value.push(read16((segment << 16) + offset));
+                    offset += 2;
+                    size += 2;
+                }
+            }
+            else if (argType >= INTARRAY) {
+                // Read series of 16-bit words
+                // The item is an array of numbers
+                value = [];
+                let len = argType - UINTARRAY;
+                for (let i = 0; i < len; i++) {
+                    value.push(read16((segment << 16) + offset));
+                    offset += 2;
+                    size += 2;
+                }
+            }
+            else if (argType >= BYTEARRAY) {
+                // Read series of 8-bit words
+                // The item is an array of numbers
+                value = [];
+                let len = argType - BYTEARRAY;
+                for (let i = 0; i < len; i++) {
+                    value.push(read8((segment << 16) + offset));
+                    offset++;
+                    size++;
+                }
+            }
+            else if (argType >= CHARARRAY) {
+                // Read string.
+                // The item is a string
+                let len = argType - CHARARRAY;
+                value = memory.readCString((segment << 16) + offset, len);
+                size += len;
             }
             else if (Types.sizeof(argType) == 1) {
                 if (Types.signed(argType)) {
@@ -483,6 +623,7 @@ Types.LPCSTR = LPCSTR;
 Types.BOOL = BOOL;
 Types.DWORD = DWORD;
 Types.HGLOBAL = HGLOBAL;
+Types.HFILE = HFILE;
 Types.WPARAM = WPARAM;
 Types.LPARAM = LPARAM;
 Types.LONG = LONG;

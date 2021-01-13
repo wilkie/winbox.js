@@ -27,8 +27,6 @@ import { NULL } from '../consts.js';
  *                   Otherwise, it is equal to the `hloc` parameter.
  */
 export function LocalFree(hloc) {
-    console.log("LocalFree:", hloc);
-
     // LocalFree deallocates from the heap of the current segment selected via DS.
     let segment = this.machine.cpu.core.ds >> 3;
 

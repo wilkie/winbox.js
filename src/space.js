@@ -91,16 +91,16 @@ export class Space extends EventComponent {
         this._container.appendChild(this._window.element);
 
         // Create a progress window
-        this._progressWindow = new ProgressWindow();
-        this._fixedWindow = new FixedWindow();
+        //this._progressWindow = new ProgressWindow();
+        //this._fixedWindow = new FixedWindow();
 
         this._containingWindow = new SizableWindow();
 
         //this._window.append(this._fixedWindow);
         //this._window.append(this._progressWindow);
 
-        this._progressWindow.move(200, 50);
-        this._progressWindow.focus();
+        //this._progressWindow.move(200, 50);
+        //this._progressWindow.focus();
     }
     
     /**
@@ -142,6 +142,10 @@ export class Space extends EventComponent {
 
     get height() {
         return this._window.height;
+    }
+
+    get window() {
+        return this._window;
     }
 }
 

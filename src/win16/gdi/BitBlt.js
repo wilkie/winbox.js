@@ -110,10 +110,17 @@ import { TRUE, FALSE } from '../consts.js';
  * @return {Types.BOOL} The return value is nonzero if the function is
  *                      successful. Otherwise it is zero.
  */
+var i = 0;
+
 export function BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight,
                        hdcSrc, nXSrc, nYSrc, dwRop) {
     // Resolve the source DC handle
     let source = this.handles.resolve(hdcSrc);
+    
+    i++;
+    if (!(i % 10)) {
+        //return TRUE;
+    }
 
     // Bail if we cannot find the source DC
     if (!source) {
@@ -122,6 +129,7 @@ export function BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight,
 
     // Resolve the bitmap attached to the device
     let sourceBitmap = source.bitmap;
+    //console.log(source, sourceBitmap);
     let sourceView = sourceBitmap.view;
 
     // Resolve the destination DC handle

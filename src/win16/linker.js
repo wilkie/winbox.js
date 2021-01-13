@@ -20,6 +20,31 @@ export class Linker {
     }
 
     /**
+     * Retrieves a list of external libraries it must have to link.
+     */
+    requirementsFor(task) {
+        let ret = [];
+
+        // Go through the relocations and see the required modules
+        task.loader.segments.forEach( (segment, i) => {
+            segment.relocations.forEach( (relocation) => {
+                if (relocation.type == Loader.RELOCATION_IMPORT) {
+                    let module = this.modules.fromName(relocation.from);
+
+                    if (!module) {
+                        // We do not have this module loaded already
+                        if (ret.indexOf(relocation.from) < 0) {
+                            ret.push(relocation.from);
+                        }
+                    }
+                }
+            });
+        });
+
+        return ret;
+    }
+
+    /**
      * Links the executable.
      */
     link(task) {
@@ -27,8 +52,7 @@ export class Linker {
 
         // Link each segment relocations
         task.loader.segments.forEach( (segment, i) => {
-            // TODO: get the actual segment index
-            let segmentIndex = i + 1;
+            let segmentIndex = task.loader.translate(i + 1);
             let relocations = segment.relocations;
 
             relocations.sort( (a, b) => a.offset - b.offset );
@@ -40,8 +64,9 @@ export class Linker {
                     if (module) {
                         module = this.modules.load(module);
                         if (relocation.ordinal) {
-                            let segment = module.segment;
-                            let offset = module.step * (relocation.ordinal + 1);
+                            let info = module.lookup(relocation.ordinal);
+                            let segment = info.segment;
+                            let offset = info.offset;
 
                             if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_SEGMENT) {
                                 this.writeRelocation16(
@@ -67,7 +92,7 @@ export class Linker {
                         }
                     }
                     else {
-                        console.log("WE NEED", relocation.from + ".DLL");
+                        console.log("WE NEED", relocation.from + ".DLL", "@", relocation.ordinal);
                     }
                 }
                 else {
@@ -121,8 +146,8 @@ export class Linker {
     writeRelocation16(relocation, destinationSegment, value) {
         if (relocation.additive) {
             // Not a relocation chain... just add to the current value
-            offset += this._memory.read16(destinationSegment << 16 + relocation.offset);
-            this._memory.write16(destinationSegment << 16 + relocationOffset, value);
+            value += this._memory.read16((destinationSegment << 16) + relocation.offset);
+            this._memory.write16((destinationSegment << 16) + relocation.offset, value);
         }
         else {
             let nextOffset = relocation.offset;

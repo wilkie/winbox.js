@@ -6,10 +6,18 @@ import { Label } from '../../controls/label.js';
 import { Button } from '../../controls/button.js';
 
 export function MessageBox(hwndParent, lpszText, lpszTitle, fuStyle) {
+    // Stop the task
+    this.scheduler.task.halt();
+
+    // Get the parent window
+    let parentWindow = this.handles.resolve(hwndParent);
+
+    // Create a dialog box
     let dialog = new FixedWindow({
         caption: lpszTitle
     });
 
+    // And place a label on it for the message text
     let label = new Label({
         caption: lpszText
     });
@@ -44,6 +52,17 @@ export function MessageBox(hwndParent, lpszText, lpszTitle, fuStyle) {
 
     dialog.focus();
 
+    let msgBoxHandle = this.handles.allocate(dialog);
+    this.windows.halt(hwndParent, msgBoxHandle);
+
     // TODO: wait until the message box closes before returning to the app
-    return 1;
+    return new Promise( (resolve) => {
+        // Return value is the button that was pressed
+        button.on("click", () => {
+            dialog.destroy();
+            this.handles.free(msgBoxHandle);
+            this.windows.halt(hwndParent, null);
+            resolve(1);
+        });
+    });
 }

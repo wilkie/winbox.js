@@ -1,5 +1,8 @@
 "use strict";
 
+// File System
+import { FAT16 } from './file-systems/fat16.js';
+
 // Task
 import { Task } from './win16/task.js';
 
@@ -20,6 +23,10 @@ import { FontManager } from './win16/font-manager.js';
 import { Kernel } from './win16/kernel.js';
 import { Gdi } from './win16/gdi.js';
 import { User, MSG } from './win16/user.js';
+import { MMSystem } from './win16/mmsystem.js';
+import { CommDlg } from './win16/commdlg.js';
+
+// Other useful types
 import { Types, Struct, VARIADIC,
          HWND, WPARAM, LPARAM, UINT } from './win16/types.js';
 
@@ -36,10 +43,20 @@ export class Win16 {
      * The operating system manages the system memory and loads executables
      * and libraries.
      */
-    constructor(machine, desktop, options = {}) {
+    constructor(dos, machine, desktop, options = {}) {
+        // Retain the DOS instance
+        this._dos = dos;
+
+        // Retain the deskop environment
         this._desktop = desktop;
+
+        // Retain the machine instance
         this._machine = machine;
+
+        // Retain a reference to the system memory
         this._memory = machine.memory;
+
+        // Create a global heap
         this._globalAllocator = new GlobalAllocator(machine.cpu, machine.memory);
 
         // Remember the time the machine starts
@@ -50,14 +67,20 @@ export class Win16 {
 
         // Register modules
         this._modules = new ModuleManager(this._globalAllocator);
-        this._modules.register(Kernel);
-        this._modules.register(Gdi);
-        this._modules.register(User);
+        let handle = this._handles.allocate(Kernel);
+        this._modules.register(Kernel, handle);
+        handle = this._handles.allocate(Gdi);
+        this._modules.register(Gdi, handle);
+        handle = this._handles.allocate(User);
+        this._modules.register(User, handle);
+        handle = this._handles.allocate(MMSystem);
+        this._modules.register(MMSystem, handle);
+        handle = this._handles.allocate(CommDlg);
+        this._modules.register(CommDlg, handle);
 
         this._classes = {};
 
         // Register system calls
-        machine.cpu.onInterrupt(0x21, this.syscallDOS.bind(this));
         machine.cpu.onInterrupt(0x80, this.syscallInvoke.bind(this));
         machine.cpu.onInterrupt(0x81, this.syscallCallbackReturn.bind(this));
 
@@ -65,12 +88,20 @@ export class Win16 {
         this._linker = new Linker(this._memory, this._modules);
 
         // And the system memory allocator
-        this._allocator = new Allocator(this.machine.memory);
+        this._allocator = new Allocator(this.machine.memory, this._globalAllocator);
+
+        // Allocate/reload the file-system
+        let letter = "C";
+        machine.disks.forEach( (disk) => {
+            if (disk.fileSystem) {
+                // TODO: if it is a floppy disk, we assign starting from "A"
+                this._dos._files.mount(letter, disk.fileSystem);
+                letter = String.fromCharCode(letter.charCodeAt(0) + 1);
+            }
+        });
 
         // Load system fonts
         this._fonts = new FontManager();
-        this._fonts.add("VGASYS.FON");  // System
-        this._fonts.add("VGAOEM.FON");  // Terminal
 
         // The task scheduler
         this._scheduler = new Scheduler(this._machine, this._modules);
@@ -78,6 +109,18 @@ export class Win16 {
         // Keep track of all window instances.
         // The '0' index window is the desktop.
         this._windows = new WindowManager(this._scheduler, this._handles, this._startTime);
+
+        // Allocate the desktop handle
+        this.handles.allocate(this._desktop.window);
+    }
+
+    async boot() {
+        let files = await this.files.list("C:\\WINDOWS\\SYSTEM");
+
+        // Initialize fonts
+        files.forEach( (file) => {
+            this._fonts.load(file);
+        });
     }
 
     /**
@@ -142,6 +185,22 @@ export class Win16 {
     }
 
     /**
+     * Returns the instance of DOS this system is running upon.
+     */
+    get dos() {
+        return this._dos;
+    }
+
+    /**
+     * Returns the file manager.
+     *
+     * @return {FileManager} The file manager.
+     */
+    get files() {
+        return this.dos.files;
+    }
+
+    /**
      * Returns the current memory allocator.
      *
      * @return {Allocator} The current memory allocator.
@@ -155,25 +214,40 @@ export class Win16 {
      *
      * @return {HINSTANCE} The handle to the loaded task.
      */
-    load(executable) {
+    async load(executable) {
         // A loader parses the executable data for information useful for
         // link/loading the task.
         let loader = new Loader(executable, this._globalAllocator);
+        await loader.parse();
+
+        console.log("resident", loader.residentEntries);
+        console.log("non-resident", loader.nonResidentEntries);
+        console.log("module-reference", loader.moduleReferenceEntries);
+        console.log("exports", loader.exports);
+
+        // Register the module with the system
+        this._modules.register(loader);
 
         // The task encapsulates a running program and its address space.
         let task = new Task(executable, loader);
+
+        console.log("WE NEED:", this._linker.requirementsFor(task));
 
         // Gather the initial data segment
         let dataSegment = loader.segments[loader.ds - 1];
 
         // Allocate a heap to the data segment (after data and before stack)
-        let heapStart = dataSegment.length;
+        let heapStart = dataSegment.length + executable.neHeader.initialStackSize;
         let heapEnd = heapStart + executable.neHeader.initialLocalHeapSize;
-        heapEnd = 0x10000 - heapStart - executable.neHeader.initialStackSize;
         LocalInit.bind(this)(loader.ds, heapStart, heapEnd);
 
         let handle = this.handles.allocate(task);
         return handle;
+    }
+
+    requirementsFor(handle) {
+        let task = this.handles.resolve(handle);
+        return this._linker.requirementsFor(task);
     }
 
     /**
@@ -200,8 +274,7 @@ export class Win16 {
 
         // We need to allocate a program segment to contain the command line
         // arguments and environment.
-        let programSegment = 0xffe;
-        let environmentSegment = 0xfff;
+        let programSegment = this._globalAllocator.find();
 
         // Allocate 256 bytes for the program segment prefix
         let programSegmentBytes = new Uint8Array(256);
@@ -209,8 +282,14 @@ export class Win16 {
 
         // Environment variables
         // The environment is a null-terminated series of keys and values.
+        let environmentSegment = this._globalAllocator.find();
         let environmentSegmentBytes = new Uint8Array(256);
         this._globalAllocator.map(environmentSegment, new DataView(environmentSegmentBytes.buffer));
+
+        // Allocate a stack
+        let stackBytes = new Uint8Array(task.executable.neHeader.initialStackSize);
+        let stackView = new DataView(stackBytes.buffer);
+        this._memory.write(this._machine.cpu.core.translateAddress(task.loader.ds << 3, dataSegment.length), stackView);
 
         // Set up the program segment prefix.
         // https://en.wikipedia.org/wiki/Program_Segment_Prefix
@@ -227,10 +306,11 @@ export class Win16 {
         this._machine.cpu.core.write8(programSegment << 3, 0x80, commandLineLength);
 
         task.programSegment = programSegment;
+        task.environmentSegment = environmentSegment;
 
         this._machine.cpu.core.ds = (task.loader.ds << 3) | 0x3;
         this._machine.cpu.core.ss = (task.loader.ss << 3) | 0x3;
-        this._machine.cpu.core.sp = 0x0000;
+        this._machine.cpu.core.sp = dataSegment.length + task.executable.neHeader.initialStackSize;
         this._machine.cpu.core.cs = (task.loader.cs << 3) | 0x3;
         this._machine.cpu.core.ip = task.loader.ip;
         this._machine.cpu.core.bx = task.executable.neHeader.initialStackSize;
@@ -243,8 +323,6 @@ export class Win16 {
         task.context = this._machine.cpu.state;
         this.resume(handle);
     }
-
-
 
     /**
      * Initializes the task. The program calls this function.
@@ -319,78 +397,8 @@ export class Win16 {
             return;
         }
 
-        this._fonts.wait().then( () => {
-            this.scheduler.resume(handle);
-        });
-    }
-
-    syscallDOS() {
-        // A DOS/bios call
-        console.log(
-            "dos syscall called from:",
-            this._machine.cpu.core.cs,
-            this._machine.cpu.core.ip,
-            this._machine.cpu.core.ah.toString(16)
-        );
-
-        switch (this._machine.cpu.core.ah) {
-            case 0x25:  // Set Interrupt Vector
-                this._machine.cpu.core.write16(
-                    this._machine.idtSegment << 3, this._machine.cpu.core.al * 4,
-                    this._machine.cpu.core.dx
-                );
-                this._machine.cpu.core.write16(
-                    this._machine.idtSegment << 3, (this._machine.cpu.core.al * 4) + 2,
-                    this._machine.cpu.core.ds
-                );
-                break;
-
-            case 0x2a:  // Get System Date
-                {
-                    let today = new Date();
-                    this._machine.cpu.core.cx = today.getYear();
-                    this._machine.cpu.core.dh = today.getMonth();
-                    this._machine.cpu.core.dl = today.getDate();
-                    this._machine.cpu.core.al = today.getDay();
-                }
-                break;
-
-            case 0x2c:  // Get System Time
-                {
-                    let today = new Date();
-                    this._machine.cpu.core.ch = today.getHours();
-                    this._machine.cpu.core.cl = today.getMinutes();
-                    this._machine.cpu.core.dh = today.getSeconds();
-                    this._machine.cpu.core.dl = today.getMilliseconds();
-                }
-                break;
-
-            case 0x30:  // Get DOS version (We are emulating DOS 6)
-                this._machine.cpu.core.ax = 0x6;
-                break;
-
-            case 0x35:  // Get Interrupt Vector
-                // TODO: implement a true IDT
-                this._machine.cpu.core.bx = this._machine.cpu.core.read16(
-                    this._machine.idtSegment, this._machine.cpu.core.al * 4
-                );
-                this._machine.cpu.core.es = this._machine.cpu.core.read16(
-                    this._machine.idtSegment, (this._machine.cpu.core.al * 4) + 2
-                );
-                break;
-
-            case 0x4c:  // Exit
-                console.log("Exit. Task halted.");
-                this.scheduler.task.halt();
-                break;
-
-            default:
-                console.log(
-                    "error: Unknown DOS call",
-                    this._machine.cpu.core.ah.toString(16)
-                );
-                break;
-        }
+        console.log("helo?");
+        this.scheduler.resume(handle);
     }
 
     syscallInvoke() {
@@ -488,11 +496,16 @@ export class Win16 {
                         // null string
                         return null;
                     }
-
-                    let ret = new String(this._memory.readCString(this._machine.cpu.core.translateAddress(hi, lo)));
-                    ret.segment = hi;
-                    ret.offset = lo;
-                    return ret;
+                    else if (hi == 0) {
+                        // null segment falls back to a number instead
+                        return lo;
+                    }
+                    else {
+                        let ret = new String(this._memory.readCString(this._machine.cpu.core.translateAddress(hi, lo)));
+                        ret.segment = hi;
+                        ret.offset = lo;
+                        return ret;
+                    }
                 }
 
                 return (hi << 16) | (lo & 0xffff);

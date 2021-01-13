@@ -885,6 +885,19 @@ export class ALU {
         return (result & 0xffffffff) >>> 0;
     }
 
+    shl64(a, b) {
+        let result = a << b;
+        this._cpu._flags.overflow = ((result ^ a) & 0x8000000000000000n) != 0n;
+        this._cpu._flags.carry = ((a >> (32n - b)) & 0x1n) != 0n;
+        if (b > 64) {
+            this._cpu._flags.carry = false;
+        }
+
+        this._cpu._flags.signed = result >= 0x8000000000000000n;
+
+        return result & 0xffffffffffffffffn;
+    }
+
     sar8(a, b) {
         if (b > 8) {
             b = 8;
@@ -991,6 +1004,26 @@ export class ALU {
         this._cpu._flags.signed = result >= 0x80000000;
 
         return (result & 0xffffffff) >>> 0;
+    }
+
+    shr64(a, b) {
+        if (b == 0) {
+            return a;
+        }
+
+        let result = a >> b;
+
+        if ((b & 0x1fn) == 1n) {
+            this._cpu._flags.overflow = a > 0x8000000000000000n;
+        }
+        else {
+            this._cpu._flags.overflow = false;
+        }
+
+        this._cpu._flags.carry = ((a >> (b - 1n)) & 0x1n) != 0n;
+        this._cpu._flags.signed = result >= 0x8000000000000000n;
+
+        return result & 0xffffffffffffffffn;
     }
 }
 

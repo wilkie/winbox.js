@@ -342,54 +342,38 @@ export class BitmapFontEntry {
  * Loads one or more bitmap fonts from a given font resource.
  */
 export class BitmapFont extends Font {
-    /**
-     * Asynchronously loads the font at the given url.
-     */
-    static load(url, options = {}) {
-        if (!BitmapFont._promiseCache[url]) {
-            BitmapFont._promiseCache[url] = new Promise( async (resolve, reject) => {
-                if (!BitmapFont._cache[url]) {
-                    fetch(url).then( (response) => {
-                        return response.arrayBuffer();
-                    }).then( (data) => {
-                        BitmapFont._cache[url] = new BitmapFont(data, options);
-                        resolve(BitmapFont._cache[url]);
-                    });
-                }
-                else {
-                    resolve(BitmapFont._cache[url]);
-                }
-            });
-        }
-
-        return BitmapFont._promiseCache[url];
-    }
-
-    constructor(data, options = {}) {
-        super();
-
-        this._view = new DataView(data);
-        this._entries = [];
-
-        if (this._view.getUint16(0, true) == 0x5a4d) {
+    async load(options = {}) {
+        if (await this._stream.read16(0) == 0x5a4d) {
             // This is an executable, pull fonts from resources
-            let executable = new Executable(data); 
+            let executable = new Executable("FONT", "C:\\FONT.FON", this._stream); 
+            await executable.parse();
 
             // Get font resources
-            executable.resources.forEach( (resourceType) => {
+            let resources = executable.resources;
+            for (let i = 0; i < resources.length; i++) {
+                let resourceType = resources[i];
                 if (resourceType.id == Executable.RESOURCES.Font) {
-                    resourceType.entries.forEach( (resource) => {
-                        let subData = executable.readResource(resource);
+                    let entries = resourceType.entries;
+                    for (let j = 0; j < entries.length; j++) {
+                        let resource = entries[j];
+                        let subData = await executable.readResource(resource);
                         let font = new BitmapFontEntry(subData, options);
                         this._entries.push(font);
-                    });
+                    }
                 }
-            });
+            }
         }
         else {
             // Likely its own font
             this._entries.push(new BitmapFontEntry(data, options));
         }
+    }
+
+    constructor(stream, options = {}) {
+        super();
+
+        this._stream = stream;
+        this._entries = [];
     }
 
     /**

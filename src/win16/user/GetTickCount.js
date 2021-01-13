@@ -20,6 +20,5 @@
  */
 export function GetTickCount() {
     let ret = (new Date).getTime() - this.startTime;
-    ret = ret + 0xcc824915;
     return ret;
 }

@@ -137,7 +137,7 @@ export class Label extends Window {
 
         let textValue = value.replace('&', '');
 
-        if (this._options.font &&
+        if (false && this._options.font &&
             this._options.font.toLowerCase().endsWith(".fon")) {
             BitmapFont.load(this._options.font).then( (fonts) => {
                 this._caption.style.display = "none";

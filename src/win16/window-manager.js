@@ -10,6 +10,7 @@ export class WindowManager {
         this._scheduler = scheduler;
         this._handles = handles;
         this._startTime = startTime;
+        this._halts = {};
     }
 
     register(taskHandle, task, hWnd, windowInstance) {
@@ -20,6 +21,13 @@ export class WindowManager {
                 this.createMessage(taskHandle, task, hWnd, event, data);
             });
         });
+    }
+
+    /**
+     * Specifies that all focus is demanded by the given child window.
+     */
+    halt(hWnd, childhWnd) {
+        this._halts[hWnd] = childhWnd;
     }
 
     /**
@@ -155,12 +163,14 @@ export class WindowManager {
         }
 
         // If we have a new message, post it to the queue.
-        messages.forEach( (msg) => {
-            msg.time = (new Date).getTime() - this._startTime;
-            task.push(msg);
-            this._scheduler.queue(taskHandle);
-            task.run();
-            this._scheduler.run();
-        });
+        // If the task is running...
+        // TODO: which messages are sent anyway?
+        if (!this._halts[hWnd]) {
+            messages.forEach( (msg) => {
+                msg.time = (new Date).getTime() - this._startTime;
+                task.push(msg);
+                this._scheduler.resume(taskHandle);
+            });
+        }
     }
 }

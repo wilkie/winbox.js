@@ -64,6 +64,14 @@ export class Task {
         this._programSegment = value;
     }
 
+    get environmentSegment() {
+        return this._environmentSegment;
+    }
+
+    set environmentSegment(value) {
+        this._environmentSegment = value;
+    }
+
     run() {
         if (this._returnValue) {
             // Call the return value procedure

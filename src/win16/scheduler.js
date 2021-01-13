@@ -56,6 +56,7 @@ export class Scheduler {
      * Places the given task in the scheduler queue by its handle.
      */
     queue(handle) {
+        //console.log('queuing', handle);
         this._currentTask = handle;
     }
 
@@ -75,17 +76,24 @@ export class Scheduler {
 
             // Reset the return value
             this.task.returnValue = null;
+
+            // Unschedule the task
+            this._currentTask = null;
         }
     }
 
     resume(handle) {
         this.queue(handle);
-        this.task.run();
+        //console.log("task running?", this.task.stopped, this.task.yield);
+        if (this.task) {
+            this.task.run();
+        }
         this.run();
     }
 
     run() {
         function step(elapsed) {
+            //console.log("stepping", this._machine.cpu.core.ip);
             try {
                 let currentTask = this.task;
 
@@ -155,6 +163,7 @@ export class Scheduler {
             }
             catch (e) {
                 console.log("error", e);
+                throw e;
                 return;
             }
         }
@@ -163,7 +172,29 @@ export class Scheduler {
     }
 
     interpretReturnValue(result, returnType) {
-        if (result instanceof Array) {
+        // Keep track of the current task in case we
+        // yield to another.
+        let currentTask = this.active;
+
+        if (result instanceof Promise) {
+            // Asynchronous API call
+            let asyncCall = result;
+
+            // Yield the task until the asynchronous function returns
+            this.yield();
+
+            // The result is actually the async callback, so wait for the
+            // Promise to resolve.
+            asyncCall.then( (result) => {
+                // Actually interpret the proper return result
+                // (sets CPU ax/dx/eax, etc)
+                this.interpretReturnValue(result, returnType);
+
+                // Resume the task
+                this.resume(currentTask);
+            });
+        }
+        else if (result instanceof Array) {
             //console.log("a call dispatch");
 
             // A call dispatch listing
@@ -183,12 +214,13 @@ export class Scheduler {
         else if (result === 'call') {
             // We make the callback and postpone the return until the callback
             // returns. The callback is responsible for setting return values.
-            this.resume(this.active);
+            this.resume(currentTask);
         }
         else if (typeof result === 'function') {
             // We yield and postpone the return until the program starts again.
+            let task = this.task;
             this.yield();
-            this.task.returnValue = () => {
+            task.returnValue = () => {
                 let bound = result.bind(this)();
 
                 if (returnType !== undefined) {
@@ -204,8 +236,8 @@ export class Scheduler {
 
             // If there is a pending message, just start the task
             // TODO: scheduler can schedule a different task
-            if (this.task.peek()) {
-                this.resume(this.active);
+            if (task.peek()) {
+                this.resume(currentTask);
             }
         }
         else if (returnType !== undefined) {
@@ -332,6 +364,7 @@ export class Scheduler {
 
     callReturn() {
         //console.log("Callback return");
+        let currentTask = this.active;
 
         // Stop execution
         this.task.halt();
@@ -366,6 +399,6 @@ export class Scheduler {
         }
 
         // Resume the task
-        this.resume(this.active);
+        this.resume(currentTask);
     }
 }
