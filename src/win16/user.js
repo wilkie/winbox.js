@@ -29,6 +29,7 @@ import { GetWindowWord } from './user/GetWindowWord.js';
 import { InitApp } from './user/InitApp.js';
 import { InvalidateRect } from './user/InvalidateRect.js';
 import { LoadBitmap } from './user/LoadBitmap.js';
+import { LoadMenu } from './user/LoadMenu.js';
 import { LoadString } from './user/LoadString.js';
 import { MessageBox } from './user/MessageBox.js';
 import { MoveWindow } from './user/MoveWindow.js';
@@ -226,7 +227,7 @@ export class User extends Module {
             [User.stub, "GetClipboardViewer", 0],
             [User.stub, "ChangeClipboardChain", 4],
             // 150 //
-            [User.stub, "LoadMenu", 6],
+            [LoadMenu, "LoadMenu", 6, [HINSTANCE, LPCSTR], HMENU],
             [User.stub, "CreateMenu", 0],
             [User.stub, "DestroyMenu", 2],
             [User.stub, "ChangeMenu", 12],
@@ -988,6 +989,7 @@ User.RDW_FRAME = 0x0400;
 User.RDW_NOFRAME = 0x0800;
 
 // MessageBox Values
+// -----------------
 User.IDOK = 0x1;
 User.IDCANCEL = 0x2;
 User.IDABORT = 0x3;

@@ -4,6 +4,8 @@ import { TRUE } from '../consts.js';
 
 import { User } from '../user.js';
 
+import { LoadMenu } from './LoadMenu.js';
+
 /**
  * The **RegisterClass** function registers a window class for subsequent use
  * in calls to the {@link User.CreateWindow CreateWindow} or
@@ -37,8 +39,17 @@ import { User } from '../user.js';
  *                      earlier, the return value is nonzero if the function is
  *                      successful or zero if an error occurs.
  */
-export function RegisterClass(lpwc) {
+export async function RegisterClass(lpwc) {
+    // Get the menu, if provided
+    let menuHandle = null;
+    if (lpwc.lpszMenuName) {
+        console.log("retrieving menu");
+        menuHandle = await LoadMenu.bind(this)(lpwc.hInstance, lpwc.lpszMenuName);
+        console.log(lpwc);
+    }
+
     // Create an ATOM for the class
+    lpwc._menuHandle = menuHandle;
     let handle = this.handles.allocate(lpwc);
     if (handle) {
         // Register a name for the ATOM

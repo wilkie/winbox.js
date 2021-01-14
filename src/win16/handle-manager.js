@@ -10,6 +10,7 @@ import { Task } from './task.js';
 import { Module } from './module.js';
 import { Font } from '../raster/font.js';
 import { File } from '../file-system.js';
+import { Menu } from '../controls/menu.js';
 
 /**
  * This manages all of the handles of resources throughout the system.
@@ -31,6 +32,10 @@ export class HandleManager {
         else if (item instanceof Window) {
             // Allocates an HWND
             handle = this.find(HandleManager.TAGS.HWND + 1, 0xffe);
+        }
+        else if (this.isMenu(item)) {
+            // Allocates an HMENU
+            handle = this.find(HandleManager.TAGS.HMENU + 1, 0xffe);
         }
         else if (this.isFile(item)) {
             // Allocates an HFILE
@@ -152,6 +157,10 @@ export class HandleManager {
         return item instanceof File;
     }
 
+    isMenu(item) {
+        return item instanceof Menu;
+    }
+
     register(handle, name) {
         if (this._handles[handle]) {
             this._handles[handle].name = name;
@@ -177,5 +186,6 @@ HandleManager.TAGS = {
     HICON: 0x4000,
     HMETAFILE: 0x3000,
     ATOM: 0x2000,
+    HMENU: 0x1800,
     HFILE: 0x1000,
 };

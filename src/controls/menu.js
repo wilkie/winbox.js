@@ -51,7 +51,6 @@ export class Menu extends Window {
 
     set caption(value) {
         this.options.caption = value;
-
         this._button.caption = value;
     }
 
@@ -107,6 +106,7 @@ export class Menu extends Window {
 
         // Add a invoking button
         this._button = new Button(this._options);
+        this._button.alignment = "left";
         this.append(this._button);
 
         // Add a listing
@@ -115,12 +115,13 @@ export class Menu extends Window {
 
         // Create the dropdown menu window
         let subWindow = new SubMenu({ caption: "SUBMENU-" + this.options.caption });
-        let blurring = false;
         subWindow.on("blur", (event) => {
-            if (!blurring) {
-                blurring = true;
-                this.trigger("blur");
-                blurring = false;
+            console.log("blur dammit", event);
+            if (event && event.target &&
+                (event.target.window === this._button ||
+                 event.target.window.parent === this._button)) {
+            }
+            else {
                 subWindow.destroy();
             }
         });
@@ -171,13 +172,13 @@ export class Menu extends Window {
             }
             else {
                 // This just acts like a button... but we immediately lose focus
-                this.trigger("blur");
+                this.trigger("blur", event);
 
                 // We need to close ALL menus, so we blur all Menu parents
                 let item = this.parent;
                 while(item) {
                     if (item instanceof Menu) {
-                        item.trigger("blur");
+                        item.trigger("blur", event);
                     }
                     item = item.parent;
                 }

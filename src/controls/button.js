@@ -85,6 +85,8 @@ export class Button extends Window {
         this.element.classList.remove("__winbox_align-right");
         this.element.classList.remove("__winbox_align-center");
         this.element.classList.add("__winbox_align-" + value);
+
+        this._label.alignment = value;
     }
 
     get alignment() {

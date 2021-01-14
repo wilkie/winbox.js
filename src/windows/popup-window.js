@@ -45,7 +45,7 @@ export class PopupWindow extends Window {
                             if (event.target) {
                                 if (event.target.window !== this.parent) {
                                     console.log("blurring", this.parent, event.target.window);
-                                    this.trigger("blur");
+                                    this.trigger("blur", event);
                                 }
                             }
                         }
@@ -58,7 +58,7 @@ export class PopupWindow extends Window {
                             if (event.target) {
                                 if (event.target.window !== this.parent) {
                                     console.log("blurring", this.parent, event.target.window);
-                                    this.trigger("blur");
+                                    this.trigger("blur", event);
                                 }
                             }
                         }

@@ -108,6 +108,11 @@ export function CreateWindow(lpszClassName, lpszWindowName,
 
     this.windows.register(taskHandle, task, hWnd, dialog);
 
+    if (windowClass._menuHandle) {
+        let menu = this.handles.resolve(windowClass._menuHandle);
+        dialog.append(menu);
+    }
+
     // TODO: GETMINMAXINFO structure
     // TODO: WM_NCCREATE params
     // TODO: WM_NCCALCSIZE params

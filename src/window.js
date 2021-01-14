@@ -26,6 +26,7 @@ export class Window extends EventComponent {
         this._items = [];
         this._nonClientItems = [];
         this._nonClient = false;
+        this._disabled = false;
 
         // References to bound events
         this._itemEvents = new Map();
@@ -55,6 +56,14 @@ export class Window extends EventComponent {
 
     get id() {
         return this._id;
+    }
+
+    get disabled() {
+        return this._disabled;
+    }
+
+    set disabled(value) {
+        this._disabled = value;
     }
 
     get options() {
