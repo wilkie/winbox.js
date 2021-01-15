@@ -1,6 +1,6 @@
 "use strict";
 
-import { Types, HWND, WPARAM, LPARAM, UINT } from './types.js';
+import { Types, HWND, WPARAM, LPARAM, UINT, LRESULT } from './types.js';
 
 import { User, MSG } from './user.js';
 
@@ -84,8 +84,8 @@ export class Scheduler {
 
     resume(handle) {
         this.queue(handle);
-        //console.log("task running?", this.task.stopped, this.task.yield);
         if (this.task) {
+            this.task.yield = false;
             this.task.run();
         }
         this.run();
@@ -93,7 +93,6 @@ export class Scheduler {
 
     run() {
         function step(elapsed) {
-            //console.log("stepping", this._machine.cpu.core.ip);
             try {
                 let currentTask = this.task;
 
@@ -101,35 +100,8 @@ export class Scheduler {
                     /*let last = (new Date).getTime();
                     console.log("step", last);*/
 
-                    // If there is an asynchronous call on the queue, run that
-                    let callItem = currentTask.pollCall();
-                    while (currentTask.currentCall != callItem) {
-                        currentTask.currentCall = callItem;
-
-                        if (callItem instanceof Array && (typeof callItem[0]) === 'string') {
-                            // Proper call item
-                            let proc = callItem[0];
-                            if (proc === 'callWndProc') {
-                                this.callWndProc(
-                                    callItem[1], callItem[2], callItem[3],
-                                    callItem[4], callItem[5], callItem[6],
-                                    callItem[7]
-                                );
-                            }
-                        }
-                        else {
-                            // If there is a tuple, we set the return value registers.
-                            if (callItem instanceof Array) {
-                                // Interpret return value
-                                this.interpretReturnValue(callItem[1], callItem[0]);
-                            }
-                        }
-
-                        callItem = currentTask.pollCall();
-                    }
-
                     let i = 0;
-                    for ( ; i < 150; i++) {
+                    for ( ; i < 50; i++) {
                         if (currentTask.stopped || currentTask.yield) {
                             break;
                         }
@@ -172,75 +144,24 @@ export class Scheduler {
     }
 
     interpretReturnValue(result, returnType) {
-        // Keep track of the current task in case we
-        // yield to another.
         let currentTask = this.active;
 
         if (result instanceof Promise) {
             // Asynchronous API call
             let asyncCall = result;
 
-            // Yield the task until the asynchronous function returns
-            this.yield();
-
             // The result is actually the async callback, so wait for the
             // Promise to resolve.
             asyncCall.then( (result) => {
+                console.log("finally", result, this._machine.cpu.core.cs.toString(16), this._machine.cpu.core.ip.toString(16));
                 // Actually interpret the proper return result
                 // (sets CPU ax/dx/eax, etc)
                 this.interpretReturnValue(result, returnType);
-
-                // Resume the task
-                this.resume(currentTask);
             });
-        }
-        else if (result instanceof Array) {
-            //console.log("a call dispatch");
-
-            // A call dispatch listing
-            // If we are currently within a call, push that context to the
-            // pending stack.
-            if (this.task.currentCall) {
-                this.task.pushPending(this.task.currentCall);
-            }
-
-            // Push each call we desire on the call stack (to the top)
-            result.reverse().forEach( (callItem) => {
-                // Push the call to the active task
-                //console.log("pushing", callItem);
-                this.task.unpullCall(callItem);
-            });
-        }
-        else if (result === 'call') {
-            // We make the callback and postpone the return until the callback
-            // returns. The callback is responsible for setting return values.
-            this.resume(currentTask);
-        }
-        else if (typeof result === 'function') {
-            // We yield and postpone the return until the program starts again.
-            let task = this.task;
-            this.yield();
-            task.returnValue = () => {
-                let bound = result.bind(this)();
-
-                if (returnType !== undefined) {
-                    // Place top value in DX
-                    if (Types.sizeof(returnType) > 2) {
-                        this._machine.cpu.core.dx = (bound >> 16) & 0xffff;
-                    }
-
-                    // Place low-word in AX
-                    this._machine.cpu.core.ax = bound & 0xffff;
-                }
-            };
-
-            // If there is a pending message, just start the task
-            // TODO: scheduler can schedule a different task
-            if (task.peek()) {
-                this.resume(currentTask);
-            }
         }
         else if (returnType !== undefined) {
+            let context = this.task.popContext();
+
             // Place top value in DX
             if (Types.sizeof(returnType) > 2) {
                 this._machine.cpu.core.dx = (result >> 16) & 0xffff;
@@ -248,6 +169,39 @@ export class Scheduler {
 
             // Place low-word in AX
             this._machine.cpu.core.ax = result & 0xffff;
+
+            let callerIP = this._machine.cpu.core.read16(
+                this._machine.cpu.core.ss,
+                this._machine.cpu.core.sp
+            );
+
+            let callerCS = this._machine.cpu.core.read16(
+                this._machine.cpu.core.ss,
+                this._machine.cpu.core.sp + 2
+            );
+
+            // Resume
+            console.log("popContext (1)", context);
+            console.log("Resuming at", callerIP, callerCS, this._machine.cpu.core.cs.toString(16), ":", this._machine.cpu.core.ip.toString(16));
+            this.resume(currentTask);
+        }
+        else {
+            // Resume (CPU context unchanged)
+            let context = this.task.popContext();
+
+            console.log("popContext (1)", context);
+
+            let callerIP = this._machine.cpu.core.read16(
+                this._machine.cpu.core.ss,
+                this._machine.cpu.core.sp
+            );
+
+            let callerCS = this._machine.cpu.core.read16(
+                this._machine.cpu.core.ss,
+                this._machine.cpu.core.sp + 2
+            );
+            console.log("Resuming at", callerIP, callerCS, this._machine.cpu.core.cs.toString(16), ":", this._machine.cpu.core.ip.toString(16));
+            this.resume(currentTask);
         }
     }
 
@@ -255,18 +209,20 @@ export class Scheduler {
      * Specifically calls into the VM at the given window class' window
      * message procedure.
      */
-    callWndProc(windowClass, hwnd, message, wParam, lParam, callback, returnType) {
+    async callWndProc(windowClass, hwnd, message, wParam, lParam) {
         // Get the function to call and craft that function call and return to the
         // current CS:IP
         let newCS = (windowClass.lpfnWndProc >> 16) & 0xffff;
         let newIP = windowClass.lpfnWndProc & 0xffff;
+
+        console.log("calling wndproc", newCS.toString(16), newIP.toString(16));
 
         let args = [
             [hwnd, HWND], [message, UINT],
             [wParam, WPARAM], [lParam, LPARAM]
         ];
 
-        return this.call(User, newCS, newIP, args, callback, returnType);
+        return await this.call(User, newCS, newIP, args, LRESULT);
     }
 
     /**
@@ -281,17 +237,13 @@ export class Scheduler {
      * this call without any alteration to the CPU state as though it were
      * a system call.
      *
-     * When the function ends, the given callback is executed (if any). If
-     * the callback returns a value, that value is interpreted as the return
-     * value of the callback routine based on the given returnType (if any).
-     *
      * If no returnType is specified, the value is not considered. The CPU
      * state is restored without alteration. If the returnType is specified,
      * however, the CPU state is restored except for the return value registers
      * required to represent the value returned by the callback. How many and
      * which registers depends on the given returnType.
      */
-    call(module, segment, offset, args, callback, returnType) {
+    async call(module, segment, offset, args, returnType) {
         // Get the memory space for the module
         let loadedModule = this._modules.instanceFor(module.name);
         let moduleSegment = (loadedModule.segment << 3) | 0x3;
@@ -300,14 +252,14 @@ export class Scheduler {
         this._machine.cpu.core.write16(moduleSegment, 1, offset);
         this._machine.cpu.core.write16(moduleSegment, 3, segment);
 
+        let handle = this.active;
+
         // Keep track of the current CS:IP by halting the task
         this.task.halt();
 
         // Preserve context
+        console.log("pushContext");
         this.task.pushContext(this._machine.cpu.state);
-
-        // Preserve callback
-        this.task.pushCallback([callback, returnType]);
 
         // Set up stack
 
@@ -358,19 +310,31 @@ export class Scheduler {
         this._machine.cpu.core.cs = moduleSegment;
         this._machine.cpu.core.ip = 0;
 
+        let pendingResolve = null;
+        let ret = new Promise( (resolve) => {
+            pendingResolve = resolve;
+        });
+
+        while (!pendingResolve) {}
+        this.task.pushCall([pendingResolve, returnType]);
+
         // The task is stopped until it yields
         this.task.run();
+        this.resume(handle);
+
+        return ret;
     }
 
     callReturn() {
-        //console.log("Callback return");
+        console.log("returning");
         let currentTask = this.active;
 
         // Stop execution
         this.task.halt();
 
-        // Pull the call item off its call stack
-        this.task.pullCall();
+        // Pull the callback item off its call stack
+        let call = this.task.pullCall();
+        console.log("pulled the call", call);
 
         // The task is no longer handling a call (unless returning to a
         // prior call)
@@ -379,26 +343,41 @@ export class Scheduler {
             this.task.currentCall = this.task.popPending();
         }
 
+        // Interpret the result
+        let result = 0;
+        if (call && call[1]) {
+            if (Types.sizeof(call[1]) == 1) {
+                result = this._machine.cpu.core.al;
+            }
+            else if (Types.sizeof(call[1]) == 2) {
+                result = this._machine.cpu.core.ax;
+            }
+            else if (Types.sizeof(call[1]) == 4) {
+                result = this._machine.cpu.core.ax;
+                result |= (this._machine.cpu.core.dx << 16);
+            }
+        }
+
         // Get the CS:IP from the task
+        console.log("popContext");
         let context = this.task.popContext();
 
-        // Get the callback
-        let callback = this.task.popCallback();
-
         // Reset CS:IP to the point after the syscall
-        this._machine.cpu.state = context;
+        if (context != 1) {
+            this._machine.cpu.state = context;
+        }
 
-        //console.log("Resuming at", context.cs >> 3, ":", context.ip);
+        console.log("Resuming at", this._machine.cpu.core.cs.toString(16), ":", this._machine.cpu.core.ip.toString(16));
 
         // If there is a pending callback, we will call that
         // This callback may request a call into the VM again...
-        if (callback[0]) {
-            let result = callback[0]();
-
-            this.interpretReturnValue(result, callback[1]);
+        if (call) {
+            call[0](result);
         }
 
-        // Resume the task
-        this.resume(currentTask);
+        // And then resume where we left off
+        if (!this.task.pollCall() && !call) {
+            this.resume(currentTask);
+        }
     }
 }

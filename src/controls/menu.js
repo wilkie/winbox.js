@@ -107,6 +107,7 @@ export class Menu extends Window {
         // Add a invoking button
         this._button = new Button(this._options);
         this._button.alignment = "left";
+        this._button.hide();
         this.append(this._button);
 
         // Add a listing
@@ -116,10 +117,13 @@ export class Menu extends Window {
         // Create the dropdown menu window
         let subWindow = new SubMenu({ caption: "SUBMENU-" + this.options.caption });
         subWindow.on("blur", (event) => {
-            console.log("blur dammit", event);
             if (event && event.target &&
                 (event.target.window === this._button ||
-                 event.target.window.parent === this._button)) {
+                 event.target.window.parent === this._button ||
+                 event.target.window.parent.parent.parent === subWindow)) {
+                console.log("nah, focusing again", this.caption);
+                this.focus();
+                subWindow.focus();
             }
             else {
                 subWindow.destroy();
@@ -129,8 +133,9 @@ export class Menu extends Window {
 
         // Add events
         this._button.on("client-mousedown", (event) => {
-            this.focus();
             this.open();
+            this.focus();
+
             let current = this.parent;
             while(current && current.element.tagName.toUpperCase() != "NAV") {
                 current = current.parent;
@@ -138,6 +143,14 @@ export class Menu extends Window {
 
             if (current) {
                 let box = current.element.getBoundingClientRect();
+
+                // We also want to include the title-bar area if possible
+                if (!(this.parent.parent instanceof Menu)) {
+                    // TODO: handle this better
+                    box.y -= 19;
+                    box.height += 19;
+                }
+
                 this.root._draggablePlane.mask(box,
                     current.moveDragEndEvent.bind(current));
             }
@@ -145,8 +158,8 @@ export class Menu extends Window {
 
         this._button.on("mouseenter", (event) => {
             if (this.parent.focused && event.buttons == 1) {
-                this.focus();
                 this.open();
+                this.focus();
             }
         });
 
@@ -163,6 +176,7 @@ export class Menu extends Window {
             if (this.root) {
                 this.root._draggablePlane.hide();
             }
+            console.log("click?");
         });
 
         this._button.on("client-mouseup", (event) => {

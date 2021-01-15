@@ -397,7 +397,6 @@ export class Win16 {
             return;
         }
 
-        console.log("helo?");
         this.scheduler.resume(handle);
     }
 
@@ -405,6 +404,10 @@ export class Win16 {
         // Get the module from the CS
         let segment = this._machine.cpu.core.cs >> 3;
         let module = this._modules.fromSegment(segment);
+
+        // Preserve context (will just thrown out)
+        console.log("pushContext (1)");
+        this.scheduler.task.pushContext(1);
 
         // Get the ordinal from the step
         let ip = this._machine.cpu.core.ip & ~(module.step - 1);
@@ -524,16 +527,21 @@ export class Win16 {
 
         // Call normal function
         if (module.instance.exports[ip][1] != "PeekMessage" && module.instance.exports[ip][1] != "GetTickCount") {
-            //console.log("Calling", module.instance.name, module.instance.exports[ip][1], callerCS.toString(16), ":", (callerIP - 5).toString(16), args);
+            console.log("Calling", module.instance.name, module.instance.exports[ip][1], callerCS.toString(16), ":", (callerIP - 5).toString(16), args);
+            console.log(this._machine.cpu.core.cs.toString(16), this._machine.cpu.core.ip.toString(16));
         }
 
         if (implementation === module.instance.stub) {
             console.log("Stub:", module.instance.name, module.instance.exports[ip][1], callerCS.toString(16), ":", (callerIP - 5).toString(16), args)
         }
 
+        // Halt the task so it won't continue
+        this.scheduler.task.halt();
+
         let result = implementation.bind(this).apply(null, args);
         //console.log("result", result, typeof result === 'function');
 
+        // Interpret the result; possibly resumes the task
         this.scheduler.interpretReturnValue(result, returnType);
     }
 

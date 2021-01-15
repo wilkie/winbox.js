@@ -33,14 +33,12 @@ import { User } from '../user.js';
  *                      message being dispatched, generally the return value is
  *                      ignored.
  */
-export function DispatchMessage(lpmsg) {
+export async function DispatchMessage(lpmsg) {
     // Get the window itself
     let dialog = this.handles.resolve(lpmsg.hwnd);
 
     // Get the window/class for the handle
     let windowClass = this.handles.retrieve(dialog.options.windowClass);
 
-    return [
-        ['callWndProc', windowClass, lpmsg.hwnd, lpmsg.message, lpmsg.wParam, lpmsg.lParam]
-    ];
+    return await this.scheduler.callWndProc(windowClass, lpmsg.hwnd, lpmsg.message, lpmsg.wParam, lpmsg.lParam);
 }

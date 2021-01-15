@@ -53,7 +53,7 @@ import { User, MSG, WINDOWPOS } from '../user.js';
  * @return {Types.BOOL} The return value is nonzero if the window was previously
  *                      visible. It is zero if the window was previously hidden.
  */
-export function ShowWindow(hwnd, nCmdShow) {
+export async function ShowWindow(hwnd, nCmdShow) {
     // Get the window itself
     let dialog = this.handles.resolve(hwnd);
 
@@ -71,89 +71,82 @@ export function ShowWindow(hwnd, nCmdShow) {
 
     // The wParam is TRUE if the window is being shown, FALSE if being hidden
     // The lParam is 0 if WM_SHOWWINDOW is generated from ShowWindow
-    return [
-        ['callWndProc', windowClass, hwnd, User.WM_SHOWWINDOW, dialog.visible ? TRUE : FALSE, 0, () => {
-            // We send a WM_WINDOWPOSCHANGING
-            let windowPos = new WINDOWPOS();
-            windowPos.hwnd = hwnd;
-            windowPos.hwndInsertAfter = NULL;
-            windowPos.x = dialog.x;
-            windowPos.y = dialog.y;
-            windowPos.cx = dialog.width;
-            windowPos.cy = dialog.height;
-            windowPos.flags = User.SWP_SHOWWINDOW | User.SWP_NOSIZE | User.SWP_NOMOVE;
+    console.log("WM_SHOWWINDOW");
+    //await this.scheduler.callWndProc(windowClass, hwnd, User.WM_SHOWWINDOW, dialog.visible ? TRUE : FALSE, 0);
 
-            return [
-                ['callWndProc', windowClass, hwnd, User.WM_WINDOWPOSCHANGING, 0, [windowPos], () => {
-                    if (!(windowPos.flags & User.SWP_NOSIZE)) {
-                        dialog.width = windowPos.cx;
-                        dialog.height = windowPos.cy;
-                    }
+    // We send a WM_WINDOWPOSCHANGING
+    let windowPos = new WINDOWPOS();
+    windowPos.hwnd = hwnd;
+    windowPos.hwndInsertAfter = NULL;
+    windowPos.x = dialog.x;
+    windowPos.y = dialog.y;
+    windowPos.cx = dialog.width;
+    windowPos.cy = dialog.height;
+    windowPos.flags = User.SWP_SHOWWINDOW | User.SWP_NOSIZE | User.SWP_NOMOVE;
 
-                    if (!(windowPos.flags & User.SWP_NOMOVE)) {
-                        dialog.x = windowPos.x;
-                        dialog.y = windowPos.y;
-                    }
+    // Query the window position
+    console.log("WM_WINDOWPOSCHANGING");
+    //await this.scheduler.callWndProc(windowClass, hwnd, User.WM_WINDOWPOSCHANGING, 0, [windowPos]);
 
-                    if (windowPos.flags & User.SWP_SHOWWINDOW) {
-                        switch (nCmdShow) {
-                            case User.SW_HIDE:
-                                dialog.hide();
-                                break;
-                            case User.SW_NORMAL:
-                                dialog.restore();
-                            case User.SW_SHOW:
-                                dialog.show();
-                                break;
-                            case User.SW_MAXIMIZE:
-                                dialog.maximize();
-                                break;
-                            case User.WM_MINIMIZE:
-                                dialog.minimize();
-                                break;
-                        }
+    if (!(windowPos.flags & User.SWP_NOSIZE)) {
+        dialog.width = windowPos.cx;
+        dialog.height = windowPos.cy;
+    }
 
-                        let timesShown = dialog.options.timesShown;
+    if (!(windowPos.flags & User.SWP_NOMOVE)) {
+        dialog.x = windowPos.x;
+        dialog.y = windowPos.y;
+    }
 
-                        if (dialog.visible) {
-                            timesShown++;
-                            dialog.options = Object.assign({}, dialog.options, {
-                                timesShown: timesShown
-                            });
+    if (windowPos.flags & User.SWP_SHOWWINDOW) {
+        switch (nCmdShow) {
+            case User.SW_HIDE:
+                dialog.hide();
+                break;
+            case User.SW_NORMAL:
+                dialog.restore();
+            case User.SW_SHOW:
+                dialog.show();
+                break;
+            case User.SW_MAXIMIZE:
+                dialog.maximize();
+                break;
+            case User.WM_MINIMIZE:
+                dialog.minimize();
+                break;
+        }
 
-                            // Focus on the window
-                            let callStack = SetFocus.bind(this)(hwnd);
+        let timesShown = dialog.options.timesShown;
 
-                            // Remove the return from the SetFocus
-                            callStack.splice(callStack.length - 1, 1);
+        if (dialog.visible) {
+            timesShown++;
+            dialog.options = Object.assign({}, dialog.options, {
+                timesShown: timesShown
+            });
 
-                            // WM_SIZE
-                            let wmSizeLParam = (dialog.width & 0xffff) | ((dialog.height & 0xffff) << 16);
-                            callStack.push([
-                                'callWndProc', windowClass, hwnd, User.WM_SIZE, 0, wmSizeLParam
-                            ]);
+            // Focus on the window
+            //await SetFocus.bind(this)(hwnd);
 
-                            // WM_MOVE
-                            let wmMoveLParam = (dialog.x & 0xffff) | ((dialog.y & 0xffff) << 16);
-                            callStack.push([
-                                'callWndProc', windowClass, hwnd, User.WM_MOVE, 0, wmMoveLParam
-                            ]);
+            // WM_SIZE
+            console.log("WM_SIZE");
+            let wmSizeLParam = (dialog.width & 0xffff) | ((dialog.height & 0xffff) << 16);
+            //await this.scheduler.callWndProc(windowClass, hwnd, User.WM_SIZE, 0, wmSizeLParam);
 
-                            // WM_PAINT
-                            let msg = new MSG();
-                            msg.hwnd = hwnd;
-                            msg.message = User.WM_PAINT;
-                            this.scheduler.task.push(msg);
-                            //callStack.push([
-                            //    'callWndProc', windowClass, hwnd, User.WM_PAINT, 0, 0
-                            //]);
+            // WM_MOVE
+            console.log("WM_MOVE");
+            let wmMoveLParam = (dialog.x & 0xffff) | ((dialog.y & 0xffff) << 16);
+            //await this.scheduler.callWndProc(windowClass, hwnd, User.WM_MOVE, 0, wmMoveLParam);
 
-                            return callStack;
-                        }
-                    }
-                }],
-            ];
-        }],
-        [BOOL, ret]
-    ];
+            // WM_PAINT
+            let msg = new MSG();
+            msg.hwnd = hwnd;
+            msg.message = User.WM_PAINT;
+            this.scheduler.task.push(msg);
+            //await this.scheduler.callWndProc(windowClass, hwnd, User.WM_PAINT, wmMoveLParam);
+        }
+    }
+
+    console.log("SHOWWINDOW DONE", ret);
+
+    return ret;
 }

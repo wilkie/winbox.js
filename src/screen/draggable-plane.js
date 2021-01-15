@@ -19,6 +19,7 @@ export class DraggablePlane {
             let draggable = document.createElement("div");
             draggable.classList.add("__winbox_draggable");
             draggable.style.position = "absolute";
+            //draggable.style.background = "red";
             draggable.style.left = "0";
             draggable.style.top = "0";
             draggable.style.right = "0";
@@ -221,7 +222,7 @@ export class DraggablePlane {
             this._state.endCallback(this._createEvent(event));
         }
 
-        this.hide();
+        this.unmask();
     }
 
     /**
@@ -245,5 +246,3 @@ export class DraggablePlane {
         return event;
     }
 }
-
-export default DraggablePlane;

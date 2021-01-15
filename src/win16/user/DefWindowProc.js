@@ -1,5 +1,11 @@
 "use strict";
 
+import { NULL } from '../consts.js';
+
+import { User, MDICREATESTRUCT } from '../user.js';
+
+import { CreateWindow } from './CreateWindow.js';
+
 /**
  * The **DefWindowProc** function calls the default window procedure. The
  * default window procedure provides default processing for any window messges
@@ -24,11 +30,28 @@
  * @return {Types.LRESULT} The return value is the result of the message
  *                         processing and depends on the message sent.
  */
-export function DefWindowProc(hwnd, uMsg, wParam, lParam) {
+export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
     let dialog = this.handles.resolve(hwnd);
 
     if (!dialog) {
         return 0;
+    }
+
+    let windowClass = this.handles.retrieve(dialog.options.windowClass);
+    if (windowClass.lpszClassName.toUpperCase() === "MDICLIENT") {
+        // This is an MDI client
+        switch (uMsg) {
+            case User.WM_MDICREATE:
+                console.log("AH I SEE");
+
+                let hi = (lParam >> 16) & 0xffff;
+                let lo = lParam & 0xffff;
+                let struct = new MDICREATESTRUCT();
+                struct.loadFromMemory(this.machine.memory, hi >> 3, lo);
+
+                // Create the window and return the new hWnd
+                return await CreateWindow.bind(this)(struct.szClass, struct.szTitle, struct.style, struct.x, struct.y, struct.cx, struct.cy, hwnd, NULL, struct.hOwner, struct.lParam);
+        }
     }
 
     return 0;

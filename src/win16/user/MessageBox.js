@@ -7,7 +7,7 @@ import { Button } from '../../controls/button.js';
 
 import { User } from '../user.js';
 
-export function MessageBox(hwndParent, lpszText, lpszTitle, fuStyle) {
+export async function MessageBox(hwndParent, lpszText, lpszTitle, fuStyle) {
     // Stop the task
     this.scheduler.task.halt();
 

@@ -16,10 +16,6 @@ export class Task {
         this._pendingStack = [];
     }
 
-    set returnValue(procedure) {
-        this._returnValue = procedure;
-    }
-
     get currentCall() {
         return this._currentCall;
     }
@@ -73,12 +69,6 @@ export class Task {
     }
 
     run() {
-        if (this._returnValue) {
-            // Call the return value procedure
-            this._returnValue();
-            this._returnValue = null;
-        }
-
         this._stopped = false;
     }
 
@@ -108,7 +98,7 @@ export class Task {
     }
     
     pullCall() {
-        return this._callStack.shift();
+        return this._callStack.pop();
     }
 
     pollCall() {
@@ -143,11 +133,21 @@ export class Task {
         return this._callbackStack.splice(this._callbackStack.length - 1, 1)[0];
     }
 
+    async pull() {
+    }
+
     /**
      * Pushes a window message to the message queue.
      */
     push(message) {
-        this._messages.push(message);
+        if (this._messageLock) {
+            let promise = this._messageLock;
+            this._messageLock = null;
+            promise(message);
+        }
+        else {
+            this._messages.push(message);
+        }
     }
 
     /**
@@ -164,9 +164,13 @@ export class Task {
     /**
      * Pulls the oldest message from the queue or returns null if empty.
      */
-    pull() {
+    async pull() {
         if (this._messages.length == 0) {
-            return null;
+            let promise = new Promise( (resolve) => {
+                this._messageLock = resolve;
+            });
+
+            return promise;
         }
 
         let ret = this._messages.splice(0, 1)[0];

@@ -4,6 +4,7 @@ import { NULL } from '../consts.js';
 
 import { Executable } from '../../executable.js';
 
+import { FixedWindow } from '../../windows/fixed-window.js';
 import { SubMenu, Menu } from '../../controls/menu.js';
 
 /**
@@ -120,10 +121,26 @@ export async function LoadMenu(hinst, lpszMenuName) {
             title = title || "-";
 
             let menu = new Menu({ caption: title });
+            menu.data = {id: id}
 
             if (flags & 0x1) {
                 menu.disabled = true;
             }
+
+            menu.on("click", (e) => {
+                console.log("WHY IS THE ID", id, menu.caption);
+                let dialog = menu.parent;
+                while (dialog.parent && !(dialog instanceof FixedWindow)) {
+                    dialog = dialog.parent;
+                }
+
+                if (dialog && dialog.data.hWnd && id) {
+                    // We need to send the WM_COMMAND message with the id
+                    let task = this.handles.resolve(dialog.data.hInstance);
+                    this.windows.createMessage(dialog.data.hInstance, task, dialog.data.hWnd, 'command', {id: menu.data.id}); 
+                    console.log("menu clicked", dialog.data.hInstance, dialog.data.hWnd, menu.data.id);
+                }
+            });
 
             console.log("menu item", flags, id, title, "appending to", menuStack[menuStack.length - 1].caption);
 

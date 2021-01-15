@@ -120,7 +120,7 @@ export class HandleManager {
     }
 
     retrieve(name) {
-        let handle = this._names[name];
+        let handle = this._names[name.toUpperCase()];
 
         if (!handle) {
             return null;
@@ -163,8 +163,8 @@ export class HandleManager {
 
     register(handle, name) {
         if (this._handles[handle]) {
-            this._handles[handle].name = name;
-            this._names[name] = handle;
+            this._handles[handle].name = name.toUpperCase();
+            this._names[name.toUpperCase()] = handle;
         }
     }
 }

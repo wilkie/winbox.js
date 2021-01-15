@@ -8,7 +8,7 @@ import { User } from '../user.js';
 
 import { FixedWindow } from '../../windows/fixed-window.js';
 
-export function SetFocus(hwnd) {
+export async function SetFocus(hwnd) {
     // Get the window itself
     let dialog = this.handles.resolve(hwnd);
 
@@ -30,51 +30,27 @@ export function SetFocus(hwnd) {
     let ret = [];
 
     // If the application is receiving focus
-    ret.push([
-        'callWndProc', windowClass, hwnd, User.WM_QUERYNEWPALETTE, 0, 0
-    ]);
-    ret.push([
-        'callWndProc', windowClass, hwnd, User.WM_WINDOWPOSCHANGING, 0, 0
-    ]);
-    ret.push([
-        'callWndProc', windowClass, hwnd, User.WM_ACTIVATEAPP, 0, 0
-    ]);
+    await this.scheduler.callWndProc(windowClass, hwnd, User.WM_QUERYNEWPALETTE, 0, 0);
+    await this.scheduler.callWndProc(windowClass, hwnd, User.WM_WINDOWPOSCHANGING, 0, 0);
+    await this.scheduler.callWndProc(windowClass, hwnd, User.WM_ACTIVATEAPP, 0, 0);
 
     // Now we do the normal activation, if a bordered window
     if (dialog instanceof FixedWindow) {
-        ret.push([
-            'callWndProc', windowClass, hwnd, User.WM_NCACTIVATE, 0, 0
-        ]);
-        ret.push([
-            'callWndProc', windowClass, hwnd, User.WM_GETTEXT, 0, 0
-        ]);
+        await this.scheduler.callWndProc(windowClass, hwnd, User.WM_NCACTIVATE, 0, 0);
+        await this.scheduler.callWndProc(windowClass, hwnd, User.WM_GETTEXT, 0, 0);
         // TODO: WA_CLICKACTIVE?
         // TODO: fMinimized/hwnd of deactivated window
-        ret.push([
-            'callWndProc', windowClass, hwnd, User.WM_ACTIVATE, User.WA_ACTIVE, 0
-        ]);
+        await this.scheduler.callWndProc(windowClass, hwnd, User.WM_ACTIVATE, User.WA_ACTIVE, 0);
     }
 
     // And the actual focus event
-    ret.push([
-        'callWndProc', windowClass, hwnd, User.WM_SETFOCUS, 0, 0
-    ]);
+    await this.scheduler.callWndProc(windowClass, hwnd, User.WM_SETFOCUS, 0, 0);
 
     // And we check invalidated regions and repaint
-    ret.push([
-        'callWndProc', windowClass, hwnd, User.WM_NCPAINT, 0, 0
-    ]);
-    ret.push([
-        'callWndProc', windowClass, hwnd, User.WM_GETTEXT, 0, 0
-    ]);
-    ret.push([
-        'callWndProc', windowClass, hwnd, User.WM_ERASEBKGND, 0, 0
-    ]);
-    ret.push([
-        'callWndProc', windowClass, hwnd, User.WM_PAINT, 0, 0
-    ]);
-
-    ret.push([HWND, NULL]);
+    await this.scheduler.callWndProc(windowClass, hwnd, User.WM_NCPAINT, 0, 0);
+    await this.scheduler.callWndProc(windowClass, hwnd, User.WM_GETTEXT, 0, 0);
+    await this.scheduler.callWndProc(windowClass, hwnd, User.WM_ERASEBKGND, 0, 0);
+    await this.scheduler.callWndProc(windowClass, hwnd, User.WM_PAINT, 0, 0);
 
     // We need to send a few messages depending on what the focus is
     // If it is the main window of an application, we send a
@@ -83,5 +59,5 @@ export function SetFocus(hwnd) {
     // order.
 
     // When the window proc returns...
-    return ret;
+    return NULL;
 }

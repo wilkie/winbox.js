@@ -77,6 +77,29 @@ export class CPU {
     }
 
     /**
+     * Runs the CPU for the given amount of wall time.
+     * 
+     * Stops when there is an interrupt or when the CPU is told to halt.
+     */
+    run(period) {
+        let time = 0;
+        function step(elapsed) {
+            time += elapsed;
+            for (let i = 0; i < 150; i++) {
+                // Step
+                this.step();
+
+                // Do it again
+                if (time < period) {
+                    window.requestAnimationFrame(step.bind(this));
+                }
+            }
+        }
+
+        window.requestAnimationFrame(step.bind(this));
+    }
+
+    /**
      * Performs a CPU step.
      */
     step() {

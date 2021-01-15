@@ -43,9 +43,7 @@ export async function RegisterClass(lpwc) {
     // Get the menu, if provided
     let menuHandle = null;
     if (lpwc.lpszMenuName) {
-        console.log("retrieving menu");
         menuHandle = await LoadMenu.bind(this)(lpwc.hInstance, lpwc.lpszMenuName);
-        console.log(lpwc);
     }
 
     // Create an ATOM for the class
@@ -55,6 +53,8 @@ export async function RegisterClass(lpwc) {
         // Register a name for the ATOM
         this.handles.register(handle, lpwc.lpszClassName);
     }
+
+    console.log("returning", handle);
 
     // Return the ATOM handle
     return handle;

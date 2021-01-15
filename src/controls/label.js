@@ -133,7 +133,7 @@ export class Label extends Window {
     }
 
     set caption(value) {
-        this.options.caption = value;
+        this.options.caption = value || "";
 
         let textValue = value.replace('&', '');
 

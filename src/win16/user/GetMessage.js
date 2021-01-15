@@ -61,26 +61,23 @@ import { TRUE, FALSE } from '../consts.js';
  *                      `WM_QUIT` is retrieved. It is zero if the `WM_QUIT`
  *                      message is retrieved.
  */
-export function GetMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax) {
-    return () => {
-        // Get message
-        let msg = this.scheduler.task.pull();
+export async function GetMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax) {
+    // Wait until we have a message, and pull it
+    let msg = await this.scheduler.task.pull();
 
-        // Copy message to memory
-        lpmsg.hwnd = msg.hwnd;
-        lpmsg.message = msg.message;
-        lpmsg.wParam = msg.wParam;
-        lpmsg.lParam = msg.lParam;
-        lpmsg.time = msg.time;
-        lpmsg.pt.x = msg.pt.x;
-        lpmsg.pt.y = msg.pt.y;
+    // Copy message to memory
+    lpmsg.hwnd = msg.hwnd;
+    lpmsg.message = msg.message;
+    lpmsg.wParam = msg.wParam;
+    lpmsg.lParam = msg.lParam;
+    lpmsg.time = msg.time;
+    lpmsg.pt.x = msg.pt.x;
+    lpmsg.pt.y = msg.pt.y;
 
-        //console.log("returning", lpmsg);
-        if (msg.message == User.WM_QUIT) {
-            return FALSE;
-        }
-        else {
-            return TRUE;
-        }
-    };
+    //console.log("returning", lpmsg);
+    if (msg.message == User.WM_QUIT) {
+        return FALSE;
+    }
+
+    return TRUE;
 }

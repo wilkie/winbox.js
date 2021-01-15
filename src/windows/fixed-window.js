@@ -17,6 +17,7 @@ export class SystemMenu extends Menu {
         // Add a specific class
         this.element.querySelector("button").classList.add("__winbox_close-button");
 
+        this._button.show();
         this._button.on("mousedown", (event) => {
             //this._ncMouseDown = true;
             //this.options._window.trigger("nonclient-mousedown", event);
@@ -266,6 +267,7 @@ export class FixedWindow extends Window {
         this.on("drag-end", (data) => {
             if (this._titleBarClicked) {
                 this.trigger("move-end", data);
+                this._titleBarClicked = false;
             }
         });
 

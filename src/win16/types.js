@@ -88,7 +88,7 @@ export var NEARPTR = 5;
  * @typedef {number} FARPTR
  * @memberof Types
  */
-export var FARPTR = 14;
+export var FARPTR = 40;
 
 /**
  * A 16-bit pointer to a C-string.
@@ -133,6 +133,7 @@ export var HWND = 9;
 export var HANDLE = 11;
 export var HMENU = 12;
 export var HINSTANCE = 13;
+export var HACCEL = 14;
 export var HBRUSH = 20;
 export var HRGN = 26;
 export var HICON = 21;
@@ -205,6 +206,7 @@ export class Types {
             case HICON:
             case HBITMAP:
             case HMENU:
+            case HACCEL:
             case HDC:
             case HANDLE:
             case HGLOBAL:
@@ -279,6 +281,7 @@ export class Types {
             case HBITMAP:
             case WNDPROC:
             case HMENU:
+            case HACCEL:
             case HDC:
             case HANDLE:
             case HGLOBAL:
@@ -617,6 +620,7 @@ Types.HLOCAL = HLOCAL;
 Types.HANDLE = HANDLE;
 Types.HWND = HWND;
 Types.HMENU = HMENU;
+Types.HACCEL = HACCEL;
 Types.HINSTANCE = HINSTANCE;
 Types.NEARPTR = NEARPTR;
 Types.LPCSTR = LPCSTR;

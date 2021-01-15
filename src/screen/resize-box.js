@@ -59,6 +59,7 @@ export class ResizeBox extends EventComponent {
     }
 
     show() {
+        console.log("resize show?");
         this.element.style.visibility = "visible";
 
         // Needs to be the bottom most thing (before the dragging plane)

@@ -4,7 +4,7 @@ import { NULL } from '../consts.js';
 
 import { HWND } from '../types.js';
 
-import { User, MSG, MINMAXINFO, CREATESTRUCT } from '../user.js';
+import { User, MSG, MINMAXINFO, CREATESTRUCT, WNDCLASS } from '../user.js';
 
 import { Bitmap } from '../../raster/bitmap.js';
 import { Palette } from '../../raster/palette.js';
@@ -26,9 +26,9 @@ import { SizableWindow } from '../../windows/sizable-window.js';
  * @returns {Types.HWND} The return value is the handle of the new window if
  *                       the function is successful. Otherwise, it is NULL.
  */
-export function CreateWindow(lpszClassName, lpszWindowName,
-                             dwStyle, x, y, nWidth, nHeight,
-                             hwndParent, hmenu, hinst, lpvParam) {
+export async function CreateWindow(lpszClassName, lpszWindowName,
+                                   dwStyle, x, y, nWidth, nHeight,
+                                   hwndParent, hmenu, hinst, lpvParam) {
     // Look up the parent (if NULL, we create a window in the desktop space)
     let parentWindow = null;
     if (hwndParent == NULL) {
@@ -74,22 +74,14 @@ export function CreateWindow(lpszClassName, lpszWindowName,
     nHeight = 500;
     //*/
 
-    if (nWidth != User.CW_USEDEFAULT) {
-        dialog.resize(nWidth, dialog.height);
-    }
-
-    if (nHeight != User.CW_USEDEFAULT) {
-        dialog.resize(dialog.width, nHeight);
+    if (nWidth != User.CW_USEDEFAULT && nHeight != User.CW_USEDEFAULT) {
+        dialog.resize(nWidth, nHeight);
     }
 
     dialog.center();
 
-    if (x != User.CW_USEDEFAULT) {
-        dialog.move(x, dialog.y);
-    }
-
-    if (y != User.CW_USEDEFAULT) {
-        dialog.move(dialog.x, y);
+    if (x != User.CW_USEDEFAULT && y != User.CW_USEDEFAULT) {
+        dialog.move(x, y);
     }
 
     // Set default bitmap (8bpp)
@@ -100,15 +92,36 @@ export function CreateWindow(lpszClassName, lpszWindowName,
     dialog.hide();
 
     let windowClass = this.handles.retrieve(lpszClassName);
+    if (!windowClass) {
+        console.log("CANNOT FIND WINDOW CLASS", lpszClassName);
+
+        if (lpszClassName.toUpperCase() === "MDICLIENT") {
+            console.log("loading MDICLIENT");
+            windowClass = new WNDCLASS();
+
+            // The default window class for mdiclient is to call DefWindowProc
+            let module = this.modules.load(User);
+
+            // Resolve the ordinal for DefWindowProc
+            let defProc = module.lookup(107);
+            defProc = (((defProc.segment << 3) | 0x3) << 16) | defProc.offset;
+            windowClass.lpfnWndProc = defProc;
+            windowClass.lpszClassName = "MDICLIENT";
+
+            let handle = this.handles.allocate(windowClass);
+            this.handles.register(handle, "MDICLIENT");
+        }
+    }
 
     let hWnd = this.handles.allocate(dialog);
+    console.log("CREATED WINDOW", hWnd);
 
     let taskHandle = this.scheduler.active;
     let task = this.handles.resolve(taskHandle);
 
     this.windows.register(taskHandle, task, hWnd, dialog);
 
-    if (windowClass._menuHandle) {
+    if (windowClass && windowClass._menuHandle) {
         let menu = this.handles.resolve(windowClass._menuHandle);
         dialog.append(menu);
     }
@@ -117,7 +130,6 @@ export function CreateWindow(lpszClassName, lpszWindowName,
     // TODO: WM_NCCREATE params
     // TODO: WM_NCCALCSIZE params
     // TODO: WM_CREATE params
-
     let mmi = new MINMAXINFO();
     let createstruct = new CREATESTRUCT();
     createstruct.lpCreateParams = lpvParam;
@@ -129,35 +141,35 @@ export function CreateWindow(lpszClassName, lpszWindowName,
     createstruct.x = x;
     createstruct.y = y;
     createstruct.style = dwStyle;
-    createstruct.lpszName = (lpszWindowName.segment << 16) | lpszWindowName.offset;
+    if (!lpszWindowName) {
+        createstruct.lpszName = 0;
+    }
+    else {
+        createstruct.lpszName = (lpszWindowName.segment << 16) | lpszWindowName.offset;
+    }
     createstruct.lpszClass = (lpszClassName.segment << 16) | lpszClassName.offset;
     createstruct.dwExStyle = 0;
 
     dialog._createStruct = createstruct;
-    //console.log("create struct???", createstruct.cy, createstruct.cx);
 
     // We asynchronously halt and call the window message procedure for the
     // initialization messages:
-    let ret = [
-        ['callWndProc', windowClass, hWnd, User.WM_GETMINMAXINFO, 0, [mmi]],
-        ['callWndProc', windowClass, hWnd, User.WM_NCCREATE, 0, 0],
-        ['callWndProc', windowClass, hWnd, User.WM_NCCALCSIZE, 0, 0],
-        ['callWndProc', windowClass, hWnd, User.WM_CREATE, 0, [createstruct]],
-    ];
+    console.log("WM_GETMINMAXINFO");
+    //await this.scheduler.callWndProc(windowClass, hWnd, User.WM_GETMINMAXINFO, 0, [mmi]);
+    console.log("WM_NCCREATE");
+    //await this.scheduler.callWndProc(windowClass, hWnd, User.WM_NCCREATE, 0, 0);
+    console.log("WM_NCCALCSIZE");
+    //await this.scheduler.callWndProc(windowClass, hWnd, User.WM_NCCALCSIZE, 0, 0);
+    console.log("WM_CREATE");
+    await this.scheduler.callWndProc(windowClass, hWnd, User.WM_CREATE, 0, [createstruct]);
 
     // If we have a parent, we notify it of the WM_CREATE
     if (hwndParent) {
-        // lo-word is hWnd of child
-        // hi-word is identifier of child
+        console.log("WM_PARENTNOTIFY");
         let notifyParam = hWnd & 0xffff;
-        ret.push([
-            'callWndProc', windowClass, hWnd,
-            User.WM_PARENTNOTIFY, User.WM_CREATE, notifyParam
-        ]);
+        //await this.scheduler.callWndProc(windowClass, hWnd, User.WM_PARENTNOTIFY, User.WM_CREATE, notifyParam);
     }
 
-    // Push return value of CreateWindow
-    ret.push([HWND, hWnd]);
-
-    return ret;
+    console.log("FINISING UP CREATEWINDOW", hWnd);
+    return hWnd;
 }

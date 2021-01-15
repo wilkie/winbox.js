@@ -6,7 +6,7 @@ import { Module } from './module.js';
 
 import { BYTE, UBYTE, INT, UINT, LONG, ULONG,
          DWORD, HLOCAL, HGLOBAL, HANDLE, ATOM, LRESULT,
-         HMENU, HINSTANCE, WPARAM, LPARAM, HDC, HRGN,
+         HMENU, HACCEL, HINSTANCE, WPARAM, LPARAM, HDC, HRGN,
          HBRUSH, HICON, HCURSOR, WNDPROC, VARIADIC, HBITMAP,
          BOOL, NEARPTR, FARPTR, LPCSTR, HWND, Struct } from './types.js';
 
@@ -41,6 +41,7 @@ import { SendMessage } from './user/SendMessage.js';
 import { SetFocus } from './user/SetFocus.js';
 import { SetWindowText } from './user/SetWindowText.js';
 import { ShowWindow } from './user/ShowWindow.js';
+import { TranslateAccelerator } from './user/TranslateAccelerator.js';
 import { TranslateMessage } from './user/TranslateMessage.js';
 import { UpdateWindow } from './user/UpdateWindow.js';
 import { wsprintf } from './user/wsprintf.js';
@@ -257,7 +258,7 @@ export class User extends Module {
             [LoadBitmap, "LoadBitmap", 6, [HINSTANCE, DWORD], HBITMAP],
             [LoadString, "LoadString", 10, [HINSTANCE, UINT, FARPTR, INT], INT],
             [User.stub, "LoadAccelerators", 6],
-            [User.stub, "TranslateAccelerator", 8],
+            [TranslateAccelerator, "TranslateAccelerator", 8, [HWND, HACCEL, [MSG]], BOOL],
             [User.stub, "GetSystemMetrics", 2],
             // 180 //
             [User.stub, "GetSysColor", 0],
@@ -707,6 +708,27 @@ export class CREATESTRUCT extends Struct {
             ['lpszName', FARPTR],
             ['lpszClass', FARPTR],
             ['dwExStyle', DWORD]
+        ]);
+    }
+}
+
+/**
+ * The **MDICREATESTRUCT** structure contains information about the class,
+ * title, owner, location, and size of a multiple document interface (MDI) child
+ * window.
+ */
+export class MDICREATESTRUCT extends Struct {
+    constructor() {
+        super([
+            ['szClass', LPCSTR],
+            ['szTitle', LPCSTR],
+            ['hOwner', HINSTANCE], 
+            ['x', INT],
+            ['y', INT],
+            ['cx', INT],
+            ['cy', INT],
+            ['style', DWORD],
+            ['lParam', LPARAM]
         ]);
     }
 }

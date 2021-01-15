@@ -58,6 +58,14 @@ export class Window extends EventComponent {
         return this._id;
     }
 
+    get data() {
+        return this._data || {};
+    }
+
+    set data(value) {
+        this._data = value;
+    }
+
     get disabled() {
         return this._disabled;
     }
@@ -878,7 +886,9 @@ export class Window extends EventComponent {
     }
 
     nonClientMouseDownEvent(event) {
-        event.stopPropagation();
+        if (event.stopPropagation) {
+            event.stopPropagation();
+        }
 
         let data = {
             x: event.offsetX,

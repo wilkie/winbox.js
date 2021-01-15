@@ -22,7 +22,7 @@ export class I286 {
     }
 
     debug(str) {
-        if (this._options.logInstructions) {
+        if ( this._options.logInstructions) {
             console.log("D:", ...arguments);
         }
     }

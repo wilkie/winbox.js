@@ -2,7 +2,7 @@
 
 import { TRUE, FALSE, NULL } from '../consts.js';
 
-import { BOOL } from '../types.js';
+import { BOOL, LRESULT } from '../types.js';
 
 import { User, MSG } from '../user.js';
 
@@ -29,16 +29,19 @@ import { User, MSG } from '../user.js';
  * @return {Types.BOOL} The return value specifies the result of the message
  *                      processing and depends on the message sent.
  */
-export function SendMessage(hwnd, uMsg, wParam, lParam) {
+export async function SendMessage(hwnd, uMsg, wParam, lParam) {
     // Get the window itself
     let dialog = this.handles.resolve(hwnd);
+    console.log(dialog, dialog.options);
 
     // Get the window/class for the handle
     let windowClass = this.handles.retrieve(dialog.options.windowClass);
 
     // Send the message
     // TODO: handle result?
-    return [
-        ['callWndProc', windowClass, hwnd, uMsg, wParam, lParam, () => {}]
-    ];
+    console.log("sendmessage to:", windowClass);
+    let result = await this.scheduler.callWndProc(windowClass, hwnd, uMsg, wParam, lParam);
+
+    console.log("sendmessage done", result.toString(16));
+    return result;
 }

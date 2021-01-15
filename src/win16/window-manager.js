@@ -14,6 +14,11 @@ export class WindowManager {
     }
 
     register(taskHandle, task, hWnd, windowInstance) {
+        let data = windowInstance.data;
+        data.hWnd = hWnd;
+        data.hInstance = taskHandle;
+        windowInstance.data = data;
+
         // Capture events
         ['client-mousedown', 'mousemove',
          'focus', 'client-keydown', 'client-keyup'].forEach( (event) => {
@@ -161,6 +166,16 @@ export class WindowManager {
         else if (event === 'focus') {
             //SetFocus.bind(this._win16)(hWnd);
         }
+        else if (event === 'command') {
+            // A menu was clicked or some other command event
+            let msg = new MSG();
+            msg.hwnd = hWnd;
+            msg.message = User.WM_COMMAND;
+            msg.wParam = data.id;
+            msg.lParam = 0;
+            messages.push(msg);
+            console.log("sending", msg);
+        }
 
         // If we have a new message, post it to the queue.
         // If the task is running...
@@ -169,7 +184,7 @@ export class WindowManager {
             messages.forEach( (msg) => {
                 msg.time = (new Date).getTime() - this._startTime;
                 task.push(msg);
-                this._scheduler.resume(taskHandle);
+                //this._scheduler.resume(taskHandle);
             });
         }
     }
