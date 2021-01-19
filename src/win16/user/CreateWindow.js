@@ -155,11 +155,11 @@ export async function CreateWindow(lpszClassName, lpszWindowName,
     // We asynchronously halt and call the window message procedure for the
     // initialization messages:
     console.log("WM_GETMINMAXINFO");
-    //await this.scheduler.callWndProc(windowClass, hWnd, User.WM_GETMINMAXINFO, 0, [mmi]);
+    await this.scheduler.callWndProc(windowClass, hWnd, User.WM_GETMINMAXINFO, 0, [mmi]);
     console.log("WM_NCCREATE");
-    //await this.scheduler.callWndProc(windowClass, hWnd, User.WM_NCCREATE, 0, 0);
+    await this.scheduler.callWndProc(windowClass, hWnd, User.WM_NCCREATE, 0, 0);
     console.log("WM_NCCALCSIZE");
-    //await this.scheduler.callWndProc(windowClass, hWnd, User.WM_NCCALCSIZE, 0, 0);
+    await this.scheduler.callWndProc(windowClass, hWnd, User.WM_NCCALCSIZE, 0, 0);
     console.log("WM_CREATE");
     await this.scheduler.callWndProc(windowClass, hWnd, User.WM_CREATE, 0, [createstruct]);
 
@@ -167,7 +167,7 @@ export async function CreateWindow(lpszClassName, lpszWindowName,
     if (hwndParent) {
         console.log("WM_PARENTNOTIFY");
         let notifyParam = hWnd & 0xffff;
-        //await this.scheduler.callWndProc(windowClass, hWnd, User.WM_PARENTNOTIFY, User.WM_CREATE, notifyParam);
+        await this.scheduler.callWndProc(windowClass, hWnd, User.WM_PARENTNOTIFY, User.WM_CREATE, notifyParam);
     }
 
     console.log("FINISING UP CREATEWINDOW", hWnd);

@@ -81,8 +81,8 @@ export class Win16 {
         this._classes = {};
 
         // Register system calls
-        machine.cpu.onInterrupt(0x80, this.syscallInvoke.bind(this));
-        machine.cpu.onInterrupt(0x81, this.syscallCallbackReturn.bind(this));
+        machine.interrupts.on(0x80, this.syscallInvoke.bind(this));
+        machine.interrupts.on(0x81, this.syscallCallbackReturn.bind(this));
 
         // Create a Linker
         this._linker = new Linker(this._memory, this._modules);
@@ -406,7 +406,6 @@ export class Win16 {
         let module = this._modules.fromSegment(segment);
 
         // Preserve context (will just thrown out)
-        console.log("pushContext (1)");
         this.scheduler.task.pushContext(1);
 
         // Get the ordinal from the step
@@ -526,10 +525,10 @@ export class Win16 {
         }
 
         // Call normal function
-        if (module.instance.exports[ip][1] != "PeekMessage" && module.instance.exports[ip][1] != "GetTickCount") {
-            console.log("Calling", module.instance.name, module.instance.exports[ip][1], callerCS.toString(16), ":", (callerIP - 5).toString(16), args);
-            console.log(this._machine.cpu.core.cs.toString(16), this._machine.cpu.core.ip.toString(16));
-        }
+        //if (module.instance.exports[ip][1] != "PeekMessage" && module.instance.exports[ip][1] != "GetTickCount") {
+            //console.log("Calling", module.instance.name, module.instance.exports[ip][1], callerCS.toString(16), ":", (callerIP - 5).toString(16), args);
+            //console.log(this._machine.cpu.core.cs.toString(16), this._machine.cpu.core.ip.toString(16));
+        //}
 
         if (implementation === module.instance.stub) {
             console.log("Stub:", module.instance.name, module.instance.exports[ip][1], callerCS.toString(16), ":", (callerIP - 5).toString(16), args)
@@ -538,11 +537,17 @@ export class Win16 {
         // Halt the task so it won't continue
         this.scheduler.task.halt();
 
+        //let last = (new Date).getTime();
         let result = implementation.bind(this).apply(null, args);
+        //let now = (new Date).getTime();
+        //let elapsed = now - last;
+        //console.log(module.instance.exports[ip][1], "in", elapsed);
         //console.log("result", result, typeof result === 'function');
 
         // Interpret the result; possibly resumes the task
         this.scheduler.interpretReturnValue(result, returnType);
+
+        return false;
     }
 
     /**

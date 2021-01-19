@@ -7,11 +7,10 @@ import { CPU, InvalidInstruction } from '../cpu.js';
  * This class represents the CPU emulation of an Intel 286.
  */
 export class I286 {
-    constructor(cpu, interruptCallback, options = {}) {
+    constructor(cpu, options = {}) {
         this._cpu = cpu;
         this._memory = cpu.memory;
         this._alu = new ALU(this);
-        this._interruptCallback = interruptCallback;
 
         this._registers = new Array(0, 0, 0, 0, 0, 0, 0, 0);
         this._segmentRegisters = new Array(0, 0, 0, 0);
@@ -22,7 +21,7 @@ export class I286 {
     }
 
     debug(str) {
-        if ( this._options.logInstructions) {
+        if (this._options.logInstructions) {
             console.log("D:", ...arguments);
         }
     }
@@ -35,9 +34,8 @@ export class I286 {
             this.push16(code);
         }
 
-        if (index >= 0x16) {
-            return this._interruptCallback(index);
-        }
+        this._cpu.interrupt = index;
+        return;
 
         // Real Mode Interrupt (IVT)
 

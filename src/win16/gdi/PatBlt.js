@@ -94,7 +94,5 @@ export function PatBlt(hdc, nLeftRect, nTopRect, nwidth, nheight, fdwRop) {
             break;
     }
 
-    this.scheduler.pushDirty(surface);
-
     return TRUE;
 }

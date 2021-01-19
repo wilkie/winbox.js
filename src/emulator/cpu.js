@@ -9,13 +9,13 @@ import { I386 } from './core/i386.js';
 export class CPU {
     constructor(memory, options = {}) {
         this._memory = memory;
-        this._core = new I386(this, (index) => {
-            this.raiseInterrupt(index);
-        });
+        this._core = new I386(this);
 
         this._interruptHandlers = new Array(128);
 
         this._instruction = {};
+
+        this._interrupt = null;
 
         this.reset();
     }
@@ -29,6 +29,20 @@ export class CPU {
 
     set state(value) {
         this._core.state = value;
+    }
+
+    /**
+     * Retrieves whether or not an interrupt has been raised and which.
+     */
+    get interrupt() {
+        return this._interrupt;
+    }
+
+    /**
+     * Raises the given interrupt.
+     */
+    set interrupt(index) {
+        this._interrupt = index;
     }
 
     /**
@@ -145,19 +159,6 @@ export class CPU {
      */
     decode(instruction) {
         return this.core.decode(instruction)
-    }
-
-    /**
-     * Raises the given interrupt.
-     */
-    raiseInterrupt(index) {
-        if (this._interruptHandlers[index]) {
-            this._interruptHandlers[index]();
-        }
-        else {
-            // Unknown interrupt
-            throw "Unknown interrupt";
-        }
     }
 
     /**

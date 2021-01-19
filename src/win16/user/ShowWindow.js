@@ -125,24 +125,24 @@ export async function ShowWindow(hwnd, nCmdShow) {
             });
 
             // Focus on the window
-            //await SetFocus.bind(this)(hwnd);
+            await SetFocus.bind(this)(hwnd);
 
             // WM_SIZE
             console.log("WM_SIZE");
             let wmSizeLParam = (dialog.width & 0xffff) | ((dialog.height & 0xffff) << 16);
-            //await this.scheduler.callWndProc(windowClass, hwnd, User.WM_SIZE, 0, wmSizeLParam);
+            await this.scheduler.callWndProc(windowClass, hwnd, User.WM_SIZE, 0, wmSizeLParam);
 
             // WM_MOVE
             console.log("WM_MOVE");
             let wmMoveLParam = (dialog.x & 0xffff) | ((dialog.y & 0xffff) << 16);
-            //await this.scheduler.callWndProc(windowClass, hwnd, User.WM_MOVE, 0, wmMoveLParam);
+            await this.scheduler.callWndProc(windowClass, hwnd, User.WM_MOVE, 0, wmMoveLParam);
 
             // WM_PAINT
             let msg = new MSG();
             msg.hwnd = hwnd;
             msg.message = User.WM_PAINT;
             this.scheduler.task.push(msg);
-            //await this.scheduler.callWndProc(windowClass, hwnd, User.WM_PAINT, wmMoveLParam);
+            await this.scheduler.callWndProc(windowClass, hwnd, User.WM_PAINT, wmMoveLParam);
         }
     }
 

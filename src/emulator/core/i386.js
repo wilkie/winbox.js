@@ -8,8 +8,8 @@ import { CPU, InvalidInstruction } from '../cpu.js';
  * This class represents the CPU emulation of an Intel 386.
  */
 export class I386 extends I286 {
-    constructor(cpu, interruptCallback, options = {}) {
-        super(cpu, interruptCallback, options);
+    constructor(cpu, options = {}) {
+        super(cpu, options);
 
         // Extend the segment registers to account for FS and GS
         this._segmentRegisters.push(0);

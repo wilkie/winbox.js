@@ -3,6 +3,7 @@
 import { CPU } from './cpu.js';
 import { Disk } from './disk.js';
 import { Memory } from './memory.js';
+import { InterruptManager } from './interrupt-manager.js';
 
 /**
  * This class represents the virtual machine.
@@ -13,9 +14,17 @@ export class Machine {
     constructor(options = {}) {
         this._memory = new Memory();
         this._cpu = new CPU(this._memory);
+        this._interrupts = new InterruptManager();
 
         // 40MiB disk, 32KiB block size
         this._disks = [new Disk(40 * 1024 * 1024, 512, 32 * 1024)];
+    }
+
+    /**
+     * Retrieve the interrupt dispatch manager.
+     */
+    get interrupts() {
+        return this._interrupts;
     }
 
     get memory() {

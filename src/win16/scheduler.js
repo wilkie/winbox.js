@@ -15,16 +15,11 @@ export class Scheduler {
         this._tasks = {};
         this._machine = machine;
         this._modules = modules;
-
-        this._dirtySurfaces = [];
+        this._running = false;
+        this._cycles = 0;
+        this._frameStart = (new Date).getTime();
 
         this._currentTask = null;
-    }
-
-    pushDirty(surface) {
-        if (!this._dirtySurfaces.includes(surface)) {
-            this._dirtySurfaces.push(surface);
-        }
     }
 
     /**
@@ -91,56 +86,68 @@ export class Scheduler {
         this.run();
     }
 
+    onInterrupt(index, callback) {
+    }
+
     run() {
+        if (this._running) {
+            //console.log("already running");
+            return;
+        }
+
+        this._running = true;
         function step(elapsed) {
             try {
                 let currentTask = this.task;
+                let taskHandle = this.active;
+                let fps = 30;
+                let freq = Math.floor(1000 / fps) - 5;
 
                 if (currentTask) {
-                    /*let last = (new Date).getTime();
-                    console.log("step", last);*/
+                    let span = 0;
 
-                    let i = 0;
-                    for ( ; i < 50; i++) {
-                        if (currentTask.stopped || currentTask.yield) {
-                            break;
+                    let max = 500;
+                    do {
+                        this._cycles++;
+                        for ( ; (this._cycles % max) != 0; this._cycles++) {
+                            this._machine.cpu.step();
+
+                            if (this._machine.cpu.interrupt !== null) {
+                                // Handle interrupt
+                                //console.log("interrupt", this._machine.cpu.interrupt.toString(16));
+                                this.task.halt();
+                                break;
+                            }
                         }
-                        this._machine.cpu.step();
-                    }
 
-                    this._dirtySurfaces.forEach( (surface) => {
-                        if (surface.dirty) {
-                            surface.update();
-                        }
-                    });
-                    this._dirtySurfaces = [];
-
-                    /*
-                    let now = (new Date).getTime();
-                    let elapsed = now - last;
-                    last = now;
-                    console.log(i, "in", elapsed, now);
-
-                    if (elapsed > 1000) {
-                        console.log("SLOW");
-                    }
-                    */
-
-                    currentTask.yield = false;
+                        let now = (new Date).getTime();
+                        span = now - this._frameStart;
+                    } while ((this._cycles % max) == 0 && span < freq);
 
                     if (!currentTask.stopped) {
+                        this._frameStart = (new Date).getTime();
                         window.requestAnimationFrame(step.bind(this));
+                        return;
+                    }
+                }
+
+                this._running = false;
+
+                if (this._machine.cpu.interrupt !== null) {
+                    let index = this._machine.cpu.interrupt;
+                    this._machine.cpu.interrupt = null;
+                    if (this._machine.interrupts.dispatch(index) === true) {
+                        this.resume(taskHandle);
                     }
                 }
             }
             catch (e) {
                 console.log("error", e);
                 throw e;
-                return;
             }
         }
 
-        window.requestAnimationFrame(step.bind(this));
+        step.bind(this)();
     }
 
     interpretReturnValue(result, returnType) {
@@ -153,7 +160,7 @@ export class Scheduler {
             // The result is actually the async callback, so wait for the
             // Promise to resolve.
             asyncCall.then( (result) => {
-                console.log("finally", result, this._machine.cpu.core.cs.toString(16), this._machine.cpu.core.ip.toString(16));
+                //console.log("finally", result, this._machine.cpu.core.cs.toString(16), this._machine.cpu.core.ip.toString(16));
                 // Actually interpret the proper return result
                 // (sets CPU ax/dx/eax, etc)
                 this.interpretReturnValue(result, returnType);
@@ -181,15 +188,15 @@ export class Scheduler {
             );
 
             // Resume
-            console.log("popContext (1)", context);
-            console.log("Resuming at", callerIP, callerCS, this._machine.cpu.core.cs.toString(16), ":", this._machine.cpu.core.ip.toString(16));
+            //console.log("popContext (1)", context);
+            //console.log("Resuming at", callerIP, callerCS, this._machine.cpu.core.cs.toString(16), ":", this._machine.cpu.core.ip.toString(16));
             this.resume(currentTask);
         }
         else {
             // Resume (CPU context unchanged)
             let context = this.task.popContext();
 
-            console.log("popContext (1)", context);
+            //console.log("popContext (1)", context);
 
             let callerIP = this._machine.cpu.core.read16(
                 this._machine.cpu.core.ss,
@@ -200,7 +207,8 @@ export class Scheduler {
                 this._machine.cpu.core.ss,
                 this._machine.cpu.core.sp + 2
             );
-            console.log("Resuming at", callerIP, callerCS, this._machine.cpu.core.cs.toString(16), ":", this._machine.cpu.core.ip.toString(16));
+
+            //console.log("Resuming at", callerIP, callerCS, this._machine.cpu.core.cs.toString(16), ":", this._machine.cpu.core.ip.toString(16));
             this.resume(currentTask);
         }
     }
@@ -215,7 +223,7 @@ export class Scheduler {
         let newCS = (windowClass.lpfnWndProc >> 16) & 0xffff;
         let newIP = windowClass.lpfnWndProc & 0xffff;
 
-        console.log("calling wndproc", newCS.toString(16), newIP.toString(16));
+        //console.log("calling wndproc", newCS.toString(16), newIP.toString(16));
 
         let args = [
             [hwnd, HWND], [message, UINT],
@@ -258,7 +266,7 @@ export class Scheduler {
         this.task.halt();
 
         // Preserve context
-        console.log("pushContext");
+        //console.log("pushContext");
         this.task.pushContext(this._machine.cpu.state);
 
         // Set up stack
@@ -326,7 +334,7 @@ export class Scheduler {
     }
 
     callReturn() {
-        console.log("returning");
+        //console.log("returning");
         let currentTask = this.active;
 
         // Stop execution
@@ -334,7 +342,7 @@ export class Scheduler {
 
         // Pull the callback item off its call stack
         let call = this.task.pullCall();
-        console.log("pulled the call", call);
+        //console.log("pulled the call", call);
 
         // The task is no longer handling a call (unless returning to a
         // prior call)
@@ -359,7 +367,7 @@ export class Scheduler {
         }
 
         // Get the CS:IP from the task
-        console.log("popContext");
+        //console.log("popContext");
         let context = this.task.popContext();
 
         // Reset CS:IP to the point after the syscall
@@ -367,7 +375,7 @@ export class Scheduler {
             this._machine.cpu.state = context;
         }
 
-        console.log("Resuming at", this._machine.cpu.core.cs.toString(16), ":", this._machine.cpu.core.ip.toString(16));
+        //console.log("Resuming at", this._machine.cpu.core.cs.toString(16), ":", this._machine.cpu.core.ip.toString(16));
 
         // If there is a pending callback, we will call that
         // This callback may request a call into the VM again...

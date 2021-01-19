@@ -116,6 +116,7 @@ export function BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight,
                        hdcSrc, nXSrc, nYSrc, dwRop) {
     // Resolve the source DC handle
     let source = this.handles.resolve(hdcSrc);
+    //console.log("bitblt", this._machine.cpu.core.cs.toString(16), this._machine.cpu.core.ip.toString(16));
     
     i++;
     if (!(i % 10)) {
@@ -216,10 +217,6 @@ export function BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight,
 
         default:
             break;
-    }
-
-    if (destinationBitmap.surface) {
-        this.scheduler.pushDirty(destinationBitmap.surface);
     }
 
     return TRUE;

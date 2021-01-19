@@ -81,12 +81,11 @@ import { User } from '../user.js';
  * @return {Types.BOOL} The return value is nonzero if a message is available.
  *                      Otherwise, it is zero.
  */
-let i = 0;
-export function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuRemove) {
+export async function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuRemove) {
     let msg = this.scheduler.task.peek();
 
     if (fuRemove & User.PM_REMOVE) {
-        msg = this.scheduler.task.pull();
+        msg = await this.scheduler.task.pull();
     }
 
     if (msg) {
@@ -100,18 +99,18 @@ export function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuRemove)
         lpmsg.pt.y = msg.pt.y;
 
         if (!(fuRemove & User.PM_NOYIELD)) {
-            return () => {
-                return TRUE;
-            };
+            return TRUE;
         }
 
         return TRUE;
     }
     else {
-        //i++;
-        if (i == 20) {
-            return () => { return TRUE; };
-        }
         return FALSE;
+        // No message... let's halt
+        return new Promise( (resolve) => {
+            window.setTimeout( () => {
+                resolve(FALSE);
+            }, 50);
+        });
     }
 }
