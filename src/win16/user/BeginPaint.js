@@ -2,6 +2,8 @@
 
 import { NULL } from '../consts.js';
 
+import { User } from '../user.js';
+
 /**
  * The **BeginPaint** function prepares the specified window for painting and
  * fills a **PAINTSTRUCT** structure with information about the painting.
@@ -42,13 +44,16 @@ import { NULL } from '../consts.js';
  * @return {Types.HDC} The return value is the handle of the device context for
  *                     the given window if the function is successful.
  */
-export function BeginPaint(hwnd, lpps) {
+export async function BeginPaint(hwnd, lpps) {
     // Get the window
     let dialog = this.handles.resolve(hwnd);
 
     if (!dialog) {
         return NULL;
     }
+
+    // Get the window/class for the handle
+    let windowClass = this.handles.retrieve(dialog.options.windowClass);
 
     // Get the surface
     let surface = dialog.surface;
@@ -57,6 +62,11 @@ export function BeginPaint(hwnd, lpps) {
     let dc = this.handles.allocate(surface);
 
     // TODO: erase bkgnd message and paint
+    if (dialog.data.erase) {
+        dialog.data.erase = false;
+
+        await this.scheduler.callWndProc(windowClass, hwnd, User.WM_ERASEBKGND, 0, 0);
+    }
 
     // Set PAINTSTRUCT properties
     lpps.hdc = dc;

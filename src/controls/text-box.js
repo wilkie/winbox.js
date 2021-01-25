@@ -337,9 +337,9 @@ export class TextBox extends Window {
         this._input.value = value;
 
         this._caption.textContent = value;
-        if (this._options.font &&
-            this._options.font.toLowerCase().endsWith(".fon")) {
-            BitmapFont.load(this._options.font).then( (fonts) => {
+        if (this._options.font) {
+            if (this._options.font instanceof BitmapFont) {
+                let fonts = this._options.font;
                 this._caption.style.display = "none";
                 this._captionImageSpan.style.display = "inline";
                 let font = fonts.fontFor(this._options.size || 10);
@@ -353,7 +353,7 @@ export class TextBox extends Window {
                   weight: this._options.weight
                 }));
                 this._captionImage.setAttribute("alt", this._caption.textContent);
-            });
+            }
         }
         else {
             this._caret.style.height = (0.0625 * this._caption.offsetHeight) + "rem";

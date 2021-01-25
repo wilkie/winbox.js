@@ -1,11 +1,15 @@
 import { chdir } from './syscall/chdir.js';
+import { close } from './syscall/close.js';
 import { exit } from './syscall/exit.js';
-import { selectDisk } from './syscall/selectDisk.js';
 import { getDate } from './syscall/getDate.js';
+import { getInterruptVector } from './syscall/getInterruptVector.js';
 import { getTime } from './syscall/getTime.js';
 import { getVersion } from './syscall/getVersion.js';
+import { open } from './syscall/open.js';
+import { read } from './syscall/read.js';
+import { seek } from './syscall/seek.js';
+import { selectDisk } from './syscall/selectDisk.js';
 import { setInterruptVector } from './syscall/setInterruptVector.js';
-import { getInterruptVector } from './syscall/getInterruptVector.js';
 
 import { I286 } from '../emulator/core/i286.js';
 
@@ -65,7 +69,7 @@ export class SyscallManager {
             // AL: Interrupt vector index
             // DS:DX: Address of vector
             0x25: [setInterruptVector, [[I286.REGISTER_AL, 1, Number],
-                                        [[I286.REGISTER_DS, I286.REGISTER_DX], Number]],
+                                        [[I286.REGISTER_DS, I286.REGISTER_DX], 2, Number]],
                                        [], false],
 
             // 0x26: create psp
@@ -91,7 +95,7 @@ export class SyscallManager {
             // CL <- minute
             // DH <- seconds
             // DL <- hundreds of seconds
-            0x2b: [getTime, [],
+            0x2c: [getTime, [],
                             [[I286.REGISTER_CH, 1],
                              [I286.REGISTER_CL, 1],
                              [I286.REGISTER_DH, 1],
@@ -123,19 +127,58 @@ export class SyscallManager {
             // 0x3a: remove directory entry (rmdir)
 
             // Change current directory
-            // DS:DX: Directory Path
+            // DS:DX: Directory path
             // CF set on error
             // AX <- error code
-            0x3b: [chdir, [[[I286.REGISTER_DS, I286.REGISTER_DX], String]],
+            0x3b: [chdir, [[[I286.REGISTER_DS, I286.REGISTER_DX], 2, String]],
                           [[I286.REGISTER_AX, 2]], true],
 
             // 0x3c: create file with handle (creat)
-            // 0x3d: open disk file with handle
+            // Open disk file with handle
+            // DS:DX: File path
+            // AL: Access (0: read-only, 1: write-only, 2: read/write)
+            // CF set on error
+            // AX <- error code (on error)
+            // AX <- file handle
+            0x3d: [open, [[[I286.REGISTER_DS, I286.REGISTER_DX], 2, String],
+                          [I286.REGISTER_AL, 1, Number]],
+                          [[I286.REGISTER_AX, 2]], true],
+
             // 0x3e: close file with handle
-            // 0x3f: read from file with handle
+            // BX: File handle
+            // CF set on error
+            // AX <- error code (on error)
+            0x3e: [close, [[I286.REGISTER_BX, 2, Number]],
+                          [], true],
+
+            // Read from file with handle
+            // DS:DX: address of buffer
+            // BX: File handle
+            // CX: Number of bytes to read
+            // CF set on error
+            // AX <- error code (on error)
+            // AX <- number of bytes read
+            0x3f: [read, [[I286.REGISTER_BX, 2, Number],
+                          [[I286.REGISTER_DS, I286.REGISTER_DX], 2, Number],
+                          [I286.REGISTER_CX, 2, Number]],
+                          [[I286.REGISTER_AX, 2]], true],
+
             // 0x40: write to file with handle
             // 0x41: delete a file (unlink)
             // 0x42: move file read/write pointer (lseek)
+            // BX: File handle
+            // AL: Method (0: from beginning, 1: from current, 2: from end)
+            // CX:DX: offset in bytes
+            // CF set on error
+            // AX <- error code (on error)
+            // DX:AX <- new offset
+            0x42: [seek, [[I286.REGISTER_BX, 2, Number],
+                          [I286.REGISTER_CX, 2, Number],
+                          [I286.REGISTER_DX, 2, Number],
+                          [I286.REGISTER_AL, 1, Number]],
+                          [[I286.REGISTER_DX, 2],
+                           [I286.REGISTER_AX, 2]], true],
+
             // 0x43: get/put file attributes (chmod)
             // 0x4400: get device information
                         // BX: device handle
@@ -243,9 +286,18 @@ export class SyscallManager {
                 let value = 0;
                 if (arg[0] instanceof Array) {
                     // Segment:Offset pair
-                    type = arg[1];
+                    type = arg[2];
                     let segment = this._machine.cpu.core.readSegmentRegister(arg[0][0]);
-                    let offset = this._machine.cpu.core.readRegister16(arg[0][1]);
+                    let offset = 0;
+                    if (arg[1] == 1) {
+                        offset = this._machine.cpu.core.readRegister8(arg[0][1]);
+                    }
+                    else if (arg[1] == 2) {
+                        offset = this._machine.cpu.core.readRegister16(arg[0][1]);
+                    }
+                    else if (arg[1] == 4) {
+                        offset = this._machine.cpu.core.readRegister32(arg[0][1]);
+                    }
                     value = this._machine.cpu.core.translateAddress(segment, offset);
                 }
                 else {
@@ -267,35 +319,66 @@ export class SyscallManager {
 
             // Call handler
             let func = handler[0];
-            let ret = func.bind(this._dos)(...args);
+            let result = func.bind(this._dos)(...args);
 
-            // Return values
-            let returns = handler[2];
-            let position = 0;
-            returns.forEach( (returnType) => {
-                let value = ret[position];
+            function interpretReturn(ret) {
+                if (!(ret instanceof Array)) {
+                    ret = [ret];
+                }
 
-                if (returnType[0] instanceof Array) {
-                    // segment:offset pair
-                    this._machine.cpu.core.writeSegmentRegister(returnType[0][0], value);
+                // Return values
+                let returns = handler[2];
+                let position = 0;
+                returns.forEach( (returnType) => {
+                    let value = ret[position];
+
+                    if (returnType[0] instanceof Array) {
+                        // segment:offset pair
+                        this._machine.cpu.core.writeSegmentRegister(returnType[0][0], value);
+                        position++;
+                        value = ret[position];
+                        this._machine.cpu.core.writeRegister8(returnType[0][0], value);
+                    }
+                    else if (returnType[1] == 1) {
+                        this._machine.cpu.core.writeRegister8(returnType[0], value);
+                    }
+                    else {
+                        this._machine.cpu.core.writeRegister16(returnType[0], value);
+                    }
+
                     position++;
-                    value = ret[position];
-                    this._machine.cpu.core.writeRegister8(returnType[0][0], value);
-                }
-                else if (returnType[1] == 1) {
-                    this._machine.cpu.core.writeRegister8(returnType[0], value);
-                }
-                else {
-                    this._machine.cpu.core.writeRegister16(returnType[0], value);
-                }
-
-                position++;
-            });
+                });
+            }
 
             let errorFlag = handler[3] || false;
-            if (errorFlag) {
-                // on error, set carry
-                //this._machine.cpu.core.flags.carry = true;
+
+            if (result instanceof Promise) {
+                return new Promise( (resolve) => {
+                    result.then( (subResult) => {
+                        interpretReturn.bind(this)(subResult);
+                        resolve(true);
+                    }).catch( (error) => {
+                        if (errorFlag) {
+                            // on error, set carry
+                            this._machine.cpu.core.flags.carry = true;
+                            this._machine.cpu.core.ax = error;
+                        }
+                        resolve(true);
+                    });
+                });
+            }
+            else {
+                try {
+                    interpretReturn.bind(this)(result);
+                }
+                catch (error) {
+                    if (errorFlag) {
+                        // on error, set carry
+                        this._machine.cpu.core.flags.carry = true;
+                        this._machine.cpu.core.ax = error;
+                    }
+                }
+                return true;
             }
         }
         else {
@@ -303,6 +386,7 @@ export class SyscallManager {
                 "error: Unknown DOS call",
                 this._machine.cpu.core.ax.toString(16)
             );
+            return true;
         }
     }
 }

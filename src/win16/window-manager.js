@@ -20,7 +20,7 @@ export class WindowManager {
         windowInstance.data = data;
 
         // Capture events
-        ['client-mousedown', 'mousemove',
+        ['client-mousedown', 'client-mouseup', 'mousemove',
          'focus', 'client-keydown', 'client-keyup'].forEach( (event) => {
             windowInstance.on(event, (data) => {
                 this.createMessage(taskHandle, task, hWnd, event, data);
@@ -38,7 +38,7 @@ export class WindowManager {
     /**
      * Crafts a message for the given event and pushes it to the given task.
      */
-    createMessage(taskHandle, task, hWnd, event, data) {
+    createMessage(taskHandle, task, hWnd, event, data, callback) {
         let messages = [];
 
         // Get the window itself
@@ -47,10 +47,13 @@ export class WindowManager {
         // Get the window/class for the handle
         let windowClass = this._handles.retrieve(dialog.options.windowClass);
 
+        let msg = new MSG();
+        msg.hwnd = hWnd;
+        msg.callback = callback;
+
         if (event === 'mousemove') {
-            let msg = new MSG();
-            msg.hwnd = hWnd;
             msg.message = User.WM_MOUSEMOVE;
+            msg.wParam = 0;
 
             // Set flags
             if (data.buttons & 1) {
@@ -76,9 +79,6 @@ export class WindowManager {
         }
         else if (event === 'client-keydown' ||
                  event === 'client-keyup') {
-            let msg = new MSG();
-            msg.hwnd = hWnd;
-
             // Get the proper message
             if (event === 'client-keydown') {
                 msg.message = User.WM_KEYDOWN;
@@ -105,17 +105,11 @@ export class WindowManager {
             msg.lParam = event.repeat & 0xffff;
 
             if (msg.wParam) {
-                console.log("key event", msg);
                 messages.push(msg);
             }
         }
         else if (event === 'client-mousedown' ||
                  event === 'client-mouseup') {
-
-            console.log("MOUSE");
-            let msg = new MSG();
-            msg.hwnd = hWnd;
-
             // Get the proper message
             if (event === 'client-mousedown') {
                 if (data.clicks == 2) {
@@ -168,13 +162,17 @@ export class WindowManager {
         }
         else if (event === 'command') {
             // A menu was clicked or some other command event
-            let msg = new MSG();
-            msg.hwnd = hWnd;
             msg.message = User.WM_COMMAND;
             msg.wParam = data.id;
             msg.lParam = 0;
             messages.push(msg);
-            console.log("sending", msg);
+        }
+        else if (event === 'timer') {
+            // A menu was clicked or some other command event
+            msg.message = User.WM_TIMER;
+            msg.wParam = data.id;
+            msg.lParam = (new Date).getTime() - this._startTime;
+            messages.push(msg);
         }
 
         // If we have a new message, post it to the queue.

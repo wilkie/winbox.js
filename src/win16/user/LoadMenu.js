@@ -41,9 +41,13 @@ export async function LoadMenu(hinst, lpszMenuName) {
         return NULL;
     }
 
-    let id = lpszMenuName;
-    if (id instanceof String || (typeof id) == 'string') {
-        id = id.toUpperCase();
+    let id = 0xffff;
+    let name = null;
+    if (lpszMenuName instanceof String || (typeof lpszMenuName) == 'string') {
+        name = lpszMenuName.toUpperCase();
+    }
+    else {
+        id = lpszMenuName;
     }
 
     let cpu = this.machine.cpu.core;
@@ -52,6 +56,8 @@ export async function LoadMenu(hinst, lpszMenuName) {
 
     let ret = NULL;
 
+    console.log("finding menu", id);
+
     // Find the menu resource
     let resourceInfo = null;
     for (let i = 0; i < executable.resources.length; i++) {
@@ -59,7 +65,9 @@ export async function LoadMenu(hinst, lpszMenuName) {
         if (resourceType.id == Executable.RESOURCES.Menu) {
             for (let j = 0; j < resourceType.entries.length; j++) {
                 let resource = resourceType.entries[j];
-                if (resource.id == id) {
+                console.log(resource);
+                if (resource.id == id || resource.name === name) {
+                    console.log("found menu");
                     resourceInfo = resource;
                     break;
                 }
@@ -85,7 +93,11 @@ export async function LoadMenu(hinst, lpszMenuName) {
         // Read each entry
         let menuStack = [];
         let ended = [];
-        let menu = new Menu();
+        let menu = new Menu({
+            font: this.fonts.lookup("System"),
+            size: 8,
+            width: 800
+        });
         menuStack.push(menu);
         ended.push(false);
 
@@ -158,7 +170,7 @@ export async function LoadMenu(hinst, lpszMenuName) {
             }
             else {
                 // React to whether or not the last item was ended
-                while (ended[menuStack.length - 1]) {
+                while (ended[menuStack.length - 1] && menuStack.length > 1) {
                     console.log("---");
                     menuStack.pop();
                     ended.pop();

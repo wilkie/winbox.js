@@ -52,5 +52,5 @@
     "lint": "stylelint \"stylesheets/**/*.scss\""
   },
   "author": "wilkie",
-  "license": "MIT"
+  "license": "AGPLv3"
 }

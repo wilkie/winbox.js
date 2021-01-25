@@ -12,5 +12,5 @@
  * @returns {Types.HWND} The return value is a handle of the desktop window.
  */
 export function GetDesktopWindow() {
-    return this.handles.resolve(this._desktop.window);
+    return this._desktop.window.data.hwnd;
 }

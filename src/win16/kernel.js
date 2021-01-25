@@ -4,7 +4,7 @@
 
 import { Module } from './module.js';
 
-import { BYTE, UBYTE, INT, UINT, FARPTR, HFILE,
+import { BYTE, UBYTE, INT, UINT, FARPTR, HFILE, ATOM,
          DWORD, HLOCAL, HGLOBAL, HANDLE, HINSTANCE, LONG,
          CHARARRAY, BOOL, NEARPTR, LPCSTR, HWND, Struct } from './types.js';
 
@@ -20,6 +20,7 @@ import { GetModuleFilename } from './kernel/GetModuleFilename.js';
 import { GetPrivateProfileString } from './kernel/GetPrivateProfileString.js';
 import { GetProcAddress } from './kernel/GetProcAddress.js';
 import { GetVersion } from './kernel/GetVersion.js';
+import { GetWindowsDirectory } from './kernel/GetWindowsDirectory.js';
 import { GetWinFlags } from './kernel/GetWinFlags.js';
 import { GlobalAlloc } from './kernel/GlobalAlloc.js';
 import { GlobalFree } from './kernel/GlobalFree.js';
@@ -42,6 +43,7 @@ import { LocalReAlloc } from './kernel/LocalReAlloc.js';
 import { LocalSize } from './kernel/LocalSize.js';
 import { LocalUnlock } from './kernel/LocalUnlock.js';
 import { LockSegment } from './kernel/LockSegment.js';
+import { MakeProcInstance } from './kernel/MakeProcInstance.js';
 import { OpenFile } from './kernel/OpenFile.js';
 import { OutputDebugString } from './kernel/OutputDebugString.js';
 import { Throw } from './kernel/Throw.js';
@@ -97,7 +99,7 @@ export class Kernel extends Module {
             [Kernel.stub, "GlobalFreeAll", 2],
             [Kernel.stub, "unknown"],
             [Kernel.stub, "GlobalMasterHandle", 0],
-            [Kernel.stub, "Yield", 0],
+            [Kernel.stub, "Yield", 0, []],
             // 30 //
             [WaitEvent, "WaitEvent", 2, [HANDLE], BOOL],
             [Kernel.stub, "PostEvent", 2],
@@ -105,8 +107,8 @@ export class Kernel extends Module {
             [Kernel.stub, "LockCurrentTask", 2],
             [Kernel.stub, "SetTaskQueue", 4],
             [Kernel.stub, "GetTaskQueue", 2],
-            [Kernel.stub, "GetCurrentTask", 0],
-            [Kernel.stub, "GetCurrentPDB", 0],
+            [Kernel.stub, "GetCurrentTask", 0, [], HANDLE],
+            [Kernel.stub, "GetCurrentPDB", 0, [], UINT],
             [Kernel.stub, "SetTaskSignalProc", 6],
             [Kernel.stub, "unknown"],
             // 40 //
@@ -115,38 +117,38 @@ export class Kernel extends Module {
             [Kernel.stub, "DisableDos", 0],
             [Kernel.stub, "unknown"],
             [Kernel.stub, "unknown"],
-            [Kernel.stub, "LoadModule", 8],
-            [Kernel.stub, "FreeModule", 2],
-            [Kernel.stub, "GetModuleHandle", 4],
-            [Kernel.stub, "GetModuleUsage", 2],
+            [Kernel.stub, "LoadModule", 8, [LPCSTR, FARPTR], HINSTANCE],
+            [Kernel.stub, "FreeModule", 2, [HINSTANCE], BOOL],
+            [Kernel.stub, "GetModuleHandle", 4, [LPCSTR], HANDLE],
+            [Kernel.stub, "GetModuleUsage", 2, [HINSTANCE], INT],
             [GetModuleFilename, "GetModuleFilename", 8, [HINSTANCE, FARPTR, INT], INT],
             // 50 //
             [GetProcAddress, "GetProcAddress", 6, [HINSTANCE, LPCSTR], FARPTR],
-            [Kernel.stub, "MakeProcInstance", 6],
-            [Kernel.stub, "FreeProcInstance", 4],
+            [MakeProcInstance, "MakeProcInstance", 6, [FARPTR, HINSTANCE], FARPTR],
+            [Kernel.stub, "FreeProcInstance", 4, [FARPTR]],
             [Kernel.stub, "CallProcInstance", 4],
-            [Kernel.stub, "GetInstanceData", 6],
+            [Kernel.stub, "GetInstanceData", 8, [HINSTANCE, FARPTR, INT], INT],
             [Catch, "Catch", 4, [FARPTR], INT],
             [Throw, "Throw", 6, [FARPTR, INT], INT], // Return value must match Catch
-            [Kernel.stub, "GetProfileInt", 10],
-            [Kernel.stub, "GetProfileString", 18],
-            [Kernel.stub, "WriteProfileString", 12],
+            [Kernel.stub, "GetProfileInt", 10, [LPCSTR, LPCSTR, INT], UINT],
+            [Kernel.stub, "GetProfileString", 18, [LPCSTR, LPCSTR, LPCSTR, FARPTR, INT], INT],
+            [Kernel.stub, "WriteProfileString", 12, [LPCSTR, LPCSTR, LPCSTR], BOOL],
             // 60 //
-            [Kernel.stub, "FindResource", 10],
-            [Kernel.stub, "LoadResource", 4],
-            [Kernel.stub, "LockResource", 2],
-            [Kernel.stub, "FreeResource", 2],
-            [Kernel.stub, "AccessResource", 4],
-            [Kernel.stub, "SizeOfResource", 4],
-            [Kernel.stub, "AllocResource", 8],
-            [Kernel.stub, "SetResourceHandler", 10],
-            [Kernel.stub, "InitAtomTable", 2],
-            [Kernel.stub, "FindAtom", 4],
+            [Kernel.stub, "FindResource", 10, [HINSTANCE, LPCSTR, LPCSTR], HANDLE],
+            [Kernel.stub, "LoadResource", 4, [HINSTANCE, HANDLE], HGLOBAL],
+            [Kernel.stub, "LockResource", 4, [HGLOBAL], FARPTR],
+            [Kernel.stub, "FreeResource", 2, [HGLOBAL], BOOL],
+            [Kernel.stub, "AccessResource", 4, [HINSTANCE, HANDLE], INT],
+            [Kernel.stub, "SizeOfResource", 4, [HINSTANCE, HANDLE], DWORD],
+            [Kernel.stub, "AllocResource", 8, [HINSTANCE, HANDLE, DWORD], HGLOBAL],
+            [Kernel.stub, "SetResourceHandler", 10, [HINSTANCE, LPCSTR, FARPTR], FARPTR],
+            [Kernel.stub, "InitAtomTable", 2, [INT], BOOL],
+            [Kernel.stub, "FindAtom", 4, [LPCSTR], ATOM],
             // 70 //
-            [Kernel.stub, "AddAtom", 4],
-            [Kernel.stub, "DeleteAtom", 2],
-            [Kernel.stub, "GetAtomName", 8],
-            [Kernel.stub, "GetAtomHandle", 2],
+            [Kernel.stub, "AddAtom", 4, [LPCSTR], ATOM],
+            [Kernel.stub, "DeleteAtom", 2, [ATOM], ATOM],
+            [Kernel.stub, "GetAtomName", 8, [ATOM, FARPTR, INT], UINT],
+            [Kernel.stub, "GetAtomHandle", 2, [ATOM], HANDLE],
             [OpenFile, "OpenFile", 10, [LPCSTR, [OFSTRUCT], UINT], HFILE],
             [Kernel.stub, "OpenPathName", 6],
             [Kernel.stub, "DeletePathName", 6],
@@ -167,29 +169,29 @@ export class Kernel extends Module {
             // 90 //
             [lstrlen, "lstrlen", 4, [FARPTR], UINT],
             [InitTask, "InitTask", 0, [], UINT],
-            [Kernel.stub, "GetTempDrive", 2],
-            [Kernel.stub, "GetCodeHandle", 4],
+            [Kernel.stub, "GetTempDrive", 2, [BYTE], BYTE],
+            [Kernel.stub, "GetCodeHandle", 4, [FARPTR], HGLOBAL],
             [Kernel.stub, "DefineHandleTable", 2],
             [LoadLibrary, "LoadLibrary", 4, [LPCSTR], HINSTANCE],
-            [Kernel.stub, "FreeLibrary", 2],
-            [Kernel.stub, "GetTempFileName", 12],
+            [Kernel.stub, "FreeLibrary", 2, [HINSTANCE]],
+            [Kernel.stub, "GetTempFileName", 12, [BYTE, LPCSTR, UINT, FARPTR], INT],
             [Kernel.stub, "GetLastDiskChange", 0],
             [Kernel.stub, "GetLPErrMode", 0],
             // 100 //
-            [Kernel.stub, "ValidateCodeSegments", 0],
+            [Kernel.stub, "ValidateCodeSegments", 0, []],
             [Kernel.stub, "NoHookDosCall", 0],
             [Kernel.stub, "Dos3Call", 0],
             [Kernel.stub, "NetBiosCall", 0],
-            [Kernel.stub, "GetCodeInfo", 8],
+            [Kernel.stub, "GetCodeInfo", 8, [FARPTR, FARPTR]],
             [Kernel.stub, "GetExeVersion", 0],
-            [Kernel.stub, "SetSwapAreaSize", 2],
-            [Kernel.stub, "SetErrorMode", 2],
-            [Kernel.stub, "SwitchStackTo", 0],
-            [Kernel.stub, "SwitchStackBack", 0],
+            [Kernel.stub, "SetSwapAreaSize", 2, [UINT], LONG],
+            [Kernel.stub, "SetErrorMode", 2, [UINT], UINT],
+            [Kernel.stub, "SwitchStackTo", 0, [UINT, UINT, UINT]],
+            [Kernel.stub, "SwitchStackBack", 0, []],
             // 110 //
-            [Kernel.stub, "PatchCodeHandle", 2],
-            [Kernel.stub, "GlobalWire", 2],
-            [Kernel.stub, "GlobalUnwire", 2],
+            [Kernel.stub, "PatchCodeHandle", 2, [UINT]],
+            [Kernel.stub, "GlobalWire", 2, [HGLOBAL]],
+            [Kernel.stub, "GlobalUnwire", 2, [HGLOBAL], BOOL],
             [Kernel.stub, "__AHSHIFT"],
             [Kernel.stub, "__AHINCR"],
             [OutputDebugString, "OutputDebugString", 4, [LPCSTR]],
@@ -205,7 +207,7 @@ export class Kernel extends Module {
             [Kernel.stub, "EnableKernel", 0],
             [Kernel.stub, "DisableKernel", 2],
             [Kernel.stub, "MemoryFreed", 0],
-            [Kernel.stub, "GetPrivateProfileInt", 0],
+            [Kernel.stub, "GetPrivateProfileInt", 14, [LPCSTR, LPCSTR, INT, LPCSTR], UINT],
             [GetPrivateProfileString, "GetPrivateProfileString", 22, [LPCSTR, LPCSTR, LPCSTR, FARPTR, INT, LPCSTR], INT],
             [WritePrivateProfileString, "WritePrivateProfileString", 16, [LPCSTR, LPCSTR, LPCSTR, LPCSTR], BOOL],
             // 130 //
@@ -213,9 +215,9 @@ export class Kernel extends Module {
             [GetDOSEnvironment, "GetDOSEnvironment", 0, [], FARPTR],
             [GetWinFlags, "GetWinFlags", 0, [], DWORD],
             [Kernel.stub, "GetExePtr", 4],
-            [Kernel.stub, "GetWindowsDirectory", 4],
-            [Kernel.stub, "GetSystemDirectory", 4],
-            [Kernel.stub, "GetDriveType", 4],
+            [GetWindowsDirectory, "GetWindowsDirectory", 6, [FARPTR, UINT], UINT],
+            [Kernel.stub, "GetSystemDirectory", 6, [FARPTR, UINT], UINT],
+            [Kernel.stub, "GetDriveType", 2, [INT], UINT],
             [FatalAppExit, "FatalAppExit", 6, [UINT, LPCSTR]],
             [Kernel.stub, "GetHeapSpaces", 12],
             [Kernel.stub, "DoSignal", 2],
@@ -231,11 +233,11 @@ export class Kernel extends Module {
             [Kernel.stub, "unknown"],
             [Kernel.stub, "unknown"],
             // 150 //
-            [Kernel.stub, "DirectedYield", 6],
+            [Kernel.stub, "DirectedYield", 2, [HANDLE]],
             [Kernel.stub, "WinOldApCall", 5],
-            [Kernel.stub, "GetNumTasks", 2],
+            [Kernel.stub, "GetNumTasks", 0, []],
             [Kernel.stub, "unknown"],
-            [Kernel.stub, "GlobalNotify", 4],
+            [Kernel.stub, "GlobalNotify", 4, [FARPTR]],
             [Kernel.stub, "GetTaskDS", 10],
             [Kernel.stub, "LimitItemsPages", 2],
             [Kernel.stub, "GetCurPID", 4],

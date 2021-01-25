@@ -13,6 +13,7 @@ export class Surface {
     constructor(canvas) {
         this._canvas = canvas;
         this._ditherer = new Ditherer();
+        this._data = {};
 
         // TODO: what are the default pen/brush?
         this.brush = new Brush(new Color(0xff, 0xff, 0xff, 0xff));
@@ -22,6 +23,14 @@ export class Surface {
 
         // We start stale
         this._stale = true;
+    }
+
+    get data() {
+        return this._data;
+    }
+
+    set data(value) {
+        this._data = value;
     }
 
     update() {
@@ -135,6 +144,16 @@ export class Surface {
 
         // Tell the bitmap that it should update this surface
         value.surface = this;
+    }
+
+    drawLine(x, y, x2, y2) {
+        this.context.strokeStyle = this.pen.color.css;
+        this.context.beginPath();
+        this.context.moveTo(x + 0.5, y + 0.5);
+        this.context.lineTo(x2 + 0.5, y2 + 0.5);
+        this.context.lineWidth = this.pen.width;
+        // TODO: pen style
+        this.context.stroke();
     }
 
     fillRect(x, y, width, height) {

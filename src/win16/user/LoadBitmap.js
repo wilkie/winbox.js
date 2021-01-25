@@ -94,22 +94,23 @@ export async function LoadBitmap(hinst, lpszBitmap) {
     let hi = (lpszBitmap >> 16) & 0xffff;
     let lo = lpszBitmap & 0xffff;
 
-    let idResource = 0;
+    let idResource = 0xffff;
+    let name = null;
 
     if (hi == 0) {
         // This is a resource identifier
         idResource = lo;
-
-        // Resource ids that are integers have the high-bit set in the executable
-        idResource |= 0x8000;
     }
     else {
         // We have a string resource
         let idSegment = (lpszBitmap >> 16) & 0xffff;
         let idOffset = lpszBitmap & 0xffff;
 
-        idResource = this.machine.memory.readCString(this.machine.cpu.core.translateAddress(idSegment, idOffset));
+        name = this.machine.memory.readCString(this.machine.cpu.core.translateAddress(idSegment, idOffset));
+        name = name.toUpperCase();
     }
+
+    console.log("looking for", name);
 
     // Resolve the handle
     let module = this.handles.resolve(hinst);
@@ -128,7 +129,7 @@ export async function LoadBitmap(hinst, lpszBitmap) {
         if (resourceType.id == Executable.RESOURCES.Bitmap) {
             for (let j = 0; j < resourceType.entries.length; j++) {
                 let resource = resourceType.entries[j];
-                if (resource.id == idResource) {
+                if (resource.id == idResource || resource.name.toUpperCase() === name) {
                     let data = await executable.readResource(resource);
                     let view = new DataView(data);
 

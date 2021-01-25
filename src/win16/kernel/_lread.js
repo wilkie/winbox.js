@@ -43,7 +43,7 @@ export async function _lread(hf, hpvBuffer, cbBuffer) {
 
     // Read the data
     let data = await file.read(file.position, cbBuffer);
-    file.position += cbBuffer;
+    file.position += data.byteLength;
 
     // Copy the data to memory
     let destSegment = (hpvBuffer >> 16) & 0xffff;

@@ -212,13 +212,38 @@ export class Memory {
 
         // Also pull from the adjacent block, if needed
         if (blockOffset + 3 >= Memory.BLOCK_SIZE) {
-            let buffer = this.read(address, 2);
+            let buffer = this.read(address, 4);
             let view = new DataView(buffer);
             return view.getUint32(0, littleEndian);
         }
 
         // Pull from the block
         return this._blocks[blockStart].getUint32(blockOffset, littleEndian);
+    }
+
+    /**
+     * Reads a 64-bit value from memory.
+     *
+     * @param {number} address - The address to read from.
+     * @param {bool} littleEndian - Whether or not to read as little endian.
+     */
+    read64(address, littleEndian = true) {
+        let blockStart = Math.floor(address / Memory.BLOCK_SIZE);
+        let blockOffset = address % Memory.BLOCK_SIZE;
+
+        if (!this._blocks[blockStart]) {
+            return this.readGarbage(address, 4, littleEndian);
+        }
+
+        // Also pull from the adjacent block, if needed
+        if (blockOffset + 7 >= Memory.BLOCK_SIZE) {
+            let buffer = this.read(address, 8);
+            let view = new DataView(buffer);
+            return view.getBigInt64(0, littleEndian);
+        }
+
+        // Pull from the block
+        return this._blocks[blockStart].getBigInt64(blockOffset, littleEndian);
     }
 
     /**
@@ -357,6 +382,34 @@ export class Memory {
 
         // Write to the block
         this._blocks[blockStart].setUint32(blockOffset, value, littleEndian);
+    }
+
+    /**
+     * Writes a 64-bit value to memory.
+     *
+     * @param {number} address - The address to write to.
+     * @param {BigInt} value - The integer value to write.
+     * @param {bool} littleEndian - Whether or not to write as little endian.
+     */
+    write64(address, value, littleEndian = true) {
+        let blockStart = Math.floor(address / Memory.BLOCK_SIZE);
+        let blockOffset = address % Memory.BLOCK_SIZE;
+
+        if (!this._blocks[blockStart]) {
+            this.allocateBlock(blockStart);
+        }
+
+        // Also write to the adjacent block, if needed
+        if (blockOffset + 7 >= Memory.BLOCK_SIZE) {
+            let bytes = new Uint32Array(2);
+            let view = new DataView(bytes);
+            view.setBigInt64(0, value, littleEndian);
+            this.write(address, view, littleEndian);
+            return;
+        }
+
+        // Write to the block
+        this._blocks[blockStart].setBigInt64(blockOffset, value, littleEndian);
     }
 
     allocateBlock(index) {

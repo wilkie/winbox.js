@@ -137,9 +137,9 @@ export class Label extends Window {
 
         let textValue = value.replace('&', '');
 
-        if (false && this._options.font &&
-            this._options.font.toLowerCase().endsWith(".fon")) {
-            BitmapFont.load(this._options.font).then( (fonts) => {
+        if (this._options.font) {
+            if (this._options.font instanceof BitmapFont) {
+                let fonts = this._options.font;
                 this._caption.style.display = "none";
                 this._captionImageSpan.style.display = "inline";
                 let font = fonts.fontFor(this._options.size || 10);
@@ -162,7 +162,7 @@ export class Label extends Window {
                 if (this.fitted) {
                     this.fit();
                 }
-            });
+            }
         }
         else {
             this._caption.textContent = textValue;

@@ -130,26 +130,28 @@ export var HGLOBAL = 8;
 
 export var HWND = 9;
 
-export var HANDLE = 11;
-export var HMENU = 12;
-export var HINSTANCE = 13;
-export var HACCEL = 14;
-export var HBRUSH = 20;
+export var HGDIOBJ = 20;
+export var HBRUSH = 21;
+export var HPEN = 22;
+export var HCURSOR = 23;
+export var WNDPROC = 24;
+export var HICON = 25;
 export var HRGN = 26;
-export var HICON = 21;
-export var HCURSOR = 22;
-export var WNDPROC = 23;
+export var HBITMAP = 27;
+export var HACCEL = 28;
+export var HINSTANCE = 29;
+export var HANDLE = 30;
+export var HMENU = 31;
 
 export var WPARAM = 15;
 export var LPARAM = 16;
 
-export var LRESULT = 24;
-export var HDC = 25;
+export var LRESULT = 40;
+export var COLORREF = 41;
 
-export var VARIADIC = 26;
-export var COLORREF = 27;
-export var HGDIOBJ = 28;
-export var HBITMAP = 29;
+export var HDC = 50;
+
+export var VARIADIC = 100;
 
 export var CHARARRAY = 0x8000000;
 export var BYTEARRAY = 0x10000000;
@@ -164,7 +166,7 @@ export var DWORDARRAY = 0x40000000;
  * @typedef {number} HFILE
  * @memberof Types
  */
-export var HFILE = 30;
+export var HFILE = 60;
 
 /**
  * Contains the various types used throughout the API.
@@ -200,6 +202,7 @@ export class Types {
             case HLOCAL:
             case HINSTANCE:
             case HBRUSH:
+            case HPEN:
             case HGDIOBJ:
             case HRGN:
             case HCURSOR:
@@ -274,6 +277,7 @@ export class Types {
             case HLOCAL:
             case HINSTANCE:
             case HBRUSH:
+            case HPEN:
             case HGDIOBJ:
             case HRGN:
             case HCURSOR:
@@ -633,6 +637,7 @@ Types.LPARAM = LPARAM;
 Types.LONG = LONG;
 Types.ULONG = ULONG;
 Types.HBRUSH = HBRUSH;
+Types.HPEN = HPEN;
 Types.HRGN = HRGN;
 Types.HICON = HICON;
 Types.HCURSOR = HCURSOR;

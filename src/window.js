@@ -22,6 +22,8 @@ export class Window extends EventComponent {
         Window.__windowCount++;
         this._id = Window.__windowCount;
 
+        this._data = {};
+
         // References to children
         this._items = [];
         this._nonClientItems = [];
@@ -59,7 +61,7 @@ export class Window extends EventComponent {
     }
 
     get data() {
-        return this._data || {};
+        return this._data;
     }
 
     set data(value) {
@@ -1032,6 +1034,12 @@ export class Window extends EventComponent {
         let data = {
             x: event.offsetX,
             y: event.offsetY,
+            clicks: 1,
+            button: event.button,
+            buttons: event.buttons,
+            shift: event.shiftKey,
+            control: event.controlKey,
+            alt: event.altKey
         };
 
         this.trigger("mouseup", data);

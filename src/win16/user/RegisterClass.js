@@ -43,6 +43,7 @@ export async function RegisterClass(lpwc) {
     // Get the menu, if provided
     let menuHandle = null;
     if (lpwc.lpszMenuName) {
+        console.log("LOADING MENU BY NAME");
         menuHandle = await LoadMenu.bind(this)(lpwc.hInstance, lpwc.lpszMenuName);
     }
 

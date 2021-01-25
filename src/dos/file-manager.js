@@ -14,6 +14,40 @@ export class FileManager {
         // The default lookup paths
         this._systemRootPath = "C:\\WINDOWS\\";
         this._systemLibsPath = "C:\\WINDOWS\\SYSTEM\\";
+
+        // For every drive, set its current directory
+        this._pwd = {};
+        this._pwd["C"] = "C:\\";
+
+        // Set the current drive
+        this._drive = "C";
+    }
+
+    /**
+     * Retrieves the current drive letter.
+     */
+    get drive() {
+        return this._drive;
+    }
+
+    /**
+     * Sets, if possible, the current drive letter to the given drive.
+     */
+    set drive(letter) {
+        this._drive = letter;
+    }
+
+    get path() {
+        return this._pwd[this.drive];
+    }
+
+    set path(value) {
+        // TODO: what happens when the value contains a drive letter
+        // and it does not match the current drive?
+        if (!value.endsWith("\\")) {
+            value = value + "\\";
+        }
+        this._pwd[this.drive] = value;
     }
 
     get handleManager() {
@@ -98,7 +132,7 @@ export class FileManager {
         // Collect paths to check, if not an absolute path (or forced).
         // These are listed in the order they are checked.
         let check = [
-            // TODO: Current directory
+            this.path,
             this.systemRootPath,
             this.systemLibsPath,
             // TODO: Executable local directory of task
@@ -115,6 +149,7 @@ export class FileManager {
         for (let i = 0; i < check.length; i++) {
             let dirPath = check[i];
             let filePath = dirPath + path;
+            console.log(dirPath);
 
             let pathInfo = this.parse(filePath);
 

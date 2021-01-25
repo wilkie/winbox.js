@@ -99,6 +99,10 @@ export class I286 {
         this.raiseInterrupt(instruction, 6);
     }
 
+    get memory() {
+        return this._memory;
+    }
+
     /**
      * Retrieves the register state.
      */
@@ -796,6 +800,12 @@ export class I286 {
             present: (gdtFlags & 0x80) > 0,
             addressSize: false,
             dpl: (gdtFlags >> 5) & 0x3,
+            type: (gdtFlags & 0x10) > 0,
+            executable: (gdtFlags & 0x8) > 0,
+            growsDown: (gdtFlags & 0x4) > 0,
+            readWrite: (gdtFlags & 0x2) > 0,
+            accessed: (gdtFlags & 0x1) > 0,
+            flags: gdtFlags
         };
     }
 
@@ -1134,7 +1144,7 @@ export class I286 {
         let immediateBytes = 0;
 
         // Decode possible two-byte opcodes
-        switch(instruction.opcode) {
+        switch (instruction.opcode) {
             case 0x0f:    // LGDT (Load Global Descriptor Table Register) /
                           // SGDT (Store Global Descriptor Table Register) /
                           // LIDT (Load Interrupt Descriptor Table Register) /
@@ -1578,7 +1588,7 @@ export class I286 {
         let shiftAmount = null;
 
         // Execute the opcode
-        switch(opcode) {
+        switch (opcode) {
             case 0x00:    // ADD eb,rb
                 operation = operation || this._alu.add8.bind(this._alu);
             case 0x08:    // OR eb,rb
@@ -2015,7 +2025,7 @@ export class I286 {
                 let jumpCondition = opcode - 0x70;
                 let jump = false;
 
-                switch(jumpCondition) {
+                switch (jumpCondition) {
                     case 0x0:   // OF == 1
                         this.debug('jo     cb   ');
                         jump = this._flags.overflow;
@@ -3257,6 +3267,38 @@ export class I286 {
                     default:
                         throw new InvalidInstruction(instruction);
                         break;
+                }
+                break;
+
+            case 0x102: // LAR
+                // TODO: implement this. it only happens in protected mode
+                {
+                    let value = 0;
+                    // Bits  0-7: 0
+                    //      11:8: segment type
+                    //        12: S flag
+                    //     14:13: DPL
+                    //        15: P flag
+                    //
+                    // 32-bit version does more than this
+                    let index = this.readOperand16(instruction);
+                    let descriptor = this.retrieveDescriptor(index);
+
+                    // Set DPL (14:13)
+                    value = value | (descriptor.dpl << 13);
+
+                    // Set P (15)
+                    value = value | ((descriptor.present ? 0x1 : 0x0) << 15);
+
+                    // Set S (12)
+                    value = value | ((descriptor.type ? 0x1 : 0x0) << 12);
+
+                    // Set Type (11:8)
+                    value = value | ((descriptor.flags & 0xf) << 8);
+
+                    // On success, ZF is set (cleared on failure)
+                    this.flags.zero = true;
+                    this.writeRegister16(instruction.sourceRegister, value);
                 }
                 break;
 

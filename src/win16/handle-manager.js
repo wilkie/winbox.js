@@ -32,6 +32,7 @@ export class HandleManager {
         else if (item instanceof Window) {
             // Allocates an HWND
             handle = this.find(HandleManager.TAGS.HWND + 1, 0xffe);
+            item.data.hwnd = handle;
         }
         else if (this.isMenu(item)) {
             // Allocates an HMENU

@@ -136,13 +136,23 @@ export class Scheduler {
                 if (this._machine.cpu.interrupt !== null) {
                     let index = this._machine.cpu.interrupt;
                     this._machine.cpu.interrupt = null;
-                    if (this._machine.interrupts.dispatch(index) === true) {
+                    let result = this._machine.interrupts.dispatch(index);
+                    if (result === true) {
                         this.resume(taskHandle);
+                    }
+                    else if (result instanceof Promise) {
+                        result.then( (value) => {
+                            if (value) {
+                                this.resume(taskHandle);
+                            }
+                        });
                     }
                 }
             }
             catch (e) {
-                console.log("error", e);
+                console.log("error", e,
+                    this._machine.cpu._instruction.cs.toString(16), ":",
+                    this._machine.cpu._instruction.ip.toString(16));
                 throw e;
             }
         }

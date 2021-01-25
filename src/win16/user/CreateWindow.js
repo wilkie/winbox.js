@@ -51,12 +51,19 @@ export async function CreateWindow(lpszClassName, lpszWindowName,
     else if (dwStyle & User.WS_OVERLAPPED) {
         windowClassType = FixedWindow;
     }
+    else if (dwStyle & User.WS_DLGFRAME) {
+        // TODO: This is a fixed window with a single pixel black border
+        windowClassType = FixedWindow;
+    }
 
     // Create a window inside the given parent
     let dialog = new windowClassType({
         caption: lpszWindowName,
         timesShown: 0,
-        windowClass: lpszClassName
+        windowClass: lpszClassName,
+        font: this.fonts.lookup("System"),
+        size: 8,
+        width: 800
     });
 
     // Set default font

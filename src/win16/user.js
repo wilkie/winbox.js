@@ -11,10 +11,13 @@ import { BYTE, UBYTE, INT, UINT, LONG, ULONG,
          BOOL, NEARPTR, FARPTR, LPCSTR, HWND, Struct } from './types.js';
 
 import { BeginPaint } from './user/BeginPaint.js';
+import { CopyRect } from './user/CopyRect.js';
 import { CreateWindow } from './user/CreateWindow.js';
 import { DefWindowProc } from './user/DefWindowProc.js';
 import { DestroyWindow } from './user/DestroyWindow.js';
+import { DialogBox } from './user/DialogBox.js';
 import { DispatchMessage } from './user/DispatchMessage.js';
+import { EndDialog } from './user/EndDialog.js';
 import { EndPaint } from './user/EndPaint.js';
 import { FillRect } from './user/FillRect.js';
 import { FindWindow } from './user/FindWindow.js';
@@ -24,6 +27,7 @@ import { GetDesktopWindow } from './user/GetDesktopWindow.js';
 import { GetMessage } from './user/GetMessage.js';
 import { GetTickCount } from './user/GetTickCount.js';
 import { GetClientRect } from './user/GetClientRect.js';
+import { GetMenu } from './user/GetMenu.js';
 import { GetWindowRect } from './user/GetWindowRect.js';
 import { GetWindowWord } from './user/GetWindowWord.js';
 import { InitApp } from './user/InitApp.js';
@@ -31,14 +35,18 @@ import { InvalidateRect } from './user/InvalidateRect.js';
 import { LoadBitmap } from './user/LoadBitmap.js';
 import { LoadMenu } from './user/LoadMenu.js';
 import { LoadString } from './user/LoadString.js';
+import { lstrcmp } from './user/lstrcmp.js';
 import { MessageBox } from './user/MessageBox.js';
 import { MoveWindow } from './user/MoveWindow.js';
 import { PeekMessage } from './user/PeekMessage.js';
+import { PtInRect } from './user/PtInRect.js';
 import { RegisterClass } from './user/RegisterClass.js';
 import { RedrawWindow } from './user/RedrawWindow.js';
 import { ReleaseDC } from './user/ReleaseDC.js';
 import { SendMessage } from './user/SendMessage.js';
 import { SetFocus } from './user/SetFocus.js';
+import { SetTimer } from './user/SetTimer.js';
+import { SetRect } from './user/SetRect.js';
 import { SetWindowText } from './user/SetWindowText.js';
 import { ShowWindow } from './user/ShowWindow.js';
 import { TranslateAccelerator } from './user/TranslateAccelerator.js';
@@ -74,7 +82,7 @@ export class User extends Module {
             [User.stub, "Unknown"],
             [User.stub, "Unknown"],
             // 10 //
-            [User.stub, "SetTimer", 10],
+            [SetTimer, "SetTimer", 10, [HWND, UINT, UINT, FARPTR], UINT],
             [User.stub, "Bear11", 10],
             [User.stub, "KillTimer", 4],
             [GetTickCount, "GetTickCount", 0, [], DWORD],
@@ -142,11 +150,11 @@ export class User extends Module {
             // 70 //
             [User.stub, "SetCursorPos", 0],
             [User.stub, "ShowCursor", 2],
-            [User.stub, "SetRect", 12],
+            [SetRect, "SetRect", 12, [[RECT], INT, INT, INT, INT]],
             [User.stub, "SetRectEmpty", 0],
-            [User.stub, "CopyRect", 8],
+            [CopyRect, "CopyRect", 8, [[RECT], [RECT]]],
             [User.stub, "IsRectEmpty", 0],
-            [User.stub, "PtInRect", 8],
+            [PtInRect, "PtInRect", 8, [[RECT], [POINT]], BOOL],
             [User.stub, "OffsetRect", 8],
             [User.stub, "InflateRect", 8],
             [User.stub, "IntersectRect", 12],
@@ -158,8 +166,8 @@ export class User extends Module {
             [User.stub, "DrawIcon", 8],
             [User.stub, "DrawText", 14],
             [User.stub, "Bear86", 0],
-            [User.stub, "DialogBox", 12],
-            [User.stub, "EndDialog", 4],
+            [DialogBox, "DialogBox", 12, [HINSTANCE, LPCSTR, HWND, FARPTR], INT],
+            [EndDialog, "EndDialog", 4, [HWND, INT]],
             [User.stub, "CreateDialog", 12],
             // 90 //
             [User.stub, "IsDialogMessage", 6],
@@ -235,7 +243,7 @@ export class User extends Module {
             [User.stub, "CheckMenuItem", 6],
             [User.stub, "EnableMenuItem", 6],
             [User.stub, "GetSystemMenu", 4],
-            [User.stub, "GetMenu", 2],
+            [GetMenu, "GetMenu", 2, [HWND], HMENU],
             [User.stub, "SetMenu", 4],
             [User.stub, "GetSubMenu", 4],
             // 160 //
@@ -526,7 +534,7 @@ export class User extends Module {
             [User.stub, "Unknown"],
             [User.stub, "Unknown"],
             // 430 //
-            [User.stub, "LSTRCMP", 8],
+            [lstrcmp, "lstrcmp", 8, [LPCSTR, LPCSTR], INT],
             [User.stub, "AnsiUpper", 4],
             [User.stub, "AnsiLower", 4],
             [User.stub, "IsCharAlpha", 2],
@@ -809,7 +817,44 @@ export class PAINTSTRUCT extends Struct {
     }
 }
 
+// Button Control Styles
+// ---------------------
+
+User.BS_PUSHBUTTON      = 0x00000000;
+User.BS_DEFPUSHBUTTON   = 0x00000001;
+User.BS_CHECKBOX        = 0x00000002;
+User.BS_AUTOCHECKBOX    = 0x00000003;
+User.BS_RADIOBUTTON     = 0x00000004;
+User.BS_3STATE          = 0x00000005;
+User.BS_AUTO3STATE      = 0x00000006;
+User.BS_GROUPBOX        = 0x00000007;
+User.BS_USERBUTTON      = 0x00000008;
+User.BS_AUTORADIOBUTTON = 0x00000009;
+User.BS_OWNERDRAW       = 0x0000000B;
+User.BS_LEFTTEXT        = 0x00000020;
+
+// Button Control Messages
+// -----------------------
+
+User.BM_GETCHECK        = (User.WM_USER + 0);
+User.BM_SETCHECK        = (User.WM_USER + 1);
+User.BM_GETSTATE        = (User.WM_USER + 2);
+User.BM_SETSTATE        = (User.WM_USER + 3);
+User.BM_SETSTYLE        = (User.WM_USER + 4);
+
+// User Button Notification Codes
+// ------------------------------
+
+User.BN_CLICKED         = 0;
+User.BN_PAINT           = 1;
+User.BN_HILITE          = 2;
+User.BN_UNHILITE        = 3;
+User.BN_DISABLE         = 4;
+User.BN_DOUBLECLICKED   = 5;
+
 // Messages
+// --------
+
 User.WM_CREATE = 0x0001;
 User.WM_DESTROY = 0x0002;
 User.WM_MOVE = 0x0003;
@@ -1074,6 +1119,20 @@ User.HWND_NOTOPMOST = 0xfffe; // -2
 User.WA_INACTIVE = 0x0;
 User.WA_ACTIVE = 0x1;
 User.WA_CLICKACTIVE = 0x2;
+
+// DialogBox styles
+// ----------------
+
+User.DS_ABSALIGN = 0x01;
+User.DS_SYSMODAL = 0x02;
+User.DS_LOCALEDIT = 0x20;
+User.DS_SETFONT = 0x40;
+User.DS_MODALFRAME = 0x80;
+User.DS_NOIDLEMSG = 0x100;
+
+/* Dialog messages */
+User.DM_GETDEFID = User.WM_USER + 0;
+User.DM_SETDEFID = User.WM_USER + 1;
 
 // Virtual Key Codes
 User.VK_LBUTTON = 0x01;

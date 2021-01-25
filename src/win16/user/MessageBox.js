@@ -16,12 +16,18 @@ export async function MessageBox(hwndParent, lpszText, lpszTitle, fuStyle) {
 
     // Create a dialog box
     let dialog = new FixedWindow({
-        caption: lpszTitle
+        caption: lpszTitle,
+        font: this.fonts.lookup("System"),
+        size: 8,
+        width: 800
     });
 
     // And place a label on it for the message text
     let label = new Label({
-        caption: lpszText
+        caption: lpszText,
+        font: this.fonts.lookup("System"),
+        size: 8,
+        width: 800
     });
 
     label.fitted = true;
@@ -100,7 +106,7 @@ export async function MessageBox(hwndParent, lpszText, lpszTitle, fuStyle) {
     let msgBoxHandle = this.handles.allocate(dialog);
     this.windows.halt(hwndParent, msgBoxHandle);
 
-    // TODO: wait until the message box closes before returning to the app
+    // Wait until the message box closes before returning to the app
     return new Promise( (resolve) => {
         // Return value is the button that was pressed
         [User.IDOK, User.IDABORT, User.IDCANCEL, User.IDIGNORE, User.IDNO,

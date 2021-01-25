@@ -27,7 +27,8 @@ export function GetDeviceCaps(hdc, iCapability) {
             return 256;
         case Gdi.RASTERCAPS:
             // Raster capabilities
-            return 0;
+            // TODO: actually just mark the ones known about
+            return 0xffff;
         case Gdi.NUMRESERVED:
             // Number of palette entries reserved by the system.
             return 16;

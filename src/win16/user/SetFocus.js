@@ -12,6 +12,11 @@ export async function SetFocus(hwnd) {
     // Get the window itself
     let dialog = this.handles.resolve(hwnd);
 
+    // Cannot find the dialog; bail.
+    if (!dialog) {
+        return hwnd;
+    }
+
     // Get the window/class for the handle
     let windowClass = this.handles.retrieve(dialog.options.windowClass);
 
@@ -47,10 +52,12 @@ export async function SetFocus(hwnd) {
     await this.scheduler.callWndProc(windowClass, hwnd, User.WM_SETFOCUS, 0, 0);
 
     // And we check invalidated regions and repaint
+    /*
     await this.scheduler.callWndProc(windowClass, hwnd, User.WM_NCPAINT, 0, 0);
     await this.scheduler.callWndProc(windowClass, hwnd, User.WM_GETTEXT, 0, 0);
     await this.scheduler.callWndProc(windowClass, hwnd, User.WM_ERASEBKGND, 0, 0);
     await this.scheduler.callWndProc(windowClass, hwnd, User.WM_PAINT, 0, 0);
+    */
 
     // We need to send a few messages depending on what the focus is
     // If it is the main window of an application, we send a

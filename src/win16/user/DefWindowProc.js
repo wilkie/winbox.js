@@ -42,7 +42,6 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
         // This is an MDI client
         switch (uMsg) {
             case User.WM_MDICREATE:
-                console.log("AH I SEE");
 
                 let hi = (lParam >> 16) & 0xffff;
                 let lo = lParam & 0xffff;
@@ -52,6 +51,22 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
                 // Create the window and return the new hWnd
                 return await CreateWindow.bind(this)(struct.szClass, struct.szTitle, struct.style, struct.x, struct.y, struct.cx, struct.cy, hwnd, NULL, struct.hOwner, struct.lParam);
         }
+    }
+
+    // Perform default actions
+    switch(uMsg) {
+        case User.WM_ERASEBKGND:
+            // Paint the update region with the window class' brush
+            let brush = this.handles.resolve(windowClass.hbrBackground);
+            if (brush) {
+                // TODO: only affect update region
+                let surface = dialog.surface;
+                let old = surface.brush;
+                surface.brush = brush;
+                surface.fillRect(0, 0, dialog.innerWidth, dialog.innerHeight);
+                surface.brush = old;
+            }
+            return 0;
     }
 
     return 0;

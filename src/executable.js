@@ -108,164 +108,267 @@ export class Executable {
         let offset = this.headerOffset + 20;
     }
 
-    get entryPoints() {
-        if (!this._entryPoints) {
-            let offset = this.headerOffset + this.neHeader.entryTableOffset;
-            let last = offset + this.neHeader.entryTableLength;
+    async _readEntryPoints() {
+        let start = this.headerOffset + this.neHeader.entryTableOffset;
+        let last = this.neHeader.entryTableLength;
 
-            // It is 1-based index, so we push a nonsense entrypoint to the list.
-            let ret = [{}];
+        let data = await this._stream.read(start, last);
 
-            // Keep track of which ordinal we are on
-            let ordinal = 1;
+        let offset = 0;
+        let view = new DataView(data);
 
-            while (offset < last) {
-                let entryPoint = {};
+        // It is 1-based index, so we push a nonsense entrypoint to the list.
+        let ret = [{}];
 
-                // Read entry point bundle header
-                // The first byte is the number of points in the bundle
-                let bundleSize = this._view.getUint8(offset);
-                offset++;
+        // Keep track of which ordinal we are on
+        let ordinal = 1;
 
-                // Get the segment index or some metadata describing the
-                // segment for this bundle.
-                let segment = this._view.getUint8(offset);
-                offset++;
+        while (offset < last) {
+            let entryPoint = {};
 
-                if (segment == 0) {
-                    // Empty bundle (skipped ordinals)
-                    console.log("skipping", bundleSize);
-                    ordinal += bundleSize;
-                    for (let bi = 0; bi < bundleSize; bi++) {
-                        ret.push({});
-                    }
-                    continue;
-                }
+            // Read entry point bundle header
+            // The first byte is the number of points in the bundle
+            let bundleSize = view.getUint8(offset);
+            offset++;
 
-                console.log("reading", bundleSize);
-                for (var bi = 0; bi < bundleSize; bi++) {
-                    if (segment == 0xff) {
-                        // This is a movable segment.
-
-                        // The next six bytes tells you the rest of the information
-                        let flags = this._view.getUint8(offset);
-                        offset++;
-
-                        // The next two bytes are an 'int 3fh' instruction.
-                        // It is weird!
-                        offset+=2;
-
-                        // A segment number
-                        let segmentNumber = this._view.getUint8(offset);
-                        offset++;
-
-                        // A segment offset
-                        let segmentOffset = this._view.getUint16(offset, true);
-                        offset += 2;
-
-                        entryPoint = {
-                            movable: true,
-                            segment: segmentNumber,
-                            offset: segmentOffset,
-                            exported: (flags & 0x1) != 0,
-                            flags: flags,
-                            ordinal: ordinal
-                        };
-                    }
-                    else if (segment == 0xfe) {
-                        // This is a constant and not a segment, apparently?
-                        console.log("WHOA!! A constant entry point???");
-                    }
-                    else {
-                        // segment is specifying the exact fixed segment
-
-                        // The next three bytes tells you the rest of the information
-                        let flags = this._view.getUint8(offset);
-                        offset++;
-
-                        // A segment offset
-                        let segmentOffset = this._view.getUint16(offset, true);
-                        offset += 2;
-
-                        entryPoint = {
-                            fixed: true,
-                            segment: segment,
-                            offset: segmentOffset,
-                            exported: (flags & 0x1) != 0,
-                            flags: flags,
-                            ordinal: ordinal
-                        };
-                    }
-
-                    ret.push(entryPoint);
-                    ordinal++;
-                }
+            if (bundleSize == 0) {
+                break;
             }
 
-            this._entryPoints = ret;
+            // Get the segment index or some metadata describing the
+            // segment for this bundle.
+            let segment = view.getUint8(offset);
+            offset++;
+
+            if (segment == 0) {
+                // Empty bundle (skipped ordinals)
+                ordinal += bundleSize;
+                for (let bi = 0; bi < bundleSize; bi++) {
+                    ret.push({});
+                }
+                continue;
+            }
+
+            for (var bi = 0; bi < bundleSize; bi++) {
+                if (segment == 0xff) {
+                    // This is a movable segment.
+
+                    // The next six bytes tells you the rest of the information
+                    let flags = view.getUint8(offset);
+                    offset++;
+
+                    // The next two bytes are an 'int 3fh' instruction.
+                    // It is weird!
+                    offset+=2;
+
+                    // A segment number
+                    let segmentNumber = view.getUint8(offset);
+                    offset++;
+
+                    // A segment offset
+                    let segmentOffset = view.getUint16(offset, true);
+                    offset += 2;
+
+                    entryPoint = {
+                        movable: true,
+                        segment: segmentNumber,
+                        offset: segmentOffset,
+                        exported: (flags & 0x1) != 0,
+                        flags: flags,
+                        ordinal: ordinal
+                    };
+                }
+                else if (segment == 0xfe) {
+                    // This is a constant and not a segment, apparently?
+                    console.log("WHOA!! A constant entry point???");
+                }
+                else {
+                    // segment is specifying the exact fixed segment
+
+                    // The next three bytes tells you the rest of the information
+                    let flags = view.getUint8(offset);
+                    offset++;
+
+                    // A segment offset
+                    let segmentOffset = view.getUint16(offset, true);
+                    offset += 2;
+
+                    entryPoint = {
+                        fixed: true,
+                        segment: segment,
+                        offset: segmentOffset,
+                        exported: (flags & 0x1) != 0,
+                        flags: flags,
+                        ordinal: ordinal
+                    };
+                }
+
+                ret.push(entryPoint);
+                ordinal++;
+            }
         }
 
+        this._entryPoints = ret;
         return this._entryPoints;
     }
 
-    get resources() {
-        if (!this._resources) {
-            let ret = [];
+    get entryPoints() {
+        return this._entryPoints;
+    }
 
-            if (this.type == Executable.TYPES.NE) {
-                let startingOffset = this.neHeader.resourceTableOffset;
-                startingOffset += this.headerOffset;
+    async _readResourceTable() {
+        let ret = [];
 
-                let offset = startingOffset;
-                let last = this.headerOffset + this.neHeader.residentNamesOffset;
+        if (this.type == Executable.TYPES.NE) {
+            let startingOffset = this.neHeader.resourceTableOffset;
+            startingOffset += this.headerOffset;
 
-                let shift = this._view.getUint16(offset, true);
-                offset += 2;
+            let offset = startingOffset;
+            let last = this.headerOffset + this.neHeader.residentNamesOffset;
 
-                let limit = 0;
-                while (offset < last && limit <= 10) {
-                    limit++;
+            let shift = this._view.getUint16(offset, true);
+            offset += 2;
 
-                    let resourceType = Util.readStructure(this._view, Executable.NEResourceType, offset, true);
+            let limit = 0;
+            while (offset < last && limit <= 30) {
+                console.log("looking", offset, last);
+                limit++;
 
-                    if (resourceType.id == 0x0) {
-                        break;
-                    }
-                    else if (resourceType.id < 0x8000) {
-                        let subOffset = startingOffset + resourceType.id;
-                        let length = this._view.getUint8(subOffset);
-                        resourceType.id = Util.readString(this._view, subOffset + 1, length);
-                    }
+                let resourceType = Util.readStructure(this._view, Executable.NEResourceType, offset, true);
 
-                    offset += 8;
-
-                    resourceType.entries = [];
-
-                    for (var i = 0; i < resourceType.number; i++) {
-                        let resource = Util.readStructure(this._view, Executable.NEResource, offset, true);
-
-                        if (resource.id < 0x8000) {
-                            let subOffset = startingOffset + resource.id;
-                            let length = this._view.getUint8(subOffset);
-                            resource.id = Util.readString(this._view, subOffset + 1, length);
-                        }
-
-                        resource.offset <<= shift;
-                        resource.length <<= shift;
-
-                        resourceType.entries.push(resource);
-
-                        offset += 12;
-                    }
-
-                    ret.push(resourceType);
+                if (resourceType.id == 0x0) {
+                    break;
                 }
-            }
+                else if (resourceType.id < 0x8000) {
+                    let subOffset = startingOffset + resourceType.id;
+                    let length = this._view.getUint8(subOffset);
+                    resourceType.name = Util.readString(this._view, subOffset + 1, length);
+                }
+                else {
+                    resourceType.id &= 0x7fff;
+                }
 
-            this._resources = ret;
+                console.log("read resource", resourceType);
+
+                offset += 8;
+
+                resourceType.entries = [];
+
+                for (var i = 0; i < resourceType.number; i++) {
+                    let resource = Util.readStructure(this._view, Executable.NEResource, offset, true);
+
+                    if (resource.id < 0x8000) {
+                        let subOffset = startingOffset + resource.id;
+                        let length = this._view.getUint8(subOffset);
+                        resource.id = Util.readString(this._view, subOffset + 1, length);
+                    }
+                    else {
+                        resource.id &= 0x7fff;
+                    }
+                    console.log("read subresource", resource);
+
+                    resource.offset <<= shift;
+                    resource.length <<= shift;
+
+                    resourceType.entries.push(resource);
+
+                    if (resourceType.id == Executable.RESOURCES.NameTable) {
+                        // Read the name table
+                        await this._readNameTable(resource);
+                    }
+
+                    offset += 12;
+                }
+
+                ret.push(resourceType);
+            }
         }
 
+        // Now, look at any newly discovered names for resources
+        // For instance, from name tables.
+        if (this._nameTable) {
+            console.log("translating resource names");
+            for (let i = 0; i < ret.length; i++) {
+                let resourceType = ret[i];
+                console.log("looking at", resourceType);
+
+                if (!this._nameTable[resourceType.id]) {
+                    continue;
+                }
+
+                let names = this._nameTable[resourceType.id];
+
+                for (let j = 0; j < resourceType.entries.length; j++) {
+                    let resource = resourceType.entries[j];
+
+                    if (names[resource.id]) {
+                        resource.name = names[resource.id];
+                        console.log("found a name!", resource);
+                    }
+                }
+            }
+        }
+
+        this._resources = ret;
+        return ret;
+    }
+
+    get resources() {
         return this._resources;
+    }
+
+    /**
+     * Reads the archaic NAMETABLE resource.
+     *
+     * This contains the names of other resources when they have both an ID and
+     * a string as a name. This is generally only available in older executables
+     * such as those from Windows 2.0 or 3.0.
+     *
+     * @param {dict} resource - The resource entry for the name table.
+     */
+    async _readNameTable(resource) {
+        // Only respect the first name table in the list
+        if (this._nameTable) {
+            return this._nameTable;
+        }
+
+        // Get the name table bytes
+        let view = new DataView(await this.readResource(resource));
+
+        console.log("reading name table", resource, view);
+
+        // Initialize the name table
+        this._nameTable = {};
+
+        // Get the offset to the table
+        let offset = 0;
+
+        // Read each entry
+        while (offset < resource.length) {
+            let length = view.getUint16(offset, true);
+            let type = view.getUint16(offset + 2, true);
+            let id = view.getUint16(offset + 4, true) & 0x7fff;
+            offset += 7;
+
+            // If the length is ever 0, we bail on the rest of the table
+            if (length == 0) {
+                break;
+            }
+
+            // Read name
+            length -= 7;
+            let name = Util.readString(view, offset, length);
+            offset += length;
+
+            this._nameTable[type] = this._nameTable[type] || {};
+            this._nameTable[type][id] = name;
+
+            console.log("name table entry", length, type, id, name);
+        }
+
+        console.log("name table", this._nameTable);
+
+        return this._nameTable;
     }
 
     /**
@@ -303,6 +406,11 @@ export class Executable {
         // This view should be able to read all metadata.
         buffer = await this._stream.read(0, max);
         this._view = new DataView(buffer);
+
+        await this._readResourceTable();
+        await this._readEntryPoints();
+
+        console.log("HEADER", this.neHeader);
     }
 
     /**
@@ -485,26 +593,27 @@ Executable.NEResource = {
  * @typedef {number} Executable.RESOURCES
  */
 Executable.RESOURCES = {
-    Accelerator:    0x8009,
-    AnimatedCursor: 0x8015,
-    AnimatedIcon:   0x8016,
-    Bitmap:         0x8002,
-    Cursor:         0x8001,
-    Dialog:         0x8005,
-    Font:           0x8008,
-    FontDirectory:  0x8007,
-    GroupCursor:    0x800c,
-    GroupIcon:      0x800e,
-    HTML:           0x8017,
-    Icon:           0x8003,
-    Manifest:       0x8018,
-    Menu:           0x8004,
-    MessageTable:   0x800b,
-    PlugAndPlay:    0x8013,
-    RawData:        0x800a, // RC_DATA
-    StringTable:    0x8006,
-    Version:        0x8010,
-    VXD:            0x8014,
+    Accelerator:    0x0009,
+    AnimatedCursor: 0x0015,
+    AnimatedIcon:   0x0016,
+    Bitmap:         0x0002,
+    Cursor:         0x0001,
+    Dialog:         0x0005,
+    Font:           0x0008,
+    FontDirectory:  0x0007,
+    GroupCursor:    0x000c,
+    GroupIcon:      0x000e,
+    HTML:           0x0017,
+    Icon:           0x0003,
+    Manifest:       0x0018,
+    Menu:           0x0004,
+    MessageTable:   0x000b,
+    PlugAndPlay:    0x0013,
+    RawData:        0x000a, // RC_DATA
+    StringTable:    0x0006,
+    Version:        0x0010,
+    VXD:            0x0014,
+    NameTable:      0x000f,
 };
 
 // https://docs.microsoft.com/en-us/previous-versions/ms809762(v=msdn.10)

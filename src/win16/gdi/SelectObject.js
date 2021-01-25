@@ -114,6 +114,9 @@ export function SelectObject(hdc, hgdiobj) {
         ret = this.handles.lookup(surface.brush) || TRUE;
         surface.brush = item;
     }
+    else {
+        console.log("SelectObject: unknown or invalid object handle");
+    }
 
     return ret;
 }

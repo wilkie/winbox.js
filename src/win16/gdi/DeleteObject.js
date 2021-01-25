@@ -36,14 +36,8 @@ export function DeleteObject(handle) {
     }
 
     let item = this.handles.resolve(handle);
-    if (item.view && item.view.heap) {
-        // Delete from the local heap (by handle or by object)
-        if (item.view.handle) {
-            item.view.heap.free(item.view.handle);
-        }
-        else {
-            item.view.heap.free(item.view.offset);
-        }
+    if (!item) {
+        return FALSE;
     }
 
     this.handles.free(handle);

@@ -7,25 +7,32 @@ import { Module } from './module.js';
 import { BYTE, UBYTE, INT, UINT, LONG, ULONG,
          DWORD, HLOCAL, HGLOBAL, HANDLE, ATOM, LRESULT,
          HMENU, HINSTANCE, WPARAM, LPARAM, HDC, HGDIOBJ,
-         HBRUSH, HICON, HCURSOR, WNDPROC, COLORREF, HBITMAP,
+         HBRUSH, HPEN, HICON, HCURSOR, WNDPROC, COLORREF, HBITMAP,
          BOOL, NEARPTR, FARPTR, LPCSTR, HWND, Struct } from './types.js';
 
 import { BitBlt } from './gdi/BitBlt.js';
 import { CreateBitmap } from './gdi/CreateBitmap.js';
 import { CreateCompatibleBitmap } from './gdi/CreateCompatibleBitmap.js';
 import { CreateCompatibleDC } from './gdi/CreateCompatibleDC.js';
+import { CreatePen } from './gdi/CreatePen.js';
 import { CreateSolidBrush } from './gdi/CreateSolidBrush.js';
+import { DeleteDC } from './gdi/DeleteDC.js';
 import { DeleteObject } from './gdi/DeleteObject.js';
 import { GetBitmapBits } from './gdi/GetBitmapBits.js';
 import { GetDeviceCaps } from './gdi/GetDeviceCaps.js';
 import { GetObject } from './gdi/GetObject.js';
+import { GetRasterizerCaps } from './gdi/GetRasterizerCaps.js';
 import { GetTextExtent } from './gdi/GetTextExtent.js';
 import { GetTextMetrics } from './gdi/GetTextMetrics.js';
 import { GetStockObject } from './gdi/GetStockObject.js';
+import { LineTo } from './gdi/LineTo.js';
+import { MoveTo } from './gdi/MoveTo.js';
 import { PatBlt } from './gdi/PatBlt.js';
+import { Rectangle } from './gdi/Rectangle.js';
 import { SelectObject } from './gdi/SelectObject.js';
 import { SetBitmapBits } from './gdi/SetBitmapBits.js';
 import { SetBkColor } from './gdi/SetBkColor.js';
+import { SetPixel } from './gdi/SetPixel.js';
 import { SetTextColor } from './gdi/SetTextColor.js';
 import { TextOut } from './gdi/TextOut.js';
 
@@ -66,21 +73,21 @@ export class Gdi extends Module {
             [Gdi.stub, "ScaleWindowExt", 10],
             [Gdi.stub, "OffsetViewportOrg", 6],
             [Gdi.stub, "ScaleViewportExt", 10],
-            [Gdi.stub, "LineTo", 6],
+            [LineTo, "LineTo", 6, [HDC, INT, INT], BOOL],
             // 20 //
-            [Gdi.stub, "MoveTo", 6],
+            [MoveTo, "MoveTo", 6, [HDC, INT, INT], DWORD],
             [Gdi.stub, "ExcludeClipRect", 10],
             [Gdi.stub, "IntersectClipRect", 10],
             [Gdi.stub, "Arc", 18],
             [Gdi.stub, "Ellipse", 10],
             [Gdi.stub, "FloodFill", 10],
             [Gdi.stub, "Pie", 18],
-            [Gdi.stub, "Rectangle", 10],
+            [Rectangle, "Rectangle", 10, [HDC, INT, INT, INT, INT], BOOL],
             [Gdi.stub, "RoundRect", 14],
             [PatBlt, "PatBlt", 14, [HDC, INT, INT, INT, INT, DWORD], BOOL],
             // 30 //
             [Gdi.stub, "SaveDC", 2],
-            [Gdi.stub, "SetPixel", 10],
+            [SetPixel, "SetPixel", 10, [HDC, INT, INT, COLORREF], COLORREF],
             [Gdi.stub, "OffsetClipRgn", 6],
             [TextOut, "TextOut", 12, [HDC, INT, INT, LPCSTR, INT], BOOL],
             [BitBlt, "BitBlt", 20, [HDC, INT, INT, INT, INT, HDC, INT, INT, DWORD], BOOL],
@@ -113,14 +120,14 @@ export class Gdi extends Module {
             [Gdi.stub, "unknown"],
             // 60 //
             [Gdi.stub, "CreatePatternBrush", 2],
-            [Gdi.stub, "CreatePen", 8],
+            [CreatePen, "CreatePen", 8, [INT, INT, COLORREF], HPEN],
             [Gdi.stub, "CreatePenIndirect", 4],
             [Gdi.stub, "CreatePolygonRgn", 8],
             [Gdi.stub, "CreateRectRgn", 8],
             [Gdi.stub, "CreateRectRgnIndirect", 4],
             [CreateSolidBrush, "CreateSolidBrush", 4, [COLORREF], HBRUSH],
             [Gdi.stub, "DPToLP", 8],
-            [Gdi.stub, "DeleteDC", 2],
+            [DeleteDC, "DeleteDC", 2, [HDC], BOOL],
             [DeleteObject, "DeleteObject", 2, [HGDIOBJ], BOOL],
             // 70 //
             [Gdi.stub, "EnumFonts", 14],
@@ -358,7 +365,7 @@ export class Gdi extends Module {
             [Gdi.stub, "CreateScalableFontResource", 12],
             [Gdi.stub, "GetFontData", 18],
             [Gdi.stub, "ConvertOutlineFontFile", 12],
-            [Gdi.stub, "GetRasterizerCaps", 6],
+            [GetRasterizerCaps, "GetRasterizerCaps", 6, [[RASTERIZER_STATUS], INT], BOOL],
             [Gdi.stub, "EngineExtTextOut", 42],
             [Gdi.stub, "unknown"],
             [Gdi.stub, "unknown"],
@@ -518,6 +525,27 @@ export class Gdi extends Module {
 }
 
 /**
+ * The **RASTERIZER_STATUS** structure contains information about whether
+ * TrueType is installed. This structure is filled when an application calls the
+ * {@link Gdi.GetRasterizerCaps GetRasterizerCaps} function.
+ *
+ * nSize: Specifies the size, in bytes, of the **RASTERIZER_STATUS** structure.
+ * wFlags: Specifies whether or not at least one TrueType font is installed and
+ * whether TrueType is enabled. This value is `TT_AVAILABLE` and/or `TT_ENABLED`
+ * if TrueType is on the system.
+ * nLanguageID: Specifies the language in the system's `SETUP.INF` file.
+ */
+export class RASTERIZER_STATUS extends Struct {
+    constructor() {
+        super([
+            ['nSize', INT],
+            ['wFlags', INT],
+            ['nLanguageID', INT],
+        ]);
+    }
+}
+
+/**
  * The **BITMAP** structure defines the height, width, color format, and bit
  * values of a logical bitmap.
  */
@@ -633,3 +661,8 @@ Gdi.PATINVERT = 0x5a0049;
 Gdi.DSTINVERT = 0x550009;
 Gdi.BLACKNESS = 0x000042;
 Gdi.WHITENESS = 0xff0062;
+
+// RASTERIZER_STATUS Flags
+// -----------------------
+Gdi.TT_AVAILABLE    = 0x0001;
+Gdi.TT_ENABLED      = 0x0002;

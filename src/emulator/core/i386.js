@@ -3,6 +3,7 @@
 import { ALU } from '../alu.js';
 import { I286 } from './i286.js';
 import { CPU, InvalidInstruction } from '../cpu.js';
+import { X87 } from '../x87.js';
 
 /**
  * This class represents the CPU emulation of an Intel 386.
@@ -10,6 +11,9 @@ import { CPU, InvalidInstruction } from '../cpu.js';
 export class I386 extends I286 {
     constructor(cpu, options = {}) {
         super(cpu, options);
+
+        // Initialize the FPU co-processor
+        this._fpu = new X87(this);
 
         // Extend the segment registers to account for FS and GS
         this._segmentRegisters.push(0);
@@ -248,7 +252,6 @@ export class I386 extends I286 {
      * Pushes a 32-bit value to the stack.
      */
     push32(value) {
-        console.log("pushed32", value);
         this.esp -= 4;
         this.write32(this.ss, this.esp, value);
     }
@@ -772,7 +775,6 @@ export class I386 extends I286 {
                 case 0x3d:    // CMP EAX,dw
                 case 0x68:    // PUSH dw
                 case 0xa0:    // MOV AL,xb
-                case 0xa1:    // MOV EAX,xw
                 case 0xa9:    // TEST EAX,dw
                 case 0xb8:    // MOV EAX,dw
                 case 0xb9:    // MOV ECX,dw
@@ -837,6 +839,19 @@ export class I386 extends I286 {
                     this.readModRM(instruction);
                     break;
 
+                case 0x9b:
+                case 0xd8:
+                case 0xd9:
+                case 0xda:
+                case 0xdb:
+                case 0xdc:
+                case 0xdd:
+                case 0xde:
+                case 0xdf:
+                    // X87 instructions
+                    this.ip--;
+                    return this._fpu.decode(instruction);
+
                 default:
                     this.ip--;
                     // Fall back to the i286 core
@@ -872,8 +887,22 @@ export class I386 extends I286 {
                     instruction = this.decode(instruction);
                     break;
 
+                case 0x9b:
+                case 0xd8:
+                case 0xd9:
+                case 0xda:
+                case 0xdb:
+                case 0xdc:
+                case 0xdd:
+                case 0xde:
+                case 0xdf:
+                    // X87 instructions
+                    this.ip--;
+                    return this._fpu.decode(instruction);
+
                 default:
                     this.ip--;
+
                     // Fall back to the i286 core
                     return super.decode(instruction);
             }
@@ -1021,7 +1050,7 @@ export class I386 extends I286 {
                 case 0x55:    // PUSH BP
                 case 0x56:    // PUSH SI
                 case 0x57:    // PUSH DI
-                    console.log('push32 +R   ');
+                    //console.log('push32 +R   ');
                     let pushDestination = opcode - 0x50;
 
                     this.push32(this.readRegister32(pushDestination));
@@ -1193,6 +1222,16 @@ export class I386 extends I286 {
                         });
                     }
                     this.writeSegmentRegister(movDestination, this.readOperand16(instruction));
+                    break;
+
+                case 0xa1:    // MOV EAX,xw
+                    this.debug('mov    EAX,xw');
+                    this.writeRegister32(I386.REGISTER_EAX,
+                        this.read32(
+                            instruction.segment || this.ds,
+                            instruction.immediate,
+                        )
+                    );
                     break;
 
                 case 0xa3:    // MOV xw,EAX
@@ -1570,6 +1609,19 @@ export class I386 extends I286 {
                     //console.log('sp:', this.sp.toString(16));
                     break;
 
+                case 0x9b:
+                case 0xd8:
+                case 0xd9:
+                case 0xda:
+                case 0xdb:
+                case 0xdc:
+                case 0xdd:
+                case 0xde:
+                case 0xdf:
+                    // X87 instructions
+                    this._fpu.execute(instruction);
+                    break;
+
                 case 0xe8:    // CALL cw
                     //console.log('call32 cw   ');
                     // Push EIP
@@ -1710,7 +1762,7 @@ export class I386 extends I286 {
                             break;
 
                         case 0x6:   // PUSH mw
-                            console.log('push32 mw', this.ss.toString(16), this.sp.toString(16), instruction.segment.toString(16), instruction.offset.toString(16), this._memory.read32(this.translateAddress(instruction.segment, instruction.offset)).toString(16), this._memory.read16(this.translateAddress(instruction.segment, instruction.offset)).toString(16));
+                            //console.log('push32 mw', this.ss.toString(16), this.sp.toString(16), instruction.segment.toString(16), instruction.offset.toString(16), this._memory.read32(this.translateAddress(instruction.segment, instruction.offset)).toString(16), this._memory.read16(this.translateAddress(instruction.segment, instruction.offset)).toString(16));
                             this.push32(this.readOperand32(instruction));
                             break;
 
@@ -1809,19 +1861,19 @@ export class I386 extends I286 {
 
                 case 0x1b6:   // MOVSZ mb,ew
                     // Zero extends byte to r32
-                    console.log("movsz", this.readOperand8(instruction));
+                    //console.log("movsz", this.readOperand8(instruction));
                     this.writeRegister32(instruction.sourceRegister, this.readOperand8(instruction));
                     break;
 
                 case 0x1b7:   // MOVSZ mw,mw
                     // Zero extends word to double-word
-                    console.log("movsz", this.readOperand16(instruction));
+                    //console.log("movsz", this.readOperand16(instruction));
                     this.writeRegister32(instruction.sourceRegister, this.readOperand16(instruction));
                     break;
 
                 case 0x1be:   // MOVSX mb,ew
                     // Sign extends byte to r32
-                    console.log("movsx", this._alu.toSigned8(this.readOperand8(instruction)));
+                    //console.log("movsx", this._alu.toSigned8(this.readOperand8(instruction)));
                     this.writeRegister32(instruction.sourceRegister, 
                         this._alu.toSigned8(this.readOperand8(instruction))
                     );
@@ -1829,7 +1881,7 @@ export class I386 extends I286 {
 
                 case 0x1bf:   // MOVSX mw,mw
                     // Sign extends word to double-word
-                    console.log("movsx", this._alu.toSigned16(this.readOperand16(instruction)));
+                    //console.log("movsx", this._alu.toSigned16(this.readOperand16(instruction)));
                     this.writeRegister32(instruction.sourceRegister, 
                         this._alu.toSigned16(this.readOperand16(instruction))
                     );
@@ -1844,7 +1896,7 @@ export class I386 extends I286 {
                     let shldHigh = this.readRegister32(instruction.sourceRegister);
                     let shldCombined = (BigInt(shldHigh) << 32n) | BigInt(shldLow);
                     let shldResult = this._alu.shl64(shldCombined, BigInt(instruction.immediate));
-                    console.log("SHLD", shldCombined, instruction.immediate, shldResult);
+                    //console.log("SHLD", shldCombined, instruction.immediate, shldResult);
                     this.writeOperand32(instruction, Number(shldResult & 0xffffffffn));
                     break;
 
@@ -1857,7 +1909,7 @@ export class I386 extends I286 {
                     let shrdHigh = this.readRegister32(instruction.sourceRegister);
                     let shrdCombined = (BigInt(shrdHigh) << 32n) | BigInt(shrdLow);
                     let shrdResult = this._alu.shr64(shrdCombined, BigInt(instruction.immediate));
-                    console.log("SHRD", shrdCombined, instruction.immediate, shrdResult);
+                    //console.log("SHRD", shrdCombined, instruction.immediate, shrdResult);
                     this.writeOperand32(instruction, Number(shrdResult & 0xffffffffn));
                     break;
 
@@ -1902,6 +1954,19 @@ export class I386 extends I286 {
                     if (this.ecx == 0) {
                         this.ip += this._alu.toSigned8(instruction.immediate);
                     }
+                    break;
+
+                case 0x9b:
+                case 0xd8:
+                case 0xd9:
+                case 0xda:
+                case 0xdb:
+                case 0xdc:
+                case 0xdd:
+                case 0xde:
+                case 0xdf:
+                    // X87 instructions
+                    this._fpu.execute(instruction);
                     break;
 
                 default:
@@ -2024,7 +2089,7 @@ export class I386 extends I286 {
 
                 case 0x1be:   // MOVSX mb,ew
                     // Sign extends byte to r16
-                    console.log("movsx mb", this._alu.toSigned8(this.readOperand8(instruction)));
+                    //console.log("movsx mb", this._alu.toSigned8(this.readOperand8(instruction)));
                     this.writeRegister16(instruction.sourceRegister, 
                         this._alu.toSigned8(this.readOperand8(instruction))
                     );
@@ -2032,7 +2097,7 @@ export class I386 extends I286 {
 
                 case 0x1bf:   // MOVSX mw,mw
                     // Sign extends word to double-word
-                    console.log("movsx mw", this._alu.toSigned16(this.readOperand16(instruction)));
+                    //console.log("movsx mw", this._alu.toSigned16(this.readOperand16(instruction)));
                     this.writeRegister32(instruction.sourceRegister, 
                         this._alu.toSigned16(this.readOperand16(instruction))
                     );
@@ -2143,6 +2208,19 @@ export class I386 extends I286 {
                         this.ip += this._alu.toSigned16(instruction.immediate);
                     }
 
+                    break;
+
+                case 0x9b:
+                case 0xd8:
+                case 0xd9:
+                case 0xda:
+                case 0xdb:
+                case 0xdc:
+                case 0xdd:
+                case 0xde:
+                case 0xdf:
+                    // X87 instructions
+                    this._fpu.execute(instruction);
                     break;
 
                 default:

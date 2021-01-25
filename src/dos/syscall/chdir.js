@@ -9,7 +9,7 @@ export function chdir(path) {
     // Determine if the given path exists
 
     // If it does, change to it
-    this._pwd = path;
+    this.files.path = path;
 
     // Return any error
     return true;

@@ -24,6 +24,9 @@ import { Kernel } from './win16/kernel.js';
 import { Gdi } from './win16/gdi.js';
 import { User, MSG } from './win16/user.js';
 import { MMSystem } from './win16/mmsystem.js';
+import { WinG } from './win16/wing.js';
+import { Sound } from './win16/sound.js';
+import { Win87EM } from './win16/win87em.js';
 import { CommDlg } from './win16/commdlg.js';
 
 // Other useful types
@@ -75,6 +78,12 @@ export class Win16 {
         this._modules.register(User, handle);
         handle = this._handles.allocate(MMSystem);
         this._modules.register(MMSystem, handle);
+        handle = this._handles.allocate(Sound);
+        this._modules.register(Sound, handle);
+        handle = this._handles.allocate(Win87EM);
+        this._modules.register(Win87EM, handle);
+        handle = this._handles.allocate(WinG);
+        this._modules.register(WinG, handle);
         handle = this._handles.allocate(CommDlg);
         this._modules.register(CommDlg, handle);
 
@@ -119,7 +128,9 @@ export class Win16 {
 
         // Initialize fonts
         files.forEach( (file) => {
-            this._fonts.load(file);
+            if (file.name.endsWith(".FON")) {
+                this._fonts.load(file);
+            }
         });
     }
 
@@ -319,6 +330,11 @@ export class Win16 {
         this._machine.cpu.core.si = 0;
         this._machine.cpu.core.es = (programSegment << 3) | 0x3;
 
+        // Set current directory
+        let parts = this.dos.files.parse(task.executable.path);
+        this.dos.files.drive = parts.drive;
+        this.dos.files.path = parts.drive + ":\\" + parts.path.slice(0, parts.path.length - 1).join("\\");
+
         // Set initial context
         task.context = this._machine.cpu.state;
         this.resume(handle);
@@ -425,6 +441,13 @@ export class Win16 {
             this._machine.cpu.core.sp + 2
         );
 
+        if (ip == 0) {
+            this.scheduler.interpretReturnValue(0);
+            return false;
+        }
+
+        console.log("hmm", ip);
+
         let functionDefinition = module.instance.exports[ip];
 
         let implementation = functionDefinition[0];
@@ -526,13 +549,9 @@ export class Win16 {
 
         // Call normal function
         //if (module.instance.exports[ip][1] != "PeekMessage" && module.instance.exports[ip][1] != "GetTickCount") {
-            //console.log("Calling", module.instance.name, module.instance.exports[ip][1], callerCS.toString(16), ":", (callerIP - 5).toString(16), args);
+            console.log("Calling", module.instance.name, module.instance.exports[ip][1], callerCS.toString(16), ":", (callerIP - 5).toString(16), args);
             //console.log(this._machine.cpu.core.cs.toString(16), this._machine.cpu.core.ip.toString(16));
         //}
-
-        if (implementation === module.instance.stub) {
-            console.log("Stub:", module.instance.name, module.instance.exports[ip][1], callerCS.toString(16), ":", (callerIP - 5).toString(16), args)
-        }
 
         // Halt the task so it won't continue
         this.scheduler.task.halt();
@@ -544,9 +563,13 @@ export class Win16 {
         //console.log(module.instance.exports[ip][1], "in", elapsed);
         //console.log("result", result, typeof result === 'function');
 
+        if (implementation === module.instance.stub) {
+            console.log("Stub:", module.instance.name, module.instance.exports[ip][1], callerCS.toString(16), ":", (callerIP - 5).toString(16), args)
+            result = 1234;
+        }
+
         // Interpret the result; possibly resumes the task
         this.scheduler.interpretReturnValue(result, returnType);
-
         return false;
     }
 

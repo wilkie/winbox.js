@@ -16,6 +16,14 @@ export class Task {
         this._pendingStack = [];
     }
 
+    get curdir() {
+        return this._curdir;
+    }
+
+    set curdir(path) {
+        this._curdir = path;
+    }
+
     get currentCall() {
         return this._currentCall;
     }
@@ -143,6 +151,12 @@ export class Task {
         if (this._messageLock) {
             let promise = this._messageLock;
             this._messageLock = null;
+
+            // Call the message callback
+            if (message.callback) {
+                message.callback();
+            }
+
             promise(message);
         }
         else {
@@ -174,6 +188,12 @@ export class Task {
         }
 
         let ret = this._messages.splice(0, 1)[0];
+
+        // Call the message callback
+        if (ret && ret.callback) {
+            ret.callback();
+        }
+
         return ret;
     }
 }

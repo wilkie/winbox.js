@@ -235,7 +235,7 @@ export class BitmapFontEntry {
                 let i = 0;
                 for( ; i < words.length; i++) {
                     let wordMetrics = this.measure(words[i], options);
-                    if (wordMetrics.width + x > width) {
+                    if (i > 0 && (wordMetrics.width + x) > width) {
                         // Stop here
                         break;
                     }

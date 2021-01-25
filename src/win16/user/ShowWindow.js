@@ -138,11 +138,13 @@ export async function ShowWindow(hwnd, nCmdShow) {
             await this.scheduler.callWndProc(windowClass, hwnd, User.WM_MOVE, 0, wmMoveLParam);
 
             // WM_PAINT
+            /*
+            console.log("WM_PAINT");
             let msg = new MSG();
             msg.hwnd = hwnd;
             msg.message = User.WM_PAINT;
-            this.scheduler.task.push(msg);
-            await this.scheduler.callWndProc(windowClass, hwnd, User.WM_PAINT, wmMoveLParam);
+            this.scheduler.task.push(msg);*/
+            //await this.scheduler.callWndProc(windowClass, hwnd, User.WM_PAINT, wmMoveLParam);
         }
     }
 
