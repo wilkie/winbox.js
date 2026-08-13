@@ -2,11 +2,12 @@
 
 import { ALU } from '../alu.js';
 import { CPU, InvalidInstruction } from '../cpu.js';
+import { CpuCore16 } from '../cpu-core.js';
 
 /**
  * This class represents the CPU emulation of an Intel 286.
  */
-export class I286 {
+export class I286 implements CpuCore16 {
   declare _alu: any;
   declare _cpu: any;
   declare _flags: any;

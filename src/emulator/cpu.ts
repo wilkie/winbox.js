@@ -2,11 +2,12 @@
 
 import { I286 } from './core/i286.js';
 import { I386 } from './core/i386.js';
+import { CpuCore, CpuCoreHost, TrapVector } from './cpu-core.js';
 
 /**
  * This class represents the CPU emulation.
  */
-export class CPU {
+export class CPU implements CpuCoreHost {
   declare _alu: any;
   declare _core: any;
   declare _cycleCount: any;
@@ -71,7 +72,7 @@ export class CPU {
   /**
    * Retrieves the execution core of the CPU.
    */
-  get core() {
+  get core(): CpuCore {
     return this._core;
   }
 

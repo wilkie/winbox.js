@@ -4,11 +4,12 @@ import { ALU } from '../alu.js';
 import { I286 } from './i286.js';
 import { CPU, InvalidInstruction } from '../cpu.js';
 import { X87 } from '../x87.js';
+import { CpuCore } from '../cpu-core.js';
 
 /**
  * This class represents the CPU emulation of an Intel 386.
  */
-export class I386 extends I286 {
+export class I386 extends I286 implements CpuCore {
   declare _alu: any;
   declare _cr0: any;
   declare _cr1: any;

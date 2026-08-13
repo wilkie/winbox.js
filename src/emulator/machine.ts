@@ -11,10 +11,11 @@ import { InterruptManager } from './interrupt-manager.js';
  * It manages instances to both the memory and CPU and other devices.
  */
 export class Machine {
-  declare _cpu: any;
-  declare _disks: any;
-  declare _interrupts: any;
-  declare _memory: any;
+  declare _cpu: CPU;
+  declare _idtSegment: number;
+  declare _disks: Disk[];
+  declare _interrupts: InterruptManager;
+  declare _memory: Memory;
   constructor(options = {}) {
     this._memory = new Memory();
     this._cpu = new CPU(this._memory);
@@ -22,20 +23,24 @@ export class Machine {
 
     // 40MiB disk, 32KiB block size
     this._disks = [new Disk(40 * 1024 * 1024, 512, 32 * 1024)];
+
+    // Segment of the interrupt vector table the Win16 layer maps in. The DOS
+    // get/set interrupt vector syscalls address it as a segment.
+    this._idtSegment = 0;
   }
 
   /**
    * Retrieve the interrupt dispatch manager.
    */
-  get interrupts() {
+  get interrupts(): InterruptManager {
     return this._interrupts;
   }
 
-  get memory() {
+  get memory(): Memory {
     return this._memory;
   }
 
-  get cpu() {
+  get cpu(): CPU {
     return this._cpu;
   }
 
@@ -43,12 +48,12 @@ export class Machine {
     return this._disks.slice();
   }
 
-  get idtSegment() {
-    return this._cpu.idt;
+  get idtSegment(): number {
+    return this._idtSegment;
   }
 
-  set idtSegment(value) {
-    this._cpu.idt = value;
+  set idtSegment(value: number) {
+    this._idtSegment = value;
   }
 
   addDisk(disk) {
@@ -56,7 +61,7 @@ export class Machine {
       throw new TypeError('disk must be an instance of object');
     }
 
-    this._disks.append(disk);
+    this._disks.push(disk);
   }
 
   run() {}
