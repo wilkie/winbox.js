@@ -2050,18 +2050,14 @@ export class I286 implements CpuCore16 {
 
       case 0x69: // IMUL rw,ew,dw
         {
+          /* imul16 sets CF and OF from the product not fitting the
+           * destination, which is exactly this form's rule, so nothing is
+           * recomputed here.
+           */
           const imulResult = this._alu.imul16(
             this.readOperand16(instruction),
             this._alu.toSigned16(instruction.immediate)
           );
-
-          if (this._alu.toSigned16(imulResult) != this._alu.toSigned16(imulResult & 0xffff)) {
-            this.flags.carry = true;
-            this.flags.overflow = true;
-          } else {
-            this.flags.carry = false;
-            this.flags.overflow = false;
-          }
 
           this.writeRegister16(instruction.sourceRegister, imulResult);
         }
@@ -2074,18 +2070,14 @@ export class I286 implements CpuCore16 {
 
       case 0x6b: // IMUL rw,db / IMUL rw,ew,db
         {
+          /* imul16 sets CF and OF from the product not fitting the
+           * destination, which is exactly this form's rule, so nothing is
+           * recomputed here.
+           */
           const imulResult = this._alu.imul16(
             this.readOperand16(instruction),
             this._alu.toSigned8(instruction.immediate)
           );
-
-          if (this._alu.toSigned16(imulResult) != this._alu.toSigned16(imulResult & 0xffff)) {
-            this.flags.carry = true;
-            this.flags.overflow = true;
-          } else {
-            this.flags.carry = false;
-            this.flags.overflow = false;
-          }
 
           this.writeRegister16(instruction.sourceRegister, imulResult);
         }
@@ -2758,37 +2750,31 @@ export class I286 implements CpuCore16 {
 
       case 0xc8: // ENTER dw,db
         this.debug('enter  dw,db');
-        // Push BP
-        this.push16(this.bp);
+        {
+          // The nesting level is taken modulo 32.
+          const level = instruction.level & 0x1f;
 
-        if (instruction.level == 0) {
-          // Set BP to SP
-          this.bp = this.sp;
-        } else {
-          // Retain original SP
-          const enterSP = this.sp;
+          this.push16(this.bp);
 
-          // For each level...
-          this.instruction.level--;
-          while (instruction.level > 0) {
-            // Subtract two from BP to go to next item
-            this.bp = this.bp - 2;
+          // The frame pointer is SP as it stands after that push.
+          const frame = this.sp;
 
-            // Push the word at that address
+          // Copy the enclosing frames' pointers into the new frame.
+          for (let display = 1; display < level; display++) {
+            this.bp = (this.bp - 2) & 0xffff;
             this.push16(this.read16(this.ss, this.bp));
-
-            // Decrease our nesting level
-            instruction.level--;
           }
 
-          // Push SP
-          this.push16(enterSP);
+          if (level > 0) {
+            this.push16(frame);
+          }
 
-          // Set BP to SP
-          this.bp = enterSP;
+          this.bp = frame;
+
+          // Finally reserve the requested space for locals.
+          this.sp = (this.sp - instruction.immediate) & 0xffff;
         }
         break;
-
       case 0xc9: // LEAVE
         this.debug('leave       ');
         this.sp = this.bp;
