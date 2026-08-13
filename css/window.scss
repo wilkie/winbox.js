@@ -56,10 +56,7 @@
 
         > .__winbox_coveralls {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            inset: 0;
             width: 100%;
             height: 100%;
         }
@@ -70,7 +67,7 @@
             height: 1.25rem;
             width: 100%;
             position: relative;
-            font: 0.75rem "MS Sans Serif";
+            font: 0.75rem "MS Sans Serif", sans-serif;
             font-weight: bold;
             margin: 0;
             padding: 0;
@@ -116,10 +113,7 @@
                 &::after {
                     content: '';
                     position: absolute;
-                    top: 0;
-                    right: 0;
-                    left: 0;
-                    bottom: 0;
+                    inset: 0;
                     border: 0.0625rem solid white;
                     border-right: 0.125rem solid gray;
                     border-bottom: 0.125rem solid gray;
@@ -240,7 +234,7 @@
                         button.__winbox_window.__winbox_button.__winbox_close-button {
                             &::after {
                                 width: 0.3125rem;
-                                left: calc((100% - .3125rem)/2 - .125rem);
+                                left: calc((100% - 0.3125rem) / 2 - 0.125rem);
                             }
                         }
                     }
@@ -296,7 +290,6 @@
 
             .__winbox_resize-border {
                 position: absolute;
-
                 width: 1.3125rem;
                 height: 1.325rem;
 

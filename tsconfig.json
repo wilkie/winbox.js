@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "moduleDetection": "force",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+
+    /* The JS -> TS migration declares class members with `declare`, which
+     * emits no code at all, so constructor assignments behave exactly as they
+     * did in the JavaScript sources and standard field semantics are safe.
+     */
+    "useDefineForClassFields": true,
+
+    /* Migration settings. The codebase was mechanically converted from
+     * JavaScript, so type safety is nominal for now. Tighten these one flag at
+     * a time as modules get real annotations.
+     */
+    "strict": false,
+    "noImplicitAny": false,
+    "allowJs": true,
+    "checkJs": false,
+
+    "types": ["jest", "node", "vite/client"]
+  },
+  "include": ["src", "test", "e2e", "*.config.ts", "*.config.js"],
+  "exclude": ["node_modules", "dist", "docs"]
+}

@@ -1,0 +1,10 @@
+{
+  "$schema": "https://typedoc.org/schema.json",
+  "entryPoints": ["src"],
+  "entryPointStrategy": "expand",
+  "exclude": ["**/demo.ts", "**/shim.ts", "**/vendor.ts"],
+  "out": "docs",
+  "name": "WinBox.js",
+  "includeVersion": true,
+  "skipErrorChecking": true
+}

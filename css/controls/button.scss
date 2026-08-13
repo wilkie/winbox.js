@@ -12,10 +12,7 @@
                 &::before {
                     content: '';
                     position: absolute;
-                    top: 0;
-                    right: 0;
-                    left: 0;
-                    bottom: 0;
+                    inset: 0;
                     border: 0.125rem solid white;
                     border-right: 0.125rem solid gray;
                     border-bottom: 0.125rem solid gray;
@@ -24,10 +21,7 @@
                 &::after {
                     content: '';
                     position: absolute;
-                    top: 0;
-                    right: 0;
-                    left: 0;
-                    bottom: 0;
+                    inset: 0;
                 }
 
                 &:focus {

@@ -2,55 +2,77 @@
   "name": "winbox.js",
   "version": "1.0.0",
   "description": "JavaScript Old-School Windows 3.1 Emulator",
-  "main": "webpack.config.js",
-  "dependencies": {},
-  "devDependencies": {
-    "@babel/core": "^7.6.0",
-    "@babel/preset-env": "^7.6.0",
-    "babel-loader": "^8.0.6",
-    "babel-plugin-istanbul": "^5.2.0",
-    "css-loader": "^2.1.1",
-    "documentation": "^9.3.1",
-    "documentation-devseed-theme": "^0.1.7",
-    "eslint": "^5.16.0",
-    "eslint-loader": "^2.2.1",
-    "jasmine-core": "^3.4.0",
-    "karma": "^4.3.0",
-    "karma-chrome-launcher": "^2.2.0",
-    "karma-cli": "^2.0.0",
-    "karma-coverage": "^1.1.2",
-    "karma-coverage-istanbul-reporter": "^2.1.0",
-    "karma-detect-browsers": "^2.3.3",
-    "karma-firefox-launcher": "^1.2.0",
-    "karma-jasmine": "^2.0.1",
-    "karma-jasmine-dom": "^1.0.1",
-    "karma-json-reporter": "^1.2.1",
-    "karma-phantomjs-launcher": "^1.0.4",
-    "karma-sourcemap-loader": "^0.3.7",
-    "karma-webpack": "^3.0.5",
-    "kss": "^3.0.1",
-    "michelangelo": "^0.8.0",
-    "mini-css-extract-plugin": "^0.5.0",
-    "node-sass": "^4.14.1",
-    "optimize-css-assets-webpack-plugin": "^5.0.3",
-    "sass-loader": "^8.0.0",
-    "stylelint": "^9.10.1",
-    "stylelint-config-standard": "^18.3.0",
-    "stylelint-scss": "^3.10.1",
-    "terser-webpack-plugin": "^2.2.1",
-    "webpack": "^4.40.2",
-    "webpack-cli": "^3.3.8",
-    "webpack-dev-server": "^3.11.0",
-    "webpack-module-hot-accept": "^1.0.4"
-  },
-  "scripts": {
-    "test": "karma start",
-    "test-server": "karma start --auto-watch --no-single-run",
-    "build": "webpack",
-    "build-docs": "documentation build src/winbox.js -c documentation.yml -f html -o docs --theme node_modules/documentation-devseed-theme",
-    "build-css-docs": "kss --config kss-config.json",
-    "lint": "stylelint \"stylesheets/**/*.scss\""
-  },
   "author": "wilkie",
-  "license": "AGPLv3"
+  "license": "AGPL-3.0-or-later",
+  "type": "module",
+  "packageManager": "pnpm@10.15.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "main": "./dist/winbox.js",
+  "module": "./dist/winbox.js",
+  "types": "./dist/winbox.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/winbox.d.ts",
+      "import": "./dist/winbox.js"
+    },
+    "./winbox.css": "./dist/winbox.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": [
+    "**/*.css",
+    "**/*.scss",
+    "./src/shim.ts"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "lint:css": "stylelint \"css/**/*.scss\"",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:e2e": "playwright test",
+    "ci": "turbo run lint lint:css typecheck test build",
+    "build:docs": "typedoc"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.62.1",
+    "@swc/core": "^1.15.47",
+    "@swc/jest": "^0.2.39",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^26.2.0",
+    "eslint": "^10.8.1",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.11.0",
+    "jest": "^30.4.2",
+    "jest-environment-jsdom": "^30.4.1",
+    "prettier": "^3.9.6",
+    "sass": "^1.102.0",
+    "stylelint": "^17.14.1",
+    "stylelint-config-standard-scss": "^17.0.0",
+    "turbo": "^2.10.9",
+    "typedoc": "^0.28.20",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.67.0",
+    "vite": "^8.2.1"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@swc/core",
+      "@parcel/watcher",
+      "unrs-resolver",
+      "esbuild"
+    ]
+  }
 }

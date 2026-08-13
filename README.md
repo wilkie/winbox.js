@@ -14,46 +14,76 @@ The goals are many but mainly focused around:
 
 ## Development
 
-To gather the dependencies for the project, you will first want to install `npm`
-using your system's package manager. Once you have `npm`, you can install the
-dependencies via:
+The project is written in TypeScript, built with [Vite](https://vite.dev/), and
+managed with [pnpm](https://pnpm.io/). You will need **Node 22 or newer**; the
+version is pinned in `.nvmrc`, so with `nvm` installed you can run:
 
 ```shell
-npm install
+nvm use
 ```
 
-This places those dependencies in a directory called `node_modules` which we
-will generally ignore.
+`pnpm` ships with Node via corepack. Enable it once, then install the
+dependencies:
 
-Then you will proceed to the next section to build the vendored libraries and
-create a web bundle.
+```shell
+corepack enable pnpm
+pnpm install
+```
+
+To poke at the windowing engine in a real browser, start the dev server. It
+serves the demo page in `index.html` with hot module replacement:
+
+```shell
+pnpm dev
+```
 
 ## Building
 
-To build a web bundle, you can invoke npm like so:
+To build a web bundle:
 
 ```shell
-npm run build
+pnpm build
 ```
 
-This will invoke webpack to use babel to transpile our JavaScript to a flavor
-more acceptable to a wide range of web browsers. Although, our code will work
-well in most modern browsers as is, and you may elect to use the native code
-as you develop.
+This produces two files in the `dist` directory. The `winbox.js` file is the web
+bundle, a single file containing the entire source for the entire project
+namespace. The `winbox.css` file contains the entire css stylesheets that makes
+things look the way they do. Both are emitted with source maps.
 
-The webpack configuration is within `webpack.config.js`. It will generate
-css files and JavaScript bundles in the `dist` directory. The `winbox.js`
-file is the web bundle which is a single file that contains the entire source
-for the entire project namespace. The `dist/css/winbox.css` contains the
-entire css stylesheets that makes things look the way they do.
+The Vite configuration is within `vite.config.ts`. Stylesheets are compiled from
+the Sass sources in `css/`, which `src/shim.ts` pulls into the bundle.
+
+### Task running
+
+Builds, lints, typechecks and tests are wired into
+[Turbo](https://turborepo.com/), which runs them in parallel and caches results.
+Repeating an unchanged task is close to instant:
+
+```shell
+pnpm turbo run lint typecheck test build
+```
+
+The individual tasks are also plain scripts, if you prefer:
+
+| Command             | What it does                                     |
+| ------------------- | ------------------------------------------------ |
+| `pnpm dev`          | Dev server with the demo page                    |
+| `pnpm build`        | Production bundle into `dist/`                   |
+| `pnpm typecheck`    | `tsc --noEmit` over `src`, `test` and `e2e`      |
+| `pnpm lint`         | ESLint over the TypeScript sources               |
+| `pnpm lint:fix`     | ESLint with autofix                              |
+| `pnpm lint:css`     | Stylelint over the Sass sources                  |
+| `pnpm format`       | Prettier over the repository                     |
+| `pnpm test`         | Jest unit tests                                  |
+| `pnpm test:e2e`     | Playwright browser tests                         |
+| `pnpm build:docs`   | API documentation into `docs/`                   |
 
 ## Documentation
 
-To create a web-based HTML version of the documentation, you can again use npm
-to run the `documentation.js` program as so:
+To create a web-based HTML version of the documentation:
 
 ```shell
-npm run build-docs
+pnpm build:docs
 ```
 
 This creates an HTML document and associated files in the `docs` directory.
@@ -65,48 +95,60 @@ and two asterisks (`/**`) and are all already accessible in the code themselves.
 
 ## Testing
 
-To run the test suite, assuming you have installed and built the project using
-the steps above, you can invoke karma with:
+There are two suites. Unit tests for the emulator run in
+[Jest](https://jestjs.io/) under Node:
 
 ```shell
-npm run test
+pnpm test
 ```
 
-This will also require a web-browser to be installed on your system. It will
-start that browser and automatically run every test script found in the `test`
-directory.
+Browser-level tests run in [Playwright](https://playwright.dev/) against the
+demo page, in both Chromium and Firefox:
 
-These tests are written with [Jasmine](https://jasmine.github.io/index.html).
-This is a behavior-driven testing framework for JavaScript.
-
-You can alternatively start a server and use your own web browser to see the
-running test suite. This can offer a chance to debug the tests and the code
-more naturally. To do so, you will start the test suite in its active mode:
-
-```
-npm run test-server
+```shell
+pnpm exec playwright install    # once, to fetch the browsers
+pnpm test:e2e
 ```
 
-After it starts, it will report the port it is running on. It will say something
-like `open http://localhost:9876/`, which is the moment you can open that URL
-in your local web-browser.
+> **Known failure:** the emulator unit suite is currently red, and was already
+> red before the TypeScript migration. The ALU moved onto the CPU core
+> (`I286`/`I386`), but the `MockCPU` helper still constructs `new ALU(cpu)` with
+> the `CPU` wrapper, and `CPU#alu` is never assigned. Nearly every ALU and
+> `cpu_execute` test therefore throws on `this._cpu._flags`. Pointing the helper
+> at `cpu.core` recovers roughly 200 of them; the rest need a closer look at
+> where flag state should live.
 
-### Filtering Tests
+### Filtering tests
 
-To run only specific tests, edit a test file and replace the word `describe` or `it` with `fdescribe` and/or `fit` respectively.
-Then run the test suite as specified in the previous section.
+To run a single file or a single name:
 
-One useful method of writing the tests is to start a test server that automatically runs new content.
-Start a karma server using this command:
-
-```
-npm run test-server
-```
-
-Or alternatively:
-
-```
-npx karma start --auto-watch --no-single-run
+```shell
+pnpm test test/emulator/alu_test.ts
+pnpm test -t 'should detect zero'
 ```
 
-This will run the tests when it sees any test file get written to, which allow you to implement tests incrementally.
+Jest also has a watch mode that re-runs affected tests as you edit:
+
+```shell
+pnpm test:watch
+```
+
+For the browser suite, Playwright's UI mode is the equivalent:
+
+```shell
+pnpm test:e2e --ui
+```
+
+## Code style
+
+Formatting is handled by [Prettier](https://prettier.io/) and is not something
+to think about; run `pnpm format` or let your editor do it on save.
+
+ESLint currently reports a large number of *warnings*. These are migration debt
+from the mechanical JavaScript to TypeScript conversion (unused variables,
+`var`, dead stores) and are deliberately not errors, so that a clean `pnpm lint`
+still means something in CI. Errors are reserved for newly introduced problems.
+
+Likewise, `tsconfig.json` runs with `strict` and `noImplicitAny` off. Class
+members carry `declare` annotations that the migration generated, and are typed
+`any`. Tightening these one flag and one module at a time is the intended path.

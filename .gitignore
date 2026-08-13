@@ -1,6 +1,13 @@
-test/coverage
-test/result.json
 node_modules/
 dist/
 docs/
-test/karma-result.json
+coverage/
+
+# Playwright
+playwright-report/
+test-results/
+blob-report/
+.playwright/
+
+# Turbo
+.turbo/

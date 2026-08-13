@@ -3,28 +3,28 @@
  */
 
 /* Workspace */
-@import "./space.scss";
+@use "./space";
 
 /* Window */
-@import "./window.scss";
+@use "./window";
 
 /* Button Control */
-@import "./controls/button.scss";
+@use "./controls/button";
 
 /* Label Control */
-@import "./controls/label.scss";
+@use "./controls/label";
 
 /* TextBox Control */
-@import "./controls/text-box.scss";
+@use "./controls/text-box";
 
 /* Menu Control */
-@import "./controls/menu.scss";
+@use "./controls/menu";
 
 /* CheckBox Control */
-@import "./controls/check-box.scss";
+@use "./controls/check-box";
 
 /* OptionButton Control */
-@import "./controls/option-button.scss";
+@use "./controls/option-button";
 
 /* PictureBox Control */
-@import "./controls/picture-box.scss";
+@use "./controls/picture-box";
