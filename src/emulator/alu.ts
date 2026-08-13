@@ -837,14 +837,24 @@ export class ALU {
 
     if (dividend >= divisor * 0x10000) {
       const scaled = divisor * 0x10000;
-      let accumulator = dividend >= scaled ? (dividend - scaled) | 1 : dividend;
+
+      /* The running value is 32 bits wide, which is where JavaScript's
+       * arithmetic gets in the way twice: the bitwise operators are signed, so
+       * `| 1` turns anything at or above 2^31 negative, and the remainder
+       * operator keeps the sign of its left operand, so a negative intermediate
+       * stays negative instead of wrapping. Both are done explicitly here.
+       */
+      const wrap = (value) => ((value % 0x100000000) + 0x100000000) % 0x100000000;
+      const setLowBit = (value) => value + 1 - (value % 2);
+
+      let accumulator = dividend >= scaled ? setLowBit(dividend - scaled) : dividend;
 
       for (let step = 0; step < 14; step++) {
-        const shifted = accumulator * 2;
+        const shifted = wrap(accumulator * 2);
         accumulator =
           shifted >= scaled || accumulator >= 0x80000000
-            ? ((shifted - scaled) % 0x100000000) + 1 - (((shifted - scaled) % 0x100000000) % 2)
-            : shifted % 0x100000000;
+            ? setLowBit(wrap(shifted - scaled))
+            : shifted;
       }
 
       this.sub16(Math.floor((accumulator % 0x80000000) / 0x8000), divisor);
