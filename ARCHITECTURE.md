@@ -134,9 +134,31 @@ Found while formalizing the boundary; recorded here rather than fixed silently.
 - **The real-mode interrupt path in `raiseInterrupt` is unreachable.** Everything
   after the latch is dead code. If real-mode vectoring is ever needed, it needs
   writing rather than enabling.
-- **The emulator suite is nondeterministic.** Tests draw operands from
-  `Helper.randomInteger` with no seed, so the set of failures changes between
-  runs and a failure cannot be reproduced from the report alone. `ALU #div16
-should divide two negative numbers as unsigned` will pass or fail depending on
-  the values drawn. Any accuracy work needs a seeded generator first, so a
-  baseline means something and a regression is attributable.
+
+## CPU accuracy
+
+Accuracy is measured, not estimated. `pnpm test:conformance` runs our core
+against instruction tests captured from a real 80286 and reports a per-opcode
+pass rate; see the Testing section of the README for how to fetch the vectors.
+
+At the time of writing, across 127 instruction forms (250 vectors each):
+
+| Result                             | Vectors | Share |
+| ---------------------------------- | ------- | ----- |
+| Passing                            | 12,451  | 40.4% |
+| Flags wrong, everything else right | 11,841  | 38.4% |
+| Form not decoded at all            | 3,490   | 11.3% |
+| Wrong memory write                 | 2,125   | 6.9%  |
+| Wrong register                     | 936     | 3.0%  |
+
+Two things follow from that shape. Most failures are flags-only, so the
+arithmetic is largely right and the status bits are largely wrong, which is
+cheap work per instruction. And the unimplemented forms are a known list rather
+than a mystery: the BCD adjust group (`DAA`, `DAS`, `AAA`, `AAS`, `AAM`, `AAD`),
+the `SAL` alias in the shift group's `/6` slot, and the `TEST` alias in `/1`.
+
+The first defect the oracle found was the parity table: all 256 entries were
+inverted, so every instruction that touches PF reported the opposite of the
+hardware. Fixing it took one opcode from 0.2% to 100%. The existing unit tests
+could not have caught it, because they assert the ALU's parity output against
+the same table the ALU computes it from.

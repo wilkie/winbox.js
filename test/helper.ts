@@ -1,5 +1,7 @@
 'use strict';
 
+import { random } from './random.js';
+
 /**
  * Utility class for the test suite.
  */
@@ -11,16 +13,14 @@ export class Helper {
   static randomInteger(max, min) {
     max = Math.floor(max);
     min = Math.floor(min || 0);
-    return Math.floor(Math.random() * (max - min)) + min;
+    return Math.floor(random() * (max - min)) + min;
   }
 
   /**
    * Returns a random alphanumeric string.
    */
   static randomString() {
-    return (
-      Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
-    );
+    return random().toString(36).substring(2, 15) + random().toString(36).substring(2, 15);
   }
 
   /**

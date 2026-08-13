@@ -6,6 +6,15 @@
  * belong in the Playwright suite under `e2e/`.
  */
 
+import { seedForTest } from './random.js';
+
+/* Every test starts from a seed derived from its own name, so a test draws the
+ * same operands alone as it does in a full run.
+ */
+beforeEach(() => {
+  seedForTest(expect.getState().currentTestName ?? 'unnamed');
+});
+
 expect.extend({
   toBeVisible(element: HTMLElement) {
     const pass = element.offsetWidth > 0 && element.offsetHeight > 0;

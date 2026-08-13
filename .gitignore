@@ -11,3 +11,8 @@ blob-report/
 
 # Turbo
 .turbo/
+
+# CPU conformance vectors (fetched, ~310MiB) and generated report
+test/conformance/vectors/
+test/conformance/.cache/
+test/conformance/report.md

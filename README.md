@@ -118,6 +118,38 @@ pnpm test:e2e
 > at `cpu.core` recovers roughly 200 of them; the rest need a closer look at
 > where flag state should live.
 
+### CPU conformance
+
+The emulator is measured against hardware. The
+[SingleStepTests 80286 suite](https://github.com/SingleStepTests/80286) records
+the complete register, flag and memory state before and after each instruction,
+captured from a real Harris N80C286. Our core is put into the recorded initial
+state, executes one instruction, and is compared against what the silicon did.
+
+The vectors are ~310 MiB and are not committed, so fetch them first:
+
+```shell
+pnpm test:conformance:fetch       # a representative subset, ~135 MiB
+pnpm test:conformance
+```
+
+`node scripts/fetch-cpu-tests.mjs --all` fetches everything, `--list` shows what
+the suite publishes, and naming opcodes fetches only those.
+
+The run writes `test/conformance/report.md` with a per-opcode table and a
+representative failure for each kind, and checks every opcode against
+`test/conformance/baseline.json`. The core does not pass these tests yet, so the
+baseline is what guards against regression: passing fewer than the recorded
+count fails the run. Re-record after an improvement:
+
+```shell
+CONFORMANCE_UPDATE=1 pnpm test:conformance
+```
+
+Regression checking only applies when `CONFORMANCE_SAMPLE` matches the sample
+the baseline was recorded at, since pass rates are not uniform across an
+opcode's vectors.
+
 ### Filtering tests
 
 To run a single file or a single name:
@@ -126,6 +158,19 @@ To run a single file or a single name:
 pnpm test test/emulator/alu_test.ts
 pnpm test -t 'should detect zero'
 ```
+
+### Reproducing a test run
+
+Tests draw their operands from a seeded generator, and the seed is printed at
+the start of every run:
+
+```
+Random seed: 2748491327 (re-run with WINBOX_TEST_SEED=2748491327 to reproduce)
+```
+
+Each test re-seeds from its own name, so a test draws the same values whether it
+runs alone or in the middle of the full suite — `pnpm test -t 'name'` reproduces
+exactly what CI saw.
 
 Jest also has a watch mode that re-runs affected tests as you edit:
 

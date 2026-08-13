@@ -42,6 +42,8 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:e2e": "playwright test",
+    "test:conformance": "jest --config jest.conformance.config.js --runInBand",
+    "test:conformance:fetch": "node scripts/fetch-cpu-tests.mjs",
     "ci": "turbo run lint lint:css typecheck test build",
     "build:docs": "typedoc"
   },

@@ -2,7 +2,8 @@
 export default {
   testEnvironment: 'node',
   roots: ['<rootDir>/test'],
-  setupFilesAfterEach: ['<rootDir>/test/setup.ts'],
+  globalSetup: '<rootDir>/test/global-setup.ts',
+  setupFilesAfterEnv: ['<rootDir>/test/setup.ts'],
   testMatch: ['**/*_test.ts'],
 
   transform: {

@@ -1153,9 +1153,6 @@ export class I286 implements CpuCore16 {
    * Decodes the next instruction.
    */
   decode(instruction) {
-    if (this.cs === 0x0) {
-      throw 'FOO';
-    }
     instruction.cs = this.cs;
     instruction.ip = this.ip;
     instruction.subOpcode = 0;
