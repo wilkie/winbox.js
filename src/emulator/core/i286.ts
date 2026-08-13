@@ -797,6 +797,38 @@ export class I286 implements CpuCore16 {
    *
    * @param {number} value - The new value for this register.
    */
+  /**
+   * Loads FLAGS from a word popped off the stack.
+   *
+   * Which bits a pop may actually change depends on the mode and the current
+   * privilege level, so POPF and IRET share this rather than assigning `f`
+   * directly.
+   *
+   * @param {number} value - The popped FLAGS word.
+   */
+  loadFlags(value) {
+    let f = value;
+
+    if (!(this.msw & 0x1)) {
+      /* Real mode on the 286 leaves IOPL, NT and bit 15 clear. This is a
+       * difference from the 8086, where the top four bits read as one, and it
+       * holds for every real-mode POPF and IRET vector in the 80286 suite.
+       */
+      f &= ~0xf000;
+    } else if (this.cpl != 0x0) {
+      // Outside ring 0 the IOPL keeps whatever it already held.
+      f &= ~(0x3 << 12);
+      f |= this._flags.iopl << 12;
+    }
+
+    // IF only changes when the privilege level permits it.
+    if (this.cpl > this.iopl) {
+      f = this._flags.interruptEnable ? f | 0x200 : f & ~0x200;
+    }
+
+    this.f = f;
+  }
+
   set f(value) {
     // Expand flags
     this._flags = {
@@ -1494,6 +1526,7 @@ export class I286 implements CpuCore16 {
       case 0x6b: // IMUL rw,db / IMUL rw,ew,db
       case 0x80: // ADC eb,db / ADD eb,db / AND eb,db / CMP eb,db /
       // OR eb,db / SBB eb,db / SUB eb,db / XOR eb,db
+      case 0x82: // Undocumented alias of 0x80, decoded identically
       case 0x83: // ADC ew,db / ADD ew,db / CMP ew,db / SBB ew,db /
       // SUB ew,db
       case 0xc0: // RCL eb,db / RCR eb,db / ROL eb,db / ROR eb,db /
@@ -2173,6 +2206,11 @@ export class I286 implements CpuCore16 {
 
         break;
 
+      /* 0x82 is an undocumented alias of 0x80 on the 8086 through the 286:
+       * the same byte-operand ALU group with a byte immediate. Real code does
+       * use it, and assemblers of the era emitted it.
+       */
+      case 0x82:
       case 0x80: // ADC eb,db / ADD eb,db / AND eb,db / CMP eb,db /
         // OR eb,db / SBB eb,db / SUB eb,db / XOR eb,db
         switch (instruction.modifier) {
@@ -2382,24 +2420,7 @@ export class I286 implements CpuCore16 {
 
       case 0x9d: // POPF
         this.debug('popf        ');
-        {
-          let f = this.pop16();
-
-          // If we are not at Ring 0, we cannot set the IOPL
-          if (this.cpl != 0x0) {
-            // So, maintain the current IOPL value.
-            f &= ~(0x3 << 12);
-            f |= this._flags.iopl << 12;
-          }
-
-          // We only change IF if we have privilege
-          if (this.cpl > this.iopl) {
-            // Ignore the IF flag by maintaining its current value
-            f = this._flags.interruptEnable ? f | 0x200 : f & ~0x200;
-          }
-
-          this.f = f;
-        }
+        this.loadFlags(this.pop16());
         break;
 
       case 0x9e: // SAHF (Store AH into Flags)
@@ -2808,7 +2829,7 @@ export class I286 implements CpuCore16 {
         this.debug('iret        ');
         this.ip = this.pop16();
         this.cs = this.pop16();
-        this.f = this.pop16();
+        this.loadFlags(this.pop16());
         break;
 
       case 0xd4: // AAM (ASCII Adjust AX After Multiply)

@@ -15,13 +15,14 @@
  *   node scripts/fetch-cpu-tests.mjs
  */
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { availableOpcodes, renderReport, runOpcode, type OpcodeSummary } from './oracle.js';
 
 const BASELINE_PATH = join(__dirname, 'baseline.json');
 const REPORT_PATH = join(__dirname, 'report.md');
+const LOCK_PATH = join(__dirname, '.running');
 
 const SAMPLE = Number(process.env.CONFORMANCE_SAMPLE ?? 250);
 const UPDATING = process.env.CONFORMANCE_UPDATE === '1';
@@ -56,10 +57,24 @@ if (!opcodes.length) {
     let silenced: jest.SpyInstance;
 
     beforeAll(() => {
+      /* Two runs at once quietly corrupt each other: both write report.md and
+       * baseline.json, and whichever finishes last wins, so the survivor can
+       * report a number that belongs to neither. Refuse rather than mislead.
+       */
+      if (existsSync(LOCK_PATH)) {
+        const owner = readFileSync(LOCK_PATH, 'utf8').trim();
+        throw new Error(
+          `another conformance run is in progress (${owner}). Wait for it, or ` +
+            `remove ${LOCK_PATH} if it was left behind by a killed run.`
+        );
+      }
+
+      writeFileSync(LOCK_PATH, `pid ${process.pid}, started ${new Date().toISOString()}`);
       silenced = jest.spyOn(console, 'log').mockImplementation(() => {});
     });
 
     afterAll(() => {
+      rmSync(LOCK_PATH, { force: true });
       silenced.mockRestore();
     });
 
@@ -79,7 +94,7 @@ if (!opcodes.length) {
          * taken at one sample size says nothing exact about another. Rather
          * than invent a tolerance, only gate when the sizes match.
          */
-        if (baseline.sample !== SAMPLE) {
+        if (baseline.sample !== SAMPLE || summary.total === 0) {
           return;
         }
 

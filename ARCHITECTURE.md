@@ -147,28 +147,27 @@ Accuracy is measured, not estimated. `pnpm test:conformance` runs our core
 against instruction tests captured from a real 80286 and reports a per-opcode
 pass rate; see the Testing section of the README for how to fetch the vectors.
 
-Across all **326** instruction forms the suite publishes, **92.9%** of vectors
-pass and 299 forms pass completely.
+Across all **326** instruction forms the suite publishes, **96.0%** of vectors
+pass and 309 of the 324 executable forms pass completely. (`INT3` and `INT n`
+have no executable vectors at all: every test for them faults on hardware, and
+the oracle skips faulting vectors.)
 
-That number is worth reading carefully. The 127 forms the fetch script pulls by
-default -- the ALU, shift, rotate, string and multiply/divide groups -- pass
-**100%**, including a full-depth run of all 585,315 of their vectors rather
-than a sample. The remaining gap is almost entirely instructions outside that
-set that the core has never implemented:
+Nothing the core implements computes the wrong answer any more -- there are no
+register or memory failures left anywhere in the suite. What remains is
+instructions it has never implemented, plus one flag case:
 
-| Family                                       | Forms | Passing |
-| -------------------------------------------- | ----- | ------- |
-| ALU `r/m`, `imm8` alias (`82 /r`)            | 8     | 0%      |
-| Port I/O (`IN`, `OUT`)                       | 4     | 0%      |
-| String I/O (`INS`, `OUTS`)                   | 4     | 0%      |
-| `BOUND`, `WAIT`, `SALC`, `HLT`               | 4     | 0%      |
-| `POPF`                                       | 1     | 12%     |
-| Interrupts (`INT3`, `INT n`, `INTO`, `IRET`) | 4     | 44%     |
-| `ENTER` / `LEAVE`                            | 2     | 49%     |
-| `IMUL` with an immediate (`69`, `6B`)        | 2     | ~55%    |
+| Family                                | Forms | Vectors | State       |
+| ------------------------------------- | ----- | ------- | ----------- |
+| Port I/O (`IN`, `OUT`)                | 4     | 1000    | Not decoded |
+| String I/O (`INS`, `OUTS`)            | 4     | 967     | Not decoded |
+| `WAIT`, `SALC`, `HLT`                 | 3     | 750     | Not decoded |
+| `BOUND`                               | 1     | 25      | Not decoded |
+| `ENTER`                               | 1     | 248     | Throws      |
+| `IMUL` with an immediate (`69`, `6B`) | 2     | 216     | CF and OF   |
 
-`POPF` and `IRET` both fail on IOPL and NT: the core lets a popped word set
-them, and the 286 does not.
+The 127 forms the fetch script pulls by default -- the ALU, shift, rotate,
+string and multiply/divide groups -- pass **100%**, including a full-depth run
+of all 585,315 of their vectors rather than a sample.
 
 ### Flag behaviour the manuals call undefined
 
@@ -207,6 +206,15 @@ appeared as a handful of failures out of thousands:
   range for every negative immediate. `ADD`/`SUB`/`CMP` on a word with a byte
   immediate is about as common as instructions get, and 42% of its vectors
   failed.
+- `0x82` was not decoded at all. It is an undocumented alias of `0x80`, the
+  byte-operand ALU group with a byte immediate, and assemblers of the era
+  emitted it. Two case labels, 2,000 vectors.
+- `POPF` and `IRET` let the popped word set IOPL and NT. On the 286 in real
+  mode the top four bits of FLAGS are always clear after a pop -- a divergence
+  from the 8086, where they read as one -- and the existing ring-0 guard never
+  fired because real mode reports CPL 0. Both now share a `loadFlags` path.
+  The protected-mode half of that path is unverified: the published corpus is
+  real mode only.
 - FLAGS bit 1 is reserved and reads as one; the packed word omitted it, so
   `PUSHF` stored and `LAHF` loaded a value two low. Flag comparisons were
   unaffected, which is why it survived so long -- the oracle masks that bit out

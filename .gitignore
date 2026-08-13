@@ -16,3 +16,4 @@ blob-report/
 test/conformance/vectors/
 test/conformance/.cache/
 test/conformance/report.md
+test/conformance/.running
