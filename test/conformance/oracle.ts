@@ -76,6 +76,8 @@ export interface VectorResult {
   passed: boolean;
   kind?: FailureKind;
   detail?: string;
+  /** Names of the flags that differed, when kind is 'flags'. */
+  flags?: string[];
   /** Set when the vector was not applicable and was not executed. */
   skipped?: boolean;
 }
@@ -86,12 +88,27 @@ export interface OpcodeSummary {
   passed: number;
   skipped: number;
   byKind: Record<FailureKind, number>;
+  /** How many vectors got each individual flag wrong. */
+  flagBits: Record<string, number>;
   /** One representative failure per kind, for the report. */
   examples: Partial<Record<FailureKind, string>>;
 }
 
 const SEGMENT_REGISTERS = ['cs', 'ss', 'ds', 'es'];
 const GENERAL_REGISTERS = ['ax', 'bx', 'cx', 'dx', 'sp', 'bp', 'si', 'di'];
+
+/** The flags that differ between two FLAGS words, by name. */
+export function differingFlags(expected: number, actual: number): string[] {
+  const names = FLAG_NAMES.filter(([bit]) => (expected & bit) !== (actual & bit)).map(
+    ([, name]) => name
+  );
+
+  if (((expected >> 12) & 0x3) !== ((actual >> 12) & 0x3)) {
+    names.push('IOPL');
+  }
+
+  return names;
+}
 
 function describeFlags(expected: number, actual: number): string {
   const differing = FLAG_NAMES.filter(([bit]) => (expected & bit) !== (actual & bit)).map(
@@ -205,7 +222,12 @@ export function runVector(vector: Vector): VectorResult {
     const actual = core.f & FLAG_MASK;
 
     if (expected !== actual) {
-      return { passed: false, kind: 'flags', detail: describeFlags(expected, actual) };
+      return {
+        passed: false,
+        kind: 'flags',
+        detail: describeFlags(expected, actual),
+        flags: differingFlags(expected, actual),
+      };
     }
   }
 
@@ -245,6 +267,7 @@ export function runOpcode(opcode: string, sample = Infinity): OpcodeSummary {
     passed: 0,
     skipped: 0,
     byKind: { unimplemented: 0, exception: 0, register: 0, flags: 0, memory: 0 },
+    flagBits: {},
     examples: {},
   };
 
@@ -265,6 +288,10 @@ export function runOpcode(opcode: string, sample = Infinity): OpcodeSummary {
 
     const kind = result.kind as FailureKind;
     summary.byKind[kind] += 1;
+
+    for (const flag of result.flags ?? []) {
+      summary.flagBits[flag] = (summary.flagBits[flag] ?? 0) + 1;
+    }
 
     if (!summary.examples[kind]) {
       summary.examples[kind] = `${vector.name}: ${result.detail}`;
@@ -309,6 +336,22 @@ export function renderReport(summaries: OpcodeSummary[], sample: number): string
     );
   }
 
+  const flagTotals: Record<string, number> = {};
+  for (const entry of summaries) {
+    for (const [flag, count] of Object.entries(entry.flagBits)) {
+      flagTotals[flag] = (flagTotals[flag] ?? 0) + count;
+    }
+  }
+
+  const ranked = Object.entries(flagTotals).sort((a, b) => b[1] - a[1]);
+
+  if (ranked.length) {
+    lines.push('', '## Which flags are wrong', '', '| Flag | Vectors |', '| ---- | ------- |');
+    for (const [flag, count] of ranked) {
+      lines.push(`| ${flag} | ${count} |`);
+    }
+  }
+
   const failing = summaries.filter((entry) => entry.passed < entry.total);
 
   if (failing.length) {
@@ -318,6 +361,13 @@ export function renderReport(summaries: OpcodeSummary[], sample: number): string
       lines.push(`### Opcode ${entry.opcode}`, '');
       for (const [kind, example] of Object.entries(entry.examples)) {
         lines.push(`- **${kind}** — ${example}`);
+      }
+      if (Object.keys(entry.flagBits).length) {
+        const breakdown = Object.entries(entry.flagBits)
+          .sort((a, b) => b[1] - a[1])
+          .map(([flag, count]) => `${flag}×${count}`)
+          .join(', ');
+        lines.push(`- flags wrong: ${breakdown}`);
       }
       lines.push('');
     }

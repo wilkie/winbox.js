@@ -2629,29 +2629,11 @@ export class I286 implements CpuCore16 {
             throw new InvalidInstruction(instruction);
         }
 
-        if (instruction.opcode == 0xd0) {
-          // Single shift might set overflow
-          // For left-shifts, OF is cleared if the high bit of the
-          // result is the same as the carry flag. Set, otherwise.
-          // SAR: Always cleared.
-          if (instruction.modifier == 0x07) {
-            this._flags.overflow = false;
-          }
-          // SHR: OF is set to the high-order bit of the original
-          // operand.
-          if (instruction.modifier == 0x05) {
-            this._flags.overflow = (this.readOperand8(instruction) & 0x80) != 0;
-          }
-        }
-
+        /* Flags belong to the ALU. This used to patch OF afterwards for the
+         * single-shift forms, using AND where the architecture calls for XOR,
+         * which is why only opcode D0 got OF wrong.
+         */
         this.writeOperand8(instruction, operation(this.readOperand8(instruction), shiftAmount));
-
-        if (instruction.opcode == 0xd0) {
-          if (instruction.modifier == 0x04) {
-            this._flags.overflow =
-              this._flags.carry && (this.readOperand8(instruction) & 0x80) != 0;
-          }
-        }
         break;
 
       case 0xc1: // RCL ew,db / RCR ew,db / ROL ew,db / ROR ew,db /

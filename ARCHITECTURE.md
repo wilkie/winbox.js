@@ -134,6 +134,12 @@ Found while formalizing the boundary; recorded here rather than fixed silently.
 - **The real-mode interrupt path in `raiseInterrupt` is unreachable.** Everything
   after the latch is dead code. If real-mode vectoring is ever needed, it needs
   writing rather than enabling.
+- **The emulator unit suite still targets the pre-refactor shape.** `MockCPU`
+  builds the ALU from the `CPU` wrapper rather than the core, and `CPU#alu`
+  returns a field nothing assigns. Pointing the helper at `cpu.core` recovers
+  about 174 tests; the `cpu_execute` files need more than that. Nine divide
+  tests began failing once `DIV`/`IDIV` started setting flags correctly: they
+  had only passed because those instructions previously touched no flags.
 
 ## CPU accuracy
 
@@ -141,24 +147,39 @@ Accuracy is measured, not estimated. `pnpm test:conformance` runs our core
 against instruction tests captured from a real 80286 and reports a per-opcode
 pass rate; see the Testing section of the README for how to fetch the vectors.
 
-At the time of writing, across 127 instruction forms (250 vectors each):
+At the time of writing, across 127 instruction forms (250 vectors each),
+**87.3%** of vectors pass and 91 of the 127 forms pass completely:
 
-| Result                             | Vectors | Share |
-| ---------------------------------- | ------- | ----- |
-| Passing                            | 12,451  | 40.4% |
-| Flags wrong, everything else right | 11,841  | 38.4% |
-| Form not decoded at all            | 3,490   | 11.3% |
-| Wrong memory write                 | 2,125   | 6.9%  |
-| Wrong register                     | 936     | 3.0%  |
+| Result                  | Vectors | Share |
+| ----------------------- | ------- | ----- |
+| Passing                 | 26,936  | 87.3% |
+| Form not decoded at all | 3,490   | 11.3% |
+| Flags wrong             | 323     | 1.0%  |
+| Wrong register          | 89      | 0.3%  |
+| Wrong memory write      | 5       | 0.0%  |
 
-Two things follow from that shape. Most failures are flags-only, so the
-arithmetic is largely right and the status bits are largely wrong, which is
-cheap work per instruction. And the unimplemented forms are a known list rather
-than a mystery: the BCD adjust group (`DAA`, `DAS`, `AAA`, `AAS`, `AAM`, `AAD`),
-the `SAL` alias in the shift group's `/6` slot, and the `TEST` alias in `/1`.
+Nearly all of what remains is instructions the core does not decode: the BCD
+adjust group (`DAA`, `DAS`, `AAA`, `AAS`, `AAM`, `AAD`), the `SAL` alias in the
+shift group's `/6` slot, and the `TEST` alias in `/1`. That is a list of things
+to write, not a list of things to debug.
 
-The first defect the oracle found was the parity table: all 256 entries were
-inverted, so every instruction that touches PF reported the opposite of the
-hardware. Fixing it took one opcode from 0.2% to 100%. The existing unit tests
-could not have caught it, because they assert the ALU's parity output against
-the same table the ALU computes it from.
+### Flag behaviour the manuals call undefined
+
+Compatibility means matching the part, including where Intel documents nothing.
+These rules were measured against the hardware vectors -- each holds for 100% of
+the tests for the instructions listed -- and are why the flag failure count went
+from 11,841 to 323:
+
+| Instruction                  | Flag           | Behaviour                                                                    |
+| ---------------------------- | -------------- | ---------------------------------------------------------------------------- |
+| `AND`, `OR`, `XOR`, `TEST`   | AF             | Always cleared                                                               |
+| `SHL`/`SAL`                  | AF             | Bit 4 of the result                                                          |
+| `SHR`, `SAR`                 | AF             | Always set                                                                   |
+| `SHR`                        | OF             | Only meaningful for a count of 1; cleared beyond                             |
+| `MUL`, `IMUL`, `DIV`, `IDIV` | SF, ZF, PF     | Describe the _high_ half of the result: AH for byte forms, DX for word forms |
+| `MUL`, `IMUL`, `DIV`, `IDIV` | AF             | Always set                                                                   |
+| `ROL`, `ROR`, `RCL`, `RCR`   | SF, ZF, PF, AF | Untouched                                                                    |
+
+`DIV` and `IDIV` also leave CF and OF in a data-dependent state that tracks the
+division microcode; those are the ~320 flag failures that remain, and matching
+them would mean modelling the divide step sequence.

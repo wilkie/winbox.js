@@ -169,33 +169,80 @@ export class ALU {
   }
 
   sub8(a, b) {
-    return this.add8(a, ~b + 1);
+    const result = this.add8(a, ~b + 1);
+
+    /* AF is the borrow out of bit 3. Delegating to add() computes it from the
+     * negated operand, which is not the same thing, so derive it from the
+     * operands the caller actually passed.
+     */
+    this._cpu._flags.auxiliaryCarry = ((a ^ b ^ result) & 0x10) != 0;
+
+    return result;
   }
 
   sub16(a, b) {
-    return this.add16(a, ~b + 1);
+    const result = this.add16(a, ~b + 1);
+
+    /* AF is the borrow out of bit 3. Delegating to add() computes it from the
+     * negated operand, which is not the same thing, so derive it from the
+     * operands the caller actually passed.
+     */
+    this._cpu._flags.auxiliaryCarry = ((a ^ b ^ result) & 0x10) != 0;
+
+    return result;
   }
 
   sub32(a, b) {
-    return this.add32(a, ~b + 1);
+    const result = this.add32(a, ~b + 1);
+
+    /* AF is the borrow out of bit 3. Delegating to add() computes it from the
+     * negated operand, which is not the same thing, so derive it from the
+     * operands the caller actually passed.
+     */
+    this._cpu._flags.auxiliaryCarry = ((a ^ b ^ result) & 0x10) != 0;
+
+    return result;
   }
 
   sbb8(a, b) {
-    return this.add8(a, ~b + 1, this._cpu._flags.carry ? 1 : 0);
+    // a - b - borrow. Passing the borrow to add() would have added it.
+    const borrow = this._cpu._flags.carry ? 1 : 0;
+    const result = this.add8(a, ~(b + borrow) + 1);
+
+    // AF is the borrow out of bit 3, from the operands as given.
+    this._cpu._flags.auxiliaryCarry = ((a ^ b ^ result) & 0x10) != 0;
+
+    return result;
   }
 
   sbb16(a, b) {
-    return this.add16(a, ~b + 1, this._cpu._flags.carry ? 1 : 0);
+    // a - b - borrow. Passing the borrow to add() would have added it.
+    const borrow = this._cpu._flags.carry ? 1 : 0;
+    const result = this.add16(a, ~(b + borrow) + 1);
+
+    // AF is the borrow out of bit 3, from the operands as given.
+    this._cpu._flags.auxiliaryCarry = ((a ^ b ^ result) & 0x10) != 0;
+
+    return result;
   }
 
   sbb32(a, b) {
-    return this.add32(a, ~b + 1, this._cpu._flags.carry ? 1 : 0);
+    // a - b - borrow. Passing the borrow to add() would have added it.
+    const borrow = this._cpu._flags.carry ? 1 : 0;
+    const result = this.add32(a, ~(b + borrow) + 1);
+
+    // AF is the borrow out of bit 3, from the operands as given.
+    this._cpu._flags.auxiliaryCarry = ((a ^ b ^ result) & 0x10) != 0;
+
+    return result;
   }
 
   and8(a, b) {
     a = a & b & 0xff;
     this._cpu._flags.overflow = false;
     this._cpu._flags.carry = false;
+    // Documented as undefined; the hardware clears it.
+    this._cpu._flags.auxiliaryCarry = false;
     this._cpu._flags.zero = a == 0;
     this._cpu._flags.signed = a >= 0x80;
     this._cpu._flags.parity = ALU.PARITY[a & 0xff];
@@ -206,6 +253,8 @@ export class ALU {
     a = a & b & 0xffff;
     this._cpu._flags.overflow = false;
     this._cpu._flags.carry = false;
+    // Documented as undefined; the hardware clears it.
+    this._cpu._flags.auxiliaryCarry = false;
     this._cpu._flags.zero = a == 0;
     this._cpu._flags.signed = a >= 0x8000;
     this._cpu._flags.parity = ALU.PARITY[a & 0xff];
@@ -216,6 +265,8 @@ export class ALU {
     a = (a & b & 0xffffffff) >>> 0;
     this._cpu._flags.overflow = false;
     this._cpu._flags.carry = false;
+    // Documented as undefined; the hardware clears it.
+    this._cpu._flags.auxiliaryCarry = false;
     this._cpu._flags.zero = a == 0;
     this._cpu._flags.signed = a >= 0x80000000;
     this._cpu._flags.parity = ALU.PARITY[a & 0xff];
@@ -226,6 +277,8 @@ export class ALU {
     a = (a | b) & 0xff;
     this._cpu._flags.overflow = false;
     this._cpu._flags.carry = false;
+    // Documented as undefined; the hardware clears it.
+    this._cpu._flags.auxiliaryCarry = false;
     this._cpu._flags.zero = a == 0;
     this._cpu._flags.signed = a >= 0x80;
     this._cpu._flags.parity = ALU.PARITY[a & 0xff];
@@ -236,6 +289,8 @@ export class ALU {
     a = (a | b) & 0xffff;
     this._cpu._flags.overflow = false;
     this._cpu._flags.carry = false;
+    // Documented as undefined; the hardware clears it.
+    this._cpu._flags.auxiliaryCarry = false;
     this._cpu._flags.zero = a == 0;
     this._cpu._flags.signed = a >= 0x8000;
     this._cpu._flags.parity = ALU.PARITY[a & 0xff];
@@ -246,6 +301,8 @@ export class ALU {
     a = ((a | b) & 0xffffffff) >>> 0;
     this._cpu._flags.overflow = false;
     this._cpu._flags.carry = false;
+    // Documented as undefined; the hardware clears it.
+    this._cpu._flags.auxiliaryCarry = false;
     this._cpu._flags.zero = a == 0;
     this._cpu._flags.signed = a >= 0x80000000;
     this._cpu._flags.parity = ALU.PARITY[a & 0xff];
@@ -256,6 +313,8 @@ export class ALU {
     a = (a ^ b) & 0xff;
     this._cpu._flags.overflow = false;
     this._cpu._flags.carry = false;
+    // Documented as undefined; the hardware clears it.
+    this._cpu._flags.auxiliaryCarry = false;
     this._cpu._flags.zero = a == 0;
     this._cpu._flags.signed = a >= 0x80;
     this._cpu._flags.parity = ALU.PARITY[a & 0xff];
@@ -266,6 +325,8 @@ export class ALU {
     a = (a ^ b) & 0xffff;
     this._cpu._flags.overflow = false;
     this._cpu._flags.carry = false;
+    // Documented as undefined; the hardware clears it.
+    this._cpu._flags.auxiliaryCarry = false;
     this._cpu._flags.zero = a == 0;
     this._cpu._flags.signed = a >= 0x8000;
     this._cpu._flags.parity = ALU.PARITY[a & 0xff];
@@ -276,6 +337,8 @@ export class ALU {
     a = ((a ^ b) & 0xffffffff) >>> 0;
     this._cpu._flags.overflow = false;
     this._cpu._flags.carry = false;
+    // Documented as undefined; the hardware clears it.
+    this._cpu._flags.auxiliaryCarry = false;
     this._cpu._flags.zero = a == 0;
     this._cpu._flags.signed = a >= 0x80000000;
     this._cpu._flags.parity = ALU.PARITY[a & 0xff];
@@ -326,10 +389,30 @@ export class ALU {
    *
    * @return {number} The unsigned result.
    */
+
+  /**
+   * Applies the status flags the multiply and divide instructions leave behind.
+   *
+   * Intel documents SF, ZF, AF and PF as undefined for these instructions. The
+   * hardware is consistent: SF, ZF and PF describe the *high* half of the
+   * result -- AH for the byte forms, DX for the word forms -- and AF is always
+   * set. This matches every MUL, IMUL, DIV and IDIV vector in the 80286 suite.
+   *
+   * @param {number} high - The high half of the result.
+   * @param {number} sign - The sign bit mask for that half.
+   */
+  applyWideResultFlags(high, sign) {
+    this._cpu._flags.zero = high == 0;
+    this._cpu._flags.signed = (high & sign) != 0;
+    this._cpu._flags.parity = ALU.PARITY[high & 0xff];
+    this._cpu._flags.auxiliaryCarry = true;
+  }
+
   mul8(a, b) {
     const result = ((a & 0xff) * (b & 0xff)) & 0xffff;
-    this._cpu._flags.carry = (result & 0xffffff00) != 0;
+    this._cpu._flags.carry = (result & 0xff00) != 0;
     this._cpu._flags.overflow = this._cpu._flags.carry;
+    this.applyWideResultFlags((result >>> 8) & 0xff, 0x80);
     return result;
   }
 
@@ -348,10 +431,11 @@ export class ALU {
    * @return {number} The unsigned result.
    */
   mul16(a, b) {
-    const result = (((a & 0xffff) * (b & 0xffff)) & 0xffffffff) >>> 0;
-    this._cpu._flags.carry = (result & 0xffff0000) != 0;
+    const result = (a & 0xffff) * (b & 0xffff);
+    this._cpu._flags.carry = result > 0xffff;
     this._cpu._flags.overflow = this._cpu._flags.carry;
-    return result;
+    this.applyWideResultFlags(Math.floor(result / 0x10000) & 0xffff, 0x8000);
+    return result >>> 0;
   }
 
   /**
@@ -392,9 +476,15 @@ export class ALU {
    * @return {number} The unsigned result.
    */
   imul8(a, b) {
-    const result = (this.toSigned8(a) * this.toSigned8(b)) & 0xffff;
-    this._cpu._flags.carry = (result & 0xff) != result;
+    const product = this.toSigned8(a) * this.toSigned8(b);
+    const result = product & 0xffff;
+
+    // CF and OF report that the result does not fit in the low half, which is
+    // to say that the low half no longer sign-extends to the whole product.
+    this._cpu._flags.carry = this.toSigned8(result & 0xff) != product;
     this._cpu._flags.overflow = this._cpu._flags.carry;
+    this.applyWideResultFlags((result >>> 8) & 0xff, 0x80);
+
     return result;
   }
 
@@ -413,9 +503,13 @@ export class ALU {
    * @return {number} The unsigned result.
    */
   imul16(a, b) {
-    const result = ((this.toSigned16(a) * this.toSigned16(b)) >>> 0) & 0xffffffff;
-    this._cpu._flags.carry = (result & 0xffff) != result;
+    const product = this.toSigned16(a) * this.toSigned16(b);
+    const result = product >>> 0;
+
+    this._cpu._flags.carry = this.toSigned16(result & 0xffff) != product;
     this._cpu._flags.overflow = this._cpu._flags.carry;
+    this.applyWideResultFlags((result >>> 16) & 0xffff, 0x8000);
+
     return result;
   }
 
@@ -455,7 +549,9 @@ export class ALU {
    * @return {number} The unsigned result. The high half is the remainder.
    */
   div8(a, b) {
-    return (((a & 0xffff) / (b & 0xff)) & 0xff) | ((((a & 0xffff) % (b & 0xff)) & 0xff) << 8);
+    const remainder = ((a & 0xffff) % (b & 0xff)) & 0xff;
+    this.applyWideResultFlags(remainder, 0x80);
+    return ((((a & 0xffff) / (b & 0xff)) & 0xff) | (remainder << 8)) >>> 0;
   }
 
   /**
@@ -472,11 +568,10 @@ export class ALU {
    * @return {number} The unsigned result. The high half is the remainder.
    */
   div16(a, b) {
-    return (
-      (((((a & 0xffffffff) >>> 0) / (b & 0xffff)) & 0xffff) |
-        (((((a & 0xffffffff) >>> 0) % (b & 0xffff)) & 0xffff) << 16)) >>>
-      0
-    );
+    const dividend = (a & 0xffffffff) >>> 0;
+    const remainder = (dividend % (b & 0xffff)) & 0xffff;
+    this.applyWideResultFlags(remainder, 0x8000);
+    return (((dividend / (b & 0xffff)) & 0xffff) | (remainder << 16)) >>> 0;
   }
 
   /**
@@ -517,7 +612,9 @@ export class ALU {
   idiv8(a, b) {
     a = this.toSigned16(a);
     b = this.toSigned8(b);
-    return ((a / b) & 0xff) | (((a % b) & 0xff) << 8);
+    const remainder = (a % b) & 0xff;
+    this.applyWideResultFlags(remainder, 0x80);
+    return (((a / b) & 0xff) | (remainder << 8)) >>> 0;
   }
 
   /**
@@ -536,7 +633,9 @@ export class ALU {
   idiv16(a, b) {
     a = this.toSigned32(a);
     b = this.toSigned16(b);
-    return (((a / b) & 0xffff) | (((a % b) & 0xffff) << 16)) >>> 0;
+    const remainder = (a % b) & 0xffff;
+    this.applyWideResultFlags(remainder, 0x8000);
+    return (((a / b) & 0xffff) | (remainder << 16)) >>> 0;
   }
 
   /**
@@ -620,7 +719,12 @@ export class ALU {
    * @return {number} The unsigned result.
    */
   inc8(a) {
-    return this.add8(a, 1);
+    // INC leaves CF alone, the same way DEC does.
+    const carry = this._cpu._flags.carry;
+    const result = this.add8(a, 1);
+    this._cpu._flags.carry = carry;
+
+    return result;
   }
 
   /**
@@ -634,7 +738,12 @@ export class ALU {
    * @return {number} The unsigned result.
    */
   inc16(a) {
-    return this.add16(a, 1);
+    // INC leaves CF alone, the same way DEC does.
+    const carry = this._cpu._flags.carry;
+    const result = this.add16(a, 1);
+    this._cpu._flags.carry = carry;
+
+    return result;
   }
 
   /**
@@ -648,247 +757,409 @@ export class ALU {
    * @return {number} The unsigned result.
    */
   inc32(a) {
-    return this.add32(a, 1);
+    // INC leaves CF alone, the same way DEC does.
+    const carry = this._cpu._flags.carry;
+    const result = this.add32(a, 1);
+    this._cpu._flags.carry = carry;
+
+    return result;
   }
 
+  /**
+   * Performs the 8-bit ROR instruction.
+   *
+   * OF is the exclusive-or of the top two bits of the result. SF, ZF, PF and
+   * AF are untouched.
+   */
   ror8(a, b) {
-    a &= 0xff;
-    if (!(b & 0x7)) {
-      // Same result (rotates around)
-      if (b & 0x18) {
-        // Rotates just once!
-        this._cpu._flags.carry = a >> 7 != 0;
-        this._cpu._flags.overflow = ((a >> 7) ^ ((a >> 6) & 0x1)) != 0;
-      }
-      return a;
+    const count = b & 0x1f;
+    const value = a & 0xff;
+
+    if (count == 0) {
+      return value;
     }
-    a = (a >> b) | (a << (8 - b));
-    this._cpu._flags.carry = (a & 0x80) != 0;
-    this._cpu._flags.overflow = ((a ^ (a << 1)) & 0x80) != 0;
-    this._cpu._flags.signed = a >= 0x80;
-    return a;
+
+    const amount = count % 8;
+    const result = amount == 0 ? value : ((value >>> amount) | (value << (8 - amount))) & 0xff;
+
+    this._cpu._flags.carry = (result & 0x80) != 0;
+    this._cpu._flags.overflow = ((result & 0x80) != 0) != ((result & (0x80 >>> 1)) != 0);
+
+    return result;
   }
 
+  /**
+   * Performs the 16-bit ROR instruction.
+   *
+   * OF is the exclusive-or of the top two bits of the result. SF, ZF, PF and
+   * AF are untouched.
+   */
   ror16(a, b) {
-    a &= 0xffff;
-    if (!(b & 0xf)) {
-      // Same result (rotates around)
-      if (b & 0x10) {
-        // Rotates just once!
-        this._cpu._flags.carry = a >> 15 != 0;
-        this._cpu._flags.overflow = ((a >> 15) ^ ((a >> 14) & 0x1)) != 0;
-      }
-      return a;
+    const count = b & 0x1f;
+    const value = a & 0xffff;
+
+    if (count == 0) {
+      return value;
     }
-    a = (a >> b) | (a << (16 - b));
-    this._cpu._flags.carry = (a & 0x8000) != 0;
-    this._cpu._flags.overflow = ((a ^ (a << 1)) & 0x8000) != 0;
-    this._cpu._flags.signed = a >= 0x8000;
-    return a;
+
+    const amount = count % 16;
+    const result = amount == 0 ? value : ((value >>> amount) | (value << (16 - amount))) & 0xffff;
+
+    this._cpu._flags.carry = (result & 0x8000) != 0;
+    this._cpu._flags.overflow = ((result & 0x8000) != 0) != ((result & (0x8000 >>> 1)) != 0);
+
+    return result;
   }
 
+  /**
+   * Performs the 32-bit ROR instruction.
+   *
+   * OF is the exclusive-or of the top two bits of the result. SF, ZF, PF and
+   * AF are untouched.
+   */
   ror32(a, b) {
-    a = (a & 0xffffffff) >>> 0;
-    if (!(b & 0x1f)) {
-      // Same result (rotates around)
-      if (b & 0x20) {
-        // Rotates just once!
-        this._cpu._flags.carry = a >> 31 != 0;
-        this._cpu._flags.overflow = ((a >> 31) ^ ((a >> 30) & 0x1)) != 0;
-      }
-      return a;
+    const count = b & 0x1f;
+    const value = a & 0xffffffff;
+
+    if (count == 0) {
+      return value;
     }
-    a = (a >> b) | (a << (32 - b));
-    this._cpu._flags.carry = (a & 0x80000000) != 0;
-    this._cpu._flags.overflow = ((a ^ (a << 1)) & 0x80000000) != 0;
-    this._cpu._flags.signed = a >= 0x80000000;
-    return a >>> 0;
+
+    const amount = count % 32;
+    const result =
+      amount == 0 ? value : ((value >>> amount) | (value << (32 - amount))) & 0xffffffff;
+
+    this._cpu._flags.carry = (result & 0x80000000) != 0;
+    this._cpu._flags.overflow =
+      ((result & 0x80000000) != 0) != ((result & (0x80000000 >>> 1)) != 0);
+
+    return result;
   }
 
+  /**
+   * Performs the 8-bit ROL instruction.
+   *
+   * Rotates touch CF and OF and nothing else: SF, ZF, PF and AF keep whatever
+   * they held before.
+   */
   rol8(a, b) {
-    a &= 0xff;
-    if (!(b & 0x7)) {
-      // Same result (rotates around)
-      if (b & 0x18) {
-        // Rotates just once!
-        this._cpu._flags.carry = (a & 0x1) != 0;
-        this._cpu._flags.overflow = ((a & 0x1) ^ (a >> 7)) != 0;
-      }
-      return a;
+    const count = b & 0x1f;
+    const value = a & 0xff;
+
+    if (count == 0) {
+      return value;
     }
-    b &= 0x7; // Restrict to 0-7
-    a = (a << b) | (a >> (8 - b));
-    this._cpu._flags.carry = (a & 0x1) != 0;
-    this._cpu._flags.overflow = ((a & 0x1) ^ (a >> 7)) != 0;
-    this._cpu._flags.signed = a >= 0x80;
-    return a;
+
+    const amount = count % 8;
+    const result = amount == 0 ? value : ((value << amount) | (value >>> (8 - amount))) & 0xff;
+
+    this._cpu._flags.carry = (result & 0x1) != 0;
+    this._cpu._flags.overflow = ((result & 0x80) != 0) != ((result & 0x1) != 0);
+
+    return result;
   }
 
+  /**
+   * Performs the 16-bit ROL instruction.
+   *
+   * Rotates touch CF and OF and nothing else: SF, ZF, PF and AF keep whatever
+   * they held before.
+   */
   rol16(a, b) {
-    a &= 0xffff;
-    if (!(b & 0xf)) {
-      // Same result (rotates around)
-      if (b & 0x10) {
-        // Rotates just once!
-        this._cpu._flags.carry = (a & 0x1) != 0;
-        this._cpu._flags.overflow = ((a & 0x1) ^ (a >> 15)) != 0;
-      }
-      return a;
+    const count = b & 0x1f;
+    const value = a & 0xffff;
+
+    if (count == 0) {
+      return value;
     }
-    b &= 0xf; // Restrict to 0-15
-    a = (a << b) | (a >> (16 - b));
-    this._cpu._flags.carry = (a & 0x1) != 0;
-    this._cpu._flags.overflow = ((a & 0x1) ^ (a >> 15)) != 0;
-    this._cpu._flags.signed = a >= 0x8000;
-    return a;
+
+    const amount = count % 16;
+    const result = amount == 0 ? value : ((value << amount) | (value >>> (16 - amount))) & 0xffff;
+
+    this._cpu._flags.carry = (result & 0x1) != 0;
+    this._cpu._flags.overflow = ((result & 0x8000) != 0) != ((result & 0x1) != 0);
+
+    return result;
   }
 
+  /**
+   * Performs the 32-bit ROL instruction.
+   *
+   * Rotates touch CF and OF and nothing else: SF, ZF, PF and AF keep whatever
+   * they held before.
+   */
   rol32(a, b) {
-    a = (a & 0xffffffff) >>> 0;
-    if (!(b & 0x1f)) {
-      // Same result (rotates around)
-      if (b & 0x20) {
-        // Rotates just once!
-        this._cpu._flags.carry = (a & 0x1) != 0;
-        this._cpu._flags.overflow = ((a & 0x1) ^ (a >> 31)) != 0;
-      }
-      return a;
+    const count = b & 0x1f;
+    const value = a & 0xffffffff;
+
+    if (count == 0) {
+      return value;
     }
-    b &= 0x1f; // Restrict to 0-31
-    a = (a << b) | (a >> (32 - b));
-    this._cpu._flags.carry = (a & 0x1) != 0;
-    this._cpu._flags.overflow = ((a & 0x1) ^ (a >> 31)) != 0;
-    this._cpu._flags.signed = a >= 0x80000000;
-    return a >>> 0;
+
+    const amount = count % 32;
+    const result =
+      amount == 0 ? value : ((value << amount) | (value >>> (32 - amount))) & 0xffffffff;
+
+    this._cpu._flags.carry = (result & 0x1) != 0;
+    this._cpu._flags.overflow = ((result & 0x80000000) != 0) != ((result & 0x1) != 0);
+
+    return result;
   }
 
+  /**
+   * Performs the 8-bit RCL instruction.
+   *
+   * CF takes part in the rotation, making it 9 bits wide, so the
+   * count wraps at 9 rather than 8.
+   */
   rcl8(a, b) {
-    if (b % 9 == 0) {
-      return a;
+    const count = (b & 0x1f) % 9;
+    let result = a & 0xff;
+
+    if (count == 0) {
+      return result;
     }
 
-    a &= 0xff;
-    b %= 9;
-    const result = (a << b) | ((this._cpu._flags.carry ? 1 : 0) << (b - 1)) | (a >> (9 - b));
-    this._cpu._flags.carry = (a >> (16 - b)) & 0x1;
-    this._cpu._flags.overflow = (this._cpu._flags.carry ? 1 : 0) ^ (result >> 7);
-    this._cpu._flags.signed = result >= 0x80;
-    return a & 0xff;
+    let carry = this._cpu._flags.carry ? 1 : 0;
+
+    for (let step = 0; step < count; step++) {
+      const top = (result & 0x80) != 0 ? 1 : 0;
+      result = (((result << 1) & 0xff) | carry) >>> 0;
+      carry = top;
+    }
+
+    this._cpu._flags.carry = carry != 0;
+    this._cpu._flags.overflow = ((result & 0x80) != 0) != (carry != 0);
+
+    return result;
   }
 
+  /**
+   * Performs the 16-bit RCL instruction.
+   *
+   * CF takes part in the rotation, making it 17 bits wide, so the
+   * count wraps at 17 rather than 16.
+   */
   rcl16(a, b) {
-    if (b % 17 == 0) {
-      return a;
+    const count = (b & 0x1f) % 17;
+    let result = a & 0xffff;
+
+    if (count == 0) {
+      return result;
     }
 
-    a &= 0xffff;
-    b %= 17;
-    const result = (a << b) | ((this._cpu._flags.carry ? 1 : 0) << (b - 1)) | (a >> (17 - b));
-    this._cpu._flags.carry = (a >> (16 - b)) & 0x1;
-    this._cpu._flags.overflow = (this._cpu._flags.carry ? 1 : 0) ^ (result >> 15);
-    this._cpu._flags.signed = result >= 0x8000;
-    return result & 0xffff;
+    let carry = this._cpu._flags.carry ? 1 : 0;
+
+    for (let step = 0; step < count; step++) {
+      const top = (result & 0x8000) != 0 ? 1 : 0;
+      result = (((result << 1) & 0xffff) | carry) >>> 0;
+      carry = top;
+    }
+
+    this._cpu._flags.carry = carry != 0;
+    this._cpu._flags.overflow = ((result & 0x8000) != 0) != (carry != 0);
+
+    return result;
   }
 
+  /**
+   * Performs the 32-bit RCL instruction.
+   *
+   * CF takes part in the rotation, making it 33 bits wide, so the
+   * count wraps at 33 rather than 32.
+   */
   rcl32(a, b) {
-    if (b % 33 == 0) {
-      return a;
+    const count = (b & 0x1f) % 33;
+    let result = a & 0xffffffff;
+
+    if (count == 0) {
+      return result;
     }
 
-    a = (a & 0xffffffff) >>> 0;
-    b %= 33;
-    const result = (a << b) | ((this._cpu._flags.carry ? 1 : 0) << (b - 1)) | (a >> (33 - b));
-    this._cpu._flags.carry = (a >> (32 - b)) & 0x1;
-    this._cpu._flags.overflow = (this._cpu._flags.carry ? 1 : 0) ^ (result >> 31);
-    this._cpu._flags.signed = result >= 0x80000000;
-    return (result & 0xffffffff) >>> 0;
+    let carry = this._cpu._flags.carry ? 1 : 0;
+
+    for (let step = 0; step < count; step++) {
+      const top = (result & 0x80000000) != 0 ? 1 : 0;
+      result = (((result << 1) & 0xffffffff) | carry) >>> 0;
+      carry = top;
+    }
+
+    this._cpu._flags.carry = carry != 0;
+    this._cpu._flags.overflow = ((result & 0x80000000) != 0) != (carry != 0);
+
+    return result;
   }
 
+  /**
+   * Performs the 8-bit RCR instruction.
+   *
+   * CF takes part in the rotation, making it 9 bits wide. OF is
+   * the exclusive-or of the top two bits of the result.
+   */
   rcr8(a, b) {
-    if (b % 9 == 0) {
-      return a;
+    const count = (b & 0x1f) % 9;
+    let result = a & 0xff;
+
+    if (count == 0) {
+      return result;
     }
 
-    a &= 0xff;
-    b %= 9;
-    const result = (a >> b) | ((this._cpu._flags.carry ? 1 : 0) << (8 - b)) | (a << (9 - b));
+    let carry = this._cpu._flags.carry ? 1 : 0;
 
-    this._cpu._flags.carry = ((a >> (b - 1)) & 0x1) != 0;
-    this._cpu._flags.overflow = ((result ^ (result << 1)) & 0x80) != 0;
-    this._cpu._flags.signed = result >= 0x80;
+    for (let step = 0; step < count; step++) {
+      const bottom = result & 0x1;
+      result = ((result >>> 1) | (carry != 0 ? 0x80 : 0)) >>> 0;
+      carry = bottom;
+    }
 
-    return result & 0xff;
+    this._cpu._flags.carry = carry != 0;
+    this._cpu._flags.overflow = ((result & 0x80) != 0) != ((result & (0x80 >>> 1)) != 0);
+
+    return result;
   }
 
+  /**
+   * Performs the 16-bit RCR instruction.
+   *
+   * CF takes part in the rotation, making it 17 bits wide. OF is
+   * the exclusive-or of the top two bits of the result.
+   */
   rcr16(a, b) {
-    if (b % 17 == 0) {
-      return a;
+    const count = (b & 0x1f) % 17;
+    let result = a & 0xffff;
+
+    if (count == 0) {
+      return result;
     }
 
-    a &= 0xffff;
-    b %= 17;
-    const result = (a >> b) | ((this._cpu._flags.carry ? 1 : 0) << (16 - b)) | (a << (17 - b));
+    let carry = this._cpu._flags.carry ? 1 : 0;
 
-    this._cpu._flags.carry = ((a >> (b - 1)) & 0x1) != 0;
-    this._cpu._flags.overflow = ((result ^ (result << 1)) & 0x8000) != 0;
-    this._cpu._flags.signed = result >= 0x8000;
+    for (let step = 0; step < count; step++) {
+      const bottom = result & 0x1;
+      result = ((result >>> 1) | (carry != 0 ? 0x8000 : 0)) >>> 0;
+      carry = bottom;
+    }
 
-    return result & 0xffff;
+    this._cpu._flags.carry = carry != 0;
+    this._cpu._flags.overflow = ((result & 0x8000) != 0) != ((result & (0x8000 >>> 1)) != 0);
+
+    return result;
   }
 
+  /**
+   * Performs the 32-bit RCR instruction.
+   *
+   * CF takes part in the rotation, making it 33 bits wide. OF is
+   * the exclusive-or of the top two bits of the result.
+   */
   rcr32(a, b) {
-    if (b % 33 == 0) {
-      return a;
+    const count = (b & 0x1f) % 33;
+    let result = a & 0xffffffff;
+
+    if (count == 0) {
+      return result;
     }
 
-    a = (a & 0xffffffff) >>> 0;
-    b %= 33;
-    const result = (a >> b) | ((this._cpu._flags.carry ? 1 : 0) << (32 - b)) | (a << (33 - b));
+    let carry = this._cpu._flags.carry ? 1 : 0;
 
-    this._cpu._flags.carry = ((a >> (b - 1)) & 0x1) != 0;
-    this._cpu._flags.overflow = ((result ^ (result << 1)) & 0x80000000) != 0;
-    this._cpu._flags.signed = result >= 0x80000000;
+    for (let step = 0; step < count; step++) {
+      const bottom = result & 0x1;
+      result = ((result >>> 1) | (carry != 0 ? 0x80000000 : 0)) >>> 0;
+      carry = bottom;
+    }
 
-    return (result & 0xffffffff) >>> 0;
+    this._cpu._flags.carry = carry != 0;
+    this._cpu._flags.overflow =
+      ((result & 0x80000000) != 0) != ((result & (0x80000000 >>> 1)) != 0);
+
+    return result;
   }
 
+  /**
+   * Performs the 8-bit SHL/SAL instruction.
+   *
+   * CF is the last bit shifted out, OF is the sign of the result exclusive-or
+   * CF, and AF -- documented as undefined -- follows bit 4 of the result on
+   * real hardware.
+   */
   shl8(a, b) {
-    const result = (a <<= b);
-    this._cpu._flags.overflow = ((result ^ a) & 0x80) != 0;
-    this._cpu._flags.carry = ((a >> (8 - b)) & 0x1) != 0;
-    if (b > 8) {
-      this._cpu._flags.carry = false;
+    // The 286 masks the shift count to five bits.
+    const count = b & 0x1f;
+    const value = a & 0xff;
+
+    if (count == 0) {
+      // A zero count leaves every flag alone.
+      return value;
     }
 
-    this._cpu._flags.signed = result >= 0x80;
+    const result = count < 8 ? (value << count) & 0xff : 0;
 
-    return result & 0xff;
+    this._cpu._flags.carry = count <= 8 ? ((value >>> (8 - count)) & 0x1) != 0 : false;
+    this._cpu._flags.overflow = ((result & 0x80) != 0) != this._cpu._flags.carry;
+    this._cpu._flags.auxiliaryCarry = (result & 0x10) != 0;
+    this._cpu._flags.zero = result == 0;
+    this._cpu._flags.signed = (result & 0x80) != 0;
+    this._cpu._flags.parity = ALU.PARITY[result & 0xff];
+
+    return result;
   }
 
+  /**
+   * Performs the 16-bit SHL/SAL instruction.
+   *
+   * CF is the last bit shifted out, OF is the sign of the result exclusive-or
+   * CF, and AF -- documented as undefined -- follows bit 4 of the result on
+   * real hardware.
+   */
   shl16(a, b) {
-    const result = a << b;
-    this._cpu._flags.overflow = ((result ^ a) & 0x8000) != 0;
-    this._cpu._flags.carry = ((a >> (16 - b)) & 0x1) != 0;
-    if (b > 16) {
-      this._cpu._flags.carry = false;
+    // The 286 masks the shift count to five bits.
+    const count = b & 0x1f;
+    const value = a & 0xffff;
+
+    if (count == 0) {
+      // A zero count leaves every flag alone.
+      return value;
     }
 
-    this._cpu._flags.signed = result >= 0x8000;
+    const result = count < 16 ? (value << count) & 0xffff : 0;
 
-    return result & 0xffff;
+    this._cpu._flags.carry = count <= 16 ? ((value >>> (16 - count)) & 0x1) != 0 : false;
+    this._cpu._flags.overflow = ((result & 0x8000) != 0) != this._cpu._flags.carry;
+    this._cpu._flags.auxiliaryCarry = (result & 0x10) != 0;
+    this._cpu._flags.zero = result == 0;
+    this._cpu._flags.signed = (result & 0x8000) != 0;
+    this._cpu._flags.parity = ALU.PARITY[result & 0xff];
+
+    return result;
   }
 
+  /**
+   * Performs the 32-bit SHL/SAL instruction.
+   *
+   * CF is the last bit shifted out, OF is the sign of the result exclusive-or
+   * CF, and AF -- documented as undefined -- follows bit 4 of the result on
+   * real hardware.
+   */
   shl32(a, b) {
-    const result = a << b;
-    this._cpu._flags.overflow = ((result ^ a) & 0x80000000) != 0;
-    this._cpu._flags.carry = ((a >> (32 - b)) & 0x1) != 0;
-    if (b > 32) {
-      this._cpu._flags.carry = false;
+    // The 286 masks the shift count to five bits.
+    const count = b & 0x1f;
+    const value = a & 0xffffffff;
+
+    if (count == 0) {
+      // A zero count leaves every flag alone.
+      return value;
     }
 
-    this._cpu._flags.signed = result >= 0x80000000;
+    const result = count < 32 ? (value << count) & 0xffffffff : 0;
 
-    return (result & 0xffffffff) >>> 0;
+    this._cpu._flags.carry = count <= 32 ? ((value >>> (32 - count)) & 0x1) != 0 : false;
+    this._cpu._flags.overflow = ((result & 0x80000000) != 0) != this._cpu._flags.carry;
+    this._cpu._flags.auxiliaryCarry = (result & 0x10) != 0;
+    this._cpu._flags.zero = result == 0;
+    this._cpu._flags.signed = (result & 0x80000000) != 0;
+    this._cpu._flags.parity = ALU.PARITY[result & 0xff];
+
+    return result;
   }
 
   shl64(a: bigint, b: bigint) {
@@ -904,109 +1175,172 @@ export class ALU {
     return result & 0xffffffffffffffffn;
   }
 
+  /**
+   * Performs the 8-bit SAR instruction.
+   *
+   * The sign is replicated, so a count at or past the width leaves all ones or
+   * all zeroes. OF is cleared, and AF -- documented as undefined -- is always
+   * set on real hardware.
+   */
   sar8(a, b) {
-    if (b > 8) {
-      b = 8;
+    const count = b & 0x1f;
+    const value = a & 0xff;
+
+    if (count == 0) {
+      return value;
     }
 
-    let result = a >> b;
-    if (a & 0x80) {
-      result |= 0xff << (8 - b);
-    }
+    const signed = this.toSigned8(value);
+    const distance = Math.min(count, 8 - 1);
+    const result = (signed >> distance) & 0xff;
 
-    this._cpu._flags.carry = ((a >> (b - 1)) & 0x1) != 0;
+    this._cpu._flags.carry = ((signed >> Math.min(count - 1, 8 - 1)) & 0x1) != 0;
     this._cpu._flags.overflow = false;
-    this._cpu._flags.signed = result >= 0x80;
-    return result & 0xff;
+    this._cpu._flags.auxiliaryCarry = true;
+    this._cpu._flags.zero = result == 0;
+    this._cpu._flags.signed = (result & 0x80) != 0;
+    this._cpu._flags.parity = ALU.PARITY[result & 0xff];
+
+    return result;
   }
 
+  /**
+   * Performs the 16-bit SAR instruction.
+   *
+   * The sign is replicated, so a count at or past the width leaves all ones or
+   * all zeroes. OF is cleared, and AF -- documented as undefined -- is always
+   * set on real hardware.
+   */
   sar16(a, b) {
-    if (b > 16) {
-      b = 16;
+    const count = b & 0x1f;
+    const value = a & 0xffff;
+
+    if (count == 0) {
+      return value;
     }
 
-    let result = a >> b;
-    if (a & 0x8000) {
-      result |= 0xffff << (16 - b);
-    }
+    const signed = this.toSigned16(value);
+    const distance = Math.min(count, 16 - 1);
+    const result = (signed >> distance) & 0xffff;
 
-    this._cpu._flags.carry = ((a >> (b - 1)) & 0x1) != 0;
+    this._cpu._flags.carry = ((signed >> Math.min(count - 1, 16 - 1)) & 0x1) != 0;
     this._cpu._flags.overflow = false;
-    this._cpu._flags.signed = result >= 0x8000;
-    return result & 0xffff;
+    this._cpu._flags.auxiliaryCarry = true;
+    this._cpu._flags.zero = result == 0;
+    this._cpu._flags.signed = (result & 0x8000) != 0;
+    this._cpu._flags.parity = ALU.PARITY[result & 0xff];
+
+    return result;
   }
 
+  /**
+   * Performs the 32-bit SAR instruction.
+   *
+   * The sign is replicated, so a count at or past the width leaves all ones or
+   * all zeroes. OF is cleared, and AF -- documented as undefined -- is always
+   * set on real hardware.
+   */
   sar32(a, b) {
-    if (b > 32) {
-      b = 32;
+    const count = b & 0x1f;
+    const value = a & 0xffffffff;
+
+    if (count == 0) {
+      return value;
     }
 
-    let result = a >> b;
-    if (a & 0x80000000) {
-      result |= 0xffffffff << (32 - b);
-    }
+    const signed = this.toSigned32(value);
+    const distance = Math.min(count, 32 - 1);
+    const result = (signed >> distance) & 0xffffffff;
 
-    this._cpu._flags.carry = ((a >> (b - 1)) & 0x1) != 0;
+    this._cpu._flags.carry = ((signed >> Math.min(count - 1, 32 - 1)) & 0x1) != 0;
     this._cpu._flags.overflow = false;
-    this._cpu._flags.signed = result >= 0x80000000;
-    return (result & 0xffffffff) >>> 0;
+    this._cpu._flags.auxiliaryCarry = true;
+    this._cpu._flags.zero = result == 0;
+    this._cpu._flags.signed = (result & 0x80000000) != 0;
+    this._cpu._flags.parity = ALU.PARITY[result & 0xff];
+
+    return result;
   }
 
+  /**
+   * Performs the 8-bit SHR instruction.
+   *
+   * OF is the sign of the original value, and AF -- documented as undefined --
+   * is always set on real hardware.
+   */
   shr8(a, b) {
-    if (b == 0) {
-      return a;
+    const count = b & 0x1f;
+    const value = a & 0xff;
+
+    if (count == 0) {
+      return value;
     }
 
-    const result = a >> b;
+    const result = count < 8 ? (value >>> count) & 0xff : 0;
 
-    if ((b & 0x1f) == 1) {
-      this._cpu._flags.overflow = a > 0x80;
-    } else {
-      this._cpu._flags.overflow = false;
-    }
+    this._cpu._flags.carry = count <= 8 ? ((value >>> (count - 1)) & 0x1) != 0 : false;
+    // OF is only meaningful for a single-bit shift; hardware clears it beyond.
+    this._cpu._flags.overflow = count == 1 && (value & 0x80) != 0;
+    this._cpu._flags.auxiliaryCarry = true;
+    this._cpu._flags.zero = result == 0;
+    this._cpu._flags.signed = (result & 0x80) != 0;
+    this._cpu._flags.parity = ALU.PARITY[result & 0xff];
 
-    this._cpu._flags.carry = ((a >> (b - 1)) & 0x1) != 0;
-    this._cpu._flags.signed = result >= 0x80;
-
-    return result & 0xff;
+    return result;
   }
 
+  /**
+   * Performs the 16-bit SHR instruction.
+   *
+   * OF is the sign of the original value, and AF -- documented as undefined --
+   * is always set on real hardware.
+   */
   shr16(a, b) {
-    if (b == 0) {
-      return a;
+    const count = b & 0x1f;
+    const value = a & 0xffff;
+
+    if (count == 0) {
+      return value;
     }
 
-    const result = a >> b;
+    const result = count < 16 ? (value >>> count) & 0xffff : 0;
 
-    if ((b & 0x1f) == 1) {
-      this._cpu._flags.overflow = a > 0x8000;
-    } else {
-      this._cpu._flags.overflow = false;
-    }
+    this._cpu._flags.carry = count <= 16 ? ((value >>> (count - 1)) & 0x1) != 0 : false;
+    // OF is only meaningful for a single-bit shift; hardware clears it beyond.
+    this._cpu._flags.overflow = count == 1 && (value & 0x8000) != 0;
+    this._cpu._flags.auxiliaryCarry = true;
+    this._cpu._flags.zero = result == 0;
+    this._cpu._flags.signed = (result & 0x8000) != 0;
+    this._cpu._flags.parity = ALU.PARITY[result & 0xff];
 
-    this._cpu._flags.carry = ((a >> (b - 1)) & 0x1) != 0;
-    this._cpu._flags.signed = result >= 0x8000;
-
-    return result & 0xffff;
+    return result;
   }
 
+  /**
+   * Performs the 32-bit SHR instruction.
+   *
+   * OF is the sign of the original value, and AF -- documented as undefined --
+   * is always set on real hardware.
+   */
   shr32(a, b) {
-    if (b == 0) {
-      return a;
+    const count = b & 0x1f;
+    const value = a & 0xffffffff;
+
+    if (count == 0) {
+      return value;
     }
 
-    const result = a >> b;
+    const result = count < 32 ? (value >>> count) & 0xffffffff : 0;
 
-    if ((b & 0x1f) == 1) {
-      this._cpu._flags.overflow = a > 0x80000000;
-    } else {
-      this._cpu._flags.overflow = false;
-    }
+    this._cpu._flags.carry = count <= 32 ? ((value >>> (count - 1)) & 0x1) != 0 : false;
+    // OF is only meaningful for a single-bit shift; hardware clears it beyond.
+    this._cpu._flags.overflow = count == 1 && (value & 0x80000000) != 0;
+    this._cpu._flags.auxiliaryCarry = true;
+    this._cpu._flags.zero = result == 0;
+    this._cpu._flags.signed = (result & 0x80000000) != 0;
+    this._cpu._flags.parity = ALU.PARITY[result & 0xff];
 
-    this._cpu._flags.carry = ((a >> (b - 1)) & 0x1) != 0;
-    this._cpu._flags.signed = result >= 0x80000000;
-
-    return (result & 0xffffffff) >>> 0;
+    return result;
   }
 
   shr64(a: bigint, b: bigint) {
