@@ -153,8 +153,8 @@ have no executable vectors at all: every test for them faults on hardware, and
 the oracle skips faulting vectors.)
 
 Nothing the core implements computes the wrong answer any more -- there are no
-register, flag or memory failures left anywhere in the suite. What remains is
-entirely instructions it has never decoded:
+register, flag or memory failures left anywhere in the suite, at sample depth
+or at full depth. What remains is entirely instructions it has never decoded:
 
 | Family                     | Forms | Vectors |
 | -------------------------- | ----- | ------- |
@@ -165,6 +165,21 @@ entirely instructions it has never decoded:
 
 Those need a decision the emulator has not had to make yet -- what a port read
 or write means in a browser -- rather than a bug to find.
+
+### Divide errors
+
+A quotient that will not fit the destination raises interrupt 0, and that
+includes every divide by zero. This is worth stating because none of it is
+covered by the conformance suite: the oracle skips vectors whose instruction
+faults on hardware, which is more than half of the vectors for the divide
+forms. `test/emulator/divide_error_test.ts` pins the behaviour instead.
+
+One case is not a fault at all. A signed byte divide whose quotient works out
+to exactly -128 is let through by the part rather than faulting, and the same
+goes for -32768 in the word form. Reproducing that means performing the
+division the long way, because whether it faults depends on the answer. The
+sampled conformance run never reaches those vectors; they show up only at full
+depth, where all four divide forms now pass all 8,504 of their vectors.
 
 The 127 forms the fetch script pulls by default -- the ALU, shift, rotate,
 string and multiply/divide groups -- pass **100%**, including a full-depth run

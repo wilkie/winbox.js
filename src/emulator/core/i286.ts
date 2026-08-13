@@ -1,6 +1,6 @@
 'use strict';
 
-import { ALU } from '../alu.js';
+import { ALU, DivideError } from '../alu.js';
 import { CPU, InvalidInstruction } from '../cpu.js';
 import { CpuCore16 } from '../cpu-core.js';
 
@@ -2967,11 +2967,25 @@ export class I286 implements CpuCore16 {
             break;
           case 0x6: // DIV eb
             this.debug('div    eb   ');
-            this.ax = this._alu.div8(this.ax, this.readOperand8(instruction));
+            try {
+              this.ax = this._alu.div8(this.ax, this.readOperand8(instruction));
+            } catch (error) {
+              if (!(error instanceof DivideError)) {
+                throw error;
+              }
+              this.raiseInterrupt(instruction, 0);
+            }
             break;
           case 0x7: // IDIV eb
-            this.debug('idev   eb   ');
-            this.ax = this._alu.idiv8(this.ax, this.readOperand8(instruction));
+            this.debug('idiv   eb   ');
+            try {
+              this.ax = this._alu.idiv8(this.ax, this.readOperand8(instruction));
+            } catch (error) {
+              if (!(error instanceof DivideError)) {
+                throw error;
+              }
+              this.raiseInterrupt(instruction, 0);
+            }
             break;
         }
         break;
@@ -3005,18 +3019,32 @@ export class I286 implements CpuCore16 {
             break;
           case 0x6: // DIV ew
             this.debug('div    ew   ');
-            const divOperand = (this.dx << 16) | this.ax;
-            const divResult = this._alu.div16(divOperand, aluWordOperand);
-            this.dx = (divResult >> 16) & 0xffff;
-            this.ax = divResult & 0xffff;
+            try {
+              const divOperand = ((this.dx << 16) | this.ax) >>> 0;
+              const divResult = this._alu.div16(divOperand, aluWordOperand);
+              this.dx = (divResult >>> 16) & 0xffff;
+              this.ax = divResult & 0xffff;
+            } catch (error) {
+              if (!(error instanceof DivideError)) {
+                throw error;
+              }
+              this.raiseInterrupt(instruction, 0);
+            }
             break;
           case 0x7: // IDIV ew
             this.debug('idiv   ew   ');
-            // The dividend is DX:AX, the same as DIV. This passed AX alone.
-            const idivOperand = ((this.dx << 16) | this.ax) >>> 0;
-            const idivResult = this._alu.idiv16(idivOperand, aluWordOperand);
-            this.dx = (idivResult >> 16) & 0xffff;
-            this.ax = idivResult & 0xffff;
+            try {
+              // The dividend is DX:AX, the same as DIV. This passed AX alone.
+              const idivOperand = ((this.dx << 16) | this.ax) >>> 0;
+              const idivResult = this._alu.idiv16(idivOperand, aluWordOperand);
+              this.dx = (idivResult >>> 16) & 0xffff;
+              this.ax = idivResult & 0xffff;
+            } catch (error) {
+              if (!(error instanceof DivideError)) {
+                throw error;
+              }
+              this.raiseInterrupt(instruction, 0);
+            }
             break;
         }
         break;

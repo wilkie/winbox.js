@@ -1,6 +1,15 @@
 'use strict';
 
 /**
+ * Raised when a divide cannot produce a representable quotient.
+ *
+ * The core turns this into interrupt 0. The flags the microcode leaves behind
+ * are already applied by the time this is thrown, because a divide error on
+ * this part is not a clean abort: the routine runs far enough to disturb them.
+ */
+export class DivideError {}
+
+/**
  * This class represents the arithmetic logic unit of the CPU.
  */
 export class ALU {
@@ -767,9 +776,32 @@ export class ALU {
    * @return {number} The unsigned result. The high half is the remainder.
    */
   div8(a, b) {
+    const dividend = a & 0xffff;
     const divisor = b & 0xff;
-    const quotient = Math.floor((a & 0xffff) / divisor) & 0xff;
-    const remainder = ((a & 0xffff) % divisor) & 0xff;
+
+    /* A quotient wider than the destination -- which includes every divide by
+     * zero -- faults. The routine has already run by then, so the flags it
+     * disturbed are reproduced before raising.
+     */
+    if (dividend >= divisor << 8) {
+      const scaled = (divisor << 8) & 0xffff;
+      let accumulator = dividend >= scaled ? ((dividend - scaled) | 1) & 0xffff : dividend;
+
+      for (let step = 0; step < 6; step++) {
+        accumulator =
+          accumulator << 1 >= scaled || (accumulator & 0x8000) > 0
+            ? (((accumulator << 1) - scaled) | 1) & 0xffff
+            : (accumulator << 1) & 0xffff;
+      }
+
+      // The routine ends on a compare, and that is what the flags describe.
+      this.sub8((accumulator & 0x7fff) >> 7, divisor);
+
+      throw new DivideError();
+    }
+
+    const quotient = Math.floor(dividend / divisor) & 0xff;
+    const remainder = (dividend % divisor) & 0xff;
     const result = ((remainder << 8) | quotient) & 0xffff;
 
     /* CF and OF are documented as undefined. What survives is the compare from
@@ -800,8 +832,26 @@ export class ALU {
    * @return {number} The unsigned result. The high half is the remainder.
    */
   div16(a, b) {
-    const divisor = b & 0xffff;
     const dividend = (a & 0xffffffff) >>> 0;
+    const divisor = b & 0xffff;
+
+    if (dividend >= divisor * 0x10000) {
+      const scaled = divisor * 0x10000;
+      let accumulator = dividend >= scaled ? (dividend - scaled) | 1 : dividend;
+
+      for (let step = 0; step < 14; step++) {
+        const shifted = accumulator * 2;
+        accumulator =
+          shifted >= scaled || accumulator >= 0x80000000
+            ? ((shifted - scaled) % 0x100000000) + 1 - (((shifted - scaled) % 0x100000000) % 2)
+            : shifted % 0x100000000;
+      }
+
+      this.sub16(Math.floor((accumulator % 0x80000000) / 0x8000), divisor);
+
+      throw new DivideError();
+    }
+
     const quotient = Math.floor(dividend / divisor) & 0xffff;
     const remainder = (dividend % divisor) & 0xffff;
 
@@ -852,18 +902,88 @@ export class ALU {
    * @return {number} The unsigned result. The high half is the remainder.
    */
   idiv8(a, b) {
-    const dividend = this.toSigned16(a);
-    const divisor = this.toSigned8(b);
-    const remainder = (dividend % divisor) & 0xff;
+    const ax = a & 0xffff;
+    const divisor = b & 0xff;
+    const negativeDividend = (ax & 0x8000) != 0;
+    const magnitude = ((divisor & 0x80) != 0 ? ~divisor + 1 : divisor) & 0xff;
+
+    this._cpu._flags.auxiliaryCarry = true;
+
+    /* The signed routine works from the one's complement of a negative
+     * dividend, and detects overflow against the divisor's magnitude shifted
+     * into place. Divide by zero lands here too.
+     */
+    if (((negativeDividend ? ~ax : ax) & 0xffff) >= magnitude << 7) {
+      /* The division is performed the long way, because the answer determines
+       * whether this faults at all: a quotient of exactly -128 is let through.
+       */
+      let accumulator = (negativeDividend ? ~ax : ax) & 0xffff;
+      const scaled = (magnitude << 8) - 1;
+
+      for (let step = 0; step < 8; step++) {
+        accumulator = (accumulator * 2) & 0xffff;
+        accumulator = accumulator - (accumulator > scaled ? scaled : 0);
+      }
+
+      let remainder = (accumulator >> 8) & 0xff;
+      let quotient = accumulator & 0xff;
+
+      /* Both the status value and CF read the remainder as it stands here,
+       * before the adjustments below. They disagree about whose sign matters:
+       * the status follows the dividend, CF follows the divisor.
+       */
+      let status = (negativeDividend ? ~remainder : remainder) & 0xff;
+      const compared = (((divisor & 0x80) != 0 ? ~remainder : remainder) & 0xff) < divisor;
+
+      this._cpu._flags.carry = compared;
+      this._cpu._flags.overflow = compared;
+
+      if (negativeDividend) {
+        remainder = (remainder + 1) & 0xff;
+      }
+
+      if (remainder == magnitude) {
+        remainder = 0;
+        quotient = (quotient + 1) & 0xff;
+        status = 0;
+      }
+
+      if (negativeDividend) {
+        remainder = (~remainder + 1) & 0xff;
+      }
+
+      this._cpu._flags.zero = status == 0;
+      this._cpu._flags.signed = (status & 0x80) != 0;
+      this._cpu._flags.parity = ALU.PARITY[status];
+
+      if ((ax & 0x8000) >> 8 != (divisor & 0x80)) {
+        quotient = (~quotient + 1) & 0xff;
+
+        /* The part allows a quotient of exactly -128 through rather than
+         * faulting, which is a documented quirk rather than a rounding rule.
+         */
+        if (quotient != 0x80) {
+          throw new DivideError();
+        }
+      } else {
+        throw new DivideError();
+      }
+
+      return ((remainder << 8) | quotient) & 0xffff;
+    }
+
+    const dividend = this.toSigned16(ax);
+    const signedDivisor = this.toSigned8(divisor);
+    const remainder = (dividend % signedDivisor) & 0xff;
 
     /* The signed routine ends on a signed compare of the remainder against the
      * divisor, rather than the unsigned undo-and-compare that DIV performs.
      */
-    this._cpu._flags.carry = this.toSigned8(remainder) < divisor;
+    this._cpu._flags.carry = this.toSigned8(remainder) < signedDivisor;
     this._cpu._flags.overflow = this._cpu._flags.carry;
     this.applyWideResultFlags(remainder, 0x80);
 
-    return (((dividend / divisor) & 0xff) | (remainder << 8)) >>> 0;
+    return (((dividend / signedDivisor) & 0xff) | (remainder << 8)) >>> 0;
   }
 
   /**
@@ -880,15 +1000,73 @@ export class ALU {
    * @return {number} The unsigned result. The high half is the remainder.
    */
   idiv16(a, b) {
-    const dividend = this.toSigned32(a);
-    const divisor = this.toSigned16(b);
-    const remainder = (dividend % divisor) & 0xffff;
+    const dxax = (a & 0xffffffff) >>> 0;
+    const divisor = b & 0xffff;
+    const negativeDividend = (dxax & 0x80000000) != 0;
+    const magnitude = ((divisor & 0x8000) != 0 ? ~divisor + 1 : divisor) & 0xffff;
 
-    this._cpu._flags.carry = this.toSigned16(remainder) < divisor;
+    this._cpu._flags.auxiliaryCarry = true;
+
+    // The 16-bit mirror of idiv8, including the quotient of -0x8000 quirk.
+    if ((negativeDividend ? ~dxax : dxax) >>> 0 >= magnitude * 0x8000) {
+      let accumulator = (negativeDividend ? ~dxax : dxax) >>> 0;
+      const scaled = magnitude * 0x10000 - 1;
+
+      for (let step = 0; step < 16; step++) {
+        accumulator = (accumulator * 2) % 0x100000000;
+        accumulator = accumulator - (accumulator > scaled ? scaled : 0);
+      }
+
+      let remainder = Math.floor(accumulator / 0x10000) & 0xffff;
+      let quotient = accumulator & 0xffff;
+
+      // As in idiv8: read before the adjustments, and the two disagree on sign.
+      let status = (negativeDividend ? ~remainder : remainder) & 0xffff;
+      const compared = (((divisor & 0x8000) != 0 ? ~remainder : remainder) & 0xffff) < divisor;
+
+      this._cpu._flags.carry = compared;
+      this._cpu._flags.overflow = compared;
+
+      if (negativeDividend) {
+        remainder = (remainder + 1) & 0xffff;
+      }
+
+      if (remainder == magnitude) {
+        remainder = 0;
+        quotient = (quotient + 1) & 0xffff;
+        status = 0;
+      }
+
+      if (negativeDividend) {
+        remainder = (~remainder + 1) & 0xffff;
+      }
+
+      this._cpu._flags.zero = status == 0;
+      this._cpu._flags.signed = (status & 0x8000) != 0;
+      this._cpu._flags.parity = ALU.PARITY[status & 0xff];
+
+      if (((dxax & 0x80000000) != 0) != ((divisor & 0x8000) != 0)) {
+        quotient = (~quotient + 1) & 0xffff;
+
+        if (quotient != 0x8000) {
+          throw new DivideError();
+        }
+      } else {
+        throw new DivideError();
+      }
+
+      return ((remainder << 16) | quotient) >>> 0;
+    }
+
+    const dividend = this.toSigned32(dxax);
+    const signedDivisor = this.toSigned16(divisor);
+    const remainder = (dividend % signedDivisor) & 0xffff;
+
+    this._cpu._flags.carry = this.toSigned16(remainder) < signedDivisor;
     this._cpu._flags.overflow = this._cpu._flags.carry;
     this.applyWideResultFlags(remainder, 0x8000);
 
-    return (((dividend / divisor) & 0xffff) | (remainder << 16)) >>> 0;
+    return (((dividend / signedDivisor) & 0xffff) | (remainder << 16)) >>> 0;
   }
 
   /**
