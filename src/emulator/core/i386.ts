@@ -691,6 +691,15 @@ export class I386 extends I286 implements CpuCore {
       instruction.operandOverride = true;
     }
 
+    /* Where the instruction begins, prefixes included. Prefixes decode
+     * recursively and each pass moves `ip` along, so this is captured once and
+     * is what a fault pushes: the address a handler would restart from.
+     */
+    if (instruction.startIp === undefined) {
+      instruction.startCs = this.cs;
+      instruction.startIp = this.ip;
+    }
+
     instruction.cs = this.cs;
     instruction.ip = this.ip;
     instruction.subOpcode = 0;

@@ -115,8 +115,8 @@ export class I286 implements CpuCore16 {
 
     // Push FLAGS, then the return address.
     this.push16(this.f);
-    this.push16(instruction.cs);
-    this.push16(restartable ? instruction.ip : this.ip);
+    this.push16(restartable ? instruction.startCs : this.cs);
+    this.push16(restartable ? instruction.startIp : this.ip);
 
     if (code !== null) {
       // Real mode pushes no error code; this is here for protected mode.
@@ -1183,6 +1183,15 @@ export class I286 implements CpuCore16 {
    * Decodes the next instruction.
    */
   decode(instruction) {
+    /* Where the instruction begins, prefixes included. Prefixes decode
+     * recursively and each pass moves `ip` along, so this is captured once and
+     * is what a fault pushes: the address a handler would restart from.
+     */
+    if (instruction.startIp === undefined) {
+      instruction.startCs = this.cs;
+      instruction.startIp = this.ip;
+    }
+
     instruction.cs = this.cs;
     instruction.ip = this.ip;
     instruction.subOpcode = 0;
@@ -2327,6 +2336,16 @@ export class I286 implements CpuCore16 {
 
       case 0x8d: // LEA
         this.debug('lea         ');
+
+        /* The source has to be a memory operand: LEA hands back an effective
+         * address, and a register has none to compute. The mod=11 encoding is
+         * invalid and faults rather than doing something arbitrary.
+         */
+        if (instruction.offset === undefined) {
+          this.raiseUndefinedOpcode(instruction);
+          break;
+        }
+
         this.writeRegister16(instruction.sourceRegister, instruction.offset);
         break;
 
@@ -2708,8 +2727,10 @@ export class I286 implements CpuCore16 {
 
       case 0xc4: // LES rw,ed (Load EA dword into DS/rw)
       case 0xc5: // LDS rw,ed (Load EA dword into DS/rw)
-        if (instruction.segment === undefined) {
-          throw new InvalidInstruction(instruction);
+        // A far pointer has to come from memory; mod=11 is an invalid encoding.
+        if (instruction.offset === undefined) {
+          this.raiseUndefinedOpcode(instruction);
+          break;
         }
 
         this.writeRegister16(instruction.sourceRegister, this.readOperand16(instruction));
@@ -3138,6 +3159,12 @@ export class I286 implements CpuCore16 {
           case 0x3: // CALL far ed
             this.debug('callf  ed');
 
+            if (instruction.offset === undefined) {
+              // The far pointer comes from memory; mod=11 is invalid.
+              this.raiseUndefinedOpcode(instruction);
+              break;
+            }
+
             // Read the far pointer before the pushes disturb the stack.
             callTarget = this.readOperand16(instruction);
             callSegment = this.read16(instruction.segment ?? this.ds, instruction.offset + 2);
@@ -3157,6 +3184,12 @@ export class I286 implements CpuCore16 {
 
           case 0x5: // JMP far ed
             this.debug('jmpf   ed');
+
+            if (instruction.offset === undefined) {
+              // As with the far call, mod=11 has no pointer to read.
+              this.raiseUndefinedOpcode(instruction);
+              break;
+            }
 
             /* The far pointer is read through the default data segment when no
              * override is present; this used to reject the instruction.
@@ -3322,6 +3355,8 @@ export class I286 implements CpuCore16 {
     instruction.repeatNE = false;
 
     // Reset instruction parameters
+    instruction.startCs = undefined;
+    instruction.startIp = undefined;
     instruction.segment = undefined;
     instruction.offset = undefined;
     instruction.operandRegister = undefined;
