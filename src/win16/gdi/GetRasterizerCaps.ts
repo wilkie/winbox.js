@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { TRUE, FALSE } from '../consts.js';
 
@@ -33,8 +33,8 @@ import { Gdi } from '../gdi.js';
  *                      successful. Otherwise, it is zero.
  */
 export function GetRasterizerCaps(lpraststat, cb) {
-    lpraststat.nSize = lpraststat.structSize;
-    lpraststat.wFlags = Gdi.TT_AVAILABLE | Gdi.TT_ENABLED;
-    lpraststat.nLanguageID = 1; // TODO: language id
-    return TRUE;
+  lpraststat.nSize = lpraststat.structSize;
+  lpraststat.wFlags = Gdi.TT_AVAILABLE | Gdi.TT_ENABLED;
+  lpraststat.nLanguageID = 1; // TODO: language id
+  return TRUE;
 }

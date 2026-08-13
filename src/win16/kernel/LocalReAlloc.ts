@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **LocalReAlloc** function changes the size or attributes of the given
@@ -58,5 +58,5 @@
  *                         Otherwise, it is `NULL`.
  */
 export function LocalReAlloc(hloc, fuNewSize, fuFlags) {
-    console.log("LocalReAlloc:", hloc, fuNewSize, fuFlags);
+  console.log('LocalReAlloc:', hloc, fuNewSize, fuFlags);
 }

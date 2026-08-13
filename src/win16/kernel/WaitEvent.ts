@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **WaitEvent** function checks for a posted event and, if one is found,
@@ -18,6 +18,6 @@
  *                      another application. Otherwise, it returns zero.
  */
 export function WaitEvent(taskID) {
-    // We do nothing... and just return a zero.
-    return 0;
+  // We do nothing... and just return a zero.
+  return 0;
 }

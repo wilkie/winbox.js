@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -77,31 +77,36 @@ import { lstrcpy } from './lstrcpy.js';
  *                      to the specified buffer, not including the terminating
  *                      null character.
  */
-export function GetPrivateProfileString(lpszSection, lpszEntry, lpszDefault,
-                                        lpszReturnBuffer, cbReturnBuffer,
-                                        lpszFilename) {
-    // Open the file
-    const handle = this.dos.files.open(lpszFilename);
-    const file = this.dos.files.resolve(handle);
-    console.log(file);
+export function GetPrivateProfileString(
+  lpszSection,
+  lpszEntry,
+  lpszDefault,
+  lpszReturnBuffer,
+  cbReturnBuffer,
+  lpszFilename
+) {
+  // Open the file
+  const handle = this.dos.files.open(lpszFilename);
+  const file = this.dos.files.resolve(handle);
+  console.log(file);
 
-    const ret = null;
+  const ret = null;
 
-    if (file) {
-        // Read INI data from file
-        // Find the section
-        // Find the entry
-        // Read the value
-    }
+  if (file) {
+    // Read INI data from file
+    // Find the section
+    // Find the entry
+    // Read the value
+  }
 
-    if (ret === null) {
-        // Always return the default, for now.
-        // TODO: lstrcpy does not have a bounds
-        lstrcpy.bind(this)(lpszReturnBuffer, (lpszDefault.segment << 16) | lpszDefault.offset);
-    }
+  if (ret === null) {
+    // Always return the default, for now.
+    // TODO: lstrcpy does not have a bounds
+    lstrcpy.bind(this)(lpszReturnBuffer, (lpszDefault.segment << 16) | lpszDefault.offset);
+  }
 
-    if (handle) {
-        this.dos.files.close(handle);
-    }
-    return 0;
+  if (handle) {
+    this.dos.files.close(handle);
+  }
+  return 0;
 }

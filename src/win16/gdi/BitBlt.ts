@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { Gdi } from '../gdi.js';
 
@@ -112,112 +112,147 @@ import { TRUE, FALSE } from '../consts.js';
  */
 let i = 0;
 
-export function BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight,
-                       hdcSrc, nXSrc, nYSrc, dwRop) {
-    // Resolve the source DC handle
-    const source = this.handles.resolve(hdcSrc);
-    //console.log("bitblt", this._machine.cpu.core.cs.toString(16), this._machine.cpu.core.ip.toString(16));
-    
-    i++;
-    if (!(i % 10)) {
-        //return TRUE;
-    }
+export function BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop) {
+  // Resolve the source DC handle
+  const source = this.handles.resolve(hdcSrc);
+  //console.log("bitblt", this._machine.cpu.core.cs.toString(16), this._machine.cpu.core.ip.toString(16));
 
-    // Bail if we cannot find the source DC
-    if (!source) {
-        return FALSE;
-    }
+  i++;
+  if (!(i % 10)) {
+    //return TRUE;
+  }
 
-    // Resolve the bitmap attached to the device
-    const sourceBitmap = source.bitmap;
-    //console.log(source, sourceBitmap);
-    const sourceView = sourceBitmap.view;
+  // Bail if we cannot find the source DC
+  if (!source) {
+    return FALSE;
+  }
 
-    // Resolve the destination DC handle
-    const destination = this.handles.resolve(hdcDest);
+  // Resolve the bitmap attached to the device
+  const sourceBitmap = source.bitmap;
+  //console.log(source, sourceBitmap);
+  const sourceView = sourceBitmap.view;
 
-    //console.log("BitBlt", source, destination.width, destination.bitmap.width);
+  // Resolve the destination DC handle
+  const destination = this.handles.resolve(hdcDest);
 
-    // Bail if we cannot find the destination DC
-    if (!destination) {
-        return FALSE;
-    }
+  //console.log("BitBlt", source, destination.width, destination.bitmap.width);
 
-    // Resolve the bitmap attached to the device
-    const destinationBitmap = destination.bitmap;
-    const destinationView = destinationBitmap.view;
+  // Bail if we cannot find the destination DC
+  if (!destination) {
+    return FALSE;
+  }
 
-    // Determine the monochrome palette (for conversion)
-    if (sourceBitmap.bpp == 1) {
-        sourceBitmap.palette[0] = destination.forecolor.r8g8b8a8;
-        sourceBitmap.palette[1] = destination.backcolor.r8g8b8a8;
-    }
+  // Resolve the bitmap attached to the device
+  const destinationBitmap = destination.bitmap;
+  const destinationView = destinationBitmap.view;
 
-    // TODO: Check width/height and bounds of bitmaps (otherwise we crash)
+  // Determine the monochrome palette (for conversion)
+  if (sourceBitmap.bpp == 1) {
+    sourceBitmap.palette[0] = destination.forecolor.r8g8b8a8;
+    sourceBitmap.palette[1] = destination.backcolor.r8g8b8a8;
+  }
 
-    // Perform the operation
-    let invert = false;
-    switch (dwRop) {
-        case Gdi.NOTSRCCOPY:
-            //console.log("NOT");
-            invert = true;
-            // fall through
-        case Gdi.SRCCOPY:
-            //console.log("SRCCOPY");
-            destinationBitmap.blit(Bitmap.OPERATIONS.COPY, nXDest, nYDest, nWidth, nHeight, sourceBitmap, nXSrc, nYSrc, nWidth, nHeight, invert);
-            break;
+  // TODO: Check width/height and bounds of bitmaps (otherwise we crash)
 
-        case Gdi.SRCPAINT:
-            destinationBitmap.blit(Bitmap.OPERATIONS.OR, nXDest, nYDest, nWidth, nHeight, sourceBitmap, nXSrc, nYSrc, nWidth, nHeight, invert);
-            break;
+  // Perform the operation
+  let invert = false;
+  switch (dwRop) {
+    case Gdi.NOTSRCCOPY:
+      //console.log("NOT");
+      invert = true;
+    // fall through
+    case Gdi.SRCCOPY:
+      //console.log("SRCCOPY");
+      destinationBitmap.blit(
+        Bitmap.OPERATIONS.COPY,
+        nXDest,
+        nYDest,
+        nWidth,
+        nHeight,
+        sourceBitmap,
+        nXSrc,
+        nYSrc,
+        nWidth,
+        nHeight,
+        invert
+      );
+      break;
 
-        case Gdi.SRCAND:
-            destinationBitmap.blit(Bitmap.OPERATIONS.AND, nXDest, nYDest, nWidth, nHeight, sourceBitmap, nXSrc, nYSrc, nWidth, nHeight, invert);
-            break;
+    case Gdi.SRCPAINT:
+      destinationBitmap.blit(
+        Bitmap.OPERATIONS.OR,
+        nXDest,
+        nYDest,
+        nWidth,
+        nHeight,
+        sourceBitmap,
+        nXSrc,
+        nYSrc,
+        nWidth,
+        nHeight,
+        invert
+      );
+      break;
 
-        case Gdi.SRCINVERT:
-            console.log("SRCINVERT");
-            break;
+    case Gdi.SRCAND:
+      destinationBitmap.blit(
+        Bitmap.OPERATIONS.AND,
+        nXDest,
+        nYDest,
+        nWidth,
+        nHeight,
+        sourceBitmap,
+        nXSrc,
+        nYSrc,
+        nWidth,
+        nHeight,
+        invert
+      );
+      break;
 
-        case Gdi.NOTSRCERASE:
-            console.log("NOT");
-            invert = true;
-            // fall through
-        case Gdi.SRCERASE:
-            console.log("SRCERASE");
-            break;
+    case Gdi.SRCINVERT:
+      console.log('SRCINVERT');
+      break;
 
-        case Gdi.MERGECOPY:
-            console.log("MERGECOPY");
-            break;
+    case Gdi.NOTSRCERASE:
+      console.log('NOT');
+      invert = true;
+    // fall through
+    case Gdi.SRCERASE:
+      console.log('SRCERASE');
+      break;
 
-        case Gdi.MERGEPAINT:
-            console.log("MERGEPAINT");
-            break;
+    case Gdi.MERGECOPY:
+      console.log('MERGECOPY');
+      break;
 
-        case Gdi.PATCOPY:
-            console.log("PATCOPY");
-            break;
+    case Gdi.MERGEPAINT:
+      console.log('MERGEPAINT');
+      break;
 
-        case Gdi.PATPAINT:
-            console.log("PATPAINT");
-            break;
+    case Gdi.PATCOPY:
+      console.log('PATCOPY');
+      break;
 
-        case Gdi.DSTINVERT:
-            console.log("DSTINVERT");
-            break;
+    case Gdi.PATPAINT:
+      console.log('PATPAINT');
+      break;
 
-        case Gdi.BLACKNESS:
-            console.log("BLACKNESS");
-            break;
+    case Gdi.DSTINVERT:
+      console.log('DSTINVERT');
+      break;
 
-        case Gdi.WHITENESS:
-            console.log("WHITENESS");
-            break;
+    case Gdi.BLACKNESS:
+      console.log('BLACKNESS');
+      break;
 
-        default:
-            break;
-    }
+    case Gdi.WHITENESS:
+      console.log('WHITENESS');
+      break;
 
-    return TRUE;
+    default:
+      break;
+  }
+
+  return TRUE;
 }

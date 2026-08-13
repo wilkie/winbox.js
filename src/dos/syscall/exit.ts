@@ -1,2 +1,1 @@
-export function exit() {
-}
+export function exit() {}

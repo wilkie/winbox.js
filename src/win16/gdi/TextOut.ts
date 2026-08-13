@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { BitmapFont } from '../../raster/bitmap-font.js';
 
@@ -41,15 +41,15 @@ import { TRUE } from '../consts.js';
  *                      successful. Otherwise, it is zero.
  */
 export function TextOut(hdc, nXStart, nYStart, lpszString, cbString) {
-    // Get the surface instance
-    const surface = this.handles.resolve(hdc);
+  // Get the surface instance
+  const surface = this.handles.resolve(hdc);
 
-    // Draw background around the text
-    const metrics = surface.measureText(lpszString.slice(0, cbString));
-    surface.fillRect(nXStart, nYStart, metrics.width, metrics.height);
+  // Draw background around the text
+  const metrics = surface.measureText(lpszString.slice(0, cbString));
+  surface.fillRect(nXStart, nYStart, metrics.width, metrics.height);
 
-    // Draw the text
-    surface.fillText(nXStart, nYStart, lpszString.slice(0, cbString));
+  // Draw the text
+  surface.fillText(nXStart, nYStart, lpszString.slice(0, cbString));
 
-    return TRUE;
+  return TRUE;
 }

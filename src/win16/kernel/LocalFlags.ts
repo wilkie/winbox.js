@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **LocalFlags** function retrieves information about the given local
@@ -23,5 +23,5 @@
  *                       discarded).
  */
 export function LocalFlags(hloc) {
-    console.log("LocalFlags:", hloc);
+  console.log('LocalFlags:', hloc);
 }

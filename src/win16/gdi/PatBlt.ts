@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { Gdi } from '../gdi.js';
 
@@ -57,42 +57,97 @@ import { TRUE, FALSE } from '../consts.js';
  *                      successful. Otherwise it is zero.
  */
 export function PatBlt(hdc, nLeftRect, nTopRect, nwidth, nheight, fdwRop) {
-    // Resolve the destination DC handle
-    const surface = this.handles.resolve(hdc);
+  // Resolve the destination DC handle
+  const surface = this.handles.resolve(hdc);
 
-    // Bail if we cannot find the destination DC
-    if (!surface) {
-        return FALSE;
-    }
+  // Bail if we cannot find the destination DC
+  if (!surface) {
+    return FALSE;
+  }
 
-    // Resolve the current brush
-    const brush = surface.brush;
+  // Resolve the current brush
+  const brush = surface.brush;
 
-    // Fill the rectangle with the brush (depending on mode)
-    switch (fdwRop) {
-        case Gdi.PATCOPY:
-            // Fill using current brush.
-            surface.bitmap.blit(Bitmap.OPERATIONS.COPY, nLeftRect, nTopRect, nwidth, nheight, surface.brush.color, 0, 0, nwidth, nheight);
-            break;
+  // Fill the rectangle with the brush (depending on mode)
+  switch (fdwRop) {
+    case Gdi.PATCOPY:
+      // Fill using current brush.
+      surface.bitmap.blit(
+        Bitmap.OPERATIONS.COPY,
+        nLeftRect,
+        nTopRect,
+        nwidth,
+        nheight,
+        surface.brush.color,
+        0,
+        0,
+        nwidth,
+        nheight
+      );
+      break;
 
-        case Gdi.PATINVERT:
-            surface.bitmap.blit(Bitmap.OPERATIONS.XOR, nLeftRect, nTopRect, nwidth, nheight, surface.brush.color, 0, 0, nwidth, nheight);
-            break;
+    case Gdi.PATINVERT:
+      surface.bitmap.blit(
+        Bitmap.OPERATIONS.XOR,
+        nLeftRect,
+        nTopRect,
+        nwidth,
+        nheight,
+        surface.brush.color,
+        0,
+        0,
+        nwidth,
+        nheight
+      );
+      break;
 
-        case Gdi.PATPAINT:
-            surface.bitmap.blit(Bitmap.OPERATIONS.OR, nLeftRect, nTopRect, nwidth, nheight, surface.brush.color, 0, 0, nwidth, nheight);
-            break;
+    case Gdi.PATPAINT:
+      surface.bitmap.blit(
+        Bitmap.OPERATIONS.OR,
+        nLeftRect,
+        nTopRect,
+        nwidth,
+        nheight,
+        surface.brush.color,
+        0,
+        0,
+        nwidth,
+        nheight
+      );
+      break;
 
-        case Gdi.WHITENESS:
-            // Fill rectangle
-            surface.bitmap.blit(Bitmap.OPERATIONS.COPY, nLeftRect, nTopRect, nwidth, nheight, new Color(255, 255, 255, 255), 0, 0, nwidth, nheight);
-            break;
+    case Gdi.WHITENESS:
+      // Fill rectangle
+      surface.bitmap.blit(
+        Bitmap.OPERATIONS.COPY,
+        nLeftRect,
+        nTopRect,
+        nwidth,
+        nheight,
+        new Color(255, 255, 255, 255),
+        0,
+        0,
+        nwidth,
+        nheight
+      );
+      break;
 
-        case Gdi.BLACKNESS:
-            // Fill rectangle with black
-            surface.bitmap.blit(Bitmap.OPERATIONS.COPY, nLeftRect, nTopRect, nwidth, nheight, new Color(0, 0, 0, 255), 0, 0, nwidth, nheight);
-            break;
-    }
+    case Gdi.BLACKNESS:
+      // Fill rectangle with black
+      surface.bitmap.blit(
+        Bitmap.OPERATIONS.COPY,
+        nLeftRect,
+        nTopRect,
+        nwidth,
+        nheight,
+        new Color(0, 0, 0, 255),
+        0,
+        0,
+        nwidth,
+        nheight
+      );
+      break;
+  }
 
-    return TRUE;
+  return TRUE;
 }

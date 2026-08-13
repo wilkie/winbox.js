@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -27,18 +27,18 @@ import { NULL } from '../consts.js';
  *                   Otherwise, it is equal to the `hloc` parameter.
  */
 export function LocalFree(hloc) {
-    // LocalFree deallocates from the heap of the current segment selected via DS.
-    const segment = this.machine.cpu.core.ds >> 3;
+  // LocalFree deallocates from the heap of the current segment selected via DS.
+  const segment = this.machine.cpu.core.ds >> 3;
 
-    // Get the local heap
-    const heap = this.allocator.heapOf(segment);
-    if (!heap) {
-        // No heap initialized
-        return hloc;
-    }
+  // Get the local heap
+  const heap = this.allocator.heapOf(segment);
+  if (!heap) {
+    // No heap initialized
+    return hloc;
+  }
 
-    // Free the memory object from the heap
-    heap.free(hloc);
+  // Free the memory object from the heap
+  heap.free(hloc);
 
-    return NULL;
+  return NULL;
 }

@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { TRUE, FALSE } from '../consts.js';
 
@@ -50,18 +50,19 @@ import { User } from '../user.js';
  *                      Otherwise, the return value is zero.
  */
 export function TranslateMessage(lpmsg) {
-    if (lpmsg.message === User.WM_KEYDOWN ||
-        lpmsg.message === User.WM_KEYUP ||
-        lpmsg.message === User.WM_SYSKEYUP ||
-        lpmsg.message === User.WM_SYSKEYUP) {
+  if (
+    lpmsg.message === User.WM_KEYDOWN ||
+    lpmsg.message === User.WM_KEYUP ||
+    lpmsg.message === User.WM_SYSKEYUP ||
+    lpmsg.message === User.WM_SYSKEYUP
+  ) {
+    // TODO: Potentially translate the key
+    // We potentially push a new message
+    //this.task.push(msg)
 
-        // TODO: Potentially translate the key
-        // We potentially push a new message
-        //this.task.push(msg)
+    return TRUE;
+  }
 
-        return TRUE;
-    }
-
-    // If that is not a key event message, return FALSE.
-    return FALSE;
+  // If that is not a key event message, return FALSE.
+  return FALSE;
 }

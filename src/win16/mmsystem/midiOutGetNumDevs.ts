@@ -1,4 +1,4 @@
 export function midiOutGetNumDevs() {
-    // TODO: midi support
-    return 0;
+  // TODO: midi support
+  return 0;
 }

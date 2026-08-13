@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { File } from '../../file-system.js';
 import { Kernel } from '../kernel.js';
@@ -35,26 +35,26 @@ import { NULL } from '../consts.js';
  *                       `HFILE_ERROR` if the function fails.
  */
 export async function _lread(hf, hpvBuffer, cbBuffer) {
-    const file = this.dos.files.resolve(hf);
+  const file = this.dos.files.resolve(hf);
 
-    if (cbBuffer > 0xfffe || !file || !(file instanceof File)) {
-        return Kernel.HFILE_ERROR;
-    }
+  if (cbBuffer > 0xfffe || !file || !(file instanceof File)) {
+    return Kernel.HFILE_ERROR;
+  }
 
-    // Read the data
-    const data = await file.read(file.position, cbBuffer);
-    file.position += data.byteLength;
+  // Read the data
+  const data = await file.read(file.position, cbBuffer);
+  file.position += data.byteLength;
 
-    // Copy the data to memory
-    const destSegment = (hpvBuffer >> 16) & 0xffff;
-    const destOffset = hpvBuffer & 0xffff;
+  // Copy the data to memory
+  const destSegment = (hpvBuffer >> 16) & 0xffff;
+  const destOffset = hpvBuffer & 0xffff;
 
-    console.log("segment?", destSegment);
+  console.log('segment?', destSegment);
 
-    const address = this.machine.cpu.core.translateAddress(destSegment, destOffset);
-    this.machine.memory.write(address, new DataView(data));
+  const address = this.machine.cpu.core.translateAddress(destSegment, destOffset);
+  this.machine.memory.write(address, new DataView(data));
 
-    console.log("read", data);
+  console.log('read', data);
 
-    return data.byteLength;
+  return data.byteLength;
 }

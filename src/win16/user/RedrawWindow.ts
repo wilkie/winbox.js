@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { TRUE, FALSE } from '../consts.js';
 
@@ -97,22 +97,22 @@ import { User, MSG } from '../user.js';
  *                      successful. Otherwise, it is zero.
  */
 export function RedrawWindow(hwnd, lprcUpdate, hrgnUpdate, fuRedraw) {
-    const dialog = this.handles.resolve(hwnd);
+  const dialog = this.handles.resolve(hwnd);
 
-    if (!dialog) {
-        return 0;
-    }
+  if (!dialog) {
+    return 0;
+  }
 
-    // Post a WM_PAINT and WM_ERASEBKGND message, as indicated
-    let msg = new MSG();
-    msg.hwnd = hwnd;
-    msg.message = User.WM_ERASEBKGND;
-    this.scheduler.task.push(msg);
+  // Post a WM_PAINT and WM_ERASEBKGND message, as indicated
+  let msg = new MSG();
+  msg.hwnd = hwnd;
+  msg.message = User.WM_ERASEBKGND;
+  this.scheduler.task.push(msg);
 
-    msg = new MSG();
-    msg.hwnd = hwnd;
-    msg.message = User.WM_PAINT;
-    this.scheduler.task.push(msg);
+  msg = new MSG();
+  msg.hwnd = hwnd;
+  msg.message = User.WM_PAINT;
+  this.scheduler.task.push(msg);
 
-    return TRUE;
+  return TRUE;
 }

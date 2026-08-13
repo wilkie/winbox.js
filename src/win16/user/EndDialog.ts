@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **EndDialog** function hides a modal dialog box and causes the
@@ -29,21 +29,21 @@
  *                              caller of {@link User.DialogBox DialogBox}.
  */
 export function EndDialog(hwndDlg, nResult) {
-    // Resolve the dialog
-    const dialog = this.handles.resolve(hwndDlg);
+  // Resolve the dialog
+  const dialog = this.handles.resolve(hwndDlg);
 
-    console.log("ok hello", hwndDlg, dialog);
+  console.log('ok hello', hwndDlg, dialog);
 
-    // Bail if the dialog is invalid
-    if (!dialog) {
-        return;
-    }
+  // Bail if the dialog is invalid
+  if (!dialog) {
+    return;
+  }
 
-    // Bail if the dialog has no resolve callback
-    if (!dialog.data.resolve) {
-        return;
-    }
+  // Bail if the dialog has no resolve callback
+  if (!dialog.data.resolve) {
+    return;
+  }
 
-    // Resolve the dialog (and resume execution from DialogBox)
-    dialog.data.resolve(nResult);
+  // Resolve the dialog (and resume execution from DialogBox)
+  dialog.data.resolve(nResult);
 }

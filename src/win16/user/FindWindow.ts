@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -27,9 +27,9 @@ import { User } from '../user.js';
  *                       function is successful. Otherwise, it is `NULL`.
  */
 export function FindWindow(lpszClassName, lpszWindow) {
-    const hWnd = NULL;
+  const hWnd = NULL;
 
-    // TODO: implement
+  // TODO: implement
 
-    return hWnd;
+  return hWnd;
 }

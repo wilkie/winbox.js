@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **LocalCompact** function rearranges the local heap so that the
@@ -32,5 +32,5 @@
  *                       objects.
  */
 export function LocalCompact(uMinFree) {
-    console.log("LocalCompact:", uMinFree);
+  console.log('LocalCompact:', uMinFree);
 }

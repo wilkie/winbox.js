@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { TRUE, FALSE, NULL } from '../consts.js';
 
@@ -12,22 +12,22 @@ import { User, MSG } from '../user.js';
  * input focus. It also destroys the window's menu, flushes the application
  * queue, destroys outstanding timers, removes clipboard ownership, and breaks
  * the clipboard-viewer chain (if the window is at the top of the viewer chain).
- * It sends `WM_DESTROY` and `WM_NCDESTROY` messages to the window. 
+ * It sends `WM_DESTROY` and `WM_NCDESTROY` messages to the window.
  *
  * If the given window is the parent of any windows, **DestroyWindow**
  * automatically destroys these child windows when it destroys the parent
  * window. The function destroys child windows first, and then the window
- * itself. 
+ * itself.
  *
  * The **DestroyWindow** function also destroys modeless dialog boxes created by
- * the {@link User.CreateDialog CreateDialog} function. 
+ * the {@link User.CreateDialog CreateDialog} function.
  *
  * Applications should always call the **DestroyWindow** function to destroy
- * their top-level windows before terminating. 
+ * their top-level windows before terminating.
  *
  * If the window being destroyed is a child window and does not have the
  * `WS_NOPARENTNOTIFY` style set, a `WM_PARENTNOTIFY` message is sent to the
- * parent. 
+ * parent.
  *
  * **See also**:
  * {@link User.CreateDialog CreateDialog}
@@ -44,20 +44,17 @@ import { User, MSG } from '../user.js';
  *                      successful. Otherwise it is zero.
  */
 export function DestroyWindow(hwnd) {
-    // Get the window itself
-    const dialog = this.handles.resolve(hwnd);
+  // Get the window itself
+  const dialog = this.handles.resolve(hwnd);
 
-    // Get the window/class for the handle
-    const windowClass = this.handles.retrieve(dialog.options.windowClass);
+  // Get the window/class for the handle
+  const windowClass = this.handles.retrieve(dialog.options.windowClass);
 
-    // Destroy the window
-    dialog.destroy();
+  // Destroy the window
+  dialog.destroy();
 
-    // TODO: Handle children
+  // TODO: Handle children
 
-    // Send the WM_DESTROY message
-    return [
-        ['callWndProc', windowClass, hwnd, User.WM_DESTROY, 0, 0, () => {
-        }]
-    ];
+  // Send the WM_DESTROY message
+  return [['callWndProc', windowClass, hwnd, User.WM_DESTROY, 0, 0, () => {}]];
 }

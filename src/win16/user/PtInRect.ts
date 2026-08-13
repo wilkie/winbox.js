@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { TRUE, FALSE } from '../consts.js';
 
@@ -25,10 +25,9 @@ import { TRUE, FALSE } from '../consts.js';
  *                      the rectangle. Otherwise it is zero.
  */
 export function PtInRect(lprc, pt) {
-    if (pt.x >= lprc.left && pt.x < lprc.right &&
-        pt.y >= lprc.top && pt.y < lprc.bottom) {
-        return TRUE;
-    }
+  if (pt.x >= lprc.left && pt.x < lprc.right && pt.y >= lprc.top && pt.y < lprc.bottom) {
+    return TRUE;
+  }
 
-    return FALSE;
+  return FALSE;
 }

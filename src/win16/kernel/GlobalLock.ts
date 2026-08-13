@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -46,8 +46,8 @@ import { NULL } from '../consts.js';
  *                         error occurs.
  */
 export function GlobalLock(hglb) {
-    // Resolve global memory pointer
-    const selector = hglb;
-    console.log("locked block at", selector, (selector << 16).toString(16));
-    return selector << 16;
+  // Resolve global memory pointer
+  const selector = hglb;
+  console.log('locked block at', selector, (selector << 16).toString(16));
+  return selector << 16;
 }

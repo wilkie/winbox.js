@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **GetTickCount** function retrieves the number of milliseconds that have
@@ -19,6 +19,6 @@
  *                        that have elapsed since the system was started.
  */
 export function GetTickCount() {
-    const ret = (new Date).getTime() - this.startTime;
-    return ret;
+  const ret = new Date().getTime() - this.startTime;
+  return ret;
 }

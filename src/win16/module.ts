@@ -1,4 +1,3 @@
-"use strict";
+'use strict';
 
-export class Module {
-}
+export class Module {}

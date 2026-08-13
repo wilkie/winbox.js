@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -36,9 +36,9 @@ import { NULL } from '../consts.js';
  *                          parameter.
  */
 export function GlobalFree(hglb) {
-    if (this.allocator.free(hglb)) {
-        return NULL;
-    }
+  if (this.allocator.free(hglb)) {
+    return NULL;
+  }
 
-    return hglb;
+  return hglb;
 }

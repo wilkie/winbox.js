@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { lstrcpy } from './lstrcpy.js';
 
@@ -18,32 +18,32 @@ import { lstrcpy } from './lstrcpy.js';
  *                         environment string.
  */
 export function GetModuleFilename(hinst, lpszFilename, cbFileName) {
-    const taskHandle = this.scheduler.active;
-    const task = this.handles.resolve(taskHandle);
-    const executable = task.executable;
-    const filename = executable.path;
+  const taskHandle = this.scheduler.active;
+  const task = this.handles.resolve(taskHandle);
+  const executable = task.executable;
+  const filename = executable.path;
 
-    const cpu = this.machine.cpu.core;
+  const cpu = this.machine.cpu.core;
 
-    const destSegment = (lpszFilename >> 16) & 0xffff;
-    let destOffset = lpszFilename & 0xffff;
+  const destSegment = (lpszFilename >> 16) & 0xffff;
+  let destOffset = lpszFilename & 0xffff;
 
-    if (cbFileName == 0) {
-        // Do nothing, I guess
-        return 0;
-    }
+  if (cbFileName == 0) {
+    // Do nothing, I guess
+    return 0;
+  }
 
-    let count = 0;
-    for (let i = 0; i < filename.length && i < cbFileName - 1; i++) {
-        const data = filename.charCodeAt(i);
-        cpu.write8(destSegment, destOffset, data);
-        destOffset++;
-        count++;
-    }
+  let count = 0;
+  for (let i = 0; i < filename.length && i < cbFileName - 1; i++) {
+    const data = filename.charCodeAt(i);
+    cpu.write8(destSegment, destOffset, data);
+    destOffset++;
+    count++;
+  }
 
-    // Write null-terminator
-    cpu.write8(destSegment, destOffset, 0x0);
-    console.log(filename, count);
+  // Write null-terminator
+  cpu.write8(destSegment, destOffset, 0x0);
+  console.log(filename, count);
 
-    return count;
+  return count;
 }

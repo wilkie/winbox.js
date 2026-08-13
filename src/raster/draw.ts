@@ -1,84 +1,81 @@
-"use strict";
+'use strict';
 
 export class Draw {
-    static _drawCircle(ctx, x, y, dx, dy, style = 0) {
-        const imageData = ctx.getImageData(x, y, dx, dy);
-        const data = imageData.data;
+  static _drawCircle(ctx, x, y, dx, dy, style = 0) {
+    const imageData = ctx.getImageData(x, y, dx, dy);
+    const data = imageData.data;
 
-        // Let's do a Bresenham's circle algorithm, because why not.
-        const r = Math.floor(dx / 2);
-        let nx = 0;
-        let ny = r;
-        let decision = 3 - (2 * r);
+    // Let's do a Bresenham's circle algorithm, because why not.
+    const r = Math.floor(dx / 2);
+    let nx = 0;
+    let ny = r;
+    let decision = 3 - 2 * r;
 
-        const setpixel = (px, py) => {
-            px = px + r;
-            py = py + r;
-            const position = ((py * dx) + px) * 4;
-            data[position + 0] = 0x00;
-            data[position + 1] = 0x00;
-            data[position + 2] = 0x00;
-            data[position + 3] = 0xff;
-        };
+    const setpixel = (px, py) => {
+      px = px + r;
+      py = py + r;
+      const position = (py * dx + px) * 4;
+      data[position + 0] = 0x00;
+      data[position + 1] = 0x00;
+      data[position + 2] = 0x00;
+      data[position + 3] = 0xff;
+    };
 
-        const plot = () => {
-            if (style == 0) {
-                // Stroke
-                setpixel(nx, ny);
-                setpixel(-nx, ny);
-                setpixel(nx, -ny);
-                setpixel(-nx, -ny);
-                setpixel(ny, nx);
-                setpixel(-ny, nx);
-                setpixel(ny, -nx);
-                setpixel(-ny, -nx);
-            }
-            else {
-                // Fill
-                // Very inefficient, but it fills a Bersenham's circle!
-                // Line between (ny, -nx) and (ny, nx), etc
-                for (let sx = -nx; sx <= nx; sx++) {
-                    setpixel(sx, ny);
-                }
-                for (let sx = -ny; sx <= ny; sx++) {
-                    setpixel(sx, nx);
-                }
-                for (let sx = -nx; sx <= nx; sx++) {
-                    setpixel(sx, -ny);
-                }
-                for (let sx = -ny; sx <= ny; sx++) {
-                    setpixel(sx, -nx);
-                }
-            }
-        };
-
-        // TODO: need to plot one extra time for even radii hmm
-        while(ny >= nx) {
-            plot();
-
-            nx++;
-            if (decision > 0) {
-                ny--;
-                decision = decision + (4 * (nx - ny)) + 10;
-            }
-            else {
-                decision = decision + (4 * nx) + 6;
-            }
+    const plot = () => {
+      if (style == 0) {
+        // Stroke
+        setpixel(nx, ny);
+        setpixel(-nx, ny);
+        setpixel(nx, -ny);
+        setpixel(-nx, -ny);
+        setpixel(ny, nx);
+        setpixel(-ny, nx);
+        setpixel(ny, -nx);
+        setpixel(-ny, -nx);
+      } else {
+        // Fill
+        // Very inefficient, but it fills a Bersenham's circle!
+        // Line between (ny, -nx) and (ny, nx), etc
+        for (let sx = -nx; sx <= nx; sx++) {
+          setpixel(sx, ny);
         }
+        for (let sx = -ny; sx <= ny; sx++) {
+          setpixel(sx, nx);
+        }
+        for (let sx = -nx; sx <= nx; sx++) {
+          setpixel(sx, -ny);
+        }
+        for (let sx = -ny; sx <= ny; sx++) {
+          setpixel(sx, -nx);
+        }
+      }
+    };
 
-        ctx.putImageData(imageData, x, y);
+    // TODO: need to plot one extra time for even radii hmm
+    while (ny >= nx) {
+      plot();
+
+      nx++;
+      if (decision > 0) {
+        ny--;
+        decision = decision + 4 * (nx - ny) + 10;
+      } else {
+        decision = decision + 4 * nx + 6;
+      }
     }
 
-    static drawCircle(ctx, x, y, dx, dy) {
-        Draw._drawCircle(ctx, x, y, dx, dy, 0);
-    }
+    ctx.putImageData(imageData, x, y);
+  }
 
-    static fillCircle(ctx, x, y, dx, dy) {
-        Draw._drawCircle(ctx, x, y, dx, dy, 1);
-    }
+  static drawCircle(ctx, x, y, dx, dy) {
+    Draw._drawCircle(ctx, x, y, dx, dy, 0);
+  }
 
-    static drawLine(ctx, x, y, x2, y2) {
-    }
+  static fillCircle(ctx, x, y, dx, dy) {
+    Draw._drawCircle(ctx, x, y, dx, dy, 1);
+  }
+
+  static drawLine(ctx, x, y, x2, y2) {}
 }
 
 export default Draw;

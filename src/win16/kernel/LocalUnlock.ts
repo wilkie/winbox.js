@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **LocalUnlock** function unlocks the given local memory object. This
@@ -22,5 +22,5 @@
  *                       Otherwise it is non-zero.
  */
 export function LocalUnlock(hloc) {
-    console.log("LocalUnlock:", hloc);
+  console.log('LocalUnlock:', hloc);
 }

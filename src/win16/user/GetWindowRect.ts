@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **GetWindowRect** function retrieves the dimensions of the bounding
@@ -21,10 +21,10 @@
  *                            right corners of a window.
  */
 export function GetWindowRect(hwnd, lprc) {
-    const dialog = this.handles.resolve(hwnd);
+  const dialog = this.handles.resolve(hwnd);
 
-    lprc.left = dialog.x;
-    lprc.top = dialog.y;
-    lprc.right = dialog.x + dialog.width;
-    lprc.bottom = dialog.y + dialog.height;
+  lprc.left = dialog.x;
+  lprc.top = dialog.y;
+  lprc.right = dialog.x + dialog.width;
+  lprc.bottom = dialog.y + dialog.height;
 }

@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **GetDOSEnvironment** function returns a far pointer to the environment
@@ -16,8 +16,8 @@
  *                         environment string.
  */
 export function GetDOSEnvironment() {
-    const taskHandle = this.scheduler.active;
-    const task = this.handles.resolve(taskHandle);
+  const taskHandle = this.scheduler.active;
+  const task = this.handles.resolve(taskHandle);
 
-    return (((task.environmentSegment << 3) | 0x3) << 16);
+  return ((task.environmentSegment << 3) | 0x3) << 16;
 }

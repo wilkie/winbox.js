@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -26,22 +26,22 @@ import { NULL } from '../consts.js';
  *                        the logical y-coordinate.
  */
 export function MoveTo(hdc, x, y) {
-    const surface = this.handles.resolve(hdc);
-    console.log("MoveTo", x, y);
+  const surface = this.handles.resolve(hdc);
+  console.log('MoveTo', x, y);
 
-    // Determine if the HDC is valid; bail if not
-    if (!surface) {
-        return NULL;
-    }
+  // Determine if the HDC is valid; bail if not
+  if (!surface) {
+    return NULL;
+  }
 
-    // Get the previous coordinate
-    const oldX = surface.data.x || 0;
-    const oldY = surface.data.y || 0;
+  // Get the previous coordinate
+  const oldX = surface.data.x || 0;
+  const oldY = surface.data.y || 0;
 
-    // Set the new coordinate
-    surface.data.x = x;
-    surface.data.y = y;
+  // Set the new coordinate
+  surface.data.x = x;
+  surface.data.y = y;
 
-    // Return the old coordinate
-    return ((oldY & 0xffff) << 16) | (oldX & 0xffff);
+  // Return the old coordinate
+  return ((oldY & 0xffff) << 16) | (oldX & 0xffff);
 }

@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -68,42 +68,42 @@ import { Kernel } from '../kernel.js';
  *                          Otherwise, it is `NULL`.
  */
 export function GlobalAlloc(fuAlloc, cbAlloc) {
-    // GlobalAlloc allocates to the system heap.
+  // GlobalAlloc allocates to the system heap.
 
-    // We can negotiate flags.
-    // TODO: flags
-    const options: any = {};
+  // We can negotiate flags.
+  // TODO: flags
+  const options: any = {};
 
-    if (fuAlloc & Kernel.GMEM_SHARE) {
-        options.sharable = true;
-    }
+  if (fuAlloc & Kernel.GMEM_SHARE) {
+    options.sharable = true;
+  }
 
-    if (fuAlloc & Kernel.GMEM_MOVEABLE) {
-        options.movable = true;
-    }
+  if (fuAlloc & Kernel.GMEM_MOVEABLE) {
+    options.movable = true;
+  }
 
-    if (fuAlloc & Kernel.GMEM_NOCOMPACT) {
-        options.noCompact = true;
-    }
+  if (fuAlloc & Kernel.GMEM_NOCOMPACT) {
+    options.noCompact = true;
+  }
 
-    if (fuAlloc & Kernel.GMEM_NODISCARD) {
-        options.noDiscard = true;
-    }
+  if (fuAlloc & Kernel.GMEM_NODISCARD) {
+    options.noDiscard = true;
+  }
 
-    if (fuAlloc & Kernel.GMEM_ZEROINIT) {
-        options.zeroInit = true;
-    }
+  if (fuAlloc & Kernel.GMEM_ZEROINIT) {
+    options.zeroInit = true;
+  }
 
-    if (fuAlloc & Kernel.GMEM_DISCARDABLE) {
-        options.discardable = true;
-    }
+  if (fuAlloc & Kernel.GMEM_DISCARDABLE) {
+    options.discardable = true;
+  }
 
-    // Get the system heap.
-    const selector = this.allocator.allocate(cbAlloc);
-    if (!selector) {
-        // Cannot allocate
-        return NULL;
-    }
+  // Get the system heap.
+  const selector = this.allocator.allocate(cbAlloc);
+  if (!selector) {
+    // Cannot allocate
+    return NULL;
+  }
 
-    return selector;
+  return selector;
 }

@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { Color } from '../../raster/color.js';
 import { Brush } from '../../raster/brush.js';
@@ -30,13 +30,13 @@ import { Brush } from '../../raster/brush.js';
  *                      function is successful. Otherwise, it is `NULL`.
  */
 export function CreateSolidBrush(clrref) {
-    // Interpret color
-    const components = Color.colorToBgr(clrref);
-    const color = new Color(components.r, components.g, components.b);
+  // Interpret color
+  const components = Color.colorToBgr(clrref);
+  const color = new Color(components.r, components.g, components.b);
 
-    // Create a Brush
-    const brush = new Brush(color);
+  // Create a Brush
+  const brush = new Brush(color);
 
-    const handle = this.handles.allocate(brush);
-    return handle;
+  const handle = this.handles.allocate(brush);
+  return handle;
 }

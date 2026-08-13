@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { TRUE, FALSE } from '../consts.js';
 
@@ -28,32 +28,32 @@ import { TRUE, FALSE } from '../consts.js';
  *                       successful. Otherwise it is zero.
  */
 export function LocalInit(uSegment, uStartAddr, uEndAddr) {
-    console.log("LocalInit:", uSegment, uStartAddr, uEndAddr);
+  console.log('LocalInit:', uSegment, uStartAddr, uEndAddr);
 
-    // Apparently, if the uSegment is 0, they *mean* the current DS.
-    uSegment = uSegment || (this.machine.cpu.core.ds >> 3);
+  // Apparently, if the uSegment is 0, they *mean* the current DS.
+  uSegment = uSegment || this.machine.cpu.core.ds >> 3;
 
-    // Also, apparently, if the start address is less than 16, it gets set
-    // to 16.
-    if (uStartAddr < 16) {
-        uStartAddr = 16;
-    }
+  // Also, apparently, if the start address is less than 16, it gets set
+  // to 16.
+  if (uStartAddr < 16) {
+    uStartAddr = 16;
+  }
 
-    // Get the selector index
-    const segment = uSegment;
+  // Get the selector index
+  const segment = uSegment;
 
-    // If the heap is already allocated, we fail out
-    if (this.allocator.heapOf(segment)) {
-        return FALSE;
-    }
-
-    // Allocate a heap
-    const size = uEndAddr - uStartAddr;
-    const heap = this.allocator.heapInitialize(segment, uStartAddr, size);
-
-    if (heap) {
-        return TRUE;
-    }
-
+  // If the heap is already allocated, we fail out
+  if (this.allocator.heapOf(segment)) {
     return FALSE;
+  }
+
+  // Allocate a heap
+  const size = uEndAddr - uStartAddr;
+  const heap = this.allocator.heapInitialize(segment, uStartAddr, size);
+
+  if (heap) {
+    return TRUE;
+  }
+
+  return FALSE;
 }

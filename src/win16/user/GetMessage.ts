@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { User } from '../user.js';
 
@@ -62,22 +62,22 @@ import { TRUE, FALSE } from '../consts.js';
  *                      message is retrieved.
  */
 export async function GetMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax) {
-    // Wait until we have a message, and pull it
-    const msg = await this.scheduler.task.pull();
+  // Wait until we have a message, and pull it
+  const msg = await this.scheduler.task.pull();
 
-    // Copy message to memory
-    lpmsg.hwnd = msg.hwnd;
-    lpmsg.message = msg.message;
-    lpmsg.wParam = msg.wParam;
-    lpmsg.lParam = msg.lParam;
-    lpmsg.time = msg.time;
-    lpmsg.pt.x = msg.pt.x;
-    lpmsg.pt.y = msg.pt.y;
+  // Copy message to memory
+  lpmsg.hwnd = msg.hwnd;
+  lpmsg.message = msg.message;
+  lpmsg.wParam = msg.wParam;
+  lpmsg.lParam = msg.lParam;
+  lpmsg.time = msg.time;
+  lpmsg.pt.x = msg.pt.x;
+  lpmsg.pt.y = msg.pt.y;
 
-    //console.log("returning", lpmsg);
-    if (msg.message == User.WM_QUIT) {
-        return FALSE;
-    }
+  //console.log("returning", lpmsg);
+  if (msg.message == User.WM_QUIT) {
+    return FALSE;
+  }
 
-    return TRUE;
+  return TRUE;
 }

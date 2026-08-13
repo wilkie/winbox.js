@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **OutputDebugString** function displays the specified character string
@@ -18,5 +18,5 @@
  * @param {string} lpszOutputString - The string to be displayed.
  */
 export function OutputDebugString(lpszOutputString) {
-    console.log(lpszOutputString.toString());
+  console.log(lpszOutputString.toString());
 }

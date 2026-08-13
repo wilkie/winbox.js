@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { TRUE, FALSE } from '../consts.js';
 
@@ -29,41 +29,41 @@ import { BitmapFont } from '../../raster/bitmap-font.js';
  *                      successful. Otherwise, it is zero.
  */
 export function GetTextMetrics(hdc, lptm) {
-    // Get the surface instance
-    const surface = this.handles.resolve(hdc);
+  // Get the surface instance
+  const surface = this.handles.resolve(hdc);
 
-    if (!surface) {
-        return FALSE;
-    }
+  if (!surface) {
+    return FALSE;
+  }
 
-    // Get the current font
-    const font = surface.font;
+  // Get the current font
+  const font = surface.font;
 
-    // Get the information
-    if (font instanceof BitmapFont) {
-        const header = font.fontFor(12).header;
+  // Get the information
+  if (font instanceof BitmapFont) {
+    const header = font.fontFor(12).header;
 
-        lptm.tmHeight = header.dfPixHeight;
-        lptm.tmAscent = header.dfAscent;
-        lptm.tmDescent = header.dfPixHeight - header.dfAscent;
-        lptm.tmInternalLeading = header.dfInternalLeading;
-        lptm.tmExternalLeading = header.dfExternalLeading;
-        lptm.tmAveCharWidth = header.dfAvgWidth;
-        lptm.tmMaxCharWidth = header.dfMaxWidth;
-        lptm.tmWeight = header.dfWeight;
-        lptm.tmItalic = header.dfItalic;
-        lptm.tmUnderlined = header.dfUnderline;
-        lptm.tmStruckOut = header.dfStrikeOut;
-        lptm.tmFirstChar = header.dfFirstChar;
-        lptm.tmLastChar = header.dfLastChar;
-        lptm.tmDefaultChar = header.dfDefaultChar;
-        lptm.tmBreakChar = header.dfBreakChar;
-        lptm.tmPitchAndFamily = header.dfPitchAndFamily;
-        lptm.tmCharSet = header.dfCharSet;
-        lptm.tmOverhang = 0;
-        lptm.tmDigitizedAspectX = header.dfHorizRes;
-        lptm.tmDigitizedAspectY = header.dfVertRes;
-    }
+    lptm.tmHeight = header.dfPixHeight;
+    lptm.tmAscent = header.dfAscent;
+    lptm.tmDescent = header.dfPixHeight - header.dfAscent;
+    lptm.tmInternalLeading = header.dfInternalLeading;
+    lptm.tmExternalLeading = header.dfExternalLeading;
+    lptm.tmAveCharWidth = header.dfAvgWidth;
+    lptm.tmMaxCharWidth = header.dfMaxWidth;
+    lptm.tmWeight = header.dfWeight;
+    lptm.tmItalic = header.dfItalic;
+    lptm.tmUnderlined = header.dfUnderline;
+    lptm.tmStruckOut = header.dfStrikeOut;
+    lptm.tmFirstChar = header.dfFirstChar;
+    lptm.tmLastChar = header.dfLastChar;
+    lptm.tmDefaultChar = header.dfDefaultChar;
+    lptm.tmBreakChar = header.dfBreakChar;
+    lptm.tmPitchAndFamily = header.dfPitchAndFamily;
+    lptm.tmCharSet = header.dfCharSet;
+    lptm.tmOverhang = 0;
+    lptm.tmDigitizedAspectX = header.dfHorizRes;
+    lptm.tmDigitizedAspectY = header.dfVertRes;
+  }
 
-    return TRUE;
+  return TRUE;
 }

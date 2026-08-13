@@ -7,10 +7,10 @@ archival solution.
 
 The goals are many but mainly focused around:
 
-* High compatibility with many popular-in-their-time applications and games.
-* Modern HTML accessibility, including support for screen-readers.
-* Wrapping older win16 libraries and using them in your own modern web-applications.
-* Support for building new, potentially anachronistic, pseudo-win16 applications using the 16-bit windows API.
+- High compatibility with many popular-in-their-time applications and games.
+- Modern HTML accessibility, including support for screen-readers.
+- Wrapping older win16 libraries and using them in your own modern web-applications.
+- Support for building new, potentially anachronistic, pseudo-win16 applications using the 16-bit windows API.
 
 ## Development
 
@@ -65,18 +65,18 @@ pnpm turbo run lint typecheck test build
 
 The individual tasks are also plain scripts, if you prefer:
 
-| Command             | What it does                                     |
-| ------------------- | ------------------------------------------------ |
-| `pnpm dev`          | Dev server with the demo page                    |
-| `pnpm build`        | Production bundle into `dist/`                   |
-| `pnpm typecheck`    | `tsc --noEmit` over `src`, `test` and `e2e`      |
-| `pnpm lint`         | ESLint over the TypeScript sources               |
-| `pnpm lint:fix`     | ESLint with autofix                              |
-| `pnpm lint:css`     | Stylelint over the Sass sources                  |
-| `pnpm format`       | Prettier over the repository                     |
-| `pnpm test`         | Jest unit tests                                  |
-| `pnpm test:e2e`     | Playwright browser tests                         |
-| `pnpm build:docs`   | API documentation into `docs/`                   |
+| Command           | What it does                                |
+| ----------------- | ------------------------------------------- |
+| `pnpm dev`        | Dev server with the demo page               |
+| `pnpm build`      | Production bundle into `dist/`              |
+| `pnpm typecheck`  | `tsc --noEmit` over `src`, `test` and `e2e` |
+| `pnpm lint`       | ESLint over the TypeScript sources          |
+| `pnpm lint:fix`   | ESLint with autofix                         |
+| `pnpm lint:css`   | Stylelint over the Sass sources             |
+| `pnpm format`     | Prettier over the repository                |
+| `pnpm test`       | Jest unit tests                             |
+| `pnpm test:e2e`   | Playwright browser tests                    |
+| `pnpm build:docs` | API documentation into `docs/`              |
 
 ## Documentation
 
@@ -144,7 +144,7 @@ pnpm test:e2e --ui
 Formatting is handled by [Prettier](https://prettier.io/) and is not something
 to think about; run `pnpm format` or let your editor do it on save.
 
-ESLint currently reports a large number of *warnings*. These are migration debt
+ESLint currently reports a large number of _warnings_. These are migration debt
 from the mechanical JavaScript to TypeScript conversion (unused variables,
 `var`, dead stores) and are deliberately not errors, so that a clean `pnpm lint`
 still means something in CI. Errors are reserved for newly introduced problems.

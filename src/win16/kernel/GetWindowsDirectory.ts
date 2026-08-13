@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { lstrcpy } from './lstrcpy.js';
 
@@ -9,17 +9,17 @@ import { lstrcpy } from './lstrcpy.js';
  *
  * The system directory is the only directory where an application should create
  * files. If the user is running a shared version of the system, the system
- * directory is the only directory guaranteed private to the user. 
+ * directory is the only directory guaranteed private to the user.
  *
  * The path this function retrieves does not end with a backslash unless the
  * system directory is the root directory. For example, if the system directory
  * is named `WINDOWS` on drive C, the path retrieved by this function is
  * `C:\WINDOWS`. If the system is installed in the root directory of drive C,
- * the path retrieved is `C:\`. 
+ * the path retrieved is `C:\`.
  *
  * A similar function, {@link Kernel.GetWindowsDir GetWindowsDir}, is intended
  * for use by MS-DOS applications that set up applications. Such applications
- * should use **GetWindowsDirectory**, not **GetWindowsDir**. 
+ * should use **GetWindowsDirectory**, not **GetWindowsDir**.
  *
  * @static
  * @function GetWindowsDirectory
@@ -42,26 +42,26 @@ import { lstrcpy } from './lstrcpy.js';
  *                       if the function fails.
  */
 export function GetWindowsDirectory(lpszSysPath, cbSysPath) {
-    const destSegment = (lpszSysPath >> 16) & 0xffff;
-    let destOffset = lpszSysPath & 0xffff;
+  const destSegment = (lpszSysPath >> 16) & 0xffff;
+  let destOffset = lpszSysPath & 0xffff;
 
-    const path = "C:\\WINDOWS";
+  const path = 'C:\\WINDOWS';
 
-    if (cbSysPath == 0) {
-        // Do nothing, I guess, and return the required buffer size.
-        return path.length;
-    }
-
-    const cpu = this.machine.cpu.core;
-    let count = 0;
-    for (let i = 0; i < path.length && i < cbSysPath - 1; i++) {
-        const data = path.charCodeAt(i);
-        cpu.write8(destSegment, destOffset, data);
-        destOffset++;
-        count++;
-    }
-
-    // Write null-terminator
-    cpu.write8(destSegment, destOffset, 0x0);
+  if (cbSysPath == 0) {
+    // Do nothing, I guess, and return the required buffer size.
     return path.length;
+  }
+
+  const cpu = this.machine.cpu.core;
+  let count = 0;
+  for (let i = 0; i < path.length && i < cbSysPath - 1; i++) {
+    const data = path.charCodeAt(i);
+    cpu.write8(destSegment, destOffset, data);
+    destOffset++;
+    count++;
+  }
+
+  // Write null-terminator
+  cpu.write8(destSegment, destOffset, 0x0);
+  return path.length;
 }

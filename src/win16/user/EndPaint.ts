@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -24,24 +24,24 @@ import { NULL } from '../consts.js';
  *                                   function.
  */
 export function EndPaint(hwnd, lpps) {
-    // Get the window
-    const dialog = this.handles.resolve(hwnd);
+  // Get the window
+  const dialog = this.handles.resolve(hwnd);
 
-    if (!dialog) {
-        return;
+  if (!dialog) {
+    return;
+  }
+
+  // Get the surface
+  const surface = dialog.surface;
+
+  // Deallocate the allocated DC
+  const referredSurface = this.handles.resolve(lpps.hdc);
+  if (surface === referredSurface) {
+    this.handles.free(lpps.hdc);
+
+    // Update window
+    if (surface && surface.dirty) {
+      surface.update();
     }
-
-    // Get the surface
-    const surface = dialog.surface;
-
-    // Deallocate the allocated DC
-    const referredSurface = this.handles.resolve(lpps.hdc);
-    if (surface === referredSurface) {
-        this.handles.free(lpps.hdc);
-
-        // Update window
-        if (surface && surface.dirty) {
-            surface.update();
-        }
-    }
+  }
 }

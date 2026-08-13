@@ -1,75 +1,77 @@
 .winbox {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+
+  canvas.__winbox_canvas {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
-    position: relative;
-    overflow: hidden;
-    user-select: none;
+    pointer-events: none;
+  }
 
-    canvas.__winbox_canvas {
-        position: absolute;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        pointer-events: none;
+  h1.__winbox_header {
+    padding: 0;
+    margin: 0;
+    position: absolute;
+    font:
+      4rem "Arial Black",
+      sans-serif;
+    color: white;
+    top: 0.5rem;
+    left: 0.5rem;
+    text-shadow: 0.25rem 0.25rem 0 black;
+    font-style: italic;
+  }
+
+  > .__winbox_window {
+    background: transparent !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+
+  .__winbox_resize-box {
+    width: 200px;
+    height: 200px;
+    left: 100px;
+    top: 100px;
+    position: absolute;
+
+    div {
+      position: absolute;
+      backdrop-filter: contrast(50%) brightness(50%) invert(1);
+      background: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAABhGlDQ1BJQ0MgcHJvZmlsZQAAKJF9kT1Iw0AcxV9TiyIVQTuIdMhQnSyIinSUKhbBQmkrtOpgcukXNGlIUlwcBdeCgx+LVQcXZ10dXAVB8APExdVJ0UVK/F9SaBHjwXE/3t173L0DhGaVqWbPJKBqlpFOxMVcflXsfUUQQwgghrDETD2ZWczCc3zdw8fXuyjP8j735xhQCiYDfCLxHNMNi3iDeHbT0jnvE4dYWVKIz4knDLog8SPXZZffOJccFnhmyMim54lDxGKpi+UuZmVDJZ4hjiiqRvlCzmWF8xZntVpn7XvyFwYL2kqG6zTDSGAJSaQgQkYdFVRhIUqrRoqJNO3HPfyjjj9FLplcFTByLKAGFZLjB/+D392axekpNykYBwIvtv0xBvTuAq2GbX8f23brBPA/A1dax19rArFP0hsdLXIEDG4DF9cdTd4DLneAkSddMiRH8tMUikXg/Yy+KQ8M3wL9a25v7X2cPgBZ6mr5Bjg4BMZLlL3u8e6+7t7+PdPu7wexFHLAgl834AAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAAuIwAALiMBeKU/dgAAAAd0SU1FB+MMFxUUF+OqcqIAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAEUlEQVQI12NgYGD4z4AE/gMADwMB/4OExBQAAAAASUVORK5CYII=");
     }
 
-    h1.__winbox_header {
-        padding: 0;
-        margin: 0;
-        position: absolute;
-        font: 4rem "Arial Black", sans-serif;
-        color: white;
-        top: 0.5rem;
-        left: 0.5rem;
-        text-shadow: 0.25rem 0.25rem 0 black;
-        font-style: italic;
+    .__winbox_resize-box_left {
+      top: 0.1875rem;
+      left: 0;
+      height: calc(100% - 0.1875rem);
+      width: 0.1875rem;
     }
 
-    > .__winbox_window {
-        background: transparent !important;
-        width: 100% !important;
-        height: 100% !important;
+    .__winbox_resize-box_top {
+      top: 0;
+      left: 0;
+      width: calc(100% - 0.1875rem);
+      height: 0.1875rem;
     }
 
-    .__winbox_resize-box {
-        width: 200px;
-        height: 200px;
-        left: 100px;
-        top: 100px;
-        position: absolute;
-
-        div {
-            position: absolute;
-            backdrop-filter: contrast(50%) brightness(50%) invert(1);
-            background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAABhGlDQ1BJQ0MgcHJvZmlsZQAAKJF9kT1Iw0AcxV9TiyIVQTuIdMhQnSyIinSUKhbBQmkrtOpgcukXNGlIUlwcBdeCgx+LVQcXZ10dXAVB8APExdVJ0UVK/F9SaBHjwXE/3t173L0DhGaVqWbPJKBqlpFOxMVcflXsfUUQQwgghrDETD2ZWczCc3zdw8fXuyjP8j735xhQCiYDfCLxHNMNi3iDeHbT0jnvE4dYWVKIz4knDLog8SPXZZffOJccFnhmyMim54lDxGKpi+UuZmVDJZ4hjiiqRvlCzmWF8xZntVpn7XvyFwYL2kqG6zTDSGAJSaQgQkYdFVRhIUqrRoqJNO3HPfyjjj9FLplcFTByLKAGFZLjB/+D392axekpNykYBwIvtv0xBvTuAq2GbX8f23brBPA/A1dax19rArFP0hsdLXIEDG4DF9cdTd4DLneAkSddMiRH8tMUikXg/Yy+KQ8M3wL9a25v7X2cPgBZ6mr5Bjg4BMZLlL3u8e6+7t7+PdPu7wexFHLAgl834AAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAAuIwAALiMBeKU/dgAAAAd0SU1FB+MMFxUUF+OqcqIAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAAEUlEQVQI12NgYGD4z4AE/gMADwMB/4OExBQAAAAASUVORK5CYII=');
-        }
-
-        .__winbox_resize-box_left {
-            top: 0.1875rem;
-            left: 0;
-            height: calc(100% - 0.1875rem);
-            width: 0.1875rem;
-        }
-
-        .__winbox_resize-box_top {
-            top: 0;
-            left: 0;
-            width: calc(100% - 0.1875rem);
-            height: 0.1875rem;
-        }
-
-        .__winbox_resize-box_right {
-            top: 0;
-            right: 0;
-            height: calc(100% - 0.1875rem);
-            width: 0.1875rem;
-        }
-
-        .__winbox_resize-box_bottom {
-            bottom: 0;
-            right: 0;
-            width: calc(100% - 0.1875rem);
-            height: 0.1875rem;
-        }
+    .__winbox_resize-box_right {
+      top: 0;
+      right: 0;
+      height: calc(100% - 0.1875rem);
+      width: 0.1875rem;
     }
+
+    .__winbox_resize-box_bottom {
+      bottom: 0;
+      right: 0;
+      width: calc(100% - 0.1875rem);
+      height: 0.1875rem;
+    }
+  }
 }

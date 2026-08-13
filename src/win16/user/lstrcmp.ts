@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **lstrcmp** function compares two character strings. The comparison is
@@ -9,18 +9,18 @@
  * so on, until it finds an inequality or reaches the ends of the strings. The
  * function returns the difference of the values of the first unequal characters
  * it encounters. For example, **lstrcmp** determines that "abcz" is greater
- * than "abcdefg" and returns the difference of "z" and "d". 
+ * than "abcdefg" and returns the difference of "z" and "d".
  *
  * The language driver for the language selected by the user determines which
  * string is greater (or whether the strings are the same). If no language
  * driver is selected, the system uses an internal function. With the system's
  * United States language functions, uppercase characters have lower values than
- * lowercase characters. 
+ * lowercase characters.
  *
  * With a double-byte character set (DBCS) version of the system, this function
- * can compare two DBCS strings. 
+ * can compare two DBCS strings.
  *
- * Both strings must be less than 64K in size. 
+ * Both strings must be less than 64K in size.
  *
  * **See also**:
  * {@link Kernel.lstrcpy lstrcpy}
@@ -42,19 +42,19 @@
  *                      if the two strings are equal.
  */
 export function lstrcmp(lpszString1, lpszString2) {
-    // TODO: how does a DBCS string work
-    console.log("lstrcmp", lpszString1, lpszString2);
+  // TODO: how does a DBCS string work
+  console.log('lstrcmp', lpszString1, lpszString2);
 
-    let ret = 0;
-    const max = Math.max(lpszString1.length, lpszString2.length);
-    for (let i = 0; i < max; i++) {
-        const a = lpszString1.charCodeAt(i) || 0;
-        const b = lpszString2.charCodeAt(i) || 0;
-        if (a != b) {
-            ret = a - b;
-            break;
-        }
+  let ret = 0;
+  const max = Math.max(lpszString1.length, lpszString2.length);
+  for (let i = 0; i < max; i++) {
+    const a = lpszString1.charCodeAt(i) || 0;
+    const b = lpszString2.charCodeAt(i) || 0;
+    if (a != b) {
+      ret = a - b;
+      break;
     }
+  }
 
-    return ret;
+  return ret;
 }

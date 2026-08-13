@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **GetClientRect** function retrieves the client coordinates of a window's
@@ -25,10 +25,10 @@
  *                            window.
  */
 export function GetClientRect(hwnd, lprc) {
-    const dialog = this.handles.resolve(hwnd);
+  const dialog = this.handles.resolve(hwnd);
 
-    lprc.left = 0;
-    lprc.top = 0;
-    lprc.right = dialog.innerWidth;
-    lprc.bottom = dialog.innerHeight;
+  lprc.left = 0;
+  lprc.top = 0;
+  lprc.right = dialog.innerWidth;
+  lprc.bottom = dialog.innerHeight;
 }

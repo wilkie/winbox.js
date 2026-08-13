@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { File } from '../../file-system.js';
 import { Kernel } from '../kernel.js';
@@ -25,13 +25,13 @@ import { NULL } from '../consts.js';
  *                        successful. Otherwise, it is `HFILE_ERROR`.
  */
 export function _lclose(hf) {
-    const file = this.dos.files.resolve(hf);
+  const file = this.dos.files.resolve(hf);
 
-    if (!file || !(file instanceof File)) {
-        return Kernel.HFILE_ERROR;
-    }
+  if (!file || !(file instanceof File)) {
+    return Kernel.HFILE_ERROR;
+  }
 
-    this.dos.files.close(hf);
+  this.dos.files.close(hf);
 
-    return NULL;
+  return NULL;
 }

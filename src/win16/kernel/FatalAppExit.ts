@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **FatalAppExit** function displays a message box and terminates the
@@ -24,6 +24,6 @@
  *                                         no more than 35 characters.
  */
 export function FatalAppExit(fuAction, lpszMessageText) {
-    console.log("FatalAppExit:", lpszMessageText);
-    // TODO: spawn a message box and pause the application until it closes.
+  console.log('FatalAppExit:', lpszMessageText);
+  // TODO: spawn a message box and pause the application until it closes.
 }

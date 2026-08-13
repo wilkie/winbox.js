@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **lstrcpy** function copies a string to a buffer.
@@ -29,27 +29,27 @@
  *                         function is successful. Otherwise, it is `NULL`.
  */
 export function lstrcpy(lpszString1, lpszString2) {
-    const cpu = this.machine.cpu.core;
+  const cpu = this.machine.cpu.core;
 
-    // TODO: how does a DBCS string work
+  // TODO: how does a DBCS string work
 
-    const destSegment = (lpszString1 >> 16) & 0xffff;
-    let destOffset = lpszString1 & 0xffff;
+  const destSegment = (lpszString1 >> 16) & 0xffff;
+  let destOffset = lpszString1 & 0xffff;
 
-    const srcSegment = (lpszString2 >> 16) & 0xffff;
-    let srcOffset = lpszString2 & 0xffff;
+  const srcSegment = (lpszString2 >> 16) & 0xffff;
+  let srcOffset = lpszString2 & 0xffff;
 
-    // Go through the src memory until we hit a null terminator
-    // Copying every byte to the destination as we go.
-    let data = null;
-    let count = 0;
-    do {
-        data = cpu.read8(srcSegment, srcOffset);
-        cpu.write8(destSegment, destOffset, data);
-        srcOffset++;
-        destOffset++;
-        count++;
-    } while (data && count <= 0xffff)
+  // Go through the src memory until we hit a null terminator
+  // Copying every byte to the destination as we go.
+  let data = null;
+  let count = 0;
+  do {
+    data = cpu.read8(srcSegment, srcOffset);
+    cpu.write8(destSegment, destOffset, data);
+    srcOffset++;
+    destOffset++;
+    count++;
+  } while (data && count <= 0xffff);
 
-    return lpszString1;
+  return lpszString1;
 }

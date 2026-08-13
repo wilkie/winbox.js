@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -9,12 +9,12 @@ import { Kernel } from '../kernel.js';
  * given global memory object.
  *
  * The size of a memory object is sometimes larger than the size requested at
- * the time the memory was allocated. 
+ * the time the memory was allocated.
  *
  * An application should call the {@link Kernel.GlobalFlags GlobalFlags}
  * function prior to calling the GlobalSize function, to verify that the
  * specified memory object was not discarded. If the memory object has been
- * discarded, the return value for **GlobalSize** is meaningless. 
+ * discarded, the return value for **GlobalSize** is meaningless.
  *
  *
  * **See also**:
@@ -32,5 +32,5 @@ import { Kernel } from '../kernel.js';
  *                        not valid or if the object has been discarded.
  */
 export function GlobalSize(hglb) {
-    return this.allocator.sizeOf(hglb);
+  return this.allocator.sizeOf(hglb);
 }

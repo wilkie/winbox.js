@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { TRUE, FALSE } from '../consts.js';
 
@@ -30,16 +30,16 @@ import { TRUE, FALSE } from '../consts.js';
  *                      successful. Otherwise, it is zero.
  */
 export function DeleteObject(handle) {
-    // Delete the handle
-    if (!this.handles.isGDI(handle)) {
-        return FALSE;
-    }
+  // Delete the handle
+  if (!this.handles.isGDI(handle)) {
+    return FALSE;
+  }
 
-    const item = this.handles.resolve(handle);
-    if (!item) {
-        return FALSE;
-    }
+  const item = this.handles.resolve(handle);
+  if (!item) {
+    return FALSE;
+  }
 
-    this.handles.free(handle);
-    return TRUE;
+  this.handles.free(handle);
+  return TRUE;
 }

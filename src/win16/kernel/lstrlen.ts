@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **lstrlen** function returns the length, in bytes, of the specified
@@ -19,25 +19,28 @@
  *                      is no error return.
  */
 export function lstrlen(lpszString) {
-    const cpu = this.machine.cpu.core;
+  const cpu = this.machine.cpu.core;
 
-    // TODO: how does a DBCS string work
+  // TODO: how does a DBCS string work
 
-    const srcSegment = (lpszString >> 16) & 0xffff;
-    let srcOffset = lpszString & 0xffff;
+  const srcSegment = (lpszString >> 16) & 0xffff;
+  let srcOffset = lpszString & 0xffff;
 
-    console.log("lstrlen", this.machine.memory.readCString(cpu.translateAddress(srcSegment, srcOffset)));
+  console.log(
+    'lstrlen',
+    this.machine.memory.readCString(cpu.translateAddress(srcSegment, srcOffset))
+  );
 
-    // Go through the src memory until we hit a null terminator
-    let data = null;
-    let count = 0;
-    do {
-        data = cpu.read8(srcSegment, srcOffset);
-        srcOffset++;
-        count++;
-    } while (data && count <= 0xffff);
+  // Go through the src memory until we hit a null terminator
+  let data = null;
+  let count = 0;
+  do {
+    data = cpu.read8(srcSegment, srcOffset);
+    srcOffset++;
+    count++;
+  } while (data && count <= 0xffff);
 
-    count--;
+  count--;
 
-    return count;
+  return count;
 }

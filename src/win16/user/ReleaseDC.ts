@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL, TRUE, FALSE } from '../consts.js';
 
@@ -26,28 +26,27 @@ import { NULL, TRUE, FALSE } from '../consts.js';
  *                      Otherwise, it is 0.
  */
 export function ReleaseDC(hwnd, hdc) {
-    const dc = 1;
-    if (hwnd == NULL) {
-        // The desktop context... do nothing
-    }
-    else {
-        // Get the window
-        const dialog = this.handles.resolve(hwnd);
+  const dc = 1;
+  if (hwnd == NULL) {
+    // The desktop context... do nothing
+  } else {
+    // Get the window
+    const dialog = this.handles.resolve(hwnd);
 
-        // Get the surface
-        const surface = dialog.surface;
+    // Get the surface
+    const surface = dialog.surface;
 
-        // Resolve the DC
-        const compare = this.handles.resolve(hdc);
+    // Resolve the DC
+    const compare = this.handles.resolve(hdc);
 
-        // If this surface does not belong to the window, fail
-        if (compare !== surface) {
-            return FALSE;
-        }
-
-        // Free the handle
-        this.handles.free(hdc);
+    // If this surface does not belong to the window, fail
+    if (compare !== surface) {
+      return FALSE;
     }
 
-    return TRUE;
+    // Free the handle
+    this.handles.free(hdc);
+  }
+
+  return TRUE;
 }

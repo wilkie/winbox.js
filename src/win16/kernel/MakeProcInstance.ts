@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -26,6 +26,6 @@ import { NULL } from '../consts.js';
  *                         error occurs.
  */
 export function MakeProcInstance(lpProc, hinst) {
-    // We mostly don't care
-    return lpProc;
+  // We mostly don't care
+  return lpProc;
 }

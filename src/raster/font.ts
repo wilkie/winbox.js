@@ -1,2 +1,1 @@
-export class Font {
-}
+export class Font {}

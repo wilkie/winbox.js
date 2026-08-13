@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -42,6 +42,6 @@ import { NULL } from '../consts.js';
  *                         Otherwise, the return value is nonzero.
  */
 export function GlobalUnlock(hglb) {
-    // TODO: handle lock counts
-    return 0;
+  // TODO: handle lock counts
+  return 0;
 }

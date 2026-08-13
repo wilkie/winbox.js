@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -34,11 +34,17 @@ import { User } from '../user.js';
  *                      ignored.
  */
 export async function DispatchMessage(lpmsg) {
-    // Get the window itself
-    const dialog = this.handles.resolve(lpmsg.hwnd);
+  // Get the window itself
+  const dialog = this.handles.resolve(lpmsg.hwnd);
 
-    // Get the window/class for the handle
-    const windowClass = this.handles.retrieve(dialog.options.windowClass);
+  // Get the window/class for the handle
+  const windowClass = this.handles.retrieve(dialog.options.windowClass);
 
-    return await this.scheduler.callWndProc(windowClass, lpmsg.hwnd, lpmsg.message, lpmsg.wParam, lpmsg.lParam);
+  return await this.scheduler.callWndProc(
+    windowClass,
+    lpmsg.hwnd,
+    lpmsg.message,
+    lpmsg.wParam,
+    lpmsg.lParam
+  );
 }

@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **GetVersion** function retrieves the current version numbers of the
@@ -43,6 +43,6 @@
  *                        numbers of the emulated Windows and MS-DOS systems.
  */
 export function GetVersion() {
-    // We are emulating windows 3.1 and dos 6.22
-    return 0x06160a03;
+  // We are emulating windows 3.1 and dos 6.22
+  return 0x06160a03;
 }

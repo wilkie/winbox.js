@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { Util } from '../../util.js';
 import { Executable } from '../../executable.js';
@@ -57,7 +57,7 @@ import { NULL } from '../consts.js';
  * * `OBM_UPARROWI`
  * * `OBM_ZOOM`
  * * `OBM_ZOOMD`
- * 
+ *
  * Bitmap names that begin with `OBM_OLD` represent bitmaps used by the system
  * in versions earlier than 3.0.
  *
@@ -87,159 +87,169 @@ import { NULL } from '../consts.js';
  *                         `NULL`.
  */
 export async function LoadBitmap(hinst, lpszBitmap) {
-    // If the hinst is NULL, we are looking for a system bitmap
-    if (hinst == NULL) {
-    }
+  // If the hinst is NULL, we are looking for a system bitmap
+  if (hinst == NULL) {
+  }
 
-    const hi = (lpszBitmap >> 16) & 0xffff;
-    const lo = lpszBitmap & 0xffff;
+  const hi = (lpszBitmap >> 16) & 0xffff;
+  const lo = lpszBitmap & 0xffff;
 
-    let idResource = 0xffff;
-    let name = null;
+  let idResource = 0xffff;
+  let name = null;
 
-    if (hi == 0) {
-        // This is a resource identifier
-        idResource = lo;
-    }
-    else {
-        // We have a string resource
-        const idSegment = (lpszBitmap >> 16) & 0xffff;
-        const idOffset = lpszBitmap & 0xffff;
+  if (hi == 0) {
+    // This is a resource identifier
+    idResource = lo;
+  } else {
+    // We have a string resource
+    const idSegment = (lpszBitmap >> 16) & 0xffff;
+    const idOffset = lpszBitmap & 0xffff;
 
-        name = this.machine.memory.readCString(this.machine.cpu.core.translateAddress(idSegment, idOffset));
-        name = name.toUpperCase();
-    }
+    name = this.machine.memory.readCString(
+      this.machine.cpu.core.translateAddress(idSegment, idOffset)
+    );
+    name = name.toUpperCase();
+  }
 
-    console.log("looking for", name);
+  console.log('looking for', name);
 
-    // Resolve the handle
-    const module = this.handles.resolve(hinst);
+  // Resolve the handle
+  const module = this.handles.resolve(hinst);
 
-    // Fail out if the handle is not found
-    if (!module) {
-        return NULL;
-    }
+  // Fail out if the handle is not found
+  if (!module) {
+    return NULL;
+  }
 
-    const memory = this.machine.memory;
-    const executable = this.scheduler.task.executable;
+  const memory = this.machine.memory;
+  const executable = this.scheduler.task.executable;
 
-    let ret = NULL;
-    for (let i = 0; i < executable.resources.length; i++) {
-        const resourceType = executable.resources[i];
-        if (resourceType.id == Executable.RESOURCES.Bitmap) {
-            for (let j = 0; j < resourceType.entries.length; j++) {
-                const resource = resourceType.entries[j];
-                if (resource.id == idResource || resource.name.toUpperCase() === name) {
-                    const data = await executable.readResource(resource);
-                    const view = new DataView(data);
+  let ret = NULL;
+  for (let i = 0; i < executable.resources.length; i++) {
+    const resourceType = executable.resources[i];
+    if (resourceType.id == Executable.RESOURCES.Bitmap) {
+      for (let j = 0; j < resourceType.entries.length; j++) {
+        const resource = resourceType.entries[j];
+        if (resource.id == idResource || resource.name.toUpperCase() === name) {
+          const data = await executable.readResource(resource);
+          const view = new DataView(data);
 
-                    // Read the bitmap header
-                    let bitmapHeader = Util.readStructure(view, {
-                        bcSize: [0, 4],
-                        bcWidth: [4, -2],
-                        bcHeight: [6, -2],
-                        bcPlanes: [8, 2],
-                        bcBitCount: [10, 2]
-                    }, 0, true);
+          // Read the bitmap header
+          let bitmapHeader = Util.readStructure(
+            view,
+            {
+              bcSize: [0, 4],
+              bcWidth: [4, -2],
+              bcHeight: [6, -2],
+              bcPlanes: [8, 2],
+              bcBitCount: [10, 2],
+            },
+            0,
+            true
+          );
 
-                    if (bitmapHeader.bcSize == 12) {
-                        // We only have the BITMAPCOREHEADER
-                        const bitmapData = data.slice(bitmapHeader.bcSize);
-                        const bitmapView = new DataView(bitmapData);
+          if (bitmapHeader.bcSize == 12) {
+            // We only have the BITMAPCOREHEADER
+            const bitmapData = data.slice(bitmapHeader.bcSize);
+            const bitmapView = new DataView(bitmapData);
 
-                        const bitmap = new Bitmap(
-                            bitmapHeader.bcWidth,
-                            bitmapHeader.bcHeight,
-                            bitmapHeader.bcBitCount,
-                            Bitmap.ABGR,
-                            bitmapView
-                        );
-                    }
-                    else {
-                        // We have the BITMAPINFOHEADER
-                        bitmapHeader = Util.readStructure(view, {
-                            biSize: [0, 4],
-                            biWidth: [4, -4],
-                            biHeight: [8, -4],
-                            biPlanes: [12, 2],
-                            biBitCount: [14, 2],
-                            biCompression: [16, 4],
-                            biSizeImage: [20, 4],
-                            biXPelsPerMeter: [24, -4],
-                            biYPelsPerMeter: [28, -4],
-                            biClrUsed: [32, 4],
-                            biClrImportant: [36, 4],
-                        }, 0, true);
+            const bitmap = new Bitmap(
+              bitmapHeader.bcWidth,
+              bitmapHeader.bcHeight,
+              bitmapHeader.bcBitCount,
+              Bitmap.ABGR,
+              bitmapView
+            );
+          } else {
+            // We have the BITMAPINFOHEADER
+            bitmapHeader = Util.readStructure(
+              view,
+              {
+                biSize: [0, 4],
+                biWidth: [4, -4],
+                biHeight: [8, -4],
+                biPlanes: [12, 2],
+                biBitCount: [14, 2],
+                biCompression: [16, 4],
+                biSizeImage: [20, 4],
+                biXPelsPerMeter: [24, -4],
+                biYPelsPerMeter: [28, -4],
+                biClrUsed: [32, 4],
+                biClrImportant: [36, 4],
+              },
+              0,
+              true
+            );
 
-                        const colors = 1 << bitmapHeader.biBitCount;
-                        const paletteSize = 4 * colors;
+            const colors = 1 << bitmapHeader.biBitCount;
+            const paletteSize = 4 * colors;
 
-                        const paletteData = data.slice(bitmapHeader.biSize);
-                        const paletteView = new DataView(paletteData);
-                        const bitmapPalette = new Uint32Array(colors);
-                        const realPalette = new Palette(Palette.PALETTEWIN16);
+            const paletteData = data.slice(bitmapHeader.biSize);
+            const paletteView = new DataView(paletteData);
+            const bitmapPalette = new Uint32Array(colors);
+            const realPalette = new Palette(Palette.PALETTEWIN16);
 
-                        for (let i = 0; i < colors; i++) {
-                            // These colors are in ARGB
-                            bitmapPalette[i] = paletteView.getUint32(i * 4, true) | 0xff000000;
+            for (let i = 0; i < colors; i++) {
+              // These colors are in ARGB
+              bitmapPalette[i] = paletteView.getUint32(i * 4, true) | 0xff000000;
 
-                            if (colors == 16) {
-                                // Windows 3.1 converts 16 color bitmaps to a
-                                // 16-color palette even in 256 color mode.
-                                bitmapPalette[i] = realPalette.nearestColor(bitmapPalette[i]).color;
-                            }
+              if (colors == 16) {
+                // Windows 3.1 converts 16 color bitmaps to a
+                // 16-color palette even in 256 color mode.
+                bitmapPalette[i] = realPalette.nearestColor(bitmapPalette[i]).color;
+              }
 
-                            // Convert to RGBA
-                            bitmapPalette[i] = (bitmapPalette[i] << 8 & 0xffffff00) |
-                                               ((bitmapPalette[i] >> 24) & 0xff);
-                        }
-
-                        const bitmapData = data.slice(bitmapHeader.biSize + paletteSize);
-
-                        // Bitmaps are stored last row first, so we have to invert them
-                        const bitmapRealData = new Uint8Array(bitmapData.byteLength);
-
-                        let bpRow = bitmapHeader.biBitCount * bitmapHeader.biWidth;
-                        let bitmapView = new DataView(bitmapData);
-                        bpRow = (bpRow + (8 - 1)) & ~(8 - 1);
-                        const widthBytes = ((bpRow >> 3) + (4 - 1)) & ~(4 - 1);
-
-                        // Flip bitmap vertically
-                        let offset = 0;
-                        for (let y = bitmapHeader.biHeight - 1; y >= 0; y--) {
-                            for (let x = 0; x < widthBytes; x++) {
-                                bitmapRealData[y * widthBytes + x] = bitmapView.getUint8(offset + x);
-                            }
-                            offset += widthBytes;
-                        }
-
-                        // Get a view of the bitmap data
-                        bitmapView = new DataView(bitmapRealData.buffer);
-
-                        // Create the Bitmap object
-                        let bitmap = new Bitmap(
-                            bitmapHeader.biWidth,
-                            bitmapHeader.biHeight,
-                            bitmapHeader.biBitCount,
-                            Bitmap.RGBA,
-                            bitmapView,
-                            bitmapPalette,
-                        );
-                        
-                        const start = (new Date).getTime();
-                        // Convert to our screen color depth
-                        bitmap = bitmap.convert(8, Palette.PALETTEWIN256);
-
-                        // Allocate a handle to it
-                        ret = this.handles.allocate(bitmap);
-                    }
-                }
+              // Convert to RGBA
+              bitmapPalette[i] =
+                ((bitmapPalette[i] << 8) & 0xffffff00) | ((bitmapPalette[i] >> 24) & 0xff);
             }
+
+            const bitmapData = data.slice(bitmapHeader.biSize + paletteSize);
+
+            // Bitmaps are stored last row first, so we have to invert them
+            const bitmapRealData = new Uint8Array(bitmapData.byteLength);
+
+            let bpRow = bitmapHeader.biBitCount * bitmapHeader.biWidth;
+            let bitmapView = new DataView(bitmapData);
+            bpRow = (bpRow + (8 - 1)) & ~(8 - 1);
+            const widthBytes = ((bpRow >> 3) + (4 - 1)) & ~(4 - 1);
+
+            // Flip bitmap vertically
+            let offset = 0;
+            for (let y = bitmapHeader.biHeight - 1; y >= 0; y--) {
+              for (let x = 0; x < widthBytes; x++) {
+                bitmapRealData[y * widthBytes + x] = bitmapView.getUint8(offset + x);
+              }
+              offset += widthBytes;
+            }
+
+            // Get a view of the bitmap data
+            bitmapView = new DataView(bitmapRealData.buffer);
+
+            // Create the Bitmap object
+            let bitmap = new Bitmap(
+              bitmapHeader.biWidth,
+              bitmapHeader.biHeight,
+              bitmapHeader.biBitCount,
+              Bitmap.RGBA,
+              bitmapView,
+              bitmapPalette
+            );
+
+            const start = new Date().getTime();
+            // Convert to our screen color depth
+            bitmap = bitmap.convert(8, Palette.PALETTEWIN256);
+
+            // Allocate a handle to it
+            ret = this.handles.allocate(bitmap);
+          }
         }
+      }
     }
+  }
 
-    console.log("returning", ret);
+  console.log('returning', ret);
 
-    // If we could not find the string, ret remains NULL.
-    return ret;
+  // If we could not find the string, ret remains NULL.
+  return ret;
 }

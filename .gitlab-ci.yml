@@ -7,7 +7,7 @@ stages:
 
 variables:
   # Keep the pnpm store inside the project so GitLab can cache it.
-  PNPM_STORE: "$CI_PROJECT_DIR/.pnpm-store"
+  PNPM_STORE: '$CI_PROJECT_DIR/.pnpm-store'
 
 .node:
   before_script:

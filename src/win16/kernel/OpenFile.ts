@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -156,54 +156,51 @@ import { Kernel } from '../kernel.js';
  *                        is `HFILE_ERROR` if an error occurs.
  */
 export async function OpenFile(lpszFileName, lpOpenBuff, fuMode) {
-    // Open the file. When successful, yields a file handle.
-    let handle = await this.dos.files.open(lpszFileName);
-    const file = this.dos.files.resolve(handle);
+  // Open the file. When successful, yields a file handle.
+  let handle = await this.dos.files.open(lpszFileName);
+  const file = this.dos.files.resolve(handle);
 
-    // If the file could not be opened
-    if (!file) {
-        handle = Kernel.HFILE_ERROR;
+  // If the file could not be opened
+  if (!file) {
+    handle = Kernel.HFILE_ERROR;
+  } else {
+    lpszFileName = file.mount + ':' + file.path;
+  }
+
+  // Create (or truncate) the file
+  if (fuMode & Kernel.OF_CREATE) {
+    if (file) {
+      // Truncate the file
+      await file.truncate();
+    } else {
+      // Create a new file
+      handle = await this.dos.files.create(lpszFileName);
     }
-    else {
-        lpszFileName = file.mount + ":" + file.path;
+  }
+
+  // Delete the file
+  if (fuMode & Kernel.OF_DELETE) {
+    await this.dos.files.remove(lpszFileName);
+  }
+
+  // Check for the file's existence
+  if (fuMode & Kernel.OF_EXIST) {
+    if (file) {
+      this.dos.files.close(file);
+      // Apparently, it returns 1 if the file is found.
+      handle = 1;
+    } else {
+      handle = Kernel.HFILE_ERROR;
     }
+  }
 
-    // Create (or truncate) the file
-    if (fuMode & Kernel.OF_CREATE) {
-        if (file) {
-            // Truncate the file
-            await file.truncate();
-        }
-        else {
-            // Create a new file
-            handle = await this.dos.files.create(lpszFileName);
-        }
-    }
+  console.log(file);
 
-    // Delete the file
-    if (fuMode & Kernel.OF_DELETE) {
-        await this.dos.files.remove(lpszFileName);
-    }
+  lpOpenBuff.cBytes = lpOpenBuff.structSize; // Number of bytes of the
+  // OFSTRUCT structure
+  lpOpenBuff.szPathName = lpszFileName; // Path to the file
+  lpOpenBuff.nErrCode = 0; // DOS error codes
+  lpOpenBuff.fFixedDisk = 1; // Whether or not it is on a fixed disk
 
-    // Check for the file's existence
-    if (fuMode & Kernel.OF_EXIST) {
-        if (file) {
-            this.dos.files.close(file);
-            // Apparently, it returns 1 if the file is found.
-            handle = 1;
-        }
-        else {
-            handle = Kernel.HFILE_ERROR;
-        }
-    }
-
-    console.log(file);
-
-    lpOpenBuff.cBytes = lpOpenBuff.structSize; // Number of bytes of the
-                                               // OFSTRUCT structure
-    lpOpenBuff.szPathName = lpszFileName; // Path to the file
-    lpOpenBuff.nErrCode = 0; // DOS error codes
-    lpOpenBuff.fFixedDisk = 1; // Whether or not it is on a fixed disk
-
-    return handle;
+  return handle;
 }

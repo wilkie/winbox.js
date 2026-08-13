@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **LocalHandle** function retrieves the handle of the specified local
@@ -19,5 +19,5 @@
  *                   addresss has no handle.
  */
 export function LocalHandle(pvMem) {
-    console.log("LocalHandle:", pvMem);
+  console.log('LocalHandle:', pvMem);
 }

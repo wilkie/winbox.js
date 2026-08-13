@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **FatalExit** function sends the current state of the operating system
@@ -18,8 +18,8 @@
  * @param {Types.INT} nErrCode - Specifies the error value to be displayed.
  */
 export function FatalExit(nErrCode) {
-    console.log("FatalExit:", nErrCode);
+  console.log('FatalExit:', nErrCode);
 
-    // TODO: spawn a message box and pause the application until it closes.
-    this.halt();
+  // TODO: spawn a message box and pause the application until it closes.
+  this.halt();
 }

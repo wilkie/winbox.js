@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { File } from '../../file-system.js';
 import { Kernel } from '../kernel.js';
@@ -44,29 +44,29 @@ import { NULL } from '../consts.js';
  *                       `HFILE_ERROR`.
  */
 export function _llseek(hf, lOffset, nOrigin) {
-    const file = this.dos.files.resolve(hf);
+  const file = this.dos.files.resolve(hf);
 
-    if (!file || !(file instanceof File)) {
-        return Kernel.HFILE_ERROR;
-    }
+  if (!file || !(file instanceof File)) {
+    return Kernel.HFILE_ERROR;
+  }
 
-    switch (nOrigin) {
-        case 0:
-            file.position = lOffset;
-            break;
+  switch (nOrigin) {
+    case 0:
+      file.position = lOffset;
+      break;
 
-        case 1:
-            file.position += lOffset;
-            break;
+    case 1:
+      file.position += lOffset;
+      break;
 
-        case 2:
-            file.position = file.size - lOffset;
-            break;
+    case 2:
+      file.position = file.size - lOffset;
+      break;
 
-        default:
-            // Unknown seek value, return error.
-            return Kernel.HFILE_ERROR;
-    }
+    default:
+      // Unknown seek value, return error.
+      return Kernel.HFILE_ERROR;
+  }
 
-    return file.position;
+  return file.position;
 }

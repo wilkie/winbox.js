@@ -1,59 +1,59 @@
 .winbox {
-    .__winbox_window {
-        .__winbox_container {
-            button.__winbox_window.__winbox_button {
-                user-select: none;
-                background: lightgray;
-                color: black;
-                border: 0.0625rem solid black;
-                border-radius: 0.19rem;
-                outline: none;
+  .__winbox_window {
+    .__winbox_container {
+      button.__winbox_window.__winbox_button {
+        user-select: none;
+        background: lightgray;
+        color: black;
+        border: 0.0625rem solid black;
+        border-radius: 0.19rem;
+        outline: none;
 
-                &::before {
-                    content: '';
-                    position: absolute;
-                    inset: 0;
-                    border: 0.125rem solid white;
-                    border-right: 0.125rem solid gray;
-                    border-bottom: 0.125rem solid gray;
-                }
-
-                &::after {
-                    content: '';
-                    position: absolute;
-                    inset: 0;
-                }
-
-                &:focus {
-                    &::after {
-                        border: 0.0625rem solid black;
-                        outline: none;
-                    }
-
-                    &::before {
-                        border: 0.1875rem solid white;
-                        border-right: 0.1875rem solid gray;
-                        border-bottom: 0.1875rem solid gray;
-                    }
-                }
-
-                &.__winbox_button_active {
-                    padding-top: 0.125rem;
-                    padding-left: 0.125rem;
-                    outline: none;
-
-                    &::before {
-                        border: 0.125rem solid gray;
-                        border-right: none;
-                        border-bottom: none;
-                    }
-
-                    &::after {
-                        border: 0.0625rem solid black;
-                        outline: none;
-                    }
-                }
-            }
+        &::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border: 0.125rem solid white;
+          border-right: 0.125rem solid gray;
+          border-bottom: 0.125rem solid gray;
         }
+
+        &::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+        }
+
+        &:focus {
+          &::after {
+            border: 0.0625rem solid black;
+            outline: none;
+          }
+
+          &::before {
+            border: 0.1875rem solid white;
+            border-right: 0.1875rem solid gray;
+            border-bottom: 0.1875rem solid gray;
+          }
+        }
+
+        &.__winbox_button_active {
+          padding-top: 0.125rem;
+          padding-left: 0.125rem;
+          outline: none;
+
+          &::before {
+            border: 0.125rem solid gray;
+            border-right: none;
+            border-bottom: none;
+          }
+
+          &::after {
+            border: 0.0625rem solid black;
+            outline: none;
+          }
+        }
+      }
     }
+  }
 }

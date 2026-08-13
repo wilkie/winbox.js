@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -26,6 +26,6 @@ import { NULL } from '../consts.js';
  *                         error occurs.
  */
 export function GetFreeSpace(fuFlags) {
-    // Resolve global memory pointer
-    return 0x1000000;
+  // Resolve global memory pointer
+  return 0x1000000;
 }

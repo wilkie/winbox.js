@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { Gdi } from '../gdi.js';
 
@@ -35,20 +35,20 @@ import { Color } from '../../raster/color.js';
  *                          return value is `0x80000000` if an error occurs.
  */
 export function SetBkColor(hdc, clrref) {
-    console.log("SetBkColor", hdc, clrref);
+  console.log('SetBkColor', hdc, clrref);
 
-    // Resolve the destination DC handle
-    const surface = this.handles.resolve(hdc);
+  // Resolve the destination DC handle
+  const surface = this.handles.resolve(hdc);
 
-    // Bail if we cannot find the destination DC
-    if (!surface) {
-        return 0x80000000;
-    }
+  // Bail if we cannot find the destination DC
+  if (!surface) {
+    return 0x80000000;
+  }
 
-    const components = Color.colorToBgr(clrref);
-    const old = surface.backcolor;
-    const color = new Color(components.r, components.g, components.b);
-    surface.backcolor = color;
-    // TODO: This is wrong... it needs to be in A8B8G8R8 format.
-    return old.value;
+  const components = Color.colorToBgr(clrref);
+  const old = surface.backcolor;
+  const color = new Color(components.r, components.g, components.b);
+  surface.backcolor = color;
+  // TODO: This is wrong... it needs to be in A8B8G8R8 format.
+  return old.value;
 }

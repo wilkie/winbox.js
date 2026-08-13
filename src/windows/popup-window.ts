@@ -1,6 +1,6 @@
-"use strict";
+'use strict';
 
-import { Window } from "../window.js";
+import { Window } from '../window.js';
 
 /**
  * A PopupWindow is a window that is a child of another but painted on the
@@ -13,72 +13,72 @@ import { Window } from "../window.js";
  * normal parent for consideration of focus and ownership.
  */
 export class PopupWindow extends Window {
-    declare _popupLoaded: any;
-    constructor(options = {}) {
-        super(options);
-    }
+  declare _popupLoaded: any;
+  constructor(options = {}) {
+    super(options);
+  }
 
-    initialize() {
-        super.initialize();
+  initialize() {
+    super.initialize();
 
-        this.element.classList.add("__winbox_window_popup");
+    this.element.classList.add('__winbox_window_popup');
 
-        this._popupLoaded = false;
-        this.on("load", (event) => {
-            if (!this._popupLoaded) {
-                // Do not repeat
-                this._popupLoaded = true;
+    this._popupLoaded = false;
+    this.on('load', (event) => {
+      if (!this._popupLoaded) {
+        // Do not repeat
+        this._popupLoaded = true;
 
-                // Add this to the top-level root
-                this.root.append(this, false, true);
+        // Add this to the top-level root
+        this.root.append(this, false, true);
 
-                // Find the parent window? Somehow?
-                let current = this.parent;
-                while (current && !current.movable) {
-                    current = current.parent;
+        // Find the parent window? Somehow?
+        let current = this.parent;
+        while (current && !current.movable) {
+          current = current.parent;
+        }
+
+        if (current) {
+          current.on('client-mousedown', (event) => {
+            if (this.focused) {
+              console.log('mousedown AH');
+              console.log(event.target);
+              if (event.target) {
+                if (event.target.window !== this.parent) {
+                  console.log('blurring', this.parent, event.target.window);
+                  this.trigger('blur', event);
                 }
-
-                if (current) {
-                    current.on("client-mousedown", (event) => {
-                        if (this.focused) {
-                            console.log("mousedown AH");
-                            console.log(event.target);
-                            if (event.target) {
-                                if (event.target.window !== this.parent) {
-                                    console.log("blurring", this.parent, event.target.window);
-                                    this.trigger("blur", event);
-                                }
-                            }
-                        }
-                    });
-
-                    current.on("nonclient-mousedown", (event) => {
-                        if (this.focused) {
-                            console.log("nonclient-mousedown AH");
-                            console.log(event.target);
-                            if (event.target) {
-                                if (event.target.window !== this.parent) {
-                                    console.log("blurring", this.parent, event.target.window);
-                                    this.trigger("blur", event);
-                                }
-                            }
-                        }
-                    });
-                }
+              }
             }
-        });
+          });
 
-        this.on("unload", () => {
-            this._popupLoaded = false;
-        });
+          current.on('nonclient-mousedown', (event) => {
+            if (this.focused) {
+              console.log('nonclient-mousedown AH');
+              console.log(event.target);
+              if (event.target) {
+                if (event.target.window !== this.parent) {
+                  console.log('blurring', this.parent, event.target.window);
+                  this.trigger('blur', event);
+                }
+              }
+            }
+          });
+        }
+      }
+    });
 
-        this.on("focus", () => {
-            // Bring ourselves to the top, please
-            if (this.parent) {
-                this.parent.reorder(this, Window.Order.Top);
-            } 
-        });
-    }
+    this.on('unload', () => {
+      this._popupLoaded = false;
+    });
+
+    this.on('focus', () => {
+      // Bring ourselves to the top, please
+      if (this.parent) {
+        this.parent.reorder(this, Window.Order.Top);
+      }
+    });
+  }
 }
 
 export default PopupWindow;

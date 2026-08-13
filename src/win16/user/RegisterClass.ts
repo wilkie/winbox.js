@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { TRUE } from '../consts.js';
 
@@ -40,23 +40,23 @@ import { LoadMenu } from './LoadMenu.js';
  *                      successful or zero if an error occurs.
  */
 export async function RegisterClass(lpwc) {
-    // Get the menu, if provided
-    let menuHandle = null;
-    if (lpwc.lpszMenuName) {
-        console.log("LOADING MENU BY NAME");
-        menuHandle = await LoadMenu.bind(this)(lpwc.hInstance, lpwc.lpszMenuName);
-    }
+  // Get the menu, if provided
+  let menuHandle = null;
+  if (lpwc.lpszMenuName) {
+    console.log('LOADING MENU BY NAME');
+    menuHandle = await LoadMenu.bind(this)(lpwc.hInstance, lpwc.lpszMenuName);
+  }
 
-    // Create an ATOM for the class
-    lpwc._menuHandle = menuHandle;
-    const handle = this.handles.allocate(lpwc);
-    if (handle) {
-        // Register a name for the ATOM
-        this.handles.register(handle, lpwc.lpszClassName);
-    }
+  // Create an ATOM for the class
+  lpwc._menuHandle = menuHandle;
+  const handle = this.handles.allocate(lpwc);
+  if (handle) {
+    // Register a name for the ATOM
+    this.handles.register(handle, lpwc.lpszClassName);
+  }
 
-    console.log("returning", handle);
+  console.log('returning', handle);
 
-    // Return the ATOM handle
-    return handle;
+  // Return the ATOM handle
+  return handle;
 }

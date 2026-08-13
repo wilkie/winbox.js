@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { Gdi } from '../gdi.js';
 
@@ -34,22 +34,22 @@ import { Color } from '../../raster/color.js';
  *                          text color, if the function is successful.
  */
 export function SetTextColor(hdc, color) {
-    console.log("SetTextColor", hdc, color);
+  console.log('SetTextColor', hdc, color);
 
-    // Resolve the destination DC handle
-    const surface = this.handles.resolve(hdc);
+  // Resolve the destination DC handle
+  const surface = this.handles.resolve(hdc);
 
-    // Bail if we cannot find the destination DC
-    if (!surface) {
-        // TODO: check if this is the proper error code?
-        // This is from SetBkColor... so this is known as an error RGB value.
-        return 0x80000000;
-    }
+  // Bail if we cannot find the destination DC
+  if (!surface) {
+    // TODO: check if this is the proper error code?
+    // This is from SetBkColor... so this is known as an error RGB value.
+    return 0x80000000;
+  }
 
-    const components = Color.colorToBgr(color);
-    const old = surface.forecolor;
-    const realized = new Color(components.r, components.g, components.b);
-    surface.forecolor = realized;
-    // TODO: This is wrong... it needs to be in A8B8G8R8 format.
-    return old.value;
+  const components = Color.colorToBgr(color);
+  const old = surface.forecolor;
+  const realized = new Color(components.r, components.g, components.b);
+  surface.forecolor = realized;
+  // TODO: This is wrong... it needs to be in A8B8G8R8 format.
+  return old.value;
 }

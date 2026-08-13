@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **GetTextExtent** function computes the width and height of a line of
@@ -29,12 +29,12 @@
  *                       height.
  */
 export function GetTextExtent(hdc, lpszString, cbString) {
-    // Get the surface instance
-    const surface = this.handles.resolve(hdc);
+  // Get the surface instance
+  const surface = this.handles.resolve(hdc);
 
-    // Draw the text
-    const metrics = surface.measureText(lpszString.slice(0, cbString));
+  // Draw the text
+  const metrics = surface.measureText(lpszString.slice(0, cbString));
 
-    // Return the DWORD consisting of the dimensions
-    return (metrics.width & 0xffff) | ((metrics.height & 0xffff) << 16);
+  // Return the DWORD consisting of the dimensions
+  return (metrics.width & 0xffff) | ((metrics.height & 0xffff) << 16);
 }

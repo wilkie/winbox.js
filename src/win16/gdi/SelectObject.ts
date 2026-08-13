@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { TRUE, NULL } from '../consts.js';
 
@@ -79,44 +79,39 @@ import { TRUE, NULL } from '../consts.js';
  *                         context.
  */
 export function SelectObject(hdc, hgdiobj) {
-    // Gather the surface we are 'emulating'
-    let surface = null;
-    if (hdc == NULL) {
-        // The screen device
-        //surface = this._desktop.surface;
-        return NULL;
-    }
-    else {
-        surface = this.handles.resolve(hdc);
-    }
+  // Gather the surface we are 'emulating'
+  let surface = null;
+  if (hdc == NULL) {
+    // The screen device
+    //surface = this._desktop.surface;
+    return NULL;
+  } else {
+    surface = this.handles.resolve(hdc);
+  }
 
-    if (!surface) {
-        return NULL;
-    }
+  if (!surface) {
+    return NULL;
+  }
 
-    // Resolve the provided handle
-    const item = this.handles.resolve(hgdiobj);
-    let ret = NULL;
+  // Resolve the provided handle
+  const item = this.handles.resolve(hgdiobj);
+  let ret = NULL;
 
-    if (this.handles.isBitmap(item)) {
-        ret = this.handles.lookup(surface.bitmap) || TRUE;
-        surface.bitmap = item;
-    }
-    else if (this.handles.isPen(item)) {
-        ret = this.handles.lookup(surface.pen) || TRUE;
-        surface.pen = item;
-    }
-    else if (this.handles.isFont(item)) {
-        ret = this.handles.lookup(surface.font) || TRUE;
-        surface.font = item;
-    }
-    else if (this.handles.isBrush(item)) {
-        ret = this.handles.lookup(surface.brush) || TRUE;
-        surface.brush = item;
-    }
-    else {
-        console.log("SelectObject: unknown or invalid object handle");
-    }
+  if (this.handles.isBitmap(item)) {
+    ret = this.handles.lookup(surface.bitmap) || TRUE;
+    surface.bitmap = item;
+  } else if (this.handles.isPen(item)) {
+    ret = this.handles.lookup(surface.pen) || TRUE;
+    surface.pen = item;
+  } else if (this.handles.isFont(item)) {
+    ret = this.handles.lookup(surface.font) || TRUE;
+    surface.font = item;
+  } else if (this.handles.isBrush(item)) {
+    ret = this.handles.lookup(surface.brush) || TRUE;
+    surface.brush = item;
+  } else {
+    console.log('SelectObject: unknown or invalid object handle');
+  }
 
-    return ret;
+  return ret;
 }

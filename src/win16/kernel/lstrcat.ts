@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **lstrcat** function appends one string to another.
@@ -24,42 +24,45 @@
  *                         function is successful.
  */
 export function lstrcat(lpszString1, lpszString2) {
-    const cpu = this.machine.cpu.core;
+  const cpu = this.machine.cpu.core;
 
-    // TODO: how does a DBCS string work
+  // TODO: how does a DBCS string work
 
-    const destSegment = (lpszString1 >> 16) & 0xffff;
-    let destOffset = lpszString1 & 0xffff;
+  const destSegment = (lpszString1 >> 16) & 0xffff;
+  let destOffset = lpszString1 & 0xffff;
 
-    const srcSegment = (lpszString2 >> 16) & 0xffff;
-    let srcOffset = lpszString2 & 0xffff;
+  const srcSegment = (lpszString2 >> 16) & 0xffff;
+  let srcOffset = lpszString2 & 0xffff;
 
-    console.log("lstrcat", this.machine.memory.readCString(cpu.translateAddress(destSegment, destOffset)),
-        this.machine.memory.readCString(cpu.translateAddress(srcSegment, srcOffset)));
+  console.log(
+    'lstrcat',
+    this.machine.memory.readCString(cpu.translateAddress(destSegment, destOffset)),
+    this.machine.memory.readCString(cpu.translateAddress(srcSegment, srcOffset))
+  );
 
-    // Go through the dest memory until we hit a null terminator
-    let data = null;
-    let count = 0;
-    do {
-        data = cpu.read8(destSegment, destOffset);
-        destOffset++;
-        count++;
-    } while (data && count <= 0xffff)
+  // Go through the dest memory until we hit a null terminator
+  let data = null;
+  let count = 0;
+  do {
+    data = cpu.read8(destSegment, destOffset);
+    destOffset++;
+    count++;
+  } while (data && count <= 0xffff);
 
-    // Return to the null-terminator in dest
-    destOffset--;
+  // Return to the null-terminator in dest
+  destOffset--;
 
-    // Go through the src memory until we hit a null terminator
-    // Copying every byte to the destination as we go.
-    data = null;
-    count = 0;
-    do {
-        data = cpu.read8(srcSegment, srcOffset);
-        cpu.write8(destSegment, destOffset, data);
-        srcOffset++;
-        destOffset++;
-        count++;
-    } while (data && count <= 0xffff)
+  // Go through the src memory until we hit a null terminator
+  // Copying every byte to the destination as we go.
+  data = null;
+  count = 0;
+  do {
+    data = cpu.read8(srcSegment, srcOffset);
+    cpu.write8(destSegment, destOffset, data);
+    srcOffset++;
+    destOffset++;
+    count++;
+  } while (data && count <= 0xffff);
 
-    return lpszString1;
+  return lpszString1;
 }

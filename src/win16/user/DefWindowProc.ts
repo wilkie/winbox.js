@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -31,43 +31,54 @@ import { CreateWindow } from './CreateWindow.js';
  *                         processing and depends on the message sent.
  */
 export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
-    const dialog = this.handles.resolve(hwnd);
+  const dialog = this.handles.resolve(hwnd);
 
-    if (!dialog) {
-        return 0;
-    }
-
-    const windowClass = this.handles.retrieve(dialog.options.windowClass);
-    if (windowClass.lpszClassName.toUpperCase() === "MDICLIENT") {
-        // This is an MDI client
-        switch (uMsg) {
-            case User.WM_MDICREATE:
-
-                const hi = (lParam >> 16) & 0xffff;
-                const lo = lParam & 0xffff;
-                const struct = new MDICREATESTRUCT();
-                struct.loadFromMemory(this.machine.memory, hi >> 3, lo);
-
-                // Create the window and return the new hWnd
-                return await CreateWindow.bind(this)(struct.szClass, struct.szTitle, struct.style, struct.x, struct.y, struct.cx, struct.cy, hwnd, NULL, struct.hOwner, struct.lParam);
-        }
-    }
-
-    // Perform default actions
-    switch(uMsg) {
-        case User.WM_ERASEBKGND:
-            // Paint the update region with the window class' brush
-            const brush = this.handles.resolve(windowClass.hbrBackground);
-            if (brush) {
-                // TODO: only affect update region
-                const surface = dialog.surface;
-                const old = surface.brush;
-                surface.brush = brush;
-                surface.fillRect(0, 0, dialog.innerWidth, dialog.innerHeight);
-                surface.brush = old;
-            }
-            return 0;
-    }
-
+  if (!dialog) {
     return 0;
+  }
+
+  const windowClass = this.handles.retrieve(dialog.options.windowClass);
+  if (windowClass.lpszClassName.toUpperCase() === 'MDICLIENT') {
+    // This is an MDI client
+    switch (uMsg) {
+      case User.WM_MDICREATE:
+        const hi = (lParam >> 16) & 0xffff;
+        const lo = lParam & 0xffff;
+        const struct = new MDICREATESTRUCT();
+        struct.loadFromMemory(this.machine.memory, hi >> 3, lo);
+
+        // Create the window and return the new hWnd
+        return await CreateWindow.bind(this)(
+          struct.szClass,
+          struct.szTitle,
+          struct.style,
+          struct.x,
+          struct.y,
+          struct.cx,
+          struct.cy,
+          hwnd,
+          NULL,
+          struct.hOwner,
+          struct.lParam
+        );
+    }
+  }
+
+  // Perform default actions
+  switch (uMsg) {
+    case User.WM_ERASEBKGND:
+      // Paint the update region with the window class' brush
+      const brush = this.handles.resolve(windowClass.hbrBackground);
+      if (brush) {
+        // TODO: only affect update region
+        const surface = dialog.surface;
+        const old = surface.brush;
+        surface.brush = brush;
+        surface.fillRect(0, 0, dialog.innerWidth, dialog.innerHeight);
+        surface.brush = old;
+      }
+      return 0;
+  }
+
+  return 0;
 }

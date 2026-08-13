@@ -29,4 +29,8 @@ const button = new Button({ caption: 'OK' });
 window_.append(button);
 
 /* Handy for prodding the emulator from the browser console. */
-Object.assign(globalThis as Record<string, unknown>, { space, demoWindow: window_, demoButton: button });
+Object.assign(globalThis as Record<string, unknown>, {
+  space,
+  demoWindow: window_,
+  demoButton: button,
+});

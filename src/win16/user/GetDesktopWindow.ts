@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **GetDesktopWindow** function retrieves the handle of the desktop window.
@@ -12,5 +12,5 @@
  * @returns {Types.HWND} The return value is a handle of the desktop window.
  */
 export function GetDesktopWindow() {
-    return this._desktop.window.data.hwnd;
+  return this._desktop.window.data.hwnd;
 }

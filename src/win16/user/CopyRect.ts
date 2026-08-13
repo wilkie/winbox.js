@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **CopyRect** function copies the dimensions of one rectangle to another.
@@ -19,8 +19,8 @@
  *                               are to be copied.
  */
 export function CopyRect(lprcDst, lprcSrc) {
-    lprcDst.left = lprcSrc.left;
-    lprcDst.top = lprcSrc.top;
-    lprcDst.bottom = lprcSrc.bottom;
-    lprcDst.right = lprcSrc.right;
+  lprcDst.left = lprcSrc.left;
+  lprcDst.top = lprcSrc.top;
+  lprcDst.bottom = lprcSrc.bottom;
+  lprcDst.right = lprcSrc.right;
 }

@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -32,7 +32,7 @@ import { Kernel } from '../kernel.js';
  *                        memory configuration.
  */
 export function GetWinFlags() {
-    // TODO: add a coprocessor when we can
-    // TODO: negotiate using the machine cpu instance
-    return Kernel.WF_PMODE | Kernel.WF_WIN386 | Kernel.WF_CPU386;
+  // TODO: add a coprocessor when we can
+  // TODO: negotiate using the machine cpu instance
+  return Kernel.WF_PMODE | Kernel.WF_WIN386 | Kernel.WF_CPU386;
 }

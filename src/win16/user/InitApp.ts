@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { TRUE } from '../consts.js';
 
@@ -16,5 +16,5 @@ import { TRUE } from '../consts.js';
  * @returns {Types.BOOL} Returns TRUE on success.
  */
 export function InitApp(hInstance) {
-    return TRUE;
+  return TRUE;
 }

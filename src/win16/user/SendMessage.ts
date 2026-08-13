@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { TRUE, FALSE, NULL } from '../consts.js';
 
@@ -7,7 +7,7 @@ import { BOOL, LRESULT } from '../types.js';
 import { User, MSG } from '../user.js';
 
 /**
- * The **SendMessage** function 
+ * The **SendMessage** function
  *
  * **See also**:
  * {@link User.PostMessage PostMessage}
@@ -30,18 +30,18 @@ import { User, MSG } from '../user.js';
  *                      processing and depends on the message sent.
  */
 export async function SendMessage(hwnd, uMsg, wParam, lParam) {
-    // Get the window itself
-    const dialog = this.handles.resolve(hwnd);
-    console.log(dialog, dialog.options);
+  // Get the window itself
+  const dialog = this.handles.resolve(hwnd);
+  console.log(dialog, dialog.options);
 
-    // Get the window/class for the handle
-    const windowClass = this.handles.retrieve(dialog.options.windowClass);
+  // Get the window/class for the handle
+  const windowClass = this.handles.retrieve(dialog.options.windowClass);
 
-    // Send the message
-    // TODO: handle result?
-    console.log("sendmessage to:", windowClass);
-    const result = await this.scheduler.callWndProc(windowClass, hwnd, uMsg, wParam, lParam);
+  // Send the message
+  // TODO: handle result?
+  console.log('sendmessage to:', windowClass);
+  const result = await this.scheduler.callWndProc(windowClass, hwnd, uMsg, wParam, lParam);
 
-    console.log("sendmessage done", result.toString(16));
-    return result;
+  console.log('sendmessage done', result.toString(16));
+  return result;
 }

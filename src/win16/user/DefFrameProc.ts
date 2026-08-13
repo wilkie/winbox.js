@@ -1,2 +1,1 @@
-export function DefFrameProc(hwnd, hwndMDIClient, uMsg, wParam, lParam) {
-}
+export function DefFrameProc(hwnd, hwndMDIClient, uMsg, wParam, lParam) {}

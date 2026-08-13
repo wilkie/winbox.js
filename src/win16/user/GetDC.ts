@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -41,22 +41,21 @@ import { NULL } from '../consts.js';
  *                      successful. Otherwise, it is `NULL`.
  */
 export function GetDC(hwnd) {
-    let dc = 1;
-    if (hwnd == NULL) {
-        // Gets the desktop context
-    }
-    else {
-        // Get the window
-        const dialog = this.handles.resolve(hwnd);
+  let dc = 1;
+  if (hwnd == NULL) {
+    // Gets the desktop context
+  } else {
+    // Get the window
+    const dialog = this.handles.resolve(hwnd);
 
-        // Get the surface
-        const surface = dialog.surface;
+    // Get the surface
+    const surface = dialog.surface;
 
-        // Allocate a DC
-        dc = this.handles.allocate(surface);
+    // Allocate a DC
+    dc = this.handles.allocate(surface);
 
-        //console.log("GetDC", dialog, surface, dc);
-    }
+    //console.log("GetDC", dialog, surface, dc);
+  }
 
-    return dc;
+  return dc;
 }

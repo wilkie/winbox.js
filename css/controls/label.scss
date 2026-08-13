@@ -1,17 +1,17 @@
 .winbox {
-    .__winbox_window {
-        .__winbox_container {
-            span.__winbox_window.__winbox_label {
-                user-select: none;
+  .__winbox_window {
+    .__winbox_container {
+      span.__winbox_window.__winbox_label {
+        user-select: none;
 
-                > span {
-                    > img {
-                        image-rendering: pixelated;
-                        pointer-events: none;
-                        user-select: none;
-                    }
-                }
-            }
+        > span {
+          > img {
+            image-rendering: pixelated;
+            pointer-events: none;
+            user-select: none;
+          }
         }
+      }
     }
+  }
 }

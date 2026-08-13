@@ -6,5 +6,5 @@
  *                      the system.
  */
 export function waveOutGetNumDevs() {
-    return 1;
+  return 1;
 }

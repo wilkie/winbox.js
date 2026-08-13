@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **GetBitmapBits** function copies the bits of the specified bitmap into a
@@ -29,27 +29,27 @@
  *                      there is an error.
  */
 export function GetBitmapBits(hbm, cbBuffer, lpvBits) {
-    const memory = this.machine.memory;
-    const item = this.handles.resolve(hbm);
+  const memory = this.machine.memory;
+  const item = this.handles.resolve(hbm);
 
-    if (!item) {
-        return 0;
-    }
+  if (!item) {
+    return 0;
+  }
 
-    const destSegment = ((lpvBits >> 16) & 0xffff) >> 3;
-    const destOffset = lpvBits & 0xffff;
+  const destSegment = ((lpvBits >> 16) & 0xffff) >> 3;
+  const destOffset = lpvBits & 0xffff;
 
-    let bpRow = item.bpp * item.width;
-    bpRow = (bpRow + (8 - 1)) & ~(8 - 1);
-    const widthBytes = ((bpRow >> 3) + (4 - 1)) & ~(4 - 1);
+  let bpRow = item.bpp * item.width;
+  bpRow = (bpRow + (8 - 1)) & ~(8 - 1);
+  const widthBytes = ((bpRow >> 3) + (4 - 1)) & ~(4 - 1);
 
-    const copied = 0;
-    const size = Math.min(widthBytes * item.height, cbBuffer);
+  const copied = 0;
+  const size = Math.min(widthBytes * item.height, cbBuffer);
 
-    // Copy the bitmap to the specified array.
-    for (let i = 0; i < size; i++) {
-        memory.write8(destSegment, destOffset, item.view.getUint8(i));
-    }
+  // Copy the bitmap to the specified array.
+  for (let i = 0; i < size; i++) {
+    memory.write8(destSegment, destOffset, item.view.getUint8(i));
+  }
 
-    return size;
+  return size;
 }

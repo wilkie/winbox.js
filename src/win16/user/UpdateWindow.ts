@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **UpdateWindow** function updates the client area of the given window by
@@ -21,5 +21,5 @@
  * @param {Types.HWND} hwnd - Identifies the window to be updated.
  */
 export function UpdateWindow(hwnd) {
-    // TODO: implement
+  // TODO: implement
 }

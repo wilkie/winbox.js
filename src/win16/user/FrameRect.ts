@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { HWND, WPARAM, LPARAM, UINT } from '../types.js';
 
@@ -31,15 +31,15 @@ import { User } from '../user.js';
  * @return {Types.INT} The return value is not used and has no meaning.
  */
 export function FrameRect(hdc, lprc, hbr) {
-    const brush = this.handles.resolve(hbr);
-    const surface = this.handles.resolve(hdc);
+  const brush = this.handles.resolve(hbr);
+  const surface = this.handles.resolve(hdc);
 
-    // Stroke a rect in that surface
-    surface.pen = brush;
-    const width = lprc.right - lprc.left;
-    const height = lprc.bottom - lprc.top;
-    surface.strokeRect(lprc.left, lprc.top, width - 1, height - 1);
+  // Stroke a rect in that surface
+  surface.pen = brush;
+  const width = lprc.right - lprc.left;
+  const height = lprc.bottom - lprc.top;
+  surface.strokeRect(lprc.left, lprc.top, width - 1, height - 1);
 
-    // Return the... uh... meaningless value.
-    return 0;
+  // Return the... uh... meaningless value.
+  return 0;
 }

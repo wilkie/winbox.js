@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { TRUE, FALSE } from '../consts.js';
 
@@ -26,25 +26,25 @@ import { TRUE, FALSE } from '../consts.js';
  *                        the logical y-coordinate.
  */
 export function LineTo(hdc, x, y) {
-    const surface = this.handles.resolve(hdc);
-    console.log("LineTo", x, y);
+  const surface = this.handles.resolve(hdc);
+  console.log('LineTo', x, y);
 
-    // Determine if the HDC is valid; bail if not
-    if (!surface) {
-        return FALSE;
-    }
+  // Determine if the HDC is valid; bail if not
+  if (!surface) {
+    return FALSE;
+  }
 
-    // Get the current coordinate
-    const startX = surface.data.x || 0;
-    const startY = surface.data.y || 0;
+  // Get the current coordinate
+  const startX = surface.data.x || 0;
+  const startY = surface.data.y || 0;
 
-    // Set the new coordinate
-    surface.data.x = x;
-    surface.data.y = y;
+  // Set the new coordinate
+  surface.data.x = x;
+  surface.data.y = y;
 
-    // Draw the line
-    surface.drawLine(startX, startY, x, y);
+  // Draw the line
+  surface.drawLine(startX, startY, x, y);
 
-    // Return success
-    return TRUE;
+  // Return success
+  return TRUE;
 }

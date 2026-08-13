@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -21,29 +21,29 @@ import { Menu } from '../../controls/menu.js';
  *                        child window.
  */
 export function GetMenu(hwnd) {
-    if (hwnd == NULL) {
-        // Gets the desktop context
-        return NULL;
+  if (hwnd == NULL) {
+    // Gets the desktop context
+    return NULL;
+  }
+
+  // Get the window
+  const dialog = this.handles.resolve(hwnd);
+
+  // Get the menu
+  let menu = null;
+  dialog.items.forEach((item) => {
+    if (item instanceof Menu) {
+      menu = item;
     }
+  });
 
-    // Get the window
-    const dialog = this.handles.resolve(hwnd);
+  if (!menu) {
+    return NULL;
+  }
 
-    // Get the menu
-    let menu = null;
-    dialog.items.forEach( (item) => {
-        if (item instanceof Menu) {
-            menu = item;
-        }
-    });
+  // Allocate an HMENU handle
+  const ret = this.handles.allocate(menu);
 
-    if (!menu) {
-        return NULL;
-    }
-
-    // Allocate an HMENU handle
-    const ret = this.handles.allocate(menu);
-
-    console.log("GetMenu", dialog, menu, ret);
-    return ret;
+  console.log('GetMenu', dialog, menu, ret);
+  return ret;
 }

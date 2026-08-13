@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **GetClientRect** function retrieves the client coordinates of a window's
@@ -25,7 +25,7 @@
  *                            window.
  */
 export function GetWindowWord(hwnd, nOffset) {
-    const dialog = this.handles.resolve(hwnd);
+  const dialog = this.handles.resolve(hwnd);
 
-    return dialog._createStruct.hInstance;
+  return dialog._createStruct.hInstance;
 }

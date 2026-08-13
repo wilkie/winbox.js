@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **LockSegment** function locks the specified discardable segment. The
@@ -37,9 +37,9 @@
  *                          has been discarded or an error occurs.
  */
 export function LockSegment(uSegment) {
-    if (uSegment == 0xffff) {
-        uSegment = -1;
-    }
+  if (uSegment == 0xffff) {
+    uSegment = -1;
+  }
 
-    return uSegment;
+  return uSegment;
 }

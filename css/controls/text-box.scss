@@ -1,70 +1,70 @@
 .winbox {
-    .__winbox_window {
-        .__winbox_container {
-            .__winbox_window.__winbox_text-box {
-                > input {
-                    position: absolute;
-                    inset: 0;
-                    width: 100%;
-                    height: 100%;
-                    border: none;
-                    outline: none;
-                    box-sizing: border-box;
-                }
-
-                > span {
-                    cursor: text;
-                    pointer-events: none;
-                    position: absolute;
-                    inset: 0;
-                    width: 100%;
-                    height: 100%;
-
-                    > img {
-                        pointer-events: none;
-                        user-select: none;
-                    }
-                }
-
-                > .__winbox_text-box_caret {
-                    display: none;
-                    position: absolute;
-                    left: 0;
-                    top: 0;
-                    height: 0;
-                    width: 0.0625rem;
-                    background-color: black;
-
-                    &.__winbox_text-box_caret_idle {
-                        @keyframes idle-blink {
-                            0% {
-                                opacity: 1.0;
-                            }
-
-                            49% {
-                                opacity: 1.0;
-                            }
-
-                            51% {
-                                opacity: 0.0;
-                            }
-
-                            100% {
-                                opacity: 0.0;
-                            }
-                        }
-
-                        opacity: 0.0;
-                        animation: 1s idle-blink infinite steps(2);
-                    }
-                }
-
-                &.__winbox_focused {
-                    > .__winbox_text-box_caret {
-                        display: block;
-                    }
-                }
-            }
+  .__winbox_window {
+    .__winbox_container {
+      .__winbox_window.__winbox_text-box {
+        > input {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          border: none;
+          outline: none;
+          box-sizing: border-box;
         }
+
+        > span {
+          cursor: text;
+          pointer-events: none;
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+
+          > img {
+            pointer-events: none;
+            user-select: none;
+          }
+        }
+
+        > .__winbox_text-box_caret {
+          display: none;
+          position: absolute;
+          left: 0;
+          top: 0;
+          height: 0;
+          width: 0.0625rem;
+          background-color: black;
+
+          &.__winbox_text-box_caret_idle {
+            @keyframes idle-blink {
+              0% {
+                opacity: 1;
+              }
+
+              49% {
+                opacity: 1;
+              }
+
+              51% {
+                opacity: 0;
+              }
+
+              100% {
+                opacity: 0;
+              }
+            }
+
+            opacity: 0;
+            animation: 1s idle-blink infinite steps(2);
+          }
+        }
+
+        &.__winbox_focused {
+          > .__winbox_text-box_caret {
+            display: block;
+          }
+        }
+      }
     }
+  }
 }

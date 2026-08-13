@@ -57,6 +57,11 @@
  *                returns an error number. Possible error returns are specified
  *                in the description.
  */
-export function waveOutOpen(lphWaveOut, wDeviceID, lpFormat, dwCallback,
-                            dwCallbackInstance, dwFlags) {
-}
+export function waveOutOpen(
+  lphWaveOut,
+  wDeviceID,
+  lpFormat,
+  dwCallback,
+  dwCallbackInstance,
+  dwFlags
+) {}

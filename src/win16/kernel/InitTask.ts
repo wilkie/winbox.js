@@ -41,5 +41,5 @@
  *                   to indicate an error.
  */
 export function InitTask() {
-    return this.initTask();
+  return this.initTask();
 }

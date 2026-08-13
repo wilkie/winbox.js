@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **SetBitmapBits** function sets the bits of the given bitmap to the
@@ -22,27 +22,27 @@
  *                      Otherwise the return value is zero.
  */
 export function SetBitmapBits(hbmp, cbBuffer, lpvBits) {
-    const cpu = this.machine.cpu.core;
-    const item = this.handles.resolve(hbmp);
+  const cpu = this.machine.cpu.core;
+  const item = this.handles.resolve(hbmp);
 
-    if (!item) {
-        return 0;
-    }
+  if (!item) {
+    return 0;
+  }
 
-    const srcSegment = (lpvBits >> 16) & 0xffff;
-    const srcOffset = lpvBits & 0xffff;
+  const srcSegment = (lpvBits >> 16) & 0xffff;
+  const srcOffset = lpvBits & 0xffff;
 
-    let bpRow = item.bpp * item.width;
-    bpRow = (bpRow + (8 - 1)) & ~(8 - 1);
-    const widthBytes = ((bpRow >> 3) + (4 - 1)) & ~(4 - 1);
+  let bpRow = item.bpp * item.width;
+  bpRow = (bpRow + (8 - 1)) & ~(8 - 1);
+  const widthBytes = ((bpRow >> 3) + (4 - 1)) & ~(4 - 1);
 
-    const copied = 0;
-    const size = Math.min(widthBytes * item.height, cbBuffer);
+  const copied = 0;
+  const size = Math.min(widthBytes * item.height, cbBuffer);
 
-    // Copy the bitmap to the bitmap's data view.
-    for (let i = 0; i < size; i++) {
-        item.view.setUint8(i, cpu.read8(srcSegment, srcOffset));
-    }
+  // Copy the bitmap to the bitmap's data view.
+  for (let i = 0; i < size; i++) {
+    item.view.setUint8(i, cpu.read8(srcSegment, srcOffset));
+  }
 
-    return size;
+  return size;
 }

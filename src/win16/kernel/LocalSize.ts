@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **LocalSize** function returns the current size, in bytes, of the given
@@ -27,5 +27,5 @@
  *                       discarded.
  */
 export function LocalSize(hloc) {
-    console.log("LocalSize:", hloc);
+  console.log('LocalSize:', hloc);
 }

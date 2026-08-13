@@ -1,7 +1,7 @@
 /**
  * The **SetRect** function sets rectangle coordinates. The action of this
  * function is equivalent to assigning the left, top, right, and bottom
- * arguments to the appropriate members of the RECT structure. 
+ * arguments to the appropriate members of the RECT structure.
  *
  * The width of the rectangle, specified by the absolute value of
  * `nRight - nLeft`, must not exceed 32,767 units. This limit also applies to
@@ -29,8 +29,8 @@
  *                              corner.
  */
 export function SetRect(lprc, nLeft, nTop, nRight, nBottom) {
-    lprc.left = nLeft;
-    lprc.top = nTop;
-    lprc.bottom = nBottom;
-    lprc.right = nRight;
+  lprc.left = nLeft;
+  lprc.top = nTop;
+  lprc.bottom = nBottom;
+  lprc.right = nRight;
 }

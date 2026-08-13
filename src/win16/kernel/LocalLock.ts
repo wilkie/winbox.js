@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **LocalLock** function retrieves a pointer to the given local memory
@@ -38,5 +38,5 @@
  *                          error occurs.
  */
 export function LocalLock(hloc) {
-    console.log("LocalLock:", hloc);
+  console.log('LocalLock:', hloc);
 }

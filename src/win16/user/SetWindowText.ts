@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 /**
  * The **SetWindowText** function sets the given window's title to the specified
@@ -25,12 +25,12 @@
  *                              the new title or control text.
  */
 export function SetWindowText(hwnd, lpsz) {
-    console.log("SetWindowText", hwnd, lpsz);
+  console.log('SetWindowText', hwnd, lpsz);
 
-    // Get window
-    const dialog = this.handles.resolve(hwnd);
+  // Get window
+  const dialog = this.handles.resolve(hwnd);
 
-    const options = dialog.options;
-    options.caption = lpsz;
-    dialog.options = options;
+  const options = dialog.options;
+  options.caption = lpsz;
+  dialog.options = options;
 }

@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL, TRUE, FALSE } from '../consts.js';
 
@@ -68,25 +68,24 @@ import { NULL, TRUE, FALSE } from '../consts.js';
  * @returns {Types.BOOL} The return value is nonzero if the function is
  *                       successful. Otherwise it is zero.
  */
-export function WritePrivateProfileString(lpszSection, lpszEntry, lpszString,
-                                          lpszFilename) {
-    // Open the file
-    const handle = this.dos.files.open(lpszFilename);
-    const file = this.dos.files.resolve(handle);
-    console.log(file);
+export function WritePrivateProfileString(lpszSection, lpszEntry, lpszString, lpszFilename) {
+  // Open the file
+  const handle = this.dos.files.open(lpszFilename);
+  const file = this.dos.files.resolve(handle);
+  console.log(file);
 
-    const ret = null;
+  const ret = null;
 
-    if (file) {
-        // Read INI data from file
-        // Find the section
-        // Find the entry
-        // Write the value
-    }
+  if (file) {
+    // Read INI data from file
+    // Find the section
+    // Find the entry
+    // Write the value
+  }
 
-    if (handle) {
-        this.dos.files.close(handle);
-    }
+  if (handle) {
+    this.dos.files.close(handle);
+  }
 
-    return TRUE;
+  return TRUE;
 }

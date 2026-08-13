@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -45,43 +45,43 @@ import { User } from '../user.js';
  *                     the given window if the function is successful.
  */
 export async function BeginPaint(hwnd, lpps) {
-    // Get the window
-    const dialog = this.handles.resolve(hwnd);
+  // Get the window
+  const dialog = this.handles.resolve(hwnd);
 
-    if (!dialog) {
-        return NULL;
-    }
+  if (!dialog) {
+    return NULL;
+  }
 
-    // Get the window/class for the handle
-    const windowClass = this.handles.retrieve(dialog.options.windowClass);
+  // Get the window/class for the handle
+  const windowClass = this.handles.retrieve(dialog.options.windowClass);
 
-    // Get the surface
-    const surface = dialog.surface;
+  // Get the surface
+  const surface = dialog.surface;
 
-    // Allocate a DC
-    const dc = this.handles.allocate(surface);
+  // Allocate a DC
+  const dc = this.handles.allocate(surface);
 
-    // TODO: erase bkgnd message and paint
-    if (dialog.data.erase) {
-        dialog.data.erase = false;
+  // TODO: erase bkgnd message and paint
+  if (dialog.data.erase) {
+    dialog.data.erase = false;
 
-        await this.scheduler.callWndProc(windowClass, hwnd, User.WM_ERASEBKGND, 0, 0);
-    }
+    await this.scheduler.callWndProc(windowClass, hwnd, User.WM_ERASEBKGND, 0, 0);
+  }
 
-    // Set PAINTSTRUCT properties
-    lpps.hdc = dc;
-    lpps.fErase = 0;
-    lpps.rcPaint.left = 0;
-    lpps.rcPaint.right = dialog.innerWidth;
-    lpps.rcPaint.top = 0;
-    lpps.rcPaint.bottom = dialog.innerHeight;
-    lpps.fRestore = 0;
-    lpps.fIncUpdate = 0;
-    lpps.rgbReserved0 = 0;
-    lpps.rgbReserved1 = 0;
-    lpps.rgbReserved2 = 0;
-    lpps.rgbReserved3 = 0;
+  // Set PAINTSTRUCT properties
+  lpps.hdc = dc;
+  lpps.fErase = 0;
+  lpps.rcPaint.left = 0;
+  lpps.rcPaint.right = dialog.innerWidth;
+  lpps.rcPaint.top = 0;
+  lpps.rcPaint.bottom = dialog.innerHeight;
+  lpps.fRestore = 0;
+  lpps.fIncUpdate = 0;
+  lpps.rgbReserved0 = 0;
+  lpps.rgbReserved1 = 0;
+  lpps.rgbReserved2 = 0;
+  lpps.rgbReserved3 = 0;
 
-    // Return that DC
-    return dc;
+  // Return that DC
+  return dc;
 }

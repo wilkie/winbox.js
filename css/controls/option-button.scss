@@ -1,13 +1,13 @@
 .winbox {
-    .__winbox_window {
-        .__winbox_container {
-            .__winbox_window.__winbox_checkbox.__winbox_optionbutton {
-                > span {
-                    img {
-                        border: none;
-                    }
-                }
-            }
+  .__winbox_window {
+    .__winbox_container {
+      .__winbox_window.__winbox_checkbox.__winbox_optionbutton {
+        > span {
+          img {
+            border: none;
+          }
         }
+      }
     }
+  }
 }

@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { NULL } from '../consts.js';
 
@@ -65,44 +65,44 @@ import { Kernel } from '../kernel.js';
  *                         successful. Otherwise it is NULL.
  */
 export function LocalAlloc(fuAllocFlags, fuAlloc) {
-    // LocalAlloc allocates to the heap of the current segment selected via DS.
-    const segment = this.machine.cpu.core.ds >> 3;
+  // LocalAlloc allocates to the heap of the current segment selected via DS.
+  const segment = this.machine.cpu.core.ds >> 3;
 
-    // We can negotiate flags.
-    // TODO: flags
-    const options: any = {};
+  // We can negotiate flags.
+  // TODO: flags
+  const options: any = {};
 
-    if (fuAllocFlags & Kernel.LMEM_MOVEABLE) {
-        options.movable = true;
-    }
+  if (fuAllocFlags & Kernel.LMEM_MOVEABLE) {
+    options.movable = true;
+  }
 
-    if (fuAllocFlags & Kernel.LMEM_NOCOMPACT) {
-        options.noCompact = true;
-    }
+  if (fuAllocFlags & Kernel.LMEM_NOCOMPACT) {
+    options.noCompact = true;
+  }
 
-    if (fuAllocFlags & Kernel.LMEM_NODISCARD) {
-        options.noDiscard = true;
-    }
+  if (fuAllocFlags & Kernel.LMEM_NODISCARD) {
+    options.noDiscard = true;
+  }
 
-    if (fuAllocFlags & Kernel.LMEM_ZEROINIT) {
-        options.zeroInit = true;
-    }
+  if (fuAllocFlags & Kernel.LMEM_ZEROINIT) {
+    options.zeroInit = true;
+  }
 
-    if (fuAllocFlags & Kernel.LMEM_DISCARDABLE) {
-        options.discardable = true;
-    }
+  if (fuAllocFlags & Kernel.LMEM_DISCARDABLE) {
+    options.discardable = true;
+  }
 
-    // Get the local heap.
-    const heap = this.allocator.heapOf(segment);
-    if (!heap) {
-        // No heap initialized
-        return NULL;
-    }
+  // Get the local heap.
+  const heap = this.allocator.heapOf(segment);
+  if (!heap) {
+    // No heap initialized
+    return NULL;
+  }
 
-    const handle = heap.allocate(fuAlloc, options);
-    if (handle === null) {
-        return NULL;
-    }
+  const handle = heap.allocate(fuAlloc, options);
+  if (handle === null) {
+    return NULL;
+  }
 
-    return handle;
+  return handle;
 }

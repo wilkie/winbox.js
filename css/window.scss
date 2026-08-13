@@ -1,376 +1,378 @@
 .winbox {
-    .__winbox_window {
-        position: absolute;
-        top: 10rem;
-        left: 10rem;
-        width: 20rem;
-        height: 20rem;
-        background: white;
-        padding: 0;
-        margin: 0;
-        overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+  .__winbox_window {
+    position: absolute;
+    top: 10rem;
+    left: 10rem;
+    width: 20rem;
+    height: 20rem;
+    background: white;
+    padding: 0;
+    margin: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 
-        &.__winbox_window-fixed {
-            padding: 0.1875rem;
-            border: 0.0625rem solid black;
+    &.__winbox_window-fixed {
+      padding: 0.1875rem;
+      border: 0.0625rem solid black;
+    }
+
+    &.__winbox_border-solid {
+      border: 0.0625rem solid black;
+      box-sizing: border-box;
+    }
+
+    &.__winbox_align-left {
+      text-align: left;
+      align-items: normal;
+    }
+
+    &.__winbox_align-center {
+      text-align: center;
+      align-items: center;
+    }
+
+    &.__winbox_align-right {
+      text-align: right;
+      align-items: flex-end;
+    }
+
+    &.__winbox_valign-top {
+      vertical-align: top;
+      justify-content: normal;
+    }
+
+    &.__winbox_valign-center {
+      vertical-align: middle;
+      justify-content: center;
+    }
+
+    &.__winbox_valign-bottom {
+      vertical-align: bottom;
+      justify-content: flex-end;
+    }
+
+    > .__winbox_coveralls {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    > h2.__winbox_title-bar {
+      display: flex;
+      flex-direction: row;
+      height: 1.25rem;
+      width: 100%;
+      position: relative;
+      font:
+        0.75rem "MS Sans Serif",
+        sans-serif;
+      font-weight: bold;
+      margin: 0;
+      padding: 0;
+      background: white;
+      text-align: center;
+      border: 0.0625rem solid white;
+      border-bottom-color: black;
+      box-sizing: border-box;
+
+      & > span {
+        flex: 1 1 auto;
+        user-select: none;
+        pointer-events: none;
+
+        img {
+          image-rendering: pixelated;
+          padding-top: 0.0625rem;
+        }
+      }
+
+      > .__winbox_window.__winbox_menu {
+        position: relative;
+        width: 1.1875rem;
+        height: 1.125rem;
+        left: 0;
+        top: 0;
+      }
+
+      button.__winbox_window.__winbox_button {
+        top: auto !important;
+        left: auto !important;
+        position: relative;
+        width: 1.1875rem !important;
+        height: 1.125rem !important;
+        background: lightgray;
+        color: black;
+        border: 0.0625rem solid black;
+        border-top: none;
+        border-bottom: none;
+        border-right: none;
+        border-radius: 0;
+
+        &::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border: 0.0625rem solid white;
+          border-right: 0.125rem solid gray;
+          border-bottom: 0.125rem solid gray;
         }
 
-        &.__winbox_border-solid {
-            border: 0.0625rem solid black;
-            box-sizing: border-box;
+        &:focus {
+          outline: none;
+          border: 0.0625rem solid black;
+          border-top: none;
+          border-bottom: none;
+          border-right: none;
         }
 
-        &.__winbox_align-left {
-            text-align: left;
-            align-items: normal;
-        }
-
-        &.__winbox_align-center {
-            text-align: center;
-            align-items: center;
-        }
-
-        &.__winbox_align-right {
-            text-align: right;
-            align-items: flex-end;
-        }
-
-        &.__winbox_valign-top {
-            vertical-align: top;
-            justify-content: normal;
-        }
-
-        &.__winbox_valign-center {
-            vertical-align: middle;
-            justify-content: center;
-        }
-
-        &.__winbox_valign-bottom {
-            vertical-align: bottom;
-            justify-content: flex-end;
-        }
-
-        > .__winbox_coveralls {
+        &.__winbox_minimize-button {
+          &::before {
+            content: "";
+            border-top: 0.25rem solid black;
+            border-left: 0.25rem solid transparent;
+            border-right: 0.25rem solid transparent;
             position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
+            top: calc(((100% - 0.25rem) / 2));
+            left: calc(((100% - (0.25rem * 2)) / 2) - 0.0625rem);
+          }
         }
+
+        &.__winbox_maximize-button {
+          &::before {
+            content: "";
+            border-bottom: 0.25rem solid black;
+            border-left: 0.25rem solid transparent;
+            border-right: 0.25rem solid transparent;
+            position: absolute;
+            top: calc(((100% - 0.25rem) / 2) - 0.0625rem);
+            left: calc(((100% - (0.25rem * 2)) / 2) - 0.0625rem);
+          }
+        }
+
+        &.__winbox_button_active,
+        &:active {
+          padding-top: 0.125rem;
+          padding-left: 0.125rem;
+          border: none;
+
+          &::after {
+            border: 0.0625rem solid gray;
+            border-right: 0.125rem solid transparent;
+            border-bottom: 0.125rem solid transparent;
+          }
+
+          &.__winbox_minimize-button {
+            &::before {
+              top: calc(((100% - 0.25rem) / 2) + 0.125rem);
+              left: calc(((100% - (0.25rem * 2)) / 2));
+            }
+          }
+
+          &.__winbox_maximize-button {
+            &::before {
+              top: calc(((100% - 0.25rem) / 2) + 0.0625rem);
+              left: calc(((100% - (0.25rem * 2)) / 2));
+            }
+          }
+        }
+
+        &.__winbox_close-button {
+          position: absolute;
+          width: 1.1875rem;
+          height: 1.125rem;
+          padding: 0;
+          left: 0;
+          top: 0;
+          background: lightgray;
+          border: none;
+          border-right: 0.0625rem solid black;
+          outline: none;
+
+          > span {
+            display: none;
+            visibility: hidden;
+          }
+
+          &::after {
+            content: "";
+            padding: 0;
+            margin: 0;
+            display: block;
+            height: 0.0625rem;
+            width: 0.6875rem;
+            background: white;
+            border: 0.0625rem solid black;
+            position: absolute;
+            top: calc((100% - 0.0625rem) / 2 - 0.125rem);
+            left: calc((100% - 0.625rem) / 2 - 0.125rem);
+            box-shadow: 0.0625rem 0.0625rem 0 0 grey;
+          }
+
+          &.__winbox_focused,
+          &.__winbox_button_active,
+          &:active {
+            background: gray;
+            outline: none;
+
+            &::after {
+              background: black;
+              border-color: white;
+              border-width: 0.0625rem;
+              box-shadow: 0.0625rem 0.0625rem 0 0 lightgrey;
+            }
+          }
+        }
+      }
+
+      & ~ .__winbox_container {
+        // MDI windows
+
+        .__winbox_window {
+          > h2.__winbox_title-bar {
+            button.__winbox_window.__winbox_button.__winbox_close-button {
+              &::after {
+                width: 0.3125rem;
+                left: calc((100% - 0.3125rem) / 2 - 0.125rem);
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .__winbox_container {
+      flex: 1 1 auto;
+      width: 100%;
+      box-sizing: border-box;
+      background: white;
+      border: 0.0625rem solid white;
+      border-top: none;
+      position: relative;
+      overflow: hidden;
+      outline: none !important;
+
+      &.__winbox_docked-container {
+        flex: 0 0 auto;
+        border-bottom: none;
+
+        > .__winbox_window {
+          width: 100%;
+          position: relative;
+        }
+      }
+    }
+
+    &.__winbox_window-resizable {
+      background: lightgray;
+      padding: 0.125rem;
+
+      &.__winbox_window-maximized {
+        top: 0 !important;
+        left: 0 !important;
+        border: none !important;
+        padding: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
 
         > h2.__winbox_title-bar {
-            display: flex;
-            flex-direction: row;
-            height: 1.25rem;
-            width: 100%;
-            position: relative;
-            font: 0.75rem "MS Sans Serif", sans-serif;
-            font-weight: bold;
-            margin: 0;
-            padding: 0;
-            background: white;
-            text-align: center;
-            border: 0.0625rem solid white;
-            border-bottom-color: black;
-            box-sizing: border-box;
-
-            & > span {
-                flex: 1 1 auto;
-                user-select: none;
-                pointer-events: none;
-
-                img {
-                    image-rendering: pixelated;
-                    padding-top: 0.0625rem;
-                }
-            }
-
-            > .__winbox_window.__winbox_menu {
-                position: relative;
-                width: 1.1875rem;
-                height: 1.125rem;
-                left: 0;
-                top: 0;
-            }
-
-            button.__winbox_window.__winbox_button {
-                top: auto !important;
-                left: auto !important;
-                position: relative;
-                width: 1.1875rem !important;
-                height: 1.125rem !important;
-                background: lightgray;
-                color: black;
-                border: 0.0625rem solid black;
-                border-top: none;
-                border-bottom: none;
-                border-right: none;
-                border-radius: 0;
-
-                &::after {
-                    content: '';
-                    position: absolute;
-                    inset: 0;
-                    border: 0.0625rem solid white;
-                    border-right: 0.125rem solid gray;
-                    border-bottom: 0.125rem solid gray;
-                }
-
-                &:focus {
-                    outline: none;
-                    border: 0.0625rem solid black;
-                    border-top: none;
-                    border-bottom: none;
-                    border-right: none;
-                }
-
-                &.__winbox_minimize-button {
-                    &::before {
-                        content: '';
-                        border-top: 0.25rem solid black;
-                        border-left: 0.25rem solid transparent;
-                        border-right: 0.25rem solid transparent;
-                        position: absolute;
-                        top: calc(((100% - 0.25rem) / 2));
-                        left: calc(((100% - (0.25rem * 2)) / 2) - 0.0625rem);
-                    }
-                }
-
-                &.__winbox_maximize-button {
-                    &::before {
-                        content: '';
-                        border-bottom: 0.25rem solid black;
-                        border-left: 0.25rem solid transparent;
-                        border-right: 0.25rem solid transparent;
-                        position: absolute;
-                        top: calc(((100% - 0.25rem) / 2) - 0.0625rem);
-                        left: calc(((100% - (0.25rem * 2)) / 2) - 0.0625rem);
-                    }
-                }
-
-                &.__winbox_button_active,
-                &:active {
-                    padding-top: 0.125rem;
-                    padding-left: 0.125rem;
-                    border: none;
-
-                    &::after {
-                        border: 0.0625rem solid gray;
-                        border-right: 0.125rem solid transparent;
-                        border-bottom: 0.125rem solid transparent;
-                    }
-
-                    &.__winbox_minimize-button {
-                        &::before {
-                            top: calc(((100% - 0.25rem) / 2) + 0.125rem);
-                            left: calc(((100% - (0.25rem * 2)) / 2));
-                        }
-                    }
-
-                    &.__winbox_maximize-button {
-                        &::before {
-                            top: calc(((100% - 0.25rem) / 2) + 0.0625rem);
-                            left: calc(((100% - (0.25rem * 2)) / 2));
-                        }
-                    }
-                }
-
-                &.__winbox_close-button {
-                    position: absolute;
-                    width: 1.1875rem;
-                    height: 1.125rem;
-                    padding: 0;
-                    left: 0;
-                    top: 0;
-                    background: lightgray;
-                    border: none;
-                    border-right: 0.0625rem solid black;
-                    outline: none;
-
-                    > span {
-                        display: none;
-                        visibility: hidden;
-                    }
-
-                    &::after {
-                        content: '';
-                        padding: 0;
-                        margin: 0;
-                        display: block;
-                        height: 0.0625rem;
-                        width: 0.6875rem;
-                        background: white;
-                        border: 0.0625rem solid black;
-                        position: absolute;
-                        top: calc((100% - 0.0625rem) / 2 - 0.125rem);
-                        left: calc((100% - 0.625rem) / 2 - 0.125rem);
-                        box-shadow: 0.0625rem 0.0625rem 0 0 grey;
-                    }
-
-                    &.__winbox_focused,
-                    &.__winbox_button_active,
-                    &:active {
-                        background: gray;
-                        outline: none;
-
-                        &::after {
-                            background: black;
-                            border-color: white;
-                            border-width: 0.0625rem;
-                            box-shadow: 0.0625rem 0.0625rem 0 0 lightgrey;
-                        }
-                    }
-                }
-            }
-
-            & ~ .__winbox_container {
-                // MDI windows
-
-                .__winbox_window {
-                    > h2.__winbox_title-bar {
-                        button.__winbox_window.__winbox_button.__winbox_close-button {
-                            &::after {
-                                width: 0.3125rem;
-                                left: calc((100% - 0.3125rem) / 2 - 0.125rem);
-                            }
-                        }
-                    }
-                }
-            }
+          border-top: none;
+          border-left: none;
+          border-right: none;
+          height: 1.1875rem;
         }
 
         .__winbox_container {
-            flex: 1 1 auto;
-            width: 100%;
-            box-sizing: border-box;
-            background: white;
-            border: 0.0625rem solid white;
-            border-top: none;
-            position: relative;
-            overflow: hidden;
-            outline: none !important;
+          border: none;
+        }
+      }
 
-            &.__winbox_docked-container {
-                flex: 0 0 auto;
-                border-bottom: none;
+      .__winbox_resize-border {
+        position: absolute;
+        width: 1.3125rem;
+        height: 1.325rem;
 
-                > .__winbox_window {
-                    width: 100%;
-                    position: relative;
-                }
-            }
+        &.__winbox_resize-border_top {
+          left: 0;
+          top: 0;
+          width: 100%;
+          cursor: n-resize;
         }
 
-        &.__winbox_window-resizable {
-            background: lightgray;
-            padding: 0.125rem;
-
-            &.__winbox_window-maximized {
-                top: 0 !important;
-                left: 0 !important;
-                border: none !important;
-                padding: 0 !important;
-                width: 100% !important;
-                height: 100% !important;
-
-                > h2.__winbox_title-bar {
-                    border-top: none;
-                    border-left: none;
-                    border-right: none;
-                    height: 1.1875rem;
-                }
-
-                .__winbox_container {
-                    border: none;
-                }
-            }
-
-            .__winbox_resize-border {
-                position: absolute;
-                width: 1.3125rem;
-                height: 1.325rem;
-
-                &.__winbox_resize-border_top {
-                    left: 0;
-                    top: 0;
-                    width: 100%;
-                    cursor: n-resize;
-                }
-
-                &.__winbox_resize-border_bottom {
-                    left: 0;
-                    bottom: 0;
-                    width: 100%;
-                    cursor: s-resize;
-                }
-
-                &.__winbox_resize-border_left {
-                    left: 0;
-                    top: 0;
-                    height: 100%;
-                    cursor: w-resize;
-                }
-
-                &.__winbox_resize-border_right {
-                    right: 0;
-                    top: 0;
-                    height: 100%;
-                    cursor: e-resize;
-                }
-
-                &.__winbox_resize-border_top-left {
-                    left: 0;
-                    top: 0;
-                    border-right: 0.0625rem solid black;
-                    border-bottom: 0.0625rem solid black;
-                    cursor: nw-resize;
-                }
-
-                &.__winbox_resize-border_top-right {
-                    right: 0;
-                    top: 0;
-                    border-left: 0.0625rem solid black;
-                    border-bottom: 0.0625rem solid black;
-                    cursor: ne-resize;
-                }
-
-                &.__winbox_resize-border_bottom-left {
-                    left: 0;
-                    bottom: 0;
-                    border-right: 0.0625rem solid black;
-                    border-top: 0.0625rem solid black;
-                    cursor: sw-resize;
-                }
-
-                &.__winbox_resize-border_bottom-right {
-                    right: 0;
-                    bottom: 0;
-                    border-left: 0.0625rem solid black;
-                    border-top: 0.0625rem solid black;
-                    cursor: se-resize;
-                }
-            }
-
-            > h2.__winbox_title-bar {
-                border-color: black;
-            }
-
-            .__winbox_container {
-                border-color: black;
-            }
+        &.__winbox_resize-border_bottom {
+          left: 0;
+          bottom: 0;
+          width: 100%;
+          cursor: s-resize;
         }
 
-        &.__winbox_focused {
-          &.__winbox_window-fixed:not(.__winbox_window-resizable) {
-            background: #a6cbf3;
-          }
-
-          > h2.__winbox_title-bar {
-            background: #a6cbf3;
-          }
+        &.__winbox_resize-border_left {
+          left: 0;
+          top: 0;
+          height: 100%;
+          cursor: w-resize;
         }
+
+        &.__winbox_resize-border_right {
+          right: 0;
+          top: 0;
+          height: 100%;
+          cursor: e-resize;
+        }
+
+        &.__winbox_resize-border_top-left {
+          left: 0;
+          top: 0;
+          border-right: 0.0625rem solid black;
+          border-bottom: 0.0625rem solid black;
+          cursor: nw-resize;
+        }
+
+        &.__winbox_resize-border_top-right {
+          right: 0;
+          top: 0;
+          border-left: 0.0625rem solid black;
+          border-bottom: 0.0625rem solid black;
+          cursor: ne-resize;
+        }
+
+        &.__winbox_resize-border_bottom-left {
+          left: 0;
+          bottom: 0;
+          border-right: 0.0625rem solid black;
+          border-top: 0.0625rem solid black;
+          cursor: sw-resize;
+        }
+
+        &.__winbox_resize-border_bottom-right {
+          right: 0;
+          bottom: 0;
+          border-left: 0.0625rem solid black;
+          border-top: 0.0625rem solid black;
+          cursor: se-resize;
+        }
+      }
+
+      > h2.__winbox_title-bar {
+        border-color: black;
+      }
+
+      .__winbox_container {
+        border-color: black;
+      }
     }
+
+    &.__winbox_focused {
+      &.__winbox_window-fixed:not(.__winbox_window-resizable) {
+        background: #a6cbf3;
+      }
+
+      > h2.__winbox_title-bar {
+        background: #a6cbf3;
+      }
+    }
+  }
 }

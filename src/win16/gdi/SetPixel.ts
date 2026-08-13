@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { Color } from '../../raster/color.js';
 import { Brush } from '../../raster/brush.js';
@@ -36,25 +36,25 @@ import { Brush } from '../../raster/brush.js';
  *                          point is outside the clipping region.)
  */
 export function SetPixel(hdc, nXPos, nYPos, clrref) {
-    // Resolve the destination DC handle
-    const surface = this.handles.resolve(hdc);
+  // Resolve the destination DC handle
+  const surface = this.handles.resolve(hdc);
 
-    // Bail if we cannot find the destination DC
-    if (!surface) {
-        return -1;
-    }
+  // Bail if we cannot find the destination DC
+  if (!surface) {
+    return -1;
+  }
 
-    // Interpret color
-    const components = Color.colorToBgr(clrref);
-    const color = new Color(components.r, components.g, components.b);
+  // Interpret color
+  const components = Color.colorToBgr(clrref);
+  const color = new Color(components.r, components.g, components.b);
 
-    // Create a Brush
-    const brush = new Brush(color);
-    const old = surface.brush;
-    surface.brush = brush;
-    surface.fillRect(nXPos, nYPos, 1, 1);
-    surface.brush = old;
+  // Create a Brush
+  const brush = new Brush(color);
+  const old = surface.brush;
+  surface.brush = brush;
+  surface.fillRect(nXPos, nYPos, 1, 1);
+  surface.brush = old;
 
-    // Return the color value that was used
-    return clrref;
+  // Return the color value that was used
+  return clrref;
 }

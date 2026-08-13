@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { TRUE, FALSE } from '../consts.js';
 
@@ -82,35 +82,34 @@ import { User } from '../user.js';
  *                      Otherwise, it is zero.
  */
 export async function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuRemove) {
-    let msg = this.scheduler.task.peek();
+  let msg = this.scheduler.task.peek();
 
-    if (fuRemove & User.PM_REMOVE) {
-        msg = await this.scheduler.task.pull();
+  if (fuRemove & User.PM_REMOVE) {
+    msg = await this.scheduler.task.pull();
+  }
+
+  if (msg) {
+    // Copy message to memory
+    lpmsg.hwnd = msg.hwnd;
+    lpmsg.message = msg.message;
+    lpmsg.wParam = msg.wParam;
+    lpmsg.lParam = msg.lParam;
+    lpmsg.time = msg.time;
+    lpmsg.pt.x = msg.pt.x;
+    lpmsg.pt.y = msg.pt.y;
+
+    if (!(fuRemove & User.PM_NOYIELD)) {
+      return TRUE;
     }
 
-    if (msg) {
-        // Copy message to memory
-        lpmsg.hwnd = msg.hwnd;
-        lpmsg.message = msg.message;
-        lpmsg.wParam = msg.wParam;
-        lpmsg.lParam = msg.lParam;
-        lpmsg.time = msg.time;
-        lpmsg.pt.x = msg.pt.x;
-        lpmsg.pt.y = msg.pt.y;
-
-        if (!(fuRemove & User.PM_NOYIELD)) {
-            return TRUE;
-        }
-
-        return TRUE;
-    }
-    else {
-        return FALSE;
-        // No message... let's halt
-        return new Promise( (resolve) => {
-            window.setTimeout( () => {
-                resolve(FALSE);
-            }, 50);
-        });
-    }
+    return TRUE;
+  } else {
+    return FALSE;
+    // No message... let's halt
+    return new Promise((resolve) => {
+      window.setTimeout(() => {
+        resolve(FALSE);
+      }, 50);
+    });
+  }
 }

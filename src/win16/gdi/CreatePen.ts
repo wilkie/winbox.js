@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 import { Color } from '../../raster/color.js';
 import { Pen } from '../../raster/pen.js';
@@ -6,10 +6,10 @@ import { Pen } from '../../raster/pen.js';
 /**
  * The **CreatePen** function creates a pen having the specified style, width,
  * and color. The pen can subsequently be selected as the current pen for any
- * device. 
+ * device.
  *
  * Pens whose width is greater than one pixel always have the `PS_NULL`,
- * `PS_SOLID`, or `PS_INSIDEFRAME` style. 
+ * `PS_SOLID`, or `PS_INSIDEFRAME` style.
  *
  * If a pen has the `PS_INSIDEFRAME` style and a color that does not match a
  * color in the logical color table, the pen is drawn with a dithered color.
@@ -19,7 +19,7 @@ import { Pen } from '../../raster/pen.js';
  *
  * When it has finished using a pen created by **CreatePen**, an application
  * should remove the pen by using the {@link Gdi.DeleteObject DeleteObject}
- * function. 
+ * function.
  *
  * The `fnPenStyle` parameter can be one of the following values:
  *
@@ -57,13 +57,13 @@ import { Pen } from '../../raster/pen.js';
  *                      function is successful. Otherwise, it is `NULL`.
  */
 export function CreatePen(fnPenStyle, nWidth, clrref) {
-    // Interpret color
-    const components = Color.colorToBgr(clrref);
-    const color = new Color(components.r, components.g, components.b);
+  // Interpret color
+  const components = Color.colorToBgr(clrref);
+  const color = new Color(components.r, components.g, components.b);
 
-    // Create a Pen
-    const pen = new Pen(color, nWidth, fnPenStyle);
+  // Create a Pen
+  const pen = new Pen(color, nWidth, fnPenStyle);
 
-    const handle = this.handles.allocate(pen);
-    return handle;
+  const handle = this.handles.allocate(pen);
+  return handle;
 }
