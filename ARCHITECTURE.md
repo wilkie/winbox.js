@@ -147,23 +147,24 @@ Accuracy is measured, not estimated. `pnpm test:conformance` runs our core
 against instruction tests captured from a real 80286 and reports a per-opcode
 pass rate; see the Testing section of the README for how to fetch the vectors.
 
-Across all **326** instruction forms the suite publishes, **96.0%** of vectors
-pass and 309 of the 324 executable forms pass completely. (`INT3` and `INT n`
+Across all **326** instruction forms the suite publishes, **96.5%** of vectors
+pass and 312 of the 324 executable forms pass completely. (`INT3` and `INT n`
 have no executable vectors at all: every test for them faults on hardware, and
 the oracle skips faulting vectors.)
 
 Nothing the core implements computes the wrong answer any more -- there are no
-register or memory failures left anywhere in the suite. What remains is
-instructions it has never implemented, plus one flag case:
+register, flag or memory failures left anywhere in the suite. What remains is
+entirely instructions it has never decoded:
 
-| Family                                | Forms | Vectors | State       |
-| ------------------------------------- | ----- | ------- | ----------- |
-| Port I/O (`IN`, `OUT`)                | 4     | 1000    | Not decoded |
-| String I/O (`INS`, `OUTS`)            | 4     | 967     | Not decoded |
-| `WAIT`, `SALC`, `HLT`                 | 3     | 750     | Not decoded |
-| `BOUND`                               | 1     | 25      | Not decoded |
-| `ENTER`                               | 1     | 248     | Throws      |
-| `IMUL` with an immediate (`69`, `6B`) | 2     | 216     | CF and OF   |
+| Family                     | Forms | Vectors |
+| -------------------------- | ----- | ------- |
+| Port I/O (`IN`, `OUT`)     | 4     | 1000    |
+| String I/O (`INS`, `OUTS`) | 4     | 967     |
+| `WAIT`, `SALC`, `HLT`      | 3     | 750     |
+| `BOUND`                    | 1     | 25      |
+
+Those need a decision the emulator has not had to make yet -- what a port read
+or write means in a browser -- rather than a bug to find.
 
 The 127 forms the fetch script pulls by default -- the ALU, shift, rotate,
 string and multiply/divide groups -- pass **100%**, including a full-depth run
@@ -206,6 +207,13 @@ appeared as a handful of failures out of thousands:
   range for every negative immediate. `ADD`/`SUB`/`CMP` on a word with a byte
   immediate is about as common as instructions get, and 42% of its vectors
   failed.
+- `ENTER` decremented `this.instruction.level`, which is an undeclared field
+  rather than the decoded instruction, so every nested-level `ENTER` threw.
+  Behind that, it never allocated the frame: `ENTER imm16, imm8` ends with
+  `SP = SP - imm16`, and the immediate was decoded and then unused.
+- `IMUL` with an immediate recomputed CF and OF after the ALU had already set
+  them, comparing a 32-bit product against a 16-bit sign extension of itself.
+  The right answer was there and was being discarded.
 - `0x82` was not decoded at all. It is an undocumented alias of `0x80`, the
   byte-operand ALU group with a byte immediate, and assemblers of the era
   emitted it. Two case labels, 2,000 vectors.
