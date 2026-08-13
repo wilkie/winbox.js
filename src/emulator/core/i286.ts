@@ -767,7 +767,8 @@ export class I286 implements CpuCore16 {
    * 14: Nested Task Flag
    */
   get f() {
-    let f = 0;
+    // Bit 1 is reserved and always reads as one.
+    let f = 0x2;
 
     // Non-privileged control flags
     f = this._flags.carry ? f | 0x01 : f;
@@ -2210,8 +2211,12 @@ export class I286 implements CpuCore16 {
 
       case 0x83: // ADC ew,db / ADD ew,db / CMP ew,db / SBB ew,db /
         // SUB ew,db
-        // Sign-extend
-        instruction.immediate = this._alu.toSigned8(instruction.immediate);
+        /* Sign-extend to the operand width. Masking matters: `toSigned8` alone
+         * yields a negative JavaScript number, and the ALU computes CF by
+         * comparing against the unsigned 16-bit range, so `add ax,0FFE7h`
+         * would carry only when it should not.
+         */
+        instruction.immediate = this._alu.toSigned8(instruction.immediate) & 0xffff;
       case 0x81: // ADC ew,dw / ADD ew,dw / AND ew,dw / CMP ew,dw /
         // OR ew,dw / SBB ew,dw / SUB ew,dw / XOR ew,dw
         switch (instruction.modifier) {
@@ -2409,7 +2414,8 @@ export class I286 implements CpuCore16 {
 
       case 0x9f: // LAHF (Load Flags into AH)
         this.debug('lahf        ');
-        let lahfValue = 0;
+        // Bit 1 is reserved and always reads as one.
+        let lahfValue = 0x2;
         lahfValue = this._flags.carry ? lahfValue | 0x1 : lahfValue;
         lahfValue = this._flags.parity ? lahfValue | 0x4 : lahfValue;
         lahfValue = this._flags.auxiliaryCarry ? lahfValue | 0x10 : lahfValue;

@@ -147,12 +147,28 @@ Accuracy is measured, not estimated. `pnpm test:conformance` runs our core
 against instruction tests captured from a real 80286 and reports a per-opcode
 pass rate; see the Testing section of the README for how to fetch the vectors.
 
-The core currently passes **every vector** in the fetched corpus: 127 of 127
-instruction forms, with no register, flag, memory or decoding failures.
+Across all **326** instruction forms the suite publishes, **92.9%** of vectors
+pass and 299 forms pass completely.
 
-Getting there meant treating the flags the manuals call undefined as
-observable behaviour rather than as licence to do anything, since compatibility
-means matching the part.
+That number is worth reading carefully. The 127 forms the fetch script pulls by
+default -- the ALU, shift, rotate, string and multiply/divide groups -- pass
+**100%**, including a full-depth run of all 585,315 of their vectors rather
+than a sample. The remaining gap is almost entirely instructions outside that
+set that the core has never implemented:
+
+| Family                                       | Forms | Passing |
+| -------------------------------------------- | ----- | ------- |
+| ALU `r/m`, `imm8` alias (`82 /r`)            | 8     | 0%      |
+| Port I/O (`IN`, `OUT`)                       | 4     | 0%      |
+| String I/O (`INS`, `OUTS`)                   | 4     | 0%      |
+| `BOUND`, `WAIT`, `SALC`, `HLT`               | 4     | 0%      |
+| `POPF`                                       | 1     | 12%     |
+| Interrupts (`INT3`, `INT n`, `INTO`, `IRET`) | 4     | 44%     |
+| `ENTER` / `LEAVE`                            | 2     | 49%     |
+| `IMUL` with an immediate (`69`, `6B`)        | 2     | ~55%    |
+
+`POPF` and `IRET` both fail on IOPL and NT: the core lets a popped word set
+them, and the 286 does not.
 
 ### Flag behaviour the manuals call undefined
 
@@ -186,6 +202,16 @@ appeared as a handful of failures out of thousands:
   was present, rather than defaulting to DS.
 - `SUB` and `SBB` computed OF, like AF before it, from the negated operand.
 - `DAS` dropped the borrow out of its first adjustment, which belongs in CF.
+- `83 /r` sign-extended its immediate into a negative JavaScript number rather
+  than the 16-bit operand it represents, so CF was computed against the wrong
+  range for every negative immediate. `ADD`/`SUB`/`CMP` on a word with a byte
+  immediate is about as common as instructions get, and 42% of its vectors
+  failed.
+- FLAGS bit 1 is reserved and reads as one; the packed word omitted it, so
+  `PUSHF` stored and `LAHF` loaded a value two low. Flag comparisons were
+  unaffected, which is why it survived so long -- the oracle masks that bit out
+  deliberately, since the core does not model it. Only instructions that
+  _store_ the word rather than test it could see the difference.
 
 The `DIV`/`IDIV` and `AAD` flag rules, and the `CALL SP` ordering, came from
 the `machinery` reference implementation, which passes the same suite.
