@@ -169,25 +169,32 @@ Accuracy is measured, not estimated. `pnpm test:conformance` runs our core
 against instruction tests captured from a real 80286 and reports a per-opcode
 pass rate; see the Testing section of the README for how to fetch the vectors.
 
-Across all **326** instruction forms the suite publishes, **96.9%** of vectors
-pass and 313 of the 324 executable forms pass completely. (`INT3` and `INT n`
-have no executable vectors at all: every test for them faults on hardware, and
-the oracle skips faulting vectors.)
+Across all **326** instruction forms the suite publishes, **95.7%** of vectors
+pass and 224 forms pass completely.
 
-Nothing the core implements computes the wrong answer any more -- there are no
-register, flag or memory failures left anywhere in the suite, at sample depth
-or at full depth. What remains is entirely instructions it has never decoded:
+That figure is lower than it was, because the measurement got wider rather than
+because the emulator got worse. The oracle used to skip every vector whose
+instruction faults on hardware; it now runs them, which adds about 2,100
+vectors to a sampled run and covers a class of behaviour that had never been
+tested at all. Nothing that was passing stopped: for every form checked at full
+depth, all of the new failures are faulting vectors and none are ordinary ones.
+
+What that exposed, in three groups:
+
+| Group                                              | Roughly       | Example                                                     |
+| -------------------------------------------------- | ------------- | ----------------------------------------------------------- |
+| Invalid encodings that must raise `#UD` and do not | 1,300 vectors | `lea ax,si` -- a register source is not a valid `LEA`       |
+| The FLAGS word pushed by a divide fault            | 1,800 vectors | `DIV`/`IDIV` overflow leaves flags we reproduce imperfectly |
+| Conditions that must raise `#GP` and do not        | 1,300 vectors | `jmp far [ds:si]` through an invalid selector               |
+
+Instructions the core has never decoded account for the rest:
 
 | Family                     | Forms | Vectors |
 | -------------------------- | ----- | ------- |
 | Port I/O (`IN`, `OUT`)     | 4     | 1000    |
 | String I/O (`INS`, `OUTS`) | 4     | 967     |
 | `HLT`, `SALC`              | 2     | 500     |
-| `BOUND`                    | 1     | 25      |
-
-Three quarters of that is I/O, which needs a decision the emulator has not had
-to make yet -- what a port read or write means in a browser -- rather than a
-bug to find.
+| `BOUND`                    | 1     | 250     |
 
 ### Flag behaviour the manuals call undefined
 
