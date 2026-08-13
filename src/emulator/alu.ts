@@ -408,6 +408,212 @@ export class ALU {
     this._cpu._flags.auxiliaryCarry = true;
   }
 
+  /**
+   * Applies SF, ZF and PF for an 8-bit result.
+   */
+  applyResultFlags8(result) {
+    this._cpu._flags.zero = result == 0;
+    this._cpu._flags.signed = (result & 0x80) != 0;
+    this._cpu._flags.parity = ALU.PARITY[result & 0xff];
+  }
+
+  /**
+   * Performs the DAA instruction.
+   *
+   * Turns the result of adding two packed BCD bytes back into packed BCD, by
+   * carrying each nibble that has gone past nine.
+   *
+   * @param {number} al - The AL register.
+   *
+   * @return {number} The adjusted AL.
+   */
+  daa(al) {
+    const before = al & 0xff;
+    const carryBefore = this._cpu._flags.carry;
+    let result = before;
+
+    if ((before & 0x0f) > 9 || this._cpu._flags.auxiliaryCarry) {
+      result = result + 6;
+      this._cpu._flags.auxiliaryCarry = true;
+    } else {
+      this._cpu._flags.auxiliaryCarry = false;
+    }
+
+    if (before > 0x99 || carryBefore) {
+      result = result + 0x60;
+      this._cpu._flags.carry = true;
+    } else {
+      this._cpu._flags.carry = false;
+    }
+
+    result &= 0xff;
+
+    // Undefined by the manual: set when the adjustment carried the value from
+    // positive to negative.
+    this._cpu._flags.overflow = (result & 0x80) != 0 && (before & 0x80) == 0;
+    this.applyResultFlags8(result);
+
+    return result;
+  }
+
+  /**
+   * Performs the DAS instruction.
+   *
+   * The subtraction counterpart of DAA: each nibble that has borrowed is
+   * brought back into packed BCD range.
+   *
+   * @param {number} al - The AL register.
+   *
+   * @return {number} The adjusted AL.
+   */
+  das(al) {
+    const before = al & 0xff;
+    const carryBefore = this._cpu._flags.carry;
+    let result = before;
+
+    if ((before & 0x0f) > 9 || this._cpu._flags.auxiliaryCarry) {
+      result = result - 6;
+      this._cpu._flags.auxiliaryCarry = true;
+    } else {
+      this._cpu._flags.auxiliaryCarry = false;
+    }
+
+    if (before > 0x99 || carryBefore) {
+      result = result - 0x60;
+      this._cpu._flags.carry = true;
+    } else {
+      this._cpu._flags.carry = false;
+    }
+
+    result &= 0xff;
+
+    // The mirror of DAA: set when the adjustment carried the value from
+    // negative to positive.
+    this._cpu._flags.overflow = (result & 0x80) == 0 && (before & 0x80) != 0;
+    this.applyResultFlags8(result);
+
+    return result;
+  }
+
+  /**
+   * Performs the AAA instruction.
+   *
+   * Adjusts AX after adding two unpacked BCD digits, carrying into AH when the
+   * low nibble has gone past nine.
+   *
+   * @param {number} ax - The AX register.
+   *
+   * @return {number} The adjusted AX.
+   */
+  aaa(ax) {
+    const before = ax & 0xff;
+    let result = ax & 0xffff;
+
+    if ((result & 0x0f) > 9 || this._cpu._flags.auxiliaryCarry) {
+      // AX as a whole, so the carry out of AL reaches AH.
+      result = (result + 0x106) & 0xffff;
+      this._cpu._flags.auxiliaryCarry = true;
+      this._cpu._flags.carry = true;
+    } else {
+      this._cpu._flags.auxiliaryCarry = false;
+      this._cpu._flags.carry = false;
+    }
+
+    /* SF, ZF and PF describe AL before it is masked down to one digit, and OF
+     * -- undefined by the manual -- follows the same sign-flip rule as DAA.
+     */
+    this._cpu._flags.overflow = (result & 0x80) != 0 && (before & 0x80) == 0;
+    this.applyResultFlags8(result & 0xff);
+    result &= 0xff0f;
+
+    return result;
+  }
+
+  /**
+   * Performs the AAS instruction.
+   *
+   * The subtraction counterpart of AAA.
+   *
+   * @param {number} ax - The AX register.
+   *
+   * @return {number} The adjusted AX.
+   */
+  aas(ax) {
+    const before = ax & 0xff;
+    let result = ax & 0xffff;
+
+    if ((result & 0x0f) > 9 || this._cpu._flags.auxiliaryCarry) {
+      // AX as a whole, so the borrow out of AL reaches AH.
+      result = (result - 0x106) & 0xffff;
+      this._cpu._flags.auxiliaryCarry = true;
+      this._cpu._flags.carry = true;
+    } else {
+      this._cpu._flags.auxiliaryCarry = false;
+      this._cpu._flags.carry = false;
+    }
+
+    /* SF, ZF and PF describe AL before it is masked down to one digit, and OF
+     * -- undefined by the manual -- follows the same sign-flip rule as DAS.
+     */
+    this._cpu._flags.overflow = (result & 0x80) == 0 && (before & 0x80) != 0;
+    this.applyResultFlags8(result & 0xff);
+    result &= 0xff0f;
+
+    return result;
+  }
+
+  /**
+   * Performs the AAM instruction.
+   *
+   * Splits AL into two unpacked BCD digits, quotient in AH and remainder in
+   * AL. The base is an immediate, which is ten for actual BCD but may be
+   * anything; a base of zero is a divide error and is the caller's to raise.
+   *
+   * @param {number} ax - The AX register.
+   * @param {number} base - The immediate base.
+   *
+   * @return {number} The adjusted AX.
+   */
+  aam(ax, base) {
+    const al = ax & 0xff;
+    const divisor = base & 0xff;
+    const high = Math.floor(al / divisor) & 0xff;
+    const low = (al % divisor) & 0xff;
+
+    // Undefined by the manual; the hardware clears all three.
+    this._cpu._flags.overflow = false;
+    this._cpu._flags.auxiliaryCarry = false;
+    this._cpu._flags.carry = false;
+    this.applyResultFlags8(low);
+
+    return ((high << 8) | low) & 0xffff;
+  }
+
+  /**
+   * Performs the AAD instruction.
+   *
+   * Folds the two unpacked BCD digits in AX back into AL, ready for a divide.
+   *
+   * @param {number} ax - The AX register.
+   * @param {number} base - The immediate base.
+   *
+   * @return {number} The adjusted AX.
+   */
+  aad(ax, base) {
+    const al = ax & 0xff;
+    const ah = (ax >> 8) & 0xff;
+    const addend = (ah * (base & 0xff)) & 0xff;
+    const sum = al + addend;
+    const result = sum & 0xff;
+
+    // The microcode multiplies and then adds; CF and AF come from that add.
+    this._cpu._flags.carry = sum > 0xff;
+    this._cpu._flags.auxiliaryCarry = ((al ^ addend ^ result) & 0x10) != 0;
+    this.applyResultFlags8(result);
+
+    return result;
+  }
+
   mul8(a, b) {
     const result = ((a & 0xff) * (b & 0xff)) & 0xffff;
     this._cpu._flags.carry = (result & 0xff00) != 0;

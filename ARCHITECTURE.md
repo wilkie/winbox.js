@@ -148,20 +148,20 @@ against instruction tests captured from a real 80286 and reports a per-opcode
 pass rate; see the Testing section of the README for how to fetch the vectors.
 
 At the time of writing, across 127 instruction forms (250 vectors each),
-**87.3%** of vectors pass and 91 of the 127 forms pass completely:
+**98.3%** of vectors pass and 103 of the 127 forms pass completely:
 
 | Result                  | Vectors | Share |
 | ----------------------- | ------- | ----- |
-| Passing                 | 26,936  | 87.3% |
-| Form not decoded at all | 3,490   | 11.3% |
-| Flags wrong             | 323     | 1.0%  |
-| Wrong register          | 89      | 0.3%  |
+| Passing                 | 30,307  | 98.3% |
+| Flags wrong             | 438     | 1.4%  |
+| Wrong register          | 8       | 0.0%  |
 | Wrong memory write      | 5       | 0.0%  |
+| Form not decoded at all | 4       | 0.0%  |
 
-Nearly all of what remains is instructions the core does not decode: the BCD
-adjust group (`DAA`, `DAS`, `AAA`, `AAS`, `AAM`, `AAD`), the `SAL` alias in the
-shift group's `/6` slot, and the `TEST` alias in `/1`. That is a list of things
-to write, not a list of things to debug.
+Almost everything that remains is a flag the manuals call undefined and the
+hardware computes from its microcode: CF and OF after `DIV` and `IDIV`, and OF
+after `AAD`. Matching those means modelling the divide and multiply step
+sequences rather than their results.
 
 ### Flag behaviour the manuals call undefined
 
@@ -180,6 +180,11 @@ from 11,841 to 323:
 | `MUL`, `IMUL`, `DIV`, `IDIV` | AF             | Always set                                                                   |
 | `ROL`, `ROR`, `RCL`, `RCR`   | SF, ZF, PF, AF | Untouched                                                                    |
 
-`DIV` and `IDIV` also leave CF and OF in a data-dependent state that tracks the
-division microcode; those are the ~320 flag failures that remain, and matching
-them would mean modelling the divide step sequence.
+`DIV` and `IDIV` leave CF and OF in a data-dependent state that tracks the
+division microcode, and `AAD` does the same with OF. Those account for nearly
+all the remaining flag failures; matching them would mean modelling the step
+sequences rather than the results.
+
+Two instructions are decoded but still adjust the wrong way in a few cases:
+`CALL r/m16` (`FF /2`) leaves IP two low on 8 of 250 vectors, and `JMP FAR m16:16`
+under a `LOCK` prefix (`FF /5`) is not decoded at all.

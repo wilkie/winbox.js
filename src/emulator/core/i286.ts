@@ -1212,8 +1212,8 @@ export class I286 implements CpuCore16 {
         // The R field is what we check
         const r = (modRM >> 3) & 0x7;
 
-        if (r == 0x00) {
-          // TEST instruction
+        if (r == 0x00 || r == 0x01) {
+          // TEST instruction; /1 is an undocumented alias of /0.
           // (We do not consume the byte above. we will pull it again)
 
           // Retain the real opcode
@@ -1836,16 +1836,19 @@ export class I286 implements CpuCore16 {
         this.ds = this.pop16();
         break;
 
-        //case 0x27:    // DAA (Decimal Adjust AL After Addition)
-        // TODO: implement
+      case 0x27: // DAA (Decimal Adjust AL After Addition)
+        this.debug('daa         ');
+        this.al = this._alu.daa(this.al);
         break;
 
-        //case 0x2f:    // DAS (Decimal Adjust AL After Subtraction)
-        // TODO: implement
+      case 0x2f: // DAS (Decimal Adjust AL After Subtraction)
+        this.debug('das         ');
+        this.al = this._alu.das(this.al);
         break;
 
-        //case 0x37:    // AAA (ASCII Adjust AL After Addition)
-        // TODO: implement
+      case 0x37: // AAA (ASCII Adjust AL After Addition)
+        this.debug('aaa         ');
+        this.ax = this._alu.aaa(this.ax);
         break;
 
       case 0x38: // CMP eb,rb
@@ -1910,8 +1913,9 @@ export class I286 implements CpuCore16 {
         operation(this.readRegister16(I286.REGISTER_AX), instruction.immediate);
         break;
 
-        //case 0x3f:    // AAS (ASCII Adjust AL After Subtraction)
-        // TODO: implement!
+      case 0x3f: // AAS (ASCII Adjust AL After Subtraction)
+        this.debug('aas         ');
+        this.ax = this._alu.aas(this.ax);
         break;
 
       case 0x40: // INC AX
@@ -2617,6 +2621,7 @@ export class I286 implements CpuCore16 {
             operation = operation || this._alu.rcl8.bind(this._alu);
           case 0x3: // RCR eb,db (Rotate 9-bits (CF,Eb) right)
             operation = operation || this._alu.rcr8.bind(this._alu);
+          case 0x6: // SAL, an undocumented alias of SHL
           case 0x4: // SAL eb,db / SHL eb,db
             operation = operation || this._alu.shl8.bind(this._alu);
           case 0x5: // SHR eb,db
@@ -2656,6 +2661,7 @@ export class I286 implements CpuCore16 {
             operation = operation || this._alu.rcl16.bind(this._alu);
           case 0x3: // RCR ew,shamt (Rotate 17-bits (CF,Ew) right)
             operation = operation || this._alu.rcr16.bind(this._alu);
+          case 0x6: // SAL, an undocumented alias of SHL
           case 0x4: // SAL ew,shamt / SHL ew,shamt
             operation = operation || this._alu.shl16.bind(this._alu);
           case 0x5: // SHR ew,shamt
@@ -2797,12 +2803,21 @@ export class I286 implements CpuCore16 {
         this.f = this.pop16();
         break;
 
-        //case 0xd4:    // AAM (ASCII Adjust AX After Multiply)
-        // TODO: implement
+      case 0xd4: // AAM (ASCII Adjust AX After Multiply)
+        this.debug('aam    db   ');
+
+        if (instruction.immediate == 0) {
+          // Dividing by the immediate, so a zero base is a divide error.
+          this.raiseInterrupt(instruction, 0);
+          break;
+        }
+
+        this.ax = this._alu.aam(this.ax, instruction.immediate);
         break;
 
-        //case 0xd5:    // AAD (ASCII Adjust AX Before Division)
-        // TODO: implement
+      case 0xd5: // AAD (ASCII Adjust AX Before Division)
+        this.debug('aad    db   ');
+        this.ax = this._alu.aad(this.ax, instruction.immediate);
         break;
 
       case 0xd7: // XLAT mb / XLATB
@@ -2982,7 +2997,9 @@ export class I286 implements CpuCore16 {
             break;
           case 0x7: // IDIV ew
             this.debug('idiv   ew   ');
-            const idivResult = this._alu.idiv16(this.ax, aluWordOperand);
+            // The dividend is DX:AX, the same as DIV. This passed AX alone.
+            const idivOperand = ((this.dx << 16) | this.ax) >>> 0;
+            const idivResult = this._alu.idiv16(idivOperand, aluWordOperand);
             this.dx = (idivResult >> 16) & 0xffff;
             this.ax = idivResult & 0xffff;
             break;
