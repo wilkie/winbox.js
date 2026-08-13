@@ -755,9 +755,23 @@ export class ALU {
    * @return {number} The unsigned result. The high half is the remainder.
    */
   div8(a, b) {
-    const remainder = ((a & 0xffff) % (b & 0xff)) & 0xff;
+    const divisor = b & 0xff;
+    const quotient = Math.floor((a & 0xffff) / divisor) & 0xff;
+    const remainder = ((a & 0xffff) % divisor) & 0xff;
+    const result = ((remainder << 8) | quotient) & 0xffff;
+
+    /* CF and OF are documented as undefined. What survives is the compare from
+     * the last step of the non-restoring division the microcode performs. If
+     * that step subtracted -- which is exactly what the low quotient bit
+     * records -- undo it before comparing. OF ends up equal to CF.
+     */
+    const compared = result & 1 ? (((result & ~1) + (divisor << 8)) & 0xffff) >>> 8 : remainder;
+
+    this._cpu._flags.carry = compared < divisor;
+    this._cpu._flags.overflow = this._cpu._flags.carry;
     this.applyWideResultFlags(remainder, 0x80);
-    return ((((a & 0xffff) / (b & 0xff)) & 0xff) | (remainder << 8)) >>> 0;
+
+    return result;
   }
 
   /**
@@ -774,10 +788,20 @@ export class ALU {
    * @return {number} The unsigned result. The high half is the remainder.
    */
   div16(a, b) {
+    const divisor = b & 0xffff;
     const dividend = (a & 0xffffffff) >>> 0;
-    const remainder = (dividend % (b & 0xffff)) & 0xffff;
+    const quotient = Math.floor(dividend / divisor) & 0xffff;
+    const remainder = (dividend % divisor) & 0xffff;
+
+    // The same undo-and-compare as div8, over DX:AX rather than AH:AL.
+    const combined = ((quotient & ~1) | ((remainder << 16) >>> 0)) >>> 0;
+    const compared = quotient & 1 ? ((combined + ((divisor << 16) >>> 0)) >>> 0) >>> 16 : remainder;
+
+    this._cpu._flags.carry = compared < divisor;
+    this._cpu._flags.overflow = this._cpu._flags.carry;
     this.applyWideResultFlags(remainder, 0x8000);
-    return (((dividend / (b & 0xffff)) & 0xffff) | (remainder << 16)) >>> 0;
+
+    return ((remainder << 16) | quotient) >>> 0;
   }
 
   /**
@@ -816,11 +840,18 @@ export class ALU {
    * @return {number} The unsigned result. The high half is the remainder.
    */
   idiv8(a, b) {
-    a = this.toSigned16(a);
-    b = this.toSigned8(b);
-    const remainder = (a % b) & 0xff;
+    const dividend = this.toSigned16(a);
+    const divisor = this.toSigned8(b);
+    const remainder = (dividend % divisor) & 0xff;
+
+    /* The signed routine ends on a signed compare of the remainder against the
+     * divisor, rather than the unsigned undo-and-compare that DIV performs.
+     */
+    this._cpu._flags.carry = this.toSigned8(remainder) < divisor;
+    this._cpu._flags.overflow = this._cpu._flags.carry;
     this.applyWideResultFlags(remainder, 0x80);
-    return (((a / b) & 0xff) | (remainder << 8)) >>> 0;
+
+    return (((dividend / divisor) & 0xff) | (remainder << 8)) >>> 0;
   }
 
   /**
@@ -837,11 +868,15 @@ export class ALU {
    * @return {number} The unsigned result. The high half is the remainder.
    */
   idiv16(a, b) {
-    a = this.toSigned32(a);
-    b = this.toSigned16(b);
-    const remainder = (a % b) & 0xffff;
+    const dividend = this.toSigned32(a);
+    const divisor = this.toSigned16(b);
+    const remainder = (dividend % divisor) & 0xffff;
+
+    this._cpu._flags.carry = this.toSigned16(remainder) < divisor;
+    this._cpu._flags.overflow = this._cpu._flags.carry;
     this.applyWideResultFlags(remainder, 0x8000);
-    return (((a / b) & 0xffff) | (remainder << 16)) >>> 0;
+
+    return (((dividend / divisor) & 0xffff) | (remainder << 16)) >>> 0;
   }
 
   /**

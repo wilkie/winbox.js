@@ -148,20 +148,15 @@ against instruction tests captured from a real 80286 and reports a per-opcode
 pass rate; see the Testing section of the README for how to fetch the vectors.
 
 At the time of writing, across 127 instruction forms (250 vectors each),
-**98.3%** of vectors pass and 103 of the 127 forms pass completely:
+**99.3%** of vectors pass and 107 of the 127 forms pass completely:
 
 | Result                  | Vectors | Share |
 | ----------------------- | ------- | ----- |
-| Passing                 | 30,307  | 98.3% |
-| Flags wrong             | 438     | 1.4%  |
-| Wrong register          | 8       | 0.0%  |
+| Passing                 | 30,631  | 99.3% |
+| Flags wrong             | 188     | 0.6%  |
+| Wrong register          | 15      | 0.0%  |
 | Wrong memory write      | 5       | 0.0%  |
 | Form not decoded at all | 4       | 0.0%  |
-
-Almost everything that remains is a flag the manuals call undefined and the
-hardware computes from its microcode: CF and OF after `DIV` and `IDIV`, and OF
-after `AAD`. Matching those means modelling the divide and multiply step
-sequences rather than their results.
 
 ### Flag behaviour the manuals call undefined
 
@@ -180,11 +175,13 @@ from 11,841 to 323:
 | `MUL`, `IMUL`, `DIV`, `IDIV` | AF             | Always set                                                                   |
 | `ROL`, `ROR`, `RCL`, `RCR`   | SF, ZF, PF, AF | Untouched                                                                    |
 
-`DIV` and `IDIV` leave CF and OF in a data-dependent state that tracks the
-division microcode, and `AAD` does the same with OF. Those account for nearly
-all the remaining flag failures; matching them would mean modelling the step
-sequences rather than the results.
+What remains is small and specific:
 
-Two instructions are decoded but still adjust the wrong way in a few cases:
-`CALL r/m16` (`FF /2`) leaves IP two low on 8 of 250 vectors, and `JMP FAR m16:16`
-under a `LOCK` prefix (`FF /5`) is not decoded at all.
+- `AAD` leaves OF in a state no simple function of its inputs or result
+  reproduces. CF and AF come from the addition its microcode performs, but OF
+  appears to leak from inside the multiply step, and modelling that is still
+  open. 124 vectors.
+- Multi-bit `RCL` and `RCR` get OF wrong in a few percent of cases, where the
+  architecture only defines it for a rotate of one. 41 vectors.
+- `CALL r/m16` (`FF /2`) leaves IP two low on 8 vectors, and `JMP FAR m16:16`
+  under a `LOCK` prefix (`FF /5`) is the one form that still does not decode.
