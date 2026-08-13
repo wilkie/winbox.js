@@ -25,9 +25,17 @@ function loadCode(core, selector: number, offset: number, bytes: number[]) {
 }
 
 function makeCore() {
-  const memory = new Memory();
-  const cpu = new CPU(memory);
+  const machine = new Machine();
+  const memory = machine.memory;
+  const cpu = machine.cpu;
   const core = cpu.core;
+
+  /* Invariant 1 is about the vectors the emulator claims for itself. The Win16
+   * layer claims 0x80 and 0x81; anything unclaimed dispatches in the guest,
+   * through the interrupt table, the way the part would.
+   */
+  machine.interrupts.on(0x80, () => false);
+  machine.interrupts.on(0x81, () => false);
 
   // Real mode, with a flat-ish segment to scribble in.
   core.cs = 0x1000;

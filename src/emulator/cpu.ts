@@ -15,6 +15,7 @@ export class CPU implements CpuCoreHost {
   declare _interrupt: any;
   declare _interruptHandlers: any;
   declare _memory: any;
+  declare _interrupts: any;
   declare ax: any;
   declare bp: any;
   declare bx: any;
@@ -95,6 +96,22 @@ export class CPU implements CpuCoreHost {
 
   static get REGISTER_AX() {
     return I386.REGISTER_AX;
+  }
+
+  /**
+   * Registers the interrupt dispatcher whose vectors this CPU should treat as
+   * belonging to the host rather than to guest code.
+   */
+  set interrupts(manager) {
+    this._interrupts = manager;
+  }
+
+  /**
+   * Whether the host handles this vector itself. Unclaimed vectors dispatch in
+   * the guest, through the interrupt table, the way the part would.
+   */
+  claimsInterrupt(vector) {
+    return this._interrupts !== undefined && this._interrupts.has(vector);
   }
 
   get alu() {

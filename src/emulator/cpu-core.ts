@@ -150,6 +150,20 @@ export interface CpuCoreHost {
    * returns; the host drains it between instructions. See invariant 1.
    */
   interrupt: TrapVector | null;
+
+  /**
+   * Whether the host handles this vector itself.
+   *
+   * Interrupt dispatch is CPU behaviour: an interrupt pushes FLAGS, CS and IP
+   * and vectors through the interrupt table, and code in the guest handles it.
+   * The exception is the vectors the emulator claims for its own use -- the
+   * Win16 thunks trap on 0x80 and 0x81 -- which must reach the host instead of
+   * a guest handler, and which is what invariant 1 describes.
+   *
+   * So the rule is: a claimed vector latches for the host, and everything else
+   * dispatches in the guest the way the part would.
+   */
+  claimsInterrupt(vector: TrapVector): boolean;
 }
 
 /**

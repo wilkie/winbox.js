@@ -14,6 +14,13 @@ export class InterruptManager {
     this._interrupts[index] = callback;
   }
 
+  /**
+   * Whether a callback is registered for the given interrupt.
+   */
+  has(index) {
+    return this._interrupts[index] !== undefined;
+  }
+
   off(index) {
     delete this._interrupts[index];
   }

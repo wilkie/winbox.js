@@ -76,70 +76,60 @@ export class I286 implements CpuCore16 {
   /**
    * Raises the hardware interrupt at the given index.
    */
-  raiseInterrupt(instruction, index, code = null) {
-    if (code !== null) {
-      this.push16(code);
+  /**
+   * Raises an interrupt.
+   *
+   * A vector the host has claimed is latched for it to drain, leaving CS:IP on
+   * the instruction after the `INT` so the host can read arguments off the
+   * guest stack and resume. That is how the Win16 thunks work, and it is
+   * invariant 1 of the core contract.
+   *
+   * Every other vector dispatches the way the part would: push FLAGS, CS and
+   * IP, clear IF and TF, and vector through the interrupt table so guest code
+   * handles it.
+   *
+   * @param {object} instruction - The instruction raising the interrupt.
+   * @param {number} index - The interrupt vector.
+   * @param {number} code - An error code, pushed only in protected mode.
+   * @param {boolean} restartable - True for a fault, which pushes the address
+   *   of the offending instruction so that it can be restarted. False for a
+   *   trap such as `INT` or `INTO`, which pushes the address of the
+   *   instruction after it.
+   */
+  raiseInterrupt(instruction, index, code = null, restartable = true) {
+    if (this._cpu.claimsInterrupt === undefined || this._cpu.claimsInterrupt(index)) {
+      // The host wants this one. Leave the machine exactly as it stands.
+      this._cpu.interrupt = index;
+      return;
     }
 
-    this._cpu.interrupt = index;
-    return;
+    if (this.msw & 0x1) {
+      /* Protected-mode dispatch reads a gate out of the IDT and switches
+       * stacks on a privilege change. None of that is implemented, and there
+       * are no protected-mode vectors published to verify it against, so the
+       * vector is latched rather than dispatched wrongly.
+       */
+      this._cpu.interrupt = index;
+      return;
+    }
 
-    // Real Mode Interrupt (IVT)
-
-    // Push FLAGS, CS, IP of offending instruction
+    // Push FLAGS, then the return address.
     this.push16(this.f);
     this.push16(instruction.cs);
-    this.push16(instruction.ip);
+    this.push16(restartable ? instruction.ip : this.ip);
 
-    // Clear IF
-    this._flags.interruptEnable = 0;
+    if (code !== null) {
+      // Real mode pushes no error code; this is here for protected mode.
+    }
 
-    // Clear TF
-    this._flags.trap = 0;
+    this._flags.interruptEnable = false;
+    this._flags.trap = false;
 
-    // Look at the IVT (Interrupt Vector Table) if not in protected mode
-    let ivtBase = this.ivt;
+    // Real-mode entries are four bytes: offset then segment.
+    const entry = this.idtBase + index * 4;
 
-    // Each IVT entry is 4 bytes wide
-    ivtBase += index * 4;
-
-    // Read the segment and offset
-    const offset = this._memory.read16(ivtBase);
-    const segment = this._memory.read16(ivtBase + 2);
-
-    // Update CS to go to the provided index of the IDT.
-    this.ip = offset;
-    this.cs = segment;
-
-    /*
-        let idtBase = this.idtBase;
-
-        // Each IDT entry is 8 bytes
-        idtBase += (index * 8);
-
-        if (idtBase >= (this.idtBase + this.idtLimit)) {
-            // Fire another interrupt for an invalid IDT entry
-            // (TODO: Unless this IS the interrupt entry...)
-            return raiseInterrupt(instruction, 8);
-        }
-
-        // The IDT entry is as follows:
-        // +0 : Interrupt Code Offset
-        // +2 : Interrupt Code Segment Selector
-        // +4 : [15: P] [13-14: DP2] [12: 0] [9-11: 0b011] [8: T] [0-7: unused]
-        // +6 : Reserved (Should be 0 to remain compatible with i386)
-        //
-        // T in bit 8 above is 0 for an interrupt gate and 1 for a trap gate
-
-        // Read the IDT entry associated with the provided index.
-        let offset = this._memory.read16(idtBase);
-        let segment = this._memory.read16(idtBase + 2);
-        let flags = this._memory.read8(idtBase + 5);
-
-        // Update CS to go to the provided index of the IDT.
-        this.ip = offset;
-        this.cs = segment;
-        */
+    this.ip = this._memory.read16(entry);
+    this.cs = this._memory.read16(entry + 2);
   }
 
   raiseUndefinedOpcode(instruction) {
@@ -2803,18 +2793,18 @@ export class I286 implements CpuCore16 {
 
       case 0xcc: // INT 3
         this.debug('int 3       ');
-        this.raiseInterrupt(instruction, 3);
+        this.raiseInterrupt(instruction, 3, null, false);
         break;
 
       case 0xcd: // INT db
         this.debug('int         ');
-        this.raiseInterrupt(instruction, instruction.immediate);
+        this.raiseInterrupt(instruction, instruction.immediate, null, false);
         break;
 
       case 0xce: // INTO
         this.debug('into        ');
         if (this._flags.overflow) {
-          this.raiseInterrupt(instruction, 4);
+          this.raiseInterrupt(instruction, 4, null, false);
         }
         break;
 

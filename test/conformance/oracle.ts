@@ -138,14 +138,16 @@ function describeFlags(expected: number, actual: number): string {
  * So the recorded IP is always one byte beyond where the instruction under test
  * left it. We execute only the instruction under test and account for the
  * terminator here, rather than executing a HALT our core does not implement.
+ *
+ * ## Faulting vectors
+ *
+ * Roughly 42,000 of the vectors fault on hardware, and they carry the state
+ * after the fault was taken: the handler's CS:IP and the stack the dispatch
+ * pushed. Nothing claims any vector here, so every interrupt dispatches through
+ * the interrupt table the way the part would, and the recorded state is
+ * directly comparable. The table itself arrives in the vector's initial memory.
  */
 export function runVector(vector: Vector): VectorResult {
-  if (vector.exception !== undefined) {
-    // Faulting instructions need protected-mode exception plumbing the core
-    // does not have yet; counting them as failures would say nothing useful.
-    return { passed: true, skipped: true };
-  }
-
   const memory = new Memory();
   const cpu = new CPU(memory);
   const core = cpu.core;

@@ -21,6 +21,11 @@ export class Machine {
     this._cpu = new CPU(this._memory);
     this._interrupts = new InterruptManager();
 
+    /* The CPU needs to know which vectors belong to the host, so that
+     * everything else dispatches through the guest's interrupt table.
+     */
+    this._cpu.interrupts = this._interrupts;
+
     // 40MiB disk, 32KiB block size
     this._disks = [new Disk(40 * 1024 * 1024, 512, 32 * 1024)];
 

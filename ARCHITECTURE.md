@@ -52,6 +52,18 @@ INT 0x81          ; the callback returned
 
 ## The trap protocol
 
+Interrupt dispatch is CPU behaviour: an interrupt pushes FLAGS, CS and IP and
+vectors through the interrupt table, and guest code handles it. The exception
+is the vectors the emulator claims for itself, which have to reach the host
+instead. So the rule is: **a claimed vector latches for the host, everything
+else dispatches in the guest.**
+
+`CpuCoreHost#claimsInterrupt` answers which is which, backed by whatever has
+been registered on `Machine#interrupts`. Today that is `0x1A`, `0x21` and
+`0x31` for the DOS layer and `0x80` and `0x81` for the Win16 thunks.
+
+For a claimed vector:
+
 1. The guest executes `INT n`.
 2. The core latches the vector on the CPU wrapper (`cpu.interrupt = n`) and
    returns. It does **not** vector through the IVT or IDT. CS:IP is left on the
@@ -65,6 +77,14 @@ INT 0x81          ; the callback returned
 `Win16#syscallInvoke` takes the last option: it returns `false`, and
 `Scheduler#interpretReturnValue` resumes the task once the API implementation
 has produced a value for AX/DX.
+
+An unclaimed vector instead dispatches the way the part would: push FLAGS, push
+CS, push the return address, clear IF and TF, and load CS:IP from the four-byte
+real-mode entry. Faults push the address of the offending instruction so it can
+be restarted; traps such as `INT`, `INT3` and `INTO` push the address of the
+instruction after. Protected-mode dispatch through IDT gates is not implemented
+-- those vectors still latch -- because there are no protected-mode vectors
+published to verify it against.
 
 ## Argument marshalling
 
