@@ -29,8 +29,6 @@ export class CPU implements CpuCoreHost {
   declare si: any;
   declare sp: any;
   declare ss: any;
-  declare static REGISTER_AL: any;
-  declare static REGISTER_AX: any;
   constructor(memory?, options: any = {}) {
     this._memory = memory;
     this._core = new I386(this);
@@ -86,8 +84,22 @@ export class CPU implements CpuCoreHost {
   /**
    * Retrieves the ALU for this CPU.
    */
+  /* Register index constants, forwarded from the execution core. Callers need
+   * them to use readRegister8 and friends, and cpu.ts and i286.ts import one
+   * another, so these are getters rather than assignments evaluated in that
+   * cycle.
+   */
+  static get REGISTER_AL() {
+    return I386.REGISTER_AL;
+  }
+
+  static get REGISTER_AX() {
+    return I386.REGISTER_AX;
+  }
+
   get alu() {
-    return this._alu;
+    // The ALU belongs to the execution core; this used to return an unset field.
+    return this._core.alu;
   }
 
   /**

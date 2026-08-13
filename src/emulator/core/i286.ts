@@ -146,6 +146,13 @@ export class I286 implements CpuCore16 {
     this.raiseInterrupt(instruction, 6);
   }
 
+  /**
+   * Retrieves the arithmetic logic unit this core executes with.
+   */
+  get alu() {
+    return this._alu;
+  }
+
   get memory() {
     return this._memory;
   }

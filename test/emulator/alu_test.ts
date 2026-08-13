@@ -419,8 +419,9 @@ describe('ALU', () => {
     });
 
     it('should detect auxiliary carry', function () {
-      const a = Helper.randomInteger(0x00, 0xff) | 0xf;
-      const b = ~(Helper.randomInteger(0x00, 0xff) | 0xf) + 1;
+      // Borrowing out of bit 3 needs the minuend's low nibble to be smaller.
+      const a = Helper.randomInteger(0x00, 0xff) & ~0xf;
+      const b = Helper.randomInteger(0x01, 0x0f);
       this.alu.sub8(a, b);
       expect(this.alu.cpu.flags.auxiliaryCarry).toBe(true);
     });
@@ -482,8 +483,9 @@ describe('ALU', () => {
     });
 
     it('should detect auxiliary carry', function () {
-      const a = Helper.randomInteger(0x0000, 0xffff) | 0xf;
-      const b = ~(Helper.randomInteger(0x0000, 0xffff) | 0xf) + 1;
+      // Borrowing out of bit 3 needs the minuend's low nibble to be smaller.
+      const a = Helper.randomInteger(0x0000, 0xffff) & ~0xf;
+      const b = Helper.randomInteger(0x01, 0x0f);
       this.alu.sub16(a, b);
       expect(this.alu.cpu.flags.auxiliaryCarry).toBe(true);
     });
@@ -537,12 +539,14 @@ describe('ALU', () => {
       expect(this.alu.cpu.flags.carry).toBe(false);
     });
 
-    it('should not set auxiliary carry', function () {
-      const flag = this.alu.cpu.flags.auxiliaryCarry;
+    it('should clear auxiliary carry', function () {
+      /* Undefined per the manual, and cleared by the part: confirmed against
+       * every AND, OR, XOR and TEST vector in the 80286 suite.
+       */
       const a = Helper.randomInteger(0x00, 0xff);
       const b = Helper.randomInteger(0x00, 0xff);
       this.alu.and8(a, b);
-      expect(this.alu.cpu.flags.auxiliaryCarry).toEqual(flag);
+      expect(this.alu.cpu.flags.auxiliaryCarry).toBe(false);
     });
 
     it('should detect zero', function () {
@@ -594,12 +598,14 @@ describe('ALU', () => {
       expect(this.alu.cpu.flags.carry).toBe(false);
     });
 
-    it('should not set auxiliary carry', function () {
-      const flag = this.alu.cpu.flags.auxiliaryCarry;
+    it('should clear auxiliary carry', function () {
+      /* Undefined per the manual, and cleared by the part: confirmed against
+       * every AND, OR, XOR and TEST vector in the 80286 suite.
+       */
       const a = Helper.randomInteger(0x0000, 0xffff);
       const b = Helper.randomInteger(0x0000, 0xffff);
       this.alu.and16(a, b);
-      expect(this.alu.cpu.flags.auxiliaryCarry).toEqual(flag);
+      expect(this.alu.cpu.flags.auxiliaryCarry).toBe(false);
     });
 
     it('should detect zero', function () {
@@ -651,12 +657,14 @@ describe('ALU', () => {
       expect(this.alu.cpu.flags.carry).toBe(false);
     });
 
-    it('should not set auxiliary carry', function () {
-      const flag = this.alu.cpu.flags.auxiliaryCarry;
+    it('should clear auxiliary carry', function () {
+      /* Undefined per the manual, and cleared by the part: confirmed against
+       * every AND, OR, XOR and TEST vector in the 80286 suite.
+       */
       const a = Helper.randomInteger(0x00, 0xff);
       const b = Helper.randomInteger(0x00, 0xff);
       this.alu.or8(a, b);
-      expect(this.alu.cpu.flags.auxiliaryCarry).toEqual(flag);
+      expect(this.alu.cpu.flags.auxiliaryCarry).toBe(false);
     });
 
     it('should detect zero', function () {
@@ -708,12 +716,14 @@ describe('ALU', () => {
       expect(this.alu.cpu.flags.carry).toBe(false);
     });
 
-    it('should not set auxiliary carry', function () {
-      const flag = this.alu.cpu.flags.auxiliaryCarry;
+    it('should clear auxiliary carry', function () {
+      /* Undefined per the manual, and cleared by the part: confirmed against
+       * every AND, OR, XOR and TEST vector in the 80286 suite.
+       */
       const a = Helper.randomInteger(0x0000, 0xffff);
       const b = Helper.randomInteger(0x0000, 0xffff);
       this.alu.or16(a, b);
-      expect(this.alu.cpu.flags.auxiliaryCarry).toEqual(flag);
+      expect(this.alu.cpu.flags.auxiliaryCarry).toBe(false);
     });
 
     it('should detect zero', function () {
@@ -765,12 +775,14 @@ describe('ALU', () => {
       expect(this.alu.cpu.flags.carry).toBe(false);
     });
 
-    it('should not set auxiliary carry', function () {
-      const flag = this.alu.cpu.flags.auxiliaryCarry;
+    it('should clear auxiliary carry', function () {
+      /* Undefined per the manual, and cleared by the part: confirmed against
+       * every AND, OR, XOR and TEST vector in the 80286 suite.
+       */
       const a = Helper.randomInteger(0x00, 0xff);
       const b = Helper.randomInteger(0x00, 0xff);
       this.alu.xor8(a, b);
-      expect(this.alu.cpu.flags.auxiliaryCarry).toEqual(flag);
+      expect(this.alu.cpu.flags.auxiliaryCarry).toBe(false);
     });
 
     it('should detect zero', function () {
@@ -822,12 +834,14 @@ describe('ALU', () => {
       expect(this.alu.cpu.flags.carry).toBe(false);
     });
 
-    it('should not set auxiliary carry', function () {
-      const flag = this.alu.cpu.flags.auxiliaryCarry;
+    it('should clear auxiliary carry', function () {
+      /* Undefined per the manual, and cleared by the part: confirmed against
+       * every AND, OR, XOR and TEST vector in the 80286 suite.
+       */
       const a = Helper.randomInteger(0x0000, 0xffff);
       const b = Helper.randomInteger(0x0000, 0xffff);
       this.alu.xor16(a, b);
-      expect(this.alu.cpu.flags.auxiliaryCarry).toEqual(flag);
+      expect(this.alu.cpu.flags.auxiliaryCarry).toBe(false);
     });
 
     it('should detect zero', function () {
@@ -1065,21 +1079,21 @@ describe('ALU', () => {
       const a = Helper.randomInteger(0x0000, 0x7fff);
       const b = Helper.randomInteger(0x0000, 0x7fff);
       const result = this.alu.toSigned16(a) * this.alu.toSigned16(b);
-      expect(this.alu.imul16(a, b)).toEqual((result >>> 0) & 0xffffffff);
+      expect(this.alu.imul16(a, b)).toEqual(result >>> 0);
     });
 
     it('should multiply two negative numbers as unsigned', function () {
       const a = Helper.randomInteger(0x8000, 0xffff);
       const b = Helper.randomInteger(0x8000, 0xffff);
       const result = this.alu.toSigned16(a) * this.alu.toSigned16(b);
-      expect(this.alu.imul16(a, b)).toEqual((result >>> 0) & 0xffffffff);
+      expect(this.alu.imul16(a, b)).toEqual(result >>> 0);
     });
 
     it('should multiply one negative with one positive number', function () {
       const a = Helper.randomInteger(0x0000, 0x7fff);
       const b = Helper.randomInteger(0x8000, 0xffff);
       const result = this.alu.toSigned16(a) * this.alu.toSigned16(b);
-      expect(this.alu.imul16(a, b)).toEqual((result >>> 0) & 0xffffffff);
+      expect(this.alu.imul16(a, b)).toEqual(result >>> 0);
     });
 
     it('should detect carry when product requires 17 bits', function () {
@@ -1138,7 +1152,8 @@ describe('ALU', () => {
     it('should divide two negative numbers as unsigned', function () {
       const a = Helper.randomInteger(0x8000, 0xffff);
       const b = Helper.randomInteger(0x8000, 0xffff);
-      const result = (a / b) | ((a % b) << 16);
+      // The packed quotient and remainder come back unsigned.
+      const result = ((a / b) | ((a % b) << 16)) >>> 0;
       expect(this.alu.div16(a, b)).toEqual(result);
     });
 
@@ -1159,11 +1174,16 @@ describe('ALU', () => {
     });
 
     it('should divide two negative numbers', function () {
-      const a = Helper.randomInteger(0x80, 0xff);
+      /* The dividend is the whole of AX, so a negative dividend means a
+       * negative 16-bit value, small enough that the quotient still fits a
+       * byte. A quotient that does not fit faults rather than wrapping.
+       */
+      const a = 0xff00 + Helper.randomInteger(0x00, 0xff);
       const b = Helper.randomInteger(0x80, 0xff);
-      let result = this.alu.toSigned8(a) / this.alu.toSigned8(b);
-      result = (result & 0xff) | (((this.alu.toSigned8(a) % this.alu.toSigned8(b)) & 0xff) << 8);
-      expect(this.alu.idiv8(a, b)).toEqual(result);
+      const dividend = this.alu.toSigned16(a);
+      const divisor = this.alu.toSigned8(b);
+      const result = ((dividend / divisor) & 0xff) | (((dividend % divisor) & 0xff) << 8);
+      expect(this.alu.idiv8(a, b)).toEqual(result >>> 0);
     });
 
     it('should divide one negative and one positive number', function () {
@@ -1185,10 +1205,13 @@ describe('ALU', () => {
     });
 
     it('should divide two negative numbers', function () {
-      const a = Helper.randomInteger(0x8000, 0xffff);
+      // As in idiv8: the dividend is DX:AX and the quotient has to fit a word.
+      const a = (0xffff0000 + Helper.randomInteger(0x0000, 0xffff)) >>> 0;
       const b = Helper.randomInteger(0x8000, 0xffff);
-      let result = (this.alu.toSigned16(a) / this.alu.toSigned16(b)) & 0xffff;
-      result |= ((this.alu.toSigned16(a) % this.alu.toSigned16(b)) & 0xffff) << 16;
+      const dividend = this.alu.toSigned32(a);
+      const divisor = this.alu.toSigned16(b);
+      let result = (dividend / divisor) & 0xffff;
+      result |= ((dividend % divisor) & 0xffff) << 16;
       expect(this.alu.idiv16(a, b)).toEqual(result >>> 0);
     });
 
@@ -1227,7 +1250,8 @@ describe('ALU', () => {
     });
 
     it('should detect auxiliary carry', function () {
-      const a = Helper.randomInteger(0x00, 0xff) | 0xf;
+      // Decrementing borrows out of bit 3 only when the low nibble is zero.
+      const a = Helper.randomInteger(0x00, 0xff) & ~0xf;
       this.alu.dec8(a);
       expect(this.alu.cpu.flags.auxiliaryCarry).toBe(true);
     });
@@ -1277,7 +1301,8 @@ describe('ALU', () => {
     });
 
     it('should detect auxiliary carry', function () {
-      const a = Helper.randomInteger(0x0000, 0xffff) | 0xf;
+      // Decrementing borrows out of bit 3 only when the low nibble is zero.
+      const a = Helper.randomInteger(0x0000, 0xffff) & ~0xf;
       this.alu.dec16(a);
       expect(this.alu.cpu.flags.auxiliaryCarry).toBe(true);
     });

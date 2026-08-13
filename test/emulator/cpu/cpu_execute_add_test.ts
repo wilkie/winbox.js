@@ -20,7 +20,7 @@ describe('CPU', () => {
 
     describe('add eb,rb', function () {
       it('should execute the instruction with register source', function () {
-        this.memory.write8(this.segment, this.cpu.ip + 0, 0x00);
+        this.cpu.write8(this.segment, this.cpu.ip + 0, 0x00);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
         const reg = Helper.randomInteger(0x0, 0x7);
         const offset = this.writeModRM(this.cpu.ip + 1, reg);
@@ -43,7 +43,7 @@ describe('CPU', () => {
       });
 
       it('should execute the instruction with memory source', function () {
-        this.memory.write8(this.segment, this.cpu.ip + 0, 0x00);
+        this.cpu.write8(this.segment, this.cpu.ip + 0, 0x00);
         this.checkInstruction.operandRegister = -1;
         const reg = Helper.randomInteger(0x0, 0x7);
 
@@ -69,7 +69,7 @@ describe('CPU', () => {
 
     describe('add rb,eb', function () {
       it('should execute the instruction with register source', function () {
-        this.memory.write8(this.segment, this.cpu.ip + 0, 0x02);
+        this.cpu.write8(this.segment, this.cpu.ip + 0, 0x02);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
         const reg = Helper.randomInteger(0x0, 0x7);
         const offset = this.writeModRM(this.cpu.ip + 1, reg);
@@ -92,7 +92,7 @@ describe('CPU', () => {
       });
 
       it('should execute the instruction with memory source', function () {
-        this.memory.write8(this.segment, this.cpu.ip + 0, 0x02);
+        this.cpu.write8(this.segment, this.cpu.ip + 0, 0x02);
         this.checkInstruction.operandRegister = -1;
         const reg = Helper.randomInteger(0x0, 0x7);
 
@@ -118,7 +118,7 @@ describe('CPU', () => {
 
     describe('add AL,db', function () {
       it('should execute the instruction', function () {
-        this.memory.write8(this.segment, this.cpu.ip + 0, 0x04);
+        this.cpu.write8(this.segment, this.cpu.ip + 0, 0x04);
         const offset = this.writeImm8(this.cpu.ip + 1);
 
         const a = Helper.randomInteger(0x00, 0xff);
@@ -139,7 +139,7 @@ describe('CPU', () => {
 
     describe('add AX,db', function () {
       it('should execute the instruction', function () {
-        this.memory.write8(this.segment, this.cpu.ip + 0, 0x05);
+        this.cpu.write8(this.segment, this.cpu.ip + 0, 0x05);
         const offset = this.writeImm16(this.cpu.ip + 1);
 
         const a = Helper.randomInteger(0x0000, 0xffff);
@@ -160,7 +160,7 @@ describe('CPU', () => {
 
     describe('add ew,dw', function () {
       it('should execute the instruction with register source', function () {
-        this.memory.write8(this.segment, this.cpu.ip + 0, 0x81);
+        this.cpu.write8(this.segment, this.cpu.ip + 0, 0x81);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
         let offset = this.writeModRM(this.cpu.ip + 1, 0x0);
         offset = this.writeImm16(offset);
@@ -181,7 +181,7 @@ describe('CPU', () => {
       });
 
       it('should execute the instruction with memory source', function () {
-        this.memory.write8(this.segment, this.cpu.ip + 0, 0x81);
+        this.cpu.write8(this.segment, this.cpu.ip + 0, 0x81);
         this.checkInstruction.operandRegister = -1;
         let offset = this.writeModRM(this.cpu.ip + 1, 0x0);
         offset = this.writeImm16(offset);
@@ -204,13 +204,17 @@ describe('CPU', () => {
 
     describe('add ew,db', function () {
       it('should execute the instruction with register source', function () {
-        this.memory.write8(this.segment, this.cpu.ip + 0, 0x83);
+        this.cpu.write8(this.segment, this.cpu.ip + 0, 0x83);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
         let offset = this.writeModRM(this.cpu.ip + 1, 0x0);
         offset = this.writeImm8(offset);
 
         const a = Helper.randomInteger(0x0000, 0xffff);
-        const b = this.checkInstruction.immediate;
+
+        /* The byte immediate is sign-extended to the operand width before it
+         * reaches the ALU, so that is what the call is expected to carry.
+         */
+        const b = (((this.checkInstruction.immediate << 24) >> 24) & 0xffff) >>> 0;
 
         this.cpu.writeRegister16(this.checkInstruction.operandRegister, a);
 
@@ -225,13 +229,17 @@ describe('CPU', () => {
       });
 
       it('should execute the instruction with memory source', function () {
-        this.memory.write8(this.segment, this.cpu.ip + 0, 0x83);
+        this.cpu.write8(this.segment, this.cpu.ip + 0, 0x83);
         this.checkInstruction.operandRegister = -1;
         let offset = this.writeModRM(this.cpu.ip + 1, 0x0);
         offset = this.writeImm8(offset);
 
         const a = Helper.randomInteger(0x0000, 0xffff);
-        const b = this.checkInstruction.immediate;
+
+        /* The byte immediate is sign-extended to the operand width before it
+         * reaches the ALU, so that is what the call is expected to carry.
+         */
+        const b = (((this.checkInstruction.immediate << 24) >> 24) & 0xffff) >>> 0;
 
         this.writeMemOperand16(a);
 
@@ -248,7 +256,7 @@ describe('CPU', () => {
 
     describe('add eb,db', function () {
       it('should execute the instruction with register source', function () {
-        this.memory.write8(this.segment, this.cpu.ip + 0, 0x80);
+        this.cpu.write8(this.segment, this.cpu.ip + 0, 0x80);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
         let offset = this.writeModRM(this.cpu.ip + 1, 0x0);
         offset = this.writeImm8(offset);
@@ -269,7 +277,7 @@ describe('CPU', () => {
       });
 
       it('should execute the instruction with memory source', function () {
-        this.memory.write8(this.segment, this.cpu.ip + 0, 0x80);
+        this.cpu.write8(this.segment, this.cpu.ip + 0, 0x80);
         this.checkInstruction.operandRegister = -1;
         let offset = this.writeModRM(this.cpu.ip + 1, 0x0);
         offset = this.writeImm8(offset);
@@ -292,7 +300,7 @@ describe('CPU', () => {
 
     describe('add ew,rw', function () {
       it('should execute the instruction with register source', function () {
-        this.memory.write8(this.segment, this.cpu.ip + 0, 0x01);
+        this.cpu.write8(this.segment, this.cpu.ip + 0, 0x01);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
         const reg = Helper.randomInteger(0x0, 0x7);
         const offset = this.writeModRM(this.cpu.ip + 1, reg);
@@ -315,7 +323,7 @@ describe('CPU', () => {
       });
 
       it('should execute the instruction with memory source', function () {
-        this.memory.write8(this.segment, this.cpu.ip + 0, 0x01);
+        this.cpu.write8(this.segment, this.cpu.ip + 0, 0x01);
         this.checkInstruction.operandRegister = -1;
         const reg = Helper.randomInteger(0x0, 0x7);
 
@@ -341,7 +349,7 @@ describe('CPU', () => {
 
     describe('add rw,ew', function () {
       it('should execute the instruction with register source', function () {
-        this.memory.write8(this.segment, this.cpu.ip + 0, 0x03);
+        this.cpu.write8(this.segment, this.cpu.ip + 0, 0x03);
         this.checkInstruction.operandRegister = Helper.randomInteger(0x0, 0x7);
         const reg = Helper.randomInteger(0x0, 0x7);
         const offset = this.writeModRM(this.cpu.ip + 1, reg);
@@ -364,7 +372,7 @@ describe('CPU', () => {
       });
 
       it('should execute the instruction with memory source', function () {
-        this.memory.write8(this.segment, this.cpu.ip + 0, 0x03);
+        this.cpu.write8(this.segment, this.cpu.ip + 0, 0x03);
         this.checkInstruction.operandRegister = -1;
         const reg = Helper.randomInteger(0x0, 0x7);
 

@@ -123,6 +123,14 @@ the desktop's dithered background, bitmap fonts, and GDI surfaces.
 
 Found while formalizing the boundary; recorded here rather than fixed silently.
 
+The emulator unit suite passes in full. It spent a long time not doing so --
+3,787 of its 3,823 tests failed -- because it had been written against an
+earlier shape of the emulator: a segmented `Memory`, registers on the `CPU`
+wrapper, and register index constants the wrapper never exposed. All of that
+had since moved into the execution core. The suite now addresses memory
+through the core, so tests and instructions translate addresses identically in
+whatever mode the core is in.
+
 - **`CpuState` omits FLAGS.** `Scheduler#call` snapshots state before entering
   a callback and restores it afterwards, so a callback's flag results leak back
   into the interrupted code. Survivable because flags are caller-saved by
@@ -134,12 +142,6 @@ Found while formalizing the boundary; recorded here rather than fixed silently.
 - **The real-mode interrupt path in `raiseInterrupt` is unreachable.** Everything
   after the latch is dead code. If real-mode vectoring is ever needed, it needs
   writing rather than enabling.
-- **The emulator unit suite still targets the pre-refactor shape.** `MockCPU`
-  builds the ALU from the `CPU` wrapper rather than the core, and `CPU#alu`
-  returns a field nothing assigns. Pointing the helper at `cpu.core` recovers
-  about 174 tests; the `cpu_execute` files need more than that. Nine divide
-  tests began failing once `DIV`/`IDIV` started setting flags correctly: they
-  had only passed because those instructions previously touched no flags.
 
 ## CPU accuracy
 

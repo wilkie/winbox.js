@@ -850,7 +850,6 @@ export class I386 extends I286 implements CpuCore {
           this.readModRM(instruction);
           break;
 
-        case 0x9b:
         case 0xd8:
         case 0xd9:
         case 0xda:
@@ -897,7 +896,6 @@ export class I386 extends I286 implements CpuCore {
           instruction = this.decode(instruction);
           break;
 
-        case 0x9b:
         case 0xd8:
         case 0xd9:
         case 0xda:
@@ -1595,7 +1593,6 @@ export class I386 extends I286 implements CpuCore {
           //console.log('sp:', this.sp.toString(16));
           break;
 
-        case 0x9b:
         case 0xd8:
         case 0xd9:
         case 0xda:
@@ -1929,7 +1926,6 @@ export class I386 extends I286 implements CpuCore {
           }
           break;
 
-        case 0x9b:
         case 0xd8:
         case 0xd9:
         case 0xda:
@@ -2175,7 +2171,6 @@ export class I386 extends I286 implements CpuCore {
 
           break;
 
-        case 0x9b:
         case 0xd8:
         case 0xd9:
         case 0xda:
