@@ -1,0 +1,8 @@
+# Revisions to skip when running git blame. Add bulk reformatting commits
+# here, never functional ones.
+#
+# Configure git to use this file automatically:
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Apply Prettier across the repository
+7d9cd35fe255d8910ffc170d81e7badfc7c6a945
