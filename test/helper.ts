@@ -64,7 +64,7 @@ export class Helper {
     let obj = toCheck;
     do {
       props = props.concat(Object.getOwnPropertyNames(obj));
-      // eslint-disable-next-line no-cond-assign
+      // The extra parentheses mark the assignment as deliberate.
     } while ((obj = Object.getPrototypeOf(obj)));
 
     return props.sort().filter(function (e, i, arr) {
