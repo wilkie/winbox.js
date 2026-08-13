@@ -147,16 +147,12 @@ Accuracy is measured, not estimated. `pnpm test:conformance` runs our core
 against instruction tests captured from a real 80286 and reports a per-opcode
 pass rate; see the Testing section of the README for how to fetch the vectors.
 
-At the time of writing, across 127 instruction forms (250 vectors each),
-**99.3%** of vectors pass and 107 of the 127 forms pass completely:
+The core currently passes **every vector** in the fetched corpus: 127 of 127
+instruction forms, with no register, flag, memory or decoding failures.
 
-| Result                  | Vectors | Share |
-| ----------------------- | ------- | ----- |
-| Passing                 | 30,631  | 99.3% |
-| Flags wrong             | 188     | 0.6%  |
-| Wrong register          | 15      | 0.0%  |
-| Wrong memory write      | 5       | 0.0%  |
-| Form not decoded at all | 4       | 0.0%  |
+Getting there meant treating the flags the manuals call undefined as
+observable behaviour rather than as licence to do anything, since compatibility
+means matching the part.
 
 ### Flag behaviour the manuals call undefined
 
@@ -175,13 +171,21 @@ from 11,841 to 323:
 | `MUL`, `IMUL`, `DIV`, `IDIV` | AF             | Always set                                                                   |
 | `ROL`, `ROR`, `RCL`, `RCR`   | SF, ZF, PF, AF | Untouched                                                                    |
 
-What remains is small and specific:
+### Bugs the vectors caught that a reading would not
 
-- `AAD` leaves OF in a state no simple function of its inputs or result
-  reproduces. CF and AF come from the addition its microcode performs, but OF
-  appears to leak from inside the multiply step, and modelling that is still
-  open. 124 vectors.
-- Multi-bit `RCL` and `RCR` get OF wrong in a few percent of cases, where the
-  architecture only defines it for a rotate of one. 41 vectors.
-- `CALL r/m16` (`FF /2`) leaves IP two low on 8 vectors, and `JMP FAR m16:16`
-  under a `LOCK` prefix (`FF /5`) is the one form that still does not decode.
+Several of these were invisible to inspection and to the unit suite, and only
+appeared as a handful of failures out of thousands:
+
+- `instruction.segment || this.ds` treated a segment override of **zero** as no
+  override at all, silently falling back to the default segment. Segment 0 is
+  perfectly legal, so any string operation or memory access under an override
+  in a zero segment read from the wrong place. Twenty-five sites, now `??`.
+- `CALL SP` pushed the return address before reading its target, so it jumped
+  to the stack pointer as the push had left it, two bytes low.
+- `JMP FAR m16:16` rejected the instruction outright unless a segment override
+  was present, rather than defaulting to DS.
+- `SUB` and `SBB` computed OF, like AF before it, from the negated operand.
+- `DAS` dropped the borrow out of its first adjustment, which belongs in CF.
+
+The `DIV`/`IDIV` and `AAD` flag rules, and the `CALL SP` ordering, came from
+the `machinery` reference implementation, which passes the same suite.

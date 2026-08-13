@@ -1605,6 +1605,8 @@ export class I286 implements CpuCore16 {
     // Some placeholder values
     let operation = null;
     let shiftAmount = null;
+    let callTarget = null;
+    let callSegment = null;
 
     // Execute the opcode
     switch (opcode) {
@@ -2420,7 +2422,7 @@ export class I286 implements CpuCore16 {
         this.debug('mov    AL,xb');
         this.writeRegister8(
           I286.REGISTER_AL,
-          this.read8(instruction.segment || this.ds, instruction.immediate)
+          this.read8(instruction.segment ?? this.ds, instruction.immediate)
         );
         break;
 
@@ -2428,14 +2430,14 @@ export class I286 implements CpuCore16 {
         this.debug('mov    AX,xw');
         this.writeRegister16(
           I286.REGISTER_AX,
-          this.read16(instruction.segment || this.ds, instruction.immediate)
+          this.read16(instruction.segment ?? this.ds, instruction.immediate)
         );
         break;
 
       case 0xa2: // MOV xb,AL
         this.debug('mov    xb,AL');
         this.write8(
-          instruction.segment || this.ds,
+          instruction.segment ?? this.ds,
           instruction.immediate,
           this.readRegister8(I286.REGISTER_AL)
         );
@@ -2443,7 +2445,7 @@ export class I286 implements CpuCore16 {
 
       case 0xa3: // MOV xw,AX
         this.debug('mov    xw,AX');
-        this.write16(instruction.segment || this.ds, instruction.immediate, this.ax);
+        this.write16(instruction.segment ?? this.ds, instruction.immediate, this.ax);
         break;
 
       case 0xa4: // MOVS mb,mb / MOVSB
@@ -2452,13 +2454,13 @@ export class I286 implements CpuCore16 {
         while (!instruction.repeat || this.cx != 0) {
           // No segment overrides are allowed.
           if (instruction.opcode == 0xa4) {
-            //console.log("MOVSB WRITE", this.cx, this.es.toString(16), this.di.toString(16), (instruction.segment || this.ds).toString(16), this.si.toString(16), this.read8(instruction.segment || this.ds, this.si).toString(16));
-            this.write8(this.es, this.di, this.read8(instruction.segment || this.ds, this.si));
+            //console.log("MOVSB WRITE", this.cx, this.es.toString(16), this.di.toString(16), (instruction.segment ?? this.ds).toString(16), this.si.toString(16), this.read8(instruction.segment ?? this.ds, this.si).toString(16));
+            this.write8(this.es, this.di, this.read8(instruction.segment ?? this.ds, this.si));
             this.di += this._flags.direction ? -1 : 1;
             this.si += this._flags.direction ? -1 : 1;
           } else {
-            //console.log("MOVSW WRITE", this.cx, this.es.toString(16), this.di.toString(16), (instruction.segment || this.ds).toString(16), this.si.toString(16), this.read8(instruction.segment || this.ds, this.si).toString(16));
-            this.write16(this.es, this.di, this.read16(instruction.segment || this.ds, this.si));
+            //console.log("MOVSW WRITE", this.cx, this.es.toString(16), this.di.toString(16), (instruction.segment ?? this.ds).toString(16), this.si.toString(16), this.read8(instruction.segment ?? this.ds, this.si).toString(16));
+            this.write16(this.es, this.di, this.read16(instruction.segment ?? this.ds, this.si));
             this.di += this._flags.direction ? -2 : 2;
             this.si += this._flags.direction ? -2 : 2;
           }
@@ -2478,14 +2480,14 @@ export class I286 implements CpuCore16 {
           // No segment overrides are allowed. (but we allow them??)
           if (instruction.opcode == 0xa6) {
             this._alu.sub8(
-              this.read8(instruction.segment || this.ds, this.si),
+              this.read8(instruction.segment ?? this.ds, this.si),
               this.read8(this.es, this.di)
             );
             this.di += this._flags.direction ? -1 : 1;
             this.si += this._flags.direction ? -1 : 1;
           } else {
             this._alu.sub16(
-              this.read16(instruction.segment || this.ds, this.si),
+              this.read16(instruction.segment ?? this.ds, this.si),
               this.read16(this.es, this.di)
             );
             this.di += this._flags.direction ? -2 : 2;
@@ -2532,10 +2534,10 @@ export class I286 implements CpuCore16 {
         this.debug('lods   mb/mw');
         while (!instruction.repeat || this.cx != 0) {
           if (instruction.opcode == 0xac) {
-            this.al = this.read8(instruction.segment || this.ds, this.si);
+            this.al = this.read8(instruction.segment ?? this.ds, this.si);
             this.si += this._flags.direction ? -1 : 1;
           } else {
-            this.ax = this.read16(instruction.segment || this.ds, this.si);
+            this.ax = this.read16(instruction.segment ?? this.ds, this.si);
             this.si += this._flags.direction ? -2 : 2;
           }
 
@@ -2822,7 +2824,7 @@ export class I286 implements CpuCore16 {
 
       case 0xd7: // XLAT mb / XLATB
         this.debug('xlat   mb');
-        this.al = this.read8(instruction.segment || this.ds, (this.bx + this.al) & 0xffff);
+        this.al = this.read8(instruction.segment ?? this.ds, (this.bx + this.al) & 0xffff);
         break;
 
       case 0xe0: // LOOPNE cb / LOOPNZ cb
@@ -3086,32 +3088,28 @@ export class I286 implements CpuCore16 {
             break;
 
           case 0x2: // CALL ew
-            // Push IP
+            /* Read the target before pushing: `CALL SP` has to see the stack
+             * pointer as it was, not as the push leaves it.
+             */
+            callTarget = this.readOperand16(instruction);
             this.push16(this.ip);
-
-            // Set IP to the given operand
-            this.ip = this.readOperand16(instruction);
+            this.ip = callTarget;
             this.debug('call   ew', this.ip.toString(16));
             break;
 
           case 0x3: // CALL far ed
             this.debug('callf  ed');
-            if (instruction.segment === undefined) {
-              throw new InvalidInstruction(instruction);
-            }
 
-            // Push CS
+            // Read the far pointer before the pushes disturb the stack.
+            callTarget = this.readOperand16(instruction);
+            callSegment = this.read16(instruction.segment ?? this.ds, instruction.offset + 2);
+
             this.push16(this.cs);
-
-            // Push IP
             this.push16(this.ip);
 
-            // Set IP to the given operand
-            this.ip = this.readOperand16(instruction);
+            this.ip = callTarget;
+            this.cs = callSegment;
             this.debug('callf  ed', this.ip.toString(16));
-
-            // Set CS to the following word
-            this.cs = this.read16(instruction.segment, instruction.offset + 2);
             break;
 
           case 0x4: // JMP ew
@@ -3121,17 +3119,13 @@ export class I286 implements CpuCore16 {
 
           case 0x5: // JMP far ed
             this.debug('jmpf   ed');
-            this.debug(instruction);
-            this.debug(this.memory);
-            if (!instruction.segment) {
-              throw new InvalidInstruction(instruction);
-            }
 
-            // Set IP to the given operand
-            this.ip = this.readOperand16(instruction);
-
-            // Set CS to the following word
-            this.cs = this.read16(instruction.segment, instruction.offset + 2);
+            /* The far pointer is read through the default data segment when no
+             * override is present; this used to reject the instruction.
+             */
+            callTarget = this.readOperand16(instruction);
+            this.cs = this.read16(instruction.segment ?? this.ds, instruction.offset + 2);
+            this.ip = callTarget;
             break;
 
           case 0x6: // PUSH mw

@@ -176,6 +176,7 @@ export class ALU {
      * operands the caller actually passed.
      */
     this._cpu._flags.auxiliaryCarry = ((a ^ b ^ result) & 0x10) != 0;
+    this._cpu._flags.overflow = ((a ^ b) & (a ^ result) & 0x80) != 0;
 
     return result;
   }
@@ -188,6 +189,7 @@ export class ALU {
      * operands the caller actually passed.
      */
     this._cpu._flags.auxiliaryCarry = ((a ^ b ^ result) & 0x10) != 0;
+    this._cpu._flags.overflow = ((a ^ b) & (a ^ result) & 0x8000) != 0;
 
     return result;
   }
@@ -200,6 +202,7 @@ export class ALU {
      * operands the caller actually passed.
      */
     this._cpu._flags.auxiliaryCarry = ((a ^ b ^ result) & 0x10) != 0;
+    this._cpu._flags.overflow = ((a ^ b) & (a ^ result) & 0x80000000) != 0;
 
     return result;
   }
@@ -211,6 +214,7 @@ export class ALU {
 
     // AF is the borrow out of bit 3, from the operands as given.
     this._cpu._flags.auxiliaryCarry = ((a ^ b ^ result) & 0x10) != 0;
+    this._cpu._flags.overflow = ((a ^ b) & (a ^ result) & 0x80) != 0;
 
     return result;
   }
@@ -222,6 +226,7 @@ export class ALU {
 
     // AF is the borrow out of bit 3, from the operands as given.
     this._cpu._flags.auxiliaryCarry = ((a ^ b ^ result) & 0x10) != 0;
+    this._cpu._flags.overflow = ((a ^ b) & (a ^ result) & 0x8000) != 0;
 
     return result;
   }
@@ -233,6 +238,7 @@ export class ALU {
 
     // AF is the borrow out of bit 3, from the operands as given.
     this._cpu._flags.auxiliaryCarry = ((a ^ b ^ result) & 0x10) != 0;
+    this._cpu._flags.overflow = ((a ^ b) & (a ^ result) & 0x80000000) != 0;
 
     return result;
   }
@@ -470,8 +476,11 @@ export class ALU {
     const before = al & 0xff;
     const carryBefore = this._cpu._flags.carry;
     let result = before;
+    let carry = false;
 
     if ((before & 0x0f) > 9 || this._cpu._flags.auxiliaryCarry) {
+      // The low adjustment can borrow, and that borrow survives into CF.
+      carry = carryBefore || result - 6 < 0;
       result = result - 6;
       this._cpu._flags.auxiliaryCarry = true;
     } else {
@@ -480,11 +489,10 @@ export class ALU {
 
     if (before > 0x99 || carryBefore) {
       result = result - 0x60;
-      this._cpu._flags.carry = true;
-    } else {
-      this._cpu._flags.carry = false;
+      carry = true;
     }
 
+    this._cpu._flags.carry = carry;
     result &= 0xff;
 
     // The mirror of DAA: set when the adjustment carried the value from
@@ -606,8 +614,12 @@ export class ALU {
     const sum = al + addend;
     const result = sum & 0xff;
 
-    // The microcode multiplies and then adds; CF and AF come from that add.
+    /* The microcode multiplies and then adds; CF and AF come from that add.
+     * OF is not computed at all -- it is assigned from CF, the same way the
+     * divides do it.
+     */
     this._cpu._flags.carry = sum > 0xff;
+    this._cpu._flags.overflow = this._cpu._flags.carry;
     this._cpu._flags.auxiliaryCarry = ((al ^ addend ^ result) & 0x10) != 0;
     this.applyResultFlags8(result);
 
@@ -1154,10 +1166,13 @@ export class ALU {
    * count wraps at 9 rather than 8.
    */
   rcl8(a, b) {
-    const count = (b & 0x1f) % 9;
+    const rotations = b & 0x1f;
+    const count = rotations % 9;
     let result = a & 0xff;
 
-    if (count == 0) {
+    if (rotations == 0) {
+      // Only a zero count leaves the flags alone; a whole
+      // rotation is an identity that still writes CF and OF.
       return result;
     }
 
@@ -1182,10 +1197,13 @@ export class ALU {
    * count wraps at 17 rather than 16.
    */
   rcl16(a, b) {
-    const count = (b & 0x1f) % 17;
+    const rotations = b & 0x1f;
+    const count = rotations % 17;
     let result = a & 0xffff;
 
-    if (count == 0) {
+    if (rotations == 0) {
+      // Only a zero count leaves the flags alone; a whole
+      // rotation is an identity that still writes CF and OF.
       return result;
     }
 
@@ -1210,10 +1228,13 @@ export class ALU {
    * count wraps at 33 rather than 32.
    */
   rcl32(a, b) {
-    const count = (b & 0x1f) % 33;
+    const rotations = b & 0x1f;
+    const count = rotations % 33;
     let result = a & 0xffffffff;
 
-    if (count == 0) {
+    if (rotations == 0) {
+      // Only a zero count leaves the flags alone; a whole
+      // rotation is an identity that still writes CF and OF.
       return result;
     }
 
@@ -1238,10 +1259,13 @@ export class ALU {
    * the exclusive-or of the top two bits of the result.
    */
   rcr8(a, b) {
-    const count = (b & 0x1f) % 9;
+    const rotations = b & 0x1f;
+    const count = rotations % 9;
     let result = a & 0xff;
 
-    if (count == 0) {
+    if (rotations == 0) {
+      // Only a zero count leaves the flags alone; a whole
+      // rotation is an identity that still writes CF and OF.
       return result;
     }
 
@@ -1266,10 +1290,13 @@ export class ALU {
    * the exclusive-or of the top two bits of the result.
    */
   rcr16(a, b) {
-    const count = (b & 0x1f) % 17;
+    const rotations = b & 0x1f;
+    const count = rotations % 17;
     let result = a & 0xffff;
 
-    if (count == 0) {
+    if (rotations == 0) {
+      // Only a zero count leaves the flags alone; a whole
+      // rotation is an identity that still writes CF and OF.
       return result;
     }
 
@@ -1294,10 +1321,13 @@ export class ALU {
    * the exclusive-or of the top two bits of the result.
    */
   rcr32(a, b) {
-    const count = (b & 0x1f) % 33;
+    const rotations = b & 0x1f;
+    const count = rotations % 33;
     let result = a & 0xffffffff;
 
-    if (count == 0) {
+    if (rotations == 0) {
+      // Only a zero count leaves the flags alone; a whole
+      // rotation is an identity that still writes CF and OF.
       return result;
     }
 

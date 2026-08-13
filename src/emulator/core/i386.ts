@@ -1254,13 +1254,13 @@ export class I386 extends I286 implements CpuCore {
           this.debug('mov    EAX,xw');
           this.writeRegister32(
             I386.REGISTER_EAX,
-            this.read32(instruction.segment || this.ds, instruction.immediate)
+            this.read32(instruction.segment ?? this.ds, instruction.immediate)
           );
           break;
 
         case 0xa3: // MOV xw,EAX
           this.debug('mov    xw,EAX');
-          this.write32(instruction.segment || this.ds, instruction.immediate, this.eax);
+          this.write32(instruction.segment ?? this.ds, instruction.immediate, this.eax);
           break;
 
         case 0xa4: // MOVS mb,mb / MOVSB
@@ -1269,12 +1269,12 @@ export class I386 extends I286 implements CpuCore {
           while (!instruction.repeat || this.cx != 0) {
             // No segment overrides are allowed.
             if (instruction.opcode == 0xa4) {
-              //console.log("MOVS WRITE", this.es, this.di, instruction.segment || this.ds, this.si, this.read8(instruction.segment || this.ds, this.si));
+              //console.log("MOVS WRITE", this.es, this.di, instruction.segment ?? this.ds, this.si, this.read8(instruction.segment ?? this.ds, this.si));
               this.write8(
                 this.es,
                 instruction.addressOverride ? this.edi : this.di,
                 this.read8(
-                  instruction.segment || this.ds,
+                  instruction.segment ?? this.ds,
                   instruction.addressOverride ? this.esi : this.si
                 )
               );
@@ -1290,7 +1290,7 @@ export class I386 extends I286 implements CpuCore {
                 this.es,
                 instruction.addressOverride ? this.edi : this.di,
                 this.read32(
-                  instruction.segment || this.ds,
+                  instruction.segment ?? this.ds,
                   instruction.addressOverride ? this.esi : this.si
                 )
               );
@@ -1333,7 +1333,7 @@ export class I386 extends I286 implements CpuCore {
             if (instruction.opcode == 0xa6) {
               this._alu.sub8(
                 this.read8(
-                  instruction.segment || this.ds,
+                  instruction.segment ?? this.ds,
                   instruction.addressOverride ? this.esi : this.si
                 ),
                 instruction.addressOverride
@@ -1350,7 +1350,7 @@ export class I386 extends I286 implements CpuCore {
             } else {
               this._alu.sub32(
                 this.read32(
-                  instruction.segment || this.ds,
+                  instruction.segment ?? this.ds,
                   instruction.addressOverride ? this.esi : this.si
                 ),
                 this.read32(this.es, instruction.addressOverride ? this.edi : this.di)
@@ -1417,7 +1417,7 @@ export class I386 extends I286 implements CpuCore {
           while (!instruction.repeat || (instruction.addressOverride ? this.ecx : this.cx) != 0) {
             if (instruction.opcode == 0xac) {
               this.al = this.read8(
-                instruction.segment || this.ds,
+                instruction.segment ?? this.ds,
                 instruction.addressOverride ? this.esi : this.si
               );
               if (instruction.addressOverride) {
@@ -1427,7 +1427,7 @@ export class I386 extends I286 implements CpuCore {
               }
             } else {
               this.eax = this.read32(
-                instruction.segment || this.ds,
+                instruction.segment ?? this.ds,
                 instruction.addressOverride ? this.esi : this.si
               );
               if (instruction.addressOverride) {
