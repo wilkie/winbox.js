@@ -189,7 +189,9 @@ export class CPU implements CpuCoreHost {
     try {
       this.execute(instruction);
     } catch (e) {
-      if (e instanceof InvalidInstruction) {
+      if (e instanceof MemoryFault) {
+        // Already dispatched; the instruction simply does not complete.
+      } else if (e instanceof InvalidInstruction) {
         if (e.callback) {
           e.callback();
         } else {
@@ -225,6 +227,14 @@ export class CPU implements CpuCoreHost {
     return this.core.execute(instruction);
   }
 }
+
+/**
+ * Raised when a memory operand runs past the end of its segment.
+ *
+ * The interrupt has already been dispatched by the time this is thrown; it
+ * exists to abandon the rest of the instruction, which must not complete.
+ */
+export class MemoryFault {}
 
 export class InvalidInstruction {
   declare _callback: any;

@@ -143,6 +143,15 @@ the desktop's dithered background, bitmap fonts, and GDI surfaces.
 
 Found while formalizing the boundary; recorded here rather than fixed silently.
 
+**The 286 and 386 have not been told apart.** The emulator targets a 386 with a
+286 mode, and the conformance corpus is an 80286, so a passing vector is only
+evidence where the two parts agree. Several places encode 286 behaviour on
+purpose and need revisiting against the 386: `POPF` and `IRET` force FLAGS bits
+12 to 15 clear in real mode, which the 386 may permit at CPL 0; the `IDIV`
+quotient of -128 that the part lets through is described as a bug and may not
+exist on the 386; and the undefined flag results for the multiplies, divides
+and shifts are 286 measurements throughout.
+
 The emulator unit suite passes in full. It spent a long time not doing so --
 3,787 of its 3,823 tests failed -- because it had been written against an
 earlier shape of the emulator: a segmented `Memory`, registers on the `CPU`
@@ -169,25 +178,14 @@ Accuracy is measured, not estimated. `pnpm test:conformance` runs our core
 against instruction tests captured from a real 80286 and reports a per-opcode
 pass rate; see the Testing section of the README for how to fetch the vectors.
 
-Across all **326** instruction forms the suite publishes, **95.7%** of vectors
-pass and 224 forms pass completely.
+Across all **326** instruction forms the suite publishes, **96.4%** of vectors
+pass and 284 forms pass completely.
 
-That figure is lower than it was, because the measurement got wider rather than
-because the emulator got worse. The oracle used to skip every vector whose
-instruction faults on hardware; it now runs them, which adds about 2,100
-vectors to a sampled run and covers a class of behaviour that had never been
-tested at all. Nothing that was passing stopped: for every form checked at full
-depth, all of the new failures are faulting vectors and none are ordinary ones.
+The target is a 386 with a 286 mode, so where the two parts differ the 386
+behaviour is the correct one and the 80286 corpus is only an oracle where they
+agree. That distinction has not yet been audited; see the known gaps.
 
-What that exposed, in three groups:
-
-| Group                                              | Roughly       | Example                                                     |
-| -------------------------------------------------- | ------------- | ----------------------------------------------------------- |
-| Invalid encodings that must raise `#UD` and do not | 1,300 vectors | `lea ax,si` -- a register source is not a valid `LEA`       |
-| The FLAGS word pushed by a divide fault            | 1,800 vectors | `DIV`/`IDIV` overflow leaves flags we reproduce imperfectly |
-| Conditions that must raise `#GP` and do not        | 1,300 vectors | `jmp far [ds:si]` through an invalid selector               |
-
-Instructions the core has never decoded account for the rest:
+Of what remains, the great majority is instructions never decoded at all:
 
 | Family                     | Forms | Vectors |
 | -------------------------- | ----- | ------- |
@@ -195,6 +193,28 @@ Instructions the core has never decoded account for the rest:
 | String I/O (`INS`, `OUTS`) | 4     | 967     |
 | `HLT`, `SALC`              | 2     | 500     |
 | `BOUND`                    | 1     | 250     |
+
+The rest is around 140 vectors spread thinly over the string, stack and
+segment-register moves, all of it the segment-limit rule below reaching paths
+that do not go through the operand helpers.
+
+### Faults
+
+A memory operand whose bytes run past the end of its segment raises `#GP`.
+Real-mode segments are 64 KiB, and the parts from the 286 onwards fault where
+the 8086 wrapped the offset silently.
+
+Two details of that are easy to get wrong and are worth stating, because both
+read the same in prose and differ by thousands of vectors:
+
+- It is `#GP` even for an operand addressed through SS. `#SS` belongs to the
+  stack operations proper, not to data that merely defaults to the stack
+  segment, which is what `[bp+si]` is.
+- The check is per access, not per operand. A far pointer read at offset
+  0xFFFE does **not** fault: the offset word is read at 0xFFFE and the segment
+  word comes from offset 0, wrapping inside the segment. Only an individual
+  16-bit access that straddles the end faults, so 0xFFFD faults on its second
+  word and 0xFFFE does not.
 
 ### Flag behaviour the manuals call undefined
 

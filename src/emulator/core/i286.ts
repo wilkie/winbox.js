@@ -1,7 +1,7 @@
 'use strict';
 
 import { ALU, DivideError } from '../alu.js';
-import { CPU, InvalidInstruction } from '../cpu.js';
+import { CPU, InvalidInstruction, MemoryFault } from '../cpu.js';
 import { CpuCore16 } from '../cpu-core.js';
 
 /**
@@ -1136,10 +1136,53 @@ export class I286 implements CpuCore16 {
    *
    * @returns {number} The value.
    */
+  /**
+   * Faults if a memory operand of the given width runs past its segment.
+   *
+   * A real-mode segment is 64 KiB and the parts from the 286 onwards fault on
+   * an operand that crosses the end of one, where the 8086 wrapped the offset
+   * back to zero.
+   *
+   * This is #GP even for an operand addressed through SS. #SS is for the stack
+   * operations proper -- pushes and pops that run off the end -- rather than
+   * for data that merely defaults to the stack segment, which is what
+   * `[bp+si]` and friends are. The hardware vectors are unambiguous on this.
+   *
+   * @param {object} instruction - The instruction being executed.
+   * @param {number} size - The operand width in bytes.
+   */
+  requireOperandWithinSegment(instruction, size) {
+    if (instruction.offset === undefined) {
+      return;
+    }
+
+    this.requireAccessWithinSegment(instruction, instruction.offset, size);
+  }
+
+  /**
+   * The same check for an access at an offset of its own.
+   *
+   * The far-pointer forms read two words, and the second one is reached at
+   * `offset + 2`, which wraps inside the segment rather than running past it.
+   * So each access is checked on its own wrapped offset: a pointer read at
+   * 0xFFFE is fine, with its segment word coming from offset 0, while one at
+   * 0xFFFD faults on the second word.
+   */
+  requireAccessWithinSegment(instruction, offset, size) {
+    if ((offset & 0xffff) + size <= 0x10000) {
+      return;
+    }
+
+    this.raiseInterrupt(instruction, 13, 0);
+    throw new MemoryFault();
+  }
+
   readOperand16(instruction) {
     if (instruction.operandRegister !== undefined) {
       return this.readRegister16(instruction.operandRegister);
     }
+
+    this.requireOperandWithinSegment(instruction, 2);
 
     // Read 16-bit word from memory at the effective address
     return this.read16(instruction.segment, instruction.offset);
@@ -1174,6 +1217,8 @@ export class I286 implements CpuCore16 {
     if (instruction.operandRegister !== undefined) {
       return this.writeRegister16(instruction.operandRegister, value);
     }
+
+    this.requireOperandWithinSegment(instruction, 2);
 
     // Write 16-bit word to memory at the effective address
     return this.write16(instruction.segment, instruction.offset, value);
@@ -2735,6 +2780,8 @@ export class I286 implements CpuCore16 {
 
         this.writeRegister16(instruction.sourceRegister, this.readOperand16(instruction));
 
+        this.requireAccessWithinSegment(instruction, instruction.offset + 2, 2);
+
         if (opcode == 0xc4) {
           this.debug('les    rw,eb');
           this.es = this.read16(instruction.segment, instruction.offset + 2);
@@ -3167,6 +3214,7 @@ export class I286 implements CpuCore16 {
 
             // Read the far pointer before the pushes disturb the stack.
             callTarget = this.readOperand16(instruction);
+            this.requireAccessWithinSegment(instruction, instruction.offset + 2, 2);
             callSegment = this.read16(instruction.segment ?? this.ds, instruction.offset + 2);
 
             this.push16(this.cs);
@@ -3195,6 +3243,7 @@ export class I286 implements CpuCore16 {
              * override is present; this used to reject the instruction.
              */
             callTarget = this.readOperand16(instruction);
+            this.requireAccessWithinSegment(instruction, instruction.offset + 2, 2);
             this.cs = this.read16(instruction.segment ?? this.ds, instruction.offset + 2);
             this.ip = callTarget;
             break;
