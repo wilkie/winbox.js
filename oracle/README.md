@@ -282,6 +282,48 @@ declared `getUint16` and `setUint16` and nothing assigned them --
 heap owns its storage now, which is where handles belong in any case, a local
 handle being an address the guest dereferences.
 
+### Display drivers
+
+`GetDeviceCaps` answers are not properties of Windows. They belong to whichever
+display driver was installed, and a program reads them and lays itself out
+differently -- it asks how many colours it has, it sizes a font from
+`LOGPIXELSY`, it draws a circle round only if it believed `ASPECTX` and
+`ASPECTY`. So a fixture recorded against one driver says nothing about another,
+and the oracle installs more than one.
+
+`install-windows.mjs --display <name>` picks the profile out of the media's own
+`[display]` table and installs into its own drive; `record.mjs --display <name>`
+records against it. What three of them say:
+
+|                              | VGA     | Super VGA | EGA         |
+| ---------------------------- | ------- | --------- | ----------- |
+| `HORZRES` x `VERTRES`        | 640x480 | 800x600   | 640x350     |
+| `HORZSIZE` x `VERTSIZE` (mm) | 208x156 | 208x156   | 240x175     |
+| `LOGPIXELSX` / `LOGPIXELSY`  | 96 / 96 | 96 / 96   | 96 / **72** |
+| `ASPECTX` / `ASPECTY`        | 36 / 36 | 36 / 36   | 38 / 48     |
+| `BITSPIXEL` x `PLANES`       | 1x4     | 1x4       | 1x4         |
+| `NUMCOLORS`                  | 16      | 16        | 16          |
+| `SM_CYCAPTION`               | 20      | 20        | 18          |
+| `SM_CYMENU`                  | 18      | 18        | 16          |
+
+EGA's pixels are not square, which is the interesting one: 96 dots per inch
+across and 72 down. Everything that lays out in logical units has to know, and
+the caption and menu bars come out shorter because the system font at that
+resolution is smaller. The driver capability bits -- `RASTERCAPS`, `TEXTCAPS`,
+`LINECAPS` -- are identical across all three, being the same generation of GDI
+driver.
+
+**256 colours cannot be recorded here yet.** Every 256-colour driver the
+distribution ships is for a particular card -- Video 7, XGA, 8514/a -- and
+DOSBox emulates none of them, so a Windows installed with one would not start.
+The modes are worth implementing regardless; what cannot be done is calling
+them measured until something can run them.
+
+The probe is called `devcaps` rather than `display` because Windows already has
+a module of that name: the display driver itself is `DISPLAY`. An application
+whose module name collides with a system driver does not load, and it fails
+before its first line of output, which is a confusing way to find out.
+
 ### The text probe
 
 Every layout decision a Windows program makes runs through GDI's text metrics.

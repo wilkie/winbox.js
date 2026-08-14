@@ -38,7 +38,36 @@ const CACHE = join(ROOT, 'oracle', '.cache');
 const FLOPPIES = join(CACHE, 'floppies');
 const STAGE = join(CACHE, 'setup-disk');
 const BUILD = join(ROOT, 'oracle', 'build');
-const DRIVE = join(BUILD, 'drive-c');
+
+/**
+ * The display drivers worth installing, and what DOSBox has to pretend to be
+ * for each.
+ *
+ * `GetDeviceCaps` answers are properties of the driver rather than of Windows,
+ * so a fixture recorded against one says nothing about another -- which is why
+ * the oracle installs more than one. The profile names come from the
+ * [display] section of SETUP.INF on the media.
+ *
+ * Not every driver the distribution offers can be recorded here. The
+ * 256-colour ones are all for particular cards -- Video 7, XGA, 8514/a -- and
+ * DOSBox emulates none of them, so a Windows installed with one would not
+ * start. What is listed is what can actually be booted.
+ */
+export const DISPLAYS = {
+  vga: { profile: 'vga', machine: 'svga_s3', description: 'VGA, 640x480, 16 colours' },
+  svga: { profile: 'svga', machine: 'svga_s3', description: 'Super VGA, 800x600, 16 colours' },
+  ega: { profile: 'egahires', machine: 'ega', description: 'EGA, 640x350, 16 colours' },
+  hercules: {
+    profile: 'hercules',
+    machine: 'hercules',
+    description: 'Hercules, 720x348, monochrome',
+  },
+};
+
+/** Where an installation for a given display lands. */
+export function driveFor(display) {
+  return join(BUILD, display === 'vga' ? 'drive-c' : `drive-c-${display}`);
+}
 
 /**
  * The answers Setup would otherwise ask for.
@@ -59,7 +88,7 @@ const ANSWERS = [
   '',
   '[configuration]',
   'machine = ibm_compatible',
-  'display = vga',
+  'display = %DISPLAY%',
   'mouse = ps2mouse',
   'network = nonet',
   'keyboard = t4s0enha',
@@ -182,11 +211,13 @@ async function stageDisks(images) {
 }
 
 /** Runs Setup under DOSBox against the staged disk. */
-async function install() {
+async function install(display, drive) {
   const answers = join(STAGE, 'ORACLE.SHH');
 
+  const script = ANSWERS.map((line) => line.replace('%DISPLAY%', DISPLAYS[display].profile));
+
   // Setup is a DOS program from 1992; it wants CRLF.
-  await writeFile(answers, `${ANSWERS.join('\r\n')}\r\n`);
+  await writeFile(answers, `${script.join('\r\n')}\r\n`);
 
   const config = join(BUILD, 'install.conf');
 
@@ -194,7 +225,7 @@ async function install() {
     config,
     [
       '[dosbox]',
-      'machine=svga_s3',
+      `machine=${DISPLAYS[display].machine}`,
       'memsize=16',
       '[cpu]',
       'core=auto',
@@ -202,7 +233,7 @@ async function install() {
       '[sdl]',
       'autolock=false',
       '[autoexec]',
-      `mount c ${DRIVE}`,
+      `mount c ${drive}`,
       `mount a ${STAGE} -t floppy`,
       'a:',
       'setup /h:a:\\ORACLE.SHH',
@@ -225,11 +256,11 @@ async function install() {
  * DOSBox exits zero whatever the program inside it did, so the only real
  * evidence is the files on the drive.
  */
-async function verify() {
+async function verify(drive) {
   const missing = [];
 
   for (const path of REQUIRED) {
-    if (!(await exists(join(DRIVE, path)))) {
+    if (!(await exists(join(drive, path)))) {
       missing.push(path);
     }
   }
@@ -237,7 +268,7 @@ async function verify() {
   if (missing.length > 0) {
     throw new Error(
       `Setup did not finish; these are missing:\n  ${missing.join('\n  ')}\n` +
-        `Look at ${join(DRIVE, 'WINDOWS', 'SETUP.LOG')} if it exists.`
+        `Look at ${join(drive, 'WINDOWS', 'SETUP.LOG')} if it exists.`
     );
   }
 
@@ -254,14 +285,14 @@ async function verify() {
     }
   }
 
-  await walk(DRIVE);
+  await walk(drive);
 
   if (leftovers.length > 0) {
     throw new Error(`${leftovers.length} files were never expanded, starting with ${leftovers[0]}`);
   }
 }
 
-async function measure() {
+async function measure(drive) {
   let files = 0;
   let bytes = 0;
 
@@ -278,36 +309,54 @@ async function measure() {
     }
   }
 
-  await walk(DRIVE);
+  await walk(drive);
   return { files, bytes };
 }
 
 async function main() {
-  const force = process.argv.includes('--force');
+  const args = process.argv.slice(2);
+  const force = args.includes('--force');
 
-  if (!force && (await exists(join(DRIVE, REQUIRED[0])))) {
-    const { files, bytes } = await measure();
-    log(`Installed: ${DRIVE} (${files} files, ${(bytes / 1e6).toFixed(1)} MB)`);
-    log('Pass --force to install again.');
-    return;
+  const at = args.indexOf('--display');
+  const wanted = at === -1 ? Object.keys(DISPLAYS) : [args[at + 1]];
+
+  for (const display of wanted) {
+    if (!DISPLAYS[display]) {
+      throw new Error(`no display ${display}; try ${Object.keys(DISPLAYS).join(', ')}`);
+    }
   }
 
-  const images = await findImages();
-  log(`Staging ${images.length} floppy images...`);
-  await stageDisks(images);
+  let staged = false;
 
-  await rm(DRIVE, { recursive: true, force: true });
-  await mkdir(DRIVE, { recursive: true });
+  for (const display of wanted) {
+    const drive = driveFor(display);
 
-  log('Running Setup under DOSBox (a few minutes)...');
-  await install();
+    if (!force && (await exists(join(drive, REQUIRED[0])))) {
+      const { files, bytes } = await measure(drive);
+      log(`${display}: installed (${files} files, ${(bytes / 1e6).toFixed(1)} MB)`);
+      continue;
+    }
 
-  log('Verifying...');
-  await verify();
+    // The staged disk is the same for every display; only the answers differ.
+    if (!staged) {
+      const images = await findImages();
+      log(`Staging ${images.length} floppy images...`);
+      await stageDisks(images);
+      staged = true;
+    }
 
-  const { files, bytes } = await measure();
-  log(`\nWindows 3.1 installed to ${DRIVE}`);
-  log(`  ${files} files, ${(bytes / 1e6).toFixed(1)} MB`);
+    log(`${display}: running Setup for ${DISPLAYS[display].description}...`);
+
+    await rm(drive, { recursive: true, force: true });
+    await mkdir(drive, { recursive: true });
+
+    await install(display, drive);
+    await verify(drive);
+
+    const { files, bytes } = await measure(drive);
+    log(`  ${files} files, ${(bytes / 1e6).toFixed(1)} MB in ${drive}`);
+  }
+
   log('\nNext: node scripts/oracle/build-drive.mjs');
 }
 

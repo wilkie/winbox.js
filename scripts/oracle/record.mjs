@@ -29,13 +29,23 @@ import { cp, mkdir, readFile, readdir, rm, stat, writeFile } from 'node:fs/promi
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { DISPLAYS, driveFor } from './install-windows.mjs';
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const CACHE = join(ROOT, 'oracle', '.cache');
 const BUILD = join(ROOT, 'oracle', 'build');
-const DRIVE = join(BUILD, 'drive-c');
 const PROBES = join(BUILD, 'probes');
 const SCRATCH = join(BUILD, 'record-c');
 const FIXTURES = join(ROOT, 'oracle', 'fixtures');
+
+/**
+ * Probes whose answers belong to a display driver rather than to Windows.
+ *
+ * `GetDeviceCaps` obviously, but the text metrics too: which stock fonts get
+ * installed depends on the resolution, so a VGA reading of them says nothing
+ * about an EGA. These get one fixture per display; everything else gets one.
+ */
+const PER_DISPLAY = new Set(['devcaps']);
 
 /** Where a probe writes, on the guest and on the host. */
 const OUTPUT_DIR = 'ORACLE';
@@ -101,14 +111,14 @@ async function setShell(probe) {
 }
 
 /** Boots Windows with the probe as its shell and waits for it to finish. */
-async function runProbe(probe) {
+async function runProbe(probe, display) {
   const config = join(BUILD, 'record.conf');
 
   await writeFile(
     config,
     [
       '[dosbox]',
-      'machine=svga_s3',
+      `machine=${DISPLAYS[display].machine}`,
       'memsize=16',
       '[cpu]',
       'core=auto',
@@ -170,7 +180,7 @@ function parse(text) {
 }
 
 /** What the fixture should say it was recorded against. */
-async function provenance() {
+async function provenance(display) {
   const distribution = await readFile(join(CACHE, 'distribution.json'), 'utf8')
     .then(JSON.parse)
     .catch(() => null);
@@ -179,10 +189,16 @@ async function provenance() {
     windows: distribution?.label ?? 'unknown',
     sha256: distribution?.sha256 ?? null,
     host: 'dosbox, standard mode',
+
+    /* Which driver was installed. Even a probe that looks display-independent
+     * was recorded on one, and saying so costs nothing.
+     */
+    display: DISPLAYS[display].profile,
+    displayDescription: DISPLAYS[display].description,
   };
 }
 
-async function record(probe, source) {
+async function record(probe, source, display) {
   const name = basename(source, '.EXE');
 
   await setShell(basename(source));
@@ -190,7 +206,7 @@ async function record(probe, source) {
   await rm(join(SCRATCH, OUTPUT_DIR), { recursive: true, force: true });
   await mkdir(join(SCRATCH, OUTPUT_DIR), { recursive: true });
 
-  await runProbe(basename(source));
+  await runProbe(basename(source), display);
 
   const output = join(SCRATCH, OUTPUT_DIR, `${name}.OUT`);
 
@@ -214,8 +230,17 @@ async function main() {
   const args = process.argv.slice(2);
   const wanted = args.filter((argument) => !argument.startsWith('-'));
 
-  if (!(await stat(DRIVE).catch(() => null))) {
-    throw new Error('nothing installed; run scripts/oracle/install-windows.mjs first');
+  const at = args.indexOf('--display');
+  const display = at === -1 ? 'vga' : args[at + 1];
+
+  if (!DISPLAYS[display]) {
+    throw new Error(`no display ${display}; try ${Object.keys(DISPLAYS).join(', ')}`);
+  }
+
+  const drive = driveFor(display);
+
+  if (!(await stat(drive).catch(() => null))) {
+    throw new Error(`nothing installed for ${display}; run scripts/oracle/install-windows.mjs`);
   }
 
   const executables = (await readdir(PROBES).catch(() => []))
@@ -232,26 +257,31 @@ async function main() {
   /* One scratch drive for the whole run rather than one per probe: the install
    * is nearly eight megabytes and only the shell line differs between runs.
    */
-  log('Preparing a scratch drive...');
+  log(`Preparing a scratch drive from ${display}...`);
   await rm(SCRATCH, { recursive: true, force: true });
-  await cp(DRIVE, SCRATCH, { recursive: true });
+  await cp(drive, SCRATCH, { recursive: true });
 
   await mkdir(FIXTURES, { recursive: true });
-  const source = await provenance();
+  const source = await provenance(display);
 
   for (const executable of executables) {
     const name = basename(executable, '.EXE').toLowerCase();
-    log(`Recording ${name} under Windows...`);
+    log(`Recording ${name} under Windows (${DISPLAYS[display].description})...`);
 
-    const records = await record(name, join(PROBES, executable));
+    const records = await record(name, join(PROBES, executable), display);
     const functions = new Set(records.map((entry) => entry.function));
 
+    /* A probe whose answers belong to the driver gets a fixture per driver;
+     * the rest would only be recorded again under a different name.
+     */
+    const fixture = PER_DISPLAY.has(name) ? `${name}-${display}` : name;
+
     await writeFile(
-      join(FIXTURES, `${name}.json`),
-      `${JSON.stringify({ probe: name, source, records }, null, 2)}\n`
+      join(FIXTURES, `${fixture}.json`),
+      `${JSON.stringify({ probe: name, display, source, records }, null, 2)}\n`
     );
 
-    log(`  ${records.length} records across ${functions.size} functions`);
+    log(`  ${records.length} records across ${functions.size} functions -> ${fixture}.json`);
   }
 
   if (!args.includes('--keep')) {

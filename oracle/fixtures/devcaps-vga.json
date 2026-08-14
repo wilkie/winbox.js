@@ -1,0 +1,235 @@
+{
+  "probe": "devcaps",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "records": [
+    {
+      "function": "GetDeviceCaps",
+      "args": "HORZRES",
+      "result": "640",
+      "section": "the surface"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "VERTRES",
+      "result": "480",
+      "section": "the surface"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "HORZSIZE",
+      "result": "208",
+      "section": "the surface"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "VERTSIZE",
+      "result": "156",
+      "section": "the surface"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "ASPECTX",
+      "result": "36",
+      "section": "the surface"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "ASPECTY",
+      "result": "36",
+      "section": "the surface"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "ASPECTXY",
+      "result": "51",
+      "section": "the surface"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "LOGPIXELSX",
+      "result": "96",
+      "section": "the surface"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "LOGPIXELSY",
+      "result": "96",
+      "section": "the surface"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "BITSPIXEL",
+      "result": "1",
+      "section": "colour"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "PLANES",
+      "result": "4",
+      "section": "colour"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "NUMCOLORS",
+      "result": "16",
+      "section": "colour"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "NUMRESERVED",
+      "result": "0",
+      "section": "colour"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "SIZEPALETTE",
+      "result": "0",
+      "section": "colour"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "COLORRES",
+      "result": "0",
+      "section": "colour"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "DRIVERVERSION",
+      "result": "778",
+      "section": "what the driver can do"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "TECHNOLOGY",
+      "result": "1",
+      "section": "what the driver can do"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "RASTERCAPS",
+      "result": "18137",
+      "section": "what the driver can do"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "CURVECAPS",
+      "result": "0",
+      "section": "what the driver can do"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "LINECAPS",
+      "result": "34",
+      "section": "what the driver can do"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "POLYGONALCAPS",
+      "result": "8",
+      "section": "what the driver can do"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "TEXTCAPS",
+      "result": "8708",
+      "section": "what the driver can do"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "CLIPCAPS",
+      "result": "1",
+      "section": "what the driver can do"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "NUMBRUSHES",
+      "result": "-1",
+      "section": "its stock objects"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "NUMPENS",
+      "result": "80",
+      "section": "its stock objects"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "NUMFONTS",
+      "result": "0",
+      "section": "its stock objects"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "NUMMARKERS",
+      "result": "0",
+      "section": "its stock objects"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "SM_CXSCREEN",
+      "result": "640",
+      "section": "the metrics that follow from it"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "SM_CYSCREEN",
+      "result": "480",
+      "section": "the metrics that follow from it"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "SM_CYCAPTION",
+      "result": "20",
+      "section": "the metrics that follow from it"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "SM_CXBORDER",
+      "result": "1",
+      "section": "the metrics that follow from it"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "SM_CYBORDER",
+      "result": "1",
+      "section": "the metrics that follow from it"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "SM_CXFRAME",
+      "result": "4",
+      "section": "the metrics that follow from it"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "SM_CYFRAME",
+      "result": "4",
+      "section": "the metrics that follow from it"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "SM_CYMENU",
+      "result": "18",
+      "section": "the metrics that follow from it"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "SM_CXICON",
+      "result": "32",
+      "section": "the metrics that follow from it"
+    },
+    {
+      "function": "GetSystemMetrics",
+      "args": "SM_CYICON",
+      "result": "32",
+      "section": "the metrics that follow from it"
+    }
+  ]
+}
