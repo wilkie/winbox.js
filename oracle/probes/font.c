@@ -115,6 +115,30 @@ static void probeFont(int height, int width, int weight, BYTE italic,
     DeleteObject(font);
 }
 
+/*
+ * Records one face plain, emboldened and slanted at a spread of sizes.
+ *
+ * The sizes are chosen to cross every strike a bitmap family is installed in
+ * and then to go past the largest, where Windows stretches a smaller strike
+ * instead. Nothing here assumes which sizes exist -- an installed size and an
+ * interpolated one are both worth having, and which is which comes out of the
+ * heights that come back.
+ */
+static void probeStyles(LPCSTR face)
+{
+    static const int HEIGHTS[] = { 13, 16, 20, 24, 29, 37, 50, 100 };
+
+    int index;
+
+    for (index = 0; index < sizeof(HEIGHTS) / sizeof(HEIGHTS[0]); index++) {
+        int height = HEIGHTS[index];
+
+        probeFont(height, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, face);
+        probeFont(height, 0, FW_BOLD, 0, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, face);
+        probeFont(height, 0, FW_NORMAL, 1, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, face);
+    }
+}
+
 /* The ordinary case: a face by name at a plain size. */
 static void probeFace(LPCSTR face, int height)
 {
@@ -258,6 +282,44 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeFont(16, 0, FW_NORMAL, 0, 1, 0, ANSI_CHARSET, DEFAULT_PITCH, "MS Sans Serif");
     probeFont(16, 0, FW_NORMAL, 0, 0, 1, ANSI_CHARSET, DEFAULT_PITCH, "MS Sans Serif");
     probeFont(16, 0, FW_NORMAL, 1, 1, 1, ANSI_CHARSET, DEFAULT_PITCH, "MS Sans Serif");
+
+    /* The same two styles at every size the face is installed in, and at one
+     * beyond them all.
+     *
+     * `tmOverhang` is what a synthesised style adds to a whole string over and
+     * above the characters in it, and one measurement of it says nothing about
+     * where the number comes from: an emboldening that smears one pixel and a
+     * slant that leans over seven look like constants until the cell height
+     * changes underneath them. Seven pixels of lean on a sixteen pixel cell is
+     * a plausible constant and an equally plausible fraction of the height,
+     * and only measuring both at several sizes separates them.
+     *
+     * The stretched size at the end matters most: it is the one case where the
+     * strike being drawn is not the size that was asked for, so an overhang
+     * that follows the strike and one that follows the request give different
+     * answers.
+     */
+    probeNote("bold and slanted at every size, to find what the overhang follows");
+    probeStyles("MS Sans Serif");
+    probeStyles("Courier");
+    probeStyles("MS Serif");
+
+    /* A face that is already bold in the file, so a request for bold has
+     * nothing to synthesise, and one that is fixed pitch.
+     */
+    probeNote("the same on faces that answer it differently");
+    probeFont(16, 0, FW_BOLD, 0, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "System");
+    probeFont(16, 0, FW_NORMAL, 1, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "System");
+    probeFont(16, 0, FW_BOLD, 0, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "Fixedsys");
+    probeFont(16, 0, FW_NORMAL, 1, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "Fixedsys");
+
+    /* Bold and slanted together, which neither of the pairs above covers: the
+     * two overhangs could add, or the larger could win.
+     */
+    probeNote("both at once");
+    probeFont(16, 0, FW_BOLD, 1, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "MS Sans Serif");
+    probeFont(24, 0, FW_BOLD, 1, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "MS Sans Serif");
+    probeFont(37, 0, FW_BOLD, 1, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "MS Sans Serif");
 
     /* With no face named, the pitch and family are all the mapper has to go
      * on, and this is how a program asks for "any fixed-pitch font".

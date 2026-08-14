@@ -67,6 +67,9 @@ export class FontManager {
   static SYMBOL_CHARSET = 0x02;
   static OEM_CHARSET = 0xff;
 
+  /** How many times over a strike may be drawn to reach a size. */
+  static MAX_STRETCH = 5;
+
   /** The size the mapper picks when a request names none, in points. */
   static DEFAULT_POINTS = 12;
 
@@ -240,7 +243,16 @@ export class FontManager {
      */
     const target = height ? Math.abs(height) : Math.round((FontManager.DEFAULT_POINTS * 96) / 72);
 
+    /* The largest size that does not overshoot, rather than the nearest one.
+     *
+     * These are not the same rule and the difference is visible: Courier is
+     * installed at cells of 13, 16 and 20, and asked for 24 Windows answers 20
+     * -- not the 26 it could have made by doubling the 13, which is closer.
+     * Overshooting is what it will not do. Asked for 29 it does double the 13,
+     * because 26 fits under 29 and is larger than 20.
+     */
     let best: any = null;
+    let smallest: any = null;
 
     for (const entry of entries) {
       const cell = entry.header.dfPixHeight;
@@ -248,28 +260,43 @@ export class FontManager {
 
       const measured = wantsCell ? cell : em;
 
-      /* Only whole multiples: a bitmap stretched by a fraction is not what a
-       * bitmap driver does, and every scaled answer recorded is exact.
+      /* Only whole multiples, and not many of them: a bitmap stretched by a
+       * fraction is not what a bitmap driver does, and nothing recorded is
+       * stretched more than five times. The limit is what makes MS Serif
+       * answer a hundred pixel request with ninety-five -- its nineteen pixel
+       * strike five times over -- rather than with the exact hundred its ten
+       * pixel strike would give at ten times, which is the answer every other
+       * rule here would have chosen.
        */
-      for (let scale = 1; scale <= 16; scale++) {
-        const distance = Math.abs(measured * scale - target);
-
-        const candidate = { entry, scale, distance };
+      for (let scale = 1; scale <= FontManager.MAX_STRETCH; scale++) {
+        const size = measured * scale;
 
         if (
-          !best ||
-          distance < best.distance ||
-          // A tie goes to the strike that needs no stretching at all.
-          (distance === best.distance && scale < best.scale)
+          !smallest ||
+          size < smallest.size ||
+          (size === smallest.size && scale < smallest.scale)
         ) {
-          best = candidate;
+          smallest = { entry, scale, size };
         }
 
-        if (measured * scale > target) {
+        if (
+          size <= target &&
+          (!best || size > best.size || (size === best.size && scale < best.scale))
+        ) {
+          best = { entry, scale, size };
+        }
+
+        if (size > target) {
           break;
         }
       }
     }
+
+    /* Nothing fits under a request smaller than anything installed, and the
+     * answer is the smallest there is rather than nothing: asking for a single
+     * pixel of MS Sans Serif gives its eight point strike.
+     */
+    best = best ?? smallest;
 
     /* An average width asked for as well as a height stretches the chosen
      * strike sideways, to the nearest whole multiple of its own average.

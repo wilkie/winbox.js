@@ -1241,6 +1241,2376 @@
     },
     {
       "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=13,ascent=11,descent=2,internal=2,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=5,max=11,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=55,height=13",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=13,ascent=11,descent=2,internal=2,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=6,max=12,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=66,height=13",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=13,ascent=11,descent=2,internal=2,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=5,max=11,weight=400,overhang=6",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=61,height=13",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=7,max=14,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=67,height=16",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=8,max=15,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=78,height=16",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=7,max=14,weight=400,overhang=7",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=74,height=16",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=20,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=20,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=20,ascent=16,descent=4,internal=4,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=20,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=8,max=16,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=20,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=20,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=80,height=20",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=20,ascent=16,descent=4,internal=4,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=9,max=17,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=91,height=20",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=20,ascent=16,descent=4,internal=4,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=8,max=16,weight=400,overhang=9",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=89,height=20",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=24,ascent=19,descent=5,internal=6,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=9,max=19,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=95,height=24",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=24,ascent=19,descent=5,internal=6,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=10,max=20,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=106,height=24",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=24,ascent=19,descent=5,internal=6,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=9,max=19,weight=400,overhang=11",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=106,height=24",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=29,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=29,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=29,ascent=23,descent=6,internal=5,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=29,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=12,max=24,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=29,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=29,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=121,height=29",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=29,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=29,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=29,ascent=23,descent=6,internal=5,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=29,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=13,max=25,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=29,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=29,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=132,height=29",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=29,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=29,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=29,ascent=23,descent=6,internal=5,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=29,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=12,max=24,weight=400,overhang=14",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=29,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=29,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=135,height=29",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=37,ascent=29,descent=8,internal=5,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=16,max=32,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=162,height=37",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=37,ascent=29,descent=8,internal=5,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=17,max=33,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=173,height=37",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=37,ascent=29,descent=8,internal=5,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=16,max=32,weight=400,overhang=18",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=180,height=37",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=50,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=50,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=48,ascent=38,descent=10,internal=12,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=50,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=18,max=38,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=50,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=50,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=190,height=48",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=50,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=50,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=48,ascent=38,descent=10,internal=12,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=50,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=19,max=39,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=50,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=50,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=201,height=48",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=50,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=50,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=48,ascent=38,descent=10,internal=12,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=50,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=18,max=38,weight=400,overhang=23",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=50,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=50,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=213,height=48",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=100,ascent=80,descent=20,internal=20,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=40,max=80,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=400,height=100",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=100,ascent=80,descent=20,internal=20,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=41,max=81,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=411,height=100",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=100,ascent=80,descent=20,internal=20,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=40,max=80,weight=400,overhang=49",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=449,height=100",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=13,ascent=11,descent=2,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=8,max=8,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=80,height=13",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=13,ascent=11,descent=2,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=9,max=9,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=91,height=13",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=13,ascent=11,descent=2,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=8,max=8,weight=400,overhang=6",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=86,height=13",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=9,max=9,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=90,height=16",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=10,max=10,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=101,height=16",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=9,max=9,weight=400,overhang=7",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=97,height=16",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=20,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=20,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=20,ascent=16,descent=4,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=20,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=12,max=12,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=20,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=20,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=120,height=20",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=20,ascent=16,descent=4,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=13,max=13,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=131,height=20",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=20,ascent=16,descent=4,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=12,max=12,weight=400,overhang=9",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=129,height=20",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=24,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=24,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=20,ascent=16,descent=4,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=24,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=12,max=12,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=24,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=24,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=120,height=20",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=20,ascent=16,descent=4,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=13,max=13,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=131,height=20",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=20,ascent=16,descent=4,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=12,max=12,weight=400,overhang=9",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=129,height=20",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=29,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=29,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=26,ascent=22,descent=4,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=29,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=16,max=16,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=29,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=29,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=160,height=26",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=29,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=29,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=26,ascent=22,descent=4,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=29,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=17,max=17,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=29,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=29,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=171,height=26",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=29,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=29,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=26,ascent=22,descent=4,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=29,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=16,max=16,weight=400,overhang=12",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=29,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=29,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=172,height=26",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=37,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=37,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=32,ascent=26,descent=6,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=37,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=18,max=18,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=37,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=37,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=180,height=32",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=37,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=37,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=32,ascent=26,descent=6,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=37,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=19,max=19,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=37,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=37,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=191,height=32",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=37,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=37,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=32,ascent=26,descent=6,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=37,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=18,max=18,weight=400,overhang=15",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=37,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=37,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=195,height=32",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=50,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=50,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=48,ascent=39,descent=9,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=50,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=27,max=27,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=50,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=50,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=270,height=48",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=50,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=50,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=48,ascent=39,descent=9,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=50,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=28,max=28,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=50,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=50,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=281,height=48",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=50,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=50,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=48,ascent=39,descent=9,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=50,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=27,max=27,weight=400,overhang=23",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=50,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=50,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=293,height=48",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=100,ascent=80,descent=20,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=60,max=60,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=600,height=100",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=100,ascent=80,descent=20,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=61,max=61,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=611,height=100",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=100,ascent=80,descent=20,internal=0,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=60,max=60,weight=400,overhang=49",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=649,height=100",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=13,ascent=11,descent=2,internal=2,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=5,max=11,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=46,height=13",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=13,ascent=11,descent=2,internal=2,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=6,max=12,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=57,height=13",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=13,ascent=11,descent=2,internal=2,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=5,max=11,weight=400,overhang=6",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=52,height=13",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=6,max=14,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=61,height=16",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=7,max=15,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=72,height=16",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=6,max=14,weight=400,overhang=7",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=68,height=16",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=20,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=20,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=20,ascent=16,descent=4,internal=4,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=20,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=8,max=16,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=20,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=20,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=82,height=20",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=20,ascent=16,descent=4,internal=4,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=9,max=17,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=93,height=20",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=20,ascent=16,descent=4,internal=4,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=8,max=16,weight=400,overhang=9",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=91,height=20",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=24,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=24,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=22,ascent=18,descent=4,internal=4,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=24,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=10,max=18,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=24,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=24,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=82,height=22",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=22,ascent=18,descent=4,internal=4,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=11,max=19,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=93,height=22",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=22,ascent=18,descent=4,internal=4,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=10,max=18,weight=400,overhang=10",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=92,height=22",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=29,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=29,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=27,ascent=21,descent=6,internal=3,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=29,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=12,max=23,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=29,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=29,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=112,height=27",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=29,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=29,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=27,ascent=21,descent=6,internal=3,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=29,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=13,max=24,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=29,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=29,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=123,height=27",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=29,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=29,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=27,ascent=21,descent=6,internal=3,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=29,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=12,max=23,weight=400,overhang=13",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=29,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=29,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=125,height=27",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=37,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=37,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=35,ascent=27,descent=8,internal=3,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=37,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=16,max=33,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=37,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=37,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=156,height=35",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=37,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=37,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=35,ascent=27,descent=8,internal=3,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=37,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=17,max=34,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=37,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=37,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=167,height=35",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=37,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=37,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=35,ascent=27,descent=8,internal=3,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=37,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=16,max=33,weight=400,overhang=17",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=37,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=37,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=173,height=35",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=50,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=50,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=50,ascent=40,descent=10,internal=10,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=50,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=20,max=40,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=50,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=50,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=205,height=50",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=50,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=50,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=50,ascent=40,descent=10,internal=10,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=50,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=21,max=41,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=50,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=50,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=216,height=50",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=50,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=50,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=50,ascent=40,descent=10,internal=10,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=50,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=20,max=40,weight=400,overhang=24",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=50,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=50,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=229,height=50",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=95,ascent=75,descent=20,internal=15,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=40,max=90,weight=400,overhang=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=375,height=95",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=95,ascent=75,descent=20,internal=15,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=41,max=91,weight=700,overhang=1",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=386,height=95",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Serif\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Serif\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=95,ascent=75,descent=20,internal=15,external=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Serif\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=40,max=90,weight=400,overhang=47",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Serif\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Serif\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=422,height=95",
+      "section": "bold and slanted at every size, to find what the overhang follows"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"System\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"System\"",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"System\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"System\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=7,max=14,weight=700,overhang=0",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"System\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"System\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=74,height=16",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"System\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"System\"",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"System\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"System\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=7,max=14,weight=700,overhang=7",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"System\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"System\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=81,height=16",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Fixedsys\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Fixedsys\"",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Fixedsys\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=15,ascent=12,descent=3,internal=3,external=0",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Fixedsys\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=9,max=9,weight=700,overhang=1",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Fixedsys\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Fixedsys\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=91,height=15",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Fixedsys\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Fixedsys\"",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Fixedsys\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=15,ascent=12,descent=3,internal=3,external=0",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Fixedsys\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=8,max=8,weight=400,overhang=7",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Fixedsys\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=48,charset=0",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Fixedsys\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=87,height=15",
+      "section": "the same on faces that answer it differently"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=700,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "both at once"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=700,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "both at once"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=700,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=8,max=15,weight=700,overhang=8",
+      "section": "both at once"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=700,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "both at once"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=700,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=85,height=16",
+      "section": "both at once"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=700,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "both at once"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=700,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=24,ascent=19,descent=5,internal=6,external=0",
+      "section": "both at once"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=700,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=10,max=20,weight=700,overhang=12",
+      "section": "both at once"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=700,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "both at once"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=24,w=0,weight=700,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=117,height=24",
+      "section": "both at once"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=700,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "both at once"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=700,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=37,ascent=29,descent=8,internal=5,external=0",
+      "section": "both at once"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=700,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=17,max=33,weight=700,overhang=19",
+      "section": "both at once"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=700,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "both at once"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=37,w=0,weight=700,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=191,height=37",
+      "section": "both at once"
+    },
+    {
+      "function": "CreateFont face",
       "args": "\"\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=1",
       "result": "\"Courier\"",
       "section": "no name, chosen by pitch and family instead"

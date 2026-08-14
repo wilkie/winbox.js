@@ -92,8 +92,18 @@ export class LogicalFont extends Font {
   measure(text, options: any = {}) {
     const measured = this._entry.measure(text, options);
 
-    const bold = (this._style.weight ?? 0) >= 700;
-    const overhang = this._style.italic ? 7 : bold ? 1 : 0;
+    /* Emboldening only happens to a face that is not bold already; see
+     * `GetTextMetrics` for why the System font is the case that shows it.
+     */
+    const bold = (this._style.weight ?? 0) >= 700 && this._entry.header.dfWeight < 700;
+
+    /* The same overhang the metrics report, and for the same reasons: one
+     * pixel for the smear that makes a bitmap bold, and half the drawn height
+     * for the lean that makes it italic. See `GetTextMetrics`.
+     */
+    const height = this._entry.header.dfPixHeight * this.scale;
+
+    const overhang = (bold ? 1 : 0) + (this._style.italic ? Math.floor((height - 1) / 2) : 0);
 
     return {
       width: measured.width * this.horizontal + (bold ? String(text).length : 0) + overhang,

@@ -622,8 +622,9 @@ none of that matching is written down, and it is where an implementation
 written from a manual goes quietly wrong: nothing crashes, the interface is
 simply laid out slightly differently, and nothing points at the cause.
 
-Fifty-one requests were recorded. Six of the rules were not what reading the
-documentation would suggest.
+A hundred and thirty-three requests were recorded. Eight of the rules were not
+what reading the documentation would suggest, and two of those only came apart
+when the same question was asked at several sizes.
 
 **The character set outranks the name, but only for OEM fonts.** Asking for
 Terminal with `ANSI_CHARSET` does not give Terminal, it gives MS Sans Serif:
@@ -647,13 +648,22 @@ succeeded. A program that asks for `ms sans serif` is told `MS Sans Serif` --
 the installed spelling, not its own -- and a program that asks for Terminal in
 the ANSI set is told MS Sans Serif. Only redirection preserves the request.
 
-**Bitmap strikes are stretched, by whole numbers, to land exactly on the
-requested height.** MS Sans Serif is installed at six sizes, the largest a
-thirty-seven pixel cell. Asked for a hundred pixels, Windows answers a hundred
--- the twenty pixel strike five times over, exact in every metric including the
-internal leading. It picks the strike and the factor that hit the number, which
-is why the answer is 100 and not 111 from stretching the largest strike three
-times.
+**Bitmap strikes are stretched by whole numbers, up to five times, and a size
+is never overshot.** MS Sans Serif is installed at six sizes, the largest a
+thirty-seven pixel cell; asked for a hundred pixels Windows answers a hundred,
+the twenty pixel strike five times over and exact in every metric including the
+internal leading.
+
+Two rules that look like one. The first is that the answer is the largest size
+obtainable that does not exceed what was asked for, rather than the nearest:
+Courier is installed at 13, 16 and 20, and asked for 24 it answers 20 -- not
+the 26 it could make by doubling the 13, though 26 is closer. Asked for 29 it
+does double the 13, because 26 fits underneath and beats 20.
+
+The second is that the factor stops at five. MS Serif is the case that shows
+it: asked for a hundred it answers ninety-five, its nineteen pixel strike five
+times over, and not the exact hundred its ten pixel strike would give at ten
+times. Every other rule here would have chosen the hundred.
 
 **A height is three different questions depending on its sign.** Positive is
 the cell including its leading, negative is the characters within it, and zero
@@ -663,14 +673,29 @@ clamped rather than stretched down.
 
 **Weight, slant, underline and strikeout are synthesised, and reported
 inconsistently.** No bold MS Sans Serif is installed, so bold is made by
-widening every character a pixel; `tmOverhang` becomes 1 and the string grows
-by its own length plus one. Slanting adds an overhang of seven and no width per
-character. Any weight of 700 or more reports exactly 700 and anything less
+widening every character a pixel. Slanting widens nothing and leans the cell
+over instead. Any weight of 700 or more reports exactly 700 and anything less
 reports what the file says -- which is not always 400, since the System font is
 drawn bold and says so to a program that asked for nothing of the kind. And
 `tmItalic` comes back as 1 while `tmUnderlined` and `tmStruckOut` come back as
 255, so a program comparing any of the three against 1 is right about one of
 them.
+
+**The two overhangs behave differently, which one measurement cannot show.**
+`tmOverhang` is what a synthesised style adds to a string beyond the characters
+in it, and the first recording measured each style at a single size -- where an
+emboldening that adds 1 and a slant that adds 7 both look like constants.
+Measuring three faces at eight sizes each separates them: the bold overhang
+really is 1 everywhere, and the slant's is `floor((height - 1) / 2)`, the cell
+leaning over by half its own height. It follows the height being *drawn*, so a
+strike stretched to a size it was never installed at leans further in
+proportion -- which is the case that could not have been guessed from the
+strike alone. Asking for both adds both.
+
+**A face that is already bold is not emboldened again.** The System font is
+drawn bold, so a request for bold has nothing to synthesise: no character
+widens, nothing overhangs, and the metrics are the plain ones with a weight of
+700. Only a face lighter than bold gets the extra pixel.
 
 The probe also caught a defect in itself. Its first recording wrote the request
 into the argument field without the underline and strikeout flags, so three
@@ -683,8 +708,8 @@ to carry everything that was varied.
 vector font, and we load neither kind -- `FontManager` reads `.FON` bitmap
 strikes and nothing else. Every remaining disagreement in this fixture is that
 one missing capability, including all the unknown-name cases, since Windows
-answers those with Times New Roman. Of the 270 records, 211 agree; the other 59
-are all outlines.
+answers those with Times New Roman. Of the 665 records, 606 agree; the other 59 are all
+outlines, and no record that a bitmap font can answer disagrees.
 
 ## On the media
 

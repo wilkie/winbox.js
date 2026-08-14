@@ -58,11 +58,14 @@ export function GetTextMetrics(hdc, lptm) {
     const scale = font instanceof LogicalFont ? font.scale : 1;
     const horizontal = font instanceof LogicalFont ? font.horizontal : 1;
 
-    /* Only two weights come out, whatever goes in: a request for anything
-     * bold or heavier reports 700, and everything else reports 400. Recorded
-     * -- 900 comes back as 700 and 300 as 400.
+    /* Whether the strike has to be emboldened, which is not the same as
+     * whether the request asked for bold. The System font is drawn bold
+     * already, so asking it for bold changes nothing: no character widens and
+     * nothing overhangs. Emboldening a face that is bold in the file would
+     * make it bolder than Windows ever draws it.
      */
-    const bold = (style.weight ?? 0) >= 700;
+    const wantsBold = (style.weight ?? 0) >= 700;
+    const bold = wantsBold && header.dfWeight < 700;
 
     lptm.tmHeight = header.dfPixHeight * scale;
     lptm.tmAscent = header.dfAscent * scale;
@@ -79,7 +82,7 @@ export function GetTextMetrics(hdc, lptm) {
      * System font is drawn bold and reports 700 to a program that asked for
      * nothing of the kind.
      */
-    lptm.tmWeight = bold ? 700 : header.dfWeight;
+    lptm.tmWeight = wantsBold ? 700 : header.dfWeight;
 
     /* Italic reports 1 and the other two report 255. Not a typo on either
      * side: `tmItalic` is a flag and the other two are the byte with every
@@ -101,13 +104,19 @@ export function GetTextMetrics(hdc, lptm) {
     lptm.tmPitchAndFamily = header.dfPitchAndFamily;
     lptm.tmCharSet = header.dfCharSet;
     /* What a synthesised style adds to the width of a whole string, over and
-     * above the characters themselves. Emboldening smears each character one
-     * pixel to the right and the last one overhangs by that pixel; slanting
-     * pushes the top of the last character further still. Both were measured
-     * at a single size, so whether the slant's overhang follows the height is
-     * not something these recordings settle.
+     * above the characters in it.
+     *
+     * Emboldening smears each character one pixel to the right, so the last
+     * one hangs one pixel past where it would have ended -- one, at every size
+     * and on every face. Slanting leans the cell over by half its own height,
+     * so the overhang grows with the font: `floor((height - 1) / 2)`, which
+     * fits every size of every face measured. The height it follows is the one
+     * actually being drawn, so a strike stretched to a size it was not
+     * installed at leans further in proportion.
+     *
+     * Asking for both adds both.
      */
-    lptm.tmOverhang = style.italic ? 7 : bold ? 1 : 0;
+    lptm.tmOverhang = (bold ? 1 : 0) + (style.italic ? Math.floor((lptm.tmHeight - 1) / 2) : 0);
     lptm.tmDigitizedAspectX = header.dfHorizRes;
     lptm.tmDigitizedAspectY = header.dfVertRes;
   }
