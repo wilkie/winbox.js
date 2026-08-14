@@ -70,16 +70,16 @@ export class FontManager {
        * regular; keeping that one is right until synthesised styles give way
        * to real ones.
        */
-      /* The plain face of the family is the one a request for the family
-       * name means. All four files name themselves the same thing, so taking
-       * whichever the directory listed first gets the bold one about as often
-       * as not.
+      /* All four files of a family name themselves the same thing, and they
+       * are four different fonts. Windows does not slant the plain one to
+       * answer a request for italic -- it opens the italic one, which is a
+       * different design and measures differently: Arial's italic is *narrower*
+       * than its regular at twenty-four pixels, which no amount of shearing
+       * would produce.
        */
-      const held = this._outlines[face];
+      const family = (this._outlines[face] = this._outlines[face] ?? {});
 
-      if (!held || (!held.regular && font.regular)) {
-        this._outlines[face] = font;
-      }
+      family[FontManager.styleKey(font.boldFace, font.italicFace)] = font;
     }
   }
 
@@ -137,14 +137,44 @@ export class FontManager {
     return undefined;
   }
 
-  /** The outline face of a name, after substitution, if one is installed. */
-  outline(name) {
+  /** How the four files of a family are told apart. */
+  static styleKey(bold, italic) {
+    return `${bold ? 'bold' : 'regular'}${italic ? '-italic' : ''}`;
+  }
+
+  /**
+   * The outline face of a name, after substitution, in the style asked for.
+   *
+   * A family that has the style installed answers with it. One that does not
+   * answers with the nearest it has, and the caller makes up the difference --
+   * which is what happens for the plotter and bitmap faces, and what used to
+   * happen for these.
+   */
+  outline(name, bold = false, italic = false) {
     const face = FontManager.SUBSTITUTES[String(name).toLowerCase()] ?? name;
     const wanted = String(face).toLowerCase();
 
     for (const installed of Object.keys(this._outlines)) {
-      if (installed.toLowerCase() === wanted) {
-        return { name: installed, font: this._outlines[installed] };
+      if (installed.toLowerCase() !== wanted) {
+        continue;
+      }
+
+      const family = this._outlines[installed];
+
+      // Exactly what was asked for, then the nearest thing to it.
+      for (const key of [
+        FontManager.styleKey(bold, italic),
+        FontManager.styleKey(bold, false),
+        FontManager.styleKey(false, italic),
+        'regular',
+      ]) {
+        if (family[key]) {
+          return {
+            name: installed,
+            font: family[key],
+            exact: key === FontManager.styleKey(bold, italic),
+          };
+        }
       }
     }
 
@@ -224,9 +254,13 @@ export class FontManager {
      * are installed, and asking for Symbol gets the bitmap. So an outline
      * answers only where no strike carries the name at all.
      */
+    const wantsBold = (request.weight ?? 0) >= 700;
+    const wantsItalic = !!request.italic;
+
     const outline = this.lookup(face)
       ? null
-      : (this.outline(face) ?? (face ? this.outline(FontManager.FALLBACK_OUTLINE) : null));
+      : (this.outline(face, wantsBold, wantsItalic) ??
+        (face ? this.outline(FontManager.FALLBACK_OUTLINE, wantsBold, wantsItalic) : null));
 
     /* A symbol outline is rejected by a request that did not ask for symbols,
      * the same way an OEM strike is: WingDings asked for in ANSI comes back
@@ -241,7 +275,7 @@ export class FontManager {
       const chosen = FontManager.realiseOutline(outline.font, request);
 
       if (chosen) {
-        return { ...chosen, outline: outline.font, face: outline.name };
+        return { ...chosen, outline: outline.font, face: outline.name, exactStyle: outline.exact };
       }
     }
 

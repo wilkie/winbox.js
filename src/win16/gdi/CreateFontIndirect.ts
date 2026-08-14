@@ -76,6 +76,12 @@ export function CreateFontIndirect(lplf) {
      * settled at, because there is no strike to stand in for either.
      */
     outline: found.outline,
+
+    /* Whether the family had the style asked for as a file of its own. When it
+     * did there is nothing to make up: the glyphs are already bold, or already
+     * slanted, and emboldening them again would be drawing them twice.
+     */
+    exactStyle: found.exactStyle,
     ppem: found.ppem,
     ascent: found.ascent,
     descent: found.descent,

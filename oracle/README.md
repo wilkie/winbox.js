@@ -961,14 +961,37 @@ through the strike, which does not. A bold string came out the right width with
 none of its characters emboldened. Passing the request through took the glyph
 fixture from 57.8% to 64.4%.
 
-For the outline faces there was nothing to pass through, because only the plain
-file of each family is loaded and the bold and italic have to be made. A pixel
-of smear for bold; a lean proportional to height for italic, whose angle was
-swept the same way as the sampling was. The answer is a tenth -- about six
-degrees -- which is shallower than the bitmap faces' own overhang implies, and
-it halves the error without removing it. No slanted outline comes out exactly
-right at any angle, so that one is a measured approximation and is labelled as
-one.
+For the outline faces the answer was that they should not be synthesised at
+all. The recorded metrics say so plainly, and it took looking at them to see
+it: a slanted outline reports an overhang of **zero**, and Arial's italic is
+*narrower* than its regular at twenty-four pixels -- 101 against 106 -- which
+no amount of shearing produces. Windows is not slanting anything. It is opening
+`ARIALI.TTF`.
+
+All four files of a family name themselves the same thing in the `name` table,
+and they are four different fonts. Loading only the plain one and leaning it
+over was answering a request for italic with an impersonation of one. Keeping
+all four, keyed by the style bits each states about itself, and picking the one
+asked for took the glyph fixture from 64.4% to 73.3% and the font fixture from
+80.9% to 85.5% -- the second because the bold and italic metrics now come from
+the file that has them.
+
+Synthesis still exists for a family that genuinely lacks a style, and for the
+bitmap strikes, which have no italic anywhere. That one is a real shear and its
+anchor was the thing worth finding: **the bottom of the cell, not the
+baseline**. Every row shifts right by `floor((rows below it) / 2)`, nothing
+ever moves left, and the top row moves by `floor((cell - 1) / 2)` -- which is
+exactly the overhang Windows reports for a slanted strike, at every size and on
+every face. Anchoring at the baseline leaves descenders swinging out to the
+left, and no angle recovers from it: the sweep just kept asking for a steeper
+and steeper lean to make up the difference, which is what a wrong anchor looks
+like from inside a search over angles.
+
+The last of it was a clipping bug hiding behind the anchor. A slanted row is
+drawn to the right of where an upright one would be, and the region the pixels
+are written into was measured without the lean, so the top of every letter fell
+off the end. It looked exactly like a glyph whose right-hand side was missing,
+which is what it was. 74.4% to 80.0%.
 
 A running interpreter that produces the wrong answer looks far more finished
 than it is, and the only thing that said otherwise was the pixel comparison.

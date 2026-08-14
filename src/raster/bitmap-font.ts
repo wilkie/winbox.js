@@ -88,6 +88,7 @@ export class BitmapFontEntry {
   draw(ctx, x, y, text, options: any = {}) {
     let color = options.color || 0x0;
     const weight = options.weight || 400;
+    const italic = options.italic || false;
     const allowAnnotation = options.allowAnnotation || false;
 
     if (text === '') {
@@ -96,8 +97,14 @@ export class BitmapFontEntry {
 
     // Measure the text
     const metrics = this.measure(text, options);
-    const width = metrics.width;
     const height = metrics.height;
+
+    /* Room for the lean. A slanted row is drawn to the right of where an
+     * upright one would be, and the region the pixels are written into is
+     * measured without it -- so the top of every letter fell off the end,
+     * which looked exactly like a glyph whose right-hand side was missing.
+     */
+    const width = metrics.width + (italic ? Math.floor((height - 1) * BitmapFont.SLANT) : 0);
 
     // Pull out the image data for that region
     const imageData = ctx.getImageData(x, y, width, height);
@@ -129,6 +136,14 @@ export class BitmapFontEntry {
       }
 
       for (let j = 0; j < height; j++) {
+        /* Slanting is done as the rows are written: each one shifts sideways
+         * in proportion to how far above the baseline it sits, so the baseline
+         * itself stays put and the top of the letter travels furthest. A row
+         * below the baseline shifts the other way, which is what makes a
+         * descender lean back under the letter.
+         */
+        const lean = italic ? Math.floor((height - 1 - j) * BitmapFont.SLANT) : 0;
+
         let lastPixel = 0;
         for (let i = relativeX; i < relativeX + charWidth; i++) {
           const nextPixel = info.glyph[j][i - relativeX] || 0;
@@ -139,8 +154,8 @@ export class BitmapFontEntry {
             pixel = lastPixel;
           }
 
-          if (pixel) {
-            const position = (j * width + i) * 4;
+          if (pixel && i + lean >= 0 && i + lean < width) {
+            const position = (j * width + i + lean) * 4;
 
             data[position + 0] = color.red;
             data[position + 1] = color.green;
@@ -461,6 +476,7 @@ export class BitmapFont extends Font {
   declare static FNT2CharacterEntry: any;
   declare static FNT3CharacterEntry: any;
   declare static FNTHeader: any;
+  declare static SLANT: any;
   declare static _cache: any;
   declare static _promiseCache: any;
   async load(options: any = {}) {
@@ -520,6 +536,15 @@ BitmapFont._promiseCache = {};
 BitmapFont._cache = {};
 
 // https://www.undocprint.org/formats/font_formats
+
+/**
+ * How far a synthesised italic leans, per pixel of height above the baseline.
+ *
+ * Swept against what Windows draws. A half is what the recorded overhang
+ * implies -- `floor((cell - 1) / 2)` across the whole cell -- and what the
+ * pixels agree with.
+ */
+BitmapFont.SLANT = 0.5;
 
 BitmapFont.FNTHeader = {
   dfVersion: [0, 2],

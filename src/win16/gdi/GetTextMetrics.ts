@@ -66,10 +66,11 @@ export function GetTextMetrics(hdc, lptm) {
     // scaled outline maximum: hinting can widen a glyph past it.
     lptm.tmMaxCharWidth = outline.deviceMaxAdvance(ppem) ?? scaled(outline.maxAdvance);
 
-    const bold = (style.weight ?? 0) >= 700 && outline.weight < 700;
+    // Only a style that had to be made shows up as an overhang.
+    const bold = (style.weight ?? 0) >= 700 && !style.exactStyle;
 
     lptm.tmWeight = (style.weight ?? 0) >= 700 ? 700 : outline.weight;
-    lptm.tmItalic = style.italic ? 1 : 0;
+    lptm.tmItalic = style.italic || outline.italicFace ? 1 : 0;
     lptm.tmUnderlined = style.underline ? 0xff : 0;
     lptm.tmStruckOut = style.strikeout ? 0xff : 0;
     lptm.tmOverhang = bold ? 1 : 0;

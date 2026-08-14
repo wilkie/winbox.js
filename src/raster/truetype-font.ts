@@ -167,6 +167,24 @@ export class TrueTypeFont {
     return this.has('OS/2') ? this.unsigned('OS/2', 4) : 400;
   }
 
+  /** Whether this file is the bold one of its family. */
+  get boldFace() {
+    if (this.has('OS/2') && this._tables['OS/2'].length >= 64) {
+      return (this.unsigned('OS/2', 62) & 0x20) !== 0;
+    }
+
+    return this.weight >= 700;
+  }
+
+  /** Whether this file is the italic one. */
+  get italicFace() {
+    if (this.has('OS/2') && this._tables['OS/2'].length >= 64) {
+      return (this.unsigned('OS/2', 62) & 0x01) !== 0;
+    }
+
+    return this.has('head') ? (this.unsigned('head', 44) & 0x02) !== 0 : false;
+  }
+
   /**
    * Whether the font holds symbols rather than letters.
    *

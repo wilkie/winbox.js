@@ -318,11 +318,11 @@ export class Surface {
 
     const style = font.style ?? {};
 
-    /* Only the plain file of each family is loaded, so a request for bold or
-     * italic always has to be answered by making one.
+    /* Nothing to synthesise where the family had the style as a file of its
+     * own -- the glyphs are already bold, or already slanted.
      */
-    const bold = (style.weight ?? 0) >= 700;
-    const italic = !!style.italic;
+    const bold = (style.weight ?? 0) >= 700 && !style.exactStyle;
+    const italic = !!style.italic && !style.exactStyle;
 
     let pen = x;
 
