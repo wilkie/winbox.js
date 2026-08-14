@@ -129,11 +129,7 @@ export class Allocator {
             return null;
         }*/
 
-    // Let us create our heap
-    const bytes = new Uint8Array(size);
-    const view = new DataView(bytes.buffer);
-
-    // And keep track of it
+    // Let us create our heap, which brings its own storage with it
     const heap = new Heap(size);
     this._heaps[segment] = heap;
     heap.segment = segment;

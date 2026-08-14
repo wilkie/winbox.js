@@ -372,10 +372,6 @@ export const KNOWN_GAPS: Record<string, string> = {
     'a global handle is not its selector on real Windows, even for fixed ' +
     'blocks; ours treats the two as the same thing, and separating them ' +
     'touches the whole handle model',
-  'LocalAlloc+LocalSize':
-    'LocalSize is an empty function and Heap has no notion of an ' +
-    "allocation's size; the recorded sizes are also odd enough to want more " +
-    'probing first, since 15, 16 and 17 bytes all come back as 18',
 };
 
 /**

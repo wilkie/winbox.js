@@ -27,5 +27,14 @@
  *                       discarded.
  */
 export function LocalSize(hloc) {
-  console.log('LocalSize:', hloc);
+  // LocalSize reads the heap of the current segment selected via DS.
+  const segment = this.machine.cpu.core.ds >> 3;
+
+  const heap = this.allocator.heapOf(segment);
+  if (!heap) {
+    // No heap initialized
+    return 0;
+  }
+
+  return heap.sizeOf(hloc);
 }

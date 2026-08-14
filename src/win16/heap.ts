@@ -11,11 +11,17 @@ export class Heap {
   declare _offset: any;
   declare _segment: any;
   declare _size: any;
-  declare getUint16: any;
-  declare setUint16: any;
+  declare _view: any;
   constructor(size) {
     // The size of the heap
     this._size = size;
+
+    /* The heap's own bytes. Handles live in here rather than in a table on the
+     * side, because a local handle is an address within the segment and
+     * software dereferences it: `LocalLock` on a moveable block reads the
+     * pointer the handle holds, and it has to be somewhere the guest can see.
+     */
+    this._view = new DataView(new Uint8Array(size).buffer);
 
     // By default, we set the segment/offset to 0.
     // A segment of 0 indicates the heap is not mapped into memory.
@@ -31,6 +37,21 @@ export class Heap {
 
     // We will cheat and keep track of allocations in our own memory
     this._allocations = [];
+  }
+
+  /**
+   * Reads a word from the heap.
+   *
+   * Offsets here are relative to the start of the heap rather than to the
+   * segment, which is why callers subtract `_offset` first.
+   */
+  getUint16(offset, littleEndian = true) {
+    return this._view.getUint16(offset, littleEndian);
+  }
+
+  /** Writes a word into the heap. */
+  setUint16(offset, value, littleEndian = true) {
+    this._view.setUint16(offset, value, littleEndian);
   }
 
   get address() {
@@ -153,6 +174,29 @@ export class Heap {
   }
 
   /**
+   * The size a request of this many bytes actually turns into.
+   *
+   * The local heap deals in four-byte units and never hands out a block
+   * smaller than eight bytes. A moveable block spends two of its own bytes on
+   * the link back to its handle, so the size reported for one is two less than
+   * the block it sits in -- which is why requests of 15, 16, 17 and 18 bytes
+   * all come back as 18.
+   *
+   * Measured rather than assumed; see oracle/fixtures/memory.json, where
+   * seventeen sizes agree with this and nine of them were chosen to disprove
+   * it.
+   *
+   * @param {number} request - The bytes asked for.
+   * @param {boolean} movable - Whether the block carries a handle.
+   * @returns {number} The bytes the caller actually gets.
+   */
+  static blockFor(request, movable) {
+    const block = Math.max(8, (request + (movable ? 2 : 0) + 3) & ~3);
+
+    return movable ? block - 2 : block;
+  }
+
+  /**
    * Makes a local allocation to the heap within the given segment.
    */
   allocate(size, options: any = {}) {
@@ -160,11 +204,41 @@ export class Heap {
       return null;
     }
 
-    // Create the data
-    const data = new Uint8Array(size);
+    /* Allocating what the caller will be told it has, rather than what it
+     * asked for: software reads `LocalSize` and uses every byte of it.
+     */
+    const data = new Uint8Array(Heap.blockFor(size, !!options.movable));
     const view = new DataView(data.buffer);
 
-    return this.insert(view);
+    // The options decide whether a handle is made, so they have to travel.
+    return this.insert(view, options);
+  }
+
+  /**
+   * The size of the block behind a handle or a pointer.
+   *
+   * `LocalSize` is defined on both, and a handle is told from a pointer by
+   * whether the heap remembers handing it out as one.
+   *
+   * @param {number} address - A local handle or a local pointer.
+   * @returns {number} The size of the block, or zero if it is not one.
+   */
+  sizeOf(address) {
+    if (this._handles[address]) {
+      // A handle holds the address of the block it stands for.
+      address = this.getUint16(address - this._offset, true);
+    }
+
+    // The two bytes before the data hold its size, so the block starts there.
+    const start = address - 2;
+
+    for (const allocation of this._allocations) {
+      if (allocation[0] === start) {
+        return allocation[3].byteLength;
+      }
+    }
+
+    return 0;
   }
 
   allocateHandle() {

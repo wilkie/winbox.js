@@ -79,12 +79,22 @@ if (fixtures.length === 0) {
           }
 
           /* A known gap is expected to fail, so the suite stays green while it
-           * lasts and turns red when it is fixed and the entry goes stale.
+           * lasts. If it starts agreeing, the entry is stale and saying so is
+           * the whole point -- an exception list nobody prunes stops meaning
+           * anything.
            */
           if (KNOWN_GAPS[name]) {
-            it.failing(`${name} matches Windows`, function () {
-              throw new Error(`${name}: ${KNOWN_GAPS[name]}`);
-            });
+            if (entry.outcome === 'agreed') {
+              it(`${name} is no longer a known gap`, function () {
+                throw new Error(
+                  `${name} now agrees with Windows; remove it from KNOWN_GAPS in replay.ts`
+                );
+              });
+            } else {
+              it.failing(`${name} matches Windows`, function () {
+                throw new Error(`${name}: ${KNOWN_GAPS[name]}`);
+              });
+            }
 
             continue;
           }
