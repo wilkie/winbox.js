@@ -904,25 +904,48 @@ bearing was applied, `xMin - lsb`, which is nearly always zero. Putting the
 bearing there shifts everything the program measures from it and the glyph
 comes out a pixel narrow.
 
-With both fixed the fitting takes hold: the glyph fixture goes from 43.3% to
-48.9%, and Arial's `A` gets its apex and crossbar on the rows Windows puts them
-on. It is not right yet -- the horizontal fitting is under-applied, so the
-letter is a pixel narrow and the average glyph differs by more pixels than the
-unhinted one did even though more glyphs are now exactly right. Five of Arial's
-twenty-four are exact where three were before, two of Times New Roman's twelve
-where none were, one of Courier New's six where none were.
+With both fixed the fitting takes hold, and the vertical direction comes out
+right while the horizontal stays a pixel narrow. Three more followed from
+chasing that.
 
-That last sentence is the useful one. Both numbers moved, in opposite
-directions, and only the exact count means anything: a glyph is either the
-pixels Windows drew or it is not, and "closer on average" is what you measure
-when you have not got there.
+**Auto flip.** A control value is a size, not a direction. A stem is a stem
+whichever side of the reference point it lies on, and the table states its
+width once; the sign has to come from the outline, and `MIRP` flips the value
+to match before it uses it. Leaving that out barely shows vertically, where
+nearly every distance is upward and positive anyway. It wrecks the horizontal
+direction, where a glyph's points sit on both sides of the reference and half
+the distances are negative -- half the points were being fitted to the wrong
+side, which is exactly what "a pixel narrow" looked like.
+
+**The control value cut-in only applies within one zone.** Comparing a distance
+in the glyph against one in the twilight zone compares two different things.
+
+**`MIAP` on a twilight point places it rather than moving it**, and sets both
+the position it is at and the position it is remembered as starting from. The
+second half is the one that matters: a later instruction measuring the original
+distance from that point would otherwise measure from the origin, because that
+is where an untouched twilight point has always been. Every reference the font
+constructs is built this way, so getting it wrong misplaces everything measured
+against them.
+
+The glyph fixture goes 43.3% to 57.8% across the four fixes. Arial's `A` now
+differs from Windows by two pixels, on one row where a diagonal edge crosses
+near a pixel centre -- which is a scan conversion question rather than a hinting
+one. Courier New averages 0.7 pixels of difference per glyph, against 11.7
+unhinted.
+
+One measurement is worth keeping in view: after the first two fixes the average
+difference per glyph was *worse* than not hinting at all, while more glyphs were
+exactly right. Only the exact count means anything. A glyph is either the pixels
+Windows drew or it is not, and "closer on average" is what you measure when you
+have not got there.
 
 A running interpreter that produces the wrong answer looks far more finished
 than it is, and the only thing that said otherwise was the pixel comparison.
 
-Which is the honest statement of where this stands: the interpreter runs, fits
-the vertical direction, and under-fits the horizontal one, and the fixture
-holds what it would have to agree with.
+Which is the honest statement of where this stands: the interpreter fits both
+directions, more than half the recorded glyphs come out exactly right, and what
+remains is a pixel here and there where the fill rule disagrees.
 
 **What we do not do.** We do not hint. Of the font fixture's 2225 records, 1801 agree: the rest are the synthesised
 styles on outline faces, the maximum character width, and the sizes the fitted

@@ -1201,6 +1201,21 @@ export class Hinter {
 
       let distance = this.cvt[value] ?? 0;
 
+      /* A twilight point has no outline behind it, so this does not move it --
+       * it puts it there, in both the position it is at and the position it is
+       * remembered as having started from. That second half matters: a later
+       * instruction measuring the original distance from this point would
+       * otherwise measure from the origin, because that is where an untouched
+       * twilight point has always been.
+       */
+      if (state.zp0 === 0) {
+        zone.x[index] = Math.round((distance * state.freedom.x) / UNIT);
+        zone.y[index] = Math.round((distance * state.freedom.y) / UNIT);
+
+        zone.originalX[index] = zone.x[index];
+        zone.originalY[index] = zone.y[index];
+      }
+
       const current = this.project(zone.x[index], zone.y[index]);
 
       if (opcode === 0x3f) {
@@ -1559,11 +1574,26 @@ export class Hinter {
         zoneOne.originalY[index] - zoneZero.originalY[state.rp0]
       );
 
+      /* Auto flip: the control value is a size, not a direction. A stem is a
+       * stem whichever side of the reference point it lies, and the table
+       * states its width once; the sign has to come from the outline.
+       *
+       * Skipping this barely shows in the vertical direction, where nearly
+       * every distance is upward and positive anyway, and wrecks the
+       * horizontal one, where a glyph's points sit on both sides of the
+       * reference and half the distances are negative. The letter comes out
+       * narrow because half its points were fitted to the wrong side.
+       */
+      if (state.autoFlip && distance !== 0 && original !== 0 && distance < 0 !== original < 0) {
+        distance = -distance;
+      }
+
       /* The cut-in: where the outline's own distance is close enough to what
        * the table says, the table wins; where it is far off, the font is doing
-       * something the table was not written for and the outline wins.
+       * something the table was not written for and the outline wins. It only
+       * applies within one zone -- across two there is nothing to compare.
        */
-      if (Math.abs(distance - original) > state.controlCutIn) {
+      if (state.zp0 === state.zp1 && Math.abs(distance - original) >= state.controlCutIn) {
         distance = original;
       }
 
