@@ -2,7 +2,7 @@
 
 import { ALU } from '../alu.js';
 import { I286 } from './i286.js';
-import { CPU, InvalidInstruction, MemoryFault } from '../cpu.js';
+import { InvalidInstruction, MemoryFault } from '../faults.js';
 import { X87 } from '../x87.js';
 import { CpuCore } from '../cpu-core.js';
 

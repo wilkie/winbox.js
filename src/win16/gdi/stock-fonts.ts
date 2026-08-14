@@ -1,7 +1,5 @@
 'use strict';
 
-import { Gdi } from '../gdi.js';
-
 /**
  * What each stock font actually is.
  *
@@ -18,11 +16,18 @@ import { Gdi } from '../gdi.js';
  * not a system font at all -- the name suggests otherwise, which is why it was
  * worth measuring rather than assuming.
  */
+/* Keyed by the stock font constants as numbers rather than through `Gdi`.
+ * These are keys of an object literal, so they are evaluated while this module
+ * is being loaded -- and `gdi.ts` imports the function that imports this one,
+ * so reaching back into it here reads a class that has not finished
+ * initialising. The switch statements elsewhere get away with it because they
+ * run when they are called.
+ */
 export const STOCK_FONTS = {
-  [Gdi.SYSTEM_FONT]: { face: 'System', points: 10 },
-  [Gdi.SYSTEM_FIXED_FONT]: { face: 'Fixedsys', points: 12 },
-  [Gdi.ANSI_VAR_FONT]: { face: 'Helv', points: 8 },
-  [Gdi.ANSI_FIXED_FONT]: { face: 'Courier', points: 10 },
-  [Gdi.OEM_FIXED_FONT]: { face: 'Terminal', points: 12 },
-  [Gdi.DEVICE_DEFAULT_FONT]: { face: 'Courier', points: 12 },
+  10: { face: 'Terminal', points: 12 }, // OEM_FIXED_FONT
+  11: { face: 'Courier', points: 10 }, // ANSI_FIXED_FONT
+  12: { face: 'Helv', points: 8 }, // ANSI_VAR_FONT
+  13: { face: 'System', points: 10 }, // SYSTEM_FONT
+  14: { face: 'Courier', points: 12 }, // DEVICE_DEFAULT_FONT
+  16: { face: 'Fixedsys', points: 12 }, // SYSTEM_FIXED_FONT
 };

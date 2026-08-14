@@ -13,13 +13,14 @@ import { User, MSG } from './user.js';
  */
 export class Scheduler {
   declare _currentTask: any;
+  declare _nextFrame: any;
   declare _cycles: any;
   declare _frameStart: any;
   declare _machine: any;
   declare _modules: any;
   declare _running: any;
   declare _tasks: any;
-  constructor(machine, modules) {
+  constructor(machine, modules, options: any = {}) {
     this._tasks = {};
     this._machine = machine;
     this._modules = modules;
@@ -27,7 +28,32 @@ export class Scheduler {
     this._cycles = 0;
     this._frameStart = new Date().getTime();
 
+    /* How the next slice of guest execution gets scheduled.
+     *
+     * In a browser this is the animation frame, which is what keeps the guest
+     * from starving the page. Nothing else about scheduling needs a browser,
+     * though, and requiring one meant a task could not be run anywhere else --
+     * not from a test, not from a script, not from the recorder. So the driver
+     * is injectable and falls back to a timer when there is no window.
+     */
+    this._nextFrame = options.nextFrame ?? Scheduler.defaultFrameDriver();
+
     this._currentTask = null;
+  }
+
+  /**
+   * The frame driver to use when the caller has no opinion.
+   *
+   * @returns {Function} A function that schedules a callback.
+   */
+  static defaultFrameDriver() {
+    const host: any = globalThis as any;
+
+    if (host.window?.requestAnimationFrame) {
+      return (callback) => host.window.requestAnimationFrame(callback);
+    }
+
+    return (callback) => setTimeout(callback, 0);
   }
 
   /**
@@ -133,7 +159,7 @@ export class Scheduler {
 
           if (!currentTask.stopped) {
             this._frameStart = new Date().getTime();
-            window.requestAnimationFrame(step.bind(this));
+            this._nextFrame(step.bind(this));
             return;
           }
         }

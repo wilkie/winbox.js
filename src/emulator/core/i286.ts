@@ -1,7 +1,7 @@
 'use strict';
 
 import { ALU, DivideError } from '../alu.js';
-import { CPU, InvalidInstruction, MemoryFault } from '../cpu.js';
+import { InvalidInstruction, MemoryFault } from '../faults.js';
 import { CpuCore16 } from '../cpu-core.js';
 
 /**

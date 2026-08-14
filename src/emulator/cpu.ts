@@ -3,6 +3,7 @@
 import { I286 } from './core/i286.js';
 import { I386 } from './core/i386.js';
 import { CpuCore, CpuCoreHost, TrapVector } from './cpu-core.js';
+import { InvalidInstruction, MemoryFault } from './faults.js';
 
 /**
  * This class represents the CPU emulation.
@@ -228,25 +229,8 @@ export class CPU implements CpuCoreHost {
   }
 }
 
-/**
- * Raised when a memory operand runs past the end of its segment.
- *
- * The interrupt has already been dispatched by the time this is thrown; it
- * exists to abandon the rest of the instruction, which must not complete.
- */
-export class MemoryFault {}
-
-export class InvalidInstruction {
-  declare _callback: any;
-  declare _instruction: any;
-  constructor(instruction, callback?) {
-    this._instruction = instruction;
-    this._callback = callback;
-  }
-
-  get callback() {
-    return this._callback;
-  }
-}
+/* Re-exported so that callers who have always imported them from here still
+ * can; they are defined in faults.ts, away from the cycle. */
+export { InvalidInstruction, MemoryFault };
 
 export default CPU;

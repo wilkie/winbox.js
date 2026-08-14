@@ -54,6 +54,8 @@ export class Win16 {
   declare _modules: any;
   declare _scheduler: any;
   declare _display: any;
+  declare _onCall: any;
+  declare _options: any;
   declare _startTime: any;
   declare _windows: any;
   /**
@@ -68,6 +70,12 @@ export class Win16 {
 
     // Retain the deskop environment
     this._desktop = desktop;
+
+    /* Called for every API call a program makes, when anything is listening.
+     * See the dispatcher in `syscallInvoke`.
+     */
+    this._options = options;
+    this._onCall = (options as any).onCall ?? null;
 
     /* Which display driver we are pretending to be. Everything a program can
      * ask about what it is drawing on comes from this, and the answers are
@@ -136,7 +144,7 @@ export class Win16 {
     this._fonts = new FontManager();
 
     // The task scheduler
-    this._scheduler = new Scheduler(this._machine, this._modules);
+    this._scheduler = new Scheduler(this._machine, this._modules, options);
 
     // Keep track of all window instances.
     // The '0' index window is the desktop.
@@ -155,6 +163,18 @@ export class Win16 {
         this._fonts.load(file);
       }
     });
+  }
+
+  /**
+   * Logs, when the system was started with logging asked for.
+   *
+   * A program makes tens of thousands of API calls to do anything at all, so
+   * this is off unless someone says otherwise.
+   */
+  debug(...args) {
+    if (this._options?.logCalls) {
+      console.log(...args);
+    }
   }
 
   /**
@@ -331,7 +351,7 @@ export class Win16 {
     const stackBytes = new Uint8Array(task.executable.neHeader.initialStackSize);
     const stackView = new DataView(stackBytes.buffer);
     this._memory.write(
-      this._machine.cpu.core.translateAddress(task.loader.ds << 3, dataSegment.length),
+      this._machine.cpu.core.translateAddress(segmentSelector(task.loader.ds), dataSegment.length),
       stackView
     );
 
@@ -339,15 +359,15 @@ export class Win16 {
     // https://en.wikipedia.org/wiki/Program_Segment_Prefix
 
     // Write INT 0x20 for CP/M exit (lol!!)
-    this._machine.cpu.core.write8(programSegment << 3, 0x0, 0xcd);
-    this._machine.cpu.core.write8(programSegment << 3, 0x1, 0x20);
+    this._machine.cpu.core.write8(segmentSelector(programSegment), 0x0, 0xcd);
+    this._machine.cpu.core.write8(segmentSelector(programSegment), 0x1, 0x20);
 
     // Write environment segment
-    this._machine.cpu.core.write16(programSegment << 3, 0x2c, environmentSegment);
+    this._machine.cpu.core.write16(segmentSelector(programSegment), 0x2c, environmentSegment);
 
     // Write command line arguments
     const commandLineLength = 0;
-    this._machine.cpu.core.write8(programSegment << 3, 0x80, commandLineLength);
+    this._machine.cpu.core.write8(segmentSelector(programSegment), 0x80, commandLineLength);
 
     task.programSegment = programSegment;
     task.environmentSegment = environmentSegment;
@@ -574,17 +594,23 @@ export class Win16 {
       args.reverse();
     }
 
-    // Call normal function
-    //if (module.instance.exports[ip][1] != "PeekMessage" && module.instance.exports[ip][1] != "GetTickCount") {
-    console.log(
-      'Calling',
-      module.instance.name,
-      module.instance.exports[ip][1],
-      callerCS.toString(16),
-      ':',
-      (callerIP - 5).toString(16),
-      args
-    );
+    const called = module.instance.exports[ip][1];
+
+    /* Every call a program makes passes through here, which makes it the one
+     * place worth offering to anyone who wants to watch. A trace is how you
+     * find out what a program actually needs -- which is a different and much
+     * shorter list than what the API contains -- and it is what lets a test
+     * assert that a program got as far as it should have.
+     */
+    this._onCall?.({
+      module: module.instance.name,
+      name: called,
+      ordinal: ip,
+      args,
+      caller: { segment: callerCS, offset: callerIP - 5 },
+    });
+
+    this.debug('Calling', module.instance.name, called, args);
     //console.log(this._machine.cpu.core.cs.toString(16), this._machine.cpu.core.ip.toString(16));
     //}
 
