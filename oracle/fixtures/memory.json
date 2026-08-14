@@ -1,0 +1,196 @@
+{
+  "probe": "memory",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode"
+  },
+  "records": [
+    {
+      "function": "GlobalAlloc+GlobalSize",
+      "args": "0x0002,1",
+      "result": "32",
+      "section": "what GlobalAlloc rounds a request up to"
+    },
+    {
+      "function": "GlobalAlloc+GlobalSize",
+      "args": "0x0002,2",
+      "result": "32",
+      "section": "what GlobalAlloc rounds a request up to"
+    },
+    {
+      "function": "GlobalAlloc+GlobalSize",
+      "args": "0x0002,15",
+      "result": "32",
+      "section": "what GlobalAlloc rounds a request up to"
+    },
+    {
+      "function": "GlobalAlloc+GlobalSize",
+      "args": "0x0002,16",
+      "result": "32",
+      "section": "what GlobalAlloc rounds a request up to"
+    },
+    {
+      "function": "GlobalAlloc+GlobalSize",
+      "args": "0x0002,17",
+      "result": "32",
+      "section": "what GlobalAlloc rounds a request up to"
+    },
+    {
+      "function": "GlobalAlloc+GlobalSize",
+      "args": "0x0002,32",
+      "result": "32",
+      "section": "what GlobalAlloc rounds a request up to"
+    },
+    {
+      "function": "GlobalAlloc+GlobalSize",
+      "args": "0x0002,100",
+      "result": "128",
+      "section": "what GlobalAlloc rounds a request up to"
+    },
+    {
+      "function": "GlobalAlloc+GlobalSize",
+      "args": "0x0002,1024",
+      "result": "1024",
+      "section": "what GlobalAlloc rounds a request up to"
+    },
+    {
+      "function": "GlobalAlloc+GlobalSize",
+      "args": "0x0002,4096",
+      "result": "4096",
+      "section": "what GlobalAlloc rounds a request up to"
+    },
+    {
+      "function": "GlobalAlloc+GlobalSize",
+      "args": "0x0002,65536",
+      "result": "65536",
+      "section": "what GlobalAlloc rounds a request up to"
+    },
+    {
+      "function": "GlobalAlloc+GlobalSize",
+      "args": "0x0000,1",
+      "result": "32",
+      "section": "and the same for fixed blocks"
+    },
+    {
+      "function": "GlobalAlloc+GlobalSize",
+      "args": "0x0000,16",
+      "result": "32",
+      "section": "and the same for fixed blocks"
+    },
+    {
+      "function": "GlobalAlloc+GlobalSize",
+      "args": "0x0000,1024",
+      "result": "1024",
+      "section": "and the same for fixed blocks"
+    },
+    {
+      "function": "GlobalAlloc+GlobalSize",
+      "args": "0x0002,0",
+      "result": "0",
+      "section": "a request of nothing at all"
+    },
+    {
+      "function": "GlobalAlloc+GlobalSize",
+      "args": "0x0000,0",
+      "result": "0",
+      "section": "a request of nothing at all"
+    },
+    {
+      "function": "GlobalAlloc+GlobalSize",
+      "args": "0x0042,100",
+      "result": "128",
+      "section": "zero-initialised memory is a flag, not a guarantee"
+    },
+    {
+      "function": "GlobalAlloc+GlobalSize",
+      "args": "0x0040,100",
+      "result": "128",
+      "section": "zero-initialised memory is a flag, not a guarantee"
+    },
+    {
+      "function": "GlobalFlags",
+      "args": "0x0002",
+      "result": "0x0000",
+      "section": "GlobalFlags"
+    },
+    {
+      "function": "GlobalFlags",
+      "args": "0x0000",
+      "result": "0x0000",
+      "section": "GlobalFlags"
+    },
+    {
+      "function": "GlobalFlags",
+      "args": "0x0102",
+      "result": "0x0100",
+      "section": "GlobalFlags"
+    },
+    {
+      "function": "GlobalLock",
+      "args": "0x0002",
+      "result": "offset=0,handle-is-selector=0",
+      "section": "GlobalLock"
+    },
+    {
+      "function": "GlobalLock",
+      "args": "0x0000",
+      "result": "offset=0,handle-is-selector=0",
+      "section": "GlobalLock"
+    },
+    {
+      "function": "GlobalFree",
+      "args": "GMEM_MOVEABLE,256",
+      "result": "returns=null",
+      "section": "GlobalFree"
+    },
+    {
+      "function": "LocalAlloc+LocalSize",
+      "args": "0x0002,1",
+      "result": "6",
+      "section": "the local heap rounds differently"
+    },
+    {
+      "function": "LocalAlloc+LocalSize",
+      "args": "0x0002,15",
+      "result": "18",
+      "section": "the local heap rounds differently"
+    },
+    {
+      "function": "LocalAlloc+LocalSize",
+      "args": "0x0002,16",
+      "result": "18",
+      "section": "the local heap rounds differently"
+    },
+    {
+      "function": "LocalAlloc+LocalSize",
+      "args": "0x0002,17",
+      "result": "18",
+      "section": "the local heap rounds differently"
+    },
+    {
+      "function": "LocalAlloc+LocalSize",
+      "args": "0x0002,100",
+      "result": "102",
+      "section": "the local heap rounds differently"
+    },
+    {
+      "function": "LocalAlloc+LocalSize",
+      "args": "0x0000,1",
+      "result": "8",
+      "section": "the local heap rounds differently"
+    },
+    {
+      "function": "LocalAlloc+LocalSize",
+      "args": "0x0000,16",
+      "result": "16",
+      "section": "the local heap rounds differently"
+    },
+    {
+      "function": "LocalAlloc+LocalSize",
+      "args": "0x0000,100",
+      "result": "100",
+      "section": "the local heap rounds differently"
+    }
+  ]
+}

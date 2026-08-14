@@ -4,6 +4,8 @@ import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { Machine } from '../../src/emulator/machine.js';
+import { GlobalAllocator } from '../../src/win16/global-allocator.js';
+import { Allocator } from '../../src/win16/allocator.js';
 
 import { lstrlen } from '../../src/win16/kernel/lstrlen.js';
 import { lstrcpy } from '../../src/win16/kernel/lstrcpy.js';
@@ -14,6 +16,13 @@ import { AnsiUpper } from '../../src/win16/user/AnsiUpper.js';
 import { AnsiLower } from '../../src/win16/user/AnsiLower.js';
 import { AnsiNext } from '../../src/win16/user/AnsiNext.js';
 import { AnsiPrev } from '../../src/win16/user/AnsiPrev.js';
+import { GlobalAlloc } from '../../src/win16/kernel/GlobalAlloc.js';
+import { GlobalSize } from '../../src/win16/kernel/GlobalSize.js';
+import { GlobalFree } from '../../src/win16/kernel/GlobalFree.js';
+import { LocalAlloc } from '../../src/win16/kernel/LocalAlloc.js';
+import { LocalSize } from '../../src/win16/kernel/LocalSize.js';
+import { LocalInit } from '../../src/win16/kernel/LocalInit.js';
+import { GlobalLock } from '../../src/win16/kernel/GlobalLock.js';
 
 /**
  * Replaying the oracle's recordings against our implementation.
@@ -62,11 +71,37 @@ export interface Fixture {
  */
 class Context {
   machine: any;
+  allocator: any;
+  globalAllocator: any;
   private next: number;
 
   constructor() {
     this.machine = new Machine();
     this.next = 0x100;
+
+    /* The memory functions reach their heaps through `this.allocator`, built
+     * here the way `Win16` builds it so that the allocator under test is the
+     * one the system would really be using.
+     */
+    this.globalAllocator = new GlobalAllocator(this.machine.cpu, this.machine.memory);
+    this.allocator = new Allocator(this.machine.memory, this.globalAllocator);
+  }
+
+  /**
+   * Gives the current data segment a local heap.
+   *
+   * `LocalAlloc` allocates from the heap belonging to whatever DS holds, and
+   * that heap is built by `LocalInit` -- which a task's startup code calls
+   * before the program's own entry point runs.
+   */
+  withLocalHeap(size = 0x2000) {
+    const segment = this.machine.cpu.core.ds >> 3;
+
+    if (!this.allocator.heapOf(segment)) {
+      LocalInit.call(this, segment, 16, size);
+    }
+
+    return this;
   }
 
   /** Writes a C string into guest memory and returns where it went. */
@@ -152,6 +187,7 @@ export function parseArgs(args: string): (string | number)[] {
       let end = args.indexOf(',', at);
       end = end === -1 ? args.length : end;
 
+      // `Number` reads the probe's 0x-prefixed flags as written.
       parsed.push(Number(args.slice(at, end)));
       at = end;
     }
@@ -255,10 +291,92 @@ const ADAPTERS: Record<string, (context: Context, args: (string | number)[]) => 
 
     return quoted(context.fetch(destination.far));
   },
+
+  'GlobalAlloc+GlobalSize'(context, [flags, request]) {
+    /* Handles are the allocator's business and two runs need not agree on
+     * them, so the probe recorded the size that came back rather than what it
+     * came back in.
+     */
+    const handle = GlobalAlloc.call(context, flags as number, request as number);
+
+    if (!handle) {
+      return 'failed';
+    }
+
+    return String(GlobalSize.call(context, handle));
+  },
+
+  'LocalAlloc+LocalSize'(context, [flags, request]) {
+    /* A local heap does not exist until something makes one. In a real program
+     * the startup code does it before `WinMain` is reached, so the probe never
+     * had to; here it has to happen explicitly, or this would be measuring the
+     * absence of a heap rather than the allocator.
+     */
+    context.withLocalHeap();
+
+    const handle = LocalAlloc.call(context, flags as number, request as number);
+
+    if (!handle) {
+      return 'failed';
+    }
+
+    return String(LocalSize.call(context, handle));
+  },
+
+  GlobalLock(context, [flags]) {
+    const handle = GlobalAlloc.call(context, flags as number, 128);
+
+    if (!handle) {
+      return 'failed';
+    }
+
+    const pointer = GlobalLock.call(context, handle);
+
+    if (!pointer) {
+      return 'null';
+    }
+
+    /* The selector is the allocator's to choose, so the probe recorded only
+     * what does not depend on it: that a global block starts at offset zero of
+     * its segment, and whether the handle turned out to be that selector.
+     */
+    const selector = (pointer >> 16) & 0xffff;
+
+    return `offset=${pointer & 0xffff},handle-is-selector=${selector === handle ? 1 : 0}`;
+  },
+
+  GlobalFree(context) {
+    const handle = GlobalAlloc.call(context, 0x0002, 256);
+
+    if (!handle) {
+      return 'failed to allocate';
+    }
+
+    return `returns=${GlobalFree.call(context, handle) ? 'handle' : 'null'}`;
+  },
 };
 
 /** Thrown by an adapter for a function we have not implemented at all. */
 export class Unimplemented extends Error {}
+
+/**
+ * Disagreements we know about and have not fixed.
+ *
+ * Each of these is a real difference from Windows with a reason it has not
+ * simply been corrected, and each is reported as an expected failure -- so the
+ * suite stays green while they persist, and turns red the moment one of them
+ * starts agreeing and the entry becomes stale.
+ */
+export const KNOWN_GAPS: Record<string, string> = {
+  GlobalLock:
+    'a global handle is not its selector on real Windows, even for fixed ' +
+    'blocks; ours treats the two as the same thing, and separating them ' +
+    'touches the whole handle model',
+  'LocalAlloc+LocalSize':
+    'LocalSize is an empty function and Heap has no notion of an ' +
+    "allocation's size; the recorded sizes are also odd enough to want more " +
+    'probing first, since 15, 16 and 17 bytes all come back as 18',
+};
 
 /**
  * Functions a module declares but wires to a stub.
@@ -267,7 +385,7 @@ export class Unimplemented extends Error {}
  * as a disagreement -- the two want different work, and conflating them makes
  * the report harder to act on.
  */
-const STUBBED = new Set<string>([]);
+const STUBBED = new Set<string>(['GlobalFlags']);
 
 /** Runs one recorded call. */
 export function replayRecord(record: Fixture['records'][number]): Replayed {

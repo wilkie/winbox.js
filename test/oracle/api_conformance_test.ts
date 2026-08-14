@@ -1,6 +1,6 @@
 'use strict';
 
-import { loadFixtures, replayFixture, type Outcome } from './replay.js';
+import { KNOWN_GAPS, loadFixtures, replayFixture, type Outcome } from './replay.js';
 
 /**
  * Agreement with real Windows 3.1, per API function.
@@ -73,6 +73,17 @@ if (fixtures.length === 0) {
                   ? `${name} is not implemented`
                   : `${name} has no replay adapter`
               );
+            });
+
+            continue;
+          }
+
+          /* A known gap is expected to fail, so the suite stays green while it
+           * lasts and turns red when it is fixed and the entry goes stale.
+           */
+          if (KNOWN_GAPS[name]) {
+            it.failing(`${name} matches Windows`, function () {
+              throw new Error(`${name}: ${KNOWN_GAPS[name]}`);
             });
 
             continue;

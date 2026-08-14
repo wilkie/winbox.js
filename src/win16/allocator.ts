@@ -46,16 +46,20 @@ export class Allocator {
    * @return {number} - The segment selector index or null on error.
    */
   allocate(size, options = {}) {
-    // Do not allocate if the size is 0 or negative.
-    if (size <= 0) {
+    if (size < 0) {
       return null;
     }
 
-    // Align the bytes requested to at least 32 bytes
-    size = (size + 0x1f) & ~0x1f;
+    /* A request for nothing is legal and gets a real handle back, whose size
+     * reports as zero -- it is how software reserves a handle without
+     * committing memory to it, which matters most for discardable blocks. It
+     * still costs a selector. Recorded from Windows in
+     * oracle/fixtures/memory.json.
+     */
+    size = size === 0 ? 0 : (size + 0x1f) & ~0x1f;
 
     // Determine how many selectors we need to allocate
-    const selectorCount = (size + 0xffff) >> 16;
+    const selectorCount = Math.max(1, (size + 0xffff) >> 16);
 
     // For each selector we are allocating, create the memory data
     // And then also map it into our machine memory.

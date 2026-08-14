@@ -201,6 +201,42 @@ subtracts 0x20 across the block turns one into the other; and 0xDF sits just
 below the lowercase run, where an off-by-one in the bound would convert it too.
 Measuring first meant never writing the wrong version.
 
+### The memory probe
+
+A handle is not a comparable thing -- the allocator picks it, and two runs need
+not agree -- so the probe records everything derived from one instead: the size
+that came back, the flags reported, whether a locked block starts at offset
+zero, whether a freed handle stays freed.
+
+What Windows actually does with a global allocation:
+
+```
+GlobalAlloc(GMEM_MOVEABLE, 1)     GlobalSize -> 32
+GlobalAlloc(GMEM_MOVEABLE, 100)   GlobalSize -> 128
+GlobalAlloc(GMEM_MOVEABLE, 1024)  GlobalSize -> 1024
+GlobalAlloc(GMEM_MOVEABLE, 0)     GlobalSize -> 0
+```
+
+Multiples of 32, minimum 32 -- which we already did, so fifteen of the
+seventeen cases agreed straight away. The two that did not were the zero-byte
+requests, which we refused outright and Windows honours: a request for nothing
+gets a real handle whose size reports as zero, which is how software reserves a
+handle without committing memory to it. That is fixed, and all seventeen agree.
+
+Two findings the probe surfaced that are not one-line fixes:
+
+- **A global handle is not its selector.** `GlobalLock` on real Windows returns
+  a pointer whose selector differs from the handle, for fixed blocks as well as
+  moveable ones. Ours returns `handle << 16`, treating the two as the same
+  thing. Offsets agree -- a global block does start at offset zero -- but the
+  identity does not, and unpicking it touches the whole handle model.
+- **`LocalSize` is an empty function.** It logs its argument and returns
+  nothing, and `Heap` has no notion of the size of an allocation at all, so all
+  eight local-heap records disagree. The recorded sizes are strange enough to be
+  worth having: requests of 15, 16 and 17 bytes all come back as 18.
+
+Memory reads 18/31. Combined with the strings probe, 75 of 88 records.
+
 `AnsiNext` has a quieter surprise: at the null terminator it returns the same
 pointer rather than moving past it, so walking a string with it stops at the end
 instead of running off.
