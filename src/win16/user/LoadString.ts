@@ -53,8 +53,11 @@ export async function LoadString(hinst, idResource, lpszBuffer, cbBuffer) {
   idResource++;
   stringId = stringId - 16 * (idResource - 1);
 
-  // Resource ids that are integers have the high-bit set in the executable
-  idResource |= 0x8000;
+  /* The executable marks an integer resource id by setting the high bit, and
+   * the loader takes it off again when it parses the table -- so what is left
+   * to compare against is the plain number. Setting the bit back here meant
+   * the comparison could never match, and every string came back empty.
+   */
 
   const destSegment = (lpszBuffer >> 16) & 0xffff;
   let destOffset = lpszBuffer & 0xffff;

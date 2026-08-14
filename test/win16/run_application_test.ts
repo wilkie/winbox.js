@@ -55,7 +55,6 @@ async function runApplication(name: string, frames = 300) {
 
   const handle = await win16.load(executable);
   win16.link(handle);
-  win16.run(handle);
 
   /* Neither application runs to completion, so how it stops is part of the
    * measurement rather than a failure. It matters that this is recorded rather
@@ -64,6 +63,12 @@ async function runApplication(name: string, frames = 300) {
    * insisted on a particular ending would pass alone and fail in company.
    */
   let stoppedBy: string | null = null;
+
+  try {
+    win16.run(handle);
+  } catch (error: any) {
+    stoppedBy = error?.constructor?.name ?? String(error);
+  }
 
   for (let frame = 0; frame < frames && !stoppedBy; frame++) {
     try {
@@ -130,11 +135,14 @@ whenBuilt('running Windows applications', () => {
     });
 
     it('stops for a reason worth knowing', function () {
-      /* Neither reaches a message loop yet. What stops it is the useful part:
-       * an InvalidInstruction means the CPU met an opcode it cannot decode,
-       * and running out of frames means it was still going.
+      /* None of these reach a message loop yet, and what stops them is the
+       * useful part. A ReferenceError is the window chrome asking for a DOM,
+       * which is as far as a headless run can go by design -- the frame and
+       * the caption are DOM, and only the client area is pixels. An
+       * InvalidInstruction is the CPU meeting an opcode it cannot decode, and
+       * null means it was still going when the frames ran out.
        */
-      expect([null, 'InvalidInstruction']).toContain(result.stoppedBy);
+      expect([null, 'InvalidInstruction', 'ReferenceError']).toContain(result.stoppedBy);
     });
   });
 });

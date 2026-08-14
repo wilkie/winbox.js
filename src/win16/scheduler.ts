@@ -211,12 +211,26 @@ export class Scheduler {
 
       // The result is actually the async callback, so wait for the
       // Promise to resolve.
-      asyncCall.then((result) => {
-        //console.log("finally", result, this._machine.cpu.core.cs.toString(16), this._machine.cpu.core.ip.toString(16));
-        // Actually interpret the proper return result
-        // (sets CPU ax/dx/eax, etc)
-        this.interpretReturnValue(result, returnType);
-      });
+      asyncCall.then(
+        (result) => {
+          // Actually interpret the proper return result (sets AX/DX, resumes)
+          this.interpretReturnValue(result, returnType);
+        },
+        (error) => {
+          /* An API call that fails while suspended used to stop the program
+           * dead: the task is halted before every call and resumed by the
+           * return, so a rejection meant nothing ever resumed it and the
+           * program simply stopped, with no fault raised and nothing to see.
+           *
+           * A failure is reported and the call returns nothing, which is what
+           * the API says failure looks like, and the program gets to decide
+           * what to do about it.
+           */
+          console.error('API call failed:', error);
+
+          this.interpretReturnValue(0, returnType);
+        }
+      );
     } else if (returnType !== undefined) {
       const context = this.task.popContext();
 

@@ -1,7 +1,7 @@
 'use strict';
 
 import { NULL } from '../consts.js';
-import { handleFor } from '../selectors.js';
+import { handleFor, selectorFor } from '../selectors.js';
 
 /**
  * The **LoadResource** function loads a resource into memory.
@@ -43,7 +43,9 @@ export async function LoadResource(hinst, hResInfo) {
    * be a separate address translation.
    */
   const handle = handleFor(index);
-  const address = this.machine.cpu.core.translateAddress(index << 3, 0);
+
+  // Through the block's own selector: `index << 3` names the wrong table.
+  const address = this.machine.cpu.core.translateAddress(selectorFor(handle), 0);
 
   this.machine.memory.write(address, new DataView(bytes.buffer, bytes.byteOffset));
 
