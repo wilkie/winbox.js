@@ -95,27 +95,20 @@ export class LogicalFont extends Font {
    * overhanging the end of the string by a little more.
    */
   /**
-   * How wide a stroke font's characters are at the size being drawn.
+   * How much of its design width each character keeps at this size.
    *
-   * The design widths are in a space whose aspect the header states -- three
-   * horizontal to two vertical for all three plotter fonts -- so a width does
-   * not scale by the same factor as a height. What the exact rounding is has
-   * not been established: this is within a pixel or two of what Windows
-   * answers across the sizes recorded, and the fixture carries the truth. See
-   * `oracle/README.md`.
+   * Not the height's scale, and not a fixed fraction of it: the mapper settles
+   * on a whole number for the average character width first, and this is the
+   * proportion that implies. See `FontManager.choose`.
    */
   get widthScale() {
-    const header = this._entry.header;
-    const design = header.dfPixHeight;
-
-    const aspect = header.dfHorizRes ? header.dfVertRes / header.dfHorizRes : 1;
-
-    return (Math.round(design * this.scale) / design) * aspect;
+    return this._style.horizontal ?? 1;
   }
 
   measure(text, options: any = {}) {
     if (this.isVector) {
       const scale = this.widthScale;
+      const cell = Math.round(this._entry.header.dfPixHeight * this.scale);
 
       let width = 0;
 
@@ -123,7 +116,21 @@ export class LogicalFont extends Font {
         width += Math.round(this._entry.characterEntryFor(character.charCodeAt(0)).width * scale);
       }
 
-      return { width, height: Math.round(this._entry.header.dfPixHeight * this.scale) };
+      /* Bold costs one pixel for the whole string rather than one per
+       * character, and a slant costs the overhang it leans by. See
+       * `GetTextMetrics` for where both numbers come from.
+       */
+      /* Emboldening draws the strokes again, offset by the width scale in whole
+       * pixels -- but by at least one, since an offset of nothing would not
+       * embolden anything. So the ink reaches past the last character by that
+       * much even at sizes where the reported overhang is zero.
+       */
+      const bold = (this._style.weight ?? 0) >= 700;
+
+      width += bold ? Math.max(1, Math.round(scale)) : 0;
+      width += this._style.italic ? Math.floor(cell / 2) : 0;
+
+      return { width, height: cell };
     }
 
     const measured = this._entry.measure(text, options);

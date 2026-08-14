@@ -1131,19 +1131,15 @@ export class Unimplemented extends Error {}
  * cases: Windows answers a face name it does not recognise with Times New
  * Roman, so a request for a font nobody ever installed is a TrueType request.
  *
- * The three plotter fonts do load, and everything about them that has been
- * worked out is exact -- the face, the style, and every vertical measure at
- * every size. What is not worked out is how their widths scale: the design
- * states its own aspect, three horizontal to two vertical, and using it lands
- * within a pixel or two without landing on the answer. The fixture has the
- * numbers for whoever works it out.
+ * The three plotter fonts load and agree in full -- face, style, and every
+ * metric at every size, including the widths, whose rule took a second
+ * recording to find. See oracle/README.md.
  */
 const NO_OUTLINE_FONTS =
   'the installation has four TrueType families we cannot load, so anything ' +
   'mapping to one disagrees -- including every unknown face name, which ' +
-  'Windows answers with Times New Roman. The plotter fonts do load, and their ' +
-  'vertical metrics are exact; how their widths scale is measured but not ' +
-  'resolved, so those are within a pixel or two rather than right';
+  'Windows answers with Times New Roman. Nothing else in this fixture does: ' +
+  'the bitmap strikes and the plotter fonts both agree throughout';
 
 export const KNOWN_GAPS: Record<string, string> = {
   'CreateFont face': NO_OUTLINE_FONTS,

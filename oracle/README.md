@@ -727,13 +727,44 @@ bitmap face gets.
 17 and the metrics report 19: GDI adds `TMPF_VECTOR`, which describes how the
 font is drawn rather than what it looks like.
 
-**How the widths scale is measured and unresolved.** They do not follow the
-height -- the header states a design aspect of three horizontal to two
-vertical, and using it gets within a pixel or two without getting it right. The
-implied scale is not even linear in the requested height: across nine sizes it
-runs from 0.53 to 0.66 of the vertical scale, and not monotonically. Something
-is being computed in integers with intermediate rounding that these
-measurements do not reveal. The fixture records the answers; the rule is open.
+**The widths are settled by a rounding that happens first.** They do not follow
+the height, and for a while they looked like they followed nothing: the implied
+scale ran from 0.53 to 0.66 of the vertical scale across nine sizes, and not
+monotonically, which is not what any single multiplication does.
+
+What happens is that GDI picks a whole number for the average character width
+before it scales anything:
+
+    average = floor(dfAvgWidth * height * dfVertRes / (dfPixHeight * dfHorizRes))
+
+and then every other width is that proportion of its design value:
+
+    width = round(designWidth * average / dfAvgWidth)
+
+The design's own aspect -- three horizontal to two vertical for all three
+plotter fonts -- is in the first line, but the `floor` around it is what makes
+the resulting ratio jump about. A request that names `lfWidth` is stating the
+same quantity from the other end, and the rest follows identically. Thirty-nine
+of thirty-nine sizes, with no exceptions.
+
+**Emboldening a stroke font thickens the pen with the font.** A strike is drawn
+again exactly one pixel across at every size. Strokes are drawn again a scaled
+pixel across: the offset is the width scale rounded to a whole number, which is
+zero until the font is drawn at about half its design width, one from there to
+about one and a half times, and three by the time it reaches three times. It
+follows the *width* scale rather than the height, which is why Roman and Script
+stop agreeing at the same requested height -- their designs are different sizes
+and the same request produces different scales.
+
+The reported overhang is that offset, and so is zero at small sizes. The ink is
+not: drawing something again zero pixels across would not embolden it, so the
+string still reaches one pixel further than a plain one at every size. Both are
+true at once, which only shows up if the returned metrics and the measured
+extent are recorded side by side. Forty-eight of forty-eight.
+
+**A slant leans one pixel further than a strike does.** `floor(height / 2)`
+against `floor((height - 1) / 2)` for the same cell. One pixel, and the only
+way to know it is to measure both kinds.
 
 Finding the character table needed the same discipline. It does not start where
 a 2.x or 3.x font's does, and reading it two bytes out yields numbers rather
@@ -744,7 +775,8 @@ of 119 makes the table agree with them, and it does so for all three faces.
 **What we do not do.** The installation carries four TrueType families and we
 cannot read an outline at all. That accounts for every remaining disagreement,
 including all the unknown-name cases, since Windows answers those with Times
-New Roman. Of the 920 records, 773 agree.
+New Roman. Of the 1445 records, 1391 agree, and nothing a bitmap or a stroke
+font can answer disagrees.
 
 ## On the media
 

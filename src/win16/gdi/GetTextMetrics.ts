@@ -93,10 +93,23 @@ export function GetTextMetrics(hdc, lptm) {
      * factor for a strike. Emboldening widens every character by one pixel
      * either way.
      */
-    const widths = font instanceof LogicalFont && font.isVector ? font.widthScale : horizontal;
+    const vector = font instanceof LogicalFont && font.isVector;
+    const widths = vector ? font.widthScale : horizontal;
 
-    lptm.tmAveCharWidth = Math.round(header.dfAvgWidth * widths) + (bold ? 1 : 0);
-    lptm.tmMaxCharWidth = Math.round(header.dfMaxWidth * widths) + (bold ? 1 : 0);
+    /* How far the emboldening is smeared, in pixels.
+     *
+     * A strike is drawn again one pixel across, always. Strokes are drawn
+     * again a *scaled* pixel across -- the pen thickens with the font -- so
+     * the offset is the width scale rounded to whole pixels, which is zero
+     * until the font is drawn at about half its design width and three by the
+     * time it is drawn at three times. Recorded across three faces at sixteen
+     * sizes each; it follows the width scale rather than the height, which is
+     * why Roman and Script part company at the same requested height.
+     */
+    const smear = !bold ? 0 : vector ? Math.round(font.widthScale) : 1;
+
+    lptm.tmAveCharWidth = Math.round(header.dfAvgWidth * widths) + smear;
+    lptm.tmMaxCharWidth = Math.round(header.dfMaxWidth * widths) + smear;
 
     /* A request for bold reports 700 however heavy it asked for. A request for
      * anything else reports what the file says, which is not always 400: the
@@ -142,7 +155,15 @@ export function GetTextMetrics(hdc, lptm) {
      *
      * Asking for both adds both.
      */
-    lptm.tmOverhang = (bold ? 1 : 0) + (style.italic ? Math.floor((lptm.tmHeight - 1) / 2) : 0);
+    /* A stroke font reports no overhang for bold at all -- its extra pixel is
+     * inside the string's width rather than past its end -- and leans one
+     * pixel further than a strike does at the same cell, `floor(h / 2)`
+     * against `floor((h - 1) / 2)`. One pixel, and the only way to know it is
+     * to measure both.
+     */
+    lptm.tmOverhang = vector
+      ? smear + (style.italic ? Math.floor(lptm.tmHeight / 2) : 0)
+      : (bold ? 1 : 0) + (style.italic ? Math.floor((lptm.tmHeight - 1) / 2) : 0);
     lptm.tmDigitizedAspectX = header.dfHorizRes;
     lptm.tmDigitizedAspectY = header.dfVertRes;
   }

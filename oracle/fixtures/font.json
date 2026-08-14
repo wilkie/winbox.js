@@ -3551,6 +3551,66 @@
     },
     {
       "function": "CreateFont face",
+      "args": "\"Roman\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=8,ascent=6,descent=2,internal=1,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=3,max=5,weight=700,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=31,height=8",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=8,ascent=6,descent=2,internal=1,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=3,max=5,weight=400,overhang=4",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=34,height=8",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
       "args": "\"Roman\",h=12,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "\"Roman\"",
       "section": "the vector faces, which have one design and no strikes"
@@ -3577,6 +3637,66 @@
       "function": "CreateFont extent",
       "args": "\"Roman\",h=12,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "width=37,height=12",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=12,ascent=9,descent=3,internal=2,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=4,max=7,weight=700,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=38,height=12",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=12,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=12,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=12,ascent=9,descent=3,internal=2,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=12,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=4,max=7,weight=400,overhang=6",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=12,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=12,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=43,height=12",
       "section": "the vector faces, which have one design and no strikes"
     },
     {
@@ -3611,6 +3731,66 @@
     },
     {
       "function": "CreateFont face",
+      "args": "\"Roman\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=16,ascent=13,descent=4,internal=2,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=6,max=10,weight=700,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=59,height=16",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=16,ascent=13,descent=4,internal=2,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=6,max=10,weight=400,overhang=8",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=66,height=16",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
       "args": "\"Roman\",h=20,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "\"Roman\"",
       "section": "the vector faces, which have one design and no strikes"
@@ -3637,6 +3817,66 @@
       "function": "CreateFont extent",
       "args": "\"Roman\",h=20,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "width=68,height=20",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=20,ascent=16,descent=4,internal=3,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=7,max=12,weight=700,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=69,height=20",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=20,ascent=16,descent=4,internal=3,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=7,max=12,weight=400,overhang=10",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=78,height=20",
       "section": "the vector faces, which have one design and no strikes"
     },
     {
@@ -3671,6 +3911,246 @@
     },
     {
       "function": "CreateFont face",
+      "args": "\"Roman\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=24,ascent=19,descent=5,internal=3,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=9,max=16,weight=700,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=88,height=24",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=24,ascent=19,descent=5,internal=3,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=9,max=16,weight=400,overhang=12",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=99,height=24",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=28,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=28,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=28,ascent=22,descent=6,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=28,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=11,max=19,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=28,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=28,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=109,height=28",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=28,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=28,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=28,ascent=22,descent=6,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=28,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=12,max=20,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=28,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=28,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=110,height=28",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=28,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=28,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=28,ascent=22,descent=6,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=28,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=11,max=19,weight=400,overhang=14",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=28,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=28,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=123,height=28",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=30,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=30,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=30,ascent=23,descent=7,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=30,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=11,max=19,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=30,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=30,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=109,height=30",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=30,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=30,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=30,ascent=23,descent=7,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=30,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=12,max=20,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=30,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=30,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=110,height=30",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=30,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=30,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=30,ascent=23,descent=7,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=30,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=11,max=19,weight=400,overhang=15",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=30,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=30,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=124,height=30",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
       "args": "\"Roman\",h=32,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "\"Roman\"",
       "section": "the vector faces, which have one design and no strikes"
@@ -3697,6 +4177,156 @@
       "function": "CreateFont extent",
       "args": "\"Roman\",h=32,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "width=119,height=32",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=32,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=32,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=32,ascent=25,descent=7,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=32,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=13,max=22,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=32,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=32,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=120,height=32",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=32,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=32,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=32,ascent=25,descent=7,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=32,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=12,max=21,weight=400,overhang=16",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=32,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=32,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=135,height=32",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=34,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=34,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=34,ascent=27,descent=7,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=34,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=13,max=23,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=34,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=34,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=129,height=34",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=34,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=34,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=34,ascent=27,descent=7,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=34,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=14,max=24,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=34,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=34,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=130,height=34",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=34,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=34,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=34,ascent=27,descent=7,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=34,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=13,max=23,weight=400,overhang=17",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=34,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=34,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=146,height=34",
       "section": "the vector faces, which have one design and no strikes"
     },
     {
@@ -3731,6 +4361,156 @@
     },
     {
       "function": "CreateFont face",
+      "args": "\"Roman\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=40,ascent=31,descent=9,internal=5,external=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=16,max=27,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=151,height=40",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=40,ascent=31,descent=9,internal=5,external=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=15,max=26,weight=400,overhang=20",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=170,height=40",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=48,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=48,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=48,ascent=38,descent=11,internal=6,external=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=48,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=19,max=33,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=48,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=48,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=187,height=48",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=48,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=48,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=48,ascent=38,descent=11,internal=6,external=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=48,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=20,max=34,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=48,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=48,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=188,height=48",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=48,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=48,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=48,ascent=38,descent=11,internal=6,external=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=48,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=19,max=33,weight=400,overhang=24",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=48,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=48,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=211,height=48",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
       "args": "\"Roman\",h=64,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "\"Roman\"",
       "section": "the vector faces, which have one design and no strikes"
@@ -3761,6 +4541,156 @@
     },
     {
       "function": "CreateFont face",
+      "args": "\"Roman\",h=64,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=64,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=64,ascent=50,descent=14,internal=8,external=4",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=64,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=26,max=44,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=64,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=64,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=246,height=64",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=64,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=64,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=64,ascent=50,descent=14,internal=8,external=4",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=64,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=25,max=43,weight=400,overhang=32",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=64,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=64,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=277,height=64",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=96,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=96,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=96,ascent=75,descent=21,internal=12,external=6",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=96,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=38,max=66,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=96,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=96,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=374,height=96",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=96,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=96,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=96,ascent=75,descent=21,internal=12,external=6",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=96,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=40,max=68,weight=700,overhang=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=96,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=96,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=376,height=96",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=96,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=96,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=96,ascent=75,descent=21,internal=12,external=6",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=96,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=38,max=66,weight=400,overhang=48",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=96,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=96,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=422,height=96",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
       "args": "\"Roman\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "\"Roman\"",
       "section": "the vector faces, which have one design and no strikes"
@@ -3787,6 +4717,246 @@
       "function": "CreateFont extent",
       "args": "\"Roman\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "width=384,height=100",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=100,ascent=78,descent=22,internal=13,external=6",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=41,max=70,weight=700,overhang=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=386,height=100",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=100,ascent=78,descent=22,internal=13,external=6",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=39,max=68,weight=400,overhang=50",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=434,height=100",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=128,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=128,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=128,ascent=100,descent=28,internal=16,external=8",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=128,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=50,max=87,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=128,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=128,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=493,height=128",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=128,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=128,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=128,ascent=100,descent=28,internal=16,external=8",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=128,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=53,max=90,weight=700,overhang=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=128,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=128,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=496,height=128",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=128,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=128,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=128,ascent=100,descent=28,internal=16,external=8",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=128,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=50,max=87,weight=400,overhang=64",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=128,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=128,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=557,height=128",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=160,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=160,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=160,ascent=125,descent=35,internal=20,external=10",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=160,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=63,max=109,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=160,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=160,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=619,height=160",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=160,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=160,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=160,ascent=125,descent=35,internal=20,external=10",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=160,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=66,max=112,weight=700,overhang=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=160,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=160,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=622,height=160",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Roman\",h=160,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Roman\",h=160,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=160,ascent=125,descent=35,internal=20,external=10",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Roman\",h=160,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=63,max=109,weight=400,overhang=80",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Roman\",h=160,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Roman\",h=160,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=699,height=160",
       "section": "the vector faces, which have one design and no strikes"
     },
     {
@@ -3911,126 +5081,6 @@
     },
     {
       "function": "CreateFont face",
-      "args": "\"Roman\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "\"Roman\"",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont heights",
-      "args": "\"Roman\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "height=16,ascent=13,descent=4,internal=2,external=1",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont widths",
-      "args": "\"Roman\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "ave=6,max=10,weight=700,overhang=0",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont style",
-      "args": "\"Roman\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont extent",
-      "args": "\"Roman\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "width=59,height=16",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont face",
-      "args": "\"Roman\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "\"Roman\"",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont heights",
-      "args": "\"Roman\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "height=16,ascent=13,descent=4,internal=2,external=1",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont widths",
-      "args": "\"Roman\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "ave=6,max=10,weight=400,overhang=8",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont style",
-      "args": "\"Roman\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "italic=1,underlined=0,struckout=0,pitch=19,charset=255",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont extent",
-      "args": "\"Roman\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "width=66,height=16",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont face",
-      "args": "\"Roman\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "\"Roman\"",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont heights",
-      "args": "\"Roman\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "height=40,ascent=31,descent=9,internal=5,external=3",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont widths",
-      "args": "\"Roman\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "ave=16,max=27,weight=700,overhang=1",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont style",
-      "args": "\"Roman\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont extent",
-      "args": "\"Roman\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "width=151,height=40",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont face",
-      "args": "\"Roman\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "\"Roman\"",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont heights",
-      "args": "\"Roman\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "height=40,ascent=31,descent=9,internal=5,external=3",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont widths",
-      "args": "\"Roman\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "ave=15,max=26,weight=400,overhang=20",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont style",
-      "args": "\"Roman\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "italic=1,underlined=0,struckout=0,pitch=19,charset=255",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont extent",
-      "args": "\"Roman\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "width=170,height=40",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont face",
       "args": "\"Modern\",h=8,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "\"Modern\"",
       "section": "the vector faces, which have one design and no strikes"
@@ -4057,6 +5107,66 @@
       "function": "CreateFont extent",
       "args": "\"Modern\",h=8,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "width=20,height=8",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=8,ascent=6,descent=2,internal=1,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=2,max=4,weight=700,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=21,height=8",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=8,ascent=6,descent=2,internal=1,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=2,max=4,weight=400,overhang=4",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=24,height=8",
       "section": "the vector faces, which have one design and no strikes"
     },
     {
@@ -4091,6 +5201,66 @@
     },
     {
       "function": "CreateFont face",
+      "args": "\"Modern\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=12,ascent=9,descent=3,internal=2,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=4,max=7,weight=700,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=44,height=12",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=12,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=12,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=12,ascent=9,descent=3,internal=2,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=12,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=4,max=7,weight=400,overhang=6",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=12,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=12,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=49,height=12",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
       "args": "\"Modern\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "\"Modern\"",
       "section": "the vector faces, which have one design and no strikes"
@@ -4117,6 +5287,66 @@
       "function": "CreateFont extent",
       "args": "\"Modern\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "width=56,height=16",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=16,ascent=13,descent=4,internal=2,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=5,max=9,weight=700,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=57,height=16",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=16,ascent=13,descent=4,internal=2,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=5,max=9,weight=400,overhang=8",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=64,height=16",
       "section": "the vector faces, which have one design and no strikes"
     },
     {
@@ -4151,6 +5381,66 @@
     },
     {
       "function": "CreateFont face",
+      "args": "\"Modern\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=20,ascent=16,descent=4,internal=3,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=7,max=12,weight=700,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=77,height=20",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=20,ascent=16,descent=4,internal=3,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=7,max=12,weight=400,overhang=10",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=86,height=20",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
       "args": "\"Modern\",h=24,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "\"Modern\"",
       "section": "the vector faces, which have one design and no strikes"
@@ -4177,6 +5467,246 @@
       "function": "CreateFont extent",
       "args": "\"Modern\",h=24,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "width=86,height=24",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=24,ascent=19,descent=5,internal=3,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=8,max=14,weight=700,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=87,height=24",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=24,ascent=19,descent=5,internal=3,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=8,max=14,weight=400,overhang=12",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=98,height=24",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=28,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=28,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=28,ascent=22,descent=6,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=28,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=9,max=16,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=28,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=28,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=97,height=28",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=28,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=28,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=28,ascent=22,descent=6,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=28,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=10,max=17,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=28,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=28,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=98,height=28",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=28,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=28,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=28,ascent=22,descent=6,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=28,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=9,max=16,weight=400,overhang=14",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=28,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=28,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=111,height=28",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=30,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=30,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=30,ascent=23,descent=7,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=30,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=10,max=18,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=30,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=30,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=107,height=30",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=30,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=30,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=30,ascent=23,descent=7,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=30,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=11,max=19,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=30,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=30,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=108,height=30",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=30,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=30,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=30,ascent=23,descent=7,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=30,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=10,max=18,weight=400,overhang=15",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=30,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=30,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=122,height=30",
       "section": "the vector faces, which have one design and no strikes"
     },
     {
@@ -4211,6 +5741,156 @@
     },
     {
       "function": "CreateFont face",
+      "args": "\"Modern\",h=32,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=32,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=32,ascent=25,descent=7,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=32,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=12,max=20,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=32,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=32,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=118,height=32",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=32,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=32,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=32,ascent=25,descent=7,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=32,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=11,max=19,weight=400,overhang=16",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=32,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=32,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=133,height=32",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=34,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=34,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=34,ascent=27,descent=7,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=34,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=12,max=21,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=34,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=34,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=127,height=34",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=34,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=34,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=34,ascent=27,descent=7,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=34,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=13,max=22,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=34,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=34,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=128,height=34",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=34,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=34,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=34,ascent=27,descent=7,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=34,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=12,max=21,weight=400,overhang=17",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=34,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=34,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=144,height=34",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
       "args": "\"Modern\",h=40,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "\"Modern\"",
       "section": "the vector faces, which have one design and no strikes"
@@ -4237,6 +5917,156 @@
       "function": "CreateFont extent",
       "args": "\"Modern\",h=40,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "width=150,height=40",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=40,ascent=31,descent=9,internal=5,external=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=15,max=26,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=151,height=40",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=40,ascent=31,descent=9,internal=5,external=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=14,max=25,weight=400,overhang=20",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=170,height=40",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=48,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=48,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=48,ascent=38,descent=11,internal=6,external=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=48,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=17,max=30,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=48,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=48,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=183,height=48",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=48,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=48,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=48,ascent=38,descent=11,internal=6,external=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=48,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=18,max=31,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=48,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=48,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=184,height=48",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=48,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=48,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=48,ascent=38,descent=11,internal=6,external=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=48,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=17,max=30,weight=400,overhang=24",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=48,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=48,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=207,height=48",
       "section": "the vector faces, which have one design and no strikes"
     },
     {
@@ -4271,6 +6101,156 @@
     },
     {
       "function": "CreateFont face",
+      "args": "\"Modern\",h=64,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=64,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=64,ascent=50,descent=14,internal=8,external=4",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=64,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=23,max=40,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=64,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=64,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=240,height=64",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=64,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=64,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=64,ascent=50,descent=14,internal=8,external=4",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=64,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=22,max=39,weight=400,overhang=32",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=64,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=64,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=271,height=64",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=96,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=96,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=96,ascent=75,descent=21,internal=12,external=6",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=96,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=34,max=60,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=96,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=96,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=366,height=96",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=96,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=96,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=96,ascent=75,descent=21,internal=12,external=6",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=96,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=36,max=62,weight=700,overhang=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=96,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=96,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=368,height=96",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=96,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=96,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=96,ascent=75,descent=21,internal=12,external=6",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=96,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=34,max=60,weight=400,overhang=48",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=96,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=96,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=414,height=96",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
       "args": "\"Modern\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "\"Modern\"",
       "section": "the vector faces, which have one design and no strikes"
@@ -4297,6 +6277,246 @@
       "function": "CreateFont extent",
       "args": "\"Modern\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "width=376,height=100",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=100,ascent=78,descent=22,internal=13,external=6",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=37,max=64,weight=700,overhang=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=378,height=100",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=100,ascent=78,descent=22,internal=13,external=6",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=35,max=62,weight=400,overhang=50",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=426,height=100",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=128,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=128,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=128,ascent=100,descent=28,internal=16,external=8",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=128,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=45,max=79,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=128,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=128,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=483,height=128",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=128,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=128,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=128,ascent=100,descent=28,internal=16,external=8",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=128,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=48,max=82,weight=700,overhang=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=128,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=128,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=486,height=128",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=128,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=128,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=128,ascent=100,descent=28,internal=16,external=8",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=128,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=45,max=79,weight=400,overhang=64",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=128,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=128,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=547,height=128",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=160,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=160,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=160,ascent=125,descent=35,internal=20,external=10",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=160,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=56,max=99,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=160,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=160,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=605,height=160",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=160,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=160,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=160,ascent=125,descent=35,internal=20,external=10",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=160,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=59,max=102,weight=700,overhang=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=160,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=160,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=608,height=160",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Modern\",h=160,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Modern\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Modern\",h=160,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=160,ascent=125,descent=35,internal=20,external=10",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Modern\",h=160,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=56,max=99,weight=400,overhang=80",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Modern\",h=160,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=51,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Modern\",h=160,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=685,height=160",
       "section": "the vector faces, which have one design and no strikes"
     },
     {
@@ -4421,126 +6641,6 @@
     },
     {
       "function": "CreateFont face",
-      "args": "\"Modern\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "\"Modern\"",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont heights",
-      "args": "\"Modern\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "height=16,ascent=13,descent=4,internal=2,external=1",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont widths",
-      "args": "\"Modern\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "ave=5,max=9,weight=700,overhang=0",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont style",
-      "args": "\"Modern\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont extent",
-      "args": "\"Modern\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "width=57,height=16",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont face",
-      "args": "\"Modern\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "\"Modern\"",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont heights",
-      "args": "\"Modern\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "height=16,ascent=13,descent=4,internal=2,external=1",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont widths",
-      "args": "\"Modern\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "ave=5,max=9,weight=400,overhang=8",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont style",
-      "args": "\"Modern\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "italic=1,underlined=0,struckout=0,pitch=51,charset=255",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont extent",
-      "args": "\"Modern\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "width=64,height=16",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont face",
-      "args": "\"Modern\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "\"Modern\"",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont heights",
-      "args": "\"Modern\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "height=40,ascent=31,descent=9,internal=5,external=3",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont widths",
-      "args": "\"Modern\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "ave=15,max=26,weight=700,overhang=1",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont style",
-      "args": "\"Modern\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "italic=0,underlined=0,struckout=0,pitch=51,charset=255",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont extent",
-      "args": "\"Modern\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "width=151,height=40",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont face",
-      "args": "\"Modern\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "\"Modern\"",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont heights",
-      "args": "\"Modern\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "height=40,ascent=31,descent=9,internal=5,external=3",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont widths",
-      "args": "\"Modern\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "ave=14,max=25,weight=400,overhang=20",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont style",
-      "args": "\"Modern\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "italic=1,underlined=0,struckout=0,pitch=51,charset=255",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont extent",
-      "args": "\"Modern\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "width=170,height=40",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont face",
       "args": "\"Script\",h=8,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "\"Script\"",
       "section": "the vector faces, which have one design and no strikes"
@@ -4567,6 +6667,66 @@
       "function": "CreateFont extent",
       "args": "\"Script\",h=8,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "width=20,height=8",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=8,ascent=5,descent=3,internal=1,external=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=2,max=4,weight=700,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=21,height=8",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=8,ascent=5,descent=3,internal=1,external=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=2,max=4,weight=400,overhang=4",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=24,height=8",
       "section": "the vector faces, which have one design and no strikes"
     },
     {
@@ -4601,6 +6761,66 @@
     },
     {
       "function": "CreateFont face",
+      "args": "\"Script\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=12,ascent=8,descent=4,internal=1,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=3,max=6,weight=700,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=34,height=12",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=12,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=12,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=12,ascent=8,descent=4,internal=1,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=12,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=3,max=6,weight=400,overhang=6",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=12,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=12,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=39,height=12",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
       "args": "\"Script\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "\"Script\"",
       "section": "the vector faces, which have one design and no strikes"
@@ -4627,6 +6847,66 @@
       "function": "CreateFont extent",
       "args": "\"Script\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "width=44,height=16",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=16,ascent=11,descent=5,internal=2,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=4,max=8,weight=700,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=45,height=16",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=16,ascent=11,descent=5,internal=2,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=4,max=8,weight=400,overhang=8",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=52,height=16",
       "section": "the vector faces, which have one design and no strikes"
     },
     {
@@ -4661,6 +6941,66 @@
     },
     {
       "function": "CreateFont face",
+      "args": "\"Script\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=20,ascent=14,descent=6,internal=2,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=6,max=12,weight=700,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=20,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=61,height=20",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=20,ascent=14,descent=6,internal=2,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=6,max=12,weight=400,overhang=10",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=20,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=70,height=20",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
       "args": "\"Script\",h=24,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "\"Script\"",
       "section": "the vector faces, which have one design and no strikes"
@@ -4687,6 +7027,246 @@
       "function": "CreateFont extent",
       "args": "\"Script\",h=24,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "width=71,height=24",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=24,ascent=16,descent=8,internal=3,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=7,max=14,weight=700,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=24,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=72,height=24",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=24,ascent=16,descent=8,internal=3,external=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=7,max=14,weight=400,overhang=12",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=24,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=83,height=24",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=28,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=28,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=28,ascent=19,descent=9,internal=3,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=28,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=8,max=16,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=28,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=28,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=80,height=28",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=28,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=28,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=28,ascent=19,descent=9,internal=3,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=28,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=8,max=16,weight=700,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=28,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=28,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=81,height=28",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=28,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=28,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=28,ascent=19,descent=9,internal=3,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=28,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=8,max=16,weight=400,overhang=14",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=28,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=28,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=94,height=28",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=30,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=30,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=30,ascent=20,descent=10,internal=3,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=30,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=9,max=17,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=30,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=30,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=92,height=30",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=30,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=30,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=30,ascent=20,descent=10,internal=3,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=30,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=10,max=18,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=30,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=30,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=93,height=30",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=30,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=30,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=30,ascent=20,descent=10,internal=3,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=30,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=9,max=17,weight=400,overhang=15",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=30,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=30,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=107,height=30",
       "section": "the vector faces, which have one design and no strikes"
     },
     {
@@ -4721,6 +7301,156 @@
     },
     {
       "function": "CreateFont face",
+      "args": "\"Script\",h=32,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=32,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=32,ascent=22,descent=10,internal=3,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=32,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=10,max=18,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=32,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=32,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=93,height=32",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=32,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=32,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=32,ascent=22,descent=10,internal=3,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=32,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=9,max=17,weight=400,overhang=16",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=32,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=32,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=108,height=32",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=34,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=34,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=34,ascent=23,descent=11,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=34,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=10,max=19,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=34,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=34,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=101,height=34",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=34,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=34,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=34,ascent=23,descent=11,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=34,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=11,max=20,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=34,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=34,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=102,height=34",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=34,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=34,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=34,ascent=23,descent=11,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=34,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=10,max=19,weight=400,overhang=17",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=34,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=34,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=118,height=34",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
       "args": "\"Script\",h=40,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "\"Script\"",
       "section": "the vector faces, which have one design and no strikes"
@@ -4747,6 +7477,156 @@
       "function": "CreateFont extent",
       "args": "\"Script\",h=40,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "width=122,height=40",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=40,ascent=27,descent=13,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=13,max=24,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=123,height=40",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=40,ascent=27,descent=13,internal=4,external=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=12,max=23,weight=400,overhang=20",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=142,height=40",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=48,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=48,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=48,ascent=32,descent=16,internal=5,external=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=48,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=14,max=27,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=48,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=48,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=139,height=48",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=48,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=48,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=48,ascent=32,descent=16,internal=5,external=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=48,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=15,max=28,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=48,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=48,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=140,height=48",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=48,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=48,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=48,ascent=32,descent=16,internal=5,external=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=48,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=14,max=27,weight=400,overhang=24",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=48,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=48,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=163,height=48",
       "section": "the vector faces, which have one design and no strikes"
     },
     {
@@ -4781,6 +7661,156 @@
     },
     {
       "function": "CreateFont face",
+      "args": "\"Script\",h=64,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=64,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=64,ascent=43,descent=21,internal=7,external=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=64,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=20,max=38,weight=700,overhang=1",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=64,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=64,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=193,height=64",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=64,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=64,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=64,ascent=43,descent=21,internal=7,external=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=64,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=19,max=37,weight=400,overhang=32",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=64,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=64,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=224,height=64",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=96,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=96,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=96,ascent=65,descent=31,internal=10,external=5",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=96,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=29,max=56,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=96,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=96,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=294,height=96",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=96,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=96,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=96,ascent=65,descent=31,internal=10,external=5",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=96,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=31,max=58,weight=700,overhang=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=96,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=96,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=296,height=96",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=96,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=96,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=96,ascent=65,descent=31,internal=10,external=5",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=96,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=29,max=56,weight=400,overhang=48",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=96,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=96,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=342,height=96",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
       "args": "\"Script\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "\"Script\"",
       "section": "the vector faces, which have one design and no strikes"
@@ -4807,6 +7837,246 @@
       "function": "CreateFont extent",
       "args": "\"Script\",h=100,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "width=300,height=100",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=100,ascent=68,descent=32,internal=11,external=5",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=32,max=60,weight=700,overhang=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=100,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=302,height=100",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=100,ascent=68,descent=32,internal=11,external=5",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=30,max=58,weight=400,overhang=50",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=100,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=350,height=100",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=128,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=128,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=128,ascent=86,descent=42,internal=14,external=7",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=128,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=39,max=76,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=128,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=128,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=394,height=128",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=128,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=128,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=128,ascent=86,descent=42,internal=14,external=7",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=128,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=41,max=78,weight=700,overhang=2",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=128,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=128,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=396,height=128",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=128,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=128,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=128,ascent=86,descent=42,internal=14,external=7",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=128,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=39,max=76,weight=400,overhang=64",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=128,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=128,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=458,height=128",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=160,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=160,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=160,ascent=108,descent=52,internal=17,external=9",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=160,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=49,max=95,weight=400,overhang=0",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=160,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=160,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=496,height=160",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=160,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=160,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=160,ascent=108,descent=52,internal=17,external=9",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=160,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=52,max=98,weight=700,overhang=3",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=160,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=160,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=499,height=160",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Script\",h=160,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Script\"",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Script\",h=160,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=160,ascent=108,descent=52,internal=17,external=9",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Script\",h=160,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=49,max=95,weight=400,overhang=80",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Script\",h=160,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=67,charset=255",
+      "section": "the vector faces, which have one design and no strikes"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Script\",h=160,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=576,height=160",
       "section": "the vector faces, which have one design and no strikes"
     },
     {
@@ -4927,126 +8197,6 @@
       "function": "CreateFont extent",
       "args": "\"Script\",h=32,w=20,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
       "result": "width=205,height=32",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont face",
-      "args": "\"Script\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "\"Script\"",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont heights",
-      "args": "\"Script\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "height=16,ascent=11,descent=5,internal=2,external=1",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont widths",
-      "args": "\"Script\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "ave=4,max=8,weight=700,overhang=0",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont style",
-      "args": "\"Script\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont extent",
-      "args": "\"Script\",h=16,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "width=45,height=16",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont face",
-      "args": "\"Script\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "\"Script\"",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont heights",
-      "args": "\"Script\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "height=16,ascent=11,descent=5,internal=2,external=1",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont widths",
-      "args": "\"Script\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "ave=4,max=8,weight=400,overhang=8",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont style",
-      "args": "\"Script\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "italic=1,underlined=0,struckout=0,pitch=67,charset=255",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont extent",
-      "args": "\"Script\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "width=52,height=16",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont face",
-      "args": "\"Script\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "\"Script\"",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont heights",
-      "args": "\"Script\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "height=40,ascent=27,descent=13,internal=4,external=2",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont widths",
-      "args": "\"Script\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "ave=13,max=24,weight=700,overhang=1",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont style",
-      "args": "\"Script\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "italic=0,underlined=0,struckout=0,pitch=67,charset=255",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont extent",
-      "args": "\"Script\",h=40,w=0,weight=700,italic=0,under=0,strike=0,charset=255,pitch=0",
-      "result": "width=123,height=40",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont face",
-      "args": "\"Script\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "\"Script\"",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont heights",
-      "args": "\"Script\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "height=40,ascent=27,descent=13,internal=4,external=2",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont widths",
-      "args": "\"Script\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "ave=12,max=23,weight=400,overhang=20",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont style",
-      "args": "\"Script\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "italic=1,underlined=0,struckout=0,pitch=67,charset=255",
-      "section": "the vector faces, which have one design and no strikes"
-    },
-    {
-      "function": "CreateFont extent",
-      "args": "\"Script\",h=40,w=0,weight=400,italic=1,under=0,strike=0,charset=255,pitch=0",
-      "result": "width=142,height=40",
       "section": "the vector faces, which have one design and no strikes"
     },
     {

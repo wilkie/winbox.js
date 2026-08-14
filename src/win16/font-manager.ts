@@ -281,7 +281,36 @@ export class FontManager {
         cell = Math.round((-height * design) / em);
       }
 
-      return { entry, scale: cell / entry.header.dfPixHeight, horizontal: null, cell };
+      /* Widths do not scale with the height, and the reason is a rounding that
+       * happens before anything else: GDI settles on a whole number for the
+       * average character width, and every other width is then a proportion of
+       * *that* rather than of the height.
+       *
+       *   average = floor(dfAvgWidth * cell * dfVertRes / (dfPixHeight * dfHorizRes))
+       *
+       * The design's own aspect -- three horizontal to two vertical for all
+       * three plotter fonts -- is in there, but the floor around it is what
+       * makes the resulting scale jump about instead of following the height:
+       * across nine sizes the effective ratio runs from 0.53 to 0.66 and not
+       * monotonically, which is what made this look like no rule at all.
+       *
+       * A request naming a width says what the average is directly, which is
+       * the same quantity arrived at from the other end.
+       */
+      const average =
+        width > 0
+          ? width
+          : Math.floor(
+              (entry.header.dfAvgWidth * cell * entry.header.dfVertRes) /
+                (entry.header.dfPixHeight * entry.header.dfHorizRes)
+            );
+
+      return {
+        entry,
+        scale: cell / entry.header.dfPixHeight,
+        horizontal: average / entry.header.dfAvgWidth,
+        cell,
+      };
     }
 
     let best: any = null;

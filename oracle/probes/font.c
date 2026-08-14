@@ -157,12 +157,28 @@ static void probeStyles(LPCSTR face)
  */
 static void probeVector(LPCSTR face, BYTE charset)
 {
-    static const int HEIGHTS[] = { 8, 12, 16, 20, 24, 32, 40, 64, 100 };
+    /* Enough sizes to see where the thresholds are rather than that there are
+     * some. The cluster from 24 to 34 straddles the point where emboldening
+     * starts to cost a pixel, and the ones past 64 say whether it keeps
+     * costing more.
+     */
+    static const int HEIGHTS[] = { 8, 12, 16, 20, 24, 28, 30, 32, 34, 40, 48,
+                                   64, 96, 100, 128, 160 };
 
     int index;
 
     for (index = 0; index < sizeof(HEIGHTS) / sizeof(HEIGHTS[0]); index++) {
-        probeFont(HEIGHTS[index], 0, FW_NORMAL, 0, 0, 0, charset, DEFAULT_PITCH, face);
+        int height = HEIGHTS[index];
+
+        /* Plain, emboldened and slanted at every size rather than at two of
+         * them. Emboldening a stroke font behaves differently at sixteen
+         * pixels and at forty -- the widths and the overhang gain a pixel at
+         * the larger size and not at the smaller -- and two sizes say only
+         * that a threshold exists, not where it is.
+         */
+        probeFont(height, 0, FW_NORMAL, 0, 0, 0, charset, DEFAULT_PITCH, face);
+        probeFont(height, 0, FW_BOLD, 0, 0, 0, charset, DEFAULT_PITCH, face);
+        probeFont(height, 0, FW_NORMAL, 1, 0, 0, charset, DEFAULT_PITCH, face);
     }
 
     /* Negative and zero mean the same things they mean for a bitmap face, and
@@ -175,11 +191,6 @@ static void probeVector(LPCSTR face, BYTE charset)
     probeFont(32, 8, FW_NORMAL, 0, 0, 0, charset, DEFAULT_PITCH, face);
     probeFont(32, 20, FW_NORMAL, 0, 0, 0, charset, DEFAULT_PITCH, face);
 
-    // And the synthesised styles, whose overhang followed the height before.
-    probeFont(16, 0, FW_BOLD, 0, 0, 0, charset, DEFAULT_PITCH, face);
-    probeFont(16, 0, FW_NORMAL, 1, 0, 0, charset, DEFAULT_PITCH, face);
-    probeFont(40, 0, FW_BOLD, 0, 0, 0, charset, DEFAULT_PITCH, face);
-    probeFont(40, 0, FW_NORMAL, 1, 0, 0, charset, DEFAULT_PITCH, face);
 }
 
 /* The ordinary case: a face by name at a plain size. */
