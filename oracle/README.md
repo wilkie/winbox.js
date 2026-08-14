@@ -1058,8 +1058,35 @@ scaling was already exact, so only the sign handling had anywhere to move.
 Seventeen records still differ, and the shape of what is left has changed.
 Eleven of them are out by one or two pixels. Three are substantial and they are
 the same three -- Times New Roman's `W` at both sizes and its `g` at the
-smaller -- still one pixel of cap height, still `cvt[2]` landing a thirty-second
-of a pixel above the halfway mark.
+smaller -- still one pixel of cap height, still `cvt[2]`.
+
+Reading `prep`'s instruction stream around the write shows what builds that
+value, and it is not a scaling at all. The sequence is:
+
+    MIAP[0]   place a twilight point at the control value
+    SRP1      make another twilight point the reference
+    IP        interpolate the first between the two references
+    GC        read where it ended up
+    WCVTP     write that back over the control value
+
+So the control value is *constructed*, by placing a point, interpolating it
+against two others that have already been fitted, and reading it back. That is
+how a font keeps a family of related heights in step: fit the first, then carry
+the rest along with it in proportion. `cvt[0]` is fitted from 9.7188 to
+10.0000, and `cvt[2]` at 9.2656 is carried to 9.2656 x 10 / 9.7188 = 9.5313 --
+which rounds to 10 where Windows lands on 9.
+
+One real omission surfaced while reading it. `IP` places a point *outside* its
+two references by shifting it, not by extrapolating: it keeps its distance from
+the nearer reference and travels with it. Extrapolating looks reasonable and is
+wrong. Correcting it changed nothing here -- the interpolation that builds
+`cvt[2]` is genuinely in range -- and it is right regardless.
+
+What is still unaccounted for is that `cvt[2]` is written more than once. There
+are two hundred and twenty control value writes in `prep` and a hundred and
+seventy-seven of them change something; the 9.5313 above is an early one, and a
+later pass overwrites it. Which pass, and what it is carrying it along with, is
+where this stands.
 
 Two spec omissions were closed while looking, neither of which these glyphs
 touch. `MIRP` places a twilight point being measured *to*, the way `MIAP`

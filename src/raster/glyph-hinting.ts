@@ -1470,23 +1470,38 @@ export class Hinter {
       const currentOne = this.project(zoneZero.x[state.rp1], zoneZero.y[state.rp1]);
       const currentTwo = this.project(zoneOne.x[state.rp2], zoneOne.y[state.rp2]);
 
-      const span = originalTwo - originalOne;
-
       while (count-- > 0) {
         const index = this.pop();
         const zone = this.zone(state.zp2);
 
         const original = this.projectDual(zone.originalX[index], zone.originalY[index]);
+        const current = this.project(zone.x[index], zone.y[index]);
 
-        const wanted = span
-          ? currentOne + ((original - originalOne) * (currentTwo - currentOne)) / span
-          : currentOne + (original - originalOne);
+        /* A point between the two references is placed proportionally: the gap
+         * it sat in is stretched or squeezed and it moves with it. A point
+         * *outside* them is not -- it keeps its distance from the nearer one
+         * and simply travels with it.
+         *
+         * Extrapolating instead looks reasonable and is wrong, and wrong by
+         * very little: it is how `cvt[2]` in Times New Roman ended up a
+         * thirty-second of a pixel too high, which is enough to round the cap
+         * height of a `W` to the wrong whole number.
+         */
+        const ascending = originalOne <= originalTwo;
 
-        this.movePoint(
-          zone,
-          index,
-          Math.round(wanted) - this.project(zone.x[index], zone.y[index])
-        );
+        let wanted;
+
+        if (ascending ? original <= originalOne : original >= originalOne) {
+          wanted = currentOne + (original - originalOne);
+        } else if (ascending ? original >= originalTwo : original <= originalTwo) {
+          wanted = currentTwo + (original - originalTwo);
+        } else {
+          wanted =
+            currentOne +
+            mulDiv(original - originalOne, currentTwo - currentOne, originalTwo - originalOne);
+        }
+
+        this.movePoint(zone, index, wanted - current);
       }
 
       state.loop = 1;
