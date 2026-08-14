@@ -28,7 +28,7 @@ occasionally worth redoing on their own.
 | 4. Drive     | `build-drive.mjs`     | `build/win31.img`         |
 | 5. Probes    | `build-probes.mjs`    | `build/probes/*.exe`      |
 | 6. Record    | `record.mjs`          | `fixtures/*.json`         |
-| 7. Replay    | a Jest suite          | pass or fail per function |
+| 7. Replay    | two Jest suites       | pass or fail per function |
 
 ### 1. Media
 
@@ -93,11 +93,17 @@ the call filled in.
 Fixtures are committed. They are small, they are the whole point, and they are
 the only part of this pipeline that cannot be regenerated without the media.
 
-### 7. Replay
+### 7. Replay, two ways
 
-A Jest suite runs the same probe binaries against WinBox.js and compares
-against the fixtures, reporting per-function agreement the way the CPU oracle
-reports per-opcode agreement. That number is the thing to drive up.
+The **direct** replay calls our implementation of a function with the recorded
+arguments. It measures the function and nothing else, which is what makes it
+practical for a hundred of them at a time.
+
+The **end-to-end** replay runs the probe's own binary: the loader parses it,
+the linker relocates it, the CPU executes it, every API call arrives through a
+thunk, and the results are written through our filesystem to a drive we
+formatted. The file is then read back and compared with what the same binary
+wrote under real Windows.
 
 ## Comparing what gets drawn
 
@@ -168,9 +174,23 @@ install and the recording each need `dosbox`, and the drive image needs
 
 ### 7. Replay
 
-`test/oracle/api_conformance_test.ts` runs the recorded calls against our
-implementation and reports agreement per function, in the shape the CPU oracle
-reports per opcode. Four outcomes, one of them good: **agreed**, **disagreed**,
+`test/win16/run_program_test.ts` does the end-to-end form. `strings`, `memory`
+and `handles` all agree record for record. `text` and `devcaps` cannot run this
+way: they ask for a device context, which means a display, so those two stay
+with the direct replay.
+
+Running the binaries found something calling the functions could not. Every
+probe formats its records with `wsprintf`, but only a running program passes
+arguments through it on a real stack -- and `wsprintf` was ending a conversion
+at its own zero-padding flag, because the loop signalled "finished" by
+assigning `0` to the character it was scanning and testing `chr == 0`, which is
+true for the string `'0'` as well. `%04X` printed `4X` as literal text and
+consumed no argument, so everything after it read from the wrong place: the
+memory probe reported allocations of 65538 bytes where it meant 1.
+
+`test/oracle/api_conformance_test.ts` does the direct form, reporting agreement
+per function in the shape the CPU oracle reports per opcode. Four outcomes, one
+of them good: **agreed**, **disagreed**,
 **unimplemented** for a stub or a function no module exports, and
 **unsupported** for a call the probes cover but the replay harness does not.
 That last one is deliberately not silent -- probe coverage outgrowing replay
