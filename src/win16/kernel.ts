@@ -42,7 +42,11 @@ import { GetProcAddress } from './kernel/GetProcAddress.js';
 import { GetVersion } from './kernel/GetVersion.js';
 import { GetWindowsDirectory } from './kernel/GetWindowsDirectory.js';
 import { GetWinFlags } from './kernel/GetWinFlags.js';
+import { FindResource } from './kernel/FindResource.js';
+import { FreeResource } from './kernel/FreeResource.js';
 import { GlobalAlloc } from './kernel/GlobalAlloc.js';
+import { LoadResource } from './kernel/LoadResource.js';
+import { LockResource } from './kernel/LockResource.js';
 import { GlobalFlags } from './kernel/GlobalFlags.js';
 import { GlobalHandle } from './kernel/GlobalHandle.js';
 import { GlobalReAlloc } from './kernel/GlobalReAlloc.js';
@@ -217,10 +221,10 @@ export class Kernel extends Module {
       [Kernel.stub, 'GetProfileString', 18, [LPCSTR, LPCSTR, LPCSTR, FARPTR, INT], INT],
       [Kernel.stub, 'WriteProfileString', 12, [LPCSTR, LPCSTR, LPCSTR], BOOL],
       // 60 //
-      [Kernel.stub, 'FindResource', 10, [HINSTANCE, LPCSTR, LPCSTR], HANDLE],
-      [Kernel.stub, 'LoadResource', 4, [HINSTANCE, HANDLE], HGLOBAL],
-      [Kernel.stub, 'LockResource', 4, [HGLOBAL], FARPTR],
-      [Kernel.stub, 'FreeResource', 2, [HGLOBAL], BOOL],
+      [FindResource, 'FindResource', 10, [HINSTANCE, LPCSTR, LPCSTR], HANDLE],
+      [LoadResource, 'LoadResource', 4, [HINSTANCE, HANDLE], HGLOBAL],
+      [LockResource, 'LockResource', 4, [HGLOBAL], FARPTR],
+      [FreeResource, 'FreeResource', 2, [HGLOBAL], BOOL],
       [Kernel.stub, 'AccessResource', 4, [HINSTANCE, HANDLE], INT],
       [Kernel.stub, 'SizeOfResource', 4, [HINSTANCE, HANDLE], DWORD],
       [Kernel.stub, 'AllocResource', 8, [HINSTANCE, HANDLE, DWORD], HGLOBAL],
