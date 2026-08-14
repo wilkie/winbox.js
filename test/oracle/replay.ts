@@ -3,7 +3,18 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { Disk } from '../../src/emulator/disk.js';
+import { FAT16 } from '../../src/file-systems/fat16.js';
 import { Machine } from '../../src/emulator/machine.js';
+import { FontManager } from '../../src/win16/font-manager.js';
+import { HandleManager } from '../../src/win16/handle-manager.js';
+import { Surface } from '../../src/raster/surface.js';
+import { GetStockObject } from '../../src/win16/gdi/GetStockObject.js';
+import { SelectObject } from '../../src/win16/gdi/SelectObject.js';
+import { GetTextExtent } from '../../src/win16/gdi/GetTextExtent.js';
+import { GetTextFace } from '../../src/win16/gdi/GetTextFace.js';
+import { GetTextMetrics } from '../../src/win16/gdi/GetTextMetrics.js';
+import { GetCharWidth } from '../../src/win16/gdi/GetCharWidth.js';
 import { GlobalAllocator } from '../../src/win16/global-allocator.js';
 import { Allocator } from '../../src/win16/allocator.js';
 
@@ -48,6 +59,53 @@ import { GlobalReAlloc } from '../../src/win16/kernel/GlobalReAlloc.js';
 
 export const FIXTURES = join(__dirname, '..', '..', 'oracle', 'fixtures');
 
+/** The drive the oracle builds, which is where the fonts are. */
+export const DRIVE_IMAGE = join(__dirname, '..', '..', 'oracle', 'build', 'win31.img');
+
+/**
+ * The fonts, loaded once.
+ *
+ * GDI cannot be asked anything about text without them, and they live on the
+ * drive image rather than in the repository, so this is both slow and
+ * conditional. Loading it once and sharing it keeps the replay honest --
+ * every adapter sees the same fonts a running system would.
+ */
+let fonts: any = null;
+
+/** Loads the installed fonts off the drive image, if it has been built. */
+export async function prepareFonts() {
+  if (fonts) {
+    return fonts;
+  }
+
+  if (!existsSync(DRIVE_IMAGE)) {
+    return null;
+  }
+
+  const bytes = new Uint8Array(readFileSync(DRIVE_IMAGE));
+  const disk = new Disk(bytes.byteLength, 512, 32768);
+
+  disk.load(bytes);
+
+  const fileSystem: any = new FAT16(disk);
+  await fileSystem.mount();
+
+  const manager: any = new FontManager();
+
+  for (const entry of await fileSystem.list(['WINDOWS', 'SYSTEM'])) {
+    if (entry.info.name.toUpperCase().endsWith('.FON')) {
+      await manager.load(await fileSystem.open(['WINDOWS', 'SYSTEM', entry.info.name]));
+    }
+  }
+
+  fonts = manager;
+
+  return fonts;
+}
+
+/** Thrown by an adapter that cannot run without the drive image. */
+export class NeedsDrive extends Error {}
+
 /** Where in guest memory the harness builds its arguments. */
 const SCRATCH_SEGMENT = 0x4000;
 
@@ -77,6 +135,8 @@ class Context {
   machine: any;
   allocator: any;
   globalAllocator: any;
+  handles: any;
+  fonts: any;
   private next: number;
 
   constructor() {
@@ -89,6 +149,34 @@ class Context {
      */
     this.globalAllocator = new GlobalAllocator(this.machine.cpu, this.machine.memory);
     this.allocator = new Allocator(this.machine.memory, this.globalAllocator);
+
+    this.handles = new HandleManager();
+    this.fonts = fonts;
+  }
+
+  /**
+   * A device context with a stock font selected into it.
+   *
+   * The canvas behind it is a stub. Measuring a bitmap font is arithmetic over
+   * the glyph table and never rasterises anything, but a `Surface` sets a
+   * brush and a pen as it is built and those reach for a drawing context, so
+   * there has to be something there to reach.
+   */
+  withStockFont(stock: number) {
+    if (!this.fonts) {
+      throw new NeedsDrive('the fonts live on the drive image; run the oracle pipeline');
+    }
+
+    const hdc = this.handles.allocate(new Surface({ getContext: () => ({}) }));
+    const font = GetStockObject.call(this, stock);
+
+    if (!font) {
+      throw new Error(`no stock font ${stock}`);
+    }
+
+    SelectObject.call(this, hdc, font);
+
+    return hdc;
   }
 
   /**
@@ -221,6 +309,31 @@ function flagsFor(name: string) {
   }
 
   return name === 'discardable' ? 0x0102 : 0x0002;
+}
+
+/**
+ * The stock font constants, by the name the probe records them under.
+ *
+ * Spelled out rather than imported so that the harness measures the numbers
+ * Windows was asked with, not whatever our own constants happen to say.
+ */
+const STOCK = {
+  OEM_FIXED_FONT: 10,
+  ANSI_FIXED_FONT: 11,
+  ANSI_VAR_FONT: 12,
+  SYSTEM_FONT: 13,
+  DEVICE_DEFAULT_FONT: 14,
+  SYSTEM_FIXED_FONT: 16,
+};
+
+/** Reads the metrics of whatever font is selected into a context. */
+function metricsOf(context: any, stock: number) {
+  const hdc = context.withStockFont(stock);
+  const tm: any = {};
+
+  GetTextMetrics.call(context, hdc, tm);
+
+  return tm;
 }
 
 /** The probe records the sign of a comparison, not its magnitude. */
@@ -425,6 +538,75 @@ const ADAPTERS: Record<string, (context: Context, args: (string | number)[]) => 
     return `moved=${before === GlobalLock.call(context, handle) ? 0 : 1}`;
   },
 
+  'metrics heights'(context, [name]) {
+    const tm = metricsOf(context, STOCK[name as string]);
+
+    return (
+      `height=${tm.tmHeight},ascent=${tm.tmAscent},descent=${tm.tmDescent},` +
+      `internal=${tm.tmInternalLeading},external=${tm.tmExternalLeading}`
+    );
+  },
+
+  'metrics widths'(context, [name]) {
+    const tm = metricsOf(context, STOCK[name as string]);
+
+    return (
+      `ave=${tm.tmAveCharWidth},max=${tm.tmMaxCharWidth},` +
+      `weight=${tm.tmWeight},overhang=${tm.tmOverhang}`
+    );
+  },
+
+  'metrics character set'(context, [name]) {
+    const tm = metricsOf(context, STOCK[name as string]);
+
+    return (
+      `first=${tm.tmFirstChar},last=${tm.tmLastChar},default=${tm.tmDefaultChar},` +
+      `break=${tm.tmBreakChar},pitch=${tm.tmPitchAndFamily},charset=${tm.tmCharSet}`
+    );
+  },
+
+  'metrics style'(context, [name]) {
+    const tm = metricsOf(context, STOCK[name as string]);
+
+    return `italic=${tm.tmItalic},underlined=${tm.tmUnderlined},struckout=${tm.tmStruckOut}`;
+  },
+
+  GetTextFace(context, [name]) {
+    const hdc = context.withStockFont(STOCK[name as string]);
+    const buffer = context.place('', 64);
+
+    GetTextFace.call(context, hdc, 64, buffer.far);
+
+    return `"${context.fetch(buffer.far)}"`;
+  },
+
+  GetTextExtent(context, [name, text]) {
+    const hdc = context.withStockFont(STOCK[name as string]);
+    const extent = GetTextExtent.call(context, hdc, String(text), String(text).length);
+
+    return `width=${extent & 0xffff},height=${(extent >>> 16) & 0xffff}`;
+  },
+
+  GetCharWidth(context, [name, range]) {
+    const [first, last] = String(range).split('-').map(Number);
+
+    const hdc = context.withStockFont(STOCK[name as string]);
+    const buffer = context.place('', 2 * (last - first + 1) + 2);
+
+    if (!GetCharWidth.call(context, hdc, first, last, buffer.far)) {
+      return 'failed';
+    }
+
+    const core = context.machine.cpu.core;
+    const widths = [];
+
+    for (let index = 0; index <= last - first; index++) {
+      widths.push(core.read16(buffer.segment, buffer.offset + index * 2));
+    }
+
+    return widths.join(',');
+  },
+
   GlobalFlags(context, [flags]) {
     const handle = GlobalAlloc.call(context, flags as number, 64);
 
@@ -545,6 +727,10 @@ export function replayRecord(record: Fixture['records'][number]): Replayed {
   } catch (error) {
     if (error instanceof Unimplemented) {
       return { ...base, actual: null, outcome: 'unimplemented' };
+    }
+
+    if (error instanceof NeedsDrive) {
+      return { ...base, actual: null, outcome: 'unsupported' };
     }
 
     return {

@@ -312,31 +312,68 @@ in it, 55 in Helv and 96 in Courier; `GetCharWidth` gives `i` 4 pixels and `W`
 14, and an empty string has an extent of zero by zero rather than zero by the
 font height.
 
-The replay for this is not written yet, and finding out why was the useful
-part. These functions need a device context, a handle table and loaded fonts,
-which is more of a system than the other probes needed -- so the question was
-whether a font could be loaded at all outside a running Windows. It can, now
-that the filesystem works: the fonts are `.FON` files on the drive the oracle
-builds, `BitmapFont` reads them straight off it, and measuring is pure
-arithmetic with no canvas involved.
+The replay needed more of a system than the earlier probes: a device context, a
+handle table, and real fonts. All three turned out to be reachable now that the
+filesystem works -- the fonts are `.FON` files on the drive the oracle builds,
+`BitmapFont` reads them straight off it, and measuring a bitmap font is
+arithmetic over its glyph table with no canvas involved.
 
-Doing that turned up two things.
+**Text reads 45/55.** Every metric, every extent, every character width and
+every face name agrees with real Windows. What is left is `GetDeviceCaps`,
+which is not a defect (see below).
 
-`FAT16File#read` returned a `Uint8Array` where every consumer expects an
+Getting there needed the mapping from stock fonts to files, and that was
+derived by measurement rather than assumed: every `.FON` on the drive was
+enumerated with its metrics and matched against what Windows reports.
+
+| Stock font            | Face reported | File        | Entry      |
+| --------------------- | ------------- | ----------- | ---------- |
+| `SYSTEM_FONT`         | System        | VGASYS.FON  | 10pt, 16px |
+| `SYSTEM_FIXED_FONT`   | Fixedsys      | VGAFIX.FON  | 12pt, 15px |
+| `ANSI_VAR_FONT`       | Helv          | SSERIFE.FON | 8pt, 13px  |
+| `ANSI_FIXED_FONT`     | Courier       | COURE.FON   | 10pt, 13px |
+| `OEM_FIXED_FONT`      | Terminal      | VGAOEM.FON  | 12pt, 12px |
+| `DEVICE_DEFAULT_FONT` | Courier       | COURE.FON   | 12pt, 16px |
+
+Two of those would have been guessed wrong. `ANSI_VAR_FONT` asks for Helv,
+which no installed file provides: `WIN.INI` carries a `[FontSubstitutes]`
+section saying `Helv=MS Sans Serif`, whose eight point entry matches exactly --
+and `GetTextFace` still answers "Helv", because the name belongs to the request
+rather than to the file that satisfied it. And `DEVICE_DEFAULT_FONT` is Courier
+at twelve points, not a system font at all, whatever its name suggests.
+
+Five bugs came out of it:
+
+- `Surface#measureText` asked for `fontFor(12)` with the size hardcoded, so a
+  file holding several sizes returned whichever entry was nearest twelve rather
+  than the one selected. Courier answered with its 15-point entry at 20 pixels
+  where `ANSI_FIXED_FONT` is the 10-point one at 13.
+- `GetStockObject` handed back the whole font _file_, so there was no size to
+  select with. A stock font is a face **and** a size, and both halves matter.
+- The font manager kept one file per face, last one winning. Several files
+  carry a face called Terminal at unrelated sizes -- `DOSAPP.FON`'s smallest is
+  six pixels tall -- so which file loaded last decided what Terminal meant.
+- `tmDefaultChar` and `tmBreakChar` were reported raw. The file stores them
+  relative to the first character it contains; the metrics report them as the
+  characters they are.
+- `GetTextExtent("")` returned zero by the font height. Windows returns zero by
+  zero, and layout code divides by the result.
+
+`FAT16File#read` also returned a `Uint8Array` where every consumer expects an
 `ArrayBuffer` -- `Executable`, the loader and `_lread` all wrap the result in a
-`DataView` directly, and `Stream#read` returns one. The method even returned an
-`ArrayBuffer` on its own stream path a few lines above. Fixed.
+`DataView`, and `Stream#read` returns one. The method even returned an
+`ArrayBuffer` on its own stream path a few lines above, so it disagreed with
+itself. Nothing had used both paths before.
 
-And the measurement is right while the font selection is not. `VGASYS.FON`
-measures `"Hello, world"` at 77 pixels by 16, which is exactly what Windows
-says, so the per-character summing and the metrics parsing are sound. But
-`Surface#measureText` asks for `fontFor(12)` with the size hardcoded, so a
-font file holding several sizes hands back whichever entry is nearest twelve
-rather than the one that was selected: Courier answers with its 15-point entry,
-20 pixels tall, where `ANSI_FIXED_FONT` is the 10-point one at 13. The stock
-fonts are not yet mapped to the files that hold them either.
+**`GetDeviceCaps` is a decision, not a defect.** The oracle recorded a VGA
+driver: 640x480, one bit per pixel across four planes, sixteen colours, 96 dots
+per inch. Ours reports the browser it is running in -- 32 bits per pixel, 256
+colours -- and reads the desktop for its size. Which device WinBox.js should
+present to a guest is a real question, since programs make layout and colour
+decisions from the answer, and it is not one to settle by quietly matching a
+fixture. Left unimplemented and recorded.
 
-### The handles probe
+### The handles probe### The handles probe
 
 Three more things came back, all of which bear on compatibility more than the
 sizing does.

@@ -51,6 +51,8 @@ import { GetDeviceCaps } from './gdi/GetDeviceCaps.js';
 import { GetObject } from './gdi/GetObject.js';
 import { GetRasterizerCaps } from './gdi/GetRasterizerCaps.js';
 import { GetTextExtent } from './gdi/GetTextExtent.js';
+import { GetCharWidth } from './gdi/GetCharWidth.js';
+import { GetTextFace } from './gdi/GetTextFace.js';
 import { GetTextMetrics } from './gdi/GetTextMetrics.js';
 import { GetStockObject } from './gdi/GetStockObject.js';
 import { LineTo } from './gdi/LineTo.js';
@@ -244,7 +246,7 @@ export class Gdi extends Module {
       // 90 //
       [Gdi.stub, 'GetTextColor', 2],
       [GetTextExtent, 'GetTextExtent', 8, [HDC, LPCSTR, INT], DWORD],
-      [Gdi.stub, 'GetTextFace', 8],
+      [GetTextFace, 'GetTextFace', 8, [HDC, INT, FARPTR], INT],
       [GetTextMetrics, 'GetTextMetrics', 6, [HDC, [TEXTMETRIC]], BOOL],
       [Gdi.stub, 'GetViewportExt', 2],
       [Gdi.stub, 'GetViewportOrg', 2],
@@ -528,7 +530,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'Chord', 18],
       [Gdi.stub, 'SetMapperFlags', 6],
       // 350 //
-      [Gdi.stub, 'GetCharWidth', 10],
+      [GetCharWidth, 'GetCharWidth', 10, [HDC, UINT, UINT, FARPTR], BOOL],
       [Gdi.stub, 'ExtTextOut', 22],
       [Gdi.stub, 'GetPhysicalFontHandle', 2],
       [Gdi.stub, 'GetAspectRatioFilter', 2],

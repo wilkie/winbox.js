@@ -183,6 +183,14 @@ export class BitmapFontEntry {
     const weight = options.weight || 400;
     const allowAnnotation = options.allowAnnotation || false;
 
+    /* A string with nothing in it occupies nothing at all, not a zero-width
+     * strip of the font's height -- `GetTextExtent("")` on Windows is zero by
+     * zero, and layout code divides by the result.
+     */
+    if (text.length === 0) {
+      return { width: 0, height: 0 };
+    }
+
     const ret = {
       width: 0,
       height: this.header.dfPixHeight,

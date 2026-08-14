@@ -3,6 +3,7 @@
 import { TRUE, FALSE } from '../consts.js';
 
 import { BitmapFont } from '../../raster/bitmap-font.js';
+import { LogicalFont } from '../../raster/logical-font.js';
 
 /**
  * The **GetTextMetrics** function retrieves the metrics for the current font.
@@ -40,8 +41,8 @@ export function GetTextMetrics(hdc, lptm) {
   const font = surface.font;
 
   // Get the information
-  if (font instanceof BitmapFont) {
-    const header = font.fontFor(12).header;
+  if (font instanceof LogicalFont || font instanceof BitmapFont) {
+    const header = (font instanceof LogicalFont ? font.entry : font.fontFor(12)).header;
 
     lptm.tmHeight = header.dfPixHeight;
     lptm.tmAscent = header.dfAscent;
@@ -56,8 +57,11 @@ export function GetTextMetrics(hdc, lptm) {
     lptm.tmStruckOut = header.dfStrikeOut;
     lptm.tmFirstChar = header.dfFirstChar;
     lptm.tmLastChar = header.dfLastChar;
-    lptm.tmDefaultChar = header.dfDefaultChar;
-    lptm.tmBreakChar = header.dfBreakChar;
+    /* The font file stores these two relative to the first character it
+     * contains, while the metrics report them as the characters they are.
+     */
+    lptm.tmDefaultChar = header.dfDefaultChar + header.dfFirstChar;
+    lptm.tmBreakChar = header.dfBreakChar + header.dfFirstChar;
     lptm.tmPitchAndFamily = header.dfPitchAndFamily;
     lptm.tmCharSet = header.dfCharSet;
     lptm.tmOverhang = 0;

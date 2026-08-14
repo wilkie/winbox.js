@@ -5,10 +5,23 @@ import { Pen } from './pen.js';
 import { Color } from './color.js';
 import { Ditherer } from './ditherer.js';
 import { BitmapFont } from './bitmap-font.js';
+import { LogicalFont } from './logical-font.js';
 
 /**
  * This offers a drawing context.
  */
+/**
+ * The sized font behind whatever was selected.
+ *
+ * A `LogicalFont` already knows which size was asked for. A bare `BitmapFont`
+ * is a whole file with the size still undecided, which happens when something
+ * selects a font without going through `GetStockObject`; twelve points is a
+ * guess, and the only honest thing to say about it is that it is one.
+ */
+function entryOf(font) {
+  return font instanceof LogicalFont ? font.entry : font.fontFor(12);
+}
+
 export class Surface {
   declare _backcolor: any;
   declare _bitmap: any;
@@ -178,10 +191,9 @@ export class Surface {
 
   fillText(x, y, text) {
     // TODO: backcolor
-    if (this._font instanceof BitmapFont) {
-      // A bitmap font
+    if (this._font instanceof LogicalFont || this._font instanceof BitmapFont) {
       // Fill the rectangle behind it
-      const font = this._font.fontFor(12);
+      const font = entryOf(this._font);
       const metrics = font.measure(text);
       this.context.fillStyle = 'white';
       this.context.fillRect(x, y, metrics.width, metrics.height);
@@ -202,9 +214,8 @@ export class Surface {
    * @param {String} text - The text to measure.
    */
   measureText(text) {
-    if (this._font instanceof BitmapFont) {
-      // A bitmap font
-      return this._font.fontFor(12).measure(text);
+    if (this._font instanceof LogicalFont || this._font instanceof BitmapFont) {
+      return entryOf(this._font).measure(text);
     } else {
       // Normal text draw
       this.context.font = this._font;

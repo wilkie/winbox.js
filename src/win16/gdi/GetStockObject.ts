@@ -1,9 +1,10 @@
 'use strict';
 
+import { STOCK_FONTS } from './stock-fonts.js';
+
 import { Brush } from '../../raster/brush.js';
 import { Pen } from '../../raster/pen.js';
 import { Color } from '../../raster/color.js';
-import { Font } from '../../raster/font.js';
 
 import { Gdi } from '../gdi.js';
 
@@ -92,38 +93,25 @@ export function GetStockObject(fnObject) {
       handle = this.handles.allocate(new Pen(new Color(0x00, 0x00, 0x00, 0x00)));
       break;
     case Gdi.OEM_FIXED_FONT:
-      {
-        // Get the 'Terminal' font
-        const font = this.fonts.lookup('Terminal');
-        handle = this.handles.lookup(font);
-        if (!handle) {
-          handle = this.handles.allocate(font);
-        }
-      }
-      break;
     case Gdi.ANSI_FIXED_FONT:
-      console.log('GetStockObject: IMPLEMENTATION REQUIRED');
-      break;
     case Gdi.ANSI_VAR_FONT:
-      console.log('GetStockObject: IMPLEMENTATION REQUIRED');
-      break;
     case Gdi.SYSTEM_FONT:
-      // Get the 'System' font
+    case Gdi.SYSTEM_FIXED_FONT:
+    case Gdi.DEVICE_DEFAULT_FONT:
       {
-        const font = this.fonts.lookup('System');
-        handle = this.handles.lookup(font);
-        if (!handle) {
-          handle = this.handles.allocate(font);
+        /* A stock font is a face at a size, and both halves matter: the same
+         * file holds Courier at ten points and at fifteen, and they are thirteen
+         * and twenty pixels tall. See stock-fonts.ts for where these come from.
+         */
+        const wanted = STOCK_FONTS[fnObject];
+        const font = this.fonts.realize(wanted.face, wanted.points);
+
+        if (font) {
+          handle = this.handles.lookup(font) || this.handles.allocate(font);
         }
       }
-      break;
-    case Gdi.DEVICE_DEFAULT_FONT:
-      console.log('GetStockObject: IMPLEMENTATION REQUIRED');
       break;
     case Gdi.DEFAULT_PALETTE:
-      console.log('GetStockObject: IMPLEMENTATION REQUIRED');
-      break;
-    case Gdi.SYSTEM_FIXED_FONT:
       console.log('GetStockObject: IMPLEMENTATION REQUIRED');
       break;
     default:
