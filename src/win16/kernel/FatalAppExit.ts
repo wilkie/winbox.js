@@ -24,6 +24,6 @@
  *                                         no more than 35 characters.
  */
 export function FatalAppExit(fuAction, lpszMessageText) {
-  console.log('FatalAppExit:', lpszMessageText);
+  this.debug('FatalAppExit:', lpszMessageText);
   // TODO: spawn a message box and pause the application until it closes.
 }

@@ -88,7 +88,7 @@ export function GetPrivateProfileString(
   // Open the file
   const handle = this.dos.files.open(lpszFilename);
   const file = this.dos.files.resolve(handle);
-  console.log(file);
+  this.debug(file);
 
   const ret = null;
 

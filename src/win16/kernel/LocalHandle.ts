@@ -19,5 +19,5 @@
  *                   addresss has no handle.
  */
 export function LocalHandle(pvMem) {
-  console.log('LocalHandle:', pvMem);
+  this.debug('LocalHandle:', pvMem);
 }

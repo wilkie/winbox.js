@@ -23,11 +23,11 @@
  * import { LOBYTE, LOWORD, HIBYTE, HIWORD } from 'win16/kernel.js';
  *
  * let version = GetVersion();
- * console.log("Windows version: " +
+ * this.debug("Windows version: " +
  *             LOBYTE(LOWORD(version)) + "." +
  *             HIBYTE(LOWORD(version)));
  *
- * console.log("MS-DOS version: " +
+ * this.debug("MS-DOS version: " +
  *             HIBYTE(HIWORD(version)) + "." +
  *             LOBYTE(HIWORD(version)));
  * ```

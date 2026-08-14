@@ -27,7 +27,7 @@ import { NULL } from '../consts.js';
  */
 export function MoveTo(hdc, x, y) {
   const surface = this.handles.resolve(hdc);
-  console.log('MoveTo', x, y);
+  this.debug('MoveTo', x, y);
 
   // Determine if the HDC is valid; bail if not
   if (!surface) {

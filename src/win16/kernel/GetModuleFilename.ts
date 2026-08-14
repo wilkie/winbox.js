@@ -43,7 +43,7 @@ export function GetModuleFilename(hinst, lpszFilename, cbFileName) {
 
   // Write null-terminator
   cpu.write8(destSegment, destOffset, 0x0);
-  console.log(filename, count);
+  this.debug(filename, count);
 
   return count;
 }

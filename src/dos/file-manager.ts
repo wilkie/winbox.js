@@ -135,7 +135,35 @@ export class FileManager {
     }
   }
 
-  async create(path) {}
+  /**
+   * Creates a file, replacing anything already there, and opens it.
+   *
+   * Unlike `open`, this does not search: a program creating a file means the
+   * path it gave and nowhere else.
+   *
+   * @param {string} path - The path to create.
+   * @returns {Promise<number>} An open file descriptor, or null.
+   */
+  async create(path) {
+    const pathInfo = this.parse(path);
+    const fileSystem = this.query(pathInfo.drive);
+
+    if (!fileSystem) {
+      return null;
+    }
+
+    await fileSystem.create(pathInfo.path);
+
+    const file = await fileSystem.open(pathInfo.path);
+
+    if (!file) {
+      return null;
+    }
+
+    file.mount = pathInfo.drive;
+
+    return this.allocate(file);
+  }
 
   async open(path) {
     // Collect paths to check, if not an absolute path (or forced).
@@ -158,7 +186,6 @@ export class FileManager {
     for (let i = 0; i < check.length; i++) {
       const dirPath = check[i];
       const filePath = dirPath + path;
-      console.log(dirPath);
 
       const pathInfo = this.parse(filePath);
 

@@ -500,8 +500,6 @@ export class Win16 {
       return false;
     }
 
-    console.log('hmm', ip);
-
     const functionDefinition = module.instance.exports[ip];
 
     const implementation = functionDefinition[0];

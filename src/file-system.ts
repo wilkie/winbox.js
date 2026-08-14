@@ -118,6 +118,17 @@ export class File {
     throw 'Unimplemented';
   }
 
+  /**
+   * Writes bytes at an offset, growing the file if it needs to.
+   *
+   * @param {number} offset - Where in the file to start.
+   * @param {Uint8Array|DataView} data - What to write.
+   * @returns {Promise<number>} How many bytes were written.
+   */
+  async write(offset, data): Promise<any> {
+    throw 'Unimplemented';
+  }
+
   async write8(offset, value): Promise<any> {
     throw 'Unimplemented';
   }

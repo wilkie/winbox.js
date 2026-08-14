@@ -23,5 +23,5 @@
  *                       discarded).
  */
 export function LocalFlags(hloc) {
-  console.log('LocalFlags:', hloc);
+  this.debug('LocalFlags:', hloc);
 }

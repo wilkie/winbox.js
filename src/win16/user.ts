@@ -50,6 +50,7 @@ import { DestroyWindow } from './user/DestroyWindow.js';
 import { DialogBox } from './user/DialogBox.js';
 import { DispatchMessage } from './user/DispatchMessage.js';
 import { EndDialog } from './user/EndDialog.js';
+import { ExitWindows } from './user/ExitWindows.js';
 import { EndPaint } from './user/EndPaint.js';
 import { FillRect } from './user/FillRect.js';
 import { FindWindow } from './user/FindWindow.js';
@@ -464,7 +465,7 @@ export class User extends Module {
       [User.stub, 'DisableOEMLayer', 0],
       [InitApp, 'InitApp', 2, [HANDLE], BOOL],
       [User.stub, 'PostQuitMessage', 0],
-      [User.stub, 'ExitWindows', 6],
+      [ExitWindows, 'ExitWindows', 6, [DWORD, UINT], BOOL],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       // 10 //

@@ -72,7 +72,7 @@ export function WritePrivateProfileString(lpszSection, lpszEntry, lpszString, lp
   // Open the file
   const handle = this.dos.files.open(lpszFilename);
   const file = this.dos.files.resolve(handle);
-  console.log(file);
+  this.debug(file);
 
   const ret = null;
 

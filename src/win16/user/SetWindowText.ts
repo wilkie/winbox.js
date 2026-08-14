@@ -25,7 +25,7 @@
  *                              the new title or control text.
  */
 export function SetWindowText(hwnd, lpsz) {
-  console.log('SetWindowText', hwnd, lpsz);
+  this.debug('SetWindowText', hwnd, lpsz);
 
   // Get window
   const dialog = this.handles.resolve(hwnd);

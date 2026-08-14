@@ -34,7 +34,7 @@ import { Color } from '../../raster/color.js';
  *                          text color, if the function is successful.
  */
 export function SetTextColor(hdc, color) {
-  console.log('SetTextColor', hdc, color);
+  this.debug('SetTextColor', hdc, color);
 
   // Resolve the destination DC handle
   const surface = this.handles.resolve(hdc);

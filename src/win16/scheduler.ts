@@ -113,10 +113,17 @@ export class Scheduler {
 
   resume(handle) {
     this.queue(handle);
+
     if (this.task) {
+      // A task that has ended stays ended; nothing resumes it.
+      if (this.task.ended) {
+        return;
+      }
+
       this.task.yield = false;
       this.task.run();
     }
+
     this.run();
   }
 

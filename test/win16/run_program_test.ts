@@ -4,6 +4,8 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { DOS } from '../../src/dos.js';
+import { Disk } from '../../src/emulator/disk.js';
+import { FAT16 } from '../../src/file-systems/fat16.js';
 import { Executable } from '../../src/executable.js';
 import { Machine } from '../../src/emulator/machine.js';
 import { Win16 } from '../../src/win16.js';
@@ -72,9 +74,19 @@ class MemoryFile {
 }
 
 /** Loads the probe and runs it, collecting every API call it makes. */
-async function runProbe(frames = 400) {
+async function runProbe(frames = 600) {
   const machine = new Machine();
   const calls: any[] = [];
+
+  // The program says when it is done by asking Windows to end the session.
+  let exited = false;
+
+  /* Give the machine a drive. The probe writes its results to a file, which is
+   * the whole point -- without somewhere to write, it runs and says nothing.
+   */
+  const fileSystem: any = new FAT16(machine.disks[0]);
+  await fileSystem.format();
+  await fileSystem.open(['ORACLE'], true);
 
   /* The scheduler hands the next slice of execution to a frame driver, which
    * in a browser is the animation frame. Here it is a trampoline: the callback
@@ -91,7 +103,13 @@ async function runProbe(frames = 400) {
       nextFrame: (callback: any) => {
         pending = callback;
       },
-      onCall: (call: any) => calls.push(call),
+      onCall: (call: any) => {
+        calls.push(call);
+
+        if (call.name === 'ExitWindows') {
+          exited = true;
+        }
+      },
     }
   );
 
@@ -107,15 +125,41 @@ async function runProbe(frames = 400) {
   win16.link(handle);
   win16.run(handle);
 
+  /* The API can suspend on a promise -- writing a file does -- so driving this
+   * means letting the timer and microtask queues drain between slices, not
+   * just handing the callback straight back.
+   */
   let ran = 0;
 
-  while (pending && ran++ < frames) {
-    const callback = pending;
-    pending = null;
-    callback();
+  for (; ran < frames; ran++) {
+    if (pending) {
+      const callback = pending;
+      pending = null;
+      callback();
+    }
+
+    await new Promise((resolve) => setImmediate(resolve));
+
+    /* `pending` goes empty whenever the program is suspended on an async call,
+     * so it is not a sign of having finished. Asking to end the session is.
+     */
+    if (exited && !pending) {
+      break;
+    }
   }
 
-  return { machine, win16, calls, frames: ran };
+  return { machine, win16, calls, fileSystem, frames: ran };
+}
+
+/** Reads what the probe wrote, as the recorder would read it. */
+async function outputOf(fileSystem: any) {
+  const file = await fileSystem.open(['ORACLE', 'STRINGS.OUT']);
+
+  if (!file) {
+    return null;
+  }
+
+  return Buffer.from(await file.read(0, file.info.size)).toString('latin1');
 }
 
 /** The probe is built rather than committed, so this steps aside without it. */
@@ -126,7 +170,7 @@ whenBuilt('running a real Win16 program', () => {
 
   beforeAll(async function () {
     result = await runProbe();
-  }, 60000);
+  }, 180000);
 
   it('loads and links a genuine NE executable', function () {
     // Parsing, relocating and starting it are all inside runProbe.
@@ -162,6 +206,51 @@ whenBuilt('running a real Win16 program', () => {
     expect(byName.get('lstrlen')).toEqual('KERNEL');
     expect(byName.get('lstrcmp')).toEqual('USER');
     expect(byName.get('InitApp')).toEqual('USER');
+  });
+
+  it('writes the output it was written to write', async function () {
+    const text = await outputOf(result.fileSystem);
+
+    expect(text).not.toBeNull();
+    expect(text!.length).toBeGreaterThan(0);
+  });
+
+  /* The strong form. The same binary produced a recording under real Windows,
+   * and this compares against it record for record -- so a disagreement is our
+   * API being wrong rather than a test being out of date.
+   */
+  it('agrees with what real Windows recorded from the same program', async function () {
+    const fixture = join(__dirname, '..', '..', 'oracle', 'fixtures', 'strings.json');
+
+    if (!existsSync(fixture)) {
+      return;
+    }
+
+    const recorded = JSON.parse(readFileSync(fixture, 'utf8'));
+    const text = (await outputOf(result.fileSystem)) ?? '';
+
+    /* The probe escapes tabs, newlines and backslashes on the way out, since
+     * they are what separate the fields; the recorder undoes that, so this
+     * has to as well.
+     */
+    const unescape = (field: string) =>
+      field.replace(
+        /\\([\\trn])/g,
+        (_, code) => ({ '\\': '\\', t: '\t', r: '\r', n: '\n' })[code] as string
+      );
+
+    const ours = text
+      .split(/\r?\n/)
+      .filter((line) => line !== '')
+      .map((line) => line.split('\t').map(unescape))
+      .filter(([name]) => name !== '#')
+      .map(([name, args, value]) => `${name}(${args}) = ${value}`);
+
+    const theirs = recorded.records.map(
+      (record: any) => `${record.function}(${record.args}) = ${record.result}`
+    );
+
+    expect(ours).toEqual(theirs);
   });
 
   it('passes arguments across the thunk', function () {

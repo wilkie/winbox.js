@@ -44,6 +44,6 @@ export function GetMenu(hwnd) {
   // Allocate an HMENU handle
   const ret = this.handles.allocate(menu);
 
-  console.log('GetMenu', dialog, menu, ret);
+  this.debug('GetMenu', dialog, menu, ret);
   return ret;
 }

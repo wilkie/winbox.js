@@ -54,7 +54,7 @@ export function GetDC(hwnd) {
     // Allocate a DC
     dc = this.handles.allocate(surface);
 
-    //console.log("GetDC", dialog, surface, dc);
+    //this.debug("GetDC", dialog, surface, dc);
   }
 
   return dc;

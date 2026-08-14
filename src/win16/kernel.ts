@@ -27,6 +27,8 @@ import {
 } from './types.js';
 
 import { _lclose } from './kernel/_lclose.js';
+import { _lcreat } from './kernel/_lcreat.js';
+import { _lwrite } from './kernel/_lwrite.js';
 import { _llseek } from './kernel/_llseek.js';
 import { _lread } from './kernel/_lread.js';
 import { Catch } from './kernel/Catch.js';
@@ -240,10 +242,10 @@ export class Kernel extends Module {
       [Kernel.stub, 'Reserved4', 4],
       [_lclose, '_lclose', 2, [HFILE], HFILE],
       [_lread, '_lread', 8, [HFILE, FARPTR, UINT], UINT],
-      [Kernel.stub, '_lcreat', 6],
+      [_lcreat, '_lcreat', 6, [LPCSTR, INT], HFILE],
       [_llseek, '_llseek', 8, [HFILE, LONG, INT], LONG],
       [Kernel.stub, '_lopen', 6],
-      [Kernel.stub, '_lwrite', 8],
+      [_lwrite, '_lwrite', 8, [HFILE, FARPTR, UINT], UINT],
       [Kernel.stub, 'Reserved5', 4],
       [lstrcpy, 'lstrcpy', 8, [FARPTR, FARPTR], FARPTR],
       [lstrcat, 'lstrcat', 4, [FARPTR, FARPTR], FARPTR],

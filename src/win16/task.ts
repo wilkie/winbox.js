@@ -17,6 +17,7 @@ export class Task {
   declare _messages: any;
   declare _pendingStack: any;
   declare _programSegment: any;
+  declare _ended: any;
   declare _stopped: any;
   declare _yield: any;
   constructor(executable, loader) {
@@ -75,6 +76,24 @@ export class Task {
     return this._stopped;
   }
 
+  /**
+   * Whether the task has finished for good.
+   *
+   * `halt` is not this. A task is halted whenever it makes an API call that
+   * has to wait for something, and is resumed when the answer arrives -- so a
+   * program that halts itself is simply resumed a moment later. Ending is the
+   * other thing: the program is done, and nothing should start it again.
+   */
+  get ended() {
+    return this._ended === true;
+  }
+
+  /** Ends the task. It will not be resumed. */
+  end() {
+    this._ended = true;
+    this.halt();
+  }
+
   get programSegment() {
     return this._programSegment;
   }
@@ -92,6 +111,10 @@ export class Task {
   }
 
   run() {
+    if (this._ended) {
+      return;
+    }
+
     this._stopped = false;
   }
 

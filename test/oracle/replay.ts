@@ -209,6 +209,15 @@ class Context {
     return this;
   }
 
+  /**
+   * Where the implementations send their tracing.
+   *
+   * This context stands in for a running `Win16`, so it has to offer what the
+   * functions reach for. Their logging is gated behind this on the real thing
+   * and is simply dropped here.
+   */
+  debug() {}
+
   /** Writes a C string into guest memory and returns where it went. */
   place(text: string, reserve = 0) {
     const core = this.machine.cpu.core;

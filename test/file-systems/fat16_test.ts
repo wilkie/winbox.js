@@ -103,6 +103,56 @@ describe('FAT16', () => {
     });
   });
 
+  describe('writing to a file', () => {
+    it('grows a file past the cluster it started in', async function () {
+      /* The point of a chain is that a file need not be contiguous, and
+       * nothing exercises that until a file outgrows its first cluster.
+       */
+      const { disk, fileSystem } = await formatted();
+
+      await fileSystem.create(['GROW.BIN']);
+
+      const file: any = await fileSystem.open(['GROW.BIN']);
+      const contents = new Uint8Array(fileSystem.clusterSize * 2 + 33);
+
+      for (let index = 0; index < contents.length; index++) {
+        contents[index] = (index * 11) & 0xff;
+      }
+
+      expect(await file.write(0, contents)).toEqual(contents.length);
+
+      // The size has to survive being looked up again, not just be remembered.
+      const reader = await remount(disk);
+      const again: any = await reader.open(['GROW.BIN']);
+
+      expect(again.info.size).toEqual(contents.length);
+      expect(Buffer.from(await again.read(0, contents.length))).toEqual(Buffer.from(contents));
+    });
+
+    it('appends the way a program writing a log does', async function () {
+      const { disk, fileSystem } = await formatted();
+
+      await fileSystem.create(['LOG.TXT']);
+
+      const file: any = await fileSystem.open(['LOG.TXT']);
+      const lines = ['first\r\n', 'second\r\n', 'third\r\n'];
+
+      let at = 0;
+
+      for (const line of lines) {
+        const bytes = new Uint8Array([...line].map((character) => character.charCodeAt(0)));
+        at += await file.write(at, bytes);
+      }
+
+      const reader = await remount(disk);
+      const again: any = await reader.open(['LOG.TXT']);
+
+      expect(Buffer.from(await again.read(0, again.info.size)).toString('latin1')).toEqual(
+        lines.join('')
+      );
+    });
+  });
+
   describe('a volume somebody else formatted', () => {
     /* The oracle drive is built rather than committed, so these describe what
      * they need and step aside when it is not there.

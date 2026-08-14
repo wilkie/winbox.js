@@ -169,24 +169,61 @@ export class Disk {
     return ret;
   }
 
+  /**
+   * Finds the block and the position within it for a sector and offset.
+   *
+   * The offset is not required to be smaller than a sector. Callers working in
+   * clusters address the first sector of a cluster and an offset within the
+   * whole of it, which for a 2 KiB cluster is four sectors' worth -- so this
+   * works in absolute addresses and lets the block arithmetic follow, which is
+   * what `read` and `write` already do.
+   *
+   * @param {number} index - The sector to start from.
+   * @param {number} offset - The offset from the start of that sector.
+   */
+  locate(index, offset) {
+    const at = index * this._sectorSize + offset;
+    const sector = Math.floor(at / this._sectorSize);
+
+    return {
+      block: this.retrieveBlock(sector),
+      within: at - Math.floor(sector / this._sectorsPerBlock) * this._blockSize,
+    };
+  }
+
+  /** Whether an access of this width would run off the end of its block. */
+  straddles(within, width) {
+    return within + width > this._blockSize;
+  }
+
   async read8(index, offset) {
-    return this.retrieveBlock(index).getUint8(
-      offset + this.sectorSize * (index % this._sectorsPerBlock)
-    );
+    const { block, within } = this.locate(index, offset);
+
+    return block.getUint8(within);
   }
 
   async read16(index, offset, littleEndian = true) {
-    return this.retrieveBlock(index).getUint16(
-      offset + this.sectorSize * (index % this._sectorsPerBlock),
-      littleEndian
-    );
+    const { block, within } = this.locate(index, offset);
+
+    if (this.straddles(within, 2)) {
+      const bytes = await this.read(index, offset, 2);
+
+      return new DataView(bytes.buffer).getUint16(0, littleEndian);
+    }
+
+    return block.getUint16(within, littleEndian);
   }
 
   async read32(index, offset, littleEndian = true) {
-    return this.retrieveBlock(index).getUint32(
-      offset + this.sectorSize * (index % this._sectorsPerBlock),
-      littleEndian
-    );
+    const { block, within } = this.locate(index, offset);
+
+    if (this.straddles(within, 4)) {
+      const bytes = await this.read(index, offset, 4);
+
+      return new DataView(bytes.buffer).getUint32(0, littleEndian);
+    }
+
+    return block.getUint32(within, littleEndian);
   }
 
   async readCString(index, offset, max) {
@@ -207,26 +244,35 @@ export class Disk {
   }
 
   async write8(index, offset, value) {
-    this.retrieveBlock(index).setUint8(
-      offset + this.sectorSize * (index % this._sectorsPerBlock),
-      value
-    );
+    const { block, within } = this.locate(index, offset);
+
+    block.setUint8(within, value);
   }
 
   async write16(index, offset, value, littleEndian = true) {
-    this.retrieveBlock(index).setUint16(
-      offset + this.sectorSize * (index % this._sectorsPerBlock),
-      value,
-      littleEndian
-    );
+    const { block, within } = this.locate(index, offset);
+
+    if (this.straddles(within, 2)) {
+      const bytes = new Uint8Array(2);
+      new DataView(bytes.buffer).setUint16(0, value, littleEndian);
+
+      return this.write(index, offset, bytes);
+    }
+
+    block.setUint16(within, value, littleEndian);
   }
 
   async write32(index, offset, value, littleEndian = true) {
-    this.retrieveBlock(index).setUint32(
-      offset + this.sectorSize * (index % this._sectorsPerBlock),
-      value,
-      littleEndian
-    );
+    const { block, within } = this.locate(index, offset);
+
+    if (this.straddles(within, 4)) {
+      const bytes = new Uint8Array(4);
+      new DataView(bytes.buffer).setUint32(0, value, littleEndian);
+
+      return this.write(index, offset, bytes);
+    }
+
+    block.setUint32(within, value, littleEndian);
   }
 
   async writeString(index, offset, value, max) {

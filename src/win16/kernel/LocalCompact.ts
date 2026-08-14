@@ -32,5 +32,5 @@
  *                       objects.
  */
 export function LocalCompact(uMinFree) {
-  console.log('LocalCompact:', uMinFree);
+  this.debug('LocalCompact:', uMinFree);
 }

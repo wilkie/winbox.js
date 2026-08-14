@@ -34,7 +34,7 @@ export function lstrcat(lpszString1, lpszString2) {
   const srcSegment = (lpszString2 >> 16) & 0xffff;
   let srcOffset = lpszString2 & 0xffff;
 
-  console.log(
+  this.debug(
     'lstrcat',
     this.machine.memory.readCString(cpu.translateAddress(destSegment, destOffset)),
     this.machine.memory.readCString(cpu.translateAddress(srcSegment, srcOffset))

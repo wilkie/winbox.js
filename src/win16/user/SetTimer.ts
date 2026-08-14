@@ -81,7 +81,7 @@ export function SetTimer(hwnd, idTimer, uTimeout, tmprc) {
       }
     } else {
       // We call the tmprc (timer-proc) function
-      console.log('oh my');
+      this.debug('oh my');
     }
   }, uTimeout);
 

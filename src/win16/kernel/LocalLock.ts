@@ -38,5 +38,5 @@
  *                          error occurs.
  */
 export function LocalLock(hloc) {
-  console.log('LocalLock:', hloc);
+  this.debug('LocalLock:', hloc);
 }

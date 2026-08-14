@@ -411,6 +411,37 @@ export class FAT16 extends FileSystem {
   }
 
   /**
+   * Removes a name from a directory, and frees what it pointed at.
+   *
+   * The entry is marked with 0xE5 rather than erased, which is what the format
+   * does: the slot stays where it is and becomes available.
+   *
+   * @param {object} directory - The directory to remove from.
+   * @param {string} name - The name to remove.
+   * @returns {Promise<boolean>} Whether anything was removed.
+   */
+  async unlink(directory, name) {
+    const existing = await directory.lookup(name);
+
+    if (!existing || existing.info.entryOffset === undefined) {
+      return false;
+    }
+
+    // Give the clusters back before losing the pointer to them.
+    let inode = existing.info.inode;
+
+    while (inode >= 2 && inode < 0xfff7) {
+      const next = await this.readFATEntry(inode);
+      await this.writeFATEntry(inode, 0);
+      inode = next;
+    }
+
+    await directory.write8(existing.info.entryOffset, 0xe5);
+
+    return true;
+  }
+
+  /**
    * Creates the given, empty, file.
    */
   async create(path, options: any = {}) {
@@ -424,6 +455,12 @@ export class FAT16 extends FileSystem {
   async map(path, data, options: any = {}) {
     // Open each directory, creating as we go
     const directory = await this.open(path.slice(0, path.length - 1), true);
+
+    /* Creating a file that already exists replaces it. Without this the
+     * directory collects a fresh entry every time, and a program that rewrites
+     * its output file leaves a trail of them.
+     */
+    await this.unlink(directory, path[path.length - 1]);
 
     // Allocate an inode for the beginning of the file
     let inode = await this.allocate();
@@ -504,6 +541,7 @@ export class FAT16 extends FileSystem {
 }
 
 export class FAT16File extends File {
+  declare parent: any;
   declare _fileSystem: any;
   declare _inode: any;
   declare _path: any;
@@ -592,6 +630,92 @@ export class FAT16File extends File {
      * used.
      */
     return ret.buffer;
+  }
+
+  /**
+   * Makes sure the file's cluster chain is long enough for this many bytes.
+   *
+   * A file is a chain rather than a run, so growing one means finding free
+   * clusters and linking them on. Nothing shuffles: the clusters can be
+   * anywhere, which is the whole reason for the chain.
+   *
+   * @param {number} length - The number of bytes the file must cover.
+   */
+  async reserve(length) {
+    const needed = Math.max(1, Math.ceil(length / this.fileSystem.clusterSize));
+
+    let inode = this.inode;
+
+    for (let index = 1; index < needed; index++) {
+      let next = await this.fileSystem.readFATEntry(inode);
+
+      // 0xFFF8 and above is the end of the chain; anything less is the next.
+      if (next >= 0xfff7) {
+        next = await this.fileSystem.allocate(inode);
+      }
+
+      inode = next;
+    }
+  }
+
+  /**
+   * Records a new size, both in memory and in the directory that names us.
+   *
+   * A size that is only remembered is lost the moment the file is looked up
+   * again, since the next lookup reads the directory.
+   *
+   * @param {number} size - The new size in bytes.
+   */
+  async setSize(size) {
+    this.info.size = size;
+
+    if (this.parent && this.info.entryOffset !== undefined) {
+      await this.parent.write32(this.info.entryOffset + 28, size);
+    }
+  }
+
+  /**
+   * Writes bytes at an offset, growing the file if it needs to.
+   *
+   * @param {number} offset - Where in the file to start.
+   * @param {Uint8Array|DataView|ArrayBuffer} data - What to write.
+   * @returns {number} How many bytes were written.
+   */
+  async write(offset, data) {
+    const bytes =
+      data instanceof Uint8Array
+        ? data
+        : new Uint8Array(data.buffer ?? data, data.byteOffset ?? 0, data.byteLength ?? data.length);
+
+    if (bytes.length === 0) {
+      return 0;
+    }
+
+    await this.reserve(offset + bytes.length);
+
+    let position = 0;
+
+    while (position < bytes.length) {
+      const address = await this.translate(offset + position);
+
+      if (!address) {
+        break;
+      }
+
+      // A write stops at the end of the cluster it started in.
+      const room = this.fileSystem.clusterSize - address[1];
+      const count = Math.min(room, bytes.length - position);
+
+      await this.disk.write(address[0], address[1], bytes.subarray(position, position + count));
+
+      position += count;
+    }
+
+    if (offset + position > this.size) {
+      await this.setSize(offset + position);
+    }
+
+    return position;
   }
 
   async read8(offset) {
@@ -877,6 +1001,8 @@ export class FAT16Directory extends FAT16File {
       const directory = (flags & 0x10) != 0;
 
       ret.push({
+        // Where this entry sits in its directory, for writing back to it.
+        entryOffset: offset,
         name: filename,
         inode: inode,
         readOnly: (flags & 0x1) != 0,
@@ -900,11 +1026,16 @@ export class FAT16Directory extends FAT16File {
     }
 
     ret = ret.map((info) => {
-      if (info.directory) {
-        return new FAT16Directory(info, info.inode, this.path + '\\' + info.name, this.fileSystem);
-      }
+      const item = info.directory
+        ? new FAT16Directory(info, info.inode, this.path + '\\' + info.name, this.fileSystem)
+        : new FAT16File(info, info.inode, this.path + '\\' + info.name, this.fileSystem);
 
-      return new FAT16File(info, info.inode, this.path + '\\' + info.name, this.fileSystem);
+      /* The directory an entry came from, so that a file which grows can write
+       * its new size back to the entry that describes it.
+       */
+      item.parent = this;
+
+      return item;
     });
 
     return ret;

@@ -28,7 +28,7 @@ import { TRUE, FALSE } from '../consts.js';
  *                       successful. Otherwise it is zero.
  */
 export function LocalInit(uSegment, uStartAddr, uEndAddr) {
-  console.log('LocalInit:', uSegment, uStartAddr, uEndAddr);
+  this.debug('LocalInit:', uSegment, uStartAddr, uEndAddr);
 
   // Apparently, if the uSegment is 0, they *mean* the current DS.
   uSegment = uSegment || this.machine.cpu.core.ds >> 3;

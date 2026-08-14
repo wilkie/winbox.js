@@ -32,7 +32,7 @@ export function EndDialog(hwndDlg, nResult) {
   // Resolve the dialog
   const dialog = this.handles.resolve(hwndDlg);
 
-  console.log('ok hello', hwndDlg, dialog);
+  this.debug('ok hello', hwndDlg, dialog);
 
   // Bail if the dialog is invalid
   if (!dialog) {

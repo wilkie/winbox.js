@@ -58,5 +58,5 @@
  *                         Otherwise, it is `NULL`.
  */
 export function LocalReAlloc(hloc, fuNewSize, fuFlags) {
-  console.log('LocalReAlloc:', hloc, fuNewSize, fuFlags);
+  this.debug('LocalReAlloc:', hloc, fuNewSize, fuFlags);
 }

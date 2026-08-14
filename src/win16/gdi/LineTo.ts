@@ -27,7 +27,7 @@ import { TRUE, FALSE } from '../consts.js';
  */
 export function LineTo(hdc, x, y) {
   const surface = this.handles.resolve(hdc);
-  console.log('LineTo', x, y);
+  this.debug('LineTo', x, y);
 
   // Determine if the HDC is valid; bail if not
   if (!surface) {

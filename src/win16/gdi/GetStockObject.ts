@@ -112,7 +112,7 @@ export function GetStockObject(fnObject) {
       }
       break;
     case Gdi.DEFAULT_PALETTE:
-      console.log('GetStockObject: IMPLEMENTATION REQUIRED');
+      this.debug('GetStockObject: IMPLEMENTATION REQUIRED');
       break;
     default:
       break;

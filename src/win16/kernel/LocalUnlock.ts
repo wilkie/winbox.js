@@ -22,5 +22,5 @@
  *                       Otherwise it is non-zero.
  */
 export function LocalUnlock(hloc) {
-  console.log('LocalUnlock:', hloc);
+  this.debug('LocalUnlock:', hloc);
 }

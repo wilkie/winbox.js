@@ -26,7 +26,7 @@ export function lstrlen(lpszString) {
   const srcSegment = (lpszString >> 16) & 0xffff;
   let srcOffset = lpszString & 0xffff;
 
-  console.log(
+  this.debug(
     'lstrlen',
     this.machine.memory.readCString(cpu.translateAddress(srcSegment, srcOffset))
   );

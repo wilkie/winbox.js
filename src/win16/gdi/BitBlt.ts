@@ -115,7 +115,7 @@ let i = 0;
 export function BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, nYSrc, dwRop) {
   // Resolve the source DC handle
   const source = this.handles.resolve(hdcSrc);
-  //console.log("bitblt", this._machine.cpu.core.cs.toString(16), this._machine.cpu.core.ip.toString(16));
+  //this.debug("bitblt", this._machine.cpu.core.cs.toString(16), this._machine.cpu.core.ip.toString(16));
 
   i++;
   if (!(i % 10)) {
@@ -129,13 +129,13 @@ export function BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, 
 
   // Resolve the bitmap attached to the device
   const sourceBitmap = source.bitmap;
-  //console.log(source, sourceBitmap);
+  //this.debug(source, sourceBitmap);
   const sourceView = sourceBitmap.view;
 
   // Resolve the destination DC handle
   const destination = this.handles.resolve(hdcDest);
 
-  //console.log("BitBlt", source, destination.width, destination.bitmap.width);
+  //this.debug("BitBlt", source, destination.width, destination.bitmap.width);
 
   // Bail if we cannot find the destination DC
   if (!destination) {
@@ -158,11 +158,11 @@ export function BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, 
   let invert = false;
   switch (dwRop) {
     case Gdi.NOTSRCCOPY:
-      //console.log("NOT");
+      //this.debug("NOT");
       invert = true;
     // fall through
     case Gdi.SRCCOPY:
-      //console.log("SRCCOPY");
+      //this.debug("SRCCOPY");
       destinationBitmap.blit(
         Bitmap.OPERATIONS.COPY,
         nXDest,
@@ -211,43 +211,43 @@ export function BitBlt(hdcDest, nXDest, nYDest, nWidth, nHeight, hdcSrc, nXSrc, 
       break;
 
     case Gdi.SRCINVERT:
-      console.log('SRCINVERT');
+      this.debug('SRCINVERT');
       break;
 
     case Gdi.NOTSRCERASE:
-      console.log('NOT');
+      this.debug('NOT');
       invert = true;
     // fall through
     case Gdi.SRCERASE:
-      console.log('SRCERASE');
+      this.debug('SRCERASE');
       break;
 
     case Gdi.MERGECOPY:
-      console.log('MERGECOPY');
+      this.debug('MERGECOPY');
       break;
 
     case Gdi.MERGEPAINT:
-      console.log('MERGEPAINT');
+      this.debug('MERGEPAINT');
       break;
 
     case Gdi.PATCOPY:
-      console.log('PATCOPY');
+      this.debug('PATCOPY');
       break;
 
     case Gdi.PATPAINT:
-      console.log('PATPAINT');
+      this.debug('PATPAINT');
       break;
 
     case Gdi.DSTINVERT:
-      console.log('DSTINVERT');
+      this.debug('DSTINVERT');
       break;
 
     case Gdi.BLACKNESS:
-      console.log('BLACKNESS');
+      this.debug('BLACKNESS');
       break;
 
     case Gdi.WHITENESS:
-      console.log('WHITENESS');
+      this.debug('WHITENESS');
       break;
 
     default:
