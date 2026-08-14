@@ -140,9 +140,9 @@ static void probeStyles(LPCSTR face)
 }
 
 /*
- * Records a vector face across a wide spread of sizes.
+ * Records a scalable face across a wide spread of sizes.
  *
- * A vector font is not a set of strikes. There is one design -- Roman is
+ * Neither a plotter font nor a TrueType one is a set of strikes. There is one design -- Roman is
  * stored at thirty-two pixels -- and Windows renders it at whatever size was
  * asked for, so the whole business of picking the nearest installed size and
  * stretching it by whole numbers does not apply. What replaces it is the
@@ -155,7 +155,7 @@ static void probeStyles(LPCSTR face)
  * vertical scales are not the same number, and one measurement cannot say what
  * either of them is. Hence the spread.
  */
-static void probeVector(LPCSTR face, BYTE charset)
+static void probeScalable(LPCSTR face, BYTE charset)
 {
     /* Enough sizes to see where the thresholds are rather than that there are
      * some. The cluster from 24 to 34 straddles the point where emboldening
@@ -374,9 +374,21 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      * design apiece, rendered at whatever size is asked for.
      */
     probeNote("the vector faces, which have one design and no strikes");
-    probeVector("Roman", OEM_CHARSET);
-    probeVector("Modern", OEM_CHARSET);
-    probeVector("Script", OEM_CHARSET);
+    probeScalable("Roman", OEM_CHARSET);
+    probeScalable("Modern", OEM_CHARSET);
+    probeScalable("Script", OEM_CHARSET);
+
+    /* The TrueType faces, across the same spread. These are outlines rather
+     * than strokes and are scaled by a different route, but the question is
+     * the same one: given a design at one size and a request at another, what
+     * do the metrics become? A single size cannot answer it -- asked for 37
+     * pixels of Arial, Windows answers 36, so it is not even honouring the
+     * request exactly.
+     */
+    probeNote("the TrueType faces, across the same spread");
+    probeScalable("Arial", ANSI_CHARSET);
+    probeScalable("Times New Roman", ANSI_CHARSET);
+    probeScalable("Courier New", ANSI_CHARSET);
 
     probeNote("both at once");
     probeFont(16, 0, FW_BOLD, 1, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "MS Sans Serif");

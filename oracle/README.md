@@ -772,11 +772,53 @@ than an error -- just wrong ones. The check that settles it is the font's own
 header, which states the average and maximum character widths: only an offset
 of 119 makes the table agree with them, and it does so for all three faces.
 
+### The TrueType metrics are downstream of the rasteriser
+
+The obvious next step was to read the outline fonts for their metrics without
+rasterising them: parse `head`, `hhea`, `OS/2` and `hmtx`, scale what they say
+to the size asked for, and leave the outlines alone. Every layout decision a
+program makes uses the metrics, the fixture is entirely metrics, and a
+rasteriser is a much larger piece of work. Three faces were swept across
+sixteen sizes to find the scaling rule.
+
+There is no scaling rule. For twenty-four of the forty-nine sizes recorded,
+**no single scale factor can produce both the reported ascent and the reported
+descent by rounding** -- the intervals do not overlap. Arial at an eight pixel
+cell reports an ascent of 7 and a descent of 1, which needs a scale of at least
+0.00350 for the ascent and less than 0.00346 for the descent. The two numbers
+are not a scaling of the font's own ascender and descender; they are arrived at
+separately.
+
+That is the signature of grid-fitting. Windows 3.1 runs the hinting bytecode
+before it scan-converts, which moves the outline onto the pixel grid, and the
+metrics it reports are what came out of that rather than what went into it. The
+internal leading says the same thing more loudly: Courier New's runs 0, 3, 3,
+3, 2, 3, 3, 3, 2, 2, 2, 4, 7, 6, 8, 9 across ascending sizes, which is not a
+multiple of anything.
+
+So the two stages are not separable, and the reason is worth stating plainly
+because it is the opposite of what the file formats suggest: reading a
+TrueType font's tables is easy and does not get you its metrics. Getting them
+means running the interpreter, which is the same work as drawing the glyphs.
+
+`src/raster/truetype-font.ts` reads the descriptive tables -- name, coordinate
+space, advances, character map -- and is verified against the installed fonts.
+It is the groundwork for that interpreter and is deliberately not wired into
+the font mapper: a face we can select and cannot draw is worse than one we
+never offer, which is what the plotter fonts demonstrated before they worked.
+
 **What we do not do.** The installation carries four TrueType families and we
-cannot read an outline at all. That accounts for every remaining disagreement,
+cannot draw an outline. That accounts for every remaining disagreement,
 including all the unknown-name cases, since Windows answers those with Times
-New Roman. Of the 1445 records, 1391 agree, and nothing a bitmap or a stroke
-font can answer disagrees.
+New Roman.
+
+Of the 2225 records, 1401 agree. That number went *down* when the TrueType
+sweep was added, and deliberately: the sweep is 720 records of behaviour we
+cannot reproduce and have no immediate plan to, recorded because it is exactly
+what a rasteriser would have to be checked against. A fixture is a measurement
+of the real thing rather than a score, and leaving out the parts we do badly at
+would make it a worse measurement. Nothing a bitmap or a stroke font can answer
+disagrees; every one of the 824 that do is an outline.
 
 ## On the media
 
