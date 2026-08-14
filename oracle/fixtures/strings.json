@@ -265,6 +265,54 @@
       "section": "AnsiUpper and AnsiLower"
     },
     {
+      "function": "AnsiUpper",
+      "args": "\"àéü\"",
+      "result": "\"ÀÉÜ\"",
+      "section": "AnsiUpper and AnsiLower"
+    },
+    {
+      "function": "AnsiLower",
+      "args": "\"àéü\"",
+      "result": "\"àéü\"",
+      "section": "AnsiUpper and AnsiLower"
+    },
+    {
+      "function": "AnsiUpper",
+      "args": "\"ÀÉÜ\"",
+      "result": "\"ÀÉÜ\"",
+      "section": "AnsiUpper and AnsiLower"
+    },
+    {
+      "function": "AnsiLower",
+      "args": "\"ÀÉÜ\"",
+      "result": "\"àéü\"",
+      "section": "AnsiUpper and AnsiLower"
+    },
+    {
+      "function": "AnsiUpper",
+      "args": "\"ß\"",
+      "result": "\"ß\"",
+      "section": "AnsiUpper and AnsiLower"
+    },
+    {
+      "function": "AnsiLower",
+      "args": "\"ß\"",
+      "result": "\"ß\"",
+      "section": "AnsiUpper and AnsiLower"
+    },
+    {
+      "function": "AnsiUpper",
+      "args": "\"÷×\"",
+      "result": "\"÷×\"",
+      "section": "AnsiUpper and AnsiLower"
+    },
+    {
+      "function": "AnsiLower",
+      "args": "\"÷×\"",
+      "result": "\"÷×\"",
+      "section": "AnsiUpper and AnsiLower"
+    },
+    {
       "function": "AnsiNext",
       "args": "\"\",0",
       "result": "0",

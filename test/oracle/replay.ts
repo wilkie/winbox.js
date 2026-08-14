@@ -9,6 +9,11 @@ import { lstrlen } from '../../src/win16/kernel/lstrlen.js';
 import { lstrcpy } from '../../src/win16/kernel/lstrcpy.js';
 import { lstrcat } from '../../src/win16/kernel/lstrcat.js';
 import { lstrcmp } from '../../src/win16/user/lstrcmp.js';
+import { lstrcmpi } from '../../src/win16/user/lstrcmpi.js';
+import { AnsiUpper } from '../../src/win16/user/AnsiUpper.js';
+import { AnsiLower } from '../../src/win16/user/AnsiLower.js';
+import { AnsiNext } from '../../src/win16/user/AnsiNext.js';
+import { AnsiPrev } from '../../src/win16/user/AnsiPrev.js';
 
 /**
  * Replaying the oracle's recordings against our implementation.
@@ -190,7 +195,41 @@ const ADAPTERS: Record<string, (context: Context, args: (string | number)[]) => 
   },
 
   lstrcmpi(context, [left, right]) {
-    throw new Unimplemented('lstrcmpi is not exported by any module');
+    return sign(
+      lstrcmpi.call(context, context.lpcstr(left as string), context.lpcstr(right as string))
+    );
+  },
+
+  AnsiUpper(context, [text]) {
+    const at = context.place(text as string);
+    AnsiUpper.call(context, at.far);
+
+    // The probe recorded the buffer, which these convert in place.
+    return quoted(context.fetch(at.far));
+  },
+
+  AnsiLower(context, [text]) {
+    const at = context.place(text as string);
+    AnsiLower.call(context, at.far);
+
+    return quoted(context.fetch(at.far));
+  },
+
+  AnsiNext(context, [text]) {
+    /* The probe recorded how far the pointer moved rather than where it landed,
+     * since an address means nothing outside the run that produced it.
+     */
+    const at = context.place(text as string);
+    const next = AnsiNext.call(context, at.far);
+
+    return String((next & 0xffff) - at.offset);
+  },
+
+  AnsiPrev(context, [text, from]) {
+    const at = context.place(text as string);
+    const previous = AnsiPrev.call(context, at.far, at.far + (from as number));
+
+    return String((previous & 0xffff) - at.offset);
   },
 
   lstrcpy(context, [source]) {
@@ -221,8 +260,14 @@ const ADAPTERS: Record<string, (context: Context, args: (string | number)[]) => 
 /** Thrown by an adapter for a function we have not implemented at all. */
 export class Unimplemented extends Error {}
 
-/** Functions declared in a module but wired to a stub. */
-const STUBBED = new Set(['AnsiUpper', 'AnsiLower', 'AnsiNext', 'AnsiPrev']);
+/**
+ * Functions a module declares but wires to a stub.
+ *
+ * Kept as an explicit list so that a stub reports as unimplemented rather than
+ * as a disagreement -- the two want different work, and conflating them makes
+ * the report harder to act on.
+ */
+const STUBBED = new Set<string>([]);
 
 /** Runs one recorded call. */
 export function replayRecord(record: Fixture['records'][number]): Replayed {

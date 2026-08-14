@@ -156,22 +156,54 @@ to uppercase instead gets that second case backwards, since `'_'` at 0x5F sits
 above `'A'` at 0x41 and below `'a'`. That is now what `lstrcmp` does, and all
 eleven agree.
 
+### Ordinals
+
+`dump-exports.mjs` checks a different thing, and found the worst bug so far. An
+ordinal is not ours to choose: a program imports USER.471, not `lstrcmpi`, and
+the loader is expected to know which is which. A table that puts something else
+at 471 sends every call to the wrong function, and nothing about the failure
+points at the numbering.
+
+The modules are a poor authority here -- `USER.EXE` names only a few dozen of
+its exports and leaves the rest to be imported by number. The SDK's import
+library is the complete record, since turning a name into a module and an
+ordinal is the whole reason it exists, and it carries one IMPDEF record per
+export to do it.
+
+Checking 929 ordinals against it turned up **37 KERNEL exports sitting one slot
+late**, every one of them downstream of a single surplus placeholder in a run
+of unnamed entries. Also two names mistyped badly enough to matter:
+`DefDriveProc` for `DefDriverProc`, and `'OpenJoba, 10'`, where a misplaced
+quote had swallowed the argument byte count into the string -- so that thunk
+would have unwound the wrong number of bytes off the stack on return. All 929
+agree now, and `test/oracle/ordinals_test.ts` keeps them that way.
+
 Where the string probe stands:
 
-| Function    | Records |                      |
-| ----------- | ------- | -------------------- |
-| `lstrlen`   | 5/5     | agrees               |
-| `lstrcmp`   | 11/11   | agrees               |
-| `lstrcpy`   | 3/3     | agrees               |
-| `lstrcat`   | 3/3     | agrees               |
-| `lstrcmpi`  | 0/11    | no module exports it |
-| `AnsiUpper` | 0/5     | stub                 |
-| `AnsiLower` | 0/5     | stub                 |
-| `AnsiNext`  | 0/3     | stub                 |
-| `AnsiPrev`  | 0/3     | stub                 |
+**57 of 57 records, 100%** -- `lstrlen`, `lstrcmp`, `lstrcmpi`, `lstrcpy`,
+`lstrcat`, `AnsiUpper`, `AnsiLower`, `AnsiNext` and `AnsiPrev`. It started at
+22 of 49: four of those were stubs, one was declared but never implemented, and
+the recordings said exactly what all five had to do.
 
-22 of 49 records, 44.9%. Everything implemented agrees completely; the rest is
-now a measured list rather than a guess about where to look next.
+The accented range is where writing them from the manual would have gone wrong,
+so the probe was extended to cover it before any of it was implemented. What
+Windows actually does:
+
+```
+AnsiUpper  "aeu" with accents  ->  the uppercase accented letters
+AnsiUpper  0xDF                ->  0xDF, no single uppercase form
+AnsiUpper  0xF7 0xD7           ->  unchanged: arithmetic, not letters
+```
+
+Those last two are the trap. The division sign at 0xF7 and the multiplication
+sign at 0xD7 sit in the middle of the accented letters, so a range check that
+subtracts 0x20 across the block turns one into the other; and 0xDF sits just
+below the lowercase run, where an off-by-one in the bound would convert it too.
+Measuring first meant never writing the wrong version.
+
+`AnsiNext` has a quieter surprise: at the null terminator it returns the same
+pointer rather than moving past it, so walking a string with it stops at the end
+instead of running off.
 
 Recording the first probe also found a flaw in the record format itself. The
 fields are tab-separated, and one of the strings under test contains a tab, so

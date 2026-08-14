@@ -38,6 +38,10 @@ import {
   Struct,
 } from './types.js';
 
+import { AnsiLower } from './user/AnsiLower.js';
+import { AnsiNext } from './user/AnsiNext.js';
+import { AnsiPrev } from './user/AnsiPrev.js';
+import { AnsiUpper } from './user/AnsiUpper.js';
 import { BeginPaint } from './user/BeginPaint.js';
 import { CopyRect } from './user/CopyRect.js';
 import { CreateWindow } from './user/CreateWindow.js';
@@ -64,6 +68,7 @@ import { LoadBitmap } from './user/LoadBitmap.js';
 import { LoadMenu } from './user/LoadMenu.js';
 import { LoadString } from './user/LoadString.js';
 import { lstrcmp } from './user/lstrcmp.js';
+import { lstrcmpi } from './user/lstrcmpi.js';
 import { MessageBox } from './user/MessageBox.js';
 import { MoveWindow } from './user/MoveWindow.js';
 import { PeekMessage } from './user/PeekMessage.js';
@@ -727,7 +732,7 @@ export class User extends Module {
       [User.stub, 'OpenDriver', 12],
       [User.stub, 'CloseDriver', 10],
       [User.stub, 'GetDriverModuleHandle', 2],
-      [User.stub, 'DefDriveProc', 16],
+      [User.stub, 'DefDriverProc', 16],
       [User.stub, 'GetDriverInfo', 6],
       [User.stub, 'GetNextDriver', 6],
       [User.stub, 'MapWindowPoints', 10],
@@ -921,8 +926,8 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       // 430 //
       [lstrcmp, 'lstrcmp', 8, [LPCSTR, LPCSTR], INT],
-      [User.stub, 'AnsiUpper', 4],
-      [User.stub, 'AnsiLower', 4],
+      [AnsiUpper, 'AnsiUpper', 4, [FARPTR], FARPTR],
+      [AnsiLower, 'AnsiLower', 4, [FARPTR], FARPTR],
       [User.stub, 'IsCharAlpha', 2],
       [User.stub, 'IsCharAlphanumeric', 2],
       [User.stub, 'IsCharUpper', 2],
@@ -965,9 +970,9 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       // 470 //
       [User.stub, 'StringFunc', 8],
-      [User.stub, 'LSTRCMPI', 8],
-      [User.stub, 'AnsiNext', 4],
-      [User.stub, 'AnsiPrev', 8],
+      [lstrcmpi, 'lstrcmpi', 8, [LPCSTR, LPCSTR], INT],
+      [AnsiNext, 'AnsiNext', 4, [FARPTR], FARPTR],
+      [AnsiPrev, 'AnsiPrev', 8, [FARPTR, FARPTR], FARPTR],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],

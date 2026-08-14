@@ -51,6 +51,7 @@
     "oracle:drive": "node scripts/oracle/build-drive.mjs",
     "oracle:probes": "node scripts/oracle/build-probes.mjs",
     "oracle:record": "node scripts/oracle/record.mjs",
+    "oracle:ordinals": "node scripts/oracle/dump-exports.mjs",
     "ci": "turbo run lint lint:css typecheck test build",
     "build:docs": "typedoc"
   },

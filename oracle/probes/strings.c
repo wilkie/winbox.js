@@ -142,6 +142,17 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeCase("MiXeD 123");
     probeCase("with-punctuation!");
 
+    /* The accented range, where guessing is least safe. Whether these convert
+     * at all depends on the language driver, and the two characters at the end
+     * are the interesting ones: 0xDF is a lowercase letter with no single
+     * uppercase form, and 0xF7 is a division sign sitting in the middle of the
+     * letters where a naive "subtract 0x20" would convert it.
+     */
+    probeCase("\xE0\xE9\xFC");
+    probeCase("\xC0\xC9\xDC");
+    probeCase("\xDF");
+    probeCase("\xF7\xD7");
+
     probeNote("AnsiNext and AnsiPrev");
     probeWalk("");
     probeWalk("a");

@@ -193,7 +193,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'PaintRgn', 4],
       [Gdi.stub, 'SelectClipRgn', 4],
       [SelectObject, 'SelectObject', 4, [HDC, HGDIOBJ], HGDIOBJ],
-      [Gdi.stub, 'unknown'],
+      [Gdi.stub, '__GP'],
       [Gdi.stub, 'CombineRgn', 8],
       [CreateBitmap, 'CreateBitmap', 12, [INT, INT, UINT, UINT, FARPTR], HBITMAP],
       [Gdi.stub, 'CreateBitmapIndirect', 4],
@@ -207,7 +207,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'CreateFont', 30],
       [Gdi.stub, 'CreateFontIndirect', 4],
       [Gdi.stub, 'CreateHatchBrush', 6],
-      [Gdi.stub, 'unknown'],
+      [Gdi.stub, 'WEP'],
       // 60 //
       [Gdi.stub, 'CreatePatternBrush', 2],
       [CreatePen, 'CreatePen', 8, [INT, INT, COLORREF], HPEN],
@@ -407,7 +407,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       // 240 //
-      [Gdi.stub, 'OpenJoba, 10'],
+      [Gdi.stub, 'OpenJob', 10],
       [Gdi.stub, 'WriteSpool', 8],
       [Gdi.stub, 'WriteDialog', 8],
       [Gdi.stub, 'CloseJob', 2],
