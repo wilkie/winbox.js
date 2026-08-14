@@ -209,12 +209,13 @@ export class Hinter {
    * @param {Object} outline - Contours in font units.
    * @param {number} advance - The glyph's advance, in font units.
    * @param {number} leftSideBearing - Its left side bearing, in font units.
+   * @param {number} xMin - The left edge of its bounding box, in font units.
    * @param {DataView} program - Its instructions.
    * @param {number} at - Where they start.
    * @param {number} length - How many bytes of them there are.
    * @returns {Array} The contours, moved onto the grid.
    */
-  hint(outline, advance, leftSideBearing, program, at, length) {
+  hint(outline, advance, leftSideBearing, xMin, program, at, length) {
     this.prepare();
 
     const zone = new Zone(0);
@@ -231,13 +232,18 @@ export class Hinter {
       zone.ends.push(zone.x.length - 1);
     }
 
-    /* The phantom points: the origin, the advance, and two more for the
-     * vertical direction. A program may move them, and moving the second is
-     * how a font adjusts its own advance width at a particular size.
+    /* The phantom points: the glyph's origin, its advance, and two more for
+     * the vertical direction. The origin is not the left side bearing -- the
+     * outline's own coordinates already start there -- it is where the pen was
+     * before the bearing was applied, which is `xMin - lsb` and so nearly
+     * always zero. Putting the bearing here instead shifts everything the
+     * program measures from it, and the glyph comes out a pixel narrow.
      */
+    const origin = Math.round((xMin - leftSideBearing) * this.scale * ONE);
+
     const phantom = [
-      { x: Math.round(leftSideBearing * this.scale * ONE), y: 0 },
-      { x: Math.round((leftSideBearing + advance) * this.scale * ONE), y: 0 },
+      { x: origin, y: 0 },
+      { x: origin + Math.round(advance * this.scale * ONE), y: 0 },
       { x: 0, y: 0 },
       { x: 0, y: 0 },
     ];
@@ -256,7 +262,7 @@ export class Hinter {
     this.zones[1] = zone;
     this.zones[0] = new Zone(this.font.maxTwilight ?? 16);
 
-    this.state = { ...this.defaults };
+    this.state = this.glyphState();
     this.stack = [];
 
     this.run(program, at, at + length);
@@ -283,6 +289,45 @@ export class Hinter {
     }
 
     return hinted;
+  }
+
+  /**
+   * The state a glyph program starts from.
+   *
+   * Not simply what `prep` left behind. Some of the graphics state is about
+   * the size and outlives the program that set it -- the round state, the
+   * minimum distance, the control value cut-in -- and some of it is about
+   * where the program had got to, and means nothing to the next one.
+   *
+   * The zone pointers are the ones that matter. `prep` builds its scratch
+   * points in the twilight zone and quite reasonably leaves the pointers
+   * there; a glyph program inheriting that moves the glyph's points in name
+   * only, writing every one of them into scratch space instead. Everything
+   * executes, nothing is out of place, and the outline comes out untouched --
+   * which is exactly what it did.
+   */
+  glyphState() {
+    const fresh = this.freshState();
+
+    // What the size program settles and a glyph program inherits.
+    for (const key of [
+      'rounding',
+      'roundPeriod',
+      'roundPhase',
+      'roundThreshold',
+      'minimumDistance',
+      'controlCutIn',
+      'singleWidth',
+      'singleWidthCutIn',
+      'autoFlip',
+      'deltaBase',
+      'deltaShift',
+      'instructionControl',
+    ]) {
+      fresh[key] = this.defaults[key];
+    }
+
+    return fresh;
   }
 
   /* ---- the machine ---- */

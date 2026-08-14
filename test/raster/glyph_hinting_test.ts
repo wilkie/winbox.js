@@ -102,6 +102,7 @@ whenBuilt('the hinting interpreter', () => {
       font.outlineOf(glyph),
       font.advanceOf(glyph),
       font.bearingOf(glyph),
+      font._view.getInt16(range.start + 2, false),
       font._view,
       instructions + 2,
       length

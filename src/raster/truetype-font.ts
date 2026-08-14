@@ -514,6 +514,7 @@ export class TrueTypeFont {
         contours,
         this.advanceOf(glyph),
         this.bearingOf(glyph),
+        this._view.getInt16(range.start + 2, false),
         this._view,
         instructions + 2,
         length

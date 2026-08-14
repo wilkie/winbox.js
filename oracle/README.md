@@ -881,22 +881,48 @@ census said the three fonts use a hundred and thirty distinct instructions, and
 each missing one stops everything until it is written, so the work went
 `GETINFO`, then `SROUND`, then the rest.
 
-What it does not do is move the outline. The points come back within a
-hundredth of a pixel of where scaling alone put them -- 3.56 against 3.55 --
-where Windows moves them onto whole pixels. The rendered result is unchanged:
-still 43.3% of the glyph fixture, still the same 16 pixels of 32 differing on
-Arial's `A`. Instructions execute and points move by whole pixels in places, so
-this is not a machine that does nothing; it is a semantic error in the graphics
-state that running without error does not expose, and the next step is
-narrowing it against the fixture one instruction at a time.
+It first did all that and moved the outline by nothing at all -- points came
+back within a hundredth of a pixel of where plain scaling put them. Every
+instruction ran, thirty-four point moves were issued, eighteen of them by whole
+pixels, and the glyph was untouched.
 
-That is worth stating plainly rather than filing under "in progress". A running
-interpreter that produces the wrong answer looks far more finished than it is,
-and the only thing that says otherwise is the pixel comparison.
+**The zone pointers.** `prep` builds its scratch points in the twilight zone
+and leaves `zp0`, `zp1` and `zp2` pointing there, quite reasonably, because it
+is finished. A glyph program that inherits them addresses the glyph's points by
+number and writes every one of them into scratch space instead. Nothing is out
+of place, nothing errors, and the outline comes out exactly as it went in.
 
-Which is the honest statement of where this stands: the rasteriser is correct
-and unhinted, the interpreter runs and is wrong, and the fixture holds what
-both would have to agree with.
+Some of the graphics state belongs to the size and outlives the program that
+set it -- the round state, the minimum distance, the control value cut-in --
+and some of it is only about where a program had got to. The zone pointers, the
+reference points, the loop counter and the vectors are the second kind and reset
+before each glyph.
+
+**The phantom points.** The origin is not the left side bearing. The outline's
+own coordinates already start there; the origin is where the pen was before the
+bearing was applied, `xMin - lsb`, which is nearly always zero. Putting the
+bearing there shifts everything the program measures from it and the glyph
+comes out a pixel narrow.
+
+With both fixed the fitting takes hold: the glyph fixture goes from 43.3% to
+48.9%, and Arial's `A` gets its apex and crossbar on the rows Windows puts them
+on. It is not right yet -- the horizontal fitting is under-applied, so the
+letter is a pixel narrow and the average glyph differs by more pixels than the
+unhinted one did even though more glyphs are now exactly right. Five of Arial's
+twenty-four are exact where three were before, two of Times New Roman's twelve
+where none were, one of Courier New's six where none were.
+
+That last sentence is the useful one. Both numbers moved, in opposite
+directions, and only the exact count means anything: a glyph is either the
+pixels Windows drew or it is not, and "closer on average" is what you measure
+when you have not got there.
+
+A running interpreter that produces the wrong answer looks far more finished
+than it is, and the only thing that said otherwise was the pixel comparison.
+
+Which is the honest statement of where this stands: the interpreter runs, fits
+the vertical direction, and under-fits the horizontal one, and the fixture
+holds what it would have to agree with.
 
 **What we do not do.** We do not hint. Of the font fixture's 2225 records, 1801 agree: the rest are the synthesised
 styles on outline faces, the maximum character width, and the sizes the fitted
