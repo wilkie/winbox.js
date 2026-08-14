@@ -1031,10 +1031,35 @@ Tracing it the rest of the way, one instruction at a time:
   9.5 and round to 9.
 
 So the residual is **one thirty-second of a pixel**, on the wrong side of a
-rounding boundary. It is not a missing instruction or a misread table; it is an
-accumulated fraction somewhere in `prep`'s arithmetic, and the next thing to
-compare is how the propagated delta is computed rather than anything about the
-glyph. That is a considerably smaller haystack than it was.
+rounding boundary. Not a missing instruction and not a misread table, but an
+accumulated fraction somewhere in `prep`'s arithmetic.
+
+The obvious suspect was the scaling: the interpreter kept its coordinates as
+whole sixty-fourths of a pixel but arrived at them through a floating point
+multiply, where the real thing works in fixed point throughout. That suspicion
+was wrong, and provably so. These fonts have 2048 units to the em, which is a
+power of two, so the factor `ppem * 64 / unitsPerEm` is exact in binary at every
+size -- and not one of the two thousand three hundred and thirty-seven control
+values across the three fonts differs between the two paths. Worth checking
+before rewriting anything on the strength of it.
+
+What *is* different is the sign. The format takes the sign off a value, does
+the arithmetic on the magnitude, and puts it back, so a half rounds away from
+zero in both directions. `Math.round` rounds a half upwards, which agrees for
+positive values and disagrees for every negative one: -2.5 is -3 there and -2
+here. Every distance measured backwards from a reference point goes through
+that, which is not as rare as the phrasing makes it sound.
+
+Converting the multiplications, divisions, projections and point moves to that
+rule took the glyph fixture from 80.0% to 81.1%. One more glyph exactly right,
+which is a modest return for the change and the right sort of return: the
+scaling was already exact, so only the sign handling had anywhere to move.
+
+Seventeen records still differ, and the shape of what is left has changed.
+Eleven of them are out by one or two pixels. Three are substantial and they are
+the same three -- Times New Roman's `W` at both sizes and its `g` at the
+smaller -- still one pixel of cap height, still `cvt[2]` landing a thirty-second
+of a pixel above the halfway mark.
 
 Two spec omissions were closed while looking, neither of which these glyphs
 touch. `MIRP` places a twilight point being measured *to*, the way `MIAP`

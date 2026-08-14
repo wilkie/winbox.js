@@ -40,13 +40,51 @@ const ONE = 64;
 /** Unit vector components are sixteen-thousand-three-hundred-and-eighty-fourths. */
 const UNIT = 16384;
 
-/** Rounds a fixed-point division the way the format's own arithmetic does. */
-function divide(a: number, b: number) {
-  if (b === 0) {
+/**
+ * `a * b / c`, rounded the way the format's own arithmetic rounds.
+ *
+ * The sign is taken off first and put back at the end, so a half rounds *away
+ * from zero* in both directions. `Math.round` rounds a half upwards, which
+ * agrees for positive values and disagrees for every negative one: -2.5 is -3
+ * here and -2 there. Every distance an interpreter measures backwards goes
+ * through this, so the difference is not as rare as the phrasing makes it
+ * sound.
+ *
+ * The scaling of the tables, by contrast, is provably unaffected: these fonts
+ * have 2048 units to the em, which is a power of two, so the factor is exact
+ * at every size and not one of the two thousand odd control values changes.
+ * The precision that matters here is in the arithmetic, not the conversion.
+ */
+function mulDiv(a: number, b: number, c: number) {
+  let sign = 1;
+
+  if (a < 0) {
+    a = -a;
+    sign = -sign;
+  }
+
+  if (b < 0) {
+    b = -b;
+    sign = -sign;
+  }
+
+  if (c < 0) {
+    c = -c;
+    sign = -sign;
+  }
+
+  if (c === 0) {
     return 0;
   }
 
-  return Math.round((a * ONE) / b);
+  const result = Math.floor((a * b + Math.floor(c / 2)) / c);
+
+  return sign < 0 ? -result : result;
+}
+
+/** A division in the units the format keeps distances in. */
+function divide(a: number, b: number) {
+  return mulDiv(a, ONE, b);
 }
 
 /** The points of a glyph, in both the state they arrived in and the current one. */
@@ -87,6 +125,7 @@ export class Hinter {
   declare font: any;
   declare ppem: number;
   declare scale: number;
+  declare pixels: number;
 
   declare stack: number[];
   declare storage: number[];
@@ -107,6 +146,11 @@ export class Hinter {
     this.font = font;
     this.ppem = ppem;
     this.scale = ppem / font.unitsPerEm;
+
+    /* The size in the units distances are kept in, so a scaling is one whole
+     * multiply and divide rather than a float in the middle of it.
+     */
+    this.pixels = ppem * ONE;
 
     this.stack = [];
     this.storage = new Array(Math.max(64, font.maxStorage ?? 64)).fill(0);
@@ -135,7 +179,7 @@ export class Hinter {
     for (let at = 0; at + 1 < table.length; at += 2) {
       const units = this.font._view.getInt16(table.offset + at, false);
 
-      values.push(Math.round(units * this.scale * ONE));
+      values.push(mulDiv(units, this.pixels, this.font.unitsPerEm));
     }
 
     return values;
@@ -222,8 +266,8 @@ export class Hinter {
 
     for (const contour of outline) {
       for (const point of contour) {
-        zone.x.push(Math.round(point.x * this.scale * ONE));
-        zone.y.push(Math.round(point.y * this.scale * ONE));
+        zone.x.push(mulDiv(point.x, this.pixels, this.font.unitsPerEm));
+        zone.y.push(mulDiv(point.y, this.pixels, this.font.unitsPerEm));
         zone.onCurve.push(point.on);
         zone.touchedX.push(false);
         zone.touchedY.push(false);
@@ -239,11 +283,11 @@ export class Hinter {
      * always zero. Putting the bearing here instead shifts everything the
      * program measures from it, and the glyph comes out a pixel narrow.
      */
-    const origin = Math.round((xMin - leftSideBearing) * this.scale * ONE);
+    const origin = mulDiv(xMin - leftSideBearing, this.pixels, this.font.unitsPerEm);
 
     const phantom = [
       { x: origin, y: 0 },
-      { x: origin + Math.round(advance * this.scale * ONE), y: 0 },
+      { x: origin + mulDiv(advance, this.pixels, this.font.unitsPerEm), y: 0 },
       { x: 0, y: 0 },
       { x: 0, y: 0 },
     ];
@@ -350,12 +394,12 @@ export class Hinter {
 
   /** How far along the projection vector a point sits. */
   project(x, y) {
-    return Math.round((x * this.state.projection.x + y * this.state.projection.y) / UNIT);
+    return mulDiv(x, this.state.projection.x, UNIT) + mulDiv(y, this.state.projection.y, UNIT);
   }
 
   /** The same, against the vector the original outline is measured with. */
   projectDual(x, y) {
-    return Math.round((x * this.state.dual.x + y * this.state.dual.y) / UNIT);
+    return mulDiv(x, this.state.dual.x, UNIT) + mulDiv(y, this.state.dual.y, UNIT);
   }
 
   /**
@@ -373,19 +417,19 @@ export class Hinter {
      * point simply moves by the distance; where they are at an angle it is
      * less, and the point has to travel further to project as far.
      */
-    const along = (projection.x * freedom.x + projection.y * freedom.y) / UNIT;
+    const along = mulDiv(projection.x, freedom.x, UNIT) + mulDiv(projection.y, freedom.y, UNIT);
 
     if (along === 0) {
       return;
     }
 
     if (freedom.x !== 0) {
-      zone.x[index] += Math.round((distance * freedom.x) / along);
+      zone.x[index] += mulDiv(distance, freedom.x, along);
       zone.touchedX[index] = true;
     }
 
     if (freedom.y !== 0) {
-      zone.y[index] += Math.round((distance * freedom.y) / along);
+      zone.y[index] += mulDiv(distance, freedom.y, along);
       zone.touchedY[index] = true;
     }
   }
@@ -695,7 +739,7 @@ export class Hinter {
         const value = this.pop();
         const index = this.pop();
 
-        this.cvt[index] = Math.round(value * this.scale * ONE);
+        this.cvt[index] = mulDiv(value, this.pixels, this.font.unitsPerEm);
 
         return at;
       }
@@ -733,7 +777,7 @@ export class Hinter {
         const b = this.pop();
         const a = this.pop();
 
-        this.push(Math.round((a * b) / ONE));
+        this.push(mulDiv(a, b, ONE));
 
         return at;
       }
