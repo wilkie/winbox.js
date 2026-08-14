@@ -514,7 +514,7 @@ present to a guest is a real question, since programs make layout and colour
 decisions from the answer, and it is not one to settle by quietly matching a
 fixture. Left unimplemented and recorded.
 
-### The handles probe### The handles probe
+### The handles probe
 
 Three more things came back, all of which bear on compatibility more than the
 sizing does.
@@ -569,6 +569,50 @@ Recording the first probe also found a flaw in the record format itself. The
 fields are tab-separated, and one of the strings under test contains a tab, so
 the record split in the wrong place and `lstrlen` appeared to disagree when it
 did not. Probes now escape tabs, newlines and backslashes on the way out.
+
+### The profile probe
+
+The initialisation file calls are read by almost everything and were, until
+now, a stub returning nothing and a function that opened a file and then
+ignored it. That single gap is what stood between Clock loading and Clock
+running: it asks `WIN.INI` for `[intl] s1159` to find out that noon is written
+"PM", got an empty string, took the branch for a locale with no such marker,
+and unwound into code that had nothing to draw.
+
+The format has more corners than it looks, and five of the answers were not
+what reading the documentation would suggest.
+
+**A quoted value keeps its spaces and loses its quotes.** `quoted="  kept  "`
+reads back as `  kept  `. Both quote characters work. Since the whitespace
+around a value is otherwise trimmed away, quoting is the only way for a value
+to have any, which makes it the mechanism rather than a nicety -- and it is
+also what the *writer* does: a value written with spaces around it comes back
+with them, which only works if `WritePrivateProfileString` adds the quotes.
+
+**`GetProfileInt` is not the string call with a conversion on the end.** It
+reads digits and stops at the first character that is not one, so `40two` is
+40. It reads a leading minus and returns a `UINT`, so `-1` is 65535. And it
+does *not* remove quotes, so `"7"` -- which the string form reads as `7` --
+begins with a character that is not a digit and is therefore zero. Three
+different rules, in one function, none of them `atoi`.
+
+**A truncated answer reports one thing and a truncated list another.** Asked
+for `value` with five bytes of room, the string form returns 4 and writes
+`valu\0`: the count is the buffer less one. Asked to enumerate a section with
+six bytes of room, the list form returns 4 and writes `onl\0\0`: the count is
+the buffer less *two*, because the closing null needs room of its own, and the
+name loses a character rather than its terminator. Guessing one from the other
+gives the wrong answer, which is what this probe was written to catch.
+
+**A comment is a semicolon at the start of a line and nowhere else.** `sList=;`
+is a real entry in a real `WIN.INI` and its value is a semicolon. So is
+`equals=a=b`: the first `=` divides the entry from the value and any later one
+belongs to the value.
+
+**Writing preserves order.** Replacing an entry leaves it where it was, and
+adding one puts it at the end of its own section rather than at the end of the
+file. Enumerating the section after five writes returns exactly the list it
+returned before them, which is the check that says so.
 
 ## On the media
 

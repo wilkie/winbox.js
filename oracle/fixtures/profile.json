@@ -1,0 +1,271 @@
+{
+  "probe": "profile",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "records": [
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Plain\",\"entry\",\"<default>\",128",
+      "result": "5,\"value\"",
+      "section": "reading values, and what surrounds them"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Plain\",\"spaced\",\"<default>\",128",
+      "result": "12,\"padded value\"",
+      "section": "reading values, and what surrounds them"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Plain\",\"quoted\",\"<default>\",128",
+      "result": "8,\"  kept  \"",
+      "section": "reading values, and what surrounds them"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Plain\",\"single\",\"<default>\",128",
+      "result": "8,\"  also  \"",
+      "section": "reading values, and what surrounds them"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Plain\",\"empty\",\"<default>\",128",
+      "result": "0,\"\"",
+      "section": "reading values, and what surrounds them"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Plain\",\"semicolon\",\"<default>\",128",
+      "result": "1,\";\"",
+      "section": "reading values, and what surrounds them"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Plain\",\"equals\",\"<default>\",128",
+      "result": "3,\"a=b\"",
+      "section": "reading values, and what surrounds them"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Plain\",\"mixed\",\"<default>\",128",
+      "result": "9,\"case test\"",
+      "section": "case, on the entry and on the section"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Plain\",\"MIXED\",\"<default>\",128",
+      "result": "9,\"case test\"",
+      "section": "case, on the entry and on the section"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"PLAIN\",\"entry\",\"<default>\",128",
+      "result": "5,\"value\"",
+      "section": "case, on the entry and on the section"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"plain\",\"entry\",\"<default>\",128",
+      "result": "5,\"value\"",
+      "section": "case, on the entry and on the section"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Plain\",\"absent\",\"<default>\",128",
+      "result": "9,\"<default>\"",
+      "section": "what is not there"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Absent\",\"entry\",\"<default>\",128",
+      "result": "9,\"<default>\"",
+      "section": "what is not there"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Plain\",\"absent\",\"\",128",
+      "result": "0,\"\"",
+      "section": "what is not there"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Plain\",\"entry\",\"<default>\",6",
+      "result": "5,\"value\"",
+      "section": "buffers too small to hold the answer"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Plain\",\"entry\",\"<default>\",5",
+      "result": "4,\"valu\"",
+      "section": "buffers too small to hold the answer"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Plain\",\"entry\",\"<default>\",2",
+      "result": "1,\"v\"",
+      "section": "buffers too small to hold the answer"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Plain\",\"entry\",\"<default>\",1",
+      "result": "0,\"\"",
+      "section": "buffers too small to hold the answer"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Plain\",\"absent\",\"<default>\",4",
+      "result": "3,\"<de\"",
+      "section": "buffers too small to hold the answer"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Second\",NULL,128",
+      "result": "5,\"only|\"",
+      "section": "enumerating a section"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Plain\",NULL,128",
+      "result": "100,\"entry|spaced|quoted|single|empty|MiXeD|number|trailing|negative|words|quotednumber|semicolon|equals|\"",
+      "section": "enumerating a section"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Absent\",NULL,128",
+      "result": "0,\"\"",
+      "section": "enumerating a section"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Second\",NULL,6",
+      "result": "4,\"onl|\"",
+      "section": "enumerating a section"
+    },
+    {
+      "function": "GetPrivateProfileInt",
+      "args": "\"Plain\",\"number\",99",
+      "result": "42",
+      "section": "values read as numbers"
+    },
+    {
+      "function": "GetPrivateProfileInt",
+      "args": "\"Plain\",\"trailing\",99",
+      "result": "40",
+      "section": "values read as numbers"
+    },
+    {
+      "function": "GetPrivateProfileInt",
+      "args": "\"Plain\",\"negative\",99",
+      "result": "65535",
+      "section": "values read as numbers"
+    },
+    {
+      "function": "GetPrivateProfileInt",
+      "args": "\"Plain\",\"words\",99",
+      "result": "0",
+      "section": "values read as numbers"
+    },
+    {
+      "function": "GetPrivateProfileInt",
+      "args": "\"Plain\",\"empty\",99",
+      "result": "0",
+      "section": "values read as numbers"
+    },
+    {
+      "function": "GetPrivateProfileInt",
+      "args": "\"Plain\",\"quotednumber\",99",
+      "result": "0",
+      "section": "values read as numbers"
+    },
+    {
+      "function": "GetPrivateProfileInt",
+      "args": "\"Plain\",\"absent\",99",
+      "result": "99",
+      "section": "values read as numbers"
+    },
+    {
+      "function": "GetPrivateProfileInt",
+      "args": "\"Absent\",\"number\",99",
+      "result": "99",
+      "section": "values read as numbers"
+    },
+    {
+      "function": "WritePrivateProfileString",
+      "args": "\"Plain\",\"added\",\"new value\"",
+      "result": "1,\"new value\"",
+      "section": "writing, and reading back what was written"
+    },
+    {
+      "function": "WritePrivateProfileString",
+      "args": "\"Plain\",\"entry\",\"replaced\"",
+      "result": "1,\"replaced\"",
+      "section": "writing, and reading back what was written"
+    },
+    {
+      "function": "WritePrivateProfileString",
+      "args": "\"Fresh\",\"first\",\"in a new section\"",
+      "result": "1,\"in a new section\"",
+      "section": "writing, and reading back what was written"
+    },
+    {
+      "function": "WritePrivateProfileString",
+      "args": "\"Plain\",\"added\",\"NULL\"",
+      "result": "1,\"<gone>\"",
+      "section": "writing, and reading back what was written"
+    },
+    {
+      "function": "WritePrivateProfileString",
+      "args": "\"Plain\",\"spaced\",\"  untrimmed\"",
+      "result": "1,\"  untrimmed\"",
+      "section": "writing, and reading back what was written"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Plain\",NULL,128",
+      "result": "100,\"entry|spaced|quoted|single|empty|MiXeD|number|trailing|negative|words|quotednumber|semicolon|equals|\"",
+      "section": "writing, and reading back what was written"
+    },
+    {
+      "function": "GetProfileString",
+      "args": "\"intl\",\"s1159\",\"<default>\"",
+      "result": "2,\"AM\"",
+      "section": "WIN.INI, which is what programs actually read"
+    },
+    {
+      "function": "GetProfileString",
+      "args": "\"intl\",\"s2359\",\"<default>\"",
+      "result": "2,\"PM\"",
+      "section": "WIN.INI, which is what programs actually read"
+    },
+    {
+      "function": "GetProfileString",
+      "args": "\"intl\",\"sTime\",\"<default>\"",
+      "result": "1,\":\"",
+      "section": "WIN.INI, which is what programs actually read"
+    },
+    {
+      "function": "GetProfileString",
+      "args": "\"intl\",\"sShortDate\",\"<default>\"",
+      "result": "6,\"M/d/yy\"",
+      "section": "WIN.INI, which is what programs actually read"
+    },
+    {
+      "function": "GetProfileString",
+      "args": "\"windows\",\"device\",\"<default>\"",
+      "result": "0,\"\"",
+      "section": "WIN.INI, which is what programs actually read"
+    },
+    {
+      "function": "GetProfileString",
+      "args": "\"Absent\",\"absent\",\"<default>\"",
+      "result": "9,\"<default>\"",
+      "section": "WIN.INI, which is what programs actually read"
+    }
+  ]
+}

@@ -221,11 +221,16 @@ export class Types {
     }
 
     switch (type) {
-      case BOOL:
       case BYTE:
       case UBYTE:
         return 1;
 
+      /* `BOOL` is `int` in the Win16 headers, so it is two bytes wherever it
+       * appears -- as an argument and as a struct field alike. Sizing it as
+       * one byte put every `PAINTSTRUCT` field after `fErase` a byte out of
+       * place, and masked a `BOOL` argument to its low eight bits.
+       */
+      case BOOL:
       case INT:
       case UINT:
       case ATOM:

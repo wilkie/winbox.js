@@ -106,6 +106,17 @@ export class Surface {
       this._context = this.canvas.getContext('2d');
     }
 
+    /* A canvas element that cannot produce a 2D context -- which is what jsdom
+     * hands back, and what any host without a canvas implementation does. The
+     * client area is our pixels either way; a browser lends us somewhere to put
+     * them, and without one we keep them ourselves rather than not drawing. The
+     * alternative is what used to happen: every property set on the context
+     * threw on `null`, far from the thing that actually went missing.
+     */
+    if (!this._context) {
+      this._context = new BitmapContext(this.width, this.height);
+    }
+
     return this._context;
   }
 

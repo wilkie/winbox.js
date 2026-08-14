@@ -20,6 +20,7 @@ export class Scheduler {
   declare _modules: any;
   declare _running: any;
   declare _tasks: any;
+  declare _onError: any;
   constructor(machine, modules, options: any = {}) {
     this._tasks = {};
     this._machine = machine;
@@ -37,6 +38,15 @@ export class Scheduler {
      * is injectable and falls back to a timer when there is no window.
      */
     this._nextFrame = options.nextFrame ?? Scheduler.defaultFrameDriver();
+
+    /* Where a failure goes when there is nobody on the stack to catch it.
+     *
+     * An API call that suspends its task resumes it from a promise callback,
+     * and an exception there has no caller: it becomes an unhandled rejection,
+     * the task never resumes, and the program stops with nothing said about
+     * why. Anything watching gets told instead.
+     */
+    this._onError = options.onError ?? null;
 
     this._currentTask = null;
   }
@@ -202,6 +212,25 @@ export class Scheduler {
     step.bind(this)();
   }
 
+  /**
+   * Reports a failure that happened with no caller to raise it to, and stops
+   * the task it happened in.
+   *
+   * @param {Error} error - What went wrong.
+   */
+  fail(error) {
+    if (this._onError) {
+      this._onError(error);
+    } else {
+      console.error('API call failed:', error);
+    }
+
+    /* The task cannot continue: it is suspended waiting on a return that is
+     * not coming. Ending it is what makes the program stop rather than hang.
+     */
+    this.task?.end();
+  }
+
   interpretReturnValue(result, returnType) {
     const currentTask = this.active;
 
@@ -213,8 +242,16 @@ export class Scheduler {
       // Promise to resolve.
       asyncCall.then(
         (result) => {
-          // Actually interpret the proper return result (sets AX/DX, resumes)
-          this.interpretReturnValue(result, returnType);
+          /* Resuming runs the guest, so anything the guest does next throws
+           * here -- inside a promise callback, where an exception would be an
+           * unhandled rejection rather than a fault anybody sees.
+           */
+          try {
+            // Actually interpret the proper return result (sets AX/DX, resumes)
+            this.interpretReturnValue(result, returnType);
+          } catch (error) {
+            this.fail(error);
+          }
         },
         (error) => {
           /* An API call that fails while suspended used to stop the program
@@ -222,13 +259,11 @@ export class Scheduler {
            * return, so a rejection meant nothing ever resumed it and the
            * program simply stopped, with no fault raised and nothing to see.
            *
-           * A failure is reported and the call returns nothing, which is what
-           * the API says failure looks like, and the program gets to decide
-           * what to do about it.
+           * Returning zero instead would let the program carry on with an
+           * answer we invented, which buys a few hundred more instructions and
+           * costs the only evidence of what is actually missing.
            */
-          console.error('API call failed:', error);
-
-          this.interpretReturnValue(0, returnType);
+          this.fail(error);
         }
       );
     } else if (returnType !== undefined) {

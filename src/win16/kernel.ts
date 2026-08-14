@@ -37,7 +37,11 @@ import { FatalExit } from './kernel/FatalExit.js';
 import { GetDOSEnvironment } from './kernel/GetDOSEnvironment.js';
 import { GetFreeSpace } from './kernel/GetFreeSpace.js';
 import { GetModuleFilename } from './kernel/GetModuleFilename.js';
+import { GetPrivateProfileInt } from './kernel/GetPrivateProfileInt.js';
 import { GetPrivateProfileString } from './kernel/GetPrivateProfileString.js';
+import { GetProfileInt } from './kernel/GetProfileInt.js';
+import { GetProfileString } from './kernel/GetProfileString.js';
+import { WriteProfileString } from './kernel/WriteProfileString.js';
 import { GetProcAddress } from './kernel/GetProcAddress.js';
 import { GetVersion } from './kernel/GetVersion.js';
 import { GetWindowsDirectory } from './kernel/GetWindowsDirectory.js';
@@ -217,13 +221,13 @@ export class Kernel extends Module {
       [Kernel.stub, 'GetInstanceData', 8, [HINSTANCE, FARPTR, INT], INT],
       [Catch, 'Catch', 4, [FARPTR], INT],
       [Throw, 'Throw', 6, [FARPTR, INT], INT], // Return value must match Catch
-      [Kernel.stub, 'GetProfileInt', 10, [LPCSTR, LPCSTR, INT], UINT],
-      [Kernel.stub, 'GetProfileString', 18, [LPCSTR, LPCSTR, LPCSTR, FARPTR, INT], INT],
-      [Kernel.stub, 'WriteProfileString', 12, [LPCSTR, LPCSTR, LPCSTR], BOOL],
+      [GetProfileInt, 'GetProfileInt', 10, [LPCSTR, LPCSTR, INT], UINT],
+      [GetProfileString, 'GetProfileString', 18, [LPCSTR, LPCSTR, LPCSTR, FARPTR, INT], INT],
+      [WriteProfileString, 'WriteProfileString', 12, [LPCSTR, LPCSTR, LPCSTR], BOOL],
       // 60 //
       [FindResource, 'FindResource', 10, [HINSTANCE, LPCSTR, LPCSTR], HANDLE],
       [LoadResource, 'LoadResource', 4, [HINSTANCE, HANDLE], HGLOBAL],
-      [LockResource, 'LockResource', 4, [HGLOBAL], FARPTR],
+      [LockResource, 'LockResource', 2, [HGLOBAL], FARPTR],
       [FreeResource, 'FreeResource', 2, [HGLOBAL], BOOL],
       [Kernel.stub, 'AccessResource', 4, [HINSTANCE, HANDLE], INT],
       [Kernel.stub, 'SizeOfResource', 4, [HINSTANCE, HANDLE], DWORD],
@@ -252,7 +256,7 @@ export class Kernel extends Module {
       [_lwrite, '_lwrite', 8, [HFILE, FARPTR, UINT], UINT],
       [Kernel.stub, 'Reserved5', 4],
       [lstrcpy, 'lstrcpy', 8, [FARPTR, FARPTR], FARPTR],
-      [lstrcat, 'lstrcat', 4, [FARPTR, FARPTR], FARPTR],
+      [lstrcat, 'lstrcat', 8, [FARPTR, FARPTR], FARPTR],
       // 90 //
       [lstrlen, 'lstrlen', 4, [FARPTR], UINT],
       [InitTask, 'InitTask', 0, [], UINT],
@@ -273,7 +277,7 @@ export class Kernel extends Module {
       [Kernel.stub, 'GetExeVersion', 0],
       [Kernel.stub, 'SetSwapAreaSize', 2, [UINT], LONG],
       [Kernel.stub, 'SetErrorMode', 2, [UINT], UINT],
-      [Kernel.stub, 'SwitchStackTo', 0, [UINT, UINT, UINT]],
+      [Kernel.stub, 'SwitchStackTo', 6, [UINT, UINT, UINT]],
       [Kernel.stub, 'SwitchStackBack', 0, []],
       // 110 //
       [Kernel.stub, 'PatchCodeHandle', 2, [UINT]],
@@ -294,7 +298,7 @@ export class Kernel extends Module {
       [Kernel.stub, 'EnableKernel', 0],
       [Kernel.stub, 'DisableKernel', 2],
       [Kernel.stub, 'MemoryFreed', 0],
-      [Kernel.stub, 'GetPrivateProfileInt', 14, [LPCSTR, LPCSTR, INT, LPCSTR], UINT],
+      [GetPrivateProfileInt, 'GetPrivateProfileInt', 14, [LPCSTR, LPCSTR, INT, LPCSTR], UINT],
       [
         GetPrivateProfileString,
         'GetPrivateProfileString',

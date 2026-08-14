@@ -1,3 +1,6 @@
+/**
+ * @jest-environment jsdom
+ */
 'use strict';
 
 import { existsSync, readFileSync } from 'node:fs';
@@ -21,14 +24,21 @@ import { Win16 } from '../../src/win16.js';
  * called is the work list -- a far shorter list than the API contains, and in
  * the order a real program needs it.
  *
- * Neither runs to completion yet. Both reach the point of registering a window
- * class and then stop, which is where the message loop would begin.
+ * These run in a DOM environment because a window has one: the frame, the
+ * caption and the menu bar are elements, and only the client area is pixels.
+ * That is the design rather than a concession to the test -- a caption that is
+ * real text is a caption a screen reader can read -- so a run with no DOM at
+ * all stops at `CreateWindow`, which is not a useful place to stop.
+ *
+ * Clock now gets the whole way to its message loop: it creates its window,
+ * reads the locale out of `WIN.INI` and its own settings out of `CLOCK.INI`,
+ * takes its `WM_TIMER` every half second and starts drawing the time.
  */
 
 const IMAGE = join(__dirname, '..', '..', 'oracle', 'build', 'win31.img');
 
 /** Loads an application off the drive image and runs it, collecting its calls. */
-async function runApplication(name: string, frames = 300) {
+async function runApplication(name: string, frames = 2000) {
   const machine = new Machine();
   const fileSystem: any = await machine.mountImage(new Uint8Array(readFileSync(IMAGE)));
 
@@ -36,17 +46,32 @@ async function runApplication(name: string, frames = 300) {
 
   let pending: any = null;
 
-  const win16: any = new Win16(
-    new DOS(machine),
-    machine,
-    { width: 640, height: 480 },
-    {
-      nextFrame: (callback: any) => {
-        pending = callback;
-      },
-      onCall: (call: any) => calls.push(`${call.module}.${call.name}`),
-    }
-  );
+  /* How it stopped, rather than whether it stopped: the scheduler gives each
+   * frame a slice of wall time, so how far the guest gets varies with how busy
+   * the machine is, and a test that insisted on one ending would pass alone
+   * and fail in company.
+   */
+  let stoppedBy: string | null = null;
+
+  /* The desktop everything is parented to. A real element, because the window
+   * chrome really is elements.
+   */
+  const desktop = document.createElement('div');
+  document.body.appendChild(desktop);
+
+  const win16: any = new Win16(new DOS(machine), machine, desktop, {
+    nextFrame: (callback: any) => {
+      pending = callback;
+    },
+    onCall: (call: any) => calls.push(`${call.module}.${call.name}`),
+
+    /* An API that fails while the task is suspended has no caller to throw
+     * to, so it is reported here instead of vanishing.
+     */
+    onError: (error: any) => {
+      stoppedBy = stoppedBy ?? error?.constructor?.name ?? String(error);
+    },
+  });
 
   const file = await fileSystem.open(['WINDOWS', `${name}.EXE`]);
   const executable: any = new Executable(name, `C:\\WINDOWS\\${name}.EXE`, file);
@@ -55,14 +80,6 @@ async function runApplication(name: string, frames = 300) {
 
   const handle = await win16.load(executable);
   win16.link(handle);
-
-  /* Neither application runs to completion, so how it stops is part of the
-   * measurement rather than a failure. It matters that this is recorded rather
-   * than thrown: the scheduler gives each frame a slice of wall time, so how
-   * far the guest gets varies with how busy the machine is, and a test that
-   * insisted on a particular ending would pass alone and fail in company.
-   */
-  let stoppedBy: string | null = null;
 
   try {
     win16.run(handle);
@@ -81,7 +98,7 @@ async function runApplication(name: string, frames = 300) {
       stoppedBy = error?.constructor?.name ?? String(error);
     }
 
-    await new Promise((resolve) => setImmediate(resolve));
+    await new Promise((resolve) => setTimeout(resolve, 0));
   }
 
   return { machine, win16, calls, stoppedBy };
@@ -98,8 +115,17 @@ whenBuilt('running Windows applications', () => {
   describe.each([
     [
       'CLOCK',
-      40,
-      ['KERNEL.GetProfileInt', 'USER.LoadCursor', 'USER.RegisterClass', 'GDI.GetDeviceCaps'],
+      150,
+      [
+        'KERNEL.GetProfileInt',
+        'USER.LoadCursor',
+        'USER.RegisterClass',
+        'GDI.GetDeviceCaps',
+        // Its window exists, and it is pumping its own messages.
+        'USER.CreateWindow',
+        'USER.GetMessage',
+        'USER.DispatchMessage',
+      ],
     ],
     ['PROGMAN', 40, ['USER.LoadCursor', 'USER.RegisterClass']],
   ])('%s', (name, expected, expectedCalls) => {
@@ -122,12 +148,13 @@ whenBuilt('running Windows applications', () => {
       );
     });
 
-    it('gets as far as registering a window class', function () {
+    it('gets as far as it is known to get', function () {
       const called = new Set(result.calls);
 
-      /* Registering a class is the first thing a program does that is about
-       * itself rather than about starting up, and it means the resource
-       * loading before it worked.
+      /* Each of these is a milestone the one before it has to have reached:
+       * a class registered means the resources loaded, a window created means
+       * the class was found, and a message dispatched means there is a message
+       * loop running against a window that exists.
        */
       for (const call of expectedCalls as string[]) {
         expect(`${call}: ${called.has(call)}`).toEqual(`${call}: true`);
@@ -135,14 +162,13 @@ whenBuilt('running Windows applications', () => {
     });
 
     it('stops for a reason worth knowing', function () {
-      /* None of these reach a message loop yet, and what stops them is the
-       * useful part. A ReferenceError is the window chrome asking for a DOM,
-       * which is as far as a headless run can go by design -- the frame and
-       * the caption are DOM, and only the client area is pixels. An
-       * InvalidInstruction is the CPU meeting an opcode it cannot decode, and
-       * null means it was still going when the frames ran out.
+      /* What stops them is the useful part. `null` means it was still running
+       * when the frames ran out, which is what a program sitting in a message
+       * loop should do. An `InvalidInstruction` is the CPU meeting an opcode
+       * it cannot decode, and an `Error` is an API reaching something we have
+       * not built -- Clock's font work stops there today.
        */
-      expect([null, 'InvalidInstruction', 'ReferenceError']).toContain(result.stoppedBy);
+      expect([null, 'InvalidInstruction', 'Error']).toContain(result.stoppedBy);
     });
   });
 });

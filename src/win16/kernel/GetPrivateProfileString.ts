@@ -1,8 +1,6 @@
 'use strict';
 
-import { NULL } from '../consts.js';
-
-import { lstrcpy } from './lstrcpy.js';
+import { copyOut, copyOutList, readProfile } from './profiles.js';
 
 /**
  * The **GetPrivateProfileString** function retrieves a character string from
@@ -77,7 +75,7 @@ import { lstrcpy } from './lstrcpy.js';
  *                      to the specified buffer, not including the terminating
  *                      null character.
  */
-export function GetPrivateProfileString(
+export async function GetPrivateProfileString(
   lpszSection,
   lpszEntry,
   lpszDefault,
@@ -85,28 +83,28 @@ export function GetPrivateProfileString(
   cbReturnBuffer,
   lpszFilename
 ) {
-  // Open the file
-  const handle = this.dos.files.open(lpszFilename);
-  const file = this.dos.files.resolve(handle);
-  this.debug(file);
+  const profile = await readProfile(this, lpszFilename);
 
-  const ret = null;
+  /* No entry named means the program wants the section's contents rather than
+   * one value out of it -- how `[fonts]` and `[ports]` get enumerated.
+   */
+  if (lpszEntry === null) {
+    const names = profile.entries(String(lpszSection));
 
-  if (file) {
-    // Read INI data from file
-    // Find the section
-    // Find the entry
-    // Read the value
+    this.debug('GetPrivateProfileString', String(lpszSection), names);
+
+    return copyOutList(this, lpszReturnBuffer, names, cbReturnBuffer);
   }
 
-  if (ret === null) {
-    // Always return the default, for now.
-    // TODO: lstrcpy does not have a bounds
-    lstrcpy.bind(this)(lpszReturnBuffer, (lpszDefault.segment << 16) | lpszDefault.offset);
-  }
+  const found = profile.get(String(lpszSection), String(lpszEntry));
 
-  if (handle) {
-    this.dos.files.close(handle);
-  }
-  return 0;
+  /* The default is copied verbatim when the entry is missing, and a null
+   * default is documented as not allowed -- but a program that passes one
+   * should get an empty string rather than the word "null".
+   */
+  const value = found === null ? (lpszDefault === null ? '' : String(lpszDefault)) : found;
+
+  this.debug('GetPrivateProfileString', String(lpszSection), String(lpszEntry), value);
+
+  return copyOut(this, lpszReturnBuffer, value, cbReturnBuffer);
 }

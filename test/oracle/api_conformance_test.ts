@@ -43,13 +43,13 @@ if (fixtures.length === 0) {
          * being collected, because GDI cannot be asked anything about text
          * without them and loading them is asynchronous.
          */
-        let replayed: ReturnType<typeof replayFixture>['replayed'] = [];
-        let summary: ReturnType<typeof replayFixture>['summary'];
+        let replayed: Awaited<ReturnType<typeof replayFixture>>['replayed'] = [];
+        let summary: Awaited<ReturnType<typeof replayFixture>>['summary'];
 
         beforeAll(async function () {
           await prepareFonts();
 
-          ({ replayed, summary } = replayFixture(fixture));
+          ({ replayed, summary } = await replayFixture(fixture));
         });
 
         it('reports what it found', function () {

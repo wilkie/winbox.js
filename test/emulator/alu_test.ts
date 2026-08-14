@@ -406,7 +406,15 @@ describe('ALU', () => {
 
     it('should detect negative overflow', function () {
       const a = Helper.randomInteger(0x80, 0xbf);
-      const b = ~Helper.randomInteger(0x80, 0xc0) + 1;
+
+      /* From 0x81 rather than 0x80, because 0x80 is the one value in the range
+       * that negates to itself: subtracting it is adding 128, and a negative
+       * minuend plus 128 lands back inside the byte rather than below it. The
+       * flag is right in that case and the expectation is not, so drawing it
+       * failed about one run in sixty-five for reasons that had nothing to do
+       * with the code under test.
+       */
+      const b = ~Helper.randomInteger(0x81, 0xc0) + 1;
       this.alu.sub8(a, b);
       expect(this.alu.cpu.flags.overflow).toBe(true);
     });
@@ -470,7 +478,9 @@ describe('ALU', () => {
 
     it('should detect negative overflow', function () {
       const a = Helper.randomInteger(0x8000, 0xbfff);
-      const b = ~Helper.randomInteger(0x8000, 0xc000) + 1;
+
+      // From 0x8001, for the reason the byte case gives.
+      const b = ~Helper.randomInteger(0x8001, 0xc000) + 1;
       this.alu.sub16(a, b);
       expect(this.alu.cpu.flags.overflow).toBe(true);
     });

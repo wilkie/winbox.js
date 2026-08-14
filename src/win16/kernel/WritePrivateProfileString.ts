@@ -1,7 +1,6 @@
 'use strict';
 
-import { NULL, TRUE, FALSE } from '../consts.js';
-
+import { readProfile, writeProfile } from './profiles.js';
 /**
  * The **WritePrivateProfileString** function copies a character string into the
  * specified section of the specified initialization file.
@@ -68,24 +67,26 @@ import { NULL, TRUE, FALSE } from '../consts.js';
  * @returns {Types.BOOL} The return value is nonzero if the function is
  *                       successful. Otherwise it is zero.
  */
-export function WritePrivateProfileString(lpszSection, lpszEntry, lpszString, lpszFilename) {
-  // Open the file
-  const handle = this.dos.files.open(lpszFilename);
-  const file = this.dos.files.resolve(handle);
-  this.debug(file);
+export async function WritePrivateProfileString(lpszSection, lpszEntry, lpszString, lpszFilename) {
+  const profile = await readProfile(this, lpszFilename);
 
-  const ret = null;
-
-  if (file) {
-    // Read INI data from file
-    // Find the section
-    // Find the entry
-    // Write the value
+  /* A null entry deletes the whole section, and a null value deletes just the
+   * entry. This is how a program clears settings it no longer wants, and it is
+   * the only way a section ever shrinks.
+   */
+  if (lpszEntry === null) {
+    for (const name of profile.entries(String(lpszSection))) {
+      profile.set(String(lpszSection), name, null);
+    }
+  } else {
+    profile.set(
+      String(lpszSection),
+      String(lpszEntry),
+      lpszString === null ? null : String(lpszString)
+    );
   }
 
-  if (handle) {
-    this.dos.files.close(handle);
-  }
+  this.debug('WritePrivateProfileString', String(lpszSection), String(lpszEntry));
 
-  return TRUE;
+  return (await writeProfile(this, lpszFilename, profile)) ? 1 : 0;
 }

@@ -24,6 +24,10 @@ import { GlobalAllocator } from '../../src/win16/global-allocator.js';
 import { Allocator } from '../../src/win16/allocator.js';
 
 import { lstrlen } from '../../src/win16/kernel/lstrlen.js';
+import { GetPrivateProfileInt } from '../../src/win16/kernel/GetPrivateProfileInt.js';
+import { GetPrivateProfileString } from '../../src/win16/kernel/GetPrivateProfileString.js';
+import { GetProfileString } from '../../src/win16/kernel/GetProfileString.js';
+import { WritePrivateProfileString } from '../../src/win16/kernel/WritePrivateProfileString.js';
 import { lstrcpy } from '../../src/win16/kernel/lstrcpy.js';
 import { lstrcat } from '../../src/win16/kernel/lstrcat.js';
 import { lstrcmp } from '../../src/win16/user/lstrcmp.js';
@@ -77,6 +81,45 @@ export const DRIVE_IMAGE = join(__dirname, '..', '..', 'oracle', 'build', 'win31
  */
 let fonts: any = null;
 
+/**
+ * `WIN.INI` as the installer left it.
+ *
+ * `GetProfileString` reads this file and nothing else, so the recorded answers
+ * are answers about the installed system. Read off the same drive image as the
+ * fonts, in the same step, because it is the same asynchronous mount.
+ */
+let windowsProfile: string | null = null;
+
+/**
+ * The file the profile probe writes for itself before it reads anything.
+ *
+ * This has to match `writeSubject` in `oracle/probes/profile.c` byte for byte:
+ * the probe recorded Windows reading *that* text, and replaying against any
+ * other text would compare two different questions. It is duplicated rather
+ * than shared because one side is C compiled for Win16 and the other is not.
+ */
+const SUBJECT_PROFILE = [
+  '[Plain]',
+  'entry=value',
+  'spaced   =   padded value   ',
+  'quoted="  kept  "',
+  "single='  also  '",
+  'empty=',
+  'MiXeD=case test',
+  'number=42',
+  'trailing=40two',
+  'negative=-1',
+  'words=none',
+  'quotednumber="7"',
+  '; a comment line',
+  'semicolon=;',
+  'equals=a=b',
+  '',
+  '[Second]',
+  'only=one',
+  '',
+].join('\r\n');
+
 /** Loads the installed fonts off the drive image, if it has been built. */
 export async function prepareFonts() {
   if (fonts) {
@@ -101,6 +144,14 @@ export async function prepareFonts() {
     if (entry.info.name.toUpperCase().endsWith('.FON')) {
       await manager.load(await fileSystem.open(['WINDOWS', 'SYSTEM', entry.info.name]));
     }
+  }
+
+  const profile = await fileSystem.open(['WINDOWS', 'WIN.INI']);
+
+  if (profile) {
+    const text = new Uint8Array(await profile.read(0, profile.size));
+
+    windowsProfile = Array.from(text, (byte) => String.fromCharCode(byte)).join('');
   }
 
   fonts = manager;
@@ -146,6 +197,7 @@ class Context {
   fonts: any;
   display: any;
   private next: number;
+  private _dos: any = null;
 
   constructor(display = 'vga') {
     this.machine = new Machine();
@@ -207,6 +259,84 @@ class Context {
     }
 
     return this;
+  }
+
+  /**
+   * Just enough of a file system for the profile calls.
+   *
+   * They open a file by name, read all of it, and sometimes write it back.
+   * Nothing here needs FAT16 or a disk: what is being measured is how the INI
+   * text is interpreted, and putting a real file system under it would only
+   * add a way for the test to fail for an unrelated reason.
+   *
+   * Names are matched on the last path component without regard to case,
+   * because the probe names its own file with a full path and `WIN.INI`
+   * without one.
+   */
+  get dos() {
+    if (this._dos) {
+      return this._dos;
+    }
+
+    const contents = new Map<string, string>([
+      ['probe.ini', SUBJECT_PROFILE],
+      ['win.ini', windowsProfile ?? ''],
+    ]);
+
+    const open = new Map<number, any>();
+    let nextHandle = 1;
+
+    const fileFor = (key: string) => ({
+      get size() {
+        return contents.get(key)!.length;
+      },
+      read(offset: number, length: number) {
+        const text = contents.get(key)!.substring(offset, offset + length);
+
+        return Uint8Array.from(text, (character) => character.charCodeAt(0) & 0xff);
+      },
+      write(offset: number, bytes: Uint8Array) {
+        const before = contents.get(key)!.substring(0, offset);
+        const written = Array.from(bytes, (byte) => String.fromCharCode(byte)).join('');
+
+        contents.set(key, before + written);
+
+        return bytes.length;
+      },
+      setSize(size: number) {
+        contents.set(key, contents.get(key)!.substring(0, size));
+      },
+    });
+
+    this._dos = {
+      files: {
+        open(path: string) {
+          const key = String(path).split(/[\\/]/).pop()!.toLowerCase();
+
+          if (!contents.has(key)) {
+            /* A program is allowed to read settings it has never written, so a
+             * file that is not there is opened as an empty one rather than
+             * refused -- which is what a real drive does the moment anything
+             * writes to it.
+             */
+            contents.set(key, '');
+          }
+
+          const handle = nextHandle++;
+          open.set(handle, fileFor(key));
+
+          return handle;
+        },
+        resolve(handle: number) {
+          return open.get(handle);
+        },
+        close(handle: number) {
+          open.delete(handle);
+        },
+      },
+    };
+
+    return this._dos;
   }
 
   /**
@@ -375,7 +505,10 @@ function sign(value: number) {
  * skipped, so that adding probe coverage without adding replay coverage cannot
  * look like success.
  */
-const ADAPTERS: Record<string, (context: Context, args: (string | number)[]) => string> = {
+const ADAPTERS: Record<
+  string,
+  (context: Context, args: (string | number)[]) => string | Promise<string>
+> = {
   lstrlen(context, [text]) {
     const at = context.place(text as string);
     return String(lstrlen.call(context, at.far));
@@ -724,6 +857,120 @@ const ADAPTERS: Record<string, (context: Context, args: (string | number)[]) => 
 
     return `returns=${GlobalFree.call(context, handle) ? 'handle' : 'null'}`;
   },
+
+  /*
+   * The profile calls.
+   *
+   * These read a file, so the harness gives the context one; the subject is
+   * the same text the probe wrote for itself, and `WIN.INI` is the real one
+   * off the drive image.
+   */
+
+  async GetPrivateProfileString(context, args) {
+    /* Three arguments means the form with no entry named, which enumerates the
+     * section instead of reading one value out of it.
+     */
+    if (args.length === 3) {
+      const [section, , size] = args as [string, string, number];
+      const buffer = context.place('', Math.max(Number(size), 1) + 2);
+
+      const count = await GetPrivateProfileString.call(
+        context,
+        context.lpcstr(section),
+        null,
+        context.lpcstr(''),
+        buffer.far,
+        Number(size),
+        context.lpcstr('PROBE.INI')
+      );
+
+      /* The probe wrote the nulls between the names out as bars so they would
+       * survive the record format, and showed exactly the returned count of
+       * bytes -- so that is what gets rebuilt here.
+       */
+      let shown = '';
+
+      for (let at = 0; at < count; at++) {
+        const byte = context.machine.cpu.core.read8(buffer.segment, buffer.offset + at);
+
+        shown += byte ? String.fromCharCode(byte) : '|';
+      }
+
+      return `${count},${quoted(shown)}`;
+    }
+
+    const [section, entry, fallback, size] = args as [string, string, string, number];
+    const buffer = context.place('', Math.max(Number(size), 1) + 2);
+
+    const count = await GetPrivateProfileString.call(
+      context,
+      context.lpcstr(section),
+      context.lpcstr(entry),
+      context.lpcstr(fallback),
+      buffer.far,
+      Number(size),
+      context.lpcstr('PROBE.INI')
+    );
+
+    return `${count},${quoted(context.fetch(buffer.far))}`;
+  },
+
+  async GetPrivateProfileInt(context, [section, entry, fallback]) {
+    const value = await GetPrivateProfileInt.call(
+      context,
+      context.lpcstr(section as string),
+      context.lpcstr(entry as string),
+      Number(fallback),
+      context.lpcstr('PROBE.INI')
+    );
+
+    return String(value);
+  },
+
+  async GetProfileString(context, [section, entry, fallback]) {
+    const buffer = context.place('', 130);
+
+    const count = await GetProfileString.call(
+      context,
+      context.lpcstr(section as string),
+      context.lpcstr(entry as string),
+      context.lpcstr(fallback as string),
+      buffer.far,
+      128
+    );
+
+    return `${count},${quoted(context.fetch(buffer.far))}`;
+  },
+
+  async WritePrivateProfileString(context, [section, entry, value]) {
+    /* The probe had no way to write a null pointer down, so it recorded the
+     * word NULL where one was passed.
+     */
+    const written = value === 'NULL' ? null : context.lpcstr(value as string);
+
+    const ok = await WritePrivateProfileString.call(
+      context,
+      context.lpcstr(section as string),
+      entry === 'NULL' ? null : context.lpcstr(entry as string),
+      written,
+      context.lpcstr('PROBE.INI')
+    );
+
+    // The probe read the entry back afterwards, which is the part that matters.
+    const buffer = context.place('', 130);
+
+    await GetPrivateProfileString.call(
+      context,
+      context.lpcstr(section as string),
+      context.lpcstr(entry === 'NULL' ? 'x' : (entry as string)),
+      context.lpcstr('<gone>'),
+      buffer.far,
+      128,
+      context.lpcstr('PROBE.INI')
+    );
+
+    return `${ok},${quoted(context.fetch(buffer.far))}`;
+  },
 };
 
 /** Thrown by an adapter for a function we have not implemented at all. */
@@ -748,8 +995,17 @@ export const KNOWN_GAPS: Record<string, string> = {};
  */
 const STUBBED = new Set<string>([]);
 
-/** Runs one recorded call. */
-export function replayRecord(record: Fixture['records'][number], display = 'vga'): Replayed {
+/**
+ * Runs one recorded call.
+ *
+ * Asynchronous because some of the functions are: anything that reads a file
+ * suspends its task on the real thing, and the profile calls read one on every
+ * lookup.
+ */
+export async function replayRecord(
+  record: Fixture['records'][number],
+  display = 'vga'
+): Promise<Replayed> {
   const base = { function: record.function, args: record.args, expected: record.result };
 
   if (STUBBED.has(record.function)) {
@@ -765,7 +1021,7 @@ export function replayRecord(record: Fixture['records'][number], display = 'vga'
   let actual: string;
 
   try {
-    actual = adapter(new Context(display), parseArgs(record.args));
+    actual = await adapter(new Context(display), parseArgs(record.args));
   } catch (error) {
     if (error instanceof Unimplemented) {
       return { ...base, actual: null, outcome: 'unimplemented' };
@@ -795,9 +1051,20 @@ export interface Summary {
   byFunction: Map<string, { total: number; agreed: number; outcome: Outcome }>;
 }
 
-/** Replays every record in a fixture and summarises the result. */
-export function replayFixture(fixture: Fixture) {
-  const replayed = fixture.records.map((record) => replayRecord(record, fixture.display ?? 'vga'));
+/**
+ * Replays every record in a fixture and summarises the result.
+ *
+ * In order, one at a time, because a probe's records are not independent: the
+ * write records change the file the reads that follow them look at, and the
+ * recording captured them happening in sequence.
+ */
+export async function replayFixture(fixture: Fixture) {
+  const replayed: Replayed[] = [];
+
+  for (const record of fixture.records) {
+    replayed.push(await replayRecord(record, fixture.display ?? 'vga'));
+  }
+
   const byFunction = new Map<string, { total: number; agreed: number; outcome: Outcome }>();
 
   for (const record of replayed) {

@@ -99,7 +99,12 @@ export class ModuleManager {
 
       const pop = tuple[2] || 0;
       const popl = pop & 0xff;
-      const poph = (pop >> 0xff) & 0xff;
+      /* The count is a 16-bit immediate, so its high byte is a shift of eight
+       * rather than of `0xff`. JavaScript takes a shift count modulo 32, so
+       * the mistake read as `pop >> 31` -- zero for every count that fits in a
+       * word, which is every count under 256 and so nearly all of them.
+       */
+      const poph = (pop >> 8) & 0xff;
 
       // INT 0x80
       code[position + 0] = 0xcd;
