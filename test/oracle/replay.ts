@@ -513,13 +513,7 @@ export class Unimplemented extends Error {}
  * suite stays green while they persist, and turns red the moment one of them
  * starts agreeing and the entry becomes stale.
  */
-export const KNOWN_GAPS: Record<string, string> = {
-  'table and privilege bits':
-    'Windows keeps these descriptors in the LDT, so a handle and its selector ' +
-    'end in 6 and 7; ours are in the GDT and end in 2 and 3. The privilege ' +
-    'relationship between them is the same, and which table segments live in ' +
-    'is a separate question from what a handle is',
-};
+export const KNOWN_GAPS: Record<string, string> = {};
 
 /**
  * Functions a module declares but wires to a stub.

@@ -6,6 +6,17 @@
  *
  * That is, the memory is 1:1 mapped.
  */
+/**
+ * Where the local descriptor table is kept.
+ *
+ * Above anything a guest addresses, since the table is ours rather than the
+ * program's, and the program reaches its segments through selectors instead.
+ */
+const LDT_BASE = 0xffff0000;
+
+/** How many descriptors the table has room for, which is the architecture's. */
+const SELECTORS = 8192;
+
 export class GlobalAllocator {
   declare _cpu: any;
   declare _memory: any;
@@ -22,10 +33,14 @@ export class GlobalAllocator {
   }
 
   reset() {
-    // Initialize the GDT
-    this._cpu.core.gdtBase = 0xffff0000;
-    this._cpu.core.gdtLimit = 0xffff;
-    this._memory.zero(this._cpu.core.gdtBase, 8 * 8192);
+    /* A task's segments live in the local descriptor table, which is where
+     * Windows puts them -- the table bit is part of every selector a program
+     * sees, so this is not an implementation detail we get to choose. See
+     * selectors.ts, and oracle/fixtures/handles.json for the recording.
+     */
+    this._cpu.core.ldtBase = LDT_BASE;
+    this._cpu.core.ldtLimit = 8 * SELECTORS - 1;
+    this._memory.zero(LDT_BASE, 8 * SELECTORS);
   }
 
   /**
@@ -54,9 +69,8 @@ export class GlobalAllocator {
 
     this._usedMap[segment] = true;
 
-    // Modify the GDT to point to the segment
-    let base = this._cpu.core.gdtBase;
-    base = base + 8 * segment;
+    // Modify the descriptor table to point to the segment
+    const base = this._cpu.core.ldtBase + 8 * segment;
 
     // Limit of 0xffff (64K)
     this._memory.write16(base, 0xffff);
@@ -71,8 +85,6 @@ export class GlobalAllocator {
     const flags = 0x80 | 0x10; // Present | Code
     this._memory.write8(base + 5, flags);
     this._memory.write8(base + 6, 0);
-
-    console.log('updating gdt at', segment.toString(16), base.toString(16));
 
     // Copy the memory into the segment
     this._memory.write(segment << 16, data);

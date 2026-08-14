@@ -1,5 +1,6 @@
 'use strict';
 
+import { segmentSelector } from '../selectors.js';
 import { NULL } from '../consts.js';
 
 import { HWND } from '../types.js';
@@ -125,7 +126,7 @@ export async function CreateWindow(
 
       // Resolve the ordinal for DefWindowProc
       let defProc = module.lookup(107);
-      defProc = (((defProc.segment << 3) | 0x3) << 16) | defProc.offset;
+      defProc = (segmentSelector(defProc.segment) << 16) | defProc.offset;
       windowClass.lpfnWndProc = defProc;
       windowClass.lpszClassName = 'MDICLIENT';
 

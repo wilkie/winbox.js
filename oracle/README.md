@@ -234,12 +234,24 @@ Two findings the probe surfaced that are not one-line fixes:
   for moveable and discardable blocks too, and `GlobalHandle` recovers the
   handle from either.
 
-  Ours are selector _indices_ rather than selector values, which is the same
-  disagreement seen from another side: a pointer from our `GlobalLock` cannot
-  be loaded into a segment register and shifted back into an index, which is
-  exactly what `LocalAlloc` does with `DS`. The two halves of our own memory
-  code already disagree about what a handle is. Fixing it means changing that
-  everywhere, which is why it is written down here rather than patched.
+  Ours were selector _indices_, which was the same disagreement seen from
+  another side: a pointer from `GlobalLock` could not be loaded into a segment
+  register and shifted back into an index, which is exactly what `LocalAlloc`
+  does with `DS`. The two halves of our own memory code disagreed about what a
+  handle was.
+
+  Windows also keeps these descriptors in the **local** table rather than the
+  global one, which is why its selectors end in 7 and its handles in 6. Ours
+  were in the GDT because that is what the code happened to do, and calling
+  that a decision was a mistake: the table bit is part of every selector a
+  program sees, part of what `AllocSelector` and `AllocDSToCSAlias` return, and
+  part of any comparison of two selectors for identity.
+
+  Both facts are stated once now, in `src/win16/selectors.ts`, and segments
+  live in the LDT. The encoding used to be written out at fourteen call sites
+  as `(index << 3) | 0x3`, which is how it came to disagree with Windows
+  without anyone deciding that it should.
+
   **The local heap's rounding is now understood.** Seventeen measurements, nine
   of them chosen to refute a model rather than confirm one:
 
@@ -299,16 +311,23 @@ the whole 64 KiB its selector can address, so a block that still fits behind
 the selectors it has does not move and only the bookkeeping changes. And the
 lock count stays where the recordings put it, at zero.
 
-**Strings 57/57, memory 40/40, handles 13/16 -- 110 of 113.** The three that
-remain are `table and privilege bits`, which is the GDT-against-LDT question
-above and a deliberate difference rather than a defect.
+**Strings 57/57, memory 40/40, handles 16/16 -- 113 of 113.** Every recorded
+call agrees with real Windows 3.1.
 
-Implementing them also exposed a flaw in the replay harness worth writing down.
-Arguments that are not numbers were being turned into `NaN`, so a probe naming
-its cases -- `moveable`, `fixed`, `moveable grow,256->1024` -- handed every
-adapter the same unusable value, and the adapters fell back to their defaults
-and agreed anyway. Two probes had been passing for the wrong reason. Text stays
-text now.
+That is the point at which these probes stop being useful, not the point at
+which the work is done. It says everything measured agrees, and what is
+measured is nine string functions and the two heaps. The next probe should be
+expected to lower it.
+
+Getting there exposed two flaws in the replay harness, worth writing down
+because nothing measures the harness. Arguments that were not numbers became
+`NaN`, so a probe naming its cases -- `moveable`, `fixed`, `moveable
+grow,256->1024` -- handed every adapter the same unusable value; the adapters
+fell back to their defaults and agreed anyway. Two probes had been passing for
+the wrong reason. And the known-gap list threw unconditionally, so an entry
+stayed green whether or not its gap was still there. Both are fixed, and the
+second earned its keep immediately: moving to the LDT made an entry stale, and
+the suite said so rather than quietly continuing to excuse it.
 
 `AnsiNext` has a quieter surprise: at the null terminator it returns the same
 pointer rather than moving past it, so walking a string with it stops at the end

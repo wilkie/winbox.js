@@ -1,6 +1,7 @@
 'use strict';
 
 // File System
+import { segmentSelector } from './win16/selectors.js';
 import { FAT16 } from './file-systems/fat16.js';
 
 // Task
@@ -335,16 +336,16 @@ export class Win16 {
     task.programSegment = programSegment;
     task.environmentSegment = environmentSegment;
 
-    this._machine.cpu.core.ds = (task.loader.ds << 3) | 0x3;
-    this._machine.cpu.core.ss = (task.loader.ss << 3) | 0x3;
+    this._machine.cpu.core.ds = segmentSelector(task.loader.ds);
+    this._machine.cpu.core.ss = segmentSelector(task.loader.ss);
     this._machine.cpu.core.sp = dataSegment.length + task.executable.neHeader.initialStackSize;
-    this._machine.cpu.core.cs = (task.loader.cs << 3) | 0x3;
+    this._machine.cpu.core.cs = segmentSelector(task.loader.cs);
     this._machine.cpu.core.ip = task.loader.ip;
     this._machine.cpu.core.bx = task.executable.neHeader.initialStackSize;
     this._machine.cpu.core.cx = task.executable.neHeader.initialLocalHeapSize;
     this._machine.cpu.core.di = 0x88; // hModule
     this._machine.cpu.core.si = 0;
-    this._machine.cpu.core.es = (programSegment << 3) | 0x3;
+    this._machine.cpu.core.es = segmentSelector(programSegment);
 
     // Set current directory
     const parts = this.dos.files.parse(task.executable.path);
@@ -370,9 +371,9 @@ export class Win16 {
     const loader = task.loader;
     const dataSegment = loader.segments[loader.ds - 1];
 
-    this._machine.cpu.core.ds = (loader.ds << 3) | 0x3;
+    this._machine.cpu.core.ds = segmentSelector(loader.ds);
     this._machine.cpu.core.bx = 0x81; // Offset to the command line in the PSP
-    this._machine.cpu.core.es = (task.programSegment << 3) | 0x3;
+    this._machine.cpu.core.es = segmentSelector(task.programSegment);
     this._machine.cpu.core.cx = dataSegment.length; // The limit for the stack.
     this._machine.cpu.core.di = taskHandle; // the HINSTANCE
     this._machine.cpu.core.dx = User.SW_SHOWNORMAL; // Show the main window

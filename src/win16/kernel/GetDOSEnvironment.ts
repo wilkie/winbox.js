@@ -1,5 +1,7 @@
 'use strict';
 
+import { segmentSelector } from '../selectors.js';
+
 /**
  * The **GetDOSEnvironment** function returns a far pointer to the environment
  * string of the current (running) task.
@@ -19,5 +21,5 @@ export function GetDOSEnvironment() {
   const taskHandle = this.scheduler.active;
   const task = this.handles.resolve(taskHandle);
 
-  return ((task.environmentSegment << 3) | 0x3) << 16;
+  return segmentSelector(task.environmentSegment) << 16;
 }

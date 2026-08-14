@@ -1,5 +1,6 @@
 'use strict';
 
+import { segmentSelector } from './selectors.js';
 import { Loader } from './loader.js';
 
 /**
@@ -71,9 +72,9 @@ export class Linker {
               const offset = info.offset;
 
               if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_SEGMENT) {
-                this.writeRelocation16(relocation, segmentIndex, (segment << 3) | 0x3);
+                this.writeRelocation16(relocation, segmentIndex, segmentSelector(segment));
               } else if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_FARADDR) {
-                this.writeRelocation32(relocation, segmentIndex, (segment << 3) | 0x3, offset);
+                this.writeRelocation32(relocation, segmentIndex, segmentSelector(segment), offset);
               } else if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_OFFSET) {
                 this.writeRelocation16(relocation, segmentIndex, offset);
               }
@@ -100,9 +101,9 @@ export class Linker {
           // TODO: lookup appropriate segment number
 
           if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_SEGMENT) {
-            this.writeRelocation16(relocation, segmentIndex, (segment << 3) | 0x3);
+            this.writeRelocation16(relocation, segmentIndex, segmentSelector(segment));
           } else if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_FARADDR) {
-            this.writeRelocation32(relocation, segmentIndex, (segment << 3) | 0x3, offset);
+            this.writeRelocation32(relocation, segmentIndex, segmentSelector(segment), offset);
           } else if (relocation.addressType == Loader.RELOCATION_ADDRESSTYPE_OFFSET) {
             this.writeRelocation16(relocation, segmentIndex, offset);
           }

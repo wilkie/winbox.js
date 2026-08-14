@@ -1,5 +1,6 @@
 'use strict';
 
+import { segmentSelector } from './selectors.js';
 import { Types, HWND, WPARAM, LPARAM, UINT, LRESULT } from './types.js';
 
 import { User, MSG } from './user.js';
@@ -272,7 +273,7 @@ export class Scheduler {
   async call(module, segment, offset, args, returnType) {
     // Get the memory space for the module
     const loadedModule = this._modules.instanceFor(module.name);
-    const moduleSegment = (loadedModule.segment << 3) | 0x3;
+    const moduleSegment = segmentSelector(loadedModule.segment);
 
     // Write new immediate for the call
     this._machine.cpu.core.write16(moduleSegment, 1, offset);

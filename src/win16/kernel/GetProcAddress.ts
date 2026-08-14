@@ -1,3 +1,5 @@
+import { segmentSelector } from '../selectors.js';
+
 export function GetProcAddress(hinst, lpszProcName) {
   // Get a reference to the module in question
   let module = this.handles.resolve(hinst);
@@ -16,6 +18,6 @@ export function GetProcAddress(hinst, lpszProcName) {
     const segment = info.segment;
     const offset = info.offset;
 
-    return (((segment << 3) | 0x3) << 16) | offset;
+    return (segmentSelector(segment) << 16) | offset;
   }
 }
