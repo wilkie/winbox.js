@@ -863,9 +863,40 @@ pushed onto one of them by the font's own bytecode; drawn without it, the stem
 is where the outline says and the outline was never meant to be believed
 literally at thirteen pixels per em.
 
+### The interpreter runs, and does not yet reproduce the pixels
+
+The hinting interpreter is written: a stack machine with the graphics state,
+the zones, the storage and control values, the function definitions, and about
+ninety instructions. It works in the sense that matters least and not yet in
+the sense that matters most.
+
+What it demonstrably does: runs Arial's `fpgm`, which defines sixty-three
+functions, then `prep`, which calls them and leaves the state each glyph starts
+from; then runs each glyph's own program to completion -- two thousand two
+hundred and forty-three instructions for a capital `A`, across a hundred and
+fourteen function calls, a hundred and fifty-eight conditionals, and the whole
+family of point-moving instructions. No exceptions, no stack underflows, no
+unimplemented opcodes. Finding the last of those was its own small loop: the
+census said the three fonts use a hundred and thirty distinct instructions, and
+each missing one stops everything until it is written, so the work went
+`GETINFO`, then `SROUND`, then the rest.
+
+What it does not do is move the outline. The points come back within a
+hundredth of a pixel of where scaling alone put them -- 3.56 against 3.55 --
+where Windows moves them onto whole pixels. The rendered result is unchanged:
+still 43.3% of the glyph fixture, still the same 16 pixels of 32 differing on
+Arial's `A`. Instructions execute and points move by whole pixels in places, so
+this is not a machine that does nothing; it is a semantic error in the graphics
+state that running without error does not expose, and the next step is
+narrowing it against the fixture one instruction at a time.
+
+That is worth stating plainly rather than filing under "in progress". A running
+interpreter that produces the wrong answer looks far more finished than it is,
+and the only thing that says otherwise is the pixel comparison.
+
 Which is the honest statement of where this stands: the rasteriser is correct
-and unhinted, the interpreter is the remaining work, and the fixture already
-holds what it would have to agree with.
+and unhinted, the interpreter runs and is wrong, and the fixture holds what
+both would have to agree with.
 
 **What we do not do.** We do not hint. Of the font fixture's 2225 records, 1801 agree: the rest are the synthesised
 styles on outline faces, the maximum character width, and the sizes the fitted

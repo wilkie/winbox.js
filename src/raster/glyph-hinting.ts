@@ -1,0 +1,1789 @@
+'use strict';
+
+/**
+ * The TrueType hinting interpreter.
+ *
+ * A TrueType font carries a program per glyph, and two more that set things up:
+ * `fpgm` defines functions once, `prep` runs whenever the size changes. What
+ * they do is move the outline's points onto the pixel grid before anything is
+ * filled -- pulling a stem onto a whole column so it comes out crisp rather
+ * than smeared across two. At the sizes text is read at that decides where
+ * about half the ink goes, which is the measurement in `oracle/README.md`.
+ *
+ * It is a stack machine with a graphics state, and the state is most of the
+ * difficulty: an instruction like `MIRP` reads the projection vector, the
+ * freedom vector, three reference points, two zone pointers, the round state,
+ * the control value cut-in and the minimum distance, and moves one point
+ * accordingly. Getting any of them wrong moves a point silently.
+ *
+ * Everything is in F26Dot6 -- a whole number of sixty-fourths of a pixel --
+ * except the unit vectors, which are F2Dot14. The mixture is the format's, not
+ * ours, and keeping the two straight is most of what the arithmetic here is
+ * doing.
+ *
+ * An instruction that is not implemented raises `Unsupported`, and the caller
+ * falls back to the unhinted outline for that glyph. That is deliberate: a
+ * half-run program leaves points moved by some instructions and not others,
+ * which is worse than not hinting at all, and silently wrong rather than
+ * visibly so.
+ */
+
+/** Raised when a program uses something this does not implement. */
+export class Unsupported extends Error {}
+
+/** How many instructions one program may run before it is assumed stuck. */
+const STEP_LIMIT = 400000;
+
+/** A point's coordinates are sixty-fourths of a pixel. */
+const ONE = 64;
+
+/** Unit vector components are sixteen-thousand-three-hundred-and-eighty-fourths. */
+const UNIT = 16384;
+
+/** Rounds a fixed-point division the way the format's own arithmetic does. */
+function divide(a: number, b: number) {
+  if (b === 0) {
+    return 0;
+  }
+
+  return Math.round((a * ONE) / b);
+}
+
+/** The points of a glyph, in both the state they arrived in and the current one. */
+export class Zone {
+  declare x: number[];
+  declare y: number[];
+  declare originalX: number[];
+  declare originalY: number[];
+  declare onCurve: boolean[];
+  declare touchedX: boolean[];
+  declare touchedY: boolean[];
+  declare ends: number[];
+
+  constructor(count = 0) {
+    this.x = new Array(count).fill(0);
+    this.y = new Array(count).fill(0);
+    this.originalX = new Array(count).fill(0);
+    this.originalY = new Array(count).fill(0);
+    this.onCurve = new Array(count).fill(true);
+    this.touchedX = new Array(count).fill(false);
+    this.touchedY = new Array(count).fill(false);
+    this.ends = [];
+  }
+
+  get length() {
+    return this.x.length;
+  }
+}
+
+/**
+ * Runs a font's hinting programs.
+ *
+ * One of these is built per font and per size: `fpgm` and `prep` are run once
+ * between them, and then each glyph's own program is run against the points of
+ * that glyph.
+ */
+export class Hinter {
+  declare font: any;
+  declare ppem: number;
+  declare scale: number;
+
+  declare stack: number[];
+  declare storage: number[];
+  declare cvt: number[];
+  declare functions: Map<number, { at: number; end: number; program: DataView }>;
+
+  declare zones: Zone[];
+  declare state: any;
+  declare defaults: any;
+
+  declare _ready: boolean;
+
+  /**
+   * @param {TrueTypeFont} font - The font whose programs these are.
+   * @param {number} ppem - The size everything is being fitted to.
+   */
+  constructor(font, ppem) {
+    this.font = font;
+    this.ppem = ppem;
+    this.scale = ppem / font.unitsPerEm;
+
+    this.stack = [];
+    this.storage = new Array(Math.max(64, font.maxStorage ?? 64)).fill(0);
+    this.functions = new Map();
+
+    // The twilight zone is scratch space the programs use for construction.
+    this.zones = [new Zone(font.maxTwilight ?? 16), new Zone(0)];
+
+    this.cvt = this.scaledControlValues();
+    this.state = this.freshState();
+    this.defaults = { ...this.state };
+
+    this._ready = false;
+  }
+
+  /** The control value table, in pixels rather than in font units. */
+  scaledControlValues() {
+    const values: number[] = [];
+
+    if (!this.font.has('cvt ')) {
+      return values;
+    }
+
+    const table = this.font._tables['cvt '];
+
+    for (let at = 0; at + 1 < table.length; at += 2) {
+      const units = this.font._view.getInt16(table.offset + at, false);
+
+      values.push(Math.round(units * this.scale * ONE));
+    }
+
+    return values;
+  }
+
+  /** The graphics state as it stands at the start of every program. */
+  freshState() {
+    return {
+      projection: { x: UNIT, y: 0 },
+      freedom: { x: UNIT, y: 0 },
+      dual: { x: UNIT, y: 0 },
+
+      rp0: 0,
+      rp1: 0,
+      rp2: 0,
+
+      zp0: 1,
+      zp1: 1,
+      zp2: 1,
+
+      loop: 1,
+      roundPeriod: ONE,
+      roundPhase: 0,
+      roundThreshold: ONE / 2,
+      rounding: true,
+
+      minimumDistance: ONE,
+      controlCutIn: (17 * ONE) / 16,
+      singleWidth: 0,
+      singleWidthCutIn: 0,
+
+      autoFlip: true,
+      deltaBase: 9,
+      deltaShift: 3,
+      instructionControl: 0,
+    };
+  }
+
+  /** Runs `fpgm` and `prep`, which between them set the size up. */
+  prepare() {
+    if (this._ready) {
+      return;
+    }
+
+    this._ready = true;
+
+    for (const tag of ['fpgm', 'prep']) {
+      if (!this.font.has(tag)) {
+        continue;
+      }
+
+      const table = this.font._tables[tag];
+
+      this.state = this.freshState();
+      this.stack = [];
+
+      this.run(this.font._view, table.offset, table.offset + table.length);
+
+      if (tag === 'fpgm') {
+        continue;
+      }
+
+      // Whatever `prep` left the state as is what each glyph starts from.
+      this.defaults = { ...this.state };
+    }
+  }
+
+  /**
+   * Hints one glyph's points.
+   *
+   * @param {Object} outline - Contours in font units.
+   * @param {number} advance - The glyph's advance, in font units.
+   * @param {number} leftSideBearing - Its left side bearing, in font units.
+   * @param {DataView} program - Its instructions.
+   * @param {number} at - Where they start.
+   * @param {number} length - How many bytes of them there are.
+   * @returns {Array} The contours, moved onto the grid.
+   */
+  hint(outline, advance, leftSideBearing, program, at, length) {
+    this.prepare();
+
+    const zone = new Zone(0);
+
+    for (const contour of outline) {
+      for (const point of contour) {
+        zone.x.push(Math.round(point.x * this.scale * ONE));
+        zone.y.push(Math.round(point.y * this.scale * ONE));
+        zone.onCurve.push(point.on);
+        zone.touchedX.push(false);
+        zone.touchedY.push(false);
+      }
+
+      zone.ends.push(zone.x.length - 1);
+    }
+
+    /* The phantom points: the origin, the advance, and two more for the
+     * vertical direction. A program may move them, and moving the second is
+     * how a font adjusts its own advance width at a particular size.
+     */
+    const phantom = [
+      { x: Math.round(leftSideBearing * this.scale * ONE), y: 0 },
+      { x: Math.round((leftSideBearing + advance) * this.scale * ONE), y: 0 },
+      { x: 0, y: 0 },
+      { x: 0, y: 0 },
+    ];
+
+    for (const point of phantom) {
+      zone.x.push(point.x);
+      zone.y.push(point.y);
+      zone.onCurve.push(false);
+      zone.touchedX.push(false);
+      zone.touchedY.push(false);
+    }
+
+    zone.originalX = zone.x.slice();
+    zone.originalY = zone.y.slice();
+
+    this.zones[1] = zone;
+    this.zones[0] = new Zone(this.font.maxTwilight ?? 16);
+
+    this.state = { ...this.defaults };
+    this.stack = [];
+
+    this.run(program, at, at + length);
+
+    // Back into contours, in font units scaled to pixels.
+    const hinted: any[] = [];
+
+    let index = 0;
+
+    for (const contour of outline) {
+      const shape: any[] = [];
+
+      for (let point = 0; point < contour.length; point++) {
+        shape.push({
+          x: zone.x[index] / ONE,
+          y: zone.y[index] / ONE,
+          on: zone.onCurve[index],
+        });
+
+        index++;
+      }
+
+      hinted.push(shape);
+    }
+
+    return hinted;
+  }
+
+  /* ---- the machine ---- */
+
+  push(value) {
+    this.stack.push(value | 0);
+  }
+
+  pop() {
+    if (this.stack.length === 0) {
+      throw new Unsupported('stack underflow');
+    }
+
+    return this.stack.pop() as number;
+  }
+
+  zone(which) {
+    return this.zones[which] ?? this.zones[1];
+  }
+
+  /** How far along the projection vector a point sits. */
+  project(x, y) {
+    return Math.round((x * this.state.projection.x + y * this.state.projection.y) / UNIT);
+  }
+
+  /** The same, against the vector the original outline is measured with. */
+  projectDual(x, y) {
+    return Math.round((x * this.state.dual.x + y * this.state.dual.y) / UNIT);
+  }
+
+  /**
+   * Moves a point by a distance along the projection vector.
+   *
+   * The point travels along the *freedom* vector, far enough that its
+   * projection moves by what was asked. When the two vectors are at an angle
+   * that means moving further than the distance itself.
+   */
+  movePoint(zone, index, distance) {
+    const { freedom, projection } = this.state;
+
+    /* How much of a step along the freedom vector shows up along the
+     * projection vector. Where the two are the same axis this is one, and the
+     * point simply moves by the distance; where they are at an angle it is
+     * less, and the point has to travel further to project as far.
+     */
+    const along = (projection.x * freedom.x + projection.y * freedom.y) / UNIT;
+
+    if (along === 0) {
+      return;
+    }
+
+    if (freedom.x !== 0) {
+      zone.x[index] += Math.round((distance * freedom.x) / along);
+      zone.touchedX[index] = true;
+    }
+
+    if (freedom.y !== 0) {
+      zone.y[index] += Math.round((distance * freedom.y) / along);
+      zone.touchedY[index] = true;
+    }
+  }
+
+  /** Rounds a distance according to the current round state. */
+  round(value) {
+    if (!this.state.rounding) {
+      return value;
+    }
+
+    const { roundPeriod, roundPhase, roundThreshold } = this.state;
+
+    const negative = value < 0;
+    let magnitude = Math.abs(value);
+
+    magnitude += roundThreshold - roundPhase;
+    magnitude = Math.floor(magnitude / roundPeriod) * roundPeriod;
+    magnitude += roundPhase;
+
+    if (magnitude < 0) {
+      magnitude = roundPhase;
+    }
+
+    return negative ? -magnitude : magnitude;
+  }
+
+  /**
+   * Executes a program.
+   *
+   * @param {DataView} program - Where the instructions are.
+   * @param {number} from - The first byte.
+   * @param {number} to - One past the last.
+   */
+  run(program, from, to) {
+    let at = from;
+    let steps = 0;
+
+    /* Nested conditionals and loops are handled by scanning forward for the
+     * matching instruction rather than by keeping a block structure, which is
+     * what the format's own flat jumps invite.
+     */
+    while (at < to) {
+      if (++steps > STEP_LIMIT) {
+        throw new Unsupported('program did not finish');
+      }
+
+      const opcode = program.getUint8(at++);
+
+      at = this.execute(opcode, program, at, to);
+    }
+  }
+
+  /**
+   * Runs one instruction and says where the next one starts.
+   *
+   * Split out from `run` because a function call, a conditional and a loop all
+   * need to execute instructions from somewhere else, and the dispatch is the
+   * same wherever the bytes came from.
+   */
+  execute(opcode, program, at, to) {
+    // The pushes carry their operands with them, so they move the cursor.
+    if (opcode === 0x40) {
+      const count = program.getUint8(at++);
+
+      for (let index = 0; index < count; index++) {
+        this.push(program.getUint8(at++));
+      }
+
+      return at;
+    }
+
+    if (opcode === 0x41) {
+      const count = program.getUint8(at++);
+
+      for (let index = 0; index < count; index++) {
+        this.push(program.getInt16(at, false));
+        at += 2;
+      }
+
+      return at;
+    }
+
+    if (opcode >= 0xb0 && opcode <= 0xb7) {
+      const count = opcode - 0xb0 + 1;
+
+      for (let index = 0; index < count; index++) {
+        this.push(program.getUint8(at++));
+      }
+
+      return at;
+    }
+
+    if (opcode >= 0xb8 && opcode <= 0xbf) {
+      const count = opcode - 0xb8 + 1;
+
+      for (let index = 0; index < count; index++) {
+        this.push(program.getInt16(at, false));
+        at += 2;
+      }
+
+      return at;
+    }
+
+    return this.perform(opcode, program, at, to);
+  }
+
+  /** Everything that is not a push. */
+  perform(opcode, program, at, to) {
+    const state = this.state;
+
+    switch (opcode) {
+      /* -- the vectors -- */
+
+      case 0x00: // SVTCA[0], both vectors to the y axis
+      case 0x01: {
+        // SVTCA[1], both to the x axis
+        const vector = opcode === 0x01 ? { x: UNIT, y: 0 } : { x: 0, y: UNIT };
+
+        state.projection = { ...vector };
+        state.dual = { ...vector };
+        state.freedom = { ...vector };
+
+        return at;
+      }
+
+      case 0x02: // SPVTCA[0]
+      case 0x03: {
+        const vector = opcode === 0x03 ? { x: UNIT, y: 0 } : { x: 0, y: UNIT };
+
+        state.projection = { ...vector };
+        state.dual = { ...vector };
+
+        return at;
+      }
+
+      case 0x04: // SFVTCA[0]
+      case 0x05: {
+        state.freedom = opcode === 0x05 ? { x: UNIT, y: 0 } : { x: 0, y: UNIT };
+
+        return at;
+      }
+
+      case 0x0e: // SFVTPV
+        state.freedom = { ...state.projection };
+        return at;
+
+      /* -- reference points and zones -- */
+
+      case 0x10:
+        state.rp0 = this.pop();
+        return at;
+
+      case 0x11:
+        state.rp1 = this.pop();
+        return at;
+
+      case 0x12:
+        state.rp2 = this.pop();
+        return at;
+
+      case 0x13:
+        state.zp0 = this.pop();
+        return at;
+
+      case 0x14:
+        state.zp1 = this.pop();
+        return at;
+
+      case 0x15:
+        state.zp2 = this.pop();
+        return at;
+
+      case 0x16: {
+        const which = this.pop();
+
+        state.zp0 = which;
+        state.zp1 = which;
+        state.zp2 = which;
+
+        return at;
+      }
+
+      /* -- the round state -- */
+
+      case 0x18: // RTG
+        state.rounding = true;
+        state.roundPeriod = ONE;
+        state.roundPhase = 0;
+        state.roundThreshold = ONE / 2;
+        return at;
+
+      case 0x19: // RTHG
+        state.rounding = true;
+        state.roundPeriod = ONE;
+        state.roundPhase = ONE / 2;
+        state.roundThreshold = ONE / 2;
+        return at;
+
+      case 0x3d: // RTDG
+        state.rounding = true;
+        state.roundPeriod = ONE / 2;
+        state.roundPhase = 0;
+        state.roundThreshold = ONE / 4;
+        return at;
+
+      case 0x7d: // RDTG
+        state.rounding = true;
+        state.roundPeriod = ONE;
+        state.roundPhase = 0;
+        state.roundThreshold = 0;
+        return at;
+
+      case 0x7c: // RUTG
+        state.rounding = true;
+        state.roundPeriod = ONE;
+        state.roundPhase = 0;
+        state.roundThreshold = ONE - 1;
+        return at;
+
+      case 0x7a: // ROFF
+        state.rounding = false;
+        return at;
+
+      /* -- the stack -- */
+
+      case 0x20: {
+        const value = this.pop();
+
+        this.push(value);
+        this.push(value);
+
+        return at;
+      }
+
+      case 0x21:
+        this.pop();
+        return at;
+
+      case 0x22:
+        this.stack = [];
+        return at;
+
+      case 0x23: {
+        const a = this.pop();
+        const b = this.pop();
+
+        this.push(a);
+        this.push(b);
+
+        return at;
+      }
+
+      case 0x24:
+        this.push(this.stack.length);
+        return at;
+
+      case 0x26: {
+        // MINDEX
+        const index = this.pop();
+        const value = this.stack.splice(this.stack.length - index, 1)[0];
+
+        this.push(value);
+
+        return at;
+      }
+
+      case 0x25: {
+        // CINDEX
+        const index = this.pop();
+
+        this.push(this.stack[this.stack.length - index]);
+
+        return at;
+      }
+
+      /* -- storage and control values -- */
+
+      case 0x43:
+        this.push(this.storage[this.pop()] ?? 0);
+        return at;
+
+      case 0x42: {
+        const value = this.pop();
+        const index = this.pop();
+
+        this.storage[index] = value;
+
+        return at;
+      }
+
+      case 0x45:
+        this.push(this.cvt[this.pop()] ?? 0);
+        return at;
+
+      case 0x44: {
+        // WCVTP, in pixels
+        const value = this.pop();
+        const index = this.pop();
+
+        this.cvt[index] = value;
+
+        return at;
+      }
+
+      case 0x70: {
+        // WCVTF, in font units
+        const value = this.pop();
+        const index = this.pop();
+
+        this.cvt[index] = Math.round(value * this.scale * ONE);
+
+        return at;
+      }
+
+      /* -- arithmetic -- */
+
+      case 0x60: {
+        const b = this.pop();
+        const a = this.pop();
+
+        this.push(a + b);
+
+        return at;
+      }
+
+      case 0x61: {
+        const b = this.pop();
+        const a = this.pop();
+
+        this.push(a - b);
+
+        return at;
+      }
+
+      case 0x62: {
+        const b = this.pop();
+        const a = this.pop();
+
+        this.push(divide(a, b));
+
+        return at;
+      }
+
+      case 0x63: {
+        const b = this.pop();
+        const a = this.pop();
+
+        this.push(Math.round((a * b) / ONE));
+
+        return at;
+      }
+
+      case 0x64:
+        this.push(Math.abs(this.pop()));
+        return at;
+
+      case 0x65:
+        this.push(-this.pop());
+        return at;
+
+      case 0x66:
+        this.push(Math.floor(this.pop() / ONE) * ONE);
+        return at;
+
+      case 0x67:
+        this.push(Math.ceil(this.pop() / ONE) * ONE);
+        return at;
+
+      case 0x8b: {
+        const b = this.pop();
+        const a = this.pop();
+
+        this.push(Math.max(a, b));
+
+        return at;
+      }
+
+      case 0x8c: {
+        const b = this.pop();
+        const a = this.pop();
+
+        this.push(Math.min(a, b));
+
+        return at;
+      }
+
+      /* -- comparison and logic -- */
+
+      case 0x50:
+      case 0x51:
+      case 0x52:
+      case 0x53:
+      case 0x54:
+      case 0x55: {
+        const b = this.pop();
+        const a = this.pop();
+
+        const answer = {
+          0x50: a < b,
+          0x51: a <= b,
+          0x52: a > b,
+          0x53: a >= b,
+          0x54: a === b,
+          0x55: a !== b,
+        }[opcode];
+
+        this.push(answer ? 1 : 0);
+
+        return at;
+      }
+
+      case 0x56:
+        this.push(Math.abs(this.round(this.pop()) / ONE) % 2 === 1 ? 1 : 0);
+        return at;
+
+      case 0x57:
+        this.push(Math.abs(this.round(this.pop()) / ONE) % 2 === 0 ? 1 : 0);
+        return at;
+
+      case 0x5a: {
+        const b = this.pop();
+        const a = this.pop();
+
+        this.push(a && b ? 1 : 0);
+
+        return at;
+      }
+
+      case 0x5b: {
+        const b = this.pop();
+        const a = this.pop();
+
+        this.push(a || b ? 1 : 0);
+
+        return at;
+      }
+
+      case 0x5c:
+        this.push(this.pop() ? 0 : 1);
+        return at;
+
+      /* -- rounding -- */
+
+      case 0x68:
+      case 0x69:
+      case 0x6a:
+      case 0x6b:
+        this.push(this.round(this.pop()));
+        return at;
+
+      case 0x6c:
+      case 0x6d:
+      case 0x6e:
+      case 0x6f:
+        // NROUND, which is the same without the rounding.
+        return at;
+
+      /* -- the size -- */
+
+      case 0x4b:
+        this.push(this.ppem);
+        return at;
+
+      case 0x4c:
+        this.push(this.ppem * ONE);
+        return at;
+
+      /* -- state values -- */
+
+      case 0x17:
+        state.loop = this.pop();
+        return at;
+
+      case 0x1a:
+        state.minimumDistance = this.pop();
+        return at;
+
+      case 0x1d:
+        state.controlCutIn = this.pop();
+        return at;
+
+      case 0x1e:
+        state.singleWidthCutIn = this.pop();
+        return at;
+
+      case 0x1f:
+        state.singleWidth = this.pop();
+        return at;
+
+      case 0x4d:
+        state.autoFlip = true;
+        return at;
+
+      case 0x4e:
+        state.autoFlip = false;
+        return at;
+
+      case 0x5e:
+        state.deltaBase = this.pop();
+        return at;
+
+      case 0x5f:
+        state.deltaShift = this.pop();
+        return at;
+
+      case 0x8e: // INSTCTRL
+        this.pop();
+        this.pop();
+        return at;
+
+      case 0x85: // SCANCTRL
+      case 0x8d: // SCANTYPE
+        this.pop();
+        return at;
+
+      /* -- functions -- */
+
+      case 0x76:
+      case 0x77: {
+        /* SROUND and S45ROUND: the round state spelled out in one byte rather
+         * than chosen from the handful of named ones. The period is how far
+         * apart the places a value can land are, the phase is where the first
+         * of them sits, and the threshold is how far past one a value has to
+         * get before it goes to the next.
+         */
+        const packed = this.pop();
+
+        const base = opcode === 0x77 ? Math.round(ONE * Math.SQRT1_2) : ONE;
+
+        const period = { 0: base / 2, 1: base, 2: base * 2, 3: base }[(packed >> 6) & 0x03];
+        const phase = (((packed >> 4) & 0x03) * period) / 4;
+
+        const selector = packed & 0x0f;
+        const threshold = selector === 0 ? period - 1 : ((selector - 4) / 8) * period;
+
+        state.rounding = true;
+        state.roundPeriod = period;
+        state.roundPhase = phase;
+        state.roundThreshold = threshold;
+
+        return at;
+      }
+
+      case 0x89:
+        // IDEF, which redefines an instruction. Nothing here does that.
+        throw new Unsupported('IDEF');
+
+      case 0x88: {
+        // GETINFO: what the program is being run by.
+        const selector = this.pop();
+
+        let answer = 0;
+
+        // Bit 0 asks for the scaler's version, and nothing here rotates or
+        // stretches, so the other bits stay clear.
+        if (selector & 0x01) {
+          answer |= 1;
+        }
+
+        this.push(answer);
+
+        return at;
+      }
+
+      case 0x8a: {
+        // ROLL, which rotates the top three.
+        const a = this.pop();
+        const b = this.pop();
+        const c = this.pop();
+
+        this.push(b);
+        this.push(a);
+        this.push(c);
+
+        return at;
+      }
+
+      case 0x0c:
+        this.push(state.projection.x);
+        this.push(state.projection.y);
+        return at;
+
+      case 0x0d:
+        this.push(state.freedom.x);
+        this.push(state.freedom.y);
+        return at;
+
+      case 0x0a: {
+        const y = this.pop();
+        const x = this.pop();
+
+        state.projection = { x, y };
+        state.dual = { x, y };
+
+        return at;
+      }
+
+      case 0x0b: {
+        const y = this.pop();
+        const x = this.pop();
+
+        state.freedom = { x, y };
+
+        return at;
+      }
+
+      case 0x06:
+      case 0x07:
+      case 0x08:
+      case 0x09:
+      case 0x86:
+      case 0x87: {
+        /* Set a vector from the line between two points -- along it for the
+         * even opcodes, at right angles for the odd ones.
+         */
+        const second = this.pop();
+        const first = this.pop();
+
+        const zoneOne = this.zone(state.zp1);
+        const zoneTwo = this.zone(state.zp2);
+
+        const perpendicular = (opcode & 0x01) !== 0;
+
+        const dx = zoneTwo.x[first] - zoneOne.x[second];
+        const dy = zoneTwo.y[first] - zoneOne.y[second];
+
+        const vector = this.unitVector(dx, dy, perpendicular);
+
+        if (opcode === 0x06 || opcode === 0x07) {
+          state.projection = vector;
+          state.dual = { ...vector };
+        } else if (opcode === 0x08 || opcode === 0x09) {
+          state.freedom = vector;
+        } else {
+          state.projection = vector;
+          state.dual = { ...vector };
+        }
+
+        return at;
+      }
+
+      case 0x29:
+        // UTP, which unsticks a point so interpolation carries it again.
+        {
+          const index = this.pop();
+          const zone = this.zone(state.zp0);
+
+          if (state.freedom.x !== 0) {
+            zone.touchedX[index] = false;
+          }
+
+          if (state.freedom.y !== 0) {
+            zone.touchedY[index] = false;
+          }
+        }
+
+        return at;
+
+      case 0x80: {
+        // FLIPPT, which turns points on and off the curve.
+        let count = state.loop;
+
+        while (count-- > 0) {
+          const index = this.pop();
+          const zone = this.zones[1];
+
+          zone.onCurve[index] = !zone.onCurve[index];
+        }
+
+        state.loop = 1;
+
+        return at;
+      }
+
+      case 0x81:
+      case 0x82: {
+        const high = this.pop();
+        const low = this.pop();
+
+        for (let index = low; index <= high; index++) {
+          this.zones[1].onCurve[index] = opcode === 0x81;
+        }
+
+        return at;
+      }
+
+      case 0x2c: {
+        // FDEF
+        const index = this.pop();
+
+        const start = at;
+        let cursor = at;
+
+        // Its body runs to the matching ENDF.
+        while (cursor < to) {
+          const inner = program.getUint8(cursor++);
+
+          if (inner === 0x2d) {
+            break;
+          }
+
+          cursor = this.skip(inner, program, cursor);
+        }
+
+        this.functions.set(index, { at: start, end: cursor - 1, program });
+
+        return cursor;
+      }
+
+      case 0x2d:
+        // ENDF, which `run` only reaches at the end of a called function.
+        return to;
+
+      case 0x2b: {
+        // CALL
+        const index = this.pop();
+
+        this.callFunction(index);
+
+        return at;
+      }
+
+      case 0x2a: {
+        // LOOPCALL
+        const index = this.pop();
+        let count = this.pop();
+
+        while (count-- > 0) {
+          this.callFunction(index);
+        }
+
+        return at;
+      }
+
+      /* -- conditionals -- */
+
+      case 0x58: {
+        // IF
+        if (this.pop()) {
+          return at;
+        }
+
+        return this.skipToElse(program, at, to);
+      }
+
+      case 0x1b: // ELSE
+        return this.skipToEnd(program, at, to);
+
+      case 0x59: // EIF
+        return at;
+
+      /* -- jumps -- */
+
+      case 0x1c: {
+        const offset = this.pop();
+
+        return at - 1 + offset;
+      }
+
+      case 0x78:
+      case 0x79: {
+        const condition = this.pop();
+        const offset = this.pop();
+
+        const taken = opcode === 0x78 ? condition : !condition;
+
+        return taken ? at - 1 + offset : at;
+      }
+
+      default:
+        return this.performGeometry(opcode, program, at, to);
+    }
+  }
+
+  /**
+   * The instructions that move points.
+   *
+   * Kept apart from the rest because they are where the graphics state
+   * actually gets used, and because they are the ones whose absence matters:
+   * everything above can be got right in isolation, and these cannot.
+   */
+  performGeometry(opcode, program, at, to) {
+    const state = this.state;
+
+    // MDAP, with and without rounding.
+    if (opcode === 0x2e || opcode === 0x2f) {
+      const index = this.pop();
+      const zone = this.zone(state.zp0);
+
+      const current = this.project(zone.x[index], zone.y[index]);
+      const distance = opcode === 0x2f ? this.round(current) - current : 0;
+
+      this.movePoint(zone, index, distance);
+
+      state.rp0 = index;
+      state.rp1 = index;
+
+      return at;
+    }
+
+    // IUP, which carries the untouched points along with the touched ones.
+    if (opcode === 0x30 || opcode === 0x31) {
+      this.interpolateUntouched(opcode === 0x31);
+
+      return at;
+    }
+
+    // MIAP, with and without rounding.
+    if (opcode === 0x3e || opcode === 0x3f) {
+      const value = this.pop();
+      const index = this.pop();
+      const zone = this.zone(state.zp0);
+
+      let distance = this.cvt[value] ?? 0;
+
+      const current = this.project(zone.x[index], zone.y[index]);
+
+      if (opcode === 0x3f) {
+        if (Math.abs(distance - current) > state.controlCutIn) {
+          distance = current;
+        }
+
+        distance = this.round(distance);
+      }
+
+      this.movePoint(zone, index, distance - current);
+
+      state.rp0 = index;
+      state.rp1 = index;
+
+      return at;
+    }
+
+    // GC: how far along the projection vector a point sits.
+    if (opcode === 0x46 || opcode === 0x47) {
+      const index = this.pop();
+      const zone = this.zone(state.zp2);
+
+      this.push(
+        opcode === 0x46
+          ? this.project(zone.x[index], zone.y[index])
+          : this.projectDual(zone.originalX[index], zone.originalY[index])
+      );
+
+      return at;
+    }
+
+    // SCFS: put a point at a given coordinate along the projection vector.
+    if (opcode === 0x48) {
+      const value = this.pop();
+      const index = this.pop();
+      const zone = this.zone(state.zp2);
+
+      this.movePoint(zone, index, value - this.project(zone.x[index], zone.y[index]));
+
+      return at;
+    }
+
+    // MD: the distance between two points, as they are now or as they were.
+    if (opcode === 0x49 || opcode === 0x4a) {
+      const second = this.pop();
+      const first = this.pop();
+
+      const zoneOne = this.zone(state.zp1);
+      const zoneTwo = this.zone(state.zp0);
+
+      this.push(
+        opcode === 0x49
+          ? this.project(zoneTwo.x[first] - zoneOne.x[second], zoneTwo.y[first] - zoneOne.y[second])
+          : this.projectDual(
+              zoneTwo.originalX[first] - zoneOne.originalX[second],
+              zoneTwo.originalY[first] - zoneOne.originalY[second]
+            )
+      );
+
+      return at;
+    }
+
+    // ALIGNRP: bring points onto the reference point's own coordinate.
+    if (opcode === 0x3c) {
+      let count = state.loop;
+
+      const zoneZero = this.zone(state.zp0);
+      const zoneOne = this.zone(state.zp1);
+
+      while (count-- > 0) {
+        const index = this.pop();
+
+        const distance = this.project(
+          zoneZero.x[state.rp0] - zoneOne.x[index],
+          zoneZero.y[state.rp0] - zoneOne.y[index]
+        );
+
+        this.movePoint(zoneOne, index, distance);
+      }
+
+      state.loop = 1;
+
+      return at;
+    }
+
+    // ALIGNPTS: bring two points to the same place, meeting in the middle.
+    if (opcode === 0x27) {
+      const second = this.pop();
+      const first = this.pop();
+
+      const zoneOne = this.zone(state.zp1);
+      const zoneZero = this.zone(state.zp0);
+
+      const distance = this.project(
+        zoneZero.x[second] - zoneOne.x[first],
+        zoneZero.y[second] - zoneOne.y[first]
+      );
+
+      this.movePoint(zoneOne, first, distance / 2);
+      this.movePoint(zoneZero, second, -distance / 2);
+
+      return at;
+    }
+
+    // SHPIX: shift points by an outright number of pixels.
+    if (opcode === 0x38) {
+      const amount = this.pop();
+
+      let count = state.loop;
+
+      while (count-- > 0) {
+        const index = this.pop();
+        const zone = this.zone(state.zp2);
+
+        if (state.freedom.x !== 0) {
+          zone.x[index] += Math.round((amount * state.freedom.x) / UNIT);
+          zone.touchedX[index] = true;
+        }
+
+        if (state.freedom.y !== 0) {
+          zone.y[index] += Math.round((amount * state.freedom.y) / UNIT);
+          zone.touchedY[index] = true;
+        }
+      }
+
+      state.loop = 1;
+
+      return at;
+    }
+
+    // SHP: shift points by however far a reference point has already moved.
+    if (opcode === 0x32 || opcode === 0x33) {
+      const { dx, dy } = this.referenceShift(opcode === 0x33);
+
+      let count = state.loop;
+
+      while (count-- > 0) {
+        const index = this.pop();
+        const zone = this.zone(state.zp2);
+
+        zone.x[index] += dx;
+        zone.y[index] += dy;
+
+        if (dx) {
+          zone.touchedX[index] = true;
+        }
+
+        if (dy) {
+          zone.touchedY[index] = true;
+        }
+      }
+
+      state.loop = 1;
+
+      return at;
+    }
+
+    // SHC: the same, to every point of a contour.
+    if (opcode === 0x34 || opcode === 0x35) {
+      const contour = this.pop();
+      const { dx, dy } = this.referenceShift(opcode === 0x35);
+
+      const zone = this.zone(state.zp2);
+
+      const from = contour === 0 ? 0 : zone.ends[contour - 1] + 1;
+      const to = zone.ends[contour] ?? zone.length - 1;
+
+      for (let index = from; index <= to; index++) {
+        zone.x[index] += dx;
+        zone.y[index] += dy;
+      }
+
+      return at;
+    }
+
+    // SHZ: the same again, to a whole zone.
+    if (opcode === 0x36 || opcode === 0x37) {
+      this.pop();
+
+      const { dx, dy } = this.referenceShift(opcode === 0x37);
+      const zone = this.zone(state.zp2);
+
+      for (let index = 0; index < zone.length; index++) {
+        zone.x[index] += dx;
+        zone.y[index] += dy;
+      }
+
+      return at;
+    }
+
+    // IP: place points proportionally between two references.
+    if (opcode === 0x39) {
+      let count = state.loop;
+
+      const zoneZero = this.zone(state.zp0);
+      const zoneOne = this.zone(state.zp1);
+
+      const originalOne = this.projectDual(
+        zoneZero.originalX[state.rp1],
+        zoneZero.originalY[state.rp1]
+      );
+      const originalTwo = this.projectDual(
+        zoneOne.originalX[state.rp2],
+        zoneOne.originalY[state.rp2]
+      );
+
+      const currentOne = this.project(zoneZero.x[state.rp1], zoneZero.y[state.rp1]);
+      const currentTwo = this.project(zoneOne.x[state.rp2], zoneOne.y[state.rp2]);
+
+      const span = originalTwo - originalOne;
+
+      while (count-- > 0) {
+        const index = this.pop();
+        const zone = this.zone(state.zp2);
+
+        const original = this.projectDual(zone.originalX[index], zone.originalY[index]);
+
+        const wanted = span
+          ? currentOne + ((original - originalOne) * (currentTwo - currentOne)) / span
+          : currentOne + (original - originalOne);
+
+        this.movePoint(
+          zone,
+          index,
+          Math.round(wanted) - this.project(zone.x[index], zone.y[index])
+        );
+      }
+
+      state.loop = 1;
+
+      return at;
+    }
+
+    // MSIRP: move a point to a given distance from the reference point.
+    if (opcode === 0x3a || opcode === 0x3b) {
+      const distance = this.pop();
+      const index = this.pop();
+
+      const zoneOne = this.zone(state.zp1);
+      const zoneZero = this.zone(state.zp0);
+
+      const current = this.project(
+        zoneOne.x[index] - zoneZero.x[state.rp0],
+        zoneOne.y[index] - zoneZero.y[state.rp0]
+      );
+
+      this.movePoint(zoneOne, index, distance - current);
+
+      state.rp1 = state.rp0;
+      state.rp2 = index;
+
+      if (opcode === 0x3b) {
+        state.rp0 = index;
+      }
+
+      return at;
+    }
+
+    /* The delta instructions: a list of exceptions, each saying that at one
+     * particular size a point or a control value wants nudging by a fraction
+     * of a pixel. This is where a font's designer fixes what the rest of the
+     * program gets wrong at one size and one size only.
+     */
+    if (opcode === 0x5d || opcode === 0x71 || opcode === 0x72) {
+      const band = { 0x5d: 0, 0x71: 16, 0x72: 32 }[opcode];
+
+      let pairs = this.pop();
+
+      while (pairs-- > 0) {
+        const index = this.pop();
+        const argument = this.pop();
+
+        this.applyDelta(argument, band, (amount) => {
+          const zone = this.zone(state.zp0);
+
+          if (state.freedom.x !== 0) {
+            zone.x[index] += amount;
+            zone.touchedX[index] = true;
+          }
+
+          if (state.freedom.y !== 0) {
+            zone.y[index] += amount;
+            zone.touchedY[index] = true;
+          }
+        });
+      }
+
+      return at;
+    }
+
+    if (opcode === 0x73 || opcode === 0x74 || opcode === 0x75) {
+      const band = { 0x73: 0, 0x74: 16, 0x75: 32 }[opcode];
+
+      let pairs = this.pop();
+
+      while (pairs-- > 0) {
+        const index = this.pop();
+        const argument = this.pop();
+
+        this.applyDelta(argument, band, (amount) => {
+          this.cvt[index] = (this.cvt[index] ?? 0) + amount;
+        });
+      }
+
+      return at;
+    }
+
+    // MDRP: move a point a rounded distance from the reference point.
+    if (opcode >= 0xc0 && opcode <= 0xdf) {
+      const index = this.pop();
+
+      const zoneOne = this.zone(state.zp1);
+      const zoneZero = this.zone(state.zp0);
+
+      const original = this.projectDual(
+        zoneOne.originalX[index] - zoneZero.originalX[state.rp0],
+        zoneOne.originalY[index] - zoneZero.originalY[state.rp0]
+      );
+
+      let distance = opcode & 0x04 ? this.round(original) : original;
+
+      if (opcode & 0x08 && Math.abs(distance) < state.minimumDistance) {
+        distance = distance < 0 ? -state.minimumDistance : state.minimumDistance;
+      }
+
+      const current = this.project(
+        zoneOne.x[index] - zoneZero.x[state.rp0],
+        zoneOne.y[index] - zoneZero.y[state.rp0]
+      );
+
+      this.movePoint(zoneOne, index, distance - current);
+
+      state.rp1 = state.rp0;
+      state.rp2 = index;
+
+      if (opcode & 0x10) {
+        state.rp0 = index;
+      }
+
+      return at;
+    }
+
+    // MIRP: the same, but the distance comes from the control value table.
+    if (opcode >= 0xe0) {
+      const value = this.pop();
+      const index = this.pop();
+
+      const zoneOne = this.zone(state.zp1);
+      const zoneZero = this.zone(state.zp0);
+
+      let distance = this.cvt[value] ?? 0;
+
+      const original = this.projectDual(
+        zoneOne.originalX[index] - zoneZero.originalX[state.rp0],
+        zoneOne.originalY[index] - zoneZero.originalY[state.rp0]
+      );
+
+      /* The cut-in: where the outline's own distance is close enough to what
+       * the table says, the table wins; where it is far off, the font is doing
+       * something the table was not written for and the outline wins.
+       */
+      if (Math.abs(distance - original) > state.controlCutIn) {
+        distance = original;
+      }
+
+      if (opcode & 0x04) {
+        distance = this.round(distance);
+      }
+
+      if (opcode & 0x08 && Math.abs(distance) < state.minimumDistance) {
+        distance = distance < 0 ? -state.minimumDistance : state.minimumDistance;
+      }
+
+      const current = this.project(
+        zoneOne.x[index] - zoneZero.x[state.rp0],
+        zoneOne.y[index] - zoneZero.y[state.rp0]
+      );
+
+      this.movePoint(zoneOne, index, distance - current);
+
+      state.rp1 = state.rp0;
+      state.rp2 = index;
+
+      if (opcode & 0x10) {
+        state.rp0 = index;
+      }
+
+      return at;
+    }
+
+    throw new Unsupported(`opcode 0x${opcode.toString(16)}`);
+  }
+
+  /** A unit vector along -- or across -- a line, in F2Dot14. */
+  unitVector(dx, dy, perpendicular) {
+    if (perpendicular) {
+      const swap = dx;
+
+      dx = -dy;
+      dy = swap;
+    }
+
+    const length = Math.sqrt(dx * dx + dy * dy);
+
+    if (!length) {
+      return { x: UNIT, y: 0 };
+    }
+
+    return { x: Math.round((dx / length) * UNIT), y: Math.round((dy / length) * UNIT) };
+  }
+
+  /** How far the reference point of a shift has already moved. */
+  referenceShift(useRp1) {
+    const state = this.state;
+
+    const zone = useRp1 ? this.zone(state.zp0) : this.zone(state.zp1);
+    const index = useRp1 ? state.rp1 : state.rp2;
+
+    return {
+      dx: zone.x[index] - zone.originalX[index],
+      dy: zone.y[index] - zone.originalY[index],
+    };
+  }
+
+  /**
+   * Applies one delta exception, if it is meant for the size being run at.
+   *
+   * The argument packs the size and the nudge into one byte: the high nibble
+   * says which size, counted from the delta base, and the low nibble says how
+   * far to move in steps of a fraction the delta shift sets.
+   */
+  applyDelta(argument, band, move) {
+    const state = this.state;
+
+    const size = ((argument >> 4) & 0x0f) + state.deltaBase + band;
+
+    if (size !== this.ppem) {
+      return;
+    }
+
+    let steps = (argument & 0x0f) - 8;
+
+    // There is no zero step: the range skips it, so the upper half shifts down.
+    if (steps >= 0) {
+      steps += 1;
+    }
+
+    move(Math.round((steps * ONE) / (1 << state.deltaShift)));
+  }
+
+  /** Runs a defined function. */
+  callFunction(index) {
+    const body = this.functions.get(index);
+
+    if (!body) {
+      throw new Unsupported(`function ${index}`);
+    }
+
+    this.run(body.program, body.at, body.end);
+  }
+
+  /** How many bytes an instruction occupies, for scanning past it. */
+  skip(opcode, program, at) {
+    if (opcode === 0x40 || opcode === 0x41) {
+      const count = program.getUint8(at++);
+
+      return at + count * (opcode === 0x41 ? 2 : 1);
+    }
+
+    if (opcode >= 0xb0 && opcode <= 0xb7) {
+      return at + (opcode - 0xb0) + 1;
+    }
+
+    if (opcode >= 0xb8 && opcode <= 0xbf) {
+      return at + (opcode - 0xb8 + 1) * 2;
+    }
+
+    return at;
+  }
+
+  /** Finds the ELSE or EIF that belongs to an IF that was not taken. */
+  skipToElse(program, at, to) {
+    let depth = 0;
+    let cursor = at;
+
+    while (cursor < to) {
+      const opcode = program.getUint8(cursor++);
+
+      if (opcode === 0x58) {
+        depth++;
+      } else if (opcode === 0x59) {
+        if (depth === 0) {
+          return cursor;
+        }
+
+        depth--;
+      } else if (opcode === 0x1b && depth === 0) {
+        return cursor;
+      }
+
+      cursor = this.skip(opcode, program, cursor);
+    }
+
+    return to;
+  }
+
+  /** Finds the EIF that closes the block an ELSE opened. */
+  skipToEnd(program, at, to) {
+    let depth = 0;
+    let cursor = at;
+
+    while (cursor < to) {
+      const opcode = program.getUint8(cursor++);
+
+      if (opcode === 0x58) {
+        depth++;
+      } else if (opcode === 0x59) {
+        if (depth === 0) {
+          return cursor;
+        }
+
+        depth--;
+      }
+
+      cursor = this.skip(opcode, program, cursor);
+    }
+
+    return to;
+  }
+
+  /**
+   * Carries the untouched points along with the touched ones.
+   *
+   * A program moves a handful of points -- the edges of stems, mostly -- and
+   * `IUP` moves everything between them proportionally, so that a curve
+   * between two moved points keeps its shape instead of being left behind.
+   */
+  interpolateUntouched(horizontal) {
+    const zone = this.zones[1];
+
+    const current = horizontal ? zone.x : zone.y;
+    const original = horizontal ? zone.originalX : zone.originalY;
+    const touched = horizontal ? zone.touchedX : zone.touchedY;
+
+    let from = 0;
+
+    for (const end of zone.ends) {
+      const anchors: number[] = [];
+
+      for (let index = from; index <= end; index++) {
+        if (touched[index]) {
+          anchors.push(index);
+        }
+      }
+
+      if (anchors.length === 0) {
+        from = end + 1;
+        continue;
+      }
+
+      /* One anchor moves the whole contour with it: there is nothing to
+       * interpolate between, so everything keeps its shape and shifts.
+       */
+      if (anchors.length === 1) {
+        const shift = current[anchors[0]] - original[anchors[0]];
+
+        for (let index = from; index <= end; index++) {
+          if (!touched[index]) {
+            current[index] = original[index] + shift;
+          }
+        }
+
+        from = end + 1;
+        continue;
+      }
+
+      for (let slot = 0; slot < anchors.length; slot++) {
+        const left = anchors[slot];
+        const right = anchors[(slot + 1) % anchors.length];
+
+        // The run between two anchors, wrapping round the end of the contour.
+        let index = left === end ? from : left + 1;
+
+        while (index !== right) {
+          /* Only the untouched ones. A point the program moved deliberately
+           * must not be dragged back by the points either side of it, which
+           * is what interpolating over it would do -- and would undo most of
+           * the fitting the program just did.
+           */
+          if (!touched[index]) {
+            this.interpolateOne(index, left, right, current, original);
+          }
+
+          index = index === end ? from : index + 1;
+        }
+      }
+
+      from = end + 1;
+    }
+  }
+
+  /** Places one untouched point between two touched ones. */
+  interpolateOne(index, left, right, current, original) {
+    const lowOriginal = Math.min(original[left], original[right]);
+    const highOriginal = Math.max(original[left], original[right]);
+
+    const low = original[left] < original[right] ? current[left] : current[right];
+    const high = original[left] < original[right] ? current[right] : current[left];
+
+    if (original[index] <= lowOriginal) {
+      current[index] = original[index] + (low - lowOriginal);
+      return;
+    }
+
+    if (original[index] >= highOriginal) {
+      current[index] = original[index] + (high - highOriginal);
+      return;
+    }
+
+    if (highOriginal === lowOriginal) {
+      current[index] = low;
+      return;
+    }
+
+    // Proportionally, so the shape between the anchors survives.
+    const across = (original[index] - lowOriginal) / (highOriginal - lowOriginal);
+
+    current[index] = Math.round(low + across * (high - low));
+  }
+}

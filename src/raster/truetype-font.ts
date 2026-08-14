@@ -1,5 +1,7 @@
 'use strict';
 
+import { Hinter } from './glyph-hinting.js';
+
 /**
  * A TrueType font, read for what it says about itself.
  *
@@ -25,6 +27,7 @@
  * interpreter, or an unhinted approximation of one; measuring it does not.
  */
 export class TrueTypeFont {
+  declare _hinters: any;
   declare _view: DataView;
   declare _tables: Record<string, { offset: number; length: number }>;
   declare _advances: number[] | null;
@@ -464,6 +467,94 @@ export class TrueTypeFont {
     return null;
   }
 
+  /**
+   * A glyph's outline, fitted to the pixel grid by the font's own program.
+   *
+   * The program is what decides where the ink goes at text sizes -- see
+   * `Hinter` -- and a program this cannot run leaves the outline as it was.
+   * Falling back is safe in a way that stopping halfway would not be: a
+   * partially hinted glyph has some points on the grid and some not, which
+   * looks worse than an honestly unhinted one and says nothing about why.
+   *
+   * @param {number} glyph - The glyph index.
+   * @param {number} ppem - The size to fit to.
+   * @returns {Object} The contours and whether they were fitted.
+   */
+  hintedOutline(glyph, ppem) {
+    const contours = this.outlineOf(glyph);
+
+    if (!contours.length || !ppem) {
+      return { contours, hinted: false, scaled: false };
+    }
+
+    const range = this.glyphRange(glyph);
+
+    if (!range) {
+      return { contours, hinted: false, scaled: false };
+    }
+
+    const count = this._view.getInt16(range.start, false);
+
+    if (count < 0) {
+      // A composite carries its own program; hinting those comes later.
+      return { contours, hinted: false, scaled: false };
+    }
+
+    const instructions = range.start + 10 + count * 2;
+    const length = this._view.getUint16(instructions, false);
+
+    if (!length) {
+      return { contours, hinted: false, scaled: false };
+    }
+
+    try {
+      const hinter = this.hinterAt(ppem);
+
+      const fitted = hinter.hint(
+        contours,
+        this.advanceOf(glyph),
+        this.bearingOf(glyph),
+        this._view,
+        instructions + 2,
+        length
+      );
+
+      /* The points come back already in pixels, so the caller must not scale
+       * them again -- which is what `scaled` says.
+       */
+      return { contours: fitted, hinted: true, scaled: true };
+    } catch {
+      return { contours, hinted: false, scaled: false };
+    }
+  }
+
+  /** The interpreter for a size, built once and kept. */
+  hinterAt(ppem) {
+    this._hinters = this._hinters ?? new Map();
+
+    if (!this._hinters.has(ppem)) {
+      this._hinters.set(ppem, new Hinter(this, ppem));
+    }
+
+    return this._hinters.get(ppem);
+  }
+
+  /** A glyph's left side bearing, in font units. */
+  bearingOf(glyph) {
+    if (!this.has('hhea') || !this.has('hmtx')) {
+      return 0;
+    }
+
+    const count = this.unsigned('hhea', 34);
+    const base = this._tables['hmtx'].offset;
+
+    if (glyph < count) {
+      return this._view.getInt16(base + glyph * 4 + 2, false);
+    }
+
+    return this._view.getInt16(base + count * 4 + (glyph - count) * 2, false);
+  }
+
   /** The glyph a character maps to, following the symbol range if need be. */
   glyphFor(code) {
     const cmap = this.cmap;
@@ -600,6 +691,16 @@ export class TrueTypeFont {
     }
 
     return this._cmap;
+  }
+
+  /** How many points the twilight zone holds, which the hinting programs use. */
+  get maxTwilight() {
+    return this.has('maxp') && this._tables['maxp'].length >= 18 ? this.unsigned('maxp', 16) : 16;
+  }
+
+  /** How many storage slots the hinting programs expect. */
+  get maxStorage() {
+    return this.has('maxp') && this._tables['maxp'].length >= 20 ? this.unsigned('maxp', 18) : 64;
   }
 
   /** Where a glyph's outline lives in `glyf`, or null if it is blank. */

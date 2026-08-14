@@ -298,11 +298,13 @@ export class Surface {
 
     for (const character of String(text)) {
       const glyph = outline.glyphFor(character.charCodeAt(0));
-      const contours = outline.outlineOf(glyph);
+      const fitted = outline.hintedOutline(glyph, ppem);
+      const contours = fitted.contours;
 
       if (contours.length) {
         const inked = fill(contours, {
-          scale,
+          // Hinting hands back pixels; an unhinted outline is still in units.
+          scale: fitted.scaled ? 1 : scale,
           originX: pen,
           originY: baseline,
           width: this.width,
