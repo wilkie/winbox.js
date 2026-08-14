@@ -19,6 +19,34 @@
 
 #define OUTPUT "C:\\ORACLE\\MEMORY.OUT"
 
+/*
+ * Blocks measured so far, kept rather than freed.
+ *
+ * Freeing between measurements was the first version of this and it was
+ * wrong: a freed block is available to satisfy the next request, so a run of
+ * increasing sizes ends up measuring block reuse instead of the allocator's
+ * rounding. Holding everything until the end means every measurement gets a
+ * block the allocator had to find room for.
+ */
+#define HELD 40
+
+static HGLOBAL heldGlobal[HELD];
+static int globalsHeld = 0;
+
+static HLOCAL heldLocal[HELD];
+static int localsHeld = 0;
+
+static void releaseHeld(void)
+{
+    while (globalsHeld > 0) {
+        GlobalFree(heldGlobal[--globalsHeld]);
+    }
+
+    while (localsHeld > 0) {
+        LocalFree(heldLocal[--localsHeld]);
+    }
+}
+
 /* Records the size a global allocation actually came back as. */
 static void probeGlobalSize(WORD flags, DWORD request)
 {
@@ -30,13 +58,13 @@ static void probeGlobalSize(WORD flags, DWORD request)
         lstrcpy(probeResult, "failed");
     } else {
         wsprintf(probeResult, "%lu", GlobalSize(handle));
+
+        if (globalsHeld < HELD) {
+            heldGlobal[globalsHeld++] = handle;
+        }
     }
 
     probe("GlobalAlloc+GlobalSize", probeArgs, probeResult);
-
-    if (handle != NULL) {
-        GlobalFree(handle);
-    }
 }
 
 /* Records the flags a global allocation reports after it is made. */
@@ -121,7 +149,10 @@ static void probeLocalSize(WORD flags, WORD request)
         lstrcpy(probeResult, "failed");
     } else {
         wsprintf(probeResult, "%u", LocalSize(handle));
-        LocalFree(handle);
+
+        if (localsHeld < HELD) {
+            heldLocal[localsHeld++] = handle;
+        }
     }
 
     probe("LocalAlloc+LocalSize", probeArgs, probeResult);
@@ -168,15 +199,32 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeNote("GlobalFree");
     probeGlobalFree();
 
+    /* The local heap rounds differently from the global one, and the two flag
+     * settings round differently from each other. These sizes are chosen to
+     * break a wrong model rather than to confirm a right one: every value sits
+     * either side of a four-byte boundary, or at the minimum block size, or
+     * exactly on one.
+     */
     probeNote("the local heap rounds differently");
     probeLocalSize(LMEM_MOVEABLE, 1);
+    probeLocalSize(LMEM_MOVEABLE, 2);
+    probeLocalSize(LMEM_MOVEABLE, 6);
+    probeLocalSize(LMEM_MOVEABLE, 7);
     probeLocalSize(LMEM_MOVEABLE, 15);
     probeLocalSize(LMEM_MOVEABLE, 16);
     probeLocalSize(LMEM_MOVEABLE, 17);
+    probeLocalSize(LMEM_MOVEABLE, 18);
+    probeLocalSize(LMEM_MOVEABLE, 19);
     probeLocalSize(LMEM_MOVEABLE, 100);
     probeLocalSize(LMEM_FIXED, 1);
+    probeLocalSize(LMEM_FIXED, 5);
+    probeLocalSize(LMEM_FIXED, 8);
+    probeLocalSize(LMEM_FIXED, 9);
     probeLocalSize(LMEM_FIXED, 16);
+    probeLocalSize(LMEM_FIXED, 17);
     probeLocalSize(LMEM_FIXED, 100);
+
+    releaseHeld();
 
     probeFinish();
     return 0;

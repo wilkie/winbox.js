@@ -152,6 +152,24 @@
     },
     {
       "function": "LocalAlloc+LocalSize",
+      "args": "0x0002,2",
+      "result": "6",
+      "section": "the local heap rounds differently"
+    },
+    {
+      "function": "LocalAlloc+LocalSize",
+      "args": "0x0002,6",
+      "result": "6",
+      "section": "the local heap rounds differently"
+    },
+    {
+      "function": "LocalAlloc+LocalSize",
+      "args": "0x0002,7",
+      "result": "10",
+      "section": "the local heap rounds differently"
+    },
+    {
+      "function": "LocalAlloc+LocalSize",
       "args": "0x0002,15",
       "result": "18",
       "section": "the local heap rounds differently"
@@ -170,6 +188,18 @@
     },
     {
       "function": "LocalAlloc+LocalSize",
+      "args": "0x0002,18",
+      "result": "18",
+      "section": "the local heap rounds differently"
+    },
+    {
+      "function": "LocalAlloc+LocalSize",
+      "args": "0x0002,19",
+      "result": "22",
+      "section": "the local heap rounds differently"
+    },
+    {
+      "function": "LocalAlloc+LocalSize",
       "args": "0x0002,100",
       "result": "102",
       "section": "the local heap rounds differently"
@@ -182,8 +212,32 @@
     },
     {
       "function": "LocalAlloc+LocalSize",
+      "args": "0x0000,5",
+      "result": "8",
+      "section": "the local heap rounds differently"
+    },
+    {
+      "function": "LocalAlloc+LocalSize",
+      "args": "0x0000,8",
+      "result": "8",
+      "section": "the local heap rounds differently"
+    },
+    {
+      "function": "LocalAlloc+LocalSize",
+      "args": "0x0000,9",
+      "result": "12",
+      "section": "the local heap rounds differently"
+    },
+    {
+      "function": "LocalAlloc+LocalSize",
       "args": "0x0000,16",
       "result": "16",
+      "section": "the local heap rounds differently"
+    },
+    {
+      "function": "LocalAlloc+LocalSize",
+      "args": "0x0000,17",
+      "result": "20",
       "section": "the local heap rounds differently"
     },
     {

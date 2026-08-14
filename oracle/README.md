@@ -230,6 +230,25 @@ Two findings the probe surfaced that are not one-line fixes:
   moveable ones. Ours returns `handle << 16`, treating the two as the same
   thing. Offsets agree -- a global block does start at offset zero -- but the
   identity does not, and unpicking it touches the whole handle model.
+  **The local heap's rounding is now understood.** Seventeen measurements, nine
+  of them chosen to refute a model rather than confirm one:
+
+```
+block    = max(8, roundup(request, 4))        allocation unit is four bytes,
+                                              and no block is smaller than 8
+fixed    LocalSize -> block
+moveable LocalSize -> max(8, roundup(request + 2, 4)) - 2
+```
+
+A moveable block spends two of its bytes on the linkage back to its handle,
+which is why `LocalSize` on one reports two less than the block it occupies,
+and why requests of 15, 16, 17 and 18 bytes all report 18. The first reading of
+that looked like an artefact of the probe freeing each block before measuring
+the next -- a freed block can satisfy the next request without the allocator
+rounding anything -- but holding every block until the end produced identical
+numbers, so the flaw was imagined and the behaviour is real. The probe holds
+them anyway; the original version was measuring something it did not intend to.
+
 - **`LocalSize` is an empty function.** It logs its argument and returns
   nothing, and `Heap` has no notion of the size of an allocation at all, so all
   eight local-heap records disagree. The recorded sizes are strange enough to be
