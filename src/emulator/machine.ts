@@ -4,6 +4,7 @@ import { CPU } from './cpu.js';
 import { Disk } from './disk.js';
 import { Memory } from './memory.js';
 import { InterruptManager } from './interrupt-manager.js';
+import { FAT16 } from '../file-systems/fat16.js';
 
 /**
  * This class represents the virtual machine.
@@ -51,6 +52,34 @@ export class Machine {
 
   get disks() {
     return this._disks.slice();
+  }
+
+  /**
+   * Puts a drive image into one of the machine's disks and mounts it.
+   *
+   * Attaching a filesystem is what makes a disk visible to the guest: `Win16`
+   * walks the machine's disks when it starts and gives a drive letter to each
+   * one that has a filesystem on it, so this has to happen before the system
+   * comes up.
+   *
+   * @param {Uint8Array} bytes - A raw FAT16 image, starting at sector zero.
+   * @param {number} index - Which of the machine's disks to attach it to.
+   * @returns {Promise<FAT16>} The mounted filesystem.
+   */
+  async mountImage(bytes, index = 0) {
+    const disk = this._disks[index];
+
+    if (!disk) {
+      throw new Error(`no disk ${index} to mount an image on`);
+    }
+
+    disk.load(bytes);
+
+    // Constructing it attaches it to the disk; mounting reads its geometry.
+    const fileSystem = new FAT16(disk);
+    await fileSystem.mount();
+
+    return fileSystem;
   }
 
   get idtSegment(): number {

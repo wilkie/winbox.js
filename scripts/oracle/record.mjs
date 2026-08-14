@@ -141,12 +141,18 @@ function parse(text) {
   const records = [];
   let section = null;
 
+  /* Fields arrive with tabs, newlines and backslashes escaped, since those are
+   * what separate the fields and the records in the first place.
+   */
+  const unescape = (field) =>
+    field.replace(/\\([\\trn])/g, (_, code) => ({ '\\': '\\', t: '\t', r: '\r', n: '\n' })[code]);
+
   for (const line of text.split(/\r?\n/)) {
     if (line === '') {
       continue;
     }
 
-    const [name, args, result] = line.split('\t');
+    const [name, args, result] = line.split('\t').map(unescape);
 
     if (name === undefined || args === undefined || result === undefined) {
       throw new Error(`malformed record: ${JSON.stringify(line)}`);

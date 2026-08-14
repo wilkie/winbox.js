@@ -43,18 +43,44 @@
  */
 export function lstrcmp(lpszString1, lpszString2) {
   // TODO: how does a DBCS string work
-  console.log('lstrcmp', lpszString1, lpszString2);
 
-  let ret = 0;
-  const max = Math.max(lpszString1.length, lpszString2.length);
+  /* This is not `strcmp`, and the difference is visible in the very first
+   * string that mixes cases. The recorded answers say `lstrcmp("Zebra",
+   * "apple")` is positive, where comparing bytes makes it negative because 'Z'
+   * is 0x5A against 'a' at 0x61.
+   *
+   * What the US language driver does is collate on the lowercased text and
+   * fall back to the byte values only to break a tie, which is why "a" is
+   * greater than "A" but "_" is still less than "a". Folding the other way --
+   * to uppercase -- gets that second case backwards, since '_' at 0x5F sits
+   * above 'A' at 0x41 and below 'a'.
+   *
+   * See oracle/fixtures/strings.json, which is where these answers come from.
+   */
+  const left = String(lpszString1);
+  const right = String(lpszString2);
+
+  const collated = compareBytes(left.toLowerCase(), right.toLowerCase());
+
+  return collated === 0 ? compareBytes(left, right) : collated;
+}
+
+/**
+ * Compares two strings by character value, shorter sorting first.
+ *
+ * @returns {number} Negative, zero or positive, as `lstrcmp` reports.
+ */
+function compareBytes(left, right) {
+  const max = Math.max(left.length, right.length);
+
   for (let i = 0; i < max; i++) {
-    const a = lpszString1.charCodeAt(i) || 0;
-    const b = lpszString2.charCodeAt(i) || 0;
+    const a = left.charCodeAt(i) || 0;
+    const b = right.charCodeAt(i) || 0;
+
     if (a != b) {
-      ret = a - b;
-      break;
+      return a - b;
     }
   }
 
-  return ret;
+  return 0;
 }

@@ -32,8 +32,8 @@
     },
     {
       "function": "lstrlen",
-      "args": "\"tab",
-      "result": "here\"",
+      "args": "\"tab\there\"",
+      "result": "8",
       "section": "lstrlen"
     },
     {

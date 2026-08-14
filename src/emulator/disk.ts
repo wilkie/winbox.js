@@ -35,27 +35,91 @@ export class Disk {
     this._fileSystem = value;
   }
 
+  /**
+   * Writes a run of bytes starting at an offset within a sector.
+   *
+   * The mirror of `read`, and byte-wise for the same reason it is: copying
+   * words would have to agree with the reader about byte order, and there is
+   * nothing to be gained by giving it the opportunity to disagree.
+   *
+   * @param {number} index - The sector to start at.
+   * @param {number} offset - The offset from the start of that sector.
+   * @param {DataView|Uint8Array} data - What to write.
+   */
   async write(index, offset, data) {
-    for (let i = 0; i < data.byteLength; i += 4, offset += 4) {
-      if (offset >= this.sectorSize) {
-        index++;
-        offset -= this.sectorSize;
+    const bytes =
+      data instanceof Uint8Array
+        ? data
+        : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+
+    let position = 0;
+    let at = index * this._sectorSize + offset;
+
+    while (position < bytes.length) {
+      const sector = Math.floor(at / this._sectorSize);
+      const block = this.retrieveBlock(sector);
+
+      const within = at - Math.floor(sector / this._sectorsPerBlock) * this._blockSize;
+      const toWrite = Math.min(bytes.length - position, this._blockSize - within);
+
+      new Uint8Array(block.buffer).set(bytes.subarray(position, position + toWrite), within);
+
+      position += toWrite;
+      at += toWrite;
+    }
+  }
+
+  /**
+   * Fills the disk from a raw image.
+   *
+   * Blocks are allocated lazily, so an image only occupies memory for the
+   * parts of it that hold something. A run of zeroes -- which most of a
+   * freshly formatted volume is -- is left unallocated and reads back as zero
+   * anyway.
+   *
+   * @param {Uint8Array} bytes - The image, starting at sector zero.
+   */
+  load(bytes) {
+    if (bytes.byteLength > this._size) {
+      throw new Error(`image is ${bytes.byteLength} bytes, disk holds ${this._size}`);
+    }
+
+    for (let at = 0; at < bytes.byteLength; at += this._blockSize) {
+      const slice = bytes.subarray(at, Math.min(at + this._blockSize, bytes.byteLength));
+
+      if (slice.every((byte) => byte === 0)) {
+        continue;
       }
 
-      const length = Math.min(data.byteLength - i, this.sectorSize - offset);
-      if (length == 1) {
-        await this.write8(index, offset, data.getUint8(i));
-        i -= 3;
-        offset -= 3;
-      } else if (length < 4) {
-        await this.write16(index, offset, data.getUint16(i));
-        // Ensure the loop moves only to current i + 2
-        i -= 2;
-        offset -= 2;
-      } else {
-        await this.write32(index, offset, data.getUint32(i));
+      const block = new Uint8Array(this._blockSize);
+      block.set(slice);
+
+      /* Blocks are keyed by the sector number of their first sector, which is
+       * what `retrieveBlock` produces once it has masked off the offset within
+       * the block -- not by a block index.
+       */
+      this._blocks[(at / this._blockSize) * this._sectorsPerBlock] = new DataView(block.buffer);
+    }
+  }
+
+  /**
+   * Reads the whole disk back out as one image.
+   *
+   * The inverse of `load`, for handing a modified drive to something outside
+   * the emulator.
+   */
+  save() {
+    const bytes = new Uint8Array(this._size);
+
+    for (let sector = 0; sector * this._sectorSize < this._size; sector += this._sectorsPerBlock) {
+      const block = this._blocks[sector];
+
+      if (block) {
+        bytes.set(new Uint8Array(block.buffer), sector * this._sectorSize);
       }
     }
+
+    return bytes;
   }
 
   retrieveBlock(index) {
@@ -69,27 +133,37 @@ export class Disk {
     return block;
   }
 
+  /**
+   * Reads a run of bytes starting at an offset within a sector.
+   *
+   * The offset may be larger than a sector -- a caller working in clusters
+   * addresses the first sector of the cluster and an offset within the whole
+   * of it -- so this works in absolute byte addresses and lets the block
+   * arithmetic fall out of that, rather than trying to carry a sector index
+   * and an offset along in step.
+   *
+   * @param {number} index - The sector to start from.
+   * @param {number} offset - The offset from the start of that sector.
+   * @param {number} length - How many bytes to read.
+   */
   async read(index, offset, length) {
-    // Get the proper block index and offset for the sector
-    offset += this.sectorSize * (index % this._sectorsPerBlock);
-    index &= this._indexMask;
-
-    // Craft a return by reading every cluster
     const ret = new Uint8Array(length);
+
     let position = 0;
+    let at = index * this._sectorSize + offset;
 
     while (position < length) {
-      let toRead = this.blockSize - offset;
-      if (position + toRead > length) {
-        toRead = length - position;
-      }
+      const sector = Math.floor(at / this._sectorSize);
+      const block = this.retrieveBlock(sector);
 
-      const bytes = this._blocks[index].buffer.slice(0, toRead);
-      ret.set(new Uint8Array(bytes), position);
+      // Where this address falls inside the block that holds it.
+      const within = at - Math.floor(sector / this._sectorsPerBlock) * this._blockSize;
+      const toRead = Math.min(length - position, this._blockSize - within);
+
+      ret.set(new Uint8Array(block.buffer, within, toRead), position);
 
       position += toRead;
-      offset = 0;
-      index++;
+      at += toRead;
     }
 
     return ret;

@@ -45,6 +45,77 @@ export class FAT16 extends FileSystem {
     return this._firstSector;
   }
 
+  /** How many entries the root directory has room for. */
+  get rootEntries() {
+    return this._rootEntries;
+  }
+
+  /**
+   * Reads the geometry of an existing volume out of its boot sector.
+   *
+   * `format` builds a volume and knows where it put everything. This is the
+   * other direction: a volume somebody else made -- the Windows installation
+   * the oracle produces, say -- says where everything is in the BIOS parameter
+   * block, and every offset below is that structure:
+   *
+   *    11  bytes per sector
+   *    13  sectors per cluster
+   *    14  reserved sectors, the boot sector among them
+   *    16  how many copies of the FAT
+   *    17  entries in the root directory
+   *    19  sectors on the volume, or zero if it needs 32 bits
+   *    22  sectors per FAT
+   *    32  sectors on the volume, when 19 could not hold it
+   *
+   * From those, the three landmarks the rest of this class navigates by: where
+   * the FAT starts, where the root directory starts, and where file data
+   * starts.
+   */
+  async mount() {
+    const bytesPerSector = await this.disk.read16(0, 11);
+
+    if (bytesPerSector !== this.disk.sectorSize) {
+      throw new Error(
+        `volume has ${bytesPerSector}-byte sectors, disk has ${this.disk.sectorSize}`
+      );
+    }
+
+    this._sectorsPerCluster = await this.disk.read8(0, 13);
+    this._clusterSize = bytesPerSector * this._sectorsPerCluster;
+
+    const reserved = await this.disk.read16(0, 14);
+    const fats = await this.disk.read8(0, 16);
+
+    this._rootEntries = await this.disk.read16(0, 17);
+    this._fatSectors = await this.disk.read16(0, 22);
+    this._fatSize = this._fatSectors * bytesPerSector;
+
+    if (this._sectorsPerCluster === 0 || this._fatSectors === 0 || fats === 0) {
+      throw new Error('not a FAT volume: the boot sector describes no filesystem');
+    }
+
+    // The FAT follows the reserved sectors, and the root directory the FATs.
+    this._fatIndex = reserved;
+    this._root = reserved + fats * this._fatSectors;
+
+    /* The root directory is a fixed run of sectors rather than a cluster
+     * chain, and data starts after it. Rounding up matters: an entry count
+     * that does not fill its last sector still consumes the whole thing.
+     */
+    const rootSectors = Math.ceil((this._rootEntries * 32) / bytesPerSector);
+    this._firstSector = this._root + rootSectors;
+
+    let sectors = await this.disk.read16(0, 19);
+
+    if (sectors === 0) {
+      sectors = await this.disk.read32(0, 32);
+    }
+
+    this._numClusters = Math.floor((sectors - this._firstSector) / this._sectorsPerCluster);
+
+    return this;
+  }
+
   async format() {
     // Allocate the boot sector
     await this.writeBootSector();
@@ -114,16 +185,35 @@ export class FAT16 extends FileSystem {
     this._sectorsPerCluster = Math.ceil(this.clusterSize / this.disk.sectorSize);
     await this.disk.write8(this._boot, 13, this._clusterSize / this.disk.sectorSize);
 
-    // Number of reserved sectors
-    await this.disk.write8(this._boot, 14, 1);
+    /* Number of reserved sectors, the boot sector among them. This says two
+     * because `writeFAT` puts the table at sector 2, and `mount` works out
+     * where the table is from this field -- the two have to agree or a volume
+     * we wrote is a volume we cannot read.
+     */
+    await this.disk.write16(this._boot, 14, 2);
+
+    // How many copies of the FAT; `writeFATEntry` maintains both.
+    await this.disk.write8(this._boot, 16, 2);
 
     // Number of root directory entries
     this._rootEntries = FAT16.MAX_ROOT_ENTRIES;
     await this.disk.write16(this._boot, 17, this._rootEntries);
 
-    // Number of sectors on the file-system
+    /* Number of sectors on the file-system. The 16-bit field cannot hold more
+     * than 32 MB of 512-byte sectors, and a volume larger than that sets it to
+     * zero and uses the 32-bit field instead.
+     */
     const numSectors = Math.floor(this.disk.size / this.disk.sectorSize);
-    await this.disk.write16(this._boot, 19, numSectors);
+
+    if (numSectors > 0xffff) {
+      await this.disk.write16(this._boot, 19, 0);
+      await this.disk.write32(this._boot, 32, numSectors);
+    } else {
+      await this.disk.write16(this._boot, 19, numSectors);
+    }
+
+    // Media descriptor: a fixed disk.
+    await this.disk.write8(this._boot, 21, 0xf8);
 
     // Write the number of sectors per track
     await this.disk.write16(this._boot, 24, 12);
@@ -145,11 +235,11 @@ export class FAT16 extends FileSystem {
     // Serial number for partition (39-42)
     await this.disk.write32(this._boot, 39, 0xabcd);
 
-    // Volume label
-    await this.disk.writeString(this._boot, 43, 'MAINDISK  ', 10);
+    // Volume label, eleven bytes of it
+    await this.disk.writeString(this._boot, 43, 'MAINDISK   ', 11);
 
-    // Filesystem type
-    await this.disk.writeString(this._boot, 43, 'FAT16   ', 8);
+    // Filesystem type, which follows the label rather than overwriting it
+    await this.disk.writeString(this._boot, 54, 'FAT16   ', 8);
 
     // Signature
     await this.disk.write16(this._boot, 510, 0xaa55);
@@ -192,9 +282,8 @@ export class FAT16 extends FileSystem {
 
     this._numClusters = numClusters;
 
-    let rootSectors = this._rootEntries * 32;
-    rootSectors = Math.floor(rootSectors / this.disk.sectorSize);
-    this._firstSector = 2 + this._fatSize * 2 + rootSectors;
+    const rootSectors = Math.ceil((this._rootEntries * 32) / this.disk.sectorSize);
+    this._firstSector = this._fatIndex + this._fatSectors * 2 + rootSectors;
 
     // Write the number of sectors per FAT
     await this.disk.write16(this._boot, 22, this._fatSectors);
@@ -218,8 +307,7 @@ export class FAT16 extends FileSystem {
    * @param {number} value - The 16-bit value to write.
    */
   async writeFATEntry(index, value) {
-    const sector = 2 + Math.floor(index / this.disk.sectorSize);
-    const offset = (index * 2) % this.disk.sectorSize;
+    const [sector, offset] = this.locateFATEntry(index);
 
     // Write to the first FAT
     await this.disk.write16(sector, offset, value);
@@ -228,9 +316,25 @@ export class FAT16 extends FileSystem {
     await this.disk.write16(sector + this._fatSectors, offset, value);
   }
 
+  /**
+   * Finds the sector and offset holding a FAT entry.
+   *
+   * Entries are two bytes wide, so the sector an entry lands in is decided by
+   * twice its index, and the table starts wherever the volume put it rather
+   * than at a fixed sector.
+   *
+   * @param {number} index - The index of the cluster.
+   * @returns {[number, number]} The sector and the offset within it.
+   */
+  locateFATEntry(index) {
+    return [
+      this._fatIndex + Math.floor((index * 2) / this.disk.sectorSize),
+      (index * 2) % this.disk.sectorSize,
+    ];
+  }
+
   async readFATEntry(index) {
-    const sector = 2 + Math.floor(index / this.disk.sectorSize);
-    const offset = (index * 2) % this.disk.sectorSize;
+    const [sector, offset] = this.locateFATEntry(index);
 
     // Read a FAT
     return await this.disk.read16(sector, offset);
@@ -240,6 +344,16 @@ export class FAT16 extends FileSystem {
    * Retrieves the directory that contains the given path.
    */
   async open(path, create = false) {
+    if (path.length === 0) {
+      // An empty path is the root directory itself.
+      return new FAT16Directory(
+        { name: '', inode: this._root, directory: true },
+        this._root,
+        '',
+        this
+      );
+    }
+
     let current = new FAT16Directory({}, this._root, '', this);
     if (path.length > 1) {
       current = await this.open(path.slice(0, path.length - 1), create);
@@ -350,10 +464,12 @@ export class FAT16 extends FileSystem {
       sector += this.firstSector;
 
       if (!(data instanceof Stream)) {
+        const length = Math.min(this.clusterSize, data.byteLength - offset);
+
         await this.disk.write(
           sector,
           0,
-          new DataView(data.slice(offset, offset + this.clusterSize))
+          new Uint8Array(data.buffer, data.byteOffset + offset, length)
         );
       } else {
         this._streams[sector] = {
@@ -699,14 +815,38 @@ export class FAT16Directory extends FAT16File {
     // The return value
     let ret = [];
 
+    /* The root directory is a fixed run of sectors with room for exactly as
+     * many entries as the boot sector declared. Every other directory is an
+     * ordinary cluster chain and runs until the chain does.
+     */
+    const limit = this.path === '' ? this.fileSystem.rootEntries : Infinity;
+
     // Read each entry
-    for (let i = 0; i < 64; i++) {
-      const b = await this.read8(i * 32);
+    for (let i = 0; i < limit; i++) {
+      const offset = i * 32;
+
+      // Off the end of the chain: there is no more directory to read.
+      if (!(await this.translate(offset))) {
+        break;
+      }
+
+      const b = await this.read8(offset);
       if (b == 0) {
         break;
       }
 
-      const offset = i * 32;
+      // 0xE5 marks an entry whose file was deleted; the slot is free.
+      if (b == 0xe5) {
+        continue;
+      }
+
+      /* A long name is stored in the slots before the entry it belongs to,
+       * disguised as read-only volume labels so that software which does not
+       * understand them skips over them. We are that software.
+       */
+      if (((await this.read8(offset + 11)) & 0x0f) == 0x0f) {
+        continue;
+      }
 
       let filename = await this.readCString(offset, 11);
       // TODO: I think it can have spaces in the beginning

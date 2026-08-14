@@ -115,6 +115,24 @@ is committed. Re-running a stage is cheap; only the first pass downloads. The
 install and the recording each need `dosbox`, and the drive image needs
 `mtools` and `dosfstools`.
 
+### 7. Replay
+
+`test/oracle/api_conformance_test.ts` runs the recorded calls against our
+implementation and reports agreement per function, in the shape the CPU oracle
+reports per opcode. Four outcomes, one of them good: **agreed**, **disagreed**,
+**unimplemented** for a stub or a function no module exports, and
+**unsupported** for a call the probes cover but the replay harness does not.
+That last one is deliberately not silent -- probe coverage outgrowing replay
+coverage would otherwise look like progress.
+
+It replays the calls rather than the probe's own binary. Running the binary
+would put the loader, the linker and the thunks under test as well, and is
+where this should end up, but it needs a Win16 system far enough up to schedule
+a task and it needs `_lcreat` and `_lwrite`, which are still stubs -- a probe
+with nowhere to write its answers records nothing. Everything the fixtures
+actually describe is measured either way: the arguments are marshalled the way
+the thunk layer marshals them, and the implementation is called with them.
+
 ## What it has found already
 
 The first probe covered nine string functions, and one of its 49 records
@@ -125,11 +143,40 @@ lstrcmp  "Zebra","apple"  1
 ```
 
 Windows returns a positive number, meaning "Zebra" sorts after "apple". Our
-`lstrcmp` subtracts bytes, and `'Z'` is 0x5A against `'a'` at 0x61, so it
-returns -7. `lstrcmp` on Windows 3.1 is not `strcmp`: it collates through the
-language driver, where case is a tiebreak rather than the primary key. The
-manual says the comparison is "based on the language driver" and leaves it
-there, which is precisely why this had to be measured rather than read.
+`lstrcmp` subtracted bytes, and `'Z'` is 0x5A against `'a'` at 0x61, so it
+returned -7. `lstrcmp` on Windows 3.1 is not `strcmp`: it collates through the
+language driver. The manual says the comparison is "based on the language
+driver" and leaves it there, which is precisely why this had to be measured
+rather than read.
+
+The eleven recorded comparisons say exactly what the rule is. Collate on the
+lowercased text, and fall back to character values only to break a tie -- which
+is why `"a"` is greater than `"A"` but `"_"` is still less than `"a"`. Folding
+to uppercase instead gets that second case backwards, since `'_'` at 0x5F sits
+above `'A'` at 0x41 and below `'a'`. That is now what `lstrcmp` does, and all
+eleven agree.
+
+Where the string probe stands:
+
+| Function    | Records |                      |
+| ----------- | ------- | -------------------- |
+| `lstrlen`   | 5/5     | agrees               |
+| `lstrcmp`   | 11/11   | agrees               |
+| `lstrcpy`   | 3/3     | agrees               |
+| `lstrcat`   | 3/3     | agrees               |
+| `lstrcmpi`  | 0/11    | no module exports it |
+| `AnsiUpper` | 0/5     | stub                 |
+| `AnsiLower` | 0/5     | stub                 |
+| `AnsiNext`  | 0/3     | stub                 |
+| `AnsiPrev`  | 0/3     | stub                 |
+
+22 of 49 records, 44.9%. Everything implemented agrees completely; the rest is
+now a measured list rather than a guess about where to look next.
+
+Recording the first probe also found a flaw in the record format itself. The
+fields are tab-separated, and one of the strings under test contains a tab, so
+the record split in the wrong place and `lstrlen` appeared to disagree when it
+did not. Probes now escape tabs, newlines and backslashes on the way out.
 
 ## On the media
 

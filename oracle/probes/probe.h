@@ -39,18 +39,54 @@ static void probeOpen(LPCSTR path)
     probeHandle = _lcreat(path, 0);
 }
 
+/*
+ * Copies a field, escaping what the record format cannot carry literally.
+ *
+ * The fields are separated by tabs and the records by newlines, so a string
+ * argument that contains either would otherwise cut the record in half -- and
+ * a probe that passes a tab to a string function is exactly the sort of thing
+ * worth recording. Escaped the way C would write them, so they stay readable.
+ */
+static LPSTR probeEscape(LPSTR out, LPCSTR in)
+{
+    while (*in) {
+        switch (*in) {
+        case '\\': *out++ = '\\'; *out++ = '\\'; break;
+        case '\t': *out++ = '\\'; *out++ = 't';  break;
+        case '\r': *out++ = '\\'; *out++ = 'r';  break;
+        case '\n': *out++ = '\\'; *out++ = 'n';  break;
+        default:   *out++ = *in;                 break;
+        }
+
+        in++;
+    }
+
+    *out = '\0';
+
+    return out;
+}
+
 /* Writes one record. */
 static void probe(LPCSTR function, LPCSTR args, LPCSTR result)
 {
-    char line[1200];
-    int length;
+    char line[2400];
+    LPSTR at;
 
     if (probeHandle == HFILE_ERROR) {
         return;
     }
 
-    length = wsprintf(line, "%s\t%s\t%s\r\n", function, args, result);
-    _lwrite(probeHandle, line, length);
+    at = probeEscape(line, function);
+    *at++ = '\t';
+
+    at = probeEscape(at, args);
+    *at++ = '\t';
+
+    at = probeEscape(at, result);
+    *at++ = '\r';
+    *at++ = '\n';
+
+    _lwrite(probeHandle, line, (int)(at - line));
 }
 
 /* Records a note rather than a call: a comment, or a section marker. */
