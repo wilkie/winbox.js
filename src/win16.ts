@@ -11,6 +11,7 @@ import { Task } from './win16/task.js';
 import { GlobalAllocator } from './win16/global-allocator.js';
 import { Allocator } from './win16/allocator.js';
 import { Loader } from './win16/loader.js';
+import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
 import { Linker } from './win16/linker.js';
 import { Scheduler } from './win16/scheduler.js';
 
@@ -52,6 +53,7 @@ export class Win16 {
   declare _memory: any;
   declare _modules: any;
   declare _scheduler: any;
+  declare _display: any;
   declare _startTime: any;
   declare _windows: any;
   /**
@@ -66,6 +68,13 @@ export class Win16 {
 
     // Retain the deskop environment
     this._desktop = desktop;
+
+    /* Which display driver we are pretending to be. Everything a program can
+     * ask about what it is drawing on comes from this, and the answers are
+     * properties of a 1992 driver rather than of the browser we are running
+     * in. See win16/display-modes.ts.
+     */
+    this._display = displayMode((options as any).display ?? DEFAULT_DISPLAY_MODE);
 
     // Retain the machine instance
     this._machine = machine;
@@ -146,6 +155,13 @@ export class Win16 {
         this._fonts.load(file);
       }
     });
+  }
+
+  /**
+   * The display driver being emulated.
+   */
+  get display() {
+    return this._display;
   }
 
   /**

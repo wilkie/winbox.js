@@ -57,6 +57,7 @@ import { FrameRect } from './user/FrameRect.js';
 import { GetDC } from './user/GetDC.js';
 import { GetDesktopWindow } from './user/GetDesktopWindow.js';
 import { GetMessage } from './user/GetMessage.js';
+import { GetSystemMetrics } from './user/GetSystemMetrics.js';
 import { GetTickCount } from './user/GetTickCount.js';
 import { GetClientRect } from './user/GetClientRect.js';
 import { GetMenu } from './user/GetMenu.js';
@@ -234,6 +235,16 @@ export class User extends Module {
   declare static VK_CAPITAL: any;
   declare static VK_CLEAR: any;
   declare static VK_CONTROL: any;
+  declare static SM_CXBORDER: any;
+  declare static SM_CXFRAME: any;
+  declare static SM_CXICON: any;
+  declare static SM_CXSCREEN: any;
+  declare static SM_CYBORDER: any;
+  declare static SM_CYCAPTION: any;
+  declare static SM_CYFRAME: any;
+  declare static SM_CYICON: any;
+  declare static SM_CYMENU: any;
+  declare static SM_CYSCREEN: any;
   declare static VK_DECIMAL: any;
   declare static VK_DELETE: any;
   declare static VK_DIVIDE: any;
@@ -648,7 +659,7 @@ export class User extends Module {
       [LoadString, 'LoadString', 10, [HINSTANCE, UINT, FARPTR, INT], INT],
       [User.stub, 'LoadAccelerators', 6],
       [TranslateAccelerator, 'TranslateAccelerator', 8, [HWND, HACCEL, [MSG]], BOOL],
-      [User.stub, 'GetSystemMetrics', 2],
+      [GetSystemMetrics, 'GetSystemMetrics', 2, [INT], INT],
       // 180 //
       [User.stub, 'GetSysColor', 0],
       [User.stub, 'SetSysColors', 10],
@@ -1607,6 +1618,20 @@ User.VK_MULTIPLY = 0x6a;
 User.VK_ADD = 0x6b;
 User.VK_SEPARATOR = 0x6c;
 User.VK_SUBTRACT = 0x6d;
+/* The system metrics, by their documented index. Several of these follow from
+ * the display driver rather than from Windows; see win16/display-modes.ts.
+ */
+User.SM_CXSCREEN = 0;
+User.SM_CYSCREEN = 1;
+User.SM_CYCAPTION = 4;
+User.SM_CXBORDER = 5;
+User.SM_CYBORDER = 6;
+User.SM_CXICON = 11;
+User.SM_CYICON = 12;
+User.SM_CYMENU = 15;
+User.SM_CXFRAME = 32;
+User.SM_CYFRAME = 33;
+
 User.VK_DECIMAL = 0x6e;
 User.VK_DIVIDE = 0x6f;
 User.VK_F1 = 0x70;

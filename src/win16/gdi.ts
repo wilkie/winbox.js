@@ -91,7 +91,7 @@ export class Gdi extends Module {
   declare static DSTINVERT: any;
   declare static GRAY_BRUSH: any;
   declare static HOLLOW_BRUSH: any;
-  declare static HORTSIZE: any;
+  declare static HORZSIZE: any;
   declare static HORZRES: any;
   declare static LINECAPS: any;
   declare static LOGPIXELSX: any;
@@ -770,7 +770,7 @@ export class TEXTMETRIC extends Struct {
 // GetDeviceCaps constants
 Gdi.DRIVERVERSION = 0x0;
 Gdi.TECHNOLOGY = 0x2;
-Gdi.HORTSIZE = 0x4;
+Gdi.HORZSIZE = 0x4;
 Gdi.VERTSIZE = 0x6;
 Gdi.HORZRES = 0x8;
 Gdi.VERTRES = 0xa;

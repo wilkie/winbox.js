@@ -15,6 +15,11 @@ import { GetTextExtent } from '../../src/win16/gdi/GetTextExtent.js';
 import { GetTextFace } from '../../src/win16/gdi/GetTextFace.js';
 import { GetTextMetrics } from '../../src/win16/gdi/GetTextMetrics.js';
 import { GetCharWidth } from '../../src/win16/gdi/GetCharWidth.js';
+import { GetDeviceCaps } from '../../src/win16/gdi/GetDeviceCaps.js';
+import { GetSystemMetrics } from '../../src/win16/user/GetSystemMetrics.js';
+import { displayMode } from '../../src/win16/display-modes.js';
+import { Gdi } from '../../src/win16/gdi.js';
+import { User } from '../../src/win16/user.js';
 import { GlobalAllocator } from '../../src/win16/global-allocator.js';
 import { Allocator } from '../../src/win16/allocator.js';
 
@@ -121,6 +126,8 @@ export interface Replayed {
 
 export interface Fixture {
   probe: string;
+  /** The display driver it was recorded against, for probes that depend on one. */
+  display?: string;
   source: { windows: string };
   records: { function: string; args: string; result: string; section?: string }[];
 }
@@ -137,11 +144,17 @@ class Context {
   globalAllocator: any;
   handles: any;
   fonts: any;
+  display: any;
   private next: number;
 
-  constructor() {
+  constructor(display = 'vga') {
     this.machine = new Machine();
     this.next = 0x100;
+
+    /* Which driver we are answering as. A capability fixture is meaningless
+     * without it, so the fixture names its display and the context adopts it.
+     */
+    this.display = displayMode(display);
 
     /* The memory functions reach their heaps through `this.allocator`, built
      * here the way `Win16` builds it so that the allocator under test is the
@@ -587,6 +600,26 @@ const ADAPTERS: Record<string, (context: Context, args: (string | number)[]) => 
     return `width=${extent & 0xffff},height=${(extent >>> 16) & 0xffff}`;
   },
 
+  GetDeviceCaps(context, [name]) {
+    const index = Gdi[name as string];
+
+    if (index === undefined) {
+      throw new Unimplemented(`no capability constant named ${name}`);
+    }
+
+    return String(GetDeviceCaps.call(context, 0, index));
+  },
+
+  GetSystemMetrics(context, [name]) {
+    const index = User[name as string];
+
+    if (index === undefined) {
+      throw new Unimplemented(`no system metric named ${name}`);
+    }
+
+    return String(GetSystemMetrics.call(context, index));
+  },
+
   GetCharWidth(context, [name, range]) {
     const [first, last] = String(range).split('-').map(Number);
 
@@ -707,7 +740,7 @@ export const KNOWN_GAPS: Record<string, string> = {};
 const STUBBED = new Set<string>([]);
 
 /** Runs one recorded call. */
-export function replayRecord(record: Fixture['records'][number]): Replayed {
+export function replayRecord(record: Fixture['records'][number], display = 'vga'): Replayed {
   const base = { function: record.function, args: record.args, expected: record.result };
 
   if (STUBBED.has(record.function)) {
@@ -723,7 +756,7 @@ export function replayRecord(record: Fixture['records'][number]): Replayed {
   let actual: string;
 
   try {
-    actual = adapter(new Context(), parseArgs(record.args));
+    actual = adapter(new Context(display), parseArgs(record.args));
   } catch (error) {
     if (error instanceof Unimplemented) {
       return { ...base, actual: null, outcome: 'unimplemented' };
@@ -755,7 +788,7 @@ export interface Summary {
 
 /** Replays every record in a fixture and summarises the result. */
 export function replayFixture(fixture: Fixture) {
-  const replayed = fixture.records.map(replayRecord);
+  const replayed = fixture.records.map((record) => replayRecord(record, fixture.display ?? 'vga'));
   const byFunction = new Map<string, { total: number; agreed: number; outcome: Outcome }>();
 
   for (const record of replayed) {

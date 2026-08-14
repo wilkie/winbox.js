@@ -313,11 +313,26 @@ resolution is smaller. The driver capability bits -- `RASTERCAPS`, `TEXTCAPS`,
 `LINECAPS` -- are identical across all three, being the same generation of GDI
 driver.
 
+All three are implemented and all three agree, 37 records each.
+`src/win16/display-modes.ts` holds them, `GetDeviceCaps` and
+`GetSystemMetrics` answer from whichever is selected, and a machine picks one
+when it starts. Fixing that also fixed the `text` probe's ten capability
+records, taking it to 55/55: `GetDeviceCaps` used to report the browser it was
+running in -- 32 bits per pixel, 256 colours -- which is something no 1992
+driver could have said.
+
 **256 colours cannot be recorded here yet.** Every 256-colour driver the
 distribution ships is for a particular card -- Video 7, XGA, 8514/a -- and
 DOSBox emulates none of them, so a Windows installed with one would not start.
-The modes are worth implementing regardless; what cannot be done is calling
-them measured until something can run them.
+Two are implemented anyway, marked `modelled` rather than `recorded` so the
+weaker claim is visible in the source: their resolutions and depths come from
+the driver descriptions in `SETUP.INF`, and their capability bits are carried
+over from the recorded drivers, which is a guess that at least rests on those
+bits being identical across all three of them. `test/win16/display_modes_test.ts`
+checks what can be checked without a recording -- that a mode claiming 256
+colours does not also claim four one-bit planes, that palette capabilities
+appear only on palette devices, and that dot pitch and aspect agree about
+whether pixels are square.
 
 The probe is called `devcaps` rather than `display` because Windows already has
 a module of that name: the display driver itself is `DISPLAY`. An application
