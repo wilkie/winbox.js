@@ -99,6 +99,57 @@ A Jest suite runs the same probe binaries against WinBox.js and compares
 against the fixtures, reporting per-function agreement the way the CPU oracle
 reports per-opcode agreement. That number is the thing to drive up.
 
+## Comparing what gets drawn
+
+Recording return values covers a great deal, but not what a program actually
+puts on the screen. The obvious next stage is to draw into a memory bitmap on
+both sides and compare -- `CreateCompatibleDC`, `CreateCompatibleBitmap`, a
+sequence of GDI calls, then `GetBitmapBits` -- which pins down glyph
+rasterisation, line endpoints, fill boundaries and raster operations, all of
+which are exactly the sort of thing that goes subtly wrong.
+
+**Colour realisation is the part it does not pin down**, and the gap is worth
+stating before the harness gets built around the assumption that it does.
+
+A Windows 3.1 display driver has sixteen colours, and a program asks for
+twenty-four bit ones. GDI resolves the difference by dithering: a
+`CreateSolidBrush` for a colour that is not one of the sixteen becomes an eight
+by eight pattern of colours that are, decided when the brush is realised for a
+device. Nothing in the API reports this -- `GetObject` still gives back the
+`lbColor` that was asked for -- so the only place the dither is visible is in
+the pixels.
+
+Where that leaves a bitmap comparison depends on where in the pipeline each
+side dithers, and the two sides currently differ:
+
+- Windows dithers at **draw** time, into the destination surface. For a
+  device-compatible bitmap the pattern is therefore in the bits, and a
+  comparison would see it.
+- WinBox.js does not dither in the GDI path at all. `CreateSolidBrush` keeps
+  the exact twenty-four bit colour, `Surface` sets it as a canvas fill style,
+  and the fill comes out flat at full precision. The `Ditherer` that `Surface`
+  builds in its constructor is used by one call, which is commented out; the
+  only live dithering in the project is decoration on the desktop background.
+
+So a fill with a colour outside the sixteen produces a dither pattern on one
+side and a flat unavailable colour on the other, and a bitmap comparison would
+report every pixel of it. That is a true difference rather than a false alarm
+-- but it would swamp the geometry differences the comparison is for, and it
+would keep reporting until the deeper question is settled.
+
+The deeper question is where WinBox.js should dither, if at all. Drawing at
+full precision and quantising at paint time would look cleaner and would match
+the project's aim of rendering through the DOM; dithering at draw time would
+match what the guest actually saw, and is the only way a program that reads its
+own pixels back gets the answer Windows would have given. The display modes
+make this concrete rather than abstract, since a sixteen colour driver and a
+256 colour one dither differently and now both exist.
+
+None of this is settled here. What is settled is that a bitmap comparison
+measures geometry and glyphs well, measures colour only as far as the two
+pipelines agree about when to quantise, and should not be read as covering the
+second until that is decided.
+
 ## Running it
 
 ```shell

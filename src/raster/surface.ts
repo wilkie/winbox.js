@@ -179,6 +179,13 @@ export class Surface {
     this.context.fillStyle = this.brush.color.css;
     this.context.fillRect(x, y, width, height);
     // TODO: improve performance of the ditherer and enable it
+    /* TODO: a sixteen colour driver has no such colour to fill with. Windows
+     * resolves that by dithering when the brush is realised, so the pattern
+     * ends up in the destination bitmap and in anything that reads it back;
+     * we fill flat at full precision instead. Whether to match that, and at
+     * which stage to quantise, is unsettled -- see the notes on comparing
+     * drawn output in oracle/README.md.
+     */
     //this._ditherer.fill(this.context, x, y, width, height, this._brush.color.value);
     this._stale = true;
   }
