@@ -772,7 +772,7 @@ than an error -- just wrong ones. The check that settles it is the font's own
 header, which states the average and maximum character widths: only an offset
 of 119 makes the table agree with them, and it does so for all three faces.
 
-### The TrueType metrics are downstream of the rasteriser
+### The TrueType metrics are in the font, not in the rasteriser
 
 The obvious next step was to read the outline fonts for their metrics without
 rasterising them: parse `head`, `hhea`, `OS/2` and `hmtx`, scale what they say
@@ -789,36 +789,58 @@ cell reports an ascent of 7 and a descent of 1, which needs a scale of at least
 are not a scaling of the font's own ascender and descender; they are arrived at
 separately.
 
-That is the signature of grid-fitting. Windows 3.1 runs the hinting bytecode
-before it scan-converts, which moves the outline onto the pixel grid, and the
-metrics it reports are what came out of that rather than what went into it. The
-internal leading says the same thing more loudly: Courier New's runs 0, 3, 3,
-3, 2, 3, 3, 3, 2, 2, 2, 4, 7, 6, 8, 9 across ascending sizes, which is not a
-multiple of anything.
+That is the signature of grid-fitting, and the first conclusion drawn from it
+was that getting these numbers meant running the hinting bytecode -- the same
+work as drawing the glyphs, and so no cheaper than a rasteriser.
 
-So the two stages are not separable, and the reason is worth stating plainly
-because it is the opposite of what the file formats suggest: reading a
-TrueType font's tables is easy and does not get you its metrics. Getting them
-means running the interpreter, which is the same work as drawing the glyphs.
+That conclusion was wrong, and the thing that showed it was looking at what
+else is in the file. Arial carries a `VDMX` table of six thousand bytes and an
+`hdmx` of five thousand, and both are tables of *results*: `VDMX` states what
+the whole face came out as at every pixel size once hinted, and `hdmx` states
+what each glyph's advance came out as at a couple of dozen of them. They were
+computed when the font was built, by whoever built it, precisely so that a
+system can answer `GetTextMetrics` without rasterising anything. Windows reads
+them, which is why its answers are grid-fitted numbers that no scaling
+reproduces.
 
-`src/raster/truetype-font.ts` reads the descriptive tables -- name, coordinate
-space, advances, character map -- and is verified against the installed fonts.
-It is the groundwork for that interpreter and is deliberately not wired into
-the font mapper: a face we can select and cannot draw is worse than one we
-never offer, which is what the plotter fonts demonstrated before they worked.
+With those, the metrics fall out:
 
-**What we do not do.** The installation carries four TrueType families and we
-cannot draw an outline. That accounts for every remaining disagreement,
-including all the unknown-name cases, since Windows answers those with Times
-New Roman.
+    ascent  = VDMX(ppem).yMax          descent = -VDMX(ppem).yMin
+    height  = ascent + descent          internal = height - ppem
+    external = round(lineGap * ppem / unitsPerEm)
+    advance  = hdmx(ppem, glyph)
 
-Of the 2225 records, 1401 agree. That number went *down* when the TrueType
-sweep was added, and deliberately: the sweep is 720 records of behaviour we
-cannot reproduce and have no immediate plan to, recorded because it is exactly
-what a rasteriser would have to be checked against. A fixture is a measurement
-of the real thing rather than a score, and leaving out the parts we do badly at
-would make it a worse measurement. Nothing a bitmap or a stroke font can answer
-disagrees; every one of the 824 that do is an outline.
+Arial asked for a sixteen pixel cell settles at thirteen pixels per em, where
+`VDMX` says 13 and -3: ascent 13, descent 3, height 16, internal 3. Every
+number Windows reports, from a table lookup.
+
+The pixel size is the largest whose fitted height does not overflow the cell
+asked for. Where two sizes come out the same height -- which happens, because
+fitting quantises -- the choice between them changes nothing except the
+internal leading, and which one Windows takes is not settled here. The smaller
+is used, which is right more often than not.
+
+Two things about the family are worth having found. All four files of a family
+name themselves the same thing in the `name` table, so a request for Arial has
+to pick the plain one deliberately rather than take whichever the directory
+listed first -- otherwise about half the answers come from Arial Bold. And a
+symbol outline is rejected by a request that did not ask for symbols, exactly
+as an OEM strike is: WingDings asked for in ANSI comes back as MS Sans Serif.
+
+What remains unresolved is `tmMaxCharWidth`, which comes back one pixel wider
+than either the scaled outline maximum or the `hdmx` maximum at the sizes those
+tables do not cover. It is one number in one record type, and it is recorded
+rather than guessed at.
+
+**What we do not do.** We cannot draw an outline. The metrics for one are now
+answered from the font's own tables, so a program can lay text out in Arial
+correctly and then find nothing drawn -- which is a worse failure than the one
+before it in some ways and a better one in others, and is the reason a
+rasteriser is the next thing rather than an optional extra.
+
+Of the 2225 records, 1801 agree, up from 1401 before the outline metrics. The
+rest are the synthesised styles on outline faces, the maximum character width,
+and the sizes the fitted tables do not cover.
 
 ## On the media
 

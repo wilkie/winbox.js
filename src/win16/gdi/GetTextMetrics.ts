@@ -41,6 +41,59 @@ export function GetTextMetrics(hdc, lptm) {
   const font = surface.font;
 
   // Get the information
+  /* An outline face has no strike to read a header from: everything comes out
+   * of the font's own tables of grid-fitted values at the pixel size it was
+   * settled at. See `TrueTypeFont` for why those tables exist.
+   */
+  if (font instanceof LogicalFont && font.outline) {
+    const outline = font.outline;
+    const ppem = font.ppem;
+    const style = font.style;
+
+    lptm.tmAscent = style.ascent;
+    lptm.tmDescent = style.descent;
+    lptm.tmHeight = style.ascent + style.descent;
+
+    // What the cell has over the em is the leading inside it.
+    lptm.tmInternalLeading = lptm.tmHeight - ppem;
+    lptm.tmExternalLeading = Math.round((outline.lineGap * ppem) / outline.unitsPerEm);
+
+    const scaled = (units) => Math.round((units * ppem) / outline.unitsPerEm);
+
+    lptm.tmAveCharWidth = scaled(outline.averageAdvance);
+
+    // The grid-fitted maximum where the font states one, which is not the
+    // scaled outline maximum: hinting can widen a glyph past it.
+    lptm.tmMaxCharWidth = outline.deviceMaxAdvance(ppem) ?? scaled(outline.maxAdvance);
+
+    const bold = (style.weight ?? 0) >= 700 && outline.weight < 700;
+
+    lptm.tmWeight = (style.weight ?? 0) >= 700 ? 700 : outline.weight;
+    lptm.tmItalic = style.italic ? 1 : 0;
+    lptm.tmUnderlined = style.underline ? 0xff : 0;
+    lptm.tmStruckOut = style.strikeout ? 0xff : 0;
+    lptm.tmOverhang = bold ? 1 : 0;
+
+    lptm.tmFirstChar = 32;
+    lptm.tmLastChar = 255;
+    lptm.tmDefaultChar = 128;
+    lptm.tmBreakChar = 32;
+
+    /* `TMPF_TRUETYPE` and `TMPF_VECTOR` both, since an outline is a vector
+     * font that happens to be a TrueType one.
+     */
+    /* Variable pitch unless the font says otherwise, plus the two bits that
+     * say how it is drawn -- `TMPF_VECTOR` and `TMPF_TRUETYPE` -- plus the
+     * family the font puts itself in.
+     */
+    lptm.tmPitchAndFamily = (outline.fixedPitch ? 0x00 : 0x01) | 0x06 | outline.family;
+    lptm.tmCharSet = 0;
+    lptm.tmDigitizedAspectX = 96;
+    lptm.tmDigitizedAspectY = 96;
+
+    return TRUE;
+  }
+
   if (font instanceof LogicalFont || font instanceof BitmapFont) {
     const header = (font instanceof LogicalFont ? font.entry : font.fontFor(12)).header;
 

@@ -9,13 +9,20 @@
  * a coordinate space of the font's own choosing, and everything a program asks
  * about the font is that outline's numbers scaled to the size being drawn.
  *
- * This reads the tables that describe the font, not the ones that draw it.
- * `glyf` and `loca` -- the outlines themselves -- are untouched, because
- * rasterising them is a separate piece of work with its own oracle: Windows
- * runs the hinting bytecode before it scan-converts, which moves the outline
- * onto the pixel grid and changes the shapes substantially at text sizes.
- * Metrics are what every layout decision a program makes actually uses, and
- * they come out of the tables read here.
+ * The metrics Windows reports for these are not a scaling of anything: for
+ * half the sizes recorded, no single scale factor can produce both the ascent
+ * and the descent by rounding. They are grid-fitted, and for a while that
+ * looked like it meant running the hinting bytecode to get them.
+ *
+ * It does not. The font carries the answers. `VDMX` tabulates the hinted
+ * extent of the whole face at every pixel size, and `hdmx` tabulates every
+ * glyph's hinted advance at a set of them -- both computed offline by whoever
+ * built the font, precisely so that a system can answer `GetTextMetrics`
+ * without rasterising anything. Reading them is how Windows answers, and it is
+ * how this does.
+ *
+ * The outlines in `glyf` are still untouched. Drawing a glyph does need the
+ * interpreter, or an unhinted approximation of one; measuring it does not.
  */
 export class TrueTypeFont {
   declare _view: DataView;
@@ -157,9 +164,100 @@ export class TrueTypeFont {
     return this.has('OS/2') ? this.unsigned('OS/2', 4) : 400;
   }
 
-  /** Whether the outlines are slanted. */
-  get italic() {
-    return this.has('head') ? (this.unsigned('head', 44) & 0x02) !== 0 : false;
+  /**
+   * Whether the font holds symbols rather than letters.
+   *
+   * A symbol font maps its characters into a private range instead of at the
+   * codepoints they are written with, so it has no glyph for `A` at `A`. That
+   * is the test, and it matters because such a font is no use to a request
+   * that asked for the ANSI character set -- Windows answers a request for
+   * WingDings in ANSI with MS Sans Serif, exactly as it does for Terminal.
+   */
+  get symbolic() {
+    const cmap = this.cmap;
+
+    return !cmap.has(0x41) && cmap.has(0xf041);
+  }
+
+  /**
+   * Whether this is the plain face of its family.
+   *
+   * The four files of a family all call themselves the same thing -- Arial,
+   * Arial Bold, Arial Italic and Arial Bold Italic are all `Arial` in the name
+   * table -- so a request for Arial has to be answered with the right one of
+   * them, and it is not whichever the directory happened to list first.
+   */
+  get regular() {
+    if (this.has('OS/2') && this._tables['OS/2'].length >= 64) {
+      const selection = this.unsigned('OS/2', 62);
+
+      // Bit 6 says so outright; failing that, not bold and not italic.
+      return (selection & 0x40) !== 0 || (selection & 0x21) === 0;
+    }
+
+    return this.weight < 700;
+  }
+
+  /**
+   * The widest advance at a pixel size, grid-fitted.
+   *
+   * `hdmx` states this per size alongside the per-glyph widths, and it is not
+   * the scaled `hhea` maximum: hinting can push a glyph a pixel wider than the
+   * outline it came from.
+   */
+  deviceMaxAdvance(ppem) {
+    if (!this.has('hdmx')) {
+      return null;
+    }
+
+    const base = this._tables['hdmx'].offset;
+    const count = this._view.getInt16(base + 2, false);
+    const stride = this._view.getInt32(base + 4, false);
+
+    for (let index = 0; index < count; index++) {
+      const record = base + 8 + index * stride;
+
+      if (this._view.getUint8(record) === ppem) {
+        return this._view.getUint8(record + 1);
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * The family the font puts itself in, as the low nibble of a `LOGFONT`'s
+   * pitch and family byte.
+   *
+   * `OS/2` states a class, and Windows turns it into one of the handful of
+   * families a program can ask for: Arial calls itself class 8, which is the
+   * sans serifs, and comes back as `FF_SWISS`; Times New Roman is class 1 and
+   * comes back as `FF_ROMAN`.
+   */
+  get family() {
+    if (!this.has('OS/2')) {
+      return 0x00;
+    }
+
+    const klass = this.signed('OS/2', 30) >> 8;
+
+    if (klass === 8) {
+      return 0x20; // FF_SWISS
+    }
+
+    if (klass === 10) {
+      return 0x40; // FF_SCRIPT
+    }
+
+    if (klass === 12) {
+      return 0x00; // FF_DONTCARE, which is what a symbol font gets
+    }
+
+    if (this.fixedPitch) {
+      return 0x30; // FF_MODERN
+    }
+
+    return 0x10; // FF_ROMAN
   }
 
   /** Whether every character advances by the same amount. */
@@ -226,6 +324,151 @@ export class TrueTypeFont {
     this._name = best;
 
     return this._name;
+  }
+
+  /**
+   * The grid-fitted extent of the face at a pixel size.
+   *
+   * `VDMX` is a table of what the outlines actually came out as once they had
+   * been hinted onto the grid, one entry per pixel size, computed when the
+   * font was built. It is why the reported ascent and descent are not a
+   * scaling of the font's own ascender and descender, and why they can move
+   * independently of one another from one size to the next.
+   *
+   * The groups are indexed by aspect ratio. Every ratio in the fonts shipped
+   * with 3.1 carries the same numbers, and a square-pixel display would take
+   * the 1:1 group in any case, so the first is read.
+   *
+   * @param {number} ppem - The size in pixels per em.
+   * @returns {Object|null} The extent above and below the line, or null if the
+   *                        table does not cover this size.
+   */
+  extentAt(ppem) {
+    if (!this.has('VDMX')) {
+      return null;
+    }
+
+    const base = this._tables['VDMX'].offset;
+    const ratios = this._view.getUint16(base + 4, false);
+
+    if (ratios === 0) {
+      return null;
+    }
+
+    const group = base + this._view.getUint16(base + 6 + ratios * 4, false);
+
+    const records = this._view.getUint16(group, false);
+    const first = this._view.getUint8(group + 2);
+    const last = this._view.getUint8(group + 3);
+
+    if (ppem < first || ppem > last) {
+      return null;
+    }
+
+    for (let index = 0; index < records; index++) {
+      const at = group + 4 + index * 6;
+
+      if (this._view.getUint16(at, false) === ppem) {
+        return {
+          ascent: this._view.getInt16(at + 2, false),
+          descent: -this._view.getInt16(at + 4, false),
+        };
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * The largest pixel size whose grid-fitted extent fits in a cell.
+   *
+   * A program asks for a cell height and the font has only the sizes it was
+   * hinted at, so the answer is the tallest that does not overflow. Where two
+   * sizes come out the same height -- which happens, because grid-fitting
+   * quantises -- the smaller is the one Windows picks, and the difference
+   * shows up in the internal leading rather than anywhere else.
+   *
+   * @param {number} height - The cell height asked for, in pixels.
+   */
+  sizeForHeight(height) {
+    if (!this.has('VDMX')) {
+      return null;
+    }
+
+    const base = this._tables['VDMX'].offset;
+    const ratios = this._view.getUint16(base + 4, false);
+
+    if (ratios === 0) {
+      return null;
+    }
+
+    const group = base + this._view.getUint16(base + 6 + ratios * 4, false);
+    const records = this._view.getUint16(group, false);
+
+    let best: any = null;
+
+    for (let index = 0; index < records; index++) {
+      const at = group + 4 + index * 6;
+
+      const ppem = this._view.getUint16(at, false);
+      const ascent = this._view.getInt16(at + 2, false);
+      const descent = -this._view.getInt16(at + 4, false);
+
+      const cell = ascent + descent;
+
+      if (cell > height) {
+        continue;
+      }
+
+      if (!best || cell > best.cell || (cell === best.cell && ppem < best.ppem)) {
+        best = { ppem, ascent, descent, cell };
+      }
+    }
+
+    return best;
+  }
+
+  /**
+   * A glyph's grid-fitted advance at a pixel size, in whole pixels.
+   *
+   * `hdmx` is the same idea as `VDMX` applied to widths: what each glyph's
+   * advance came out as once hinted, at the handful of sizes the font was
+   * built for. A size that is not in the table has no answer here, and a
+   * fixed-pitch font may carry no table at all because every advance is the
+   * same one scaled.
+   *
+   * @param {number} ppem - The size in pixels per em.
+   * @param {number} glyph - The glyph index.
+   */
+  deviceAdvance(ppem, glyph) {
+    if (!this.has('hdmx')) {
+      return null;
+    }
+
+    const base = this._tables['hdmx'].offset;
+    const count = this._view.getInt16(base + 2, false);
+    const stride = this._view.getInt32(base + 4, false);
+
+    for (let index = 0; index < count; index++) {
+      const record = base + 8 + index * stride;
+
+      if (this._view.getUint8(record) !== ppem) {
+        continue;
+      }
+
+      const at = record + 2 + glyph;
+
+      return at < base + this._tables['hdmx'].length ? this._view.getUint8(at) : null;
+    }
+
+    return null;
+  }
+
+  /** The glyph a character maps to, following the symbol range if need be. */
+  glyphFor(code) {
+    const cmap = this.cmap;
+
+    return cmap.get(code) ?? cmap.get(0xf000 + code) ?? 0;
   }
 
   /**

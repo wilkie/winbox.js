@@ -71,6 +71,14 @@ export function CreateFontIndirect(lplf) {
     strikeout: request.strikeout,
     scale: found.scale,
     horizontal: found.horizontal,
+
+    /* An outline face carries the font itself and the pixel size it was
+     * settled at, because there is no strike to stand in for either.
+     */
+    outline: found.outline,
+    ppem: found.ppem,
+    ascent: found.ascent,
+    descent: found.descent,
   });
 
   this.debug('CreateFontIndirect', request.face, request.height, found.scale);

@@ -106,6 +106,79 @@ whenBuilt('reading a TrueType font', () => {
     });
   });
 
+  describe('the grid-fitted tables', () => {
+    let arial: any;
+
+    beforeAll(async function () {
+      arial = await installed('ARIAL.TTF');
+    }, 60000);
+
+    /* These are the tables that make the metrics answerable without running
+     * the hinting bytecode: what the outlines came out as once fitted to the
+     * grid, tabulated per pixel size when the font was built.
+     */
+    it('states what the face comes out as at a pixel size', function () {
+      // Verified against what Windows reports for a sixteen pixel cell.
+      expect(arial.extentAt(13)).toEqual({ ascent: 13, descent: 3 });
+    });
+
+    it('has nothing to say about a size it was not built for', function () {
+      expect(arial.extentAt(7)).toBeNull();
+    });
+
+    it('finds the size that fills a cell without overflowing it', function () {
+      const found = arial.sizeForHeight(16);
+
+      expect(`${found.ascent}/${found.descent}`).toEqual('13/3');
+
+      /* Thirteen and fourteen both come out sixteen pixels tall, and the
+       * smaller is the one Windows settles on -- which shows up only in the
+       * internal leading, since the extent is the same either way.
+       */
+      expect(found.ppem).toEqual(13);
+    });
+
+    it('will not overflow the cell it was given', function () {
+      for (const height of [8, 12, 16, 20, 24, 32, 48, 64, 100]) {
+        const found = arial.sizeForHeight(height);
+
+        if (found) {
+          expect(`${height}: ${found.ascent + found.descent <= height}`).toEqual(`${height}: true`);
+        }
+      }
+    });
+
+    it("states each glyph's fitted advance where it was built for the size", function () {
+      const glyph = arial.glyphFor('W'.charCodeAt(0));
+
+      expect(arial.deviceAdvance(13, glyph)).toBeGreaterThan(0);
+
+      // And says nothing where it was not.
+      expect(arial.deviceAdvance(7, glyph)).toBeNull();
+    });
+
+    it('knows which file of a family is the plain one', async function () {
+      expect(arial.regular).toEqual(true);
+      expect((await installed('ARIALBD.TTF')).regular).toEqual(false);
+
+      /* All four files of a family name themselves the same thing, so this is
+       * the only thing separating them.
+       */
+      expect((await installed('ARIALBD.TTF')).faceName).toEqual('Arial');
+    }, 60000);
+
+    it('knows a symbol font from a text one', async function () {
+      expect(arial.symbolic).toEqual(false);
+      expect((await installed('WINGDING.TTF')).symbolic).toEqual(true);
+    }, 60000);
+
+    it('puts itself in a family a program can ask for', async function () {
+      // FF_SWISS for the sans serifs, FF_ROMAN for the serifs.
+      expect(arial.family).toEqual(0x20);
+      expect((await installed('TIMES.TTF')).family).toEqual(0x10);
+    }, 60000);
+  });
+
   it('refuses bytes that are not a font', function () {
     const rubbish = new DataView(new Uint8Array([1, 2, 3, 4]).buffer);
 

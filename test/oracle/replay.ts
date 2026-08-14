@@ -142,7 +142,7 @@ export async function prepareFonts() {
   const manager: any = new FontManager();
 
   for (const entry of await fileSystem.list(['WINDOWS', 'SYSTEM'])) {
-    if (entry.info.name.toUpperCase().endsWith('.FON')) {
+    if (/\.(FON|TTF)$/.test(entry.info.name.toUpperCase())) {
       await manager.load(await fileSystem.open(['WINDOWS', 'SYSTEM', entry.info.name]));
     }
   }
@@ -1125,21 +1125,17 @@ export class Unimplemented extends Error {}
 /**
  * Two separate things are missing, and they are worth keeping apart.
  *
- * The installation carries four TrueType families -- Arial, Times New Roman,
- * Courier New and WingDings -- and we cannot read an outline at all. That
- * accounts for most of what disagrees here, and for more than the obvious
- * cases: Windows answers a face name it does not recognise with Times New
- * Roman, so a request for a font nobody ever installed is a TrueType request.
- *
- * The three plotter fonts load and agree in full -- face, style, and every
- * metric at every size, including the widths, whose rule took a second
- * recording to find. See oracle/README.md.
+ * The bitmap strikes and the plotter fonts agree throughout. The outline faces
+ * agree on everything their own fitted tables cover -- which is the face, the
+ * height, the ascent, the descent and the leadings at every size the font was
+ * built for -- and disagree on the synthesised styles, on the maximum
+ * character width, and at sizes the tables skip. See oracle/README.md.
  */
 const NO_OUTLINE_FONTS =
-  'the installation has four TrueType families we cannot load, so anything ' +
-  'mapping to one disagrees -- including every unknown face name, which ' +
-  'Windows answers with Times New Roman. Nothing else in this fixture does: ' +
-  'the bitmap strikes and the plotter fonts both agree throughout';
+  'the outline faces answer with the metrics their own fitted tables state, ' +
+  'which is most of what they are asked; what still disagrees is the ' +
+  'synthesised styles on them, the maximum character width, and the sizes ' +
+  'those tables do not cover';
 
 export const KNOWN_GAPS: Record<string, string> = {
   'CreateFont face': NO_OUTLINE_FONTS,
@@ -1147,7 +1143,6 @@ export const KNOWN_GAPS: Record<string, string> = {
   'CreateFont widths': NO_OUTLINE_FONTS,
   'CreateFont style': NO_OUTLINE_FONTS,
   'CreateFont extent': NO_OUTLINE_FONTS,
-  CreateFontIndirect: NO_OUTLINE_FONTS,
 };
 
 /**

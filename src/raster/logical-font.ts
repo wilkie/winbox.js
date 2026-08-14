@@ -57,6 +57,16 @@ export class LogicalFont extends Font {
     return !!this._entry?.isVector;
   }
 
+  /** The outline font behind this, if it is one. */
+  get outline() {
+    return this._style.outline ?? null;
+  }
+
+  /** The pixel size an outline face was settled at. */
+  get ppem() {
+    return this._style.ppem ?? 0;
+  }
+
   /** How many times over the strike is drawn, to reach the size asked for. */
   get scale() {
     return this._style.scale ?? 1;
@@ -106,6 +116,27 @@ export class LogicalFont extends Font {
   }
 
   measure(text, options: any = {}) {
+    if (this.outline) {
+      /* Every advance is the grid-fitted one the font tabulates for this pixel
+       * size. Where the table does not cover the size -- it holds a couple of
+       * dozen rather than all of them -- the outline's own advance is scaled,
+       * which is what it would have been hinted from.
+       */
+      const font = this.outline;
+      const ppem = this.ppem;
+
+      let width = 0;
+
+      for (const character of String(text)) {
+        const glyph = font.glyphFor(character.charCodeAt(0));
+        const device = font.deviceAdvance(ppem, glyph);
+
+        width += device ?? Math.round((font.advanceOf(glyph) * ppem) / font.unitsPerEm);
+      }
+
+      return { width, height: this._style.ascent + this._style.descent };
+    }
+
     if (this.isVector) {
       const scale = this.widthScale;
       const cell = Math.round(this._entry.header.dfPixHeight * this.scale);

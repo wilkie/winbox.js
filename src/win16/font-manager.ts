@@ -1,14 +1,17 @@
 import { BitmapFont } from '../raster/bitmap-font.js';
 import { Stream } from '../stream.js';
 import { LogicalFont } from '../raster/logical-font.js';
+import { TrueTypeFont } from '../raster/truetype-font.js';
 
 export class FontManager {
   declare _callback: any;
   declare _fonts: any;
+  declare _outlines: any;
   declare _loading: any;
   declare _waitPromise: any;
   constructor() {
     this._fonts = {};
+    this._outlines = {};
     this._loading = 0;
 
     this._waitPromise = new Promise<void>((resolve, reject) => {
@@ -43,8 +46,40 @@ export class FontManager {
 
         this._fonts[face].push(entry);
       });
-    } else {
-      // TrueType Font
+      return;
+    }
+
+    if (file.name.toLowerCase().endsWith('.ttf')) {
+      const bytes = new Uint8Array(await file.read(0, file.size));
+      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+
+      if (!TrueTypeFont.looksLikeFont(view)) {
+        return;
+      }
+
+      const font = new TrueTypeFont(bytes);
+      const face = font.faceName;
+
+      if (!face) {
+        return;
+      }
+
+      /* An outline face has no strikes to collect, so it stands alone under
+       * its name rather than joining a list. A family's bold and italic files
+       * name themselves the same thing, and the first one loaded is the
+       * regular; keeping that one is right until synthesised styles give way
+       * to real ones.
+       */
+      /* The plain face of the family is the one a request for the family
+       * name means. All four files name themselves the same thing, so taking
+       * whichever the directory listed first gets the bold one about as often
+       * as not.
+       */
+      const held = this._outlines[face];
+
+      if (!held || (!held.regular && font.regular)) {
+        this._outlines[face] = font;
+      }
     }
   }
 
@@ -101,6 +136,23 @@ export class FontManager {
 
     return undefined;
   }
+
+  /** The outline face of a name, after substitution, if one is installed. */
+  outline(name) {
+    const face = FontManager.SUBSTITUTES[String(name).toLowerCase()] ?? name;
+    const wanted = String(face).toLowerCase();
+
+    for (const installed of Object.keys(this._outlines)) {
+      if (installed.toLowerCase() === wanted) {
+        return { name: installed, font: this._outlines[installed] };
+      }
+    }
+
+    return null;
+  }
+
+  /** The face an unrecognised name is answered with, if it is installed. */
+  static FALLBACK_OUTLINE = 'Times New Roman';
 
   /**
    * What a request with no usable face name falls back to.
@@ -163,6 +215,36 @@ export class FontManager {
       face = FontManager.familyFace(pitchAndFamily);
     }
 
+    /* An outline face answers before the strikes are consulted, and an
+     * unrecognised name falls to Times New Roman rather than to the family
+     * default -- which is the one place a name that is not installed produces
+     * a *different* answer from a name that was never given.
+     */
+    /* A strike of the same name wins: both a bitmap Symbol and a TrueType one
+     * are installed, and asking for Symbol gets the bitmap. So an outline
+     * answers only where no strike carries the name at all.
+     */
+    const outline = this.lookup(face)
+      ? null
+      : (this.outline(face) ?? (face ? this.outline(FontManager.FALLBACK_OUTLINE) : null));
+
+    /* A symbol outline is rejected by a request that did not ask for symbols,
+     * the same way an OEM strike is: WingDings asked for in ANSI comes back
+     * as MS Sans Serif.
+     */
+    const usable =
+      outline &&
+      charset !== FontManager.OEM_CHARSET &&
+      !(outline.font.symbolic && charset !== FontManager.SYMBOL_CHARSET);
+
+    if (usable) {
+      const chosen = FontManager.realiseOutline(outline.font, request);
+
+      if (chosen) {
+        return { ...chosen, outline: outline.font, face: outline.name };
+      }
+    }
+
     let entries = this.lookup(face);
 
     /* An OEM face is no use to a request that did not ask for one, and Windows
@@ -217,6 +299,44 @@ export class FontManager {
     const echo = found && substituted && request.face;
 
     return { ...chosen, face: echo ? String(request.face) : chosen.entry.name };
+  }
+
+  /**
+   * Settles an outline face at a size.
+   *
+   * The metrics are not a scaling of anything the font says about itself --
+   * see `TrueTypeFont` -- so the size is chosen by looking through the font's
+   * own table of grid-fitted extents for the largest that fits in the cell
+   * asked for.
+   *
+   * Where two pixel sizes come out the same height the choice between them
+   * changes nothing about the ascent, the descent or the height, because that
+   * is what makes them tied; it moves the internal leading by one, and which
+   * one Windows picks is not settled. The larger is taken here.
+   */
+  static realiseOutline(font, request) {
+    const height = request.height ?? 0;
+
+    /* A negative height asks for the em rather than the cell, which for an
+     * outline is the pixel size directly. Zero is the mapper's default, which
+     * these fonts answer at the same eighteen pixels a plotter font does.
+     */
+    if (height < 0) {
+      const extent = font.extentAt(-height);
+
+      return extent
+        ? { entry: null, ppem: -height, ascent: extent.ascent, descent: extent.descent }
+        : null;
+    }
+
+    const wanted = height || 18;
+    const found = font.sizeForHeight(wanted);
+
+    if (!found) {
+      return null;
+    }
+
+    return { entry: null, ppem: found.ppem, ascent: found.ascent, descent: found.descent };
   }
 
   /**
