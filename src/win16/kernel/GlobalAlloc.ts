@@ -101,7 +101,9 @@ export function GlobalAlloc(fuAlloc, cbAlloc) {
   }
 
   // Get the system heap.
-  const index = this.allocator.allocate(cbAlloc);
+  options.flags = fuAlloc;
+
+  const index = this.allocator.allocate(cbAlloc, options);
   if (index === null || index < 0) {
     // Cannot allocate
     return NULL;

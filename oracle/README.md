@@ -290,18 +290,25 @@ and its base does not -- but expecting is not knowing, and now it is recorded.
 **The lock count stays at zero** through two nested `GlobalLock` calls, on
 fixed and moveable blocks alike, and both locks return the same pointer.
 
-Of the sixteen records we agree with five, and the two that moved are the ones
-worth having: `handle vs selector` and `GlobalLock`. `GlobalHandle`,
-`GlobalReAlloc`, `GlobalFlags` and the lock count are stubs, and `table and
-privilege bits` is the GDT-against-LDT question above.
+All of it is implemented now. `GlobalHandle` recovers a handle from a selector
+by arithmetic rather than by searching, which is what the handle model bought.
+`GlobalFlags` reports only `GMEM_DISCARDABLE` -- moveable and fixed both come
+back as zero, which the fixtures are unambiguous about and no manual says.
+`GlobalReAlloc` keeps the handle and the address, because a descriptor covers
+the whole 64 KiB its selector can address, so a block that still fits behind
+the selectors it has does not move and only the bookkeeping changes. And the
+lock count stays where the recordings put it, at zero.
 
-The `identity` record was split in two while making that change, because the
-privilege relationship and the choice of table can be got right and wrong
-independently, and a single record bundling them would have shown no progress
-at all when half of it was fixed.
+**Strings 57/57, memory 40/40, handles 13/16 -- 110 of 113.** The three that
+remain are `table and privilege bits`, which is the GDT-against-LDT question
+above and a deliberate difference rather than a defect.
 
-Memory reads 37/40 and handles 5/16. Across all three probes, 99 of 113
-records.
+Implementing them also exposed a flaw in the replay harness worth writing down.
+Arguments that are not numbers were being turned into `NaN`, so a probe naming
+its cases -- `moveable`, `fixed`, `moveable grow,256->1024` -- handed every
+adapter the same unusable value, and the adapters fell back to their defaults
+and agreed anyway. Two probes had been passing for the wrong reason. Text stays
+text now.
 
 `AnsiNext` has a quieter surprise: at the null terminator it returns the same
 pointer rather than moving past it, so walking a string with it stops at the end

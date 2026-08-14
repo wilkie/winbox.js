@@ -24,6 +24,9 @@ import { LocalSize } from '../../src/win16/kernel/LocalSize.js';
 import { LocalInit } from '../../src/win16/kernel/LocalInit.js';
 import { GlobalLock } from '../../src/win16/kernel/GlobalLock.js';
 import { GlobalUnlock } from '../../src/win16/kernel/GlobalUnlock.js';
+import { GlobalFlags } from '../../src/win16/kernel/GlobalFlags.js';
+import { GlobalHandle } from '../../src/win16/kernel/GlobalHandle.js';
+import { GlobalReAlloc } from '../../src/win16/kernel/GlobalReAlloc.js';
 
 /**
  * Replaying the oracle's recordings against our implementation.
@@ -188,8 +191,17 @@ export function parseArgs(args: string): (string | number)[] {
       let end = args.indexOf(',', at);
       end = end === -1 ? args.length : end;
 
-      // `Number` reads the probe's 0x-prefixed flags as written.
-      parsed.push(Number(args.slice(at, end)));
+      const text = args.slice(at, end);
+
+      /* `Number` reads the probe's 0x-prefixed flags as written. Anything that
+       * is not a number stays text: probes describe what they are measuring as
+       * well as what they passed -- `moveable grow` names a case rather than an
+       * argument -- and turning those into NaN loses the distinction between
+       * the cases silently.
+       */
+      const value = Number(text);
+
+      parsed.push(text.trim() !== '' && !Number.isNaN(value) ? value : text);
       at = end;
     }
   }
@@ -413,6 +425,72 @@ const ADAPTERS: Record<string, (context: Context, args: (string | number)[]) => 
     return `moved=${before === GlobalLock.call(context, handle) ? 0 : 1}`;
   },
 
+  GlobalFlags(context, [flags]) {
+    const handle = GlobalAlloc.call(context, flags as number, 64);
+
+    if (!handle) {
+      return 'failed';
+    }
+
+    return `0x${(GlobalFlags.call(context, handle) & 0xffff).toString(16).padStart(4, '0')}`;
+  },
+
+  GlobalHandle(context, [name]) {
+    const handle = GlobalAlloc.call(context, flagsFor(name as string), 256);
+
+    if (!handle) {
+      return 'failed';
+    }
+
+    // The probe passes the selector out of the pointer it locked.
+    const selector = (GlobalLock.call(context, handle) >>> 16) & 0xffff;
+    const recovered = GlobalHandle.call(context, selector) & 0xffff;
+
+    return `recovered=${recovered === handle ? 1 : 0}`;
+  },
+
+  'lock count'(context, [name]) {
+    const handle = GlobalAlloc.call(context, flagsFor(name as string), 256);
+
+    if (!handle) {
+      return 'failed';
+    }
+
+    const first = GlobalLock.call(context, handle);
+    const second = GlobalLock.call(context, handle);
+
+    return `same=${first === second ? 1 : 0},count=${GlobalFlags.call(context, handle) & 0xff}`;
+  },
+
+  GlobalReAlloc(context, [description, sizes]) {
+    /* The probe names the block and the change together, as `moveable
+     * grow,256->1024`, so the sizes arrive as one field to split.
+     */
+    const [from, to] = String(sizes).split('->').map(Number);
+    const flags = String(description).startsWith('fixed') ? 0x0000 : 0x0002;
+
+    const handle = GlobalAlloc.call(context, flags, from);
+
+    if (!handle) {
+      return 'failed';
+    }
+
+    const before = GlobalLock.call(context, handle);
+    const resized = GlobalReAlloc.call(context, handle, to, flags);
+
+    if (!resized) {
+      return 'failed';
+    }
+
+    const after = GlobalLock.call(context, resized);
+
+    return (
+      `same-handle=${resized === handle ? 1 : 0},` +
+      `same-address=${before === after ? 1 : 0},` +
+      `size=${GlobalSize.call(context, resized)}`
+    );
+  },
+
   GlobalFree(context) {
     const handle = GlobalAlloc.call(context, 0x0002, 256);
 
@@ -450,7 +528,7 @@ export const KNOWN_GAPS: Record<string, string> = {
  * as a disagreement -- the two want different work, and conflating them makes
  * the report harder to act on.
  */
-const STUBBED = new Set<string>(['GlobalFlags', 'GlobalHandle', 'GlobalReAlloc', 'lock count']);
+const STUBBED = new Set<string>([]);
 
 /** Runs one recorded call. */
 export function replayRecord(record: Fixture['records'][number]): Replayed {

@@ -41,6 +41,9 @@ import { GetVersion } from './kernel/GetVersion.js';
 import { GetWindowsDirectory } from './kernel/GetWindowsDirectory.js';
 import { GetWinFlags } from './kernel/GetWinFlags.js';
 import { GlobalAlloc } from './kernel/GlobalAlloc.js';
+import { GlobalFlags } from './kernel/GlobalFlags.js';
+import { GlobalHandle } from './kernel/GlobalHandle.js';
+import { GlobalReAlloc } from './kernel/GlobalReAlloc.js';
 import { GlobalFree } from './kernel/GlobalFree.js';
 import { GlobalLock } from './kernel/GlobalLock.js';
 import { GlobalSize } from './kernel/GlobalSize.js';
@@ -163,14 +166,14 @@ export class Kernel extends Module {
       [LocalCompact, 'LocalCompact', 2, [UINT], UINT],
       [Kernel.stub, 'LocalNotify', 4],
       [GlobalAlloc, 'GlobalAlloc', 6, [UINT, DWORD], HGLOBAL],
-      [Kernel.stub, 'GlobalReAlloc', 8],
+      [GlobalReAlloc, 'GlobalReAlloc', 8, [HGLOBAL, DWORD, UINT], HGLOBAL],
       [GlobalFree, 'GlobalFree', 2, [HGLOBAL], HGLOBAL],
       [GlobalLock, 'GlobalLock', 2, [HGLOBAL], FARPTR],
       [GlobalUnlock, 'GlobalUnlock', 2, [HGLOBAL], FARPTR],
       // 20 //
       [GlobalSize, 'GlobalSize', 2, [HGLOBAL], DWORD],
-      [Kernel.stub, 'GlobalHandle', 2],
-      [Kernel.stub, 'GlobalFlags', 2, [HGLOBAL], UINT],
+      [GlobalHandle, 'GlobalHandle', 2, [UINT], DWORD],
+      [GlobalFlags, 'GlobalFlags', 2, [HGLOBAL], UINT],
       [LockSegment, 'LockSegment', 2, [UINT], HGLOBAL],
       [UnlockSegment, 'UnlockSegment', 2, [UINT]],
       [Kernel.stub, 'GlobalCompact', 4],

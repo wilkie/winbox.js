@@ -68,9 +68,14 @@ export class Allocator {
       return null;
     }
 
-    // Record the memory object
+    /* What was asked for, and how much room it was given. The selector count
+     * is kept because a later `GlobalReAlloc` needs to know whether a bigger
+     * size still fits where the block already is.
+     */
     this._objects[nextSelector] = {
       size: size,
+      selectors: selectorCount,
+      flags: (options as any).flags ?? 0,
     };
 
     // Map it in
@@ -95,6 +100,50 @@ export class Allocator {
     }
 
     return 0;
+  }
+
+  /**
+   * The allocation flags an object was made with.
+   *
+   * @param {number} index - The descriptor index of the object.
+   * @returns {number} The flags, or zero if there is no such object.
+   */
+  flagsOf(index) {
+    return this._objects[index]?.flags ?? 0;
+  }
+
+  /**
+   * Changes the size of an existing allocation, in place.
+   *
+   * A descriptor here covers the whole 64 KiB its selector can address and the
+   * mapping is one to one, so a block that still fits behind the selectors it
+   * already has does not move and does not need its descriptor touched --
+   * which is why real Windows hands back the same handle and the same address
+   * for a block grown four times over. Only the bookkeeping changes.
+   *
+   * @param {number} index - The descriptor index of the object.
+   * @param {number} size - The new size in bytes.
+   * @returns {boolean} Whether the object could be resized where it stands.
+   */
+  resize(index, size) {
+    const object = this._objects[index];
+
+    if (!object || size < 0) {
+      return false;
+    }
+
+    size = size === 0 ? 0 : (size + 0x1f) & ~0x1f;
+
+    /* Growing past the selectors it was given would mean moving it, and what
+     * Windows does in that case has not been measured.
+     */
+    if (Math.max(1, (size + 0xffff) >> 16) > object.selectors) {
+      return false;
+    }
+
+    object.size = size;
+
+    return true;
   }
 
   /**
