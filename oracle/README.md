@@ -249,12 +249,20 @@ rounding anything -- but holding every block until the end produced identical
 numbers, so the flaw was imagined and the behaviour is real. The probe holds
 them anyway; the original version was measuring something it did not intend to.
 
-- **`LocalSize` is an empty function.** It logs its argument and returns
-  nothing, and `Heap` has no notion of the size of an allocation at all, so all
-  eight local-heap records disagree. The recorded sizes are strange enough to be
-  worth having: requests of 15, 16 and 17 bytes all come back as 18.
+That model is implemented now -- `Heap.blockFor` rounds, `Heap#sizeOf` answers
+for a handle or a pointer, and `LocalAlloc+LocalSize` reads 17/17. The rounding
+was the easy part. Two things underneath it had to be fixed first, both
+invisible because nothing had ever exercised them: `Heap#allocate` dropped its
+options on the way to `insert`, so a moveable request never asked for a handle
+and that path had never once run; and when it did run it threw, because `Heap`
+declared `getUint16` and `setUint16` and nothing assigned them --
+`heapInitialize` built a `DataView` for the heap's bytes and discarded it. The
+heap owns its storage now, which is where handles belong in any case, a local
+handle being an address the guest dereferences.
 
-Memory reads 18/31. Combined with the strings probe, 75 of 88 records.
+Memory reads 35/40. Combined with the strings probe, 92 of 97 records. What is
+left is `GlobalFlags`, which is a stub, and `GlobalLock` -- the
+handle-is-not-a-selector question, which is what the handles probe is for.
 
 `AnsiNext` has a quieter surprise: at the null terminator it returns the same
 pointer rather than moving past it, so walking a string with it stops at the end
