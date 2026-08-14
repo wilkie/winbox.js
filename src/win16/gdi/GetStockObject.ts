@@ -1,6 +1,6 @@
 'use strict';
 
-import { STOCK_FONTS } from './stock-fonts.js';
+import { stockFontHandle } from './stock-fonts.js';
 
 import { Brush } from '../../raster/brush.js';
 import { Pen } from '../../raster/pen.js';
@@ -98,18 +98,8 @@ export function GetStockObject(fnObject) {
     case Gdi.SYSTEM_FONT:
     case Gdi.SYSTEM_FIXED_FONT:
     case Gdi.DEVICE_DEFAULT_FONT:
-      {
-        /* A stock font is a face at a size, and both halves matter: the same
-         * file holds Courier at ten points and at fifteen, and they are thirteen
-         * and twenty pixels tall. See stock-fonts.ts for where these come from.
-         */
-        const wanted = STOCK_FONTS[fnObject];
-        const font = this.fonts.realize(wanted.face, wanted.points);
-
-        if (font) {
-          handle = this.handles.lookup(font) || this.handles.allocate(font);
-        }
-      }
+      // See stock-fonts.ts for what each of these actually is, and why.
+      handle = stockFontHandle(this, fnObject) ?? NULL;
       break;
     case Gdi.DEFAULT_PALETTE:
       this.debug('GetStockObject: IMPLEMENTATION REQUIRED');

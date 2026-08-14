@@ -37,6 +37,8 @@ import { Types, Struct, VARIADIC, HWND, WPARAM, LPARAM, UINT } from './win16/typ
 // Kernel calls
 import { LocalInit } from './win16/kernel/LocalInit.js';
 
+import { Surface } from './raster/surface.js';
+
 /**
  * This represents the Windows 16-bit Operating System emulation.
  */
@@ -54,6 +56,7 @@ export class Win16 {
   declare _modules: any;
   declare _scheduler: any;
   declare _display: any;
+  declare _screen: any;
   declare _onCall: any;
   declare _options: any;
   declare _startTime: any;
@@ -154,15 +157,27 @@ export class Win16 {
     this.handles.allocate(this._desktop.window);
   }
 
+  /**
+   * Brings the system up to the state a program expects to find it in.
+   *
+   * Loading the fonts is the whole of it so far, and it has to finish before
+   * anything runs: a device context comes with the system font already in it,
+   * and a program that asks how wide its text will be does so long before it
+   * would think to load anything itself.
+   *
+   * Each font is a file to read, so each load is asynchronous. They were
+   * started and not waited for, which meant `boot` returned with nothing
+   * loaded and the fonts arrived at whatever point they happened to arrive --
+   * usually after the first thing that needed them.
+   */
   async boot() {
     const files = await this.files.list('C:\\WINDOWS\\SYSTEM');
 
-    // Initialize fonts
-    files.forEach((file) => {
-      if (file.name.endsWith('.FON')) {
-        this._fonts.load(file);
-      }
-    });
+    await Promise.all(
+      files
+        .filter((file) => file.name.toUpperCase().endsWith('.FON'))
+        .map((file) => this._fonts.load(file))
+    );
   }
 
   /**
@@ -182,6 +197,30 @@ export class Win16 {
    */
   get display() {
     return this._display;
+  }
+
+  /**
+   * The screen, as something that can be drawn on.
+   *
+   * `GetDC(NULL)` hands a program a device context for the screen itself
+   * rather than for any window, and programs use it for exactly the things a
+   * window cannot answer: how big the display is, how many colours it has, and
+   * how wide a string will be in a given font. Both of the oracle's drawing
+   * probes open one before they ask anything.
+   *
+   * Its size comes from the display driver rather than from the page. A guest
+   * asking the screen how big it is should be told what a VGA is, not what
+   * this browser window happens to be, which is the same reason
+   * `GetDeviceCaps` answers from the display mode.
+   *
+   * Built on first use, because most programs never ask.
+   */
+  get screen() {
+    if (!this._screen) {
+      this._screen = Surface.offscreen(this._display.width, this._display.height);
+    }
+
+    return this._screen;
   }
 
   /**

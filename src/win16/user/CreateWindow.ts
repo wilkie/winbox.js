@@ -74,8 +74,14 @@ export async function CreateWindow(
     width: 800,
   });
 
-  // Set default font
-  dialog.surface.font = this.fonts.lookup('System');
+  /* No font goes on the surface here. `lookup` answers with every entry a face
+   * has -- an array, not a font -- so what landed here was something nothing
+   * could measure or draw with, and it sat in front of the real default:
+   * `GetDC` puts the system font in a context that has none, and could not,
+   * because this had already filled the slot.
+   *
+   * A font belongs to a device context rather than to a window in any case.
+   */
 
   dialog.show();
   dialog.resize(400, 300);

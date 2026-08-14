@@ -26,27 +26,33 @@ import { NULL, TRUE, FALSE } from '../consts.js';
  *                      Otherwise, it is 0.
  */
 export function ReleaseDC(hwnd, hdc) {
-  const dc = 1;
+  /* Which surface the context has to be over for this to be the right window
+   * releasing it. `GetDC(NULL)` hands out the screen, so `ReleaseDC(NULL, ...)`
+   * gives it back -- the documentation is explicit that the two calls have to
+   * agree about the window, and it is a real mistake to catch.
+   */
+  let surface = null;
+
   if (hwnd == NULL) {
-    // The desktop context... do nothing
+    surface = this.screen;
   } else {
-    // Get the window
     const dialog = this.handles.resolve(hwnd);
 
-    // Get the surface
-    const surface = dialog.surface;
-
-    // Resolve the DC
-    const compare = this.handles.resolve(hdc);
-
-    // If this surface does not belong to the window, fail
-    if (compare !== surface) {
+    if (!dialog) {
       return FALSE;
     }
 
-    // Free the handle
-    this.handles.free(hdc);
+    surface = dialog.surface;
   }
+
+  if (this.handles.resolve(hdc) !== surface) {
+    return FALSE;
+  }
+
+  /* Only the handle goes. The surface behind it is the window's own pixels --
+   * or the screen's -- and outlives every context handed out over it.
+   */
+  this.handles.free(hdc);
 
   return TRUE;
 }

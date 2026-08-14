@@ -73,6 +73,14 @@ async function runApplication(name: string, frames = 2000) {
     },
   });
 
+  /* Starting the system before starting a program in it. The fonts come off
+   * the same drive the program does, and a device context has the system font
+   * in it from the moment it is handed out -- so a program that measures its
+   * text before drawing it, which is most of them, needs this to have
+   * happened.
+   */
+  await win16.boot();
+
   const file = await fileSystem.open(['WINDOWS', `${name}.EXE`]);
   const executable: any = new Executable(name, `C:\\WINDOWS\\${name}.EXE`, file);
 
@@ -125,6 +133,9 @@ whenBuilt('running Windows applications', () => {
         'USER.CreateWindow',
         'USER.GetMessage',
         'USER.DispatchMessage',
+        // And it is drawing the time into it.
+        'GDI.GetTextExtent',
+        'GDI.ExtTextOut',
       ],
     ],
     ['PROGMAN', 40, ['USER.LoadCursor', 'USER.RegisterClass']],

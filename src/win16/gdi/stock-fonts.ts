@@ -31,3 +31,38 @@ export const STOCK_FONTS = {
   14: { face: 'Courier', points: 12 }, // DEVICE_DEFAULT_FONT
   16: { face: 'Fixedsys', points: 12 }, // SYSTEM_FIXED_FONT
 };
+
+/** The font every device context starts with, before anything selects one. */
+export const SYSTEM_FONT = 13;
+
+/**
+ * Realises a stock font and hands back its handle.
+ *
+ * `GetStockObject` is the obvious caller, but not the only one: a device
+ * context has the system font in it before a program selects anything, so
+ * `GetDC` needs the same font by the same route. Doing it here means the two
+ * cannot come to different conclusions about what the system font is.
+ *
+ * @param {Object} context - The module the call is running in.
+ * @param {number} index - One of the stock font constants.
+ * @returns {number|null} The font's handle, or null if it cannot be realised.
+ */
+export function stockFontHandle(context, index) {
+  const wanted = STOCK_FONTS[index];
+
+  if (!wanted) {
+    return null;
+  }
+
+  /* A stock font is a face at a size, and both halves matter: the same file
+   * holds Courier at ten points and at fifteen, and they are thirteen and
+   * twenty pixels tall.
+   */
+  const font = context.fonts.realize(wanted.face, wanted.points);
+
+  if (!font) {
+    return null;
+  }
+
+  return context.handles.lookup(font) || context.handles.allocate(font);
+}

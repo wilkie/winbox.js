@@ -9,6 +9,7 @@ import { FAT16 } from '../../src/file-systems/fat16.js';
 import { Executable } from '../../src/executable.js';
 import { Machine } from '../../src/emulator/machine.js';
 import { Win16 } from '../../src/win16.js';
+import { DEFAULT_DISPLAY_MODE } from '../../src/win16/display-modes.js';
 
 /**
  * Running a real program.
@@ -34,14 +35,28 @@ const FIXTURES = join(__dirname, '..', '..', 'oracle', 'fixtures');
 /** The probe the detailed assertions below are written against. */
 const PROBE = join(PROBES, 'STRINGS.EXE');
 
+/** The installed Windows the probes were recorded against. */
+const IMAGE = join(__dirname, '..', '..', 'oracle', 'build', 'win31.img');
+
 /**
- * The probes worth running the whole way through.
+ * The probes worth running the whole way through, and what each is compared
+ * against.
  *
- * Not all of them: `text` and `devcaps` ask for a device context, which means
- * a display, and there is not one here. Those two are covered by the replay
- * suite calling the functions directly.
+ * `devcaps` names its display, because what the capability calls answer *is*
+ * the display driver: there is one recording per driver, and only the one we
+ * are emulating means anything.
+ *
+ * `text` needs the installed fonts, which live on the drive image rather than
+ * in this repository. A system with no fonts is not a state Windows is ever
+ * in, so that probe steps aside rather than running against nothing.
  */
-const END_TO_END = ['strings', 'memory', 'handles'];
+const END_TO_END = [
+  { name: 'strings', fixture: 'strings' },
+  { name: 'memory', fixture: 'memory' },
+  { name: 'handles', fixture: 'handles' },
+  { name: 'devcaps', fixture: `devcaps-${DEFAULT_DISPLAY_MODE}` },
+  { name: 'text', fixture: 'text', fonts: true },
+];
 
 /** A file-like over bytes, offering what a loader asks a file for. */
 class MemoryFile {
@@ -87,7 +102,7 @@ class MemoryFile {
 }
 
 /** Loads the probe and runs it, collecting every API call it makes. */
-async function runProbe(name = 'strings', frames = 600) {
+async function runProbe(name = 'strings', frames = 600, withFonts = false) {
   const machine = new Machine();
   const calls: any[] = [];
 
@@ -136,6 +151,15 @@ async function runProbe(name = 'strings', frames = 600) {
 
   await executable.parse();
 
+  /* The fonts a running system would already have loaded. `boot` reads them
+   * off `C:\WINDOWS\SYSTEM`, which on this scratch drive holds nothing, so
+   * they come from the installed Windows the recording was made against --
+   * the same files, by the same reader.
+   */
+  if (withFonts) {
+    await loadInstalledFonts(win16);
+  }
+
   const handle = await win16.load(executable);
   win16.link(handle);
   win16.run(handle);
@@ -164,6 +188,29 @@ async function runProbe(name = 'strings', frames = 600) {
   }
 
   return { machine, win16, calls, fileSystem, frames: ran };
+}
+
+/**
+ * Puts the installed fonts on a system, the way starting up would.
+ *
+ * Nothing can be asked about text without them: a device context with no font
+ * in it is not a state Windows hands out, and every answer the text probe
+ * records is a property of a particular installed file at a particular size.
+ */
+async function loadInstalledFonts(win16: any) {
+  const bytes = new Uint8Array(readFileSync(IMAGE));
+  const disk = new Disk(bytes.byteLength, 512, 32768);
+
+  disk.load(bytes);
+
+  const installed: any = new FAT16(disk);
+  await installed.mount();
+
+  for (const entry of await installed.list(['WINDOWS', 'SYSTEM'])) {
+    if (entry.info.name.toUpperCase().endsWith('.FON')) {
+      await win16.fonts.load(await installed.open(['WINDOWS', 'SYSTEM', entry.info.name]));
+    }
+  }
 }
 
 /** Reads what the probe wrote, as the recorder would read it. */
@@ -293,16 +340,16 @@ whenBuilt('running a real Win16 program', () => {
  * and what comes out the far end is what Windows wrote.
  */
 describe('what real programs produce', () => {
-  for (const name of END_TO_END) {
+  for (const { name, fixture: recording, fonts } of END_TO_END) {
     const probe = join(PROBES, `${name.toUpperCase()}.EXE`);
-    const fixture = join(FIXTURES, `${name}.json`);
+    const fixture = join(FIXTURES, `${recording}.json`);
 
-    const runnable = existsSync(probe) && existsSync(fixture);
+    const runnable = existsSync(probe) && existsSync(fixture) && (!fonts || existsSync(IMAGE));
 
     (runnable ? it : it.skip)(
       `${name} agrees with real Windows, end to end`,
       async function () {
-        const { fileSystem } = await runProbe(name);
+        const { fileSystem } = await runProbe(name, 4000, fonts);
         const recorded = JSON.parse(readFileSync(fixture, 'utf8'));
 
         const ours = recordsFrom((await outputOf(fileSystem, name)) ?? '');

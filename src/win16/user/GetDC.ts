@@ -2,6 +2,8 @@
 
 import { NULL } from '../consts.js';
 
+import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
+
 /**
  * The **GetDC** function retrieves the handle of a device context for the
  * client area of the given window. The device context can be used in
@@ -41,21 +43,46 @@ import { NULL } from '../consts.js';
  *                      successful. Otherwise, it is `NULL`.
  */
 export function GetDC(hwnd) {
-  let dc = 1;
+  let surface = null;
+
   if (hwnd == NULL) {
-    // Gets the desktop context
+    /* The screen itself. This used to answer 1 -- a number that resolves to
+     * nothing, so every GDI call made with it found no surface. Programs ask
+     * the screen how big it is and how wide their text will be before they
+     * have a window to ask, which is what both of the drawing probes do.
+     */
+    surface = this.screen;
   } else {
-    // Get the window
     const dialog = this.handles.resolve(hwnd);
 
-    // Get the surface
-    const surface = dialog.surface;
+    if (!dialog) {
+      return NULL;
+    }
 
-    // Allocate a DC
-    dc = this.handles.allocate(surface);
-
-    //this.debug("GetDC", dialog, surface, dc);
+    surface = dialog.surface;
   }
 
-  return dc;
+  if (!surface) {
+    return NULL;
+  }
+
+  /* A device context comes with the system font already in it. Nothing has to
+   * select a font before asking about text, and a program that never selects
+   * one still draws in something -- so a context with no font is not a state
+   * Windows ever hands out.
+   *
+   * Windows resets a common context's attributes on every `GetDC`, and this
+   * does not: our context is the window's surface rather than a separate thing
+   * borrowed from a pool of five, so what a program selects into it outlives
+   * the release. That divergence is older and wider than this function.
+   */
+  if (!surface.font) {
+    const font = stockFontHandle(this, SYSTEM_FONT);
+
+    if (font) {
+      surface.font = this.handles.resolve(font);
+    }
+  }
+
+  return this.handles.allocate(surface);
 }
