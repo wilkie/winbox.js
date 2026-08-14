@@ -996,9 +996,35 @@ which is what it was. 74.4% to 80.0%.
 A running interpreter that produces the wrong answer looks far more finished
 than it is, and the only thing that said otherwise was the pixel comparison.
 
+### Where the last eighteen are
+
+Four fifths of the recorded glyphs come out exactly right. What is left is
+almost all Times New Roman's `W` and `g`, and chasing them narrowed the problem
+without solving it, which is worth writing down so the next attempt does not
+start from the same wrong place.
+
+It looked like the serifs were failing to snap: Windows draws the top of a `W`
+as a clean three-pixel bar on one row, and ours scatters single pixels across
+two. Reading the hinted coordinates says otherwise. They *are* snapping -- the
+serif tops come back at exactly 10.00 and 11.00 pixels, whole numbers, which is
+the interpreter doing its job.
+
+The difference is one pixel of cap height. Windows puts the top of the `W` ten
+pixels above the baseline and we put it eleven. Everything downstream follows
+from that: a bar one row higher, and the serif spread over the two rows the
+edge now straddles. So this is not a fill question, not a snapping question,
+and not the anchor question that the italic work turned out to be. It is one
+control value, or one distance, coming out a pixel long.
+
+Two spec omissions were closed while looking, neither of which these glyphs
+touch. `MIRP` places a twilight point being measured *to*, the way `MIAP`
+places one being measured *from* -- an untouched twilight point has always been
+at the origin, so a distance measured from one is otherwise whatever the
+reference happens to be. That one is correct and changed nothing here.
+
 Which is the honest statement of where this stands: the interpreter fits both
-directions, more than half the recorded glyphs come out exactly right, and what
-remains is a pixel here and there where the fill rule disagrees.
+directions, four fifths of the recorded glyphs are exactly right, and the last
+of them differ by a single pixel of cap height in one face.
 
 **What we do not do.** We do not hint. Of the font fixture's 2225 records, 1801 agree: the rest are the synthesised
 styles on outline faces, the maximum character width, and the sizes the fitted

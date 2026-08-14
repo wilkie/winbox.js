@@ -1569,6 +1569,23 @@ export class Hinter {
 
       let distance = this.cvt[value] ?? 0;
 
+      /* A twilight point being measured to has no outline behind it either, so
+       * it is placed at the control value from the reference point before
+       * anything is measured -- the same rule `MIAP` follows, and for the same
+       * reason: an untouched twilight point has always been at the origin, so
+       * the distance from one would otherwise be whatever the reference point
+       * happens to be rather than what was asked for.
+       */
+      if (state.zp1 === 0) {
+        zoneOne.originalX[index] =
+          zoneZero.originalX[state.rp0] + Math.round((distance * state.freedom.x) / UNIT);
+        zoneOne.originalY[index] =
+          zoneZero.originalY[state.rp0] + Math.round((distance * state.freedom.y) / UNIT);
+
+        zoneOne.x[index] = zoneOne.originalX[index];
+        zoneOne.y[index] = zoneOne.originalY[index];
+      }
+
       const original = this.projectDual(
         zoneOne.originalX[index] - zoneZero.originalX[state.rp0],
         zoneOne.originalY[index] - zoneZero.originalY[state.rp0]
