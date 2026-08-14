@@ -940,6 +940,36 @@ exactly right. Only the exact count means anything. A glyph is either the pixels
 Windows drew or it is not, and "closer on average" is what you measure when you
 have not got there.
 
+### The fill rule was not the problem
+
+The two pixels left on Arial's `A` looked like a scan conversion question, so
+the sampling position was swept against the fixture: sixteen combinations of
+where in the pixel to test, then twenty-five more at a hundredth of a pixel
+around the best. Sampling at the exact centre of the pixel wins outright, the
+peak is sharp, and every other offset is worse in both directions. There is no
+sub-pixel bias to correct. The fill rule was already right.
+
+What the same investigation did find was that the errors are lopsided: we were
+inking 84 pixels Windows does not and missing 191 that it does, and the worst
+cases were all `weight=700` and `italic=1`. Arial's bold `W` missed
+thirty-six pixels and added none, which is not a rounding disagreement. The
+synthesised styles were not being drawn at all.
+
+For the bitmap faces the cause was one line: `fillText` measured the text
+through the logical font, which knows what was asked for, and then drew it
+through the strike, which does not. A bold string came out the right width with
+none of its characters emboldened. Passing the request through took the glyph
+fixture from 57.8% to 64.4%.
+
+For the outline faces there was nothing to pass through, because only the plain
+file of each family is loaded and the bold and italic have to be made. A pixel
+of smear for bold; a lean proportional to height for italic, whose angle was
+swept the same way as the sampling was. The answer is a tenth -- about six
+degrees -- which is shallower than the bitmap faces' own overhang implies, and
+it halves the error without removing it. No slanted outline comes out exactly
+right at any angle, so that one is a measured approximation and is labelled as
+one.
+
 A running interpreter that produces the wrong answer looks far more finished
 than it is, and the only thing that said otherwise was the pixel comparison.
 

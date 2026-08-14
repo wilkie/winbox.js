@@ -25,6 +25,18 @@ function entryOf(font) {
 }
 
 export class Surface {
+  /**
+   * How far a synthesised italic leans, as a fraction of its height.
+   *
+   * Swept against what Windows draws rather than reasoned about, and the
+   * answer is shallower than it looks like it should be: a tenth, about six
+   * degrees, where the bitmap faces' own overhang implies something nearer a
+   * half. It halves the error and does not remove it -- no slanted outline
+   * comes out exactly right at any angle -- so this is a measured
+   * approximation rather than the rule. See oracle/README.md.
+   */
+  static SLANT = 0.1;
+
   declare _backcolor: any;
   declare _bitmap: any;
   declare _brush: any;
@@ -253,12 +265,22 @@ export class Surface {
     }
 
     if (this._font instanceof LogicalFont || this._font instanceof BitmapFont) {
+      /* What was asked for, which the strike does not know: a face with no
+       * bold of its own is emboldened as it is drawn, and measuring it that
+       * way while drawing it plainly is how a bold string came out the right
+       * width with none of its characters bolder.
+       */
+      const style = this._font instanceof LogicalFont ? this._font.style : {};
+      const options = { weight: style.weight ?? 400, italic: !!style.italic };
+
       // Fill the rectangle behind it
       const font = entryOf(this._font);
-      const metrics = font.measure(text);
+      const metrics =
+        this._font instanceof LogicalFont ? this._font.measure(text) : font.measure(text, options);
+
       this.context.fillStyle = 'white';
       this.context.fillRect(x, y, metrics.width, metrics.height);
-      font.draw(this.context, x, y, text);
+      font.draw(this.context, x, y, text, options);
     } else {
       // Normal text draw
       this.context.font = this._font;
@@ -294,6 +316,14 @@ export class Surface {
      */
     const colour = BitmapContext.toRGBA('black');
 
+    const style = font.style ?? {};
+
+    /* Only the plain file of each family is loaded, so a request for bold or
+     * italic always has to be answered by making one.
+     */
+    const bold = (style.weight ?? 0) >= 700;
+    const italic = !!style.italic;
+
     let pen = x;
 
     for (const character of String(text)) {
@@ -302,7 +332,15 @@ export class Surface {
       const contours = fitted.contours;
 
       if (contours.length) {
-        const inked = fill(contours, {
+        /* An outline face has no bold or italic of its own here -- only the
+         * plain file of each family is loaded -- so both are made as the
+         * bitmap faces make them: emboldening draws the glyph again a pixel
+         * across, and slanting leans it over by an amount proportional to how
+         * far above the baseline each point sits.
+         */
+        const slanted = italic ? this.slant(contours, fitted.scaled ? 1 : scale) : contours;
+
+        const inked = fill(slanted, {
           // Hinting hands back pixels; an unhinted outline is still in units.
           scale: fitted.scaled ? 1 : scale,
           originX: pen,
@@ -315,6 +353,10 @@ export class Surface {
           for (let column = 0; column < this.width; column++) {
             if (inked[row * this.width + column]) {
               this.context.setPixel(column, row, colour);
+
+              if (bold) {
+                this.context.setPixel(column + 1, row, colour);
+              }
             }
           }
         }
@@ -324,6 +366,22 @@ export class Surface {
 
       pen += device ?? Math.round(outline.advanceOf(glyph) * scale);
     }
+  }
+
+  /**
+   * Leans an outline over, for a face with no italic of its own.
+   *
+   * Every point moves right in proportion to how far above the baseline it
+   * sits, so the baseline itself stays put and the top of the letter travels
+   * furthest. The proportion is the same one the bitmap faces lean by.
+   */
+  slant(contours, scale) {
+    return contours.map((contour) =>
+      contour.map((point) => ({
+        ...point,
+        x: point.x + point.y * Surface.SLANT,
+      }))
+    );
   }
 
   /**
