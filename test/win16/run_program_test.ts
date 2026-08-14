@@ -28,7 +28,20 @@ import { Win16 } from '../../src/win16.js';
  * `InitTask`, waiting for the system, and announcing itself with `InitApp`.
  */
 
-const PROBE = join(__dirname, '..', '..', 'oracle', 'build', 'probes', 'STRINGS.EXE');
+const PROBES = join(__dirname, '..', '..', 'oracle', 'build', 'probes');
+const FIXTURES = join(__dirname, '..', '..', 'oracle', 'fixtures');
+
+/** The probe the detailed assertions below are written against. */
+const PROBE = join(PROBES, 'STRINGS.EXE');
+
+/**
+ * The probes worth running the whole way through.
+ *
+ * Not all of them: `text` and `devcaps` ask for a device context, which means
+ * a display, and there is not one here. Those two are covered by the replay
+ * suite calling the functions directly.
+ */
+const END_TO_END = ['strings', 'memory', 'handles'];
 
 /** A file-like over bytes, offering what a loader asks a file for. */
 class MemoryFile {
@@ -74,7 +87,7 @@ class MemoryFile {
 }
 
 /** Loads the probe and runs it, collecting every API call it makes. */
-async function runProbe(frames = 600) {
+async function runProbe(name = 'strings', frames = 600) {
   const machine = new Machine();
   const calls: any[] = [];
 
@@ -113,10 +126,12 @@ async function runProbe(frames = 600) {
     }
   );
 
+  const upper = name.toUpperCase();
+
   const executable: any = new Executable(
-    'STRINGS',
-    'C:\\STRINGS.EXE',
-    new MemoryFile(new Uint8Array(readFileSync(PROBE)))
+    upper,
+    `C:\\${upper}.EXE`,
+    new MemoryFile(new Uint8Array(readFileSync(join(PROBES, `${upper}.EXE`))))
   );
 
   await executable.parse();
@@ -152,14 +167,35 @@ async function runProbe(frames = 600) {
 }
 
 /** Reads what the probe wrote, as the recorder would read it. */
-async function outputOf(fileSystem: any) {
-  const file = await fileSystem.open(['ORACLE', 'STRINGS.OUT']);
+async function outputOf(fileSystem: any, name = 'strings') {
+  const file = await fileSystem.open(['ORACLE', `${name.toUpperCase()}.OUT`]);
 
   if (!file) {
     return null;
   }
 
   return Buffer.from(await file.read(0, file.info.size)).toString('latin1');
+}
+
+/**
+ * Turns a probe's output into the same shape the fixture records it in.
+ *
+ * The probe escapes tabs, newlines and backslashes on the way out, since those
+ * are what separate the fields; the recorder undoes that, so this has to too.
+ */
+function recordsFrom(text: string) {
+  const unescape = (field: string) =>
+    field.replace(
+      /\\([\\trn])/g,
+      (_, code) => ({ '\\': '\\', t: '\t', r: '\r', n: '\n' })[code] as string
+    );
+
+  return text
+    .split(/\r?\n/)
+    .filter((line) => line !== '')
+    .map((line) => line.split('\t').map(unescape))
+    .filter(([name]) => name !== '#')
+    .map(([name, args, value]) => `${name}(${args}) = ${value}`);
 }
 
 /** The probe is built rather than committed, so this steps aside without it. */
@@ -220,37 +256,18 @@ whenBuilt('running a real Win16 program', () => {
    * API being wrong rather than a test being out of date.
    */
   it('agrees with what real Windows recorded from the same program', async function () {
-    const fixture = join(__dirname, '..', '..', 'oracle', 'fixtures', 'strings.json');
+    const fixture = join(FIXTURES, 'strings.json');
 
     if (!existsSync(fixture)) {
       return;
     }
 
     const recorded = JSON.parse(readFileSync(fixture, 'utf8'));
-    const text = (await outputOf(result.fileSystem)) ?? '';
+    const ours = recordsFrom((await outputOf(result.fileSystem)) ?? '');
 
-    /* The probe escapes tabs, newlines and backslashes on the way out, since
-     * they are what separate the fields; the recorder undoes that, so this
-     * has to as well.
-     */
-    const unescape = (field: string) =>
-      field.replace(
-        /\\([\\trn])/g,
-        (_, code) => ({ '\\': '\\', t: '\t', r: '\r', n: '\n' })[code] as string
-      );
-
-    const ours = text
-      .split(/\r?\n/)
-      .filter((line) => line !== '')
-      .map((line) => line.split('\t').map(unescape))
-      .filter(([name]) => name !== '#')
-      .map(([name, args, value]) => `${name}(${args}) = ${value}`);
-
-    const theirs = recorded.records.map(
-      (record: any) => `${record.function}(${record.args}) = ${record.result}`
+    expect(ours).toEqual(
+      recorded.records.map((record: any) => `${record.function}(${record.args}) = ${record.result}`)
     );
-
-    expect(ours).toEqual(theirs);
   });
 
   it('passes arguments across the thunk', function () {
@@ -265,4 +282,38 @@ whenBuilt('running a real Win16 program', () => {
     expect(compares[0].args.length).toEqual(2);
     expect(String(compares[0].args[0])).toEqual(expect.any(String));
   });
+});
+
+/**
+ * The same comparison for every probe that can run without a display.
+ *
+ * Each of these is already checked by the replay suite, which calls our
+ * functions directly. This is the stronger claim: the program itself runs, on
+ * our CPU, through our loader and thunks, and writes through our filesystem --
+ * and what comes out the far end is what Windows wrote.
+ */
+describe('what real programs produce', () => {
+  for (const name of END_TO_END) {
+    const probe = join(PROBES, `${name.toUpperCase()}.EXE`);
+    const fixture = join(FIXTURES, `${name}.json`);
+
+    const runnable = existsSync(probe) && existsSync(fixture);
+
+    (runnable ? it : it.skip)(
+      `${name} agrees with real Windows, end to end`,
+      async function () {
+        const { fileSystem } = await runProbe(name);
+        const recorded = JSON.parse(readFileSync(fixture, 'utf8'));
+
+        const ours = recordsFrom((await outputOf(fileSystem, name)) ?? '');
+
+        expect(ours).toEqual(
+          recorded.records.map(
+            (record: any) => `${record.function}(${record.args}) = ${record.result}`
+          )
+        );
+      },
+      180000
+    );
+  }
 });

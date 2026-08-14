@@ -23,6 +23,16 @@ export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
       let width = 0;
       let precision = 0;
       let parsingPrecision = false;
+
+      /* Whether the conversion has been dealt with and the scan should stop.
+       *
+       * This used to be signalled by assigning 0 to `chr` and testing `chr ==
+       * 0`, which is true for the string '0' as well -- so `%04X` ended at its
+       * zero-padding flag, printed "4X" as literal text, and never consumed
+       * its argument. Everything after it in the list then read from the wrong
+       * place.
+       */
+      let done = false;
       let padRight = false;
       let padZeros = false;
       let hexPrefix = false;
@@ -37,7 +47,7 @@ export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
             // Output a percent
             cpu.write8(destSegment, destOffset, '%'.charCodeAt(0));
             destOffset++;
-            chr = 0;
+            done = true;
             break;
 
           case '-':
@@ -79,7 +89,7 @@ export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
                 count++;
               } while (data != 0);
             }
-            chr = 0;
+            done = true;
             break;
 
           case 'l':
@@ -148,7 +158,7 @@ export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
                 destOffset++;
               }
             }
-            chr = 0;
+            done = true;
             break;
 
           case '.':
@@ -159,20 +169,20 @@ export function wsprintf(lpszOutput, lpszFormat, lpvArgList) {
           default:
             // Parse numeric widths, etc
             if (chr >= '0' && chr <= '9') {
-              chr = Number(chr);
+              const digit = Number(chr);
 
               if (parsingPrecision) {
                 precision *= 10;
-                precision += chr;
+                precision += digit;
               } else {
                 width *= 10;
-                width += chr;
+                width += digit;
               }
             }
             break;
         }
 
-        if (chr == 0) {
+        if (done) {
           break;
         }
       }
