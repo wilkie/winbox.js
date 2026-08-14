@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      7zip-bin:
+        specifier: ^5.2.0
+        version: 5.2.0
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.8.1)
@@ -70,6 +73,9 @@ importers:
         version: 8.2.1(@types/node@26.2.0)(sass@1.102.0)(yaml@2.9.0)
 
 packages:
+
+  7zip-bin@5.2.0:
+    resolution: {integrity: sha512-ukTPVhqG4jNzMro2qA9HSCSSVJN3aN7tlb+hfqYCt3ER0yWroeA2VR38MNrOHLQ/cVj+DaIMad0kFCtWWowh/A==}
 
   '@asamuzakjp/css-color@3.2.0':
     resolution: {integrity: sha512-K1A6z8tS3XsmCMM86xoWdn7Fkdn9m6RSVtocUrJYIwZnFVkng/PvkEoWtOWmP+Scc6saYWHWZYbndEEXxl24jw==}
@@ -2758,6 +2764,8 @@ packages:
     engines: {node: '>=10'}
 
 snapshots:
+
+  7zip-bin@5.2.0: {}
 
   '@asamuzakjp/css-color@3.2.0':
     dependencies:

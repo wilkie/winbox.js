@@ -45,10 +45,13 @@
     "test:conformance": "jest --config jest.conformance.config.js --runInBand",
     "test:conformance:fetch": "node scripts/fetch-cpu-tests.mjs",
     "bench": "vite build --config bench/vite.config.ts --logLevel warn && node dist/bench/cpu.js",
+    "oracle:media": "node scripts/oracle/fetch-windows.mjs",
+    "oracle:toolchain": "node scripts/oracle/fetch-toolchain.mjs",
     "ci": "turbo run lint lint:css typecheck test build",
     "build:docs": "typedoc"
   },
   "devDependencies": {
+    "7zip-bin": "^5.2.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.62.1",
     "@swc/core": "^1.15.47",

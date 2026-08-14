@@ -17,3 +17,6 @@ test/conformance/vectors/
 test/conformance/.cache/
 test/conformance/report.md
 test/conformance/.running
+
+oracle/.cache/
+oracle/build/
