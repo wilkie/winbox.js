@@ -1,0 +1,304 @@
+{
+  "probe": "strings",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode"
+  },
+  "records": [
+    {
+      "function": "lstrlen",
+      "args": "\"\"",
+      "result": "0",
+      "section": "lstrlen"
+    },
+    {
+      "function": "lstrlen",
+      "args": "\"a\"",
+      "result": "1",
+      "section": "lstrlen"
+    },
+    {
+      "function": "lstrlen",
+      "args": "\"hello\"",
+      "result": "5",
+      "section": "lstrlen"
+    },
+    {
+      "function": "lstrlen",
+      "args": "\"with spaces and 1234\"",
+      "result": "20",
+      "section": "lstrlen"
+    },
+    {
+      "function": "lstrlen",
+      "args": "\"tab",
+      "result": "here\"",
+      "section": "lstrlen"
+    },
+    {
+      "function": "lstrcmp",
+      "args": "\"\",\"\"",
+      "result": "0",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmpi",
+      "args": "\"\",\"\"",
+      "result": "0",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmp",
+      "args": "\"a\",\"a\"",
+      "result": "0",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmpi",
+      "args": "\"a\",\"a\"",
+      "result": "0",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmp",
+      "args": "\"a\",\"b\"",
+      "result": "-1",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmpi",
+      "args": "\"a\",\"b\"",
+      "result": "-1",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmp",
+      "args": "\"b\",\"a\"",
+      "result": "1",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmpi",
+      "args": "\"b\",\"a\"",
+      "result": "1",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmp",
+      "args": "\"a\",\"A\"",
+      "result": "1",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmpi",
+      "args": "\"a\",\"A\"",
+      "result": "0",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmp",
+      "args": "\"A\",\"a\"",
+      "result": "-1",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmpi",
+      "args": "\"A\",\"a\"",
+      "result": "0",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmp",
+      "args": "\"abc\",\"abd\"",
+      "result": "-1",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmpi",
+      "args": "\"abc\",\"abd\"",
+      "result": "-1",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmp",
+      "args": "\"abc\",\"abcd\"",
+      "result": "-1",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmpi",
+      "args": "\"abc\",\"abcd\"",
+      "result": "-1",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmp",
+      "args": "\"Zebra\",\"apple\"",
+      "result": "1",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmpi",
+      "args": "\"Zebra\",\"apple\"",
+      "result": "1",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmp",
+      "args": "\"_\",\"a\"",
+      "result": "-1",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmpi",
+      "args": "\"_\",\"a\"",
+      "result": "-1",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmp",
+      "args": "\"1\",\"a\"",
+      "result": "-1",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcmpi",
+      "args": "\"1\",\"a\"",
+      "result": "-1",
+      "section": "lstrcmp and lstrcmpi"
+    },
+    {
+      "function": "lstrcpy",
+      "args": "\"\"",
+      "result": "\"\"",
+      "section": "lstrcpy and lstrcat"
+    },
+    {
+      "function": "lstrcat",
+      "args": "\"\",\"\"",
+      "result": "\"\"",
+      "section": "lstrcpy and lstrcat"
+    },
+    {
+      "function": "lstrcpy",
+      "args": "\"hello\"",
+      "result": "\"hello\"",
+      "section": "lstrcpy and lstrcat"
+    },
+    {
+      "function": "lstrcat",
+      "args": "\"hello\",\" world\"",
+      "result": "\"hello world\"",
+      "section": "lstrcpy and lstrcat"
+    },
+    {
+      "function": "lstrcpy",
+      "args": "\"a\"",
+      "result": "\"a\"",
+      "section": "lstrcpy and lstrcat"
+    },
+    {
+      "function": "lstrcat",
+      "args": "\"a\",\"b\"",
+      "result": "\"ab\"",
+      "section": "lstrcpy and lstrcat"
+    },
+    {
+      "function": "AnsiUpper",
+      "args": "\"\"",
+      "result": "\"\"",
+      "section": "AnsiUpper and AnsiLower"
+    },
+    {
+      "function": "AnsiLower",
+      "args": "\"\"",
+      "result": "\"\"",
+      "section": "AnsiUpper and AnsiLower"
+    },
+    {
+      "function": "AnsiUpper",
+      "args": "\"hello\"",
+      "result": "\"HELLO\"",
+      "section": "AnsiUpper and AnsiLower"
+    },
+    {
+      "function": "AnsiLower",
+      "args": "\"hello\"",
+      "result": "\"hello\"",
+      "section": "AnsiUpper and AnsiLower"
+    },
+    {
+      "function": "AnsiUpper",
+      "args": "\"HELLO\"",
+      "result": "\"HELLO\"",
+      "section": "AnsiUpper and AnsiLower"
+    },
+    {
+      "function": "AnsiLower",
+      "args": "\"HELLO\"",
+      "result": "\"hello\"",
+      "section": "AnsiUpper and AnsiLower"
+    },
+    {
+      "function": "AnsiUpper",
+      "args": "\"MiXeD 123\"",
+      "result": "\"MIXED 123\"",
+      "section": "AnsiUpper and AnsiLower"
+    },
+    {
+      "function": "AnsiLower",
+      "args": "\"MiXeD 123\"",
+      "result": "\"mixed 123\"",
+      "section": "AnsiUpper and AnsiLower"
+    },
+    {
+      "function": "AnsiUpper",
+      "args": "\"with-punctuation!\"",
+      "result": "\"WITH-PUNCTUATION!\"",
+      "section": "AnsiUpper and AnsiLower"
+    },
+    {
+      "function": "AnsiLower",
+      "args": "\"with-punctuation!\"",
+      "result": "\"with-punctuation!\"",
+      "section": "AnsiUpper and AnsiLower"
+    },
+    {
+      "function": "AnsiNext",
+      "args": "\"\",0",
+      "result": "0",
+      "section": "AnsiNext and AnsiPrev"
+    },
+    {
+      "function": "AnsiPrev",
+      "args": "\"\",0",
+      "result": "0",
+      "section": "AnsiNext and AnsiPrev"
+    },
+    {
+      "function": "AnsiNext",
+      "args": "\"a\",0",
+      "result": "1",
+      "section": "AnsiNext and AnsiPrev"
+    },
+    {
+      "function": "AnsiPrev",
+      "args": "\"a\",1",
+      "result": "0",
+      "section": "AnsiNext and AnsiPrev"
+    },
+    {
+      "function": "AnsiNext",
+      "args": "\"hello\",0",
+      "result": "1",
+      "section": "AnsiNext and AnsiPrev"
+    },
+    {
+      "function": "AnsiPrev",
+      "args": "\"hello\",5",
+      "result": "4",
+      "section": "AnsiNext and AnsiPrev"
+    }
+  ]
+}

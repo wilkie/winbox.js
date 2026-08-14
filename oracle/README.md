@@ -102,12 +102,34 @@ reports per-opcode agreement. That number is the thing to drive up.
 ## Running it
 
 ```shell
-node scripts/oracle/fetch-windows.mjs
-node scripts/oracle/fetch-toolchain.mjs
+pnpm oracle:media       # WinWorld -> six floppy images
+pnpm oracle:toolchain   # Open Watcom, Linux-hosted
+pnpm oracle:install     # Setup under DOSBox -> a real installation
+pnpm oracle:drive       # -> a FAT16 image
+pnpm oracle:probes      # probes/*.c -> NE executables
+pnpm oracle:record      # run under Windows -> fixtures/*.json
 ```
 
 Everything is cached under `.cache/` and built into `build/`, neither of which
-is committed. Re-running a stage is cheap; only the first pass downloads.
+is committed. Re-running a stage is cheap; only the first pass downloads. The
+install and the recording each need `dosbox`, and the drive image needs
+`mtools` and `dosfstools`.
+
+## What it has found already
+
+The first probe covered nine string functions, and one of its 49 records
+disagrees with our implementation:
+
+```
+lstrcmp  "Zebra","apple"  1
+```
+
+Windows returns a positive number, meaning "Zebra" sorts after "apple". Our
+`lstrcmp` subtracts bytes, and `'Z'` is 0x5A against `'a'` at 0x61, so it
+returns -7. `lstrcmp` on Windows 3.1 is not `strcmp`: it collates through the
+language driver, where case is a tiebreak rather than the primary key. The
+manual says the comparison is "based on the language driver" and leaves it
+there, which is precisely why this had to be measured rather than read.
 
 ## On the media
 

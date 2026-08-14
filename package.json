@@ -47,6 +47,10 @@
     "bench": "vite build --config bench/vite.config.ts --logLevel warn && node dist/bench/cpu.js",
     "oracle:media": "node scripts/oracle/fetch-windows.mjs",
     "oracle:toolchain": "node scripts/oracle/fetch-toolchain.mjs",
+    "oracle:install": "node scripts/oracle/install-windows.mjs",
+    "oracle:drive": "node scripts/oracle/build-drive.mjs",
+    "oracle:probes": "node scripts/oracle/build-probes.mjs",
+    "oracle:record": "node scripts/oracle/record.mjs",
     "ci": "turbo run lint lint:css typecheck test build",
     "build:docs": "typedoc"
   },
