@@ -321,7 +321,7 @@ export class I286 implements CpuCore16 {
    * @param {number} value - The physical address of the table.
    */
   set idtBase(value) {
-    console.log('idt base=', value);
+    this.debug('idt base=', value);
     this._idtBase = value;
   }
 
@@ -354,7 +354,7 @@ export class I286 implements CpuCore16 {
    * @param {number} value - The physical address of the table.
    */
   set gdtBase(value) {
-    console.log('setting gdt', value.toString(16));
+    this.debug('setting gdt', value.toString(16));
     this._gdtBase = value;
   }
 
@@ -849,54 +849,31 @@ export class I286 implements CpuCore16 {
     };
   }
 
+  /**
+   * Decodes the descriptor a selector names.
+   *
+   * Real mode has no descriptors: the selector is a paragraph number and every
+   * segment is the same 64 KiB. That is all this core does. Protected mode on
+   * the 286 was a dead end -- it could be entered but not left, and Windows
+   * used it only through the 386 -- so the descriptor tables are read by the
+   * 386 core, which overrides this.
+   *
+   * @param {number} segment - The selector to decode.
+   * @returns {object} The descriptor it names.
+   */
   retrieveDescriptor(segment) {
-    const ldt = (segment >> 2) & 0x1;
-    const iopl = segment & 0x3;
-    const index = segment >> 3;
-
-    console.log('loading selector', index, 'from', ldt ? 'ldt' : 'gdt', 'level', iopl);
-
-    // Read selector
-    const gdtBase = this.gdtBase + index * 8;
-    const gdtMax = this.gdtBase + this.gdtLimit;
-
-    console.log('gdt', gdtBase.toString(16), gdtMax.toString(16));
-
-    if (gdtBase + 8 >= gdtMax) {
-      // Invalid Entry
-      console.log('INVALID');
-      throw 'F';
-    }
-
-    // Read the gate descriptor: 16-bit limit, 24-bit base, 8-bit flags
-    const segmentLimit = this._memory.read16(gdtBase);
-    let segmentBase = this._memory.read16(gdtBase + 2);
-    segmentBase |= this._memory.read8(gdtBase + 4) << 16;
-
-    const gdtFlags = this._memory.read8(gdtBase + 5);
-
-    console.log(
-      '16-bit descriptor:',
-      'base=',
-      segmentBase.toString(16),
-      'limit=',
-      segmentLimit.toString(16),
-      'flags=',
-      gdtFlags.toString(16)
-    );
-
     return {
-      base: segmentBase,
-      limit: segmentLimit,
-      present: (gdtFlags & 0x80) > 0,
+      base: (segment & 0xffff) << 4,
+      limit: 0xffff,
+      present: true,
       addressSize: false,
-      dpl: (gdtFlags >> 5) & 0x3,
-      type: (gdtFlags & 0x10) > 0,
-      executable: (gdtFlags & 0x8) > 0,
-      growsDown: (gdtFlags & 0x4) > 0,
-      readWrite: (gdtFlags & 0x2) > 0,
-      accessed: (gdtFlags & 0x1) > 0,
-      flags: gdtFlags,
+      dpl: 0,
+      type: true,
+      executable: false,
+      growsDown: false,
+      readWrite: true,
+      accessed: true,
+      flags: 0x93,
     };
   }
 
@@ -1129,6 +1106,8 @@ export class I286 implements CpuCore16 {
       return this.readRegister8(instruction.operandRegister);
     }
 
+    this.requireOperandWithinSegment(instruction, 1);
+
     // Read byte from memory at the effective address
     return this.read8(instruction.segment, instruction.offset);
   }
@@ -1177,10 +1156,14 @@ export class I286 implements CpuCore16 {
   requireAccessWithinSegment(instruction, offset, size) {
     if (this.msw & 0x1) {
       /* In protected mode the limit belongs to the descriptor and can be
-       * anything up to four gigabytes, so the 64 KiB assumption below does not
-       * hold. Limits are not enforced there yet, and there are no
-       * protected-mode vectors published to check an implementation against.
+       * anything up to four gigabytes, so the 64 KiB rule below does not hold.
        */
+      this.requireWithinDescriptorLimit(
+        instruction,
+        instruction.segment ?? this.ds,
+        offset & 0xffff,
+        size
+      );
       return;
     }
 
@@ -1191,6 +1174,15 @@ export class I286 implements CpuCore16 {
     this.raiseInterrupt(instruction, 13, 0);
     throw new MemoryFault();
   }
+
+  /**
+   * The protected-mode half of that check, against the descriptor's limit.
+   *
+   * This core has no descriptor decoding of its own -- protected mode on the
+   * 286 was a dead end that Windows never ran in and that we do not emulate --
+   * so there is nothing here to check against. The 386 core overrides it.
+   */
+  requireWithinDescriptorLimit(instruction, selector, offset, size) {}
 
   readOperand16(instruction) {
     if (instruction.operandRegister !== undefined) {
@@ -1215,6 +1207,8 @@ export class I286 implements CpuCore16 {
     if (instruction.operandRegister !== undefined) {
       return this.writeRegister8(instruction.operandRegister, value);
     }
+
+    this.requireOperandWithinSegment(instruction, 1);
 
     // Write byte to memory at the effective address
     return this.write8(instruction.segment, instruction.offset, value);

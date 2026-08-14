@@ -2,7 +2,7 @@
 
 import { ALU } from '../alu.js';
 import { I286 } from './i286.js';
-import { CPU, InvalidInstruction } from '../cpu.js';
+import { CPU, InvalidInstruction, MemoryFault } from '../cpu.js';
 import { X87 } from '../x87.js';
 import { CpuCore } from '../cpu-core.js';
 
@@ -135,6 +135,31 @@ export class I386 extends I286 implements CpuCore {
     this._ip = value & 0xffffffff;
   }
 
+  /**
+   * Decodes the descriptor a selector names.
+   *
+   * A 386 descriptor is eight bytes, and every field the 286 defined stayed
+   * where it was; the base and limit simply grew into the two bytes the 286
+   * left reserved:
+   *
+   *   0-1  limit[15:0]
+   *   2-3  base[15:0]
+   *   4    base[23:16]
+   *   5    P | DPL | S | type
+   *   6    G | D/B | 0 | AVL | limit[19:16]
+   *   7    base[31:24]
+   *
+   * The granularity bit scales the limit by 4 KiB. Every byte of the last page
+   * is still addressable, so the low twelve bits come back set: a granular
+   * limit of 1 covers offsets up to 0x1FFF, not up to 0x1000.
+   *
+   * Descriptors are cached on load rather than read per access, which is what
+   * the part does -- editing a descriptor in the table has no effect until the
+   * selector is loaded again.
+   *
+   * @param {number} segment - The selector to decode.
+   * @returns {object} The descriptor it names.
+   */
   retrieveDescriptor(segment) {
     const descriptor = this._translationCache[segment];
     if (descriptor) {
@@ -142,70 +167,129 @@ export class I386 extends I286 implements CpuCore {
     }
 
     if (!(this.cr0 & 0x1)) {
+      // Real mode: the selector is a paragraph number and a segment is 64 KiB.
       return {
-        base: segment << 4,
+        base: (segment & 0xffff) << 4,
         limit: 0xffff,
         present: true,
         addressSize: false,
         dpl: 0,
+        type: true,
+        executable: false,
+        growsDown: false,
+        readWrite: true,
+        accessed: true,
+        flags: 0x93,
       };
     }
 
-    if (segment == 0x0) {
-      // Null selector
+    if ((segment & 0xfffc) === 0) {
+      /* The null selector loads without complaint -- it is how software parks
+       * a segment register it is not using -- and faults on any attempt to
+       * reach memory through it.
+       */
       return {
         base: 0,
         limit: 0,
-        present: true,
+        present: false,
+        nullSelector: true,
         addressSize: false,
         dpl: 0,
+        type: true,
+        executable: false,
+        growsDown: false,
+        readWrite: true,
+        accessed: false,
+        flags: 0x00,
       };
     }
 
-    const ldt = (segment >> 2) & 0x1;
-    const iopl = segment & 0x3;
+    const local = (segment & 0x4) > 0;
     const index = segment >> 3;
 
-    //console.log("loading 32-bit selector", index, "from", (ldt ? "ldt" : "gdt"), "level", iopl);
+    const tableBase = local ? this.ldtBase : this.gdtBase;
+    const tableLimit = local ? this.ldtLimit : this.gdtLimit;
 
-    // Read selector
-    const gdtBase = this.gdtBase + index * 8;
-    const gdtMax = this.gdtBase + this.gdtLimit;
-
-    //console.log("gdt", gdtBase.toString(16), gdtMax.toString(16));
-
-    if (gdtBase + 8 >= gdtMax) {
-      // Invalid Entry
-      console.log('INVALID');
-      throw 'F';
+    /* A table limit is the offset of its last valid byte, so the last
+     * descriptor that fits ends exactly on it.
+     */
+    if (index * 8 + 7 > tableLimit) {
+      this.raiseInterrupt(this._instruction, 13, segment & 0xfffc);
+      throw new MemoryFault();
     }
 
-    // 386 32-bit base address GDT entry
-    let segmentLimit = this._memory.read16(gdtBase);
-    segmentLimit |= (this._memory.read8(gdtBase + 6) & 0xf) << 16;
+    const entry = tableBase + index * 8;
 
-    // Acquire the base address of the segment
-    let segmentBase = this._memory.read16(gdtBase + 2);
-    segmentBase |= this._memory.read8(gdtBase + 4) << 16;
-    segmentBase |= this._memory.read8(gdtBase + 7) << 24;
+    let limit = this._memory.read16(entry);
+    limit |= (this._memory.read8(entry + 6) & 0xf) << 16;
 
-    // Determine the proper flags
-    let gdtFlags = this._memory.read8(gdtBase + 5) & 0xff;
-    gdtFlags |= this._memory.read8(gdtBase + 6) << 8;
+    let base = this._memory.read16(entry + 2);
+    base |= this._memory.read8(entry + 4) << 16;
+    base |= this._memory.read8(entry + 7) << 24;
 
-    //console.log("descriptor:", "limit=", segmentLimit.toString(16), "offset=", segmentBase.toString(16), "flags=", gdtFlags.toString(16));
+    const access = this._memory.read8(entry + 5);
+    const granularity = this._memory.read8(entry + 6);
 
-    if (gdtFlags & 0x40) {
-      console.log('Default address size of 32');
+    if (granularity & 0x80) {
+      limit = (limit << 12) | 0xfff;
     }
 
     return {
-      base: segmentBase,
-      limit: segmentLimit,
-      present: (gdtFlags & 0x80) > 0,
-      addressSize: (gdtFlags & 0x4000) > 0,
-      dpl: (gdtFlags >> 13) & 0x3,
+      base: base >>> 0,
+      limit: limit >>> 0,
+      present: (access & 0x80) > 0,
+      dpl: (access >> 5) & 0x3,
+      addressSize: (granularity & 0x40) > 0,
+      type: (access & 0x10) > 0,
+      executable: (access & 0x8) > 0,
+
+      /* Bit 2 only means expand-down in a data segment; in a code segment the
+       * same bit says the segment is conforming.
+       */
+      growsDown: (access & 0x1c) === 0x14,
+      readWrite: (access & 0x2) > 0,
+      accessed: (access & 0x1) > 0,
+      flags: access,
     };
+  }
+
+  /**
+   * Faults if a protected-mode access runs past its segment.
+   *
+   * @param {object} instruction - The instruction being executed.
+   * @param {number} selector - The selector the access is made through.
+   * @param {number} offset - The offset within that segment.
+   * @param {number} size - The access width in bytes.
+   */
+  requireWithinDescriptorLimit(instruction, selector, offset, size) {
+    const descriptor = this.retrieveDescriptor(selector);
+
+    if (descriptor.nullSelector || !descriptor.present) {
+      this.raiseInterrupt(instruction, 13, selector & 0xfffc);
+      throw new MemoryFault();
+    }
+
+    /* An expand-down segment runs the other way: the limit is the last offset
+     * *outside* it and the segment reaches from there to the top of whichever
+     * address space the D/B bit selects. It is how a stack that grows toward
+     * zero is given more room, by lowering its limit rather than raising it.
+     */
+    const last = offset + size - 1;
+    const withinSegment = descriptor.growsDown
+      ? offset > descriptor.limit && last <= (descriptor.addressSize ? 0xffffffff : 0xffff)
+      : last <= descriptor.limit;
+
+    if (withinSegment) {
+      return;
+    }
+
+    /* An access through SS is a stack fault. This is not the real-mode rule,
+     * where the hardware vectors show #GP even for an operand that merely
+     * defaults to SS, but that rule is about a segment running past 64 KiB
+     * rather than about a descriptor limit, and the two are separate checks.
+     */
+    this.raiseInterrupt(instruction, selector === this.ss ? 12 : 13, 0);
+    throw new MemoryFault();
   }
 
   computeBase(segment) {
@@ -375,6 +459,8 @@ export class I386 extends I286 implements CpuCore {
       return this.readRegister32(instruction.operandRegister);
     }
 
+    this.requireOperandWithinSegment(instruction, 4);
+
     // Read 32-bit word from memory at the effective address
     return this.read32(instruction.segment, instruction.offset);
   }
@@ -393,7 +479,9 @@ export class I386 extends I286 implements CpuCore {
       return this.writeRegister32(instruction.operandRegister, value);
     }
 
-    // Write 16-bit word to memory at the effective address
+    this.requireOperandWithinSegment(instruction, 4);
+
+    // Write 32-bit word to memory at the effective address
     return this.write32(instruction.segment, instruction.offset, value);
   }
 

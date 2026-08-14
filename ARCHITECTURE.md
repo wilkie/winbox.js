@@ -162,19 +162,50 @@ verify the 386 behaviour, and changing it would trade a measured behaviour for
 an assumed one across five hundred passing vectors. It is marked in the source.
 
 **What being a 386 in protected mode actually implies** is a different and
-larger list, none of it reachable by the corpus:
+larger list, none of it reachable by the corpus. Protected mode is the only
+mode the Win16 layer ever runs in, and no published corpus covers it, so
+`test/emulator/protected_mode_test.ts` builds descriptor tables by hand and
+serves as the oracle instead. Writing it turned up five decoding bugs at once,
+all of which it now pins:
 
-- Segment limits are not enforced in protected mode. The `#GP` rule for an
-  operand running past its segment is real-mode only, because there the limit
-  is always 64 KiB; a descriptor's limit can be anything up to four gigabytes.
-- A null selector loads as present with a zero limit, so using one does not
-  fault the way it should.
+- **DPL was read out of the wrong byte.** `(flags >> 13) & 3` lands on byte 6,
+  where the granularity bits are; DPL is bits 5-6 of the access byte.
+- **The granularity bit was decoded and discarded.** A segment declared in 4 KiB
+  units had a limit 4,096 times too small, which mattered not at all while no
+  limit was enforced and would have been fatal the moment one was.
+- **Segment limits were not enforced at all.** The `#GP` rule was real-mode only,
+  where the limit is always 64 KiB; a descriptor's limit can be anything up to
+  four gigabytes, and expand-down segments invert the comparison entirely.
+- **A null selector loaded as present**, so using one addressed real memory at
+  zero rather than faulting.
+- **A selector past the end of the table threw the string `'F'`.** The bounds
+  test was also off by one, rejecting the last descriptor that fits.
+
+The limit check hangs off `requireWithinDescriptorLimit`, which the 386 core
+overrides and the 286 core leaves empty -- a 286 in protected mode is a dead end
+this project has no reason to emulate, so `I286#retrieveDescriptor` now decodes
+real-mode selectors only and the 386 core owns the tables.
+
+Enforcing limits meant checking the 8-bit and 32-bit operand paths too, which
+the real-mode rule had skipped: a byte access cannot straddle a 64 KiB boundary,
+but it can certainly sit past a descriptor's limit. In real mode the added
+checks are provably no-ops, and the corpus result held at 96.4% across all 326
+forms to confirm it.
+
+What is still missing:
+
+- The check covers the ModRM operand helpers. Accesses that reach memory by
+  another route -- the `moffs` forms, the string operations, pushes and pops --
+  still bypass it, as does instruction fetch past the CS limit.
 - `cpl` is hard-wired to zero on the 386 core, so no DPL or RPL check can ever
-  fire.
+  fire, and neither can a stack switch on a privilege change.
+- Faults latch rather than dispatch, because protected-mode dispatch reads a
+  gate out of the IDT and none of that is written.
 - The descriptor cache is loaded when a selector is loaded and is never
   invalidated otherwise, which matches the hardware. What it means is that the
   Win16 allocator must reload selectors after moving a segment, and that has
-  not been checked.
+  not been checked. The cache is keyed by selector value rather than by segment
+  register, so two registers holding the same selector share one entry.
 
 The emulator unit suite passes in full. It spent a long time not doing so --
 3,787 of its 3,823 tests failed -- because it had been written against an

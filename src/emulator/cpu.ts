@@ -182,11 +182,11 @@ export class CPU implements CpuCoreHost {
             //__console.log("from", a.toString(16), b.toString(16));
         }*/
 
-    // Fetch / Decode
-    const instruction = this.decode(this._instruction);
-
-    // Execute
     try {
+      // Fetch / Decode
+      const instruction = this.decode(this._instruction);
+
+      // Execute
       this.execute(instruction);
     } catch (e) {
       if (e instanceof MemoryFault) {
