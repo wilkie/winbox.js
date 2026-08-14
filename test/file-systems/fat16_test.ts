@@ -75,7 +75,9 @@ describe('FAT16', () => {
 
       expect(entry).not.toBeNull();
       expect(entry.info.size).toEqual(contents.length);
-      expect(Array.from(await entry.read(0, contents.length))).toEqual(Array.from(contents));
+      expect(Array.from(new Uint8Array(await entry.read(0, contents.length)))).toEqual(
+        Array.from(contents)
+      );
     });
 
     it('reads back a file longer than one cluster', async function () {
@@ -95,7 +97,9 @@ describe('FAT16', () => {
       const entry: any = await reader.open(['BIG.BIN']);
 
       expect(entry.info.size).toEqual(contents.length);
-      expect(Array.from(await entry.read(0, contents.length))).toEqual(Array.from(contents));
+      expect(Array.from(new Uint8Array(await entry.read(0, contents.length)))).toEqual(
+        Array.from(contents)
+      );
     });
   });
 

@@ -1,0 +1,340 @@
+{
+  "probe": "text",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode"
+  },
+  "records": [
+    {
+      "function": "GetDeviceCaps",
+      "args": "HORZRES",
+      "result": "640",
+      "section": "what the screen says about itself"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "VERTRES",
+      "result": "480",
+      "section": "what the screen says about itself"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "BITSPIXEL",
+      "result": "1",
+      "section": "what the screen says about itself"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "PLANES",
+      "result": "4",
+      "section": "what the screen says about itself"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "LOGPIXELSX",
+      "result": "96",
+      "section": "what the screen says about itself"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "LOGPIXELSY",
+      "result": "96",
+      "section": "what the screen says about itself"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "ASPECTX",
+      "result": "36",
+      "section": "what the screen says about itself"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "ASPECTY",
+      "result": "36",
+      "section": "what the screen says about itself"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "NUMFONTS",
+      "result": "0",
+      "section": "what the screen says about itself"
+    },
+    {
+      "function": "GetDeviceCaps",
+      "args": "NUMCOLORS",
+      "result": "16",
+      "section": "what the screen says about itself"
+    },
+    {
+      "function": "metrics heights",
+      "args": "SYSTEM_FONT",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics widths",
+      "args": "SYSTEM_FONT",
+      "result": "ave=7,max=14,weight=700,overhang=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics character set",
+      "args": "SYSTEM_FONT",
+      "result": "first=32,last=255,default=128,break=32,pitch=33,charset=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics style",
+      "args": "SYSTEM_FONT",
+      "result": "italic=0,underlined=0,struckout=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "GetTextFace",
+      "args": "SYSTEM_FONT",
+      "result": "\"System\"",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics heights",
+      "args": "SYSTEM_FIXED_FONT",
+      "result": "height=15,ascent=12,descent=3,internal=3,external=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics widths",
+      "args": "SYSTEM_FIXED_FONT",
+      "result": "ave=8,max=8,weight=400,overhang=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics character set",
+      "args": "SYSTEM_FIXED_FONT",
+      "result": "first=32,last=255,default=128,break=32,pitch=48,charset=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics style",
+      "args": "SYSTEM_FIXED_FONT",
+      "result": "italic=0,underlined=0,struckout=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "GetTextFace",
+      "args": "SYSTEM_FIXED_FONT",
+      "result": "\"Fixedsys\"",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics heights",
+      "args": "ANSI_VAR_FONT",
+      "result": "height=13,ascent=11,descent=2,internal=2,external=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics widths",
+      "args": "ANSI_VAR_FONT",
+      "result": "ave=5,max=11,weight=400,overhang=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics character set",
+      "args": "ANSI_VAR_FONT",
+      "result": "first=32,last=255,default=128,break=32,pitch=33,charset=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics style",
+      "args": "ANSI_VAR_FONT",
+      "result": "italic=0,underlined=0,struckout=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "GetTextFace",
+      "args": "ANSI_VAR_FONT",
+      "result": "\"Helv\"",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics heights",
+      "args": "ANSI_FIXED_FONT",
+      "result": "height=13,ascent=11,descent=2,internal=0,external=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics widths",
+      "args": "ANSI_FIXED_FONT",
+      "result": "ave=8,max=8,weight=400,overhang=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics character set",
+      "args": "ANSI_FIXED_FONT",
+      "result": "first=32,last=255,default=128,break=32,pitch=48,charset=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics style",
+      "args": "ANSI_FIXED_FONT",
+      "result": "italic=0,underlined=0,struckout=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "GetTextFace",
+      "args": "ANSI_FIXED_FONT",
+      "result": "\"Courier\"",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics heights",
+      "args": "OEM_FIXED_FONT",
+      "result": "height=12,ascent=10,descent=2,internal=0,external=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics widths",
+      "args": "OEM_FIXED_FONT",
+      "result": "ave=8,max=8,weight=400,overhang=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics character set",
+      "args": "OEM_FIXED_FONT",
+      "result": "first=1,last=254,default=32,break=32,pitch=48,charset=255",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics style",
+      "args": "OEM_FIXED_FONT",
+      "result": "italic=0,underlined=0,struckout=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "GetTextFace",
+      "args": "OEM_FIXED_FONT",
+      "result": "\"Terminal\"",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics heights",
+      "args": "DEVICE_DEFAULT_FONT",
+      "result": "height=16,ascent=13,descent=3,internal=0,external=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics widths",
+      "args": "DEVICE_DEFAULT_FONT",
+      "result": "ave=9,max=9,weight=400,overhang=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics character set",
+      "args": "DEVICE_DEFAULT_FONT",
+      "result": "first=32,last=255,default=128,break=32,pitch=48,charset=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "metrics style",
+      "args": "DEVICE_DEFAULT_FONT",
+      "result": "italic=0,underlined=0,struckout=0",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "GetTextFace",
+      "args": "DEVICE_DEFAULT_FONT",
+      "result": "\"Courier\"",
+      "section": "the stock fonts"
+    },
+    {
+      "function": "GetTextExtent",
+      "args": "SYSTEM_FONT,\"\"",
+      "result": "width=0,height=0",
+      "section": "how wide a string is"
+    },
+    {
+      "function": "GetTextExtent",
+      "args": "SYSTEM_FONT,\"i\"",
+      "result": "width=4,height=16",
+      "section": "how wide a string is"
+    },
+    {
+      "function": "GetTextExtent",
+      "args": "SYSTEM_FONT,\"W\"",
+      "result": "width=14,height=16",
+      "section": "how wide a string is"
+    },
+    {
+      "function": "GetTextExtent",
+      "args": "SYSTEM_FONT,\"iiii\"",
+      "result": "width=16,height=16",
+      "section": "how wide a string is"
+    },
+    {
+      "function": "GetTextExtent",
+      "args": "SYSTEM_FONT,\"WWWW\"",
+      "result": "width=56,height=16",
+      "section": "how wide a string is"
+    },
+    {
+      "function": "GetTextExtent",
+      "args": "SYSTEM_FONT,\"Hello, world\"",
+      "result": "width=77,height=16",
+      "section": "how wide a string is"
+    },
+    {
+      "function": "GetTextExtent",
+      "args": "SYSTEM_FONT,\"The quick brown fox\"",
+      "result": "width=129,height=16",
+      "section": "how wide a string is"
+    },
+    {
+      "function": "GetTextExtent",
+      "args": "SYSTEM_FONT,\"    \"",
+      "result": "width=16,height=16",
+      "section": "how wide a string is"
+    },
+    {
+      "function": "GetTextExtent",
+      "args": "ANSI_VAR_FONT,\"Hello, world\"",
+      "result": "width=55,height=13",
+      "section": "how wide a string is"
+    },
+    {
+      "function": "GetTextExtent",
+      "args": "ANSI_FIXED_FONT,\"Hello, world\"",
+      "result": "width=96,height=13",
+      "section": "how wide a string is"
+    },
+    {
+      "function": "GetTextExtent",
+      "args": "SYSTEM_FIXED_FONT,\"Hello, world\"",
+      "result": "width=96,height=15",
+      "section": "how wide a string is"
+    },
+    {
+      "function": "GetCharWidth",
+      "args": "SYSTEM_FONT,65-68",
+      "result": "8,10,9,10",
+      "section": "and how wide its characters are"
+    },
+    {
+      "function": "GetCharWidth",
+      "args": "SYSTEM_FONT,105-108",
+      "result": "4,4,7,4",
+      "section": "and how wide its characters are"
+    },
+    {
+      "function": "GetCharWidth",
+      "args": "ANSI_FIXED_FONT,105-108",
+      "result": "8,8,8,8",
+      "section": "and how wide its characters are"
+    },
+    {
+      "function": "GetCharWidth",
+      "args": "SYSTEM_FONT,32-35",
+      "result": "4,4,6,8",
+      "section": "and how wide its characters are"
+    }
+  ]
+}

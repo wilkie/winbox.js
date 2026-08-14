@@ -584,7 +584,14 @@ export class FAT16File extends File {
       offset += toRead;
     }
 
-    return ret;
+    /* An ArrayBuffer, because that is what a stream read returns and what
+     * every consumer expects -- `Executable`, the loader and `_lread` all wrap
+     * the result in a DataView directly. This method already returned one on
+     * its stream path a few lines above and a Uint8Array here, which is the
+     * sort of disagreement that only shows up when both paths are finally
+     * used.
+     */
+    return ret.buffer;
   }
 
   async read8(offset) {

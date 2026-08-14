@@ -282,6 +282,60 @@ declared `getUint16` and `setUint16` and nothing assigned them --
 heap owns its storage now, which is where handles belong in any case, a local
 handle being an address the guest dereferences.
 
+### The text probe
+
+Every layout decision a Windows program makes runs through GDI's text metrics.
+A dialog sizes its controls from `tmHeight` and `tmAveCharWidth`, a list box
+decides how many items fit from the same, and anything that draws a string then
+draws something after it asks `GetTextExtent` where the string ended. Wrong by
+a pixel and nothing crashes; the interface is simply laid out slightly wrong,
+in a way that is hard to trace back to its cause.
+
+Metrics mean nothing without a font, so every measurement selects a stock font
+first, and the device context is recorded too -- a disagreement about screen
+resolution should show up as one disagreement rather than as a hundred
+disagreements about text. The screen is 640x480, sixteen colours across four
+planes, 96 dots per inch.
+
+What Windows says about its stock fonts:
+
+| Stock font          | Face     | Height | Ascent | Average | Max | Weight |
+| ------------------- | -------- | ------ | ------ | ------- | --- | ------ |
+| `SYSTEM_FONT`       | System   | 16     | 13     | 7       | 14  | 700    |
+| `SYSTEM_FIXED_FONT` | Fixedsys | 15     | 12     | 8       | 8   | 400    |
+| `ANSI_VAR_FONT`     | Helv     | 13     | 11     | 5       | 11  | 400    |
+| `ANSI_FIXED_FONT`   | Courier  | 13     | 11     | 8       | 8   | 400    |
+| `OEM_FIXED_FONT`    | Terminal | 12     | 10     | 8       | 8   | 400    |
+
+The system font is bold, which surprises people. `"Hello, world"` is 77 pixels
+in it, 55 in Helv and 96 in Courier; `GetCharWidth` gives `i` 4 pixels and `W`
+14, and an empty string has an extent of zero by zero rather than zero by the
+font height.
+
+The replay for this is not written yet, and finding out why was the useful
+part. These functions need a device context, a handle table and loaded fonts,
+which is more of a system than the other probes needed -- so the question was
+whether a font could be loaded at all outside a running Windows. It can, now
+that the filesystem works: the fonts are `.FON` files on the drive the oracle
+builds, `BitmapFont` reads them straight off it, and measuring is pure
+arithmetic with no canvas involved.
+
+Doing that turned up two things.
+
+`FAT16File#read` returned a `Uint8Array` where every consumer expects an
+`ArrayBuffer` -- `Executable`, the loader and `_lread` all wrap the result in a
+`DataView` directly, and `Stream#read` returns one. The method even returned an
+`ArrayBuffer` on its own stream path a few lines above. Fixed.
+
+And the measurement is right while the font selection is not. `VGASYS.FON`
+measures `"Hello, world"` at 77 pixels by 16, which is exactly what Windows
+says, so the per-character summing and the metrics parsing are sound. But
+`Surface#measureText` asks for `fontFor(12)` with the size hardcoded, so a
+font file holding several sizes hands back whichever entry is nearest twelve
+rather than the one that was selected: Courier answers with its 15-point entry,
+20 pixels tall, where `ANSI_FIXED_FONT` is the 10-point one at 13. The stock
+fonts are not yet mapped to the files that hold them either.
+
 ### The handles probe
 
 Three more things came back, all of which bear on compatibility more than the
