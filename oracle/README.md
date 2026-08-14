@@ -832,15 +832,45 @@ than either the scaled outline maximum or the `hdmx` maximum at the sizes those
 tables do not cover. It is one number in one record type, and it is recorded
 rather than guessed at.
 
-**What we do not do.** We cannot draw an outline. The metrics for one are now
-answered from the font's own tables, so a program can lay text out in Arial
-correctly and then find nothing drawn -- which is a worse failure than the one
-before it in some ways and a better one in others, and is the reason a
-rasteriser is the next thing rather than an optional extra.
+### What Windows actually draws
 
-Of the 2225 records, 1801 agree, up from 1401 before the outline metrics. The
-rest are the synthesised styles on outline faces, the maximum character width,
-and the sizes the fitted tables do not cover.
+Everything above records numbers a program can ask for. `glyphs.c` records
+pixels, which nothing can ask for: it draws into a monochrome memory bitmap it
+owns and reads the bits back, so the record is the ink itself. That is the only
+ground truth a rasteriser can have -- a glyph's shape is not derivable from
+anything, and the whole question is what comes out.
+
+The stock bitmap fonts are in there as a control, and they matter more than the
+cases the probe was written for. **Every one agrees exactly**: every character
+of the System, ANSI variable and ANSI fixed fonts, and of MS Sans Serif and
+Courier asked for by name, pixel for pixel. That is what says the comparison is
+sound rather than accidentally lenient, and it had to be established before any
+of the outline numbers meant anything.
+
+The outlines are filled without hinting, and the measurement is:
+
+| face | exact | pixels differing, of ink |
+| --- | --- | --- |
+| Arial | 3 of 24 | 16 of 32 |
+| Times New Roman | 0 of 12 | 15 of 33 |
+| Courier New | 0 of 6 | 12 of 17 |
+
+So the shape is right -- an unhinted Arial `A` is recognisably the same letter
+in the same place at the same size -- and about half the ink is in a different
+pixel. That is what hinting is worth at the sizes text is read at, and it is a
+number rather than an intuition. A stem that falls between two columns is
+pushed onto one of them by the font's own bytecode; drawn without it, the stem
+is where the outline says and the outline was never meant to be believed
+literally at thirteen pixels per em.
+
+Which is the honest statement of where this stands: the rasteriser is correct
+and unhinted, the interpreter is the remaining work, and the fixture already
+holds what it would have to agree with.
+
+**What we do not do.** We do not hint. Of the font fixture's 2225 records, 1801 agree: the rest are the synthesised
+styles on outline faces, the maximum character width, and the sizes the fitted
+tables do not cover. Of the glyph fixture's 90, the 42 bitmap ones agree
+exactly and the 42 outline ones do not.
 
 ## On the media
 

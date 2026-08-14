@@ -7,6 +7,7 @@ import { Ditherer } from './ditherer.js';
 import { BitmapFont } from './bitmap-font.js';
 import { BitmapContext } from './bitmap-context.js';
 import { LogicalFont } from './logical-font.js';
+import { fill } from './glyph-raster.js';
 
 /**
  * This offers a drawing context.
@@ -239,6 +240,12 @@ export class Surface {
 
   fillText(x, y, text) {
     // TODO: backcolor
+    if (this._font instanceof LogicalFont && this._font.outline) {
+      this.outlineText(x, y, text);
+      this._stale = true;
+      return;
+    }
+
     if (this._font instanceof LogicalFont && this._font.isVector) {
       this.strokeText(x, y, text);
       this._stale = true;
@@ -260,6 +267,61 @@ export class Surface {
       this.context.fillText(text, x, y);
     }
     this._stale = true;
+  }
+
+  /**
+   * Draws text with an outline font, by filling what its contours enclose.
+   *
+   * The advance between characters is the grid-fitted one the font tabulates,
+   * so the letters land where the measured extent says they will even though
+   * the shapes themselves are drawn unhinted. Getting those two from different
+   * places sounds wrong and is not: the advance is a fact the font states, and
+   * the shape is something a rasteriser works out.
+   */
+  outlineText(x, y, text) {
+    const font = this._font;
+    const outline = font.outline;
+    const ppem = font.ppem;
+
+    const scale = ppem / outline.unitsPerEm;
+
+    // The baseline, which is where the outline's own origin sits.
+    const baseline = y + font.style.ascent;
+
+    /* Black, as the bitmap path draws in black. `forecolor` starts out white
+     * on a fresh surface, which paints nothing onto the white a text draw has
+     * just laid down.
+     */
+    const colour = BitmapContext.toRGBA('black');
+
+    let pen = x;
+
+    for (const character of String(text)) {
+      const glyph = outline.glyphFor(character.charCodeAt(0));
+      const contours = outline.outlineOf(glyph);
+
+      if (contours.length) {
+        const inked = fill(contours, {
+          scale,
+          originX: pen,
+          originY: baseline,
+          width: this.width,
+          height: this.height,
+        });
+
+        for (let row = 0; row < this.height; row++) {
+          for (let column = 0; column < this.width; column++) {
+            if (inked[row * this.width + column]) {
+              this.context.setPixel(column, row, colour);
+            }
+          }
+        }
+      }
+
+      const device = outline.deviceAdvance(ppem, glyph);
+
+      pen += device ?? Math.round(outline.advanceOf(glyph) * scale);
+    }
   }
 
   /**

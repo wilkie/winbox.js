@@ -602,6 +602,185 @@ export class TrueTypeFont {
     return this._cmap;
   }
 
+  /** Where a glyph's outline lives in `glyf`, or null if it is blank. */
+  glyphRange(glyph) {
+    if (!this.has('loca') || !this.has('glyf') || !this.has('head')) {
+      return null;
+    }
+
+    const long = this.signed('head', 50) !== 0;
+    const loca = this._tables['loca'].offset;
+
+    const start = long
+      ? this._view.getUint32(loca + glyph * 4, false)
+      : this._view.getUint16(loca + glyph * 2, false) * 2;
+
+    const end = long
+      ? this._view.getUint32(loca + (glyph + 1) * 4, false)
+      : this._view.getUint16(loca + (glyph + 1) * 2, false) * 2;
+
+    // Equal offsets mean the glyph has no outline at all -- a space.
+    return end > start ? { start: this._tables['glyf'].offset + start, length: end - start } : null;
+  }
+
+  /**
+   * A glyph's outline, in font units.
+   *
+   * Contours of points, each either on the curve or a control point for the
+   * quadratic that joins its neighbours. A composite glyph is assembled from
+   * others -- an accented letter is a letter and an accent placed against it --
+   * so those are expanded here rather than left for the rasteriser to worry
+   * about.
+   *
+   * @param {number} glyph - The glyph index.
+   * @param {number} depth - How far into a composite this already is.
+   */
+  outlineOf(glyph, depth = 0) {
+    const range = this.glyphRange(glyph);
+
+    if (!range || depth > 5) {
+      return [];
+    }
+
+    const at = range.start;
+    const contours = this._view.getInt16(at, false);
+
+    if (contours < 0) {
+      return this.compositeOutline(at + 10, range, depth);
+    }
+
+    const ends: number[] = [];
+
+    for (let index = 0; index < contours; index++) {
+      ends.push(this._view.getUint16(at + 10 + index * 2, false));
+    }
+
+    const points = contours ? ends[contours - 1] + 1 : 0;
+
+    // The hinting program sits between the contour ends and the flags.
+    let cursor = at + 10 + contours * 2;
+    cursor += 2 + this._view.getUint16(cursor, false);
+
+    const flags: number[] = [];
+
+    while (flags.length < points) {
+      const flag = this._view.getUint8(cursor++);
+
+      flags.push(flag);
+
+      // A repeat flag says how many more points share it.
+      if (flag & 0x08) {
+        let repeats = this._view.getUint8(cursor++);
+
+        while (repeats-- > 0 && flags.length < points) {
+          flags.push(flag);
+        }
+      }
+    }
+
+    /* The coordinates are deltas, and each axis is stored end to end rather
+     * than interleaved: every x, then every y.
+     */
+    const read = (shortBit, sameBit) => {
+      const values: number[] = [];
+
+      let value = 0;
+
+      for (const flag of flags) {
+        if (flag & shortBit) {
+          const delta = this._view.getUint8(cursor++);
+
+          value += flag & sameBit ? delta : -delta;
+        } else if (!(flag & sameBit)) {
+          value += this._view.getInt16(cursor, false);
+          cursor += 2;
+        }
+
+        values.push(value);
+      }
+
+      return values;
+    };
+
+    const xs = read(0x02, 0x10);
+    const ys = read(0x04, 0x20);
+
+    const shapes: any[] = [];
+
+    let from = 0;
+
+    for (const end of ends) {
+      const contour: any[] = [];
+
+      for (let index = from; index <= end && index < points; index++) {
+        contour.push({ x: xs[index], y: ys[index], on: (flags[index] & 0x01) !== 0 });
+      }
+
+      if (contour.length) {
+        shapes.push(contour);
+      }
+
+      from = end + 1;
+    }
+
+    return shapes;
+  }
+
+  /** Assembles a glyph that is made of other glyphs. */
+  compositeOutline(at, range, depth) {
+    const shapes: any[] = [];
+
+    let cursor = at;
+
+    for (;;) {
+      if (cursor + 4 > range.start + range.length) {
+        break;
+      }
+
+      const flags = this._view.getUint16(cursor, false);
+      const index = this._view.getUint16(cursor + 2, false);
+
+      cursor += 4;
+
+      let dx = 0;
+      let dy = 0;
+
+      if (flags & 0x0001) {
+        dx = this._view.getInt16(cursor, false);
+        dy = this._view.getInt16(cursor + 2, false);
+        cursor += 4;
+      } else {
+        dx = (this._view.getUint8(cursor) << 24) >> 24;
+        dy = (this._view.getUint8(cursor + 1) << 24) >> 24;
+        cursor += 2;
+      }
+
+      /* Scaled components exist and none of the fonts here use them; skipping
+       * the right number of bytes keeps the rest of the record readable.
+       */
+      if (flags & 0x0008) {
+        cursor += 2;
+      } else if (flags & 0x0040) {
+        cursor += 4;
+      } else if (flags & 0x0080) {
+        cursor += 8;
+      }
+
+      // Only an offset placement is honoured, which is what these fonts use.
+      if (flags & 0x0002) {
+        for (const contour of this.outlineOf(index, depth + 1)) {
+          shapes.push(contour.map((point) => ({ ...point, x: point.x + dx, y: point.y + dy })));
+        }
+      }
+
+      if (!(flags & 0x0020)) {
+        break;
+      }
+    }
+
+    return shapes;
+  }
+
   /**
    * The advance of one character, in font units.
    *

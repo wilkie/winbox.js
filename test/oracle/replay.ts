@@ -9,6 +9,8 @@ import { Machine } from '../../src/emulator/machine.js';
 import { FontManager } from '../../src/win16/font-manager.js';
 import { HandleManager } from '../../src/win16/handle-manager.js';
 import { Surface } from '../../src/raster/surface.js';
+import { Brush } from '../../src/raster/brush.js';
+import { Color } from '../../src/raster/color.js';
 import { GetStockObject } from '../../src/win16/gdi/GetStockObject.js';
 import { SelectObject } from '../../src/win16/gdi/SelectObject.js';
 import { GetTextExtent } from '../../src/win16/gdi/GetTextExtent.js';
@@ -399,6 +401,50 @@ class Context {
     GetTextFace.call(this, hdc, 64, name.far);
 
     return { hdc, metrics, face: this.fetch(name.far) };
+  }
+
+  /**
+   * Draws one character the way the glyph probe drew it, and reads it back.
+   *
+   * The probe drew into a monochrome bitmap and recorded the bits, so this has
+   * to produce the same thing: a thirty-two pixel cell, the character at the
+   * same origin, and one bit per pixel saying whether it was inked. Anything
+   * darker than halfway counts as ink, which is the only judgement being made
+   * -- the probe's bitmap had no greys to lose.
+   */
+  drawGlyph(font: any, character: string) {
+    const surface: any = Surface.offscreen(32, 32);
+
+    surface.font = font;
+
+    // White to start with, as `PatBlt(..., WHITENESS)` left it.
+    surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
+    surface.fillRect(0, 0, 32, 32);
+
+    surface.fillText(2, 0, character);
+
+    const pixels = surface.context.pixels;
+
+    let hex = '';
+
+    for (let row = 0; row < 32; row++) {
+      for (let group = 0; group < 4; group++) {
+        let byte = 0;
+
+        for (let bit = 0; bit < 8; bit++) {
+          const at = (row * 32 + group * 8 + bit) * 4;
+
+          // A set bit is white, which is what the probe's background was.
+          const inked = pixels[at] < 0x80 && pixels[at + 3] !== 0;
+
+          byte |= (inked ? 0 : 1) << (7 - bit);
+        }
+
+        hex += byte.toString(16).padStart(2, '0');
+      }
+    }
+
+    return hex;
   }
 
   /**
@@ -1109,6 +1155,60 @@ const ADAPTERS: Record<
       `ave=${metrics.tmAveCharWidth},weight=${metrics.tmWeight}`
     );
   },
+
+  /**
+   * What a character actually looks like.
+   *
+   * The only probe that records pixels, and the only ground truth there is for
+   * anything that draws. The stock font cases are the control: they are
+   * strikes we already render, so a disagreement there is a disagreement about
+   * the comparison rather than about a rasteriser.
+   */
+  glyph(context, args) {
+    if (!context.fonts) {
+      throw new NeedsDrive('the fonts live on the drive image; run the oracle pipeline');
+    }
+
+    const character = String(args[args.length - 1]).replace(/'/g, '');
+
+    const stock = {
+      SYSTEM_FONT: 13,
+      ANSI_VAR_FONT: 12,
+      ANSI_FIXED_FONT: 11,
+    }[String(args[0])];
+
+    let font: any;
+
+    if (stock !== undefined) {
+      const handle = GetStockObject.call(context, stock);
+
+      font = context.handles.resolve(handle);
+    } else {
+      const fields: Record<string, number> = {};
+
+      for (const field of args.slice(1, -1)) {
+        const [name, value] = String(field).split('=');
+
+        fields[name] = Number(value);
+      }
+
+      const handle = CreateFontIndirect.call(context, {
+        lfHeight: fields.h ?? 0,
+        lfWeight: fields.weight ?? 0,
+        lfItalic: fields.italic ?? 0,
+        lfCharSet: 0,
+        lfFaceName: String(args[0]),
+      });
+
+      if (!handle) {
+        throw new Unimplemented('no font mapped');
+      }
+
+      font = context.handles.resolve(handle);
+    }
+
+    return context.drawGlyph(font, character);
+  },
 };
 
 /** Thrown by an adapter for a function we have not implemented at all. */
@@ -1137,7 +1237,23 @@ const NO_OUTLINE_FONTS =
   'synthesised styles on them, the maximum character width, and the sizes ' +
   'those tables do not cover';
 
+/**
+ * The one probe that records pixels, and the one that cannot be satisfied by
+ * reading a table.
+ *
+ * The bitmap strikes agree exactly -- every stock font, every character, every
+ * pixel -- which is what says the comparison itself is sound. The outlines do
+ * not, because they are drawn without hinting: Windows runs the font's own
+ * bytecode to move the outline onto the pixel grid before it fills anything,
+ * and at the sizes text is read at that decides where about half the ink goes.
+ */
+const NO_HINTING =
+  "the outlines are filled without running the font's hinting bytecode, so " +
+  'the shapes are right and roughly half the pixels are not; the bitmap and ' +
+  'stroke faces in this fixture agree exactly';
+
 export const KNOWN_GAPS: Record<string, string> = {
+  glyph: NO_HINTING,
   'CreateFont face': NO_OUTLINE_FONTS,
   'CreateFont heights': NO_OUTLINE_FONTS,
   'CreateFont widths': NO_OUTLINE_FONTS,
