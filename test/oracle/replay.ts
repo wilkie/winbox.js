@@ -24,6 +24,7 @@ import { GlobalAllocator } from '../../src/win16/global-allocator.js';
 import { Allocator } from '../../src/win16/allocator.js';
 
 import { lstrlen } from '../../src/win16/kernel/lstrlen.js';
+import { CreateFontIndirect } from '../../src/win16/gdi/CreateFontIndirect.js';
 import { GetPrivateProfileInt } from '../../src/win16/kernel/GetPrivateProfileInt.js';
 import { GetPrivateProfileString } from '../../src/win16/kernel/GetPrivateProfileString.js';
 import { GetProfileString } from '../../src/win16/kernel/GetProfileString.js';
@@ -158,6 +159,14 @@ export async function prepareFonts() {
 
   return fonts;
 }
+
+/**
+ * The string `oracle/probes/font.c` measures every mapped font with.
+ *
+ * Has to match the probe's `SPECIMEN` exactly: the recorded widths are widths
+ * of this text, and measuring anything else compares two different questions.
+ */
+const FONT_SPECIMEN = 'Wg jpq 128';
 
 /** Thrown by an adapter that cannot run without the drive image. */
 export class NeedsDrive extends Error {}
@@ -337,6 +346,59 @@ class Context {
     };
 
     return this._dos;
+  }
+
+  /**
+   * Maps a recorded font request and selects the result into a context.
+   *
+   * The probe wrote a whole `LOGFONT` out flat -- `"MS Sans Serif",h=16,w=0,
+   * weight=400,...` -- so this reads it back into one and puts it through the
+   * same `CreateFontIndirect` a program calls. Five records ask five different
+   * questions about one mapping, so they all come through here.
+   */
+  mappedFont(args: (string | number)[]) {
+    if (!this.fonts) {
+      throw new NeedsDrive('the fonts live on the drive image; run the oracle pipeline');
+    }
+
+    const fields: Record<string, number> = {};
+
+    for (const field of args.slice(1)) {
+      const [name, value] = String(field).split('=');
+
+      fields[name] = Number(value);
+    }
+
+    const handle = CreateFontIndirect.call(this, {
+      lfHeight: fields.h ?? 0,
+      lfWidth: fields.w ?? 0,
+      lfWeight: fields.weight ?? 0,
+      lfItalic: fields.italic ?? 0,
+      lfUnderline: fields.under ?? 0,
+      lfStrikeOut: fields.strike ?? 0,
+      lfCharSet: fields.charset ?? 0,
+      lfPitchAndFamily: fields.pitch ?? 0,
+      lfFaceName: String(args[0] ?? ''),
+    });
+
+    if (!handle) {
+      throw new Unimplemented('no font mapped');
+    }
+
+    /* A surface to select it into, because the metrics are a property of a
+     * font in a device context rather than of a font on its own.
+     */
+    const hdc = this.handles.allocate(new Surface({ getContext: () => ({}) }));
+
+    SelectObject.call(this, hdc, handle);
+
+    const metrics: any = {};
+    GetTextMetrics.call(this, hdc, metrics);
+
+    const name = this.place('', 64);
+    GetTextFace.call(this, hdc, 64, name.far);
+
+    return { hdc, metrics, face: this.fetch(name.far) };
   }
 
   /**
@@ -971,6 +1033,82 @@ const ADAPTERS: Record<
 
     return `${ok},${quoted(context.fetch(buffer.far))}`;
   },
+
+  /*
+   * Font mapping.
+   *
+   * The recorded argument is a whole `LOGFONT` written out flat, so it is
+   * parsed back into one and put through the same `CreateFontIndirect` a
+   * program would call. Each of the five records for a request asks a
+   * different question about the same mapping, so they share the setup.
+   */
+
+  'CreateFont face'(context, args) {
+    return quoted(context.mappedFont(args).face);
+  },
+
+  'CreateFont heights'(context, args) {
+    const tm = context.mappedFont(args).metrics;
+
+    return (
+      `height=${tm.tmHeight},ascent=${tm.tmAscent},descent=${tm.tmDescent},` +
+      `internal=${tm.tmInternalLeading},external=${tm.tmExternalLeading}`
+    );
+  },
+
+  'CreateFont widths'(context, args) {
+    const tm = context.mappedFont(args).metrics;
+
+    return (
+      `ave=${tm.tmAveCharWidth},max=${tm.tmMaxCharWidth},` +
+      `weight=${tm.tmWeight},overhang=${tm.tmOverhang}`
+    );
+  },
+
+  'CreateFont style'(context, args) {
+    const tm = context.mappedFont(args).metrics;
+
+    return (
+      `italic=${tm.tmItalic},underlined=${tm.tmUnderlined},struckout=${tm.tmStruckOut},` +
+      `pitch=${tm.tmPitchAndFamily},charset=${tm.tmCharSet}`
+    );
+  },
+
+  'CreateFont extent'(context, args) {
+    const { hdc } = context.mappedFont(args);
+
+    /* The thunk layer hands an `LPCSTR` over as a string that remembers where
+     * it came from, not as a pointer, so the harness has to build the same
+     * thing rather than the address of it.
+     */
+    const extent = GetTextExtent.call(
+      context,
+      hdc,
+      context.lpcstr(FONT_SPECIMEN),
+      FONT_SPECIMEN.length
+    );
+
+    return `width=${extent & 0xffff},height=${(extent >> 16) & 0xffff}`;
+  },
+
+  CreateFontIndirect(context, [face, height]) {
+    const { face: resolved, metrics } = context.mappedFont([
+      face,
+      `h=${String(height).replace(/^h=/, '')}`,
+      'w=0',
+      'weight=400',
+      'italic=0',
+      'under=0',
+      'strike=0',
+      'charset=0',
+      'pitch=0',
+    ]);
+
+    return (
+      `${quoted(resolved)},height=${metrics.tmHeight},` +
+      `ave=${metrics.tmAveCharWidth},weight=${metrics.tmWeight}`
+    );
+  },
 };
 
 /** Thrown by an adapter for a function we have not implemented at all. */
@@ -984,7 +1122,31 @@ export class Unimplemented extends Error {}
  * suite stays green while they persist, and turns red the moment one of them
  * starts agreeing and the entry becomes stale.
  */
-export const KNOWN_GAPS: Record<string, string> = {};
+/**
+ * The installation the oracle records against has four TrueType families on it
+ * -- Arial, Times New Roman, Courier New and WingDings -- and one vector font,
+ * Roman, which is what the OEM character set maps to. We load neither kind:
+ * `FontManager` reads `.FON` bitmap strikes and nothing else.
+ *
+ * That is one missing capability rather than a scattering of wrong answers,
+ * and it accounts for every disagreement in this fixture. It shows up in more
+ * places than the obvious one, because Windows answers a face name it does not
+ * recognise with Times New Roman -- so a request for a font nobody has ever
+ * installed is a TrueType request too.
+ */
+const NO_OUTLINE_FONTS =
+  'the installation has TrueType and vector fonts; we load only .FON strikes, ' +
+  'so anything that maps to an outline disagrees -- including every unknown ' +
+  'face name, which Windows answers with Times New Roman';
+
+export const KNOWN_GAPS: Record<string, string> = {
+  'CreateFont face': NO_OUTLINE_FONTS,
+  'CreateFont heights': NO_OUTLINE_FONTS,
+  'CreateFont widths': NO_OUTLINE_FONTS,
+  'CreateFont style': NO_OUTLINE_FONTS,
+  'CreateFont extent': NO_OUTLINE_FONTS,
+  CreateFontIndirect: NO_OUTLINE_FONTS,
+};
 
 /**
  * Functions a module declares but wires to a stub.

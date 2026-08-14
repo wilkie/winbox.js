@@ -35,11 +35,14 @@ import {
   FARPTR,
   LPCSTR,
   HWND,
+  CHARARRAY,
   Struct,
 } from './types.js';
 
 import { BitBlt } from './gdi/BitBlt.js';
 import { CreateBitmap } from './gdi/CreateBitmap.js';
+import { CreateFont } from './gdi/CreateFont.js';
+import { CreateFontIndirect } from './gdi/CreateFontIndirect.js';
 import { CreateCompatibleBitmap } from './gdi/CreateCompatibleBitmap.js';
 import { CreateCompatibleDC } from './gdi/CreateCompatibleDC.js';
 import { CreatePen } from './gdi/CreatePen.js';
@@ -206,8 +209,14 @@ export class Gdi extends Module {
       [Gdi.stub, 'CreateDC', 16],
       [Gdi.stub, 'CreateEllipticRgn', 8],
       [Gdi.stub, 'CreateEllipticRgnIndirect', 4],
-      [Gdi.stub, 'CreateFont', 30],
-      [Gdi.stub, 'CreateFontIndirect', 4],
+      [
+        CreateFont,
+        'CreateFont',
+        30,
+        [INT, INT, INT, INT, INT, BYTE, BYTE, BYTE, BYTE, BYTE, BYTE, BYTE, BYTE, LPCSTR],
+        HGDIOBJ,
+      ],
+      [CreateFontIndirect, 'CreateFontIndirect', 4, [[LOGFONT]], HGDIOBJ],
       [Gdi.stub, 'CreateHatchBrush', 6],
       [Gdi.stub, 'WEP'],
       // 60 //
@@ -740,6 +749,34 @@ export class BITMAP extends Struct {
  * and {@link Gdi.EnumFontFamilies EnumFontFamilies} functions return
  * information about TrueType fonts in a NEWTEXTMETRIC structure.
  */
+/**
+ * The **LOGFONT** structure defines the attributes of a font.
+ *
+ * It is a description rather than a font: every field is what the program
+ * would like, and the font mapper answers with the closest thing installed.
+ * `lfFaceName` is a fixed thirty-two bytes whether the name fills it or not.
+ */
+export class LOGFONT extends Struct {
+  constructor() {
+    super([
+      ['lfHeight', INT],
+      ['lfWidth', INT],
+      ['lfEscapement', INT],
+      ['lfOrientation', INT],
+      ['lfWeight', INT],
+      ['lfItalic', BYTE],
+      ['lfUnderline', BYTE],
+      ['lfStrikeOut', BYTE],
+      ['lfCharSet', BYTE],
+      ['lfOutPrecision', BYTE],
+      ['lfClipPrecision', BYTE],
+      ['lfQuality', BYTE],
+      ['lfPitchAndFamily', BYTE],
+      ['lfFaceName', CHARARRAY + 32],
+    ]);
+  }
+}
+
 export class TEXTMETRIC extends Struct {
   constructor() {
     super([

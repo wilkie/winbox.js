@@ -21,18 +21,45 @@ export class LogicalFont extends Font {
   declare _face: any;
   declare _points: any;
   declare _entry: any;
+  declare _style: any;
 
   /**
    * @param {string} face - The typeface as it was asked for.
    * @param {number} points - The point size as it was asked for.
    * @param {object} entry - The `BitmapFontEntry` that satisfies it.
+   * @param {object} style - What else was asked for: weight, italic,
+   *                         underline, strikeout, and how far the strike has
+   *                         to be stretched to reach the requested size.
    */
-  constructor(face, points, entry) {
+  constructor(face, points, entry, style: any = {}) {
     super();
 
     this._face = face;
     this._points = points;
     this._entry = entry;
+    this._style = style;
+  }
+
+  /**
+   * What was asked for beyond the face and the size.
+   *
+   * A bitmap face has one weight and no slant, so a request for bold or italic
+   * is answered by altering the one strike there is rather than by opening a
+   * different file -- which means the request has to be remembered, because
+   * the file cannot remember it.
+   */
+  get style() {
+    return this._style;
+  }
+
+  /** How many times over the strike is drawn, to reach the size asked for. */
+  get scale() {
+    return this._style.scale ?? 1;
+  }
+
+  /** The same, sideways, which a request for a width sets on its own. */
+  get horizontal() {
+    return this._style.horizontal ?? this.scale;
   }
 
   /** The typeface as it was asked for, which is what `GetTextFace` reports. */
@@ -53,8 +80,25 @@ export class LogicalFont extends Font {
     return this._entry.header;
   }
 
+  /**
+   * How much room the text takes, with everything the request added to it.
+   *
+   * The strike is measured first and then adjusted, because none of what a
+   * request can ask for is in the file: stretching to a size that is not
+   * installed multiplies every width, emboldening widens each character by a
+   * pixel, and both emboldening and slanting leave the last character
+   * overhanging the end of the string by a little more.
+   */
   measure(text, options: any = {}) {
-    return this._entry.measure(text, options);
+    const measured = this._entry.measure(text, options);
+
+    const bold = (this._style.weight ?? 0) >= 700;
+    const overhang = this._style.italic ? 7 : bold ? 1 : 0;
+
+    return {
+      width: measured.width * this.horizontal + (bold ? String(text).length : 0) + overhang,
+      height: measured.height * this.scale,
+    };
   }
 
   dataFor(text, options: any = {}) {

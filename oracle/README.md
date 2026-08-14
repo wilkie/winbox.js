@@ -614,6 +614,78 @@ adding one puts it at the end of its own section rather than at the end of the
 file. Enumerating the section after five writes returns exactly the list it
 returned before them, which is the check that says so.
 
+### The font probe
+
+A program does not choose a font. It describes one -- a name, a height, a
+weight, a pitch -- and GDI answers with the closest thing installed. Almost
+none of that matching is written down, and it is where an implementation
+written from a manual goes quietly wrong: nothing crashes, the interface is
+simply laid out slightly differently, and nothing points at the cause.
+
+Fifty-one requests were recorded. Six of the rules were not what reading the
+documentation would suggest.
+
+**The character set outranks the name, but only for OEM fonts.** Asking for
+Terminal with `ANSI_CHARSET` does not give Terminal, it gives MS Sans Serif:
+Terminal is an OEM font, and for this purpose that is the same as not being
+installed. Asking for Symbol with `ANSI_CHARSET` *does* give Symbol, though its
+character set does not match either. Probing only Terminal would have produced
+the rule "the character sets must match", which is wrong; it took both to see
+that only the OEM set disqualifies a face.
+
+**An unknown name is answered with Times New Roman, an absent name with MS Sans
+Serif.** These are different fallbacks for what look like the same failure.
+`Nonesuch` and `MSSansSerif` -- the right name with its spaces removed -- both
+land on Times New Roman, while an empty face name lands on MS Sans Serif by way
+of the pitch and family. Names match without regard to case and with every
+regard to spacing.
+
+**A substituted name is echoed back; a name that merely failed is not.** A
+program asking for Helv is told Helv by `GetTextFace`, though MS Sans Serif is
+what gets drawn, because `WIN.INI` redirected the name and the redirect
+succeeded. A program that asks for `ms sans serif` is told `MS Sans Serif` --
+the installed spelling, not its own -- and a program that asks for Terminal in
+the ANSI set is told MS Sans Serif. Only redirection preserves the request.
+
+**Bitmap strikes are stretched, by whole numbers, to land exactly on the
+requested height.** MS Sans Serif is installed at six sizes, the largest a
+thirty-seven pixel cell. Asked for a hundred pixels, Windows answers a hundred
+-- the twenty pixel strike five times over, exact in every metric including the
+internal leading. It picks the strike and the factor that hit the number, which
+is why the answer is 100 and not 111 from stretching the largest strike three
+times.
+
+**A height is three different questions depending on its sign.** Positive is
+the cell including its leading, negative is the characters within it, and zero
+is the mapper's own default -- which is twelve points, not the smallest
+installed size or the largest. A request smaller than anything installed is
+clamped rather than stretched down.
+
+**Weight, slant, underline and strikeout are synthesised, and reported
+inconsistently.** No bold MS Sans Serif is installed, so bold is made by
+widening every character a pixel; `tmOverhang` becomes 1 and the string grows
+by its own length plus one. Slanting adds an overhang of seven and no width per
+character. Any weight of 700 or more reports exactly 700 and anything less
+reports what the file says -- which is not always 400, since the System font is
+drawn bold and says so to a program that asked for nothing of the kind. And
+`tmItalic` comes back as 1 while `tmUnderlined` and `tmStruckOut` come back as
+255, so a program comparing any of the three against 1 is right about one of
+them.
+
+The probe also caught a defect in itself. Its first recording wrote the request
+into the argument field without the underline and strikeout flags, so three
+different requests recorded under identical arguments -- three answers to what
+the fixture said was one question, with no way to tell afterwards which
+belonged to which. The argument field is what identifies a record, and it has
+to carry everything that was varied.
+
+**What we do not do.** The installation carries four TrueType families and one
+vector font, and we load neither kind -- `FontManager` reads `.FON` bitmap
+strikes and nothing else. Every remaining disagreement in this fixture is that
+one missing capability, including all the unknown-name cases, since Windows
+answers those with Times New Roman. Of the 270 records, 211 agree; the other 59
+are all outlines.
+
 ## On the media
 
 Windows 3.1 is thirty-four years old and has not been sold in this form since

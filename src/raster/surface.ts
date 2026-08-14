@@ -263,7 +263,12 @@ export class Surface {
    */
   measureText(text) {
     if (this._font instanceof LogicalFont || this._font instanceof BitmapFont) {
-      return entryOf(this._font).measure(text);
+      /* Through the logical font rather than past it to its strike. What was
+       * asked for is not in the file -- a size that is not installed, a weight
+       * the face does not have -- so the strike alone measures the wrong
+       * thing, and going straight to it is how that gets lost.
+       */
+      return this._font.measure(text);
     } else {
       // Normal text draw
       this.context.font = this._font;
