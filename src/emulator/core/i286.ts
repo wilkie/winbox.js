@@ -914,7 +914,7 @@ export class I286 implements CpuCore16 {
     offset &= 0xffff;
 
     if (offset < descriptor.lowLimit || offset + size > descriptor.pastLimit) {
-      this.raiseSegmentFault(segment);
+      this.raiseSegmentFault(segment, offset, size);
     }
 
     return descriptor.base + offset;
@@ -929,9 +929,9 @@ export class I286 implements CpuCore16 {
    *
    * @param {number} segment - The selector the access was made through.
    */
-  raiseSegmentFault(segment) {
+  raiseSegmentFault(segment, offset?, size?) {
     this.raiseInterrupt(this._instruction, 13, 0);
-    throw new MemoryFault();
+    throw new MemoryFault(segment, offset, size);
   }
 
   read8(segment, offset) {

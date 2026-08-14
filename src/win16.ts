@@ -331,7 +331,14 @@ export class Win16 {
     const idtSegment = 0xffd;
     const idtBytes = new Uint8Array(4096);
     this._globalAllocator.map(idtSegment, new DataView(idtBytes.buffer));
-    this._machine.idtSegment = idtSegment;
+
+    /* Published as a selector rather than as the descriptor index it was
+     * mapped by: the DOS interrupt-vector calls address it as a segment, and
+     * an index is not one -- it names the right descriptor only by accident of
+     * both being small numbers, and names the wrong one as soon as the table
+     * or privilege bits matter.
+     */
+    this._machine.idtSegment = segmentSelector(idtSegment);
 
     // We need to allocate a program segment to contain the command line
     // arguments and environment.

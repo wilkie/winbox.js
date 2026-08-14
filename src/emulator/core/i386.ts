@@ -301,7 +301,7 @@ export class I386 extends I286 implements CpuCore {
    *
    * @param {number} segment - The selector the access was made through.
    */
-  raiseSegmentFault(segment) {
+  raiseSegmentFault(segment, offset?, size?) {
     let vector = 13;
 
     if (this.cr0 & 0x1) {
@@ -315,7 +315,7 @@ export class I386 extends I286 implements CpuCore {
     }
 
     this.raiseInterrupt(this._instruction, vector, 0);
-    throw new MemoryFault();
+    throw new MemoryFault(segment, offset, size);
   }
 
   get msw() {
