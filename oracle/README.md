@@ -1082,11 +1082,34 @@ the nearer reference and travels with it. Extrapolating looks reasonable and is
 wrong. Correcting it changed nothing here -- the interpolation that builds
 `cvt[2]` is genuinely in range -- and it is right regardless.
 
-What is still unaccounted for is that `cvt[2]` is written more than once. There
-are two hundred and twenty control value writes in `prep` and a hundred and
-seventy-seven of them change something; the 9.5313 above is an early one, and a
-later pass overwrites it. Which pass, and what it is carrying it along with, is
-where this stands.
+`cvt[2]` is written twice, and the second write is the plain thing it looks
+like:
+
+    RCVT      read cvt[2], which is 9.5313
+    RTG       round to grid
+    ROUND     9.5313 becomes 10.0000
+    WCVTP     write it back
+
+There is nothing wrong with that. 9.5313 rounds to 10 under any rule anyone
+would write down, so the error is entirely in the 9.5313, and it is small:
+Windows needs a value of 9.4844 or less to land on 9, which is **three
+sixty-fourths of a pixel** away.
+
+Working backwards through the interpolation that built it -- `mulDiv(593, 640,
+622)` in the units the format keeps distances in -- there is only one input
+that could carry an error that size. Changing the raw `cvt[2]` or the fitted
+`cvt[0]` would take forty sixty-fourths to move the answer; changing the *raw*
+`cvt[0]`, the 622, takes three. So whatever is different is in that value or in
+what produced it, and not in the arithmetic here, which has been checked
+against the reference implementation instruction by instruction.
+
+That is where this stops. The remaining distance is three sixty-fourths of a
+pixel in one control value of one font, it shows up in three recorded glyphs,
+and closing it needs an instruction-by-instruction trace against a known-good
+interpreter rather than more reasoning about this one. The interpreter is
+right about four fifths of what was recorded and every part of it that has been
+checked against the specification matches; what is left is not a misunderstanding
+of the format but a discrepancy too small to find by reading.
 
 Two spec omissions were closed while looking, neither of which these glyphs
 touch. `MIRP` places a twilight point being measured *to*, the way `MIAP`
