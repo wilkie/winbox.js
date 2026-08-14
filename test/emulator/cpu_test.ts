@@ -937,8 +937,17 @@ describe('CPU', () => {
     });
 
     it('should decode the `clts` instruction', function () {
+      /* CLTS is `0F 06`, and the second byte is part of the instruction rather
+       * than an operand -- 0x0F introduces a two-byte opcode on everything
+       * from the 286 onwards, where the 8086 had `POP CS` there. Writing a
+       * random second byte, as this did, tested CLTS only on the runs where
+       * the generator happened to produce a 6, and decoded some other
+       * instruction entirely on the rest.
+       */
       this.cpu.write8(this.segment, this.cpu.ip + 0, 0x0f);
-      const offset = this.writeImm8(this.cpu.ip + 1);
+      this.cpu.write8(this.segment, this.cpu.ip + 1, 0x06);
+      this.checkInstruction.immediate = 0x06;
+
       this.instruction = this.cpu.decode(this.instruction);
       this.assertInstruction();
       expect(this.instruction.opcode).toEqual(0x0f);
