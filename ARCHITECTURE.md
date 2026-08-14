@@ -143,14 +143,38 @@ the desktop's dithered background, bitmap fonts, and GDI surfaces.
 
 Found while formalizing the boundary; recorded here rather than fixed silently.
 
-**The 286 and 386 have not been told apart.** The emulator targets a 386 with a
-286 mode, and the conformance corpus is an 80286, so a passing vector is only
-evidence where the two parts agree. Several places encode 286 behaviour on
-purpose and need revisiting against the 386: `POPF` and `IRET` force FLAGS bits
-12 to 15 clear in real mode, which the 386 may permit at CPL 0; the `IDIV`
-quotient of -128 that the part lets through is described as a bug and may not
-exist on the 386; and the undefined flag results for the multiplies, divides
-and shifts are 286 measurements throughout.
+**Where the 286 and the 386 differ.** The emulator is a 386, and for the HLE it
+can be assumed to be a 386 already in protected mode. The conformance corpus is
+an 80286 in real mode, so it is an oracle for the instruction semantics the two
+parts share and for nothing else. The audit found four places that are
+part-specific, and only one of them is a behaviour the two parts disagree on:
+
+| Behaviour                                            | Status                                                                                    |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| `POPF`/`IRET` clearing FLAGS bits 12-15 in real mode | Diverges. The 386 is understood to permit IOPL and NT. Left as the measured 286 behaviour |
+| Shift counts masked to five bits                     | Shared by both parts; the comment naming the 286 is about provenance, not divergence      |
+| Undefined flags for the multiplies and divides       | Measured on a 286. Unverifiable for the 386 without a corpus                              |
+| The `IDIV` quotient of -128 the part lets through    | Described as a bug in the reference. Unknown on a 386                                     |
+
+The `POPF` divergence is deliberately not "corrected" to the 386 answer. The
+branch is real-mode only and the HLE never reaches it, nothing published can
+verify the 386 behaviour, and changing it would trade a measured behaviour for
+an assumed one across five hundred passing vectors. It is marked in the source.
+
+**What being a 386 in protected mode actually implies** is a different and
+larger list, none of it reachable by the corpus:
+
+- Segment limits are not enforced in protected mode. The `#GP` rule for an
+  operand running past its segment is real-mode only, because there the limit
+  is always 64 KiB; a descriptor's limit can be anything up to four gigabytes.
+- A null selector loads as present with a zero limit, so using one does not
+  fault the way it should.
+- `cpl` is hard-wired to zero on the 386 core, so no DPL or RPL check can ever
+  fire.
+- The descriptor cache is loaded when a selector is loaded and is never
+  invalidated otherwise, which matches the hardware. What it means is that the
+  Win16 allocator must reload selectors after moving a segment, and that has
+  not been checked.
 
 The emulator unit suite passes in full. It spent a long time not doing so --
 3,787 of its 3,823 tests failed -- because it had been written against an

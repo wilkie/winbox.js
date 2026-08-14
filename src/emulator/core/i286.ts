@@ -807,9 +807,15 @@ export class I286 implements CpuCore16 {
     let f = value;
 
     if (!(this.msw & 0x1)) {
-      /* Real mode on the 286 leaves IOPL, NT and bit 15 clear. This is a
-       * difference from the 8086, where the top four bits read as one, and it
-       * holds for every real-mode POPF and IRET vector in the 80286 suite.
+      /* Real mode leaves IOPL, NT and bit 15 clear. This is measured from the
+       * 80286 vectors, where it holds for every real-mode POPF and IRET, and
+       * is a difference from the 8086, where the top four bits read as one.
+       *
+       * A 386 is understood to permit IOPL and NT to change in real mode, so
+       * this is a place the two parts diverge. It is deliberately left as the
+       * measured 286 behaviour: nothing published can verify the 386 answer,
+       * the HLE runs in protected mode and never reaches this branch, and the
+       * alternative is to trade a verified behaviour for an assumed one.
        */
       f &= ~0xf000;
     } else if (this.cpl != 0x0) {
@@ -1169,6 +1175,15 @@ export class I286 implements CpuCore16 {
    * 0xFFFD faults on the second word.
    */
   requireAccessWithinSegment(instruction, offset, size) {
+    if (this.msw & 0x1) {
+      /* In protected mode the limit belongs to the descriptor and can be
+       * anything up to four gigabytes, so the 64 KiB assumption below does not
+       * hold. Limits are not enforced there yet, and there are no
+       * protected-mode vectors published to check an implementation against.
+       */
+      return;
+    }
+
     if ((offset & 0xffff) + size <= 0x10000) {
       return;
     }
