@@ -44,6 +44,7 @@
     "test:e2e": "playwright test",
     "test:conformance": "jest --config jest.conformance.config.js --runInBand",
     "test:conformance:fetch": "node scripts/fetch-cpu-tests.mjs",
+    "bench": "vite build --config bench/vite.config.ts --logLevel warn && node dist/bench/cpu.js",
     "ci": "turbo run lint lint:css typecheck test build",
     "build:docs": "typedoc"
   },

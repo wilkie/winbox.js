@@ -186,19 +186,60 @@ overrides and the 286 core leaves empty -- a 286 in protected mode is a dead end
 this project has no reason to emulate, so `I286#retrieveDescriptor` now decodes
 real-mode selectors only and the 386 core owns the tables.
 
-Enforcing limits meant checking the 8-bit and 32-bit operand paths too, which
-the real-mode rule had skipped: a byte access cannot straddle a 64 KiB boundary,
-but it can certainly sit past a descriptor's limit. In real mode the added
-checks are provably no-ops, and the corpus result held at 96.4% across all 326
-forms to confirm it.
+### Where the limit check lives
+
+It began in the operand helpers, which was the wrong place: they cover the
+ModRM forms and nothing else, so the `moffs` forms, the string operations,
+pushes and pops, and instruction fetch itself all reached memory without being
+checked. The check now sits in `translateAddress`, which every access goes
+through, so those paths are covered by construction rather than by having been
+remembered.
+
+The two modes turned out to want the same comparison. A real-mode segment is
+64 KiB, so the rule the corpus pins -- an access crossing the end of a segment
+faults, where the 8086 wrapped -- is a limit check against 0xFFFF, and a
+descriptor limit is that same check against a different number. Each descriptor
+carries the bounds worked out once when it was loaded, including the inversion
+for expand-down segments and an impossible pair for a segment that is not
+present, so the check on the hot path is two integer comparisons and every
+decision about which fault to raise happens in the slow path.
+
+**It cost nothing.** Measured with `pnpm bench` over four workloads in both
+modes, three alternating runs each, every change landed inside the ±6%
+run-to-run spread, with medians between -0.5% and +3.5%. The check paid for
+itself because it replaced a worse path: `translateAddress` used to call
+`computeBase`, which did the same descriptor-cache lookup and then threw the
+descriptor away to return one field, after which the operand helpers looked it
+up a second time to check the limit. One lookup and two comparisons is less work
+than that, and `computeBase` is gone.
+
+Every descriptor is built with the same keys in the same order -- the real-mode
+one, the null selector, and the decoded one all carry `nullSelector` and the
+precomputed bounds whether they need them or not -- so the property reads on the
+hot path stay monomorphic. That is worth 5.6% on fetch-heavy code in protected
+mode and nothing anywhere else, which is about what a hidden-class miss is worth.
+
+The benchmark also says protected mode runs fetch-heavy code about 30% slower
+than real mode, and has since before any of this: the gap was 38% at the
+baseline. It is not the limit check -- the memory-heavy workloads show no gap at
+all -- and it has not been chased down yet.
+
+Correctness moved the right way too: 96.4% to **96.5%** of the corpus, with all
+326 forms still passing the no-regression gate. Widening the check exposed one
+real bug behind it -- a fault raised from inside a memory access reported the
+restart address from the core's own instruction object rather than the one in
+flight, so it pushed a CS of zero. `decode` now records the instruction it is
+given, which is what the corpus had been quietly failing on.
 
 What is still missing:
 
-- The check covers the ModRM operand helpers. Accesses that reach memory by
-  another route -- the `moffs` forms, the string operations, pushes and pops --
-  still bypass it, as does instruction fetch past the CS limit.
 - `cpl` is hard-wired to zero on the 386 core, so no DPL or RPL check can ever
   fire, and neither can a stack switch on a privilege change.
+- A not-present segment faults when it is used rather than when its selector is
+  loaded, which is where the part raises `#NP`.
+- Offsets are masked to sixteen bits in `translateAddress`, so a 32-bit
+  addressing mode cannot reach past 64 KiB into a larger segment. Nothing the
+  Win16 layer does needs it yet.
 - Faults latch rather than dispatch, because protected-mode dispatch reads a
   gate out of the IDT and none of that is written.
 - The descriptor cache is loaded when a selector is loaded and is never

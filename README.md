@@ -76,6 +76,7 @@ The individual tasks are also plain scripts, if you prefer:
 | `pnpm format`     | Prettier over the repository                |
 | `pnpm test`       | Jest unit tests                             |
 | `pnpm test:e2e`   | Playwright browser tests                    |
+| `pnpm bench`      | CPU throughput benchmark                    |
 | `pnpm build:docs` | API documentation into `docs/`              |
 
 ## Documentation
@@ -149,6 +150,20 @@ CONFORMANCE_UPDATE=1 pnpm test:conformance
 Regression checking only applies when `CONFORMANCE_SAMPLE` matches the sample
 the baseline was recorded at, since pass rates are not uniform across an
 opcode's vectors.
+
+### Benchmarking
+
+```shell
+pnpm bench
+```
+
+This runs four workloads through the execution core in both real and protected
+mode and reports instructions per second. The absolute numbers mean nothing on
+their own — they move with the machine, the Node version and what else is
+running — but the ratio between two runs is what tells you whether a change to
+the core cost anything. Run-to-run spread is around six percent, so treat
+anything smaller than that as noise, and take a median of three runs before
+believing a result.
 
 ### Filtering tests
 

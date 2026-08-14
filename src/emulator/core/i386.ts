@@ -171,7 +171,10 @@ export class I386 extends I286 implements CpuCore {
       return {
         base: (segment & 0xffff) << 4,
         limit: 0xffff,
+        lowLimit: 0,
+        pastLimit: 0x10000,
         present: true,
+        nullSelector: false,
         addressSize: false,
         dpl: 0,
         type: true,
@@ -191,6 +194,8 @@ export class I386 extends I286 implements CpuCore {
       return {
         base: 0,
         limit: 0,
+        lowLimit: 1,
+        pastLimit: 0,
         present: false,
         nullSelector: true,
         addressSize: false,
@@ -234,19 +239,51 @@ export class I386 extends I286 implements CpuCore {
       limit = (limit << 12) | 0xfff;
     }
 
+    limit = limit >>> 0;
+
+    /* Bit 2 only means expand-down in a data segment; in a code segment the
+     * same bit says the segment is conforming.
+     */
+    const growsDown = (access & 0x1c) === 0x14;
+    const present = (access & 0x80) > 0;
+
+    /* The bounds every access is checked against, worked out once here so that
+     * the check itself is two comparisons.
+     *
+     * An expand-down segment runs the other way: the limit is the last offset
+     * *outside* it, and the segment reaches from there up to the top of
+     * whichever address space the D/B bit selects. It is how a stack that grows
+     * toward zero is given more room, by lowering its limit rather than raising
+     * it.
+     *
+     * A segment that is not present gets bounds no offset can satisfy, so it
+     * faults on use without needing a branch of its own.
+     */
+    let lowLimit = 0;
+    let pastLimit = limit + 1;
+
+    if (growsDown) {
+      lowLimit = limit + 1;
+      pastLimit = (granularity & 0x40 ? 0xffffffff : 0xffff) + 1;
+    }
+
+    if (!present) {
+      lowLimit = 1;
+      pastLimit = 0;
+    }
+
     return {
       base: base >>> 0,
-      limit: limit >>> 0,
-      present: (access & 0x80) > 0,
-      dpl: (access >> 5) & 0x3,
+      limit: limit,
+      lowLimit: lowLimit,
+      pastLimit: pastLimit,
+      present: present,
+      nullSelector: false,
       addressSize: (granularity & 0x40) > 0,
+      dpl: (access >> 5) & 0x3,
       type: (access & 0x10) > 0,
       executable: (access & 0x8) > 0,
-
-      /* Bit 2 only means expand-down in a data segment; in a code segment the
-       * same bit says the segment is conforming.
-       */
-      growsDown: (access & 0x1c) === 0x14,
+      growsDown: growsDown,
       readWrite: (access & 0x2) > 0,
       accessed: (access & 0x1) > 0,
       flags: access,
@@ -254,68 +291,31 @@ export class I386 extends I286 implements CpuCore {
   }
 
   /**
-   * Faults if a protected-mode access runs past its segment.
+   * Raises the fault for an access that ran past its segment.
    *
-   * @param {object} instruction - The instruction being executed.
-   * @param {number} selector - The selector the access is made through.
-   * @param {number} offset - The offset within that segment.
-   * @param {number} size - The access width in bytes.
+   * Protected mode distinguishes cases real mode does not. A null selector is
+   * `#GP(0)`; an access through `SS` is a stack fault rather than a general
+   * protection fault; and a segment marked not present is `#NP`, though the
+   * part raises that when the selector is loaded rather than when it is used,
+   * which is a check we do not make yet.
+   *
+   * @param {number} segment - The selector the access was made through.
    */
-  requireWithinDescriptorLimit(instruction, selector, offset, size) {
-    const descriptor = this.retrieveDescriptor(selector);
+  raiseSegmentFault(segment) {
+    let vector = 13;
 
-    if (descriptor.nullSelector || !descriptor.present) {
-      this.raiseInterrupt(instruction, 13, selector & 0xfffc);
-      throw new MemoryFault();
-    }
-
-    /* An expand-down segment runs the other way: the limit is the last offset
-     * *outside* it and the segment reaches from there to the top of whichever
-     * address space the D/B bit selects. It is how a stack that grows toward
-     * zero is given more room, by lowering its limit rather than raising it.
-     */
-    const last = offset + size - 1;
-    const withinSegment = descriptor.growsDown
-      ? offset > descriptor.limit && last <= (descriptor.addressSize ? 0xffffffff : 0xffff)
-      : last <= descriptor.limit;
-
-    if (withinSegment) {
-      return;
-    }
-
-    /* An access through SS is a stack fault. This is not the real-mode rule,
-     * where the hardware vectors show #GP even for an operand that merely
-     * defaults to SS, but that rule is about a segment running past 64 KiB
-     * rather than about a descriptor limit, and the two are separate checks.
-     */
-    this.raiseInterrupt(instruction, selector === this.ss ? 12 : 13, 0);
-    throw new MemoryFault();
-  }
-
-  computeBase(segment) {
-    let base = this._translationCache[segment];
-
-    if (base) {
-      return base.base;
-    }
-
-    // Protected-mode Addressing
     if (this.cr0 & 0x1) {
-      const descriptor = this.retrieveDescriptor(segment);
-      base = descriptor.base;
-    } else {
-      base = super.computeBase(segment);
+      const descriptor = this._translationCache[segment] ?? this.retrieveDescriptor(segment);
+
+      if (!descriptor.present && !descriptor.nullSelector) {
+        vector = 11;
+      } else if (descriptor.present && segment === this.ss) {
+        vector = 12;
+      }
     }
 
-    return base;
-  }
-
-  /**
-   * Translates an address from the current segment and offset.
-   */
-  translateAddress(segment, offset) {
-    // Rely on the i286 core for normal real addressing
-    return super.translateAddress(segment, offset);
+    this.raiseInterrupt(this._instruction, vector, 0);
+    throw new MemoryFault();
   }
 
   get msw() {
@@ -433,15 +433,15 @@ export class I386 extends I286 implements CpuCore {
   }
 
   read32(segment, offset) {
-    return this._memory.read32(this.translateAddress(segment, offset));
+    return this._memory.read32(this.translateAddress(segment, offset, 4));
   }
 
   readSigned32(segment, offset) {
-    return this._memory.readSigned32(this.translateAddress(segment, offset));
+    return this._memory.readSigned32(this.translateAddress(segment, offset, 4));
   }
 
   write32(segment, offset, value) {
-    return this._memory.write32(this.translateAddress(segment, offset), value);
+    return this._memory.write32(this.translateAddress(segment, offset, 4), value);
   }
 
   /**
@@ -458,8 +458,6 @@ export class I386 extends I286 implements CpuCore {
     if (instruction.operandRegister !== undefined) {
       return this.readRegister32(instruction.operandRegister);
     }
-
-    this.requireOperandWithinSegment(instruction, 4);
 
     // Read 32-bit word from memory at the effective address
     return this.read32(instruction.segment, instruction.offset);
@@ -478,8 +476,6 @@ export class I386 extends I286 implements CpuCore {
     if (instruction.operandRegister !== undefined) {
       return this.writeRegister32(instruction.operandRegister, value);
     }
-
-    this.requireOperandWithinSegment(instruction, 4);
 
     // Write 32-bit word to memory at the effective address
     return this.write32(instruction.segment, instruction.offset, value);
@@ -774,7 +770,7 @@ export class I386 extends I286 implements CpuCore {
     }
 
     if (instruction.addressOverride === undefined && this.retrieveDescriptor(this.cs).addressSize) {
-      console.log('Address+Operand Override!!');
+      this.debug('Address+Operand Override!!');
       instruction.addressOverride = true;
       instruction.operandOverride = true;
     }

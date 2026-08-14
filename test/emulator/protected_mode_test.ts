@@ -214,7 +214,11 @@ describe('protected mode', () => {
       expect(machine.cpu.interrupt).toEqual(13);
     });
 
-    it('faults when the segment is not present', function () {
+    it('raises a segment-not-present fault when the segment is absent', function () {
+      /* The part raises this when the selector is loaded rather than when it
+       * is used, which is a check we do not make; what matters here is that a
+       * segment marked absent cannot be read through.
+       */
       const { machine, core } = protectedMachine({
         3: { base: 0x40000, limit: 0xffff, present: false },
       });
@@ -222,7 +226,7 @@ describe('protected mode', () => {
       core.ds = 0x18;
       readThroughBx(machine, core, 0x0000);
 
-      expect(machine.cpu.interrupt).toEqual(13);
+      expect(machine.cpu.interrupt).toEqual(11);
     });
 
     it('raises a stack fault rather than a general protection fault through SS', function () {
@@ -308,6 +312,80 @@ describe('protected mode', () => {
       machine.cpu.step();
 
       expect(machine.cpu.interrupt).toBeNull();
+    });
+  });
+
+  describe('accesses that do not go through a ModRM operand', () => {
+    /* These are the routes the operand helpers never saw. The check lives in
+     * translateAddress now, which every access goes through, so each of them
+     * is covered by construction rather than by having been remembered.
+     */
+
+    /** A machine whose data segment stops at 0x00FF, code loaded physically. */
+    function limited(code: number[]) {
+      const { machine, core } = protectedMachine({ 3: { base: 0x40000, limit: 0x00ff } });
+
+      code.forEach((byte, index) => {
+        machine.memory.write8((0x20000 + index) >>> 0, byte);
+      });
+
+      core.ds = 0x18;
+      core.es = 0x18;
+      core.cs = CODE_SELECTOR;
+      core.ip = 0;
+
+      return { machine, core };
+    }
+
+    it('faults on a direct-offset load past the limit', function () {
+      // MOV AL, [0x0200] -- the moffs form, which carries its own address.
+      const { machine } = limited([0xa0, 0x00, 0x02]);
+
+      machine.cpu.step();
+
+      expect(machine.cpu.interrupt).toEqual(13);
+    });
+
+    it('faults on a string operation past the limit', function () {
+      // MOVSB, which addresses through ES:DI and DS:SI with no ModRM at all.
+      const { machine, core } = limited([0xa4]);
+
+      core.si = 0x0000;
+      core.di = 0x0200;
+
+      machine.cpu.step();
+
+      expect(machine.cpu.interrupt).toEqual(13);
+    });
+
+    it('faults on a push past the limit', function () {
+      const { machine, core } = limited([0x50]); // PUSH AX
+
+      core.ss = 0x18;
+      core.sp = 0x0001; // Decrements to 0xFFFF, far outside a 0x00FF limit.
+
+      machine.cpu.step();
+
+      expect(machine.cpu.interrupt).toEqual(12);
+    });
+
+    it('faults when instruction fetch runs past the code segment', function () {
+      /* A three-byte instruction in a segment with room for two bytes. The
+       * first two fetches are inside it and the third is not.
+       */
+      const { machine, core } = protectedMachine({ 4: { base: 0x60000, limit: 0x0001 } });
+
+      // MOV AL, [BP] -- three bytes, written straight to memory.
+      [0x8a, 0x46, 0x00].forEach((byte, index) => {
+        machine.memory.write8(0x60000 + index, byte);
+      });
+
+      core.cs = 0x20;
+      core.ip = 0;
+
+      machine.cpu.step();
+
+      expect(machine.cpu.interrupt).toEqual(13);
     });
   });
 });

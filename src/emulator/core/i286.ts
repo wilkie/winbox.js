@@ -865,7 +865,10 @@ export class I286 implements CpuCore16 {
     return {
       base: (segment & 0xffff) << 4,
       limit: 0xffff,
+      lowLimit: 0,
+      pastLimit: 0x10000,
       present: true,
+      nullSelector: false,
       addressSize: false,
       dpl: 0,
       type: true,
@@ -877,50 +880,82 @@ export class I286 implements CpuCore16 {
     };
   }
 
-  computeBase(segment) {
-    let base = this._translationCache[segment];
+  /**
+   * Translates a segmented address, faulting if the access runs past the end
+   * of the segment.
+   *
+   * Every memory access an instruction makes arrives here, which is what makes
+   * this the place for the limit check rather than the operand helpers. Those
+   * cover the ModRM forms and nothing else: the `moffs` forms, the string
+   * operations, pushes and pops, and instruction fetch itself all reach memory
+   * by other routes, and every one of them can run past a limit.
+   *
+   * The two modes want the same comparison. A real-mode segment is 64 KiB, so
+   * the rule the hardware vectors pin -- an access crossing the end of a
+   * segment faults, where the 8086 wrapped the offset back to zero -- is a
+   * limit check against 0xFFFF, and a descriptor limit is the same check
+   * against a different number. The bounds are worked out once when the
+   * descriptor is loaded, so what happens here is two comparisons; which fault
+   * to raise is decided in the slow path, where it costs nothing.
+   *
+   * The check is per access, not per operand. A far pointer read at offset
+   * 0xFFFE is fine, its segment word coming from offset 0, while one at 0xFFFD
+   * faults on the second word. Each access is checked on its own wrapped
+   * offset, which is what the hardware does.
+   *
+   * @param {number} segment - The selector to address through.
+   * @param {number} offset - The offset within that segment.
+   * @param {number} size - The access width in bytes.
+   * @returns {number} The physical address.
+   */
+  translateAddress(segment, offset, size = 1) {
+    const descriptor = this._translationCache[segment] ?? this.retrieveDescriptor(segment);
 
-    if (base) {
-      return base.base;
+    offset &= 0xffff;
+
+    if (offset < descriptor.lowLimit || offset + size > descriptor.pastLimit) {
+      this.raiseSegmentFault(segment);
     }
 
-    // Protected-mode Addressing
-    if (this.msw & 0x1) {
-      // The segment selector identifies the segment in memory.
-    } else {
-      base = segment << 4;
-    }
-
-    return base;
+    return descriptor.base + offset;
   }
 
-  translateAddress(segment, offset) {
-    const base = this.computeBase(segment);
-    return base + (offset & 0xffff);
+  /**
+   * Raises the fault for an access that ran past its segment.
+   *
+   * Real mode has one answer: `#GP`, even for an operand that merely defaults
+   * to `SS`, which the hardware vectors are unambiguous about. The 386 core
+   * distinguishes the protected-mode cases.
+   *
+   * @param {number} segment - The selector the access was made through.
+   */
+  raiseSegmentFault(segment) {
+    this.raiseInterrupt(this._instruction, 13, 0);
+    throw new MemoryFault();
   }
 
   read8(segment, offset) {
-    return this._memory.read8(this.translateAddress(segment, offset));
+    return this._memory.read8(this.translateAddress(segment, offset, 1));
   }
 
   read16(segment, offset) {
-    return this._memory.read16(this.translateAddress(segment, offset));
+    return this._memory.read16(this.translateAddress(segment, offset, 2));
   }
 
   write8(segment, offset, value) {
-    this._memory.write8(this.translateAddress(segment, offset), value);
+    this._memory.write8(this.translateAddress(segment, offset, 1), value);
   }
 
   write16(segment, offset, value) {
-    this._memory.write16(this.translateAddress(segment, offset), value);
+    this._memory.write16(this.translateAddress(segment, offset, 2), value);
   }
 
   readSigned8(segment, offset) {
-    return this._memory.readSigned8(this.translateAddress(segment, offset));
+    return this._memory.readSigned8(this.translateAddress(segment, offset, 1));
   }
 
   readSigned16(segment, offset) {
-    return this._memory.readSigned16(this.translateAddress(segment, offset));
+    return this._memory.readSigned16(this.translateAddress(segment, offset, 2));
   }
 
   /**
@@ -1106,8 +1141,6 @@ export class I286 implements CpuCore16 {
       return this.readRegister8(instruction.operandRegister);
     }
 
-    this.requireOperandWithinSegment(instruction, 1);
-
     // Read byte from memory at the effective address
     return this.read8(instruction.segment, instruction.offset);
   }
@@ -1121,75 +1154,11 @@ export class I286 implements CpuCore16 {
    *
    * @returns {number} The value.
    */
-  /**
-   * Faults if a memory operand of the given width runs past its segment.
-   *
-   * A real-mode segment is 64 KiB and the parts from the 286 onwards fault on
-   * an operand that crosses the end of one, where the 8086 wrapped the offset
-   * back to zero.
-   *
-   * This is #GP even for an operand addressed through SS. #SS is for the stack
-   * operations proper -- pushes and pops that run off the end -- rather than
-   * for data that merely defaults to the stack segment, which is what
-   * `[bp+si]` and friends are. The hardware vectors are unambiguous on this.
-   *
-   * @param {object} instruction - The instruction being executed.
-   * @param {number} size - The operand width in bytes.
-   */
-  requireOperandWithinSegment(instruction, size) {
-    if (instruction.offset === undefined) {
-      return;
-    }
-
-    this.requireAccessWithinSegment(instruction, instruction.offset, size);
-  }
-
-  /**
-   * The same check for an access at an offset of its own.
-   *
-   * The far-pointer forms read two words, and the second one is reached at
-   * `offset + 2`, which wraps inside the segment rather than running past it.
-   * So each access is checked on its own wrapped offset: a pointer read at
-   * 0xFFFE is fine, with its segment word coming from offset 0, while one at
-   * 0xFFFD faults on the second word.
-   */
-  requireAccessWithinSegment(instruction, offset, size) {
-    if (this.msw & 0x1) {
-      /* In protected mode the limit belongs to the descriptor and can be
-       * anything up to four gigabytes, so the 64 KiB rule below does not hold.
-       */
-      this.requireWithinDescriptorLimit(
-        instruction,
-        instruction.segment ?? this.ds,
-        offset & 0xffff,
-        size
-      );
-      return;
-    }
-
-    if ((offset & 0xffff) + size <= 0x10000) {
-      return;
-    }
-
-    this.raiseInterrupt(instruction, 13, 0);
-    throw new MemoryFault();
-  }
-
-  /**
-   * The protected-mode half of that check, against the descriptor's limit.
-   *
-   * This core has no descriptor decoding of its own -- protected mode on the
-   * 286 was a dead end that Windows never ran in and that we do not emulate --
-   * so there is nothing here to check against. The 386 core overrides it.
-   */
-  requireWithinDescriptorLimit(instruction, selector, offset, size) {}
 
   readOperand16(instruction) {
     if (instruction.operandRegister !== undefined) {
       return this.readRegister16(instruction.operandRegister);
     }
-
-    this.requireOperandWithinSegment(instruction, 2);
 
     // Read 16-bit word from memory at the effective address
     return this.read16(instruction.segment, instruction.offset);
@@ -1208,8 +1177,6 @@ export class I286 implements CpuCore16 {
       return this.writeRegister8(instruction.operandRegister, value);
     }
 
-    this.requireOperandWithinSegment(instruction, 1);
-
     // Write byte to memory at the effective address
     return this.write8(instruction.segment, instruction.offset, value);
   }
@@ -1227,8 +1194,6 @@ export class I286 implements CpuCore16 {
       return this.writeRegister16(instruction.operandRegister, value);
     }
 
-    this.requireOperandWithinSegment(instruction, 2);
-
     // Write 16-bit word to memory at the effective address
     return this.write16(instruction.segment, instruction.offset, value);
   }
@@ -1245,6 +1210,12 @@ export class I286 implements CpuCore16 {
       instruction.startCs = this.cs;
       instruction.startIp = this.ip;
     }
+
+    /* A fault raised from deep inside a memory access has no instruction to
+     * hand, and the one the host passes in here is the only one in flight, so
+     * it is what `raiseSegmentFault` reports the restart address from.
+     */
+    this._instruction = instruction;
 
     instruction.cs = this.cs;
     instruction.ip = this.ip;
@@ -2789,8 +2760,6 @@ export class I286 implements CpuCore16 {
 
         this.writeRegister16(instruction.sourceRegister, this.readOperand16(instruction));
 
-        this.requireAccessWithinSegment(instruction, instruction.offset + 2, 2);
-
         if (opcode == 0xc4) {
           this.debug('les    rw,eb');
           this.es = this.read16(instruction.segment, instruction.offset + 2);
@@ -3223,7 +3192,6 @@ export class I286 implements CpuCore16 {
 
             // Read the far pointer before the pushes disturb the stack.
             callTarget = this.readOperand16(instruction);
-            this.requireAccessWithinSegment(instruction, instruction.offset + 2, 2);
             callSegment = this.read16(instruction.segment ?? this.ds, instruction.offset + 2);
 
             this.push16(this.cs);
@@ -3252,7 +3220,6 @@ export class I286 implements CpuCore16 {
              * override is present; this used to reject the instruction.
              */
             callTarget = this.readOperand16(instruction);
-            this.requireAccessWithinSegment(instruction, instruction.offset + 2, 2);
             this.cs = this.read16(instruction.segment ?? this.ds, instruction.offset + 2);
             this.ip = callTarget;
             break;
