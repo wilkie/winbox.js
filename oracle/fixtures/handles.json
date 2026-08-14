@@ -1,0 +1,88 @@
+{
+  "probe": "handles",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode"
+  },
+  "records": [
+    {
+      "function": "identity",
+      "args": "moveable",
+      "result": "equal=0,difference=1,low3=6/7",
+      "section": "is a handle its selector"
+    },
+    {
+      "function": "identity",
+      "args": "fixed",
+      "result": "equal=0,difference=1,low3=6/7",
+      "section": "is a handle its selector"
+    },
+    {
+      "function": "identity",
+      "args": "discardable",
+      "result": "equal=0,difference=1,low3=6/7",
+      "section": "is a handle its selector"
+    },
+    {
+      "function": "GlobalHandle",
+      "args": "moveable",
+      "result": "recovered=1",
+      "section": "and can a pointer be turned back into one"
+    },
+    {
+      "function": "GlobalHandle",
+      "args": "fixed",
+      "result": "recovered=1",
+      "section": "and can a pointer be turned back into one"
+    },
+    {
+      "function": "lock count",
+      "args": "moveable",
+      "result": "same=1,count=0",
+      "section": "locking twice"
+    },
+    {
+      "function": "lock count",
+      "args": "fixed",
+      "result": "same=1,count=0",
+      "section": "locking twice"
+    },
+    {
+      "function": "stability",
+      "args": "moveable",
+      "result": "moved=0",
+      "section": "does an unlocked block stay put"
+    },
+    {
+      "function": "stability",
+      "args": "fixed",
+      "result": "moved=0",
+      "section": "does an unlocked block stay put"
+    },
+    {
+      "function": "GlobalReAlloc",
+      "args": "moveable grow,256->1024",
+      "result": "same-handle=1,same-address=1,size=1024",
+      "section": "GlobalReAlloc"
+    },
+    {
+      "function": "GlobalReAlloc",
+      "args": "moveable shrink,1024->256",
+      "result": "same-handle=1,same-address=1,size=256",
+      "section": "GlobalReAlloc"
+    },
+    {
+      "function": "GlobalReAlloc",
+      "args": "fixed grow,256->1024",
+      "result": "same-handle=1,same-address=1,size=1024",
+      "section": "GlobalReAlloc"
+    },
+    {
+      "function": "GlobalReAlloc",
+      "args": "moveable same,256->256",
+      "result": "same-handle=1,same-address=1,size=256",
+      "section": "GlobalReAlloc"
+    }
+  ]
+}

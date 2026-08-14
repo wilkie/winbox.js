@@ -225,11 +225,21 @@ handle without committing memory to it. That is fixed, and all seventeen agree.
 
 Two findings the probe surfaced that are not one-line fixes:
 
-- **A global handle is not its selector.** `GlobalLock` on real Windows returns
-  a pointer whose selector differs from the handle, for fixed blocks as well as
-  moveable ones. Ours returns `handle << 16`, treating the two as the same
-  thing. Offsets agree -- a global block does start at offset zero -- but the
-  identity does not, and unpicking it touches the whole handle model.
+- **A global handle is a selector with its privilege bits lowered.** This was
+  the contradiction the memory probe left behind, and the handles probe settled
+  it. The handle and the selector differ by exactly one, and their low three
+  bits are 6 and 7: both name the same LDT entry, and what separates them is
+  the requested privilege level, 2 against 3. So the folklore that a fixed
+  handle "is" its selector was nearly right -- near enough to mislead. It holds
+  for moveable and discardable blocks too, and `GlobalHandle` recovers the
+  handle from either.
+
+  Ours are selector _indices_ rather than selector values, which is the same
+  disagreement seen from another side: a pointer from our `GlobalLock` cannot
+  be loaded into a segment register and shifted back into an index, which is
+  exactly what `LocalAlloc` does with `DS`. The two halves of our own memory
+  code already disagree about what a handle is. Fixing it means changing that
+  everywhere, which is why it is written down here rather than patched.
   **The local heap's rounding is now understood.** Seventeen measurements, nine
   of them chosen to refute a model rather than confirm one:
 
@@ -260,7 +270,32 @@ declared `getUint16` and `setUint16` and nothing assigned them --
 heap owns its storage now, which is where handles belong in any case, a local
 handle being an address the guest dereferences.
 
-Memory reads 35/40. Combined with the strings probe, 92 of 97 records. What is
+### The handles probe
+
+Three more things came back, all of which bear on compatibility more than the
+sizing does.
+
+**Nothing moves.** A moveable block keeps its address across an unlock, eight
+4 KB allocations, half of those freed, and an explicit `GlobalCompact`. Thirty
+years of software has a latent bug where it locks a moveable block, allocates,
+and keeps using the old pointer; on this evidence that bug stayed latent,
+which means our never moving anything is not obviously wrong. It is the one
+answer here we already agree with.
+
+**`GlobalReAlloc` keeps both the handle and the address**, growing 256 bytes to
+1024 as readily as shrinking back, for fixed blocks as well as moveable. In
+protected mode that is what you would expect -- the descriptor's limit changes
+and its base does not -- but expecting is not knowing, and now it is recorded.
+
+**The lock count stays at zero** through two nested `GlobalLock` calls, on
+fixed and moveable blocks alike, and both locks return the same pointer.
+
+Of the thirteen records, we agree with two. `GlobalHandle`, `GlobalReAlloc` and
+`GlobalFlags` are stubs, and `identity` is the handle-versus-selector question
+above.
+
+Memory reads 35/40 and handles 2/13. Across all three probes, 94 of 110
+records. What is
 left is `GlobalFlags`, which is a stub, and `GlobalLock` -- the
 handle-is-not-a-selector question, which is what the handles probe is for.
 

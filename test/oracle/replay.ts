@@ -23,6 +23,7 @@ import { LocalAlloc } from '../../src/win16/kernel/LocalAlloc.js';
 import { LocalSize } from '../../src/win16/kernel/LocalSize.js';
 import { LocalInit } from '../../src/win16/kernel/LocalInit.js';
 import { GlobalLock } from '../../src/win16/kernel/GlobalLock.js';
+import { GlobalUnlock } from '../../src/win16/kernel/GlobalUnlock.js';
 
 /**
  * Replaying the oracle's recordings against our implementation.
@@ -345,6 +346,58 @@ const ADAPTERS: Record<string, (context: Context, args: (string | number)[]) => 
     return `offset=${pointer & 0xffff},handle-is-selector=${selector === handle ? 1 : 0}`;
   },
 
+  /**
+   * How a handle relates to the selector its pointer carries.
+   *
+   * Neither value is comparable on its own, so the probe recorded the shape of
+   * the relationship: whether they are equal, what separates them, and what
+   * their low three bits are -- the table and privilege bits, which is where a
+   * selector derived from a handle would differ from it.
+   */
+  identity(context, [,]) {
+    const handle = GlobalAlloc.call(context, 0x0002, 256);
+
+    if (!handle) {
+      return 'failed';
+    }
+
+    const selector = (GlobalLock.call(context, handle) >> 16) & 0xffff;
+
+    return (
+      `equal=${selector === handle ? 1 : 0},` +
+      `difference=${selector - handle},` +
+      `low3=${handle & 7}/${selector & 7}`
+    );
+  },
+
+  /** Whether a block keeps its address across an unlock and a relock. */
+  stability(context, [name]) {
+    const flags = name === 'fixed' ? 0x0000 : 0x0002;
+    const handle = GlobalAlloc.call(context, flags, 256);
+
+    if (!handle) {
+      return 'failed';
+    }
+
+    const before = GlobalLock.call(context, handle);
+    GlobalUnlock.call(context, handle);
+
+    // Stir the heap the way the probe does, to give a compactor its chance.
+    const filler = [];
+
+    for (let index = 0; index < 8; index++) {
+      filler.push(GlobalAlloc.call(context, 0x0002, 4096));
+    }
+
+    for (let index = 0; index < 8; index += 2) {
+      if (filler[index]) {
+        GlobalFree.call(context, filler[index]);
+      }
+    }
+
+    return `moved=${before === GlobalLock.call(context, handle) ? 0 : 1}`;
+  },
+
   GlobalFree(context) {
     const handle = GlobalAlloc.call(context, 0x0002, 256);
 
@@ -369,9 +422,15 @@ export class Unimplemented extends Error {}
  */
 export const KNOWN_GAPS: Record<string, string> = {
   GlobalLock:
-    'a global handle is not its selector on real Windows, even for fixed ' +
-    'blocks; ours treats the two as the same thing, and separating them ' +
-    'touches the whole handle model',
+    'the selector a locked pointer carries is the handle with its privilege ' +
+    'bits raised, and ours returns the handle unchanged; see `identity`',
+  identity:
+    'a global handle on Windows is a selector with RPL 2 and the pointer it ' +
+    'locks to carries the same selector with RPL 3, so they differ by exactly ' +
+    'one. Ours are selector indices rather than selector values, which is ' +
+    'also why a pointer from GlobalLock cannot be loaded into a segment ' +
+    'register and shifted back to an index the way LocalAlloc expects. ' +
+    'Fixing it means changing what a handle is, everywhere',
 };
 
 /**
@@ -381,7 +440,7 @@ export const KNOWN_GAPS: Record<string, string> = {
  * as a disagreement -- the two want different work, and conflating them makes
  * the report harder to act on.
  */
-const STUBBED = new Set<string>(['GlobalFlags']);
+const STUBBED = new Set<string>(['GlobalFlags', 'GlobalHandle', 'GlobalReAlloc', 'lock count']);
 
 /** Runs one recorded call. */
 export function replayRecord(record: Fixture['records'][number]): Replayed {
