@@ -293,6 +293,98 @@ export class BitmapFontEntry {
   }
 
   /**
+   * Whether this font is strokes rather than pixels.
+   *
+   * The low bit of `dfType` says so. Windows calls these plotter fonts, and
+   * three of them ship with 3.1 -- Roman, Modern and Script. They have one
+   * design apiece rather than a set of strikes, and GDI draws them at whatever
+   * size is asked for, which makes them a different kind of thing from
+   * everything else in this file however similar the container looks.
+   */
+  get isVector() {
+    return (this.header.dfType & 0x01) === 1;
+  }
+
+  /**
+   * Where the character table begins.
+   *
+   * A 3.x font puts it after a 148 byte header and a 2.x font after 118. The
+   * vector fonts are version 1.0 and put it at 119, which is not a number any
+   * documentation to hand gives: it was found by reading the table at each
+   * candidate offset and seeing which one reproduces the widths the header
+   * itself reports in `dfAvgWidth` and `dfMaxWidth`. Only 119 does, for all
+   * three of them.
+   */
+  get tableOffset() {
+    if (this.isVector) {
+      return 119;
+    }
+
+    return this.header.dfVersion <= 0x200 ? 118 : 148;
+  }
+
+  /** How wide the character table's entries are, in bytes. */
+  get entrySize() {
+    return this.header.dfVersion <= 0x200 ? 4 : 6;
+  }
+
+  /**
+   * The strokes that draw one character, as runs of points to join up.
+   *
+   * The data is a stream of signed byte pairs. A `0x80` byte lifts the pen and
+   * the pair after it is an absolute position to move to; any other byte is
+   * the first of a pair of offsets from where the pen already is, and the pen
+   * draws as it goes. So a character is a handful of polylines, in the design
+   * coordinates of the font.
+   */
+  strokesFor(code) {
+    if (typeof code === 'string') {
+      code = code.charCodeAt(0);
+    }
+
+    const info = this.characterEntryFor(code);
+    const runs: number[][][] = [];
+
+    let at = this.header.dfBitsOffset + info.offset;
+    const end = Math.min(at + info.length, this._view.byteLength);
+
+    let run: number[][] | null = null;
+    let x = 0;
+    let y = 0;
+
+    const signed = (byte) => (byte > 0x7f ? byte - 0x100 : byte);
+
+    while (at < end - 1) {
+      const marker = this._view.getUint8(at);
+
+      if (marker === 0x80) {
+        // Pen up: the pair that follows is where to put it down again.
+        x = signed(this._view.getUint8(at + 1));
+        y = signed(this._view.getUint8(at + 2));
+
+        run = [[x, y]];
+        runs.push(run);
+        at += 3;
+        continue;
+      }
+
+      x += signed(this._view.getUint8(at));
+      y += signed(this._view.getUint8(at + 1));
+
+      if (!run) {
+        run = [[x, y]];
+        runs.push(run);
+      } else {
+        run.push([x, y]);
+      }
+
+      at += 2;
+    }
+
+    return runs;
+  }
+
+  /**
    * Returns the character information for the given codepoint.
    */
   characterEntryFor(code) {
@@ -305,20 +397,30 @@ export class BitmapFontEntry {
         return this.characterEntryFor(this.header.dfDefaultChar + this.header.dfFirstChar);
       }
 
-      let entrySize = 6; // 3.x fonts
-      let headerSize = 148;
-      let entryDefinition = BitmapFont.FNT3CharacterEntry;
-      if (this.header.dfVersion <= 0x200) {
-        entrySize = 4; // 2.x fonts
-        entryDefinition = BitmapFont.FNT2CharacterEntry;
-        headerSize = 118;
-      }
+      const entrySize = this.entrySize;
+      const entryDefinition =
+        entrySize === 4 ? BitmapFont.FNT2CharacterEntry : BitmapFont.FNT3CharacterEntry;
 
       let offset = code - this.header.dfFirstChar;
       offset *= entrySize;
-      offset += headerSize;
+      offset += this.tableOffset;
 
       const info = Util.readStructure(this._view, entryDefinition, offset);
+
+      if (this.isVector) {
+        /* A stroke character has no raster to read. How much of the stroke
+         * data belongs to it is the distance to whatever the next character
+         * points at, which is how the runs know where to stop.
+         */
+        const next = Util.readStructure(this._view, entryDefinition, offset + entrySize);
+
+        info.length = Math.max(0, (next.offset || info.offset) - info.offset);
+        info.glyph = null;
+
+        this._chars[code] = info;
+
+        return info;
+      }
 
       // Read raster data
       offset = info.offset;

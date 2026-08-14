@@ -239,6 +239,12 @@ export class Surface {
 
   fillText(x, y, text) {
     // TODO: backcolor
+    if (this._font instanceof LogicalFont && this._font.isVector) {
+      this.strokeText(x, y, text);
+      this._stale = true;
+      return;
+    }
+
     if (this._font instanceof LogicalFont || this._font instanceof BitmapFont) {
       // Fill the rectangle behind it
       const font = entryOf(this._font);
@@ -257,6 +263,65 @@ export class Surface {
   }
 
   /**
+   * Draws text with a stroke font, by joining up the points it is made of.
+   *
+   * A plotter font is polylines rather than pixels, which is why it can be
+   * drawn at any size at all. The design coordinates are scaled to the size
+   * being drawn -- separately in each direction, since the design has its own
+   * aspect -- and the result is joined up with the ordinary line drawing.
+   *
+   * Whether these are the pixels Windows chooses is not established. Matching
+   * a rasteriser is a separate piece of work with its own oracle, and until
+   * that exists this draws something correct in shape rather than something
+   * verified in pixels.
+   */
+  strokeText(x, y, text) {
+    const font = this._font;
+    const entry = font.entry;
+    const header = entry.header;
+
+    const design = header.dfPixHeight;
+    const cell = Math.round(design * font.scale);
+
+    const vertical = cell / design;
+    const horizontal = font.widthScale;
+
+    // The baseline, which is where the design's own origin sits.
+    const baseline = y + Math.round(header.dfAscent * vertical);
+
+    this.context.strokeStyle = this.pen.color.css;
+
+    let pen = x;
+
+    for (const character of String(text)) {
+      const code = character.charCodeAt(0);
+
+      for (const run of entry.strokesFor(code)) {
+        if (run.length < 2) {
+          continue;
+        }
+
+        this.context.beginPath();
+
+        run.forEach(([px, py], index) => {
+          const at = pen + Math.round(px * horizontal);
+          const down = baseline - Math.round(py * vertical);
+
+          if (index === 0) {
+            this.context.moveTo(at, down);
+          } else {
+            this.context.lineTo(at, down);
+          }
+        });
+
+        this.context.stroke();
+      }
+
+      pen += Math.round(entry.characterEntryFor(code).width * horizontal);
+    }
+  }
+
+  /**
    * Returns the dimensions of the given string using the current font.
    *
    * @param {String} text - The text to measure.
@@ -268,7 +333,9 @@ export class Surface {
        * the face does not have -- so the strike alone measures the wrong
        * thing, and going straight to it is how that gets lost.
        */
-      return this._font.measure(text);
+      return this._font instanceof LogicalFont
+        ? this._font.measure(text)
+        : entryOf(this._font).measure(text);
     } else {
       // Normal text draw
       this.context.font = this._font;

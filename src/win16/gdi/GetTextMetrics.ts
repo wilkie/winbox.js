@@ -58,6 +58,12 @@ export function GetTextMetrics(hdc, lptm) {
     const scale = font instanceof LogicalFont ? font.scale : 1;
     const horizontal = font instanceof LogicalFont ? font.horizontal : 1;
 
+    /* The height actually being drawn. For a strike stretched by a whole
+     * number that is the design times the factor; for a scalable face it is
+     * whatever was asked for, and the factor is a fraction.
+     */
+    const cell = Math.round(header.dfPixHeight * scale);
+
     /* Whether the strike has to be emboldened, which is not the same as
      * whether the request asked for bold. The System font is drawn bold
      * already, so asking it for bold changes nothing: no character widens and
@@ -67,15 +73,30 @@ export function GetTextMetrics(hdc, lptm) {
     const wantsBold = (style.weight ?? 0) >= 700;
     const bold = wantsBold && header.dfWeight < 700;
 
-    lptm.tmHeight = header.dfPixHeight * scale;
-    lptm.tmAscent = header.dfAscent * scale;
-    lptm.tmDescent = (header.dfPixHeight - header.dfAscent) * scale;
-    lptm.tmInternalLeading = header.dfInternalLeading * scale;
-    lptm.tmExternalLeading = header.dfExternalLeading * scale;
+    /* A scalable face is drawn at exactly the height asked for, and every
+     * other vertical measure is its design value scaled to that and rounded on
+     * its own. They are rounded independently, so the ascent and descent need
+     * not add up to the height -- a sixteen pixel Roman reports thirteen and
+     * four. Measured across three faces at nine sizes each, including one
+     * whose design is 37 pixels rather than 32.
+     */
+    const design = header.dfPixHeight;
+    const vertical = (value) => (scale === 1 ? value : Math.round((value * cell) / design));
 
-    // Emboldening a bitmap widens every character by one pixel.
-    lptm.tmAveCharWidth = header.dfAvgWidth * horizontal + (bold ? 1 : 0);
-    lptm.tmMaxCharWidth = header.dfMaxWidth * horizontal + (bold ? 1 : 0);
+    lptm.tmHeight = cell;
+    lptm.tmAscent = vertical(header.dfAscent);
+    lptm.tmDescent = vertical(design - header.dfAscent);
+    lptm.tmInternalLeading = vertical(header.dfInternalLeading);
+    lptm.tmExternalLeading = vertical(header.dfExternalLeading);
+
+    /* Widths follow the design's own aspect for a stroke font and the stretch
+     * factor for a strike. Emboldening widens every character by one pixel
+     * either way.
+     */
+    const widths = font instanceof LogicalFont && font.isVector ? font.widthScale : horizontal;
+
+    lptm.tmAveCharWidth = Math.round(header.dfAvgWidth * widths) + (bold ? 1 : 0);
+    lptm.tmMaxCharWidth = Math.round(header.dfMaxWidth * widths) + (bold ? 1 : 0);
 
     /* A request for bold reports 700 however heavy it asked for. A request for
      * anything else reports what the file says, which is not always 400: the
@@ -101,7 +122,12 @@ export function GetTextMetrics(hdc, lptm) {
      */
     lptm.tmDefaultChar = header.dfDefaultChar + header.dfFirstChar;
     lptm.tmBreakChar = header.dfBreakChar + header.dfFirstChar;
-    lptm.tmPitchAndFamily = header.dfPitchAndFamily;
+    /* GDI adds `TMPF_VECTOR` for a stroke font. The file itself does not carry
+     * it -- Roman says 17 and the metrics report 19 -- because it describes how
+     * the font is drawn rather than what it looks like.
+     */
+    lptm.tmPitchAndFamily =
+      header.dfPitchAndFamily | (font instanceof LogicalFont && font.isVector ? 0x02 : 0x00);
     lptm.tmCharSet = header.dfCharSet;
     /* What a synthesised style adds to the width of a whole string, over and
      * above the characters in it.

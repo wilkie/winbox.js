@@ -52,6 +52,11 @@ export class LogicalFont extends Font {
     return this._style;
   }
 
+  /** Whether what will be drawn is strokes rather than pixels. */
+  get isVector() {
+    return !!this._entry?.isVector;
+  }
+
   /** How many times over the strike is drawn, to reach the size asked for. */
   get scale() {
     return this._style.scale ?? 1;
@@ -89,7 +94,38 @@ export class LogicalFont extends Font {
    * pixel, and both emboldening and slanting leave the last character
    * overhanging the end of the string by a little more.
    */
+  /**
+   * How wide a stroke font's characters are at the size being drawn.
+   *
+   * The design widths are in a space whose aspect the header states -- three
+   * horizontal to two vertical for all three plotter fonts -- so a width does
+   * not scale by the same factor as a height. What the exact rounding is has
+   * not been established: this is within a pixel or two of what Windows
+   * answers across the sizes recorded, and the fixture carries the truth. See
+   * `oracle/README.md`.
+   */
+  get widthScale() {
+    const header = this._entry.header;
+    const design = header.dfPixHeight;
+
+    const aspect = header.dfHorizRes ? header.dfVertRes / header.dfHorizRes : 1;
+
+    return (Math.round(design * this.scale) / design) * aspect;
+  }
+
   measure(text, options: any = {}) {
+    if (this.isVector) {
+      const scale = this.widthScale;
+
+      let width = 0;
+
+      for (const character of String(text)) {
+        width += Math.round(this._entry.characterEntryFor(character.charCodeAt(0)).width * scale);
+      }
+
+      return { width, height: Math.round(this._entry.header.dfPixHeight * this.scale) };
+    }
+
     const measured = this._entry.measure(text, options);
 
     /* Emboldening only happens to a face that is not bold already; see

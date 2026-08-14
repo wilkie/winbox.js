@@ -704,12 +704,47 @@ the fixture said was one question, with no way to tell afterwards which
 belonged to which. The argument field is what identifies a record, and it has
 to carry everything that was varied.
 
-**What we do not do.** The installation carries four TrueType families and one
-vector font, and we load neither kind -- `FontManager` reads `.FON` bitmap
-strikes and nothing else. Every remaining disagreement in this fixture is that
-one missing capability, including all the unknown-name cases, since Windows
-answers those with Times New Roman. Of the 665 records, 606 agree; the other 59 are all
-outlines, and no record that a bitmap font can answer disagrees.
+### The plotter fonts
+
+Three of the installed faces -- Roman, Modern and Script -- are strokes rather
+than pixels, and they are a different kind of thing from everything else in a
+`.FON` however similar the container looks. There is one design apiece and GDI
+draws it at whatever size is asked for, so nothing about choosing the nearest
+strike and stretching it by a whole number applies. They are reachable only
+through `OEM_CHARSET`, which is also what selects Roman when a request names no
+face at all.
+
+**Every vertical measure is the design's, scaled and rounded on its own.** The
+height is exactly what was asked for. The ascent, descent and both leadings are
+`round(design * height / designHeight)` -- each rounded separately, so the
+ascent and descent need not add up to the height: a sixteen pixel Roman reports
+thirteen and four. That fits all three faces at nine sizes each, including
+Script, whose design is thirty-seven pixels rather than thirty-two. A request
+for no height at all gives eighteen pixels, which is not the twelve points a
+bitmap face gets.
+
+**`tmPitchAndFamily` gains a bit the file does not have.** Roman's header says
+17 and the metrics report 19: GDI adds `TMPF_VECTOR`, which describes how the
+font is drawn rather than what it looks like.
+
+**How the widths scale is measured and unresolved.** They do not follow the
+height -- the header states a design aspect of three horizontal to two
+vertical, and using it gets within a pixel or two without getting it right. The
+implied scale is not even linear in the requested height: across nine sizes it
+runs from 0.53 to 0.66 of the vertical scale, and not monotonically. Something
+is being computed in integers with intermediate rounding that these
+measurements do not reveal. The fixture records the answers; the rule is open.
+
+Finding the character table needed the same discipline. It does not start where
+a 2.x or 3.x font's does, and reading it two bytes out yields numbers rather
+than an error -- just wrong ones. The check that settles it is the font's own
+header, which states the average and maximum character widths: only an offset
+of 119 makes the table agree with them, and it does so for all three faces.
+
+**What we do not do.** The installation carries four TrueType families and we
+cannot read an outline at all. That accounts for every remaining disagreement,
+including all the unknown-name cases, since Windows answers those with Times
+New Roman. Of the 920 records, 773 agree.
 
 ## On the media
 

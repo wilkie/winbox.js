@@ -1123,21 +1123,27 @@ export class Unimplemented extends Error {}
  * starts agreeing and the entry becomes stale.
  */
 /**
- * The installation the oracle records against has four TrueType families on it
- * -- Arial, Times New Roman, Courier New and WingDings -- and one vector font,
- * Roman, which is what the OEM character set maps to. We load neither kind:
- * `FontManager` reads `.FON` bitmap strikes and nothing else.
+ * Two separate things are missing, and they are worth keeping apart.
  *
- * That is one missing capability rather than a scattering of wrong answers,
- * and it accounts for every disagreement in this fixture. It shows up in more
- * places than the obvious one, because Windows answers a face name it does not
- * recognise with Times New Roman -- so a request for a font nobody has ever
- * installed is a TrueType request too.
+ * The installation carries four TrueType families -- Arial, Times New Roman,
+ * Courier New and WingDings -- and we cannot read an outline at all. That
+ * accounts for most of what disagrees here, and for more than the obvious
+ * cases: Windows answers a face name it does not recognise with Times New
+ * Roman, so a request for a font nobody ever installed is a TrueType request.
+ *
+ * The three plotter fonts do load, and everything about them that has been
+ * worked out is exact -- the face, the style, and every vertical measure at
+ * every size. What is not worked out is how their widths scale: the design
+ * states its own aspect, three horizontal to two vertical, and using it lands
+ * within a pixel or two without landing on the answer. The fixture has the
+ * numbers for whoever works it out.
  */
 const NO_OUTLINE_FONTS =
-  'the installation has TrueType and vector fonts; we load only .FON strikes, ' +
-  'so anything that maps to an outline disagrees -- including every unknown ' +
-  'face name, which Windows answers with Times New Roman';
+  'the installation has four TrueType families we cannot load, so anything ' +
+  'mapping to one disagrees -- including every unknown face name, which ' +
+  'Windows answers with Times New Roman. The plotter fonts do load, and their ' +
+  'vertical metrics are exact; how their widths scale is measured but not ' +
+  'resolved, so those are within a pixel or two rather than right';
 
 export const KNOWN_GAPS: Record<string, string> = {
   'CreateFont face': NO_OUTLINE_FONTS,

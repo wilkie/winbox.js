@@ -153,6 +153,12 @@ export class FontManager {
 
     if (charset === FontManager.SYMBOL_CHARSET) {
       face = 'Symbol';
+    } else if (charset === FontManager.OEM_CHARSET && !this.lookup(face)) {
+      /* The OEM character set is answered by Roman unless something else OEM
+       * was named. Roman is a plotter font, so this is also the one route by
+       * which a scalable face gets chosen at all.
+       */
+      face = 'Roman';
     } else if (!face) {
       face = FontManager.familyFace(pitchAndFamily);
     }
@@ -251,6 +257,33 @@ export class FontManager {
      * Overshooting is what it will not do. Asked for 29 it does double the 13,
      * because 26 fits under 29 and is larger than 20.
      */
+    /* A scalable face has one design and is drawn at whatever size is wanted,
+     * so none of the business below -- nearest strike, whole-number stretch,
+     * never overshoot -- applies to it. It is realised exactly.
+     */
+    if (entries[0] && entries[0].isVector) {
+      const entry = entries[0];
+
+      /* Zero means the mapper's default, which for a scalable face is eighteen
+       * pixels rather than the twelve points a bitmap face gets. Recorded for
+       * all three plotter fonts, whose designs are different heights.
+       */
+      let cell = height ? Math.abs(height) : 18;
+
+      /* A negative height asks for the characters rather than the cell, and
+       * the leading is a fixed fraction of the design, so the cell it implies
+       * follows from it.
+       */
+      if (height < 0) {
+        const design = entry.header.dfPixHeight;
+        const em = design - entry.header.dfInternalLeading;
+
+        cell = Math.round((-height * design) / em);
+      }
+
+      return { entry, scale: cell / entry.header.dfPixHeight, horizontal: null, cell };
+    }
+
     let best: any = null;
     let smallest: any = null;
 

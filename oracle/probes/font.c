@@ -139,6 +139,49 @@ static void probeStyles(LPCSTR face)
     }
 }
 
+/*
+ * Records a vector face across a wide spread of sizes.
+ *
+ * A vector font is not a set of strikes. There is one design -- Roman is
+ * stored at thirty-two pixels -- and Windows renders it at whatever size was
+ * asked for, so the whole business of picking the nearest installed size and
+ * stretching it by whole numbers does not apply. What replaces it is the
+ * question: given a design at one size and a request at another, what do the
+ * metrics become?
+ *
+ * Halving the design height does not halve the widths -- the first recording
+ * showed a thirty-two pixel Roman with an average width of nineteen answering
+ * a sixteen pixel request with an average of six -- so the horizontal and
+ * vertical scales are not the same number, and one measurement cannot say what
+ * either of them is. Hence the spread.
+ */
+static void probeVector(LPCSTR face, BYTE charset)
+{
+    static const int HEIGHTS[] = { 8, 12, 16, 20, 24, 32, 40, 64, 100 };
+
+    int index;
+
+    for (index = 0; index < sizeof(HEIGHTS) / sizeof(HEIGHTS[0]); index++) {
+        probeFont(HEIGHTS[index], 0, FW_NORMAL, 0, 0, 0, charset, DEFAULT_PITCH, face);
+    }
+
+    /* Negative and zero mean the same things they mean for a bitmap face, and
+     * whether a scalable one honours them the same way is worth having.
+     */
+    probeFont(-16, 0, FW_NORMAL, 0, 0, 0, charset, DEFAULT_PITCH, face);
+    probeFont(0, 0, FW_NORMAL, 0, 0, 0, charset, DEFAULT_PITCH, face);
+
+    // A width asked for as well, which a scalable face can satisfy exactly.
+    probeFont(32, 8, FW_NORMAL, 0, 0, 0, charset, DEFAULT_PITCH, face);
+    probeFont(32, 20, FW_NORMAL, 0, 0, 0, charset, DEFAULT_PITCH, face);
+
+    // And the synthesised styles, whose overhang followed the height before.
+    probeFont(16, 0, FW_BOLD, 0, 0, 0, charset, DEFAULT_PITCH, face);
+    probeFont(16, 0, FW_NORMAL, 1, 0, 0, charset, DEFAULT_PITCH, face);
+    probeFont(40, 0, FW_BOLD, 0, 0, 0, charset, DEFAULT_PITCH, face);
+    probeFont(40, 0, FW_NORMAL, 1, 0, 0, charset, DEFAULT_PITCH, face);
+}
+
 /* The ordinary case: a face by name at a plain size. */
 static void probeFace(LPCSTR face, int height)
 {
@@ -316,6 +359,14 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     /* Bold and slanted together, which neither of the pairs above covers: the
      * two overhangs could add, or the larger could win.
      */
+    /* The three stroke fonts, which are outlines in a `.FON` container: one
+     * design apiece, rendered at whatever size is asked for.
+     */
+    probeNote("the vector faces, which have one design and no strikes");
+    probeVector("Roman", OEM_CHARSET);
+    probeVector("Modern", OEM_CHARSET);
+    probeVector("Script", OEM_CHARSET);
+
     probeNote("both at once");
     probeFont(16, 0, FW_BOLD, 1, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "MS Sans Serif");
     probeFont(24, 0, FW_BOLD, 1, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "MS Sans Serif");
