@@ -1013,8 +1013,28 @@ The difference is one pixel of cap height. Windows puts the top of the `W` ten
 pixels above the baseline and we put it eleven. Everything downstream follows
 from that: a bar one row higher, and the serif spread over the two rows the
 edge now straddles. So this is not a fill question, not a snapping question,
-and not the anchor question that the italic work turned out to be. It is one
-control value, or one distance, coming out a pixel long.
+and not the anchor question that the italic work turned out to be.
+
+Tracing it the rest of the way, one instruction at a time:
+
+* `MIAP[round]` moves point 0 from 9.266 pixels to 10.000. That single move is
+  the whole error -- every other point of the serif is placed relative to this
+  one and inherits it.
+* What it rounds is `cvt[2]`, which is 9.2656 in the font and which `prep`
+  raises to **9.5313** before any glyph runs.
+* That rise is not arbitrary and looks correct. `prep` rounds `cvt[0]` from
+  9.7188 to 10.0000 -- a rise of 0.2656 -- and shifts the entries related to it
+  by the same amount, which is how a font keeps a family of heights in step
+  once the first of them has been fitted. `cvt[2]` gets 9.2656 + 0.2656.
+* And 9.5313 rounds to 10. It is a thirty-second of a pixel above the halfway
+  mark, and that is the entire difference: Windows' value must sit just under
+  9.5 and round to 9.
+
+So the residual is **one thirty-second of a pixel**, on the wrong side of a
+rounding boundary. It is not a missing instruction or a misread table; it is an
+accumulated fraction somewhere in `prep`'s arithmetic, and the next thing to
+compare is how the propagated delta is computed rather than anything about the
+glyph. That is a considerably smaller haystack than it was.
 
 Two spec omissions were closed while looking, neither of which these glyphs
 touch. `MIRP` places a twilight point being measured *to*, the way `MIAP`
