@@ -143,6 +143,19 @@ report every pixel of it. That is a true difference rather than a false alarm
 -- but it would swamp the geometry differences the comparison is for, and it
 would keep reporting until the deeper question is settled.
 
+**The client area is pixels.** That is settled, and it settles the rest: a
+dither pattern is not something the DOM can express, so a window's contents
+cannot be DOM if they are to look like what the guest drew. Chrome -- the
+frame, the caption, the menus -- stays DOM, which is where the accessibility
+argument applies anyway; everything a program draws inside its window goes
+through a raster we own.
+
+`src/raster/bitmap-context.ts` is the first piece of that: the operations
+`Surface` reaches for, over a buffer rather than a canvas. `Surface` is
+unchanged and the browser keeps the canvas it always had, so this adds a target
+rather than replacing one. `Surface.offscreen(width, height)` makes one, and
+real Windows glyphs rasterise into it with no browser present.
+
 The deeper question is where WinBox.js should dither, if at all. Drawing at
 full precision and quantising at paint time would look cleaner and would match
 the project's aim of rendering through the DOM; dithering at draw time would

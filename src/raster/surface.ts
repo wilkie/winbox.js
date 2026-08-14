@@ -5,6 +5,7 @@ import { Pen } from './pen.js';
 import { Color } from './color.js';
 import { Ditherer } from './ditherer.js';
 import { BitmapFont } from './bitmap-font.js';
+import { BitmapContext } from './bitmap-context.js';
 import { LogicalFont } from './logical-font.js';
 
 /**
@@ -106,6 +107,35 @@ export class Surface {
     }
 
     return this._context;
+  }
+
+  /**
+   * A surface that draws into pixels we own rather than onto a page.
+   *
+   * The client area of a window is pixels -- a sixteen colour driver dithers,
+   * and a dither pattern is not something the DOM can express -- so drawing
+   * has to work somewhere other than a browser canvas: in a test, in a
+   * comparison against what Windows drew, and eventually in whatever we
+   * present to the page.
+   *
+   * @param {number} width - Width in pixels.
+   * @param {number} height - Height in pixels.
+   * @returns {Surface} A surface backed by a `BitmapContext`.
+   */
+  static offscreen(width, height) {
+    const context = new BitmapContext(width, height);
+
+    /* `Surface` reads its size off the canvas element's attributes, so what it
+     * is given has to answer to that much of one. Nothing else about a canvas
+     * is used once the context exists.
+     */
+    const surface = new Surface({
+      getContext: () => context,
+      getAttribute: (name) => (name === 'width' ? width : height),
+      setAttribute: () => {},
+    });
+
+    return surface;
   }
 
   get brush() {
