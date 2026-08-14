@@ -7,21 +7,39 @@
   },
   "records": [
     {
-      "function": "identity",
+      "function": "handle vs selector",
       "args": "moveable",
-      "result": "equal=0,difference=1,low3=6/7",
+      "result": "equal=0,difference=1",
       "section": "is a handle its selector"
     },
     {
-      "function": "identity",
+      "function": "table and privilege bits",
+      "args": "moveable",
+      "result": "handle=6,selector=7",
+      "section": "is a handle its selector"
+    },
+    {
+      "function": "handle vs selector",
       "args": "fixed",
-      "result": "equal=0,difference=1,low3=6/7",
+      "result": "equal=0,difference=1",
       "section": "is a handle its selector"
     },
     {
-      "function": "identity",
+      "function": "table and privilege bits",
+      "args": "fixed",
+      "result": "handle=6,selector=7",
+      "section": "is a handle its selector"
+    },
+    {
+      "function": "handle vs selector",
       "args": "discardable",
-      "result": "equal=0,difference=1,low3=6/7",
+      "result": "equal=0,difference=1",
+      "section": "is a handle its selector"
+    },
+    {
+      "function": "table and privilege bits",
+      "args": "discardable",
+      "result": "handle=6,selector=7",
       "section": "is a handle its selector"
     },
     {

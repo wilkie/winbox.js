@@ -1,5 +1,7 @@
 'use strict';
 
+import { handleFor } from '../selectors.js';
+
 import { NULL } from '../consts.js';
 
 import { Kernel } from '../kernel.js';
@@ -99,11 +101,14 @@ export function GlobalAlloc(fuAlloc, cbAlloc) {
   }
 
   // Get the system heap.
-  const selector = this.allocator.allocate(cbAlloc);
-  if (!selector) {
+  const index = this.allocator.allocate(cbAlloc);
+  if (index === null || index < 0) {
     // Cannot allocate
     return NULL;
   }
 
-  return selector;
+  /* What the caller gets is a handle rather than the index the allocator deals
+   * in: the same descriptor, at a lower privilege level. See selectors.ts.
+   */
+  return handleFor(index);
 }

@@ -1,5 +1,7 @@
 'use strict';
 
+import { indexFor } from '../selectors.js';
+
 import { NULL } from '../consts.js';
 
 import { Kernel } from '../kernel.js';
@@ -32,5 +34,5 @@ import { Kernel } from '../kernel.js';
  *                        not valid or if the object has been discarded.
  */
 export function GlobalSize(hglb) {
-  return this.allocator.sizeOf(hglb);
+  return this.allocator.sizeOf(indexFor(hglb));
 }

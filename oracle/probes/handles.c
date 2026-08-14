@@ -40,27 +40,30 @@ static void probeIdentity(WORD flags, LPCSTR name)
     WORD selector;
 
     if (handle == NULL) {
-        probe("identity", name, "failed");
+        probe("handle vs selector", name, "failed");
         return;
     }
 
     pointer = (DWORD)GlobalLock(handle);
     selector = HIWORD(pointer);
 
-    /* The values themselves are the allocator's to choose, so what gets
-     * recorded is the relationship: whether they are equal, what separates
-     * them, and whether the difference is in the low three bits -- which is
-     * where a selector keeps its table and privilege bits, and so where a
-     * handle and a selector would differ if one were derived from the other.
+    /* Two separate questions, recorded separately because they can be got
+     * right and wrong independently. The first is how a handle relates to its
+     * selector -- whether they differ, and by how much -- which is what decides
+     * whether either can be turned into the other. The second is which table
+     * and privilege level they name, which is a choice about where segments
+     * live rather than about what a handle is.
      */
     wsprintf(probeResult,
-             "equal=%d,difference=%d,low3=%d/%d",
+             "equal=%d,difference=%d",
              (int)(selector == handle),
-             (int)((short)selector - (short)handle),
-             (int)(handle & 7),
-             (int)(selector & 7));
+             (int)((short)selector - (short)handle));
 
-    probe("identity", name, probeResult);
+    probe("handle vs selector", name, probeResult);
+
+    wsprintf(probeResult, "handle=%d,selector=%d", (int)(handle & 7), (int)(selector & 7));
+
+    probe("table and privilege bits", name, probeResult);
 
     GlobalUnlock(handle);
     GlobalFree(handle);

@@ -290,14 +290,18 @@ and its base does not -- but expecting is not knowing, and now it is recorded.
 **The lock count stays at zero** through two nested `GlobalLock` calls, on
 fixed and moveable blocks alike, and both locks return the same pointer.
 
-Of the thirteen records, we agree with two. `GlobalHandle`, `GlobalReAlloc` and
-`GlobalFlags` are stubs, and `identity` is the handle-versus-selector question
-above.
+Of the sixteen records we agree with five, and the two that moved are the ones
+worth having: `handle vs selector` and `GlobalLock`. `GlobalHandle`,
+`GlobalReAlloc`, `GlobalFlags` and the lock count are stubs, and `table and
+privilege bits` is the GDT-against-LDT question above.
 
-Memory reads 35/40 and handles 2/13. Across all three probes, 94 of 110
-records. What is
-left is `GlobalFlags`, which is a stub, and `GlobalLock` -- the
-handle-is-not-a-selector question, which is what the handles probe is for.
+The `identity` record was split in two while making that change, because the
+privilege relationship and the choice of table can be got right and wrong
+independently, and a single record bundling them would have shown no progress
+at all when half of it was fixed.
+
+Memory reads 37/40 and handles 5/16. Across all three probes, 99 of 113
+records.
 
 `AnsiNext` has a quieter surprise: at the null terminator it returns the same
 pointer rather than moving past it, so walking a string with it stops at the end

@@ -1,5 +1,7 @@
 'use strict';
 
+import { selectorFor } from '../selectors.js';
+
 import { NULL } from '../consts.js';
 
 /**
@@ -46,8 +48,8 @@ import { NULL } from '../consts.js';
  *                         error occurs.
  */
 export function GlobalLock(hglb) {
-  // Resolve global memory pointer
-  const selector = hglb;
-  console.log('locked block at', selector, (selector << 16).toString(16));
-  return selector << 16;
+  /* A locked block is addressed through the handle's own descriptor at the
+   * privilege level code runs at, and it starts at offset zero of it.
+   */
+  return (selectorFor(hglb) << 16) >>> 0;
 }

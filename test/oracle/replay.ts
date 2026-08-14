@@ -202,6 +202,15 @@ function quoted(text: string) {
   return `"${text}"`;
 }
 
+/** The allocation flags a probe's description of a block stands for. */
+function flagsFor(name: string) {
+  if (name === 'fixed') {
+    return 0x0000;
+  }
+
+  return name === 'discardable' ? 0x0102 : 0x0002;
+}
+
 /** The probe records the sign of a comparison, not its magnitude. */
 function sign(value: number) {
   return String(value < 0 ? -1 : value > 0 ? 1 : 0);
@@ -349,31 +358,37 @@ const ADAPTERS: Record<string, (context: Context, args: (string | number)[]) => 
   /**
    * How a handle relates to the selector its pointer carries.
    *
-   * Neither value is comparable on its own, so the probe recorded the shape of
-   * the relationship: whether they are equal, what separates them, and what
-   * their low three bits are -- the table and privilege bits, which is where a
-   * selector derived from a handle would differ from it.
+   * Neither value is comparable on its own, so what the probe recorded is the
+   * shape of the relationship rather than either number.
    */
-  identity(context, [,]) {
-    const handle = GlobalAlloc.call(context, 0x0002, 256);
+  'handle vs selector'(context, [name]) {
+    const handle = GlobalAlloc.call(context, flagsFor(name as string), 256);
 
     if (!handle) {
       return 'failed';
     }
 
-    const selector = (GlobalLock.call(context, handle) >> 16) & 0xffff;
+    const selector = (GlobalLock.call(context, handle) >>> 16) & 0xffff;
 
-    return (
-      `equal=${selector === handle ? 1 : 0},` +
-      `difference=${selector - handle},` +
-      `low3=${handle & 7}/${selector & 7}`
-    );
+    return `equal=${selector === handle ? 1 : 0},difference=${selector - handle}`;
+  },
+
+  /** Which table and privilege level the pair name. */
+  'table and privilege bits'(context, [name]) {
+    const handle = GlobalAlloc.call(context, flagsFor(name as string), 256);
+
+    if (!handle) {
+      return 'failed';
+    }
+
+    const selector = (GlobalLock.call(context, handle) >>> 16) & 0xffff;
+
+    return `handle=${handle & 7},selector=${selector & 7}`;
   },
 
   /** Whether a block keeps its address across an unlock and a relock. */
   stability(context, [name]) {
-    const flags = name === 'fixed' ? 0x0000 : 0x0002;
-    const handle = GlobalAlloc.call(context, flags, 256);
+    const handle = GlobalAlloc.call(context, flagsFor(name as string), 256);
 
     if (!handle) {
       return 'failed';
@@ -421,16 +436,11 @@ export class Unimplemented extends Error {}
  * starts agreeing and the entry becomes stale.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  GlobalLock:
-    'the selector a locked pointer carries is the handle with its privilege ' +
-    'bits raised, and ours returns the handle unchanged; see `identity`',
-  identity:
-    'a global handle on Windows is a selector with RPL 2 and the pointer it ' +
-    'locks to carries the same selector with RPL 3, so they differ by exactly ' +
-    'one. Ours are selector indices rather than selector values, which is ' +
-    'also why a pointer from GlobalLock cannot be loaded into a segment ' +
-    'register and shifted back to an index the way LocalAlloc expects. ' +
-    'Fixing it means changing what a handle is, everywhere',
+  'table and privilege bits':
+    'Windows keeps these descriptors in the LDT, so a handle and its selector ' +
+    'end in 6 and 7; ours are in the GDT and end in 2 and 3. The privilege ' +
+    'relationship between them is the same, and which table segments live in ' +
+    'is a separate question from what a handle is',
 };
 
 /**

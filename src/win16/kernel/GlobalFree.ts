@@ -1,5 +1,7 @@
 'use strict';
 
+import { indexFor } from '../selectors.js';
+
 import { NULL } from '../consts.js';
 
 /**
@@ -36,7 +38,7 @@ import { NULL } from '../consts.js';
  *                          parameter.
  */
 export function GlobalFree(hglb) {
-  if (this.allocator.free(hglb)) {
+  if (this.allocator.free(indexFor(hglb))) {
     return NULL;
   }
 
