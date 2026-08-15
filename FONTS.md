@@ -694,6 +694,20 @@ the outline in the right place and a stroke a fraction of a pixel wide failing
 to ink a cell. That was dropout control, and section 6 now measures and
 implements it.
 
+Five differ now, by eight pixels between them and none invented:
+
+| Font            | Glyph | Size | Missing                       |
+| --------------- | ----- | ---- | ----------------------------- |
+| Arial           | `1`   | 24   | 2, on the flag's leading edge |
+| Arial Italic    | `A`   | 16   | 1, at the end of the crossbar |
+| Times New Roman | `W`   | 16   | 1, in a thin diagonal         |
+| Times New Roman | `g`   | 24   | 2, the ear and the bowl's end |
+| Courier New     | `1`   | 16   | 2, the whole flag             |
+
+Every one is the end of a thin stroke, which is what a dropout rule is for, and
+section 6 records why it is not one. **Open**, and now known to be in the
+hinting rather than the rasteriser.
+
 **A string is measured with these advances where `hdmx` has no entry for the
 size.** Arial's table covers 11, 12, 13, 15, 16, 17, 19, 21, 24, 27, 29, 32, 33,
 37, 42, 46, 50, 54, 58, 67, 75, 83, 92 and 100 pixels per em, and nothing else --
@@ -762,6 +776,23 @@ scanline either crosses such a stroke properly or misses it entirely. So a
 column sweep ought to be needed. It is not: added with the same stub rule it
 rescues nothing and inks one pixel Windows leaves blank. **Measured**, and
 against expectation, which is why it is written down rather than kept.
+
+Tested again after the phantom rounding, when the remaining differences were
+eight missing pixels and none invented -- exactly the shape a missing dropout
+rule leaves -- and at four stub thresholds:
+
+| column sweep      | glyphs   | missing | invented |
+| ----------------- | -------- | ------- | -------- |
+| off               | 85 of 90 | 8       | 0        |
+| stub half a pixel | 85       | 8       | 1        |
+| stub a quarter    | 81       | 8       | 7        |
+| stub a tenth      | 81       | 8       | 9        |
+| no stub at all    | 81       | 8       | 9        |
+
+The missing count never moves. Not once, at any threshold. A column sweep that
+finds nothing to rescue means there is no thin span at those columns to rescue --
+the outline does not reach them at all -- so what is left is a difference in
+where the hinting put the outline, and not in how it was sampled.
 
 What it would have rescued -- the flag of a Courier New `1` at thirteen pixels
 per em, two pixels Windows draws and this does not -- stays **open**. Windows
