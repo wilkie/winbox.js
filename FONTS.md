@@ -1202,6 +1202,14 @@ phantom point and phantom points are touched. Truncating toward zero and
 truncating downward score identically on every fixture, so the recording does
 not say which; toward zero is what the interpreter's own division does.
 
+**It is this instruction and not the arithmetic generally**, which is the part
+worth keeping. The same sweep over `IP` -- a point interpolated between two
+references, the same shape of calculation -- says rounding, 687 glyphs against 679. Over `movePoint`, which distributes a distance along the freedom vector, it
+says rounding again, 687 against 676. Both of those were fitted on the ninety
+glyph fixture and both survive the wide one unchanged. So the interpreter rounds
+everywhere it divides except in `IUP`, and a sweep that had been run over all
+three at once would have found nothing.
+
 **Arithmetic rounds half away from zero.** The format takes the sign off a
 value, works on the magnitude and puts it back. `Math.round` rounds a half
 upwards: the two agree for positive values and disagree for every negative one.

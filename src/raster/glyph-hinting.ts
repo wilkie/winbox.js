@@ -2291,6 +2291,14 @@ export class Hinter {
      * every fixture, so the recording does not say which; toward zero is what
      * the interpreter's own `divide` does, and following it keeps one rule
      * rather than two.
+     *
+     * **It is this instruction and not the arithmetic generally.** The same
+     * sweep over `IP`, which interpolates a point between two references and is
+     * the same shape of calculation, says rounding: 687 glyphs against 679 for
+     * truncation. Over `movePoint`, which distributes a distance along the
+     * freedom vector, it says rounding again: 687 against 676. Both were fitted
+     * on the narrow fixture and both survive the wide one unchanged. So the
+     * interpreter rounds everywhere it divides except here.
      */
     const across = (original[index] - lowOriginal) / (highOriginal - lowOriginal);
 
