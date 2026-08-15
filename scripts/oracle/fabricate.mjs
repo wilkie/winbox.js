@@ -746,6 +746,57 @@ function reporter(name, { font = 'TIMES.TTF', character, point, constant, cut, m
 }
 
 export const FABRICATIONS = [
+  /* Width against height, at one lean, to separate two things that had been
+   * growing together.
+   *
+   * With the width fixed in design units, a bigger size makes the stroke both
+   * wider in pixels and taller in rows, and the left answers arrive with both.
+   * Only one of them can be what matters, and no font that scales a fixed shape
+   * can say which.
+   *
+   * This one varies them against each other: six design widths against six
+   * heights, so that at any one size the strokes differ in width, and the same
+   * width appears at several heights. The lean is held at about a
+   * thirty-second of a pixel per row -- the value that gave the most even mix
+   * of the two answers -- which means the slant has to be scaled with the
+   * height to keep the ratio the same.
+   */
+  {
+    name: 'cour-shapes',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with bars of six widths against six heights, at one lean',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const WIDTHS = [40, 80, 120, 160, 200, 240];
+      const HEIGHTS = [300, 500, 800, 1100, 1400, 1800];
+      const LEAN = 0.032;
+      const START = 600;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const width = WIDTHS[index % WIDTHS.length];
+        const height = HEIGHTS[Math.floor(index / WIDTHS.length) % HEIGHTS.length];
+        const slant = Math.round(LEAN * height);
+
+        const points = [
+          [START, 0],
+          [START + slant, height],
+          [START + slant + width, height],
+          [START + width, 0],
+        ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, points, program: [] });
+        setBearing(bytes, glyph, START);
+      }
+
+      return bytes;
+    },
+  },
+
   /* Bars that lean a little, at six starting offsets, to fill a hole the other
    * fonts left.
    *

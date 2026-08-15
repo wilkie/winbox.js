@@ -1463,11 +1463,44 @@ every lean, and universal at the largest:
 | 0.032  | 0/19    | 2/23 | 9/21 | 3/19 | 10/20 | 14/20 | **13/13** |
 
 The lean is a ratio and does not change with the size, so something absolute
-does: the stroke is half a pixel wide and five rows tall at the smallest cell
-and four fifths of a pixel wide and fourteen rows tall at the largest. Which of
-those it is the font cannot say, because it holds the width fixed in design
-units and both grow together. **That is the next font: the same offsets and
-leans with the width held fixed in _pixels_ instead.** **Open**, and now open with
+does: the stroke is a third of a pixel wide and five rows tall at the smallest
+cell and four fifths of a pixel wide and fourteen rows tall at the largest, and
+that font cannot separate the two because both grow together.
+
+### Which turns out to be a property of the stroke, not of the row
+
+A sixth font varies them against each other -- six design widths against six
+heights at one lean, so that the same width appears at several heights -- and
+the first thing it says is not about either of them.
+
+**Every row of a stroke takes the same side.** Of 414 strokes with two or more
+rescued rows across four fonts, **402 are uniform**. Whatever decides the pixel
+is decided once for the stroke, which is why nothing measured per row has ever
+separated it: `u` varies down a leaning stroke and the answer does not.
+
+That also disposes of the accumulator. Within strokes ten rows and longer the
+left answers are spread evenly from the first row to the last -- 25%, 50%, 50%,
+50% and so on down -- where anything carried from row to row would drift.
+
+**What does decide it is how far the stroke moves sideways over its whole
+height.** Of the stroke-level quantities, that one separates 90.7% of 398
+leaning strokes; the width in pixels manages 59% and the height in rows 56.5%.
+It is the lean multiplied by the height, which is just the slant expressed in
+pixels:
+
+| Total sideways shift | strokes | took the left pixel |
+| -------------------- | ------- | ------------------- |
+| under 1/8 pixel      | 123     | 2%                  |
+| 1/8 to 1/4           | 64      | 27%                 |
+| 1/4 to 3/8           | 30      | 57%                 |
+| 3/8 to 1/2           | 9       | 100%                |
+| over 1/2             | 172     | 99%                 |
+
+A stroke that leans by less than an eighth of a pixel over its entire length is
+drawn as though it were upright; one that leans by more than three eighths never
+is. The transition is a ramp rather than a step, so this is not the whole rule
+either -- but it is a stroke-level quantity with a plain geometric meaning, and
+it is the first thing found that orders the data at all. **Open**, and now open with
 a measured surface rather than a hunch.
 
 One negative worth keeping with it: **removing the column sweep improves every
