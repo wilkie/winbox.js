@@ -374,6 +374,55 @@ export class TrueTypeFont {
   }
 
   /**
+   * Where in `VDMX` the group for this device's pixels starts.
+   *
+   * The table is not one list of sizes, it is one per aspect ratio, and which
+   * of them applies is decided by the shape of the device's pixels. Arial
+   * Italic carries four: 4:3, 5:3, 2:1 and a catch-all with `xRatio` zero. A
+   * VGA at 96 dots per inch each way has square pixels, so none of the first
+   * three apply and the catch-all is the one to read.
+   *
+   * Reading the first group instead of the right one is wrong in a way that
+   * hides: three quarters of the sizes agree between the groups, and the ones
+   * that differ look like an off-by-one in the leading rather than like a
+   * lookup in the wrong table. Arial Italic at 96 pixels reports an extent of
+   * 76 and 19, which appears nowhere in the first group and at 85 pixels per em
+   * in the fourth. **Measured**, against every recorded size.
+   *
+   * @returns {number|null} The offset of the group, or null if there is none.
+   */
+  vdmxGroup() {
+    if (!this.has('VDMX')) {
+      return null;
+    }
+
+    const base = this._tables['VDMX'].offset;
+    const ratios = this._view.getUint16(base + 4, false);
+
+    if (ratios === 0) {
+      return null;
+    }
+
+    for (let index = 0; index < ratios; index++) {
+      const at = base + 6 + index * 4;
+
+      const xRatio = this._view.getUint8(at + 1);
+      const yStart = this._view.getUint8(at + 2);
+      const yEnd = this._view.getUint8(at + 3);
+
+      /* An `xRatio` of zero matches any device. Otherwise the record covers the
+       * aspect ratios between `yStart:xRatio` and `yEnd:xRatio`, and the pixels
+       * here are square.
+       */
+      if (xRatio === 0 || (yStart <= xRatio && xRatio <= yEnd)) {
+        return base + this._view.getUint16(base + 6 + ratios * 4 + index * 2, false);
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * The grid-fitted extent of the face at a pixel size.
    *
    * `VDMX` is a table of what the outlines actually came out as once they had
@@ -391,18 +440,11 @@ export class TrueTypeFont {
    *                        table does not cover this size.
    */
   extentAt(ppem) {
-    if (!this.has('VDMX')) {
+    const group = this.vdmxGroup();
+
+    if (group === null) {
       return null;
     }
-
-    const base = this._tables['VDMX'].offset;
-    const ratios = this._view.getUint16(base + 4, false);
-
-    if (ratios === 0) {
-      return null;
-    }
-
-    const group = base + this._view.getUint16(base + 6 + ratios * 4, false);
 
     const records = this._view.getUint16(group, false);
     const first = this._view.getUint8(group + 2);
@@ -438,18 +480,12 @@ export class TrueTypeFont {
    * @param {number} height - The cell height asked for, in pixels.
    */
   sizeForHeight(height) {
-    if (!this.has('VDMX')) {
+    const group = this.vdmxGroup();
+
+    if (group === null) {
       return null;
     }
 
-    const base = this._tables['VDMX'].offset;
-    const ratios = this._view.getUint16(base + 4, false);
-
-    if (ratios === 0) {
-      return null;
-    }
-
-    const group = base + this._view.getUint16(base + 6 + ratios * 4, false);
     const records = this._view.getUint16(group, false);
 
     let best: any = null;
@@ -511,13 +547,12 @@ export class TrueTypeFont {
 
   /** The smallest size `VDMX` tabulates, or infinity if it tabulates none. */
   _smallestTabulated() {
-    if (!this.has('VDMX')) {
+    const group = this.vdmxGroup();
+
+    if (group === null) {
       return Infinity;
     }
 
-    const base = this._tables['VDMX'].offset;
-    const ratios = this._view.getUint16(base + 4, false);
-    const group = base + this._view.getUint16(base + 6 + ratios * 4, false);
     const records = this._view.getUint16(group, false);
 
     let smallest = Infinity;

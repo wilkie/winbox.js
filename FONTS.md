@@ -290,11 +290,28 @@ the floor is on the size or on the cell it produces cannot be separated here,
 because at this size the two coincide. **Recorded**, the behaviour; **open**,
 which of the two it is.
 
+**`VDMX` is one table per aspect ratio, and reading the wrong one is nearly
+right.** Arial Italic carries four: 4:3, 5:3, 2:1, and a catch-all with
+`xRatio` zero. A VGA at 96 dots per inch each way has square pixels, so none of
+the first three apply and the catch-all is the one Windows reads. **Measured**,
+against every recorded size.
+
+This is worth stating because of how it failed rather than because of what it
+says. Reading the first group instead of the right one agrees at three sizes in
+four, and where it disagrees the error is one pixel of internal leading -- which
+reads exactly like a rounding bug, and was filed here as one. What settled it
+was checking whether the recorded numbers appeared in the table _at all_: Arial
+Italic at ninety-six pixels reports an extent of 76 and 19, which is in no entry
+of the first group and is at 85 pixels per em in the fourth. A value that is not
+in the table you are reading is not a rounding error.
+
 **The pixel size is the largest whose fitted height does not overflow the cell
-asked for.** Where two sizes come out the same height -- which happens, because
-fitting quantises -- the choice changes nothing except the internal leading.
-Which one Windows takes is **open**; the smaller is used here and is right more
-often than not.
+asked for, and the smaller of a tie.** Where two sizes come out the same height
+-- which happens, because fitting quantises -- the choice shows up only in the
+internal leading. The smaller is what Windows takes: Arial Italic at a hundred
+pixels fits at both 89 and 90 pixels per em, and the reported leading of 11 is
+the one 89 gives. **Measured**, once the right ratio group was being read; while
+the wrong one was, this looked unresolvable and was recorded here as open.
 
 **`tmMaxCharWidth` is the font's bounding box scaled to the size.** Not the
 widest advance, and not the grid-fitted widths in `hdmx`:
@@ -518,7 +535,7 @@ fitted height.
 | Fixture                                                      | Agreement |
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
-| `font` (2,655 records)                                       | 93.3%     |
+| `font` (2,655 records)                                       | 94.7%     |
 | `glyphs` (90 records)                                        | 81.1%     |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical. The
@@ -537,6 +554,6 @@ wrong, and the rate _fell_ to 83.3% on the larger set. The gap was always there;
 until the probe asked, it was not being counted. Answering it took the figure to
 93.3%.
 
-What is left is two things, both in section 5 and neither of them a face: the
-extent of a measured string, and the internal leading where two fitted heights
-tie.
+What is left is mostly one thing: the extent of a measured string, which is a
+sum of per-glyph advances and so asks a harder question than any single metric
+does.
