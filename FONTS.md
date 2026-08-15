@@ -383,10 +383,42 @@ a broken machine does by accident. The second is where the remaining glyph gap
 must be -- because if the advances are right and the pixels are not, what is
 wrong is not the arithmetic.
 
-The eighteen Times New Roman disagreements are the same gap the recorded glyphs
-show, measured somewhere far easier to look at: no emulator, no recording, and
-a specific glyph and size for each one. That is the place to chase it from.
-**Open**, and much better posed than it was.
+### Where the interpreter is wrong, exactly
+
+Run over all six files that carry an `hdmx`, the disagreements come to
+forty-six, each pinned to one glyph at one size:
+
+| Font                 | Differing   | Glyphs involved                   |
+| -------------------- | ----------- | --------------------------------- |
+| Arial                | 0 of 3,720  | --                                |
+| Arial Bold           | 3 of 3,600  | `j`                               |
+| Arial Italic         | 4 of 3,624  | `M`                               |
+| Times New Roman      | 18 of 3,696 | `I`, `k`, `o`, `w`, `y`, `»`, `þ` |
+| Times New Roman Bold | 5 of 3,648  | `k`, `m`                          |
+| Times New Roman Ital | 16 of 3,768 | `)`, `‰`                          |
+
+Two of those clusters are the same fault: Times Italic `)` and Times `»` come
+out **exactly two pixels narrow at every size from 11 to 19 and are right from
+21 up**. Following one instruction at a time, the fault is a single `MIRP` (both
+glyphs, opcodes `0xE4` and `0xE6`) applied to the **left phantom point** -- the
+glyph's origin. Moving that point rightward narrows the advance, and at these
+sizes it moves when Windows leaves it alone.
+
+For Times `»` at eleven pixels per em the instruction reads `cvt[23]` as -23
+sixty-fourths, measures the outline's own distance at -22, keeps the control
+value because the cut-in is nowhere near, rounds it to zero, and so moves the
+origin the whole -128 it currently sits at: two pixels. Windows ends with the
+origin where it started, which means its distance came out -128 and not zero.
+Neither the control value nor the outline distance rounds to -128 under any
+round state, so Windows is not reaching that instruction with the same numbers.
+
+At sixteen pixels the same instruction rounds to zero in both, moves the origin
+one pixel in both, and agrees.
+
+**Open.** But it is open in a form that costs nothing to work on: one glyph, one
+size, one instruction, no emulator and no recording. Every previous statement of
+this gap was "the outlines come out wrong", which is not something you can put a
+breakpoint in.
 
 **A string is measured with these advances where `hdmx` has no entry for the
 size.** Arial's table covers 11, 12, 13, 15, 16, 17, 19, 21, 24, 27, 29, 32, 33,
