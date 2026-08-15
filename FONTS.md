@@ -411,11 +411,12 @@ Run against it, this interpreter agrees on:
 | Arial                | 3,720            | **3,720 (100%)** |
 | Arial Bold           | 3,600            | **3,600 (100%)** |
 | Arial Italic         | 3,624            | 3,620            |
-| Times New Roman      | 3,696            | 3,691            |
-| Times New Roman Bold | 3,648            | 3,647            |
-| Times New Roman Ital | 3,768            | 3,766            |
+| Times New Roman      | 3,696            | 3,692            |
+| Times New Roman Bold | 3,648            | **3,648 (100%)** |
+| Times New Roman Ital | 3,768            | **3,768 (100%)** |
 
-**22,044 of 22,056**, across all six files that carry the table.
+**22,048 of 22,056**, across all six files that carry the table. Four of the six
+reproduce every advance they tabulate.
 
 Every glyph that carries a program, at all twenty-four tabulated sizes. For
 comparison, `glyphs.json` holds ninety records in total.
@@ -486,29 +487,23 @@ Arial and Arial Bold now reproduce every advance they tabulate.
 
 ### What is left
 
-Twelve advances still differ, and they have been characterised even though they
-are not fixed:
+Eight advances still differ, in two glyphs:
 
-| Font                 | Glyph    | Sizes          |
-| -------------------- | -------- | -------------- |
-| Arial Italic         | `M`      | 32, 67, 75, 92 |
-| Times New Roman      | `w`      | 46, 67, 75     |
-| Times New Roman      | `o`      | 75             |
-| Times New Roman      | U+00BA   | 16             |
-| Times New Roman Bold | U+2219   | 42             |
-| Times New Roman Ital | `!`, `%` | 92             |
+| Font            | Glyph | Sizes          |
+| --------------- | ----- | -------------- |
+| Arial Italic    | `M`   | 32, 67, 75, 92 |
+| Times New Roman | `w`   | 46, 67, 75     |
+| Times New Roman | `o`   | 75             |
 
 **They are position errors, not rounding-boundary errors.** The advance phantom
 lands where it lands and the rounding of it is not in question: Times New
-Roman's `w` at 46 pixels per em comes out at 32.953 pixels where Windows says
-32, and Times Italic's `!` at 92 comes out at **exactly 31.000** where Windows
-says 30. A value sitting precisely on an integer is not a rounding dispute; the
-point is a whole pixel from where it belongs.
+Roman's `w` at 46 pixels per em comes out at 32.953 pixels where Windows says 32. A value that far from the boundary is not a rounding dispute; the point is
+most of a pixel from where it belongs.
 
-The four Arial Italic `M` failures share something the others do not: a
+The four Arial Italic `M` failures share something the four Times ones do not: a
 projection vector of (16037, -3353), which is the face's own slant, against a
-freedom vector of pure x. Every other failure has both vectors on the x axis. So
-it is at most two classes and possibly two unrelated faults.
+freedom vector of pure x. The Times failures have both vectors on the x axis. So
+it is two classes, and possibly two unrelated faults.
 
 Five candidate explanations have been checked and rejected:
 
@@ -611,45 +606,62 @@ The margin there is one advance in 22,056 and should not be oversold. What it
 does rule out is the idea that the remaining gap is explained by this rule being
 missing.
 
-#### At least one of them is a branch, not an arithmetic difference
+#### Control values round halves upward, and a branch hangs on it
 
-Times New Roman Italic's `!` at 92 pixels per em is the simplest of the twelve
-and the only one traced to a mechanism. Its advance phantom is placed by a
-rounding `MIRP` against `cvt[23]`, which the _glyph program_ writes rather than
-`prep`. Ours holds 104 sixty-fourths, which rounds to two pixels; Windows needs
-something under 96, which rounds to one.
+Chasing the simplest of the twelve to the bottom found the last arithmetic rule,
+and it was hiding behind a conditional rather than behind a position.
 
-Where that value comes from is a conditional, and the conditional goes the other
-way at the two sizes:
+Times New Roman Italic's `!` at 92 pixels per em was a pixel wide. Disassembling
+the `fpgm` function its glyph program calls shows a **rounding-error
+distributor**, an idiom worth recognising because several of these fonts use it:
 
 ```
-        ppem 83 (correct)              ppem 92 (wrong)
-9463    ROUND[grey](397)  -> 384       ROUND[grey](440)  -> 448
-9465    ROUND[white](93)  -> 64        ROUND[white](104) -> 128
-9466    ADD               -> 448       ADD               -> 576
-9467    SUB   512 - 448   -> 64        SUB   576 - 576   -> 0
-9474    GT    64 > 0      -> true      GT    0 > 0       -> false
-9475    JROF  falls through            JROF  jumps
-9498      SUB, writing cvt[26]           (skipped)
+    total  = ROUND(a + b)
+    parts  = ROUND(a) + ROUND(b)
+    if      (total - parts > 0)  nudge one control value down a pixel
+    else if (0 > total - parts)  nudge the other down a pixel
+                                 otherwise leave both alone
 ```
 
-At 83 the subtraction leaves 64 and the program writes a control value; at 92 it
-leaves exactly zero, the branch is taken, and the stale value is used. So the
-glyph comes out wrong not because an instruction computed the wrong number but
-because the program **took a different path**, and it took it on a comparison
-against zero that two roundings happened to land on.
+The program is asking whether rounding the whole agrees with rounding the parts,
+and fixing up the discrepancy when it does not. At 83 pixels per em the parts
+fall a pixel short and it adjusts; at 92 they agree exactly and it does nothing.
+Both of those were what our interpreter computed, and both were right for the
+numbers it had.
 
-That is worth knowing for what it rules out. A difference of one sixty-fourth
-anywhere above this point flips a branch rather than shifting a position, which
-is why the resulting error is a whole pixel and why no adjustment to the
-rounding arithmetic moves it a little in the right direction -- every sweep above
-either changes nothing or changes it completely. It also means the input that
-differs may be far upstream and quite small.
+The numbers were wrong by a sixty-fourth. `cvt[91]` is -36 font units, which at
+92 pixels per em is **-103.5 exactly**. Rounding halves away from zero gives
+-104; rounding them upward gives -103. That one unit decides whether the totals
+agree, which decides whether the branch is taken, which decides a whole pixel of
+advance.
 
-**Open**, at twelve of 22,056. Nine mechanisms have now been swept or verified.
-What is left is not a rule findable by inspection: the error is a third of a
-pixel entering somewhere above three levels of correct instructions, amplified by
-the roundings above it.
+**Control values are scaled with halves rounded upward, not away from zero.**
+
+```
+value = floor((units * ppem * 64 + unitsPerEm / 2) / unitsPerEm)
+```
+
+The two agree on every positive value and differ only on negatives landing
+exactly on a half -- which is what `(value + half) >> shift` does when the shift
+is arithmetic: the addition biases and the shift floors. **Measured**: 12 wrong
+advances to **8**, and Times New Roman Bold and Times New Roman Italic go from
+one and two wrong to none at all.
+
+Applying the same rule to the outline coordinates changes nothing either way, so
+it is left alone: there is no evidence for it here.
+
+This is the fifth fault this session to present as a wrong instruction and turn
+out to be a wrong input, and the first where the amplifier was a branch rather
+than a rounding. It also explains why every arithmetic sweep before it either
+changed nothing or changed everything: a sixty-fourth either flips the
+comparison or it does not, and there is no partial credit on a branch.
+
+### What is left
+
+Eight advances differ: Arial Italic's `M` at four sizes, Times New Roman's `w` at
+three and `o` at one. Both remaining glyphs have been traced three levels deep
+with every instruction locally correct, and ten mechanisms have now been swept or
+verified against them. **Open.**
 
 ### The pattern worth naming
 
