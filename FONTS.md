@@ -778,23 +778,36 @@ Every variant lands on eight wrong pixels. Widths from 0.3 to 0.6, turn
 distances from 0 to 40, and the conjunction of the two: the total never moves,
 and all any of them does is trade a pixel Windows inks for one it does not.
 
-**And the flattening interacts with all of it.** How finely a quadratic is
-broken into line segments is a free parameter here, and sweeping it moves the
-same eight pixels:
+**The curves are intersected exactly, not flattened.** A quadratic meets a
+scanline at the roots of
 
-| segments | 2   | 4   | 6   | **8** | 12  | 16  | 32  | 64  |
-| -------- | --- | --- | --- | ----- | --- | --- | --- | --- |
-| wrong    | 8   | 7   | 7   | **8** | 9   | 9   | 9   | 9   |
+```
+(y0 - 2y1 + y2) t^2 + 2(y1 - y0) t + (y0 - Y) = 0
+```
 
-The trend is monotonic in the direction that matters: **as the flattening
-converges on the true curve, the disagreement settles at nine.** Eight is what
-eight segments happens to give, and seven is what four gives -- both of them
-flattening error cancelling part of the real difference rather than reducing it.
-A renderer with exact curves would be at nine.
+which is the Bezier written out and set equal to the line. Each root inside the
+piece gives an `x` and a direction, and the direction is the sign of the tangent
+there rather than of the piece as a whole -- a curve that turns over between its
+ends crosses the same line twice in opposite senses.
 
-That is worth knowing before anyone tunes it. Two segments scores best of all on
-glyph count, 86 of 90, and two segments is a visibly wrong quadratic. Fitting
-this parameter on ninety small glyphs would buy a number and lose the curve.
+It was flattened into eight line segments before, and that turned out to be
+propping up the score. Sweeping the number of segments:
+
+| segments | 2   | 4   | 6   | 8   | 12  | 16  | 32  | 64  | exact |
+| -------- | --- | --- | --- | --- | --- | --- | --- | --- | ----- |
+| wrong    | 8   | 7   | 7   | 8   | 9   | 9   | 9   | 9   | **9** |
+
+Monotonic in the direction that matters: **as the approximation converges on the
+true curve the disagreement settles at nine, and the exact intersection agrees
+with a 64-segment and a 256-segment flattening pixel for pixel.** Eight was what
+eight segments happened to give -- approximation error cancelling part of a real
+difference rather than reducing it.
+
+So this costs a glyph, 85 of 90 down to 84, and is kept anyway. The number it
+gives up was never real: two segments scores best of all at 86, and two segments
+is a visibly wrong quadratic. What it buys is that the nine pixels left are all
+of them genuine, and that the next person to look at them is not measuring
+against a curve that is not there.
 
 That is a floor, and a floor means the rule is not the thing. **Whatever these
 eight pixels are, no refinement of "which thin spans get rescued" reaches them**
@@ -1089,11 +1102,11 @@ fitted height.
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
 | `font` (2,655 records)                                       | 98.0%     |
-| `glyphs` (90 records)                                        | 94.4%     |
+| `glyphs` (90 records)                                        | 93.3%     |
 | `hinting` (618 records)                                      | 98.2%     |
 
-Of the glyph records, every bitmap and plotter one is pixel-identical. The five
-that differ are all outline faces, and between them they miss eight pixels
+Of the glyph records, every bitmap and plotter one is pixel-identical. The six
+that differ are all outline faces, and between them they miss nine pixels
 Windows inks and invent none.
 
 `CreateFont face` agrees on every one of the 2,655 records: whatever Windows

@@ -110,6 +110,154 @@ export function flatten(contour) {
 }
 
 /**
+ * Splits a contour into the pieces it is actually made of.
+ *
+ * The same walk `flatten` does, stopping one step earlier: where that turns
+ * each quadratic into a run of line segments, this hands the quadratic back
+ * whole, so a scanline can be intersected with it exactly.
+ *
+ * @param {Array} contour - Points, each `{x, y, on}`.
+ * @returns {Array} Pieces, each `{from, to}` and a `control` if it curves.
+ */
+export function segmentsOf(contour) {
+  if (contour.length === 0) {
+    return [];
+  }
+
+  const points = contour.slice();
+
+  if (!points[0].on) {
+    const last = points[points.length - 1];
+
+    points.unshift(
+      last.on ? last : { x: (points[0].x + last.x) / 2, y: (points[0].y + last.y) / 2, on: true }
+    );
+  }
+
+  const pieces: any[] = [];
+
+  let at = [points[0].x, points[0].y];
+  let control: any = null;
+
+  const line = (to) => {
+    pieces.push({ from: at, to });
+    at = to;
+  };
+
+  const curve = (via, to) => {
+    pieces.push({ from: at, control: [via.x, via.y], to });
+    at = to;
+  };
+
+  for (let index = 1; index <= points.length; index++) {
+    const point = points[index % points.length];
+
+    if (point.on) {
+      if (control) {
+        curve(control, [point.x, point.y]);
+        control = null;
+      } else {
+        line([point.x, point.y]);
+      }
+
+      continue;
+    }
+
+    if (control) {
+      // Two controls in a row: the point between them is on the curve.
+      curve(control, [(control.x + point.x) / 2, (control.y + point.y) / 2]);
+    }
+
+    control = point;
+  }
+
+  if (control) {
+    curve(control, [points[0].x, points[0].y]);
+  }
+
+  return pieces;
+}
+
+/**
+ * Where one piece of a contour crosses a horizontal line, exactly.
+ *
+ * A straight piece crosses at most once and the intersection is a division. A
+ * quadratic crosses at most twice, at the roots of
+ *
+ *     (y0 - 2y1 + y2) t^2 + 2(y1 - y0) t + (y0 - Y) = 0
+ *
+ * which is the Bezier written out and set equal to the scanline. Each root
+ * inside the piece gives an `x` and a direction, and the direction is the sign
+ * of the tangent there rather than of the piece as a whole -- a curve that
+ * turns over between its ends crosses the same line twice in opposite senses,
+ * and counting it once either way is how an approximation loses a shape.
+ *
+ * The interval is half open at the far end, so a crossing exactly on a point
+ * two pieces share belongs to one of them and not to both.
+ */
+function crossesAt(piece, y, into) {
+  const [x0, y0] = piece.from;
+  const [x2, y2] = piece.to;
+
+  if (!piece.control) {
+    if (y0 === y2) {
+      return;
+    }
+
+    const t = (y - y0) / (y2 - y0);
+
+    if (t < 0 || t >= 1) {
+      return;
+    }
+
+    into.push({ x: x0 + t * (x2 - x0), winding: y2 > y0 ? 1 : -1 });
+
+    return;
+  }
+
+  const [x1, y1] = piece.control;
+
+  const a = y0 - 2 * y1 + y2;
+  const b = 2 * (y1 - y0);
+  const c = y0 - y;
+
+  const roots: number[] = [];
+
+  if (a === 0) {
+    if (b !== 0) {
+      roots.push(-c / b);
+    }
+  } else {
+    const under = b * b - 4 * a * c;
+
+    if (under < 0) {
+      return;
+    }
+
+    const root = Math.sqrt(under);
+
+    roots.push((-b + root) / (2 * a), (-b - root) / (2 * a));
+  }
+
+  for (const t of roots) {
+    if (t < 0 || t >= 1) {
+      continue;
+    }
+
+    // The tangent in y, which says which way the curve goes through the line.
+    const slope = 2 * a * t + b;
+
+    if (slope === 0) {
+      continue;
+    }
+
+    const u = 1 - t;
+
+    into.push({ x: u * u * x0 + 2 * u * t * x1 + t * t * x2, winding: slope > 0 ? 1 : -1 });
+  }
+}
+
+/**
  * Fills a set of contours into a bitmap.
  *
  * The winding rule is the non-zero one TrueType specifies: a pixel is inside
@@ -127,32 +275,24 @@ export function fill(contours, options) {
 
   const pixels = new Uint8Array(width * height);
 
-  const edges: any[] = [];
+  /* Into device space as the pieces are built: x grows the same way, y is
+   * measured up from the baseline and pixels are counted down from the top.
+   */
+  const place = (point) => [originX + point[0] * scale, originY - point[1] * scale];
+
+  const pieces: any[] = [];
 
   for (const contour of contours) {
-    const polygon = flatten(contour);
-
-    for (let index = 0; index < polygon.length; index++) {
-      const from = polygon[index];
-      const to = polygon[(index + 1) % polygon.length];
-
-      /* Into device space as the edges are built: x grows the same way, y is
-       * measured up from the baseline and pixels are counted down from the top.
-       */
-      const x0 = originX + from[0] * scale;
-      const y0 = originY - from[1] * scale;
-      const x1 = originX + to[0] * scale;
-      const y1 = originY - to[1] * scale;
-
-      if (y0 === y1) {
-        continue;
-      }
-
-      edges.push({ x0, y0, x1, y1, winding: y1 > y0 ? 1 : -1 });
+    for (const piece of segmentsOf(contour)) {
+      pieces.push({
+        from: place(piece.from),
+        to: place(piece.to),
+        control: piece.control ? place(piece.control) : undefined,
+      });
     }
   }
 
-  if (edges.length === 0) {
+  if (pieces.length === 0) {
     return pixels;
   }
 
@@ -162,17 +302,8 @@ export function fill(contours, options) {
 
     const crossings: any[] = [];
 
-    for (const edge of edges) {
-      const top = Math.min(edge.y0, edge.y1);
-      const bottom = Math.max(edge.y0, edge.y1);
-
-      if (y < top || y >= bottom) {
-        continue;
-      }
-
-      const t = (y - edge.y0) / (edge.y1 - edge.y0);
-
-      crossings.push({ x: edge.x0 + t * (edge.x1 - edge.x0), winding: edge.winding });
+    for (const piece of pieces) {
+      crossesAt(piece, y, crossings);
     }
 
     if (crossings.length === 0) {
