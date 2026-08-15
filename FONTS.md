@@ -93,6 +93,13 @@ Small Fonts is installed in, and nothing else. So the mapper prefers a strike
 that is _exactly_ the height asked for over scaling an outline to it, which is
 why the pattern is scattered rather than a cut-off.
 
+The pitch has to match as well. `Courier New` never falls back at any height,
+and no fixed-pitch strike is installed below thirteen pixels for it to fall back
+to -- Small Fonts has a 3, 5, 6, 8, 10 and 11 and every one of them is variable
+pitch. **Measured**: requiring the pitch to agree is what stops Courier New
+answering with Small Fonts, and it costs nothing elsewhere. Terminal's 6 and 8
+are excluded separately, by being OEM.
+
 That is not the whole rule. MS Serif is installed at 10, 11, 13, 16, 19, 21, 27
 and 35; it wins the tie at 10 and 11, where both it and Small Fonts have a
 strike, and loses at 13, where it has one and Small Fonts does not -- Arial wins
@@ -263,6 +270,25 @@ advance  = hdmx(ppem, glyph)
 Arial asked for a sixteen pixel cell settles at thirteen pixels per em, where
 `VDMX` says 13 and -3: ascent 13, descent 3, height 16, internal 3. Every number
 Windows reports, from a table lookup. **Recorded.**
+
+**Below the smallest size the table covers, the extent is computed instead.**
+Arial's `VDMX` starts at eight pixels per em, and Windows still answers for
+everything below it: a one pixel cell of Arial comes back two pixels tall, a
+four pixel cell comes back four, a nine pixel cell comes back seven. Scaling the
+`OS/2` ascender and descender and rounding reproduces all of them -- 2 and 0 at
+two pixels per em, 3 and 1 at three, 6 and 1 at seven. **Measured**, across
+heights one to fourteen for three families.
+
+That is not evidence Windows scales them. It is evidence that at three pixels to
+the em the hinting moves nothing far enough to show, which is why the cache
+starts where it does.
+
+**Asked for a cell nothing fits in, an outline overflows rather than refusing.**
+One pixel of Arial is two pixels tall and is still called Arial; one pixel of
+Courier New is three. Something floors the size at two pixels per em. Whether
+the floor is on the size or on the cell it produces cannot be separated here,
+because at this size the two coincide. **Recorded**, the behaviour; **open**,
+which of the two it is.
 
 **The pixel size is the largest whose fitted height does not overflow the cell
 asked for.** Where two sizes come out the same height -- which happens, because
@@ -492,22 +518,25 @@ fitted height.
 | Fixture                                                      | Agreement |
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
-| `font` (2,655 records)                                       | 83.3%     |
+| `font` (2,655 records)                                       | 93.3%     |
 | `glyphs` (90 records)                                        | 81.1%     |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical. The
 seventeen that differ are all outline faces, eleven of them by one or two
 pixels.
 
-The font figure fell as it improved, which is worth explaining rather than
-hiding. Against the 2,225 records this document was first written from,
-agreement went 85.5% to 90.4% -- the bounding-box rule above, and nothing else.
-Then the probe grew by 430 records asking where a TrueType request stops being
-answered by the outline, and almost every one of them is a face the mapper gets
-wrong, so the rate dropped to 83.3% on the larger set. The 199 extra agreements
-are real and so is the new gap: it was always there, and until the probe asked
-it was not being counted.
+`CreateFont face` agrees on every one of the 2,655 records: whatever Windows
+picks for a request, this picks too. That is the section 2 rules above, all of
+them measured in one recording.
 
-Every remaining `CreateFont style` disagreement is downstream of a face the
-mapper chose wrongly. There are no metric rules left failing on a face we get
-right -- the whole of the remaining font gap is now in section 2.
+The route there is worth keeping. Against the 2,225 records this document was
+first written from, agreement went 85.5% to 90.4% on the bounding-box rule
+alone. Then the probe grew by 430 records asking where a TrueType request stops
+being answered by the outline, almost every one of them a face the mapper got
+wrong, and the rate _fell_ to 83.3% on the larger set. The gap was always there;
+until the probe asked, it was not being counted. Answering it took the figure to
+93.3%.
+
+What is left is two things, both in section 5 and neither of them a face: the
+extent of a measured string, and the internal leading where two fitted heights
+tie.

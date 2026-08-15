@@ -1232,10 +1232,10 @@ export class Unimplemented extends Error {}
  * character width, and at sizes the tables skip. See oracle/README.md.
  */
 const NO_OUTLINE_FONTS =
-  'the outline faces answer with the metrics their own fitted tables state, ' +
-  'which is most of what they are asked; what still disagrees is the ' +
-  'synthesised styles on them, the maximum character width, and the sizes ' +
-  'those tables do not cover';
+  'the outline faces answer with the metrics their own fitted tables state ' +
+  'and the face the mapper picks now agrees on every record; what still ' +
+  'disagrees is the extent of a measured string and the internal leading at ' +
+  'sizes where two fitted heights tie';
 
 /**
  * The one probe that records pixels, and the one that cannot be satisfied by
@@ -1254,7 +1254,6 @@ const NO_HINTING =
 
 export const KNOWN_GAPS: Record<string, string> = {
   glyph: NO_HINTING,
-  'CreateFont face': NO_OUTLINE_FONTS,
   'CreateFont heights': NO_OUTLINE_FONTS,
   'CreateFont widths': NO_OUTLINE_FONTS,
   'CreateFont style': NO_OUTLINE_FONTS,

@@ -138,14 +138,29 @@ whenBuilt('reading a TrueType font', () => {
       expect(found.ppem).toEqual(13);
     });
 
-    it('will not overflow the cell it was given', function () {
-      for (const height of [8, 12, 16, 20, 24, 32, 48, 64, 100]) {
+    it('will not overflow a cell anything fits in', function () {
+      for (const height of [12, 16, 20, 24, 32, 48, 64, 100]) {
         const found = arial.sizeForHeight(height);
 
         if (found) {
           expect(`${height}: ${found.ascent + found.descent <= height}`).toEqual(`${height}: true`);
         }
       }
+    });
+
+    it('answers a cell too small for anything with the smallest it has', function () {
+      /* Asked for less than the font fits in, Windows does not refuse and does
+       * not fall back to a strike -- it overflows. Arial asked for a one pixel
+       * cell reports a height of two and keeps the name Arial, and Courier New
+       * reports three. **Recorded**, in `font.json`, across heights one to
+       * fourteen.
+       */
+      const found = arial.sizeForHeight(1);
+
+      expect(found.ascent + found.descent).toEqual(2);
+
+      // And the same answer for every cell too small to hold it.
+      expect(arial.sizeForHeight(2)).toEqual(found);
     });
 
     it("states each glyph's fitted advance where it was built for the size", function () {

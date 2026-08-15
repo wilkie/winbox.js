@@ -49,6 +49,16 @@ export class TrueTypeFont {
     this.readDirectory();
   }
 
+  /**
+   * The smallest size a face is ever drawn at.
+   *
+   * Asked for a one pixel cell Windows answers with two pixels of Arial rather
+   * than one, so something floors it. Two is where the recording puts the
+   * floor; whether it is a floor on the size or on the cell it produces the
+   * probe cannot separate, because at this size they coincide.
+   */
+  static MIN_PPEM = 2;
+
   /** Whether the bytes look like a TrueType font at all. */
   static looksLikeFont(view: DataView) {
     if (view.byteLength < 12) {
@@ -462,7 +472,70 @@ export class TrueTypeFont {
       }
     }
 
-    return best;
+    /* Below the smallest size the table covers, the extent is computed rather
+     * than looked up.
+     *
+     * `VDMX` is a cache of what the hinted outline comes out as, and Arial's
+     * starts at eight pixels per em. Windows still answers for the sizes below
+     * it -- asked for a one pixel cell it reports two pixels of Arial, and for
+     * a nine pixel cell it reports seven -- so it is doing the work the table
+     * would have saved it. Scaling the `hhea` ascender and descender and
+     * rounding reproduces every one of those: 2 and 0 at two pixels per em, 3
+     * and 1 at three, 6 and 1 at seven. **Measured**, against heights one to
+     * fourteen for three families.
+     *
+     * This does not mean Windows scales them. It means that at these sizes
+     * hinting moves nothing far enough to show, which is unsurprising when the
+     * whole em is three pixels tall.
+     */
+    for (let ppem = TrueTypeFont.MIN_PPEM; ppem < this._smallestTabulated(); ppem++) {
+      const ascent = Math.round((this.ascender * ppem) / this.unitsPerEm);
+      const descent = Math.round((this.descender * ppem) / this.unitsPerEm);
+      const cell = ascent + descent;
+
+      if (cell > height) {
+        continue;
+      }
+
+      if (!best || cell > best.cell) {
+        best = { ppem, ascent, descent, cell };
+      }
+    }
+
+    /* Asked for a cell smaller than anything fits in, Windows overflows rather
+     * than refusing: one pixel of Arial comes back two pixels tall, and keeps
+     * the name Arial rather than falling to a strike. **Recorded.**
+     */
+    return best ?? this.smallestSize();
+  }
+
+  /** The smallest size `VDMX` tabulates, or infinity if it tabulates none. */
+  _smallestTabulated() {
+    if (!this.has('VDMX')) {
+      return Infinity;
+    }
+
+    const base = this._tables['VDMX'].offset;
+    const ratios = this._view.getUint16(base + 4, false);
+    const group = base + this._view.getUint16(base + 6 + ratios * 4, false);
+    const records = this._view.getUint16(group, false);
+
+    let smallest = Infinity;
+
+    for (let index = 0; index < records; index++) {
+      smallest = Math.min(smallest, this._view.getUint16(group + 4 + index * 6, false));
+    }
+
+    return smallest;
+  }
+
+  /** The smallest size the face is drawn at, for a cell nothing fits in. */
+  smallestSize() {
+    const ppem = TrueTypeFont.MIN_PPEM;
+    const ascent = Math.round((this.ascender * ppem) / this.unitsPerEm);
+    const descent = Math.round((this.descender * ppem) / this.unitsPerEm);
+
+    return { ppem, ascent, descent, cell: ascent + descent };
   }
 
   /**

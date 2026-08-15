@@ -105,6 +105,46 @@ export class FontManager {
   /** How many times over a strike may be drawn to reach a size. */
   static MAX_STRETCH = 5;
 
+  /**
+   * The cell height at and above which an outline always wins.
+   *
+   * Below it a strike installed at exactly the height asked for beats scaling
+   * a TrueType face to that height. Sweeping every height from one to fourteen
+   * gives a scattered pattern rather than a cut-off -- Arial answers with Small
+   * Fonts at 3, 5, 6, 8, 10 and 11 and with itself everywhere else -- and those
+   * six are exactly the strikes Small Fonts is installed in.
+   *
+   * Twelve is where it stops, and why it stops there is **not** known. Several
+   * families carry a thirteen pixel strike, MS Sans Serif among them, which is
+   * the same FF_SWISS family Arial is in and ought to be the strongest raster
+   * candidate available; Arial wins that height anyway. See `FONTS.md`.
+   */
+  static OUTLINE_FLOOR = 12;
+
+  /**
+   * The order `WIN.INI` installs the raster faces in.
+   *
+   * Two faces can both have a strike at the height asked for -- MS Serif and
+   * Small Fonts both have a 10 and an 11 -- and the recording says MS Serif
+   * wins both, for a request for Arial and for a request for Times New Roman
+   * alike. It is not the family that decides it, since those two requests are
+   * FF_SWISS and FF_ROMAN and get the same answer; it is the order the fonts
+   * appear in `[fonts]`, where MS Serif is listed four lines above Small Fonts.
+   *
+   * Kept as a list rather than read from `WIN.INI` because the loader takes
+   * fonts in directory order, which is not installation order.
+   */
+  static INSTALLED_ORDER = [
+    'MS Sans Serif',
+    'Courier',
+    'MS Serif',
+    'Symbol',
+    'Roman',
+    'Script',
+    'Modern',
+    'Small Fonts',
+  ];
+
   /** The size the mapper picks when a request names none, in points. */
   static DEFAULT_POINTS = 12;
 
@@ -208,6 +248,78 @@ export class FontManager {
   }
 
   /**
+   * The outline face that stands in for a family, when one has to.
+   *
+   * The same three-way split `familyFace` makes for the strikes, made again
+   * over the TrueType families. Only reached by a request for a style the
+   * strikes cannot supply.
+   */
+  static familyOutline(pitchAndFamily) {
+    const family = pitchAndFamily & 0xf0;
+
+    if (pitchAndFamily & FontManager.FIXED_PITCH || family === FontManager.FF_MODERN) {
+      return 'Courier New';
+    }
+
+    if (family === FontManager.FF_ROMAN) {
+      return 'Times New Roman';
+    }
+
+    return 'Arial';
+  }
+
+  /** Whether a name is installed and is itself an OEM face. */
+  _isOEM(name) {
+    const entries = this.lookup(name);
+
+    return !!entries?.some((entry) => entry.header.dfCharSet === FontManager.OEM_CHARSET);
+  }
+
+  /**
+   * The face with a strike at exactly this cell height, if one should win.
+   *
+   * Only below `OUTLINE_FLOOR`, and only against an outline: this is the rule
+   * that answers a request for eight pixel Arial with Small Fonts. Ties go to
+   * whichever face `WIN.INI` lists first, which is how MS Serif takes 10 and 11
+   * from Small Fonts even though both carry those sizes.
+   *
+   * @param {number} height - The cell height asked for, in pixels.
+   * @param {number} charset - The character set the request asked for.
+   * @returns {Object|null} `{name, entries}`, or null if the outline should win.
+   */
+  _strikeAt(height, charset, fixedPitch) {
+    if (height <= 0 || height >= FontManager.OUTLINE_FLOOR) {
+      return null;
+    }
+
+    for (const name of FontManager.INSTALLED_ORDER) {
+      const entries = this.lookup(name);
+
+      if (!entries) {
+        continue;
+      }
+
+      /* An OEM face is no use to a request that did not ask for one, the same
+       * way it is not when it was named outright. Terminal has a 6 and an 8,
+       * and neither of them takes those heights from Small Fonts.
+       */
+      const matching = entries.filter(
+        (entry) =>
+          entry.header.dfPixHeight === height &&
+          !!(entry.header.dfPitchAndFamily & FontManager.FIXED_PITCH) !== fixedPitch &&
+          (charset === FontManager.OEM_CHARSET ||
+            entry.header.dfCharSet !== FontManager.OEM_CHARSET)
+      );
+
+      if (matching.length > 0) {
+        return { name, entries: matching };
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Finds the installed font that best answers a description of one.
    *
    * A program does not choose a font, it describes one, and GDI finds the
@@ -235,10 +347,12 @@ export class FontManager {
 
     if (charset === FontManager.SYMBOL_CHARSET) {
       face = 'Symbol';
-    } else if (charset === FontManager.OEM_CHARSET && !this.lookup(face)) {
+    } else if (charset === FontManager.OEM_CHARSET && !this._isOEM(face)) {
       /* The OEM character set is answered by Roman unless something else OEM
-       * was named. Roman is a plotter font, so this is also the one route by
-       * which a scalable face gets chosen at all.
+       * was named, and being installed is not enough to count as something
+       * else: `Courier`, `System` and `MS Sans Serif` are all installed, all
+       * named explicitly, and all answered with Roman. Only a face that is
+       * itself an OEM one keeps its name -- Roman, Script and Modern do.
        */
       face = 'Roman';
     } else if (!face) {
@@ -272,6 +386,19 @@ export class FontManager {
       !(outline.font.symbolic && charset !== FontManager.SYMBOL_CHARSET);
 
     if (usable) {
+      /* A strike installed at exactly this height beats the outline, below the
+       * size at which outlines start winning outright. This is the whole of why
+       * a request for eight pixel Arial comes back as Small Fonts.
+       */
+      const strike = this._strikeAt(request.height ?? 0, charset, outline.font.fixedPitch);
+
+      if (strike) {
+        return {
+          ...FontManager.choose(strike.entries, request),
+          face: strike.name,
+        };
+      }
+
       const chosen = FontManager.realiseOutline(outline.font, request);
 
       if (chosen) {
@@ -301,6 +428,39 @@ export class FontManager {
      * `WIN.INI` redirected the name, which decides what to call the result.
      */
     const found = !!entries && entries.length > 0;
+
+    /* A request for italic changes what gets picked, rather than being
+     * synthesised onto whatever would have been picked anyway.
+     *
+     * `Terminal`, `WingDings` and an empty name all answer with MS Sans Serif
+     * upright. Ask the same three for italic and all three answer with Arial,
+     * at an overhang of zero -- a real italic file, not a slanted strike. So
+     * where the mapper is falling back rather than honouring a name, having an
+     * italic to offer outranks the family it would otherwise have settled on.
+     *
+     * Only where it is falling back: `MS Sans Serif` asked for by name in
+     * italic stays MS Sans Serif and gets a synthesised slant.
+     */
+    const fallingBack = !request.face || !found;
+    const plainCharset =
+      charset === FontManager.ANSI_CHARSET || charset === FontManager.DEFAULT_CHARSET;
+
+    if (wantsItalic && fallingBack && plainCharset) {
+      const italicFamily = this.outline(FontManager.familyOutline(pitchAndFamily), wantsBold, true);
+
+      if (italicFamily?.font?.italicFace) {
+        const chosen = FontManager.realiseOutline(italicFamily.font, request);
+
+        if (chosen) {
+          return {
+            ...chosen,
+            outline: italicFamily.font,
+            face: italicFamily.name,
+            exactStyle: italicFamily.exact,
+          };
+        }
+      }
+    }
 
     /* A redirected name is the one case where the request is echoed back
      * rather than the font that answered it: a program asking for Helv is told
