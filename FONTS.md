@@ -946,9 +946,39 @@ rather than a hundred -- and the peak is sharper still:
 
 **Which end of a span is closed makes no difference.** All four conventions --
 `[from, to)`, `(from, to]`, and both closed or both open -- give the same eight
-wrong pixels. No span boundary in the recorded glyphs lands exactly on a pixel
-centre, so the question does not arise, and the half-open form is kept because
-it is the one that cannot double-ink a shared edge.
+wrong pixels, and the same on 846 glyphs: 687 against 686. No span boundary in
+the recorded glyphs lands exactly on a pixel centre, so the question does not
+arise, and the half-open form is kept because it is the one that cannot
+double-ink a shared edge.
+
+**Which end of an _edge_ is closed makes a great deal of difference, and it is a
+different question.** A span is bounded by two crossings; an edge is one piece of
+the outline, and where two pieces share a vertex exactly on the scanline, the
+half-open rule decides which of them the crossing belongs to. **It has to be
+decided by the coordinate and not by the direction of travel.**
+
+Directing it by travel is the obvious way to write it -- keep the crossing at
+parameter zero, give up the one at parameter one -- and it is wrong exactly
+where it matters. Take a vertex that is a local maximum lying exactly on the
+scanline. The arc arriving reaches the line at its far end and gives the
+crossing up; the arc leaving starts at the line and keeps it. **One crossing
+where there should be nought**, and the winding is inverted for the whole rest
+of the scanline: every pixel from that vertex to the right edge of the glyph
+comes out the wrong colour.
+
+Grid-fitting puts vertices exactly on scanlines rather often, because that is
+what grid-fitting is for. Arial's `w` at seventeen pixels per em has the peak
+between its middle strokes hinted to exactly `5.50, 7.50`, and the sample line
+for that row is exactly 7.50; its `N` at eleven has the same thing. Deciding by
+coordinate instead -- the piece whose _higher_ end sits on the line gives the
+crossing up, the piece whose lower end does keeps it -- makes a local maximum
+contribute nothing and a local minimum contribute a cancelling pair, which is
+what they should contribute. **Worth four glyphs of 846, and both error terms
+fall rather than trading.**
+
+The same rule has to be applied per _monotonic arc_ rather than per piece, since
+a quadratic that turns over in the sweep direction has two of them and two
+chances to share a vertex.
 
 There is no sub-pixel bias to correct, which is worth knowing because a
 one-pixel disagreement in a glyph looks exactly like a fill rule problem and
@@ -1370,7 +1400,7 @@ fitted height.
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
 | `font` (2,655 records)                                       | 99.96%    |
-| `glyphs` (846 records)                                       | 81.2%     |
+| `glyphs` (846 records)                                       | 81.7%     |
 | `hinting` (618 records)                                      | 98.9%     |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical -- all
@@ -1385,9 +1415,9 @@ outline faces says something different:
 
 | Face            | Glyphs exact | Pixels missing | Pixels invented |
 | --------------- | ------------ | -------------- | --------------- |
-| Arial           | 242 of 276   | 16             | 42              |
+| Arial           | 245 of 276   | 12             | 35              |
 | Times New Roman | 214 of 264   | 46             | 31              |
-| Courier New     | 183 of 258   | 255            | 40              |
+| Courier New     | 184 of 258   | 254            | 40              |
 
 Split by size instead, the error is not spread across them at all. **Courier New
 at a ten pixel cell is 0 of 36 and 301 wrong pixels -- more than half of every
@@ -1420,7 +1450,7 @@ better.** Six letters agreeing to seven pixels was not evidence that the
 rasteriser was within seven pixels of Windows; it was evidence that those six
 letters were. Every rule in section 6 that was fitted against ninety records --
 the stub threshold above all -- now has eight hundred to answer to, and the
-error is no longer one-sided: 317 pixels missing against 113 invented, where the
+error is no longer one-sided: 312 pixels missing against 106 invented, where the
 narrow sample had none invented at all.
 
 `CreateFont face` agrees on every one of the 2,655 records: whatever Windows

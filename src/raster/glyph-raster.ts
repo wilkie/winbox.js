@@ -221,9 +221,25 @@ export function segmentsOf(contour) {
  * turns over between its ends crosses the same line twice in opposite senses,
  * and counting it once either way is how an approximation loses a shape.
  *
- * The interval is half open at the far end, so a crossing exactly on a point
- * two pieces share belongs to one of them and not to both.
+ * The interval is half open, so a crossing exactly on a point two pieces share
+ * belongs to one of them and not to both -- and **which one is decided by the
+ * coordinate, not by the direction of travel.** The piece whose *higher* end
+ * sits on the line gives it up; the piece whose lower end does keeps it.
+ *
+ * Directing it by travel instead is the obvious way to write it and is wrong
+ * where it matters most. Take a vertex that is a local maximum sitting exactly
+ * on the line -- the peak in the middle of a `w`, which grid-fitting puts
+ * exactly there rather often. The arc arriving reaches the line at its far end
+ * and is excluded; the arc leaving starts at the line and is kept. One crossing
+ * where there should be nought or two, and the winding is inverted for the
+ * whole rest of the scanline: every pixel from the peak to the right edge of
+ * the glyph comes out the wrong colour. Arial's `w` at seventeen pixels per em
+ * is exactly this, and so is its `N` at eleven.
  */
+function keeps(y, low, high) {
+  return y >= low && y < high;
+}
+
 function crossesAt(piece, y, into) {
   const [x0, y0] = piece.from;
   const [x2, y2] = piece.to;
@@ -233,11 +249,11 @@ function crossesAt(piece, y, into) {
       return;
     }
 
-    const t = (y - y0) / (y2 - y0);
-
-    if (t < 0 || t >= 1) {
+    if (!keeps(y, Math.min(y0, y2), Math.max(y0, y2))) {
       return;
     }
+
+    const t = (y - y0) / (y2 - y0);
 
     into.push({ x: x0 + t * (x2 - x0), winding: y2 > y0 ? 1 : -1 });
 
@@ -268,8 +284,24 @@ function crossesAt(piece, y, into) {
     roots.push((-b + root) / (2 * a), (-b - root) / (2 * a));
   }
 
+  /* Where the curve turns over in y, if it does inside the piece. Each root
+   * belongs to whichever side of that it falls on, and the half-open test is
+   * made against the ends of *that* arc rather than of the whole piece -- a
+   * quadratic that turns over has two arcs and two chances to share a vertex.
+   */
+  const turn = a === 0 ? null : -b / (2 * a);
+  const at = (t) => (1 - t) * (1 - t) * y0 + 2 * (1 - t) * t * y1 + t * t * y2;
+  const splits = turn !== null && turn > 0 && turn < 1;
+
   for (const t of roots) {
-    if (t < 0 || t >= 1) {
+    if (t < 0 || t > 1) {
+      continue;
+    }
+
+    const lo = splits && t > turn ? turn : 0;
+    const hi = splits && t > turn ? 1 : splits ? turn : 1;
+
+    if (!keeps(y, Math.min(at(lo), at(hi)), Math.max(at(lo), at(hi)))) {
       continue;
     }
 
@@ -298,11 +330,11 @@ function crossesDown(piece, x, into) {
       return;
     }
 
-    const t = (x - x0) / (x2 - x0);
-
-    if (t < 0 || t >= 1) {
+    if (!keeps(x, Math.min(x0, x2), Math.max(x0, x2))) {
       return;
     }
+
+    const t = (x - x0) / (x2 - x0);
 
     into.push({ y: y0 + t * (y2 - y0), winding: x2 > x0 ? 1 : -1 });
 
@@ -333,8 +365,20 @@ function crossesDown(piece, x, into) {
     roots.push((-b + root) / (2 * a), (-b - root) / (2 * a));
   }
 
+  // The same turning point and the same half-open test, along the other axis.
+  const turn = a === 0 ? null : -b / (2 * a);
+  const at = (t) => (1 - t) * (1 - t) * x0 + 2 * (1 - t) * t * x1 + t * t * x2;
+  const splits = turn !== null && turn > 0 && turn < 1;
+
   for (const t of roots) {
-    if (t < 0 || t >= 1) {
+    if (t < 0 || t > 1) {
+      continue;
+    }
+
+    const lo = splits && t > turn ? turn : 0;
+    const hi = splits && t > turn ? 1 : splits ? turn : 1;
+
+    if (!keeps(x, Math.min(at(lo), at(hi)), Math.max(at(lo), at(hi)))) {
       continue;
     }
 
