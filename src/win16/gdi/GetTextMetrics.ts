@@ -60,7 +60,10 @@ export function GetTextMetrics(hdc, lptm) {
 
     const scaled = (units) => Math.round((units * ppem) / outline.unitsPerEm);
 
-    lptm.tmAveCharWidth = scaled(outline.averageAdvance);
+    // Widths follow the horizontal size, which a requested `lfWidth` changes.
+    const across = (units) => Math.round((units * font.xPpem) / outline.unitsPerEm);
+
+    lptm.tmAveCharWidth = across(outline.averageAdvance);
 
     /* The font's bounding box, not its widest advance and not the grid-fitted
      * widths in `hdmx`.
@@ -71,7 +74,7 @@ export function GetTextMetrics(hdc, lptm) {
      * and for an italic face it is wider again -- which is why the gap against
      * the advance grows with the size rather than sitting at a pixel or two.
      */
-    lptm.tmMaxCharWidth = scaled(outline.boundingWidth);
+    lptm.tmMaxCharWidth = across(outline.boundingWidth);
 
     // Only a style that had to be made shows up as an overhang.
     const bold = (style.weight ?? 0) >= 700 && !style.exactStyle;

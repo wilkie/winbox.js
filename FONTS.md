@@ -306,12 +306,50 @@ of the first group and is at 85 pixels per em in the fourth. A value that is not
 in the table you are reading is not a rounding error.
 
 **The pixel size is the largest whose fitted height does not overflow the cell
-asked for, and the smaller of a tie.** Where two sizes come out the same height
--- which happens, because fitting quantises -- the choice shows up only in the
-internal leading. The smaller is what Windows takes: Arial Italic at a hundred
-pixels fits at both 89 and 90 pixels per em, and the reported leading of 11 is
-the one 89 gives. **Measured**, once the right ratio group was being read; while
-the wrong one was, this looked unresolvable and was recorded here as open.
+asked for. Of a tie, Windows takes the smallest when the cell fits the height
+exactly and the largest when it falls short.**
+
+Two sizes often fit the same cell, because the fitting quantises: Arial is
+sixteen pixels tall at both thirteen and fourteen pixels per em. Which is taken
+changes nothing about the ascent, the descent or the height -- that is what makes
+them tied -- and moves the internal leading by one, so it is visible.
+
+**Measured**, across forty-eight ties in three families and all three styles of
+each, with no exception:
+
+| Request            | Tie        | Cell | Windows |                |
+| ------------------ | ---------- | ---- | ------- | -------------- |
+| Arial 16           | 13, 14     | 16   | **13**  | exact, lowest  |
+| Arial 48           | 41, 42     | 47   | **42**  | short, highest |
+| Arial Italic 100   | 89, 90     | 100  | **89**  | exact, lowest  |
+| Times New Roman 30 | 25, 26     | 29   | **26**  | short, highest |
+| Courier New 16     | 12, 13, 14 | 16   | **12**  | exact, lowest  |
+
+Stated as a rule that sounds arbitrary; stated as a loop it is the obvious thing
+to write. Walk the sizes upward keeping the best fit so far, let a later size of
+equal cell replace an earlier one, and stop as soon as something fits exactly --
+there is nothing better to find. The scan that stops early keeps the first of the
+tie; the scan that runs to the end keeps the last. One loop, both behaviours.
+
+The ppem each row implies is confirmed independently by the widths, which are
+scaled from it by a different constant, so this does not rest on the leading
+alone.
+
+**A requested `lfWidth` gives the glyphs a horizontal pixel size of their own.**
+It asks for the average character to come out that wide, and Windows answers by
+scaling the outline to a second size rather than by stretching what the height
+chose:
+
+```
+xPpem = floor(lfWidth * unitsPerEm / OS/2.xAvgCharWidth)
+```
+
+Every horizontal metric then follows from `xPpem` and every vertical one from
+`ppem`. **Measured**, on all six recorded requests across three families: Arial
+asked for eight comes out at eighteen pixels per em and asked for twenty at
+forty-five, and both the average and the maximum follow. Rounding instead of
+flooring is right for Arial and wrong for Times New Roman, which is the sort of
+thing one font on its own cannot settle.
 
 **`tmMaxCharWidth` is the font's bounding box scaled to the size.** Not the
 widest advance, and not the grid-fitted widths in `hdmx`:
@@ -679,7 +717,7 @@ fitted height.
 | Fixture                                                      | Agreement |
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
-| `font` (2,655 records)                                       | 95.9%     |
+| `font` (2,655 records)                                       | 98.1%     |
 | `glyphs` (90 records)                                        | 87.8%     |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical. The
@@ -699,6 +737,9 @@ wrong, and the rate _fell_ to 83.3% on the larger set. The gap was always there;
 until the probe asked, it was not being counted. Answering it took the figure to
 93.3%.
 
-What is left is mostly one thing: the extent of a measured string, which is a
-sum of per-glyph advances and so asks a harder question than any single metric
-does.
+What is left is fifty-one records, and most of them are no longer a font-mapping
+or metric question at all. Thirty are the extent of a measured string, which is a
+sum of per-glyph advances -- and those advances now come from running the hinting
+programs, so what remains of the extent gap is the same twenty-eight advances
+section 5 records against `hdmx`, reached by a different route. Fixing the
+interpreter fixes both.

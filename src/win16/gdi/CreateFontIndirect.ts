@@ -83,6 +83,11 @@ export function CreateFontIndirect(lplf) {
      */
     exactStyle: found.exactStyle,
     ppem: found.ppem,
+
+    /* The horizontal pixel size, which differs from `ppem` only when the
+     * request asked for an average character width of its own.
+     */
+    xPpem: found.xPpem,
     ascent: found.ascent,
     descent: found.descent,
   });

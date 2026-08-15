@@ -511,6 +511,30 @@ export class FontManager {
   static realiseOutline(font, request) {
     const height = request.height ?? 0;
 
+    /* A width asked for as well as a height gives the glyphs a pixel size of
+     * their own in the horizontal direction.
+     *
+     * `lfWidth` is a request for the average character to come out that wide,
+     * and Windows answers it by scaling the outline horizontally to a second
+     * pixel size rather than by stretching what the height chose. The size is
+     * the one that makes the font's own stated average land on the number
+     * asked for, rounded down:
+     *
+     *     floor(lfWidth * unitsPerEm / xAvgCharWidth)
+     *
+     * **Measured**, on all six recorded requests across three families: Arial
+     * asked for eight comes out at eighteen pixels per em and asked for twenty
+     * at forty-five, and every average and maximum follows from that one
+     * number. Rounding rather than flooring is wrong for Times New Roman and
+     * right for Arial, which is the sort of thing one font cannot settle.
+     */
+    const width = request.width ?? 0;
+
+    const horizontal =
+      width > 0 && font.averageAdvance
+        ? Math.floor((width * font.unitsPerEm) / font.averageAdvance)
+        : 0;
+
     /* A negative height asks for the em rather than the cell, which for an
      * outline is the pixel size directly. Zero is the mapper's default, which
      * these fonts answer at the same eighteen pixels a plotter font does.
@@ -519,7 +543,13 @@ export class FontManager {
       const extent = font.extentAt(-height);
 
       return extent
-        ? { entry: null, ppem: -height, ascent: extent.ascent, descent: extent.descent }
+        ? {
+            entry: null,
+            ppem: -height,
+            xPpem: horizontal || -height,
+            ascent: extent.ascent,
+            descent: extent.descent,
+          }
         : null;
     }
 
@@ -530,7 +560,13 @@ export class FontManager {
       return null;
     }
 
-    return { entry: null, ppem: found.ppem, ascent: found.ascent, descent: found.descent };
+    return {
+      entry: null,
+      ppem: found.ppem,
+      xPpem: horizontal || found.ppem,
+      ascent: found.ascent,
+      descent: found.descent,
+    };
   }
 
   /**

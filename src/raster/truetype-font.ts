@@ -490,23 +490,37 @@ export class TrueTypeFont {
 
     let best: any = null;
 
-    for (let index = 0; index < records; index++) {
-      const at = group + 4 + index * 6;
-
-      const ppem = this._view.getUint16(at, false);
-      const ascent = this._view.getInt16(at + 2, false);
-      const descent = -this._view.getInt16(at + 4, false);
-
+    /* Two sizes often fit the same cell, because the fitting quantises: Arial
+     * comes out sixteen pixels tall at both thirteen and fourteen pixels per
+     * em. Which one is taken changes nothing about the ascent, the descent or
+     * the height -- that is what makes them tied -- and moves the internal
+     * leading by one, so it is visible and it matters.
+     *
+     * Windows takes the *smallest* of a tie when the cell it fits is exactly
+     * the height asked for, and the *largest* when the cell falls short.
+     * **Measured**, across forty-eight ties in three families and all three
+     * styles of each, with no exception.
+     *
+     * Stated as a rule that sounds arbitrary; stated as a loop it is the
+     * obvious thing to write. Walk the sizes upward keeping the best fit so
+     * far, let a later size of equal cell replace an earlier one, and stop as
+     * soon as something fits exactly -- there is nothing better to find. The
+     * scan that stops early keeps the first of the tie; the scan that runs to
+     * the end keeps the last.
+     */
+    const consider = (ppem, ascent, descent) => {
       const cell = ascent + descent;
 
       if (cell > height) {
-        continue;
+        return false;
       }
 
-      if (!best || cell > best.cell || (cell === best.cell && ppem < best.ppem)) {
+      if (!best || cell >= best.cell) {
         best = { ppem, ascent, descent, cell };
       }
-    }
+
+      return cell === height;
+    };
 
     /* Below the smallest size the table covers, the extent is computed rather
      * than looked up.
@@ -524,18 +538,26 @@ export class TrueTypeFont {
      * hinting moves nothing far enough to show, which is unsurprising when the
      * whole em is three pixels tall.
      */
-    for (let ppem = TrueTypeFont.MIN_PPEM; ppem < this._smallestTabulated(); ppem++) {
-      const ascent = Math.round((this.ascender * ppem) / this.unitsPerEm);
-      const descent = Math.round((this.descender * ppem) / this.unitsPerEm);
-      const cell = ascent + descent;
+    const smallest = this._smallestTabulated();
 
-      if (cell > height) {
-        continue;
-      }
+    let exact = false;
 
-      if (!best || cell > best.cell) {
-        best = { ppem, ascent, descent, cell };
-      }
+    for (let ppem = TrueTypeFont.MIN_PPEM; !exact && ppem < smallest; ppem++) {
+      exact = consider(
+        ppem,
+        Math.round((this.ascender * ppem) / this.unitsPerEm),
+        Math.round((this.descender * ppem) / this.unitsPerEm)
+      );
+    }
+
+    for (let index = 0; !exact && index < records; index++) {
+      const at = group + 4 + index * 6;
+
+      exact = consider(
+        this._view.getUint16(at, false),
+        this._view.getInt16(at + 2, false),
+        -this._view.getInt16(at + 4, false)
+      );
     }
 
     /* Asked for a cell smaller than anything fits in, Windows overflows rather

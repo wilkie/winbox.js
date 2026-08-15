@@ -67,6 +67,16 @@ export class LogicalFont extends Font {
     return this._style.ppem ?? 0;
   }
 
+  /**
+   * The pixel size the glyphs are drawn at horizontally.
+   *
+   * The same as `ppem` unless the request named an average width, which asks
+   * for a font wider or narrower than its design. See `realiseOutline`.
+   */
+  get xPpem() {
+    return this._style.xPpem ?? this.ppem;
+  }
+
   /** How many times over the strike is drawn, to reach the size asked for. */
   get scale() {
     return this._style.scale ?? 1;
@@ -123,7 +133,7 @@ export class LogicalFont extends Font {
        * which is what it would have been hinted from.
        */
       const font = this.outline;
-      const ppem = this.ppem;
+      const ppem = this.xPpem;
 
       let width = 0;
 
