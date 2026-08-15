@@ -2338,6 +2338,15 @@ export class Hinter {
      * the interpreter's own `divide` does, and following it keeps one rule
      * rather than two.
      *
+     * Nor is it the same fault as `IP`'s. That instruction had to be given the
+     * *design* coordinates because a ratio of two numbers already quantised to
+     * sixty-fourths has lost the precision the ratio needed -- and the same
+     * change made here moves nothing at all: 701 glyphs either way, and every
+     * record of the other two fixtures unchanged. The anchors of an `IUP` run
+     * are two points of the same contour with the interpolated point between
+     * them, so the quantisation is small against the span it divides.
+     * **Measured.**
+     *
      * **It is this instruction and not the arithmetic generally.** The same
      * sweep over `IP`, which interpolates a point between two references and is
      * the same shape of calculation, says rounding: 687 glyphs against 679 for
