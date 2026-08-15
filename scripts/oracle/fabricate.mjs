@@ -663,6 +663,51 @@ function reporter(name, { character, point, constant, cut, magnify, describe }) 
 }
 
 export const FABRICATIONS = [
+  /* The bisection. The same point read after successively more of the program
+   * has run, so the first cut at which Windows and this disagree brackets the
+   * instruction that puts them apart. Every offset is one the program is
+   * statically balanced at, which is what makes the readout reachable.
+   */
+  reporter('times-w-p35-cut241', {
+    character: 'w',
+    point: 35,
+    cut: 241,
+    magnify: 8,
+    describe: "Times New Roman's w reporting point 35 after 241 bytes of its program",
+  }),
+
+  reporter('times-w-p35-cut359', {
+    character: 'w',
+    point: 35,
+    cut: 359,
+    magnify: 8,
+    describe: "Times New Roman's w reporting point 35 after 359 bytes of its program",
+  }),
+
+  reporter('times-w-p35-cut481', {
+    character: 'w',
+    point: 35,
+    cut: 481,
+    magnify: 8,
+    describe: "Times New Roman's w reporting point 35 after 481 bytes of its program",
+  }),
+
+  reporter('times-w-p35-cut600', {
+    character: 'w',
+    point: 35,
+    cut: 600,
+    magnify: 8,
+    describe: "Times New Roman's w reporting point 35 after 600 bytes of its program",
+  }),
+
+  reporter('times-w-p35-cut660', {
+    character: 'w',
+    point: 35,
+    cut: 660,
+    magnify: 8,
+    describe: "Times New Roman's w reporting point 35 after 660 bytes of its program",
+  }),
+
   /* The calibration, which has to come before any reading is believed. The
    * advance phantom is put at exactly sixteen pixels and nothing else is
    * touched, so a correct channel reports sixteen at every size. Anything else

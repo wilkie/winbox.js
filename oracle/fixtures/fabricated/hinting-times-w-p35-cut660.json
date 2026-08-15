@@ -1,0 +1,1868 @@
+{
+  "probe": "hinting",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": "times-w-p35-cut660",
+  "records": [
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=8,'w'",
+      "result": "advance=5,ppem=7",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=9,'w'",
+      "result": "advance=5,ppem=7",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=10,'w'",
+      "result": "advance=6,ppem=8",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=11,'w'",
+      "result": "advance=6,ppem=9",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=12,'w'",
+      "result": "advance=56,ppem=9",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=13,'w'",
+      "result": "advance=64,ppem=10",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=14,'w'",
+      "result": "advance=7,ppem=11",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=15,'w'",
+      "result": "advance=9,ppem=12",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=16,'w'",
+      "result": "advance=80,ppem=14",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=17,'w'",
+      "result": "advance=11,ppem=15",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=18,'w'",
+      "result": "advance=11,ppem=15",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=19,'w'",
+      "result": "advance=11,ppem=16",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=20,'w'",
+      "result": "advance=96,ppem=18",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=21,'w'",
+      "result": "advance=13,ppem=19",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=22,'w'",
+      "result": "advance=111,ppem=20",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=23,'w'",
+      "result": "advance=15,ppem=21",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=24,'w'",
+      "result": "advance=15,ppem=21",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=25,'w'",
+      "result": "advance=113,ppem=22",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=26,'w'",
+      "result": "advance=121,ppem=23",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=27,'w'",
+      "result": "advance=17,ppem=24",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=28,'w'",
+      "result": "advance=17,ppem=24",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=29,'w'",
+      "result": "advance=129,ppem=25",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=30,'w'",
+      "result": "advance=137,ppem=26",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=31,'w'",
+      "result": "advance=19,ppem=27",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=32,'w'",
+      "result": "advance=19,ppem=27",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=33,'w'",
+      "result": "advance=137,ppem=28",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=34,'w'",
+      "result": "advance=153,ppem=30",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=35,'w'",
+      "result": "advance=153,ppem=31",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=36,'w'",
+      "result": "advance=23,ppem=32",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=37,'w'",
+      "result": "advance=23,ppem=33",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=38,'w'",
+      "result": "advance=23,ppem=33",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=39,'w'",
+      "result": "advance=185,ppem=34",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=40,'w'",
+      "result": "advance=185,ppem=35",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=41,'w'",
+      "result": "advance=193,ppem=36",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=42,'w'",
+      "result": "advance=27,ppem=37",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=43,'w'",
+      "result": "advance=201,ppem=38",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=44,'w'",
+      "result": "advance=209,ppem=39",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=45,'w'",
+      "result": "advance=209,ppem=39",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=46,'w'",
+      "result": "advance=209,ppem=40",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=47,'w'",
+      "result": "advance=209,ppem=41",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=48,'w'",
+      "result": "advance=29,ppem=42",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=49,'w'",
+      "result": "advance=217,ppem=43",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=50,'w'",
+      "result": "advance=217,ppem=43",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=51,'w'",
+      "result": "advance=225,ppem=44",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=52,'w'",
+      "result": "advance=225,ppem=45",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=53,'w'",
+      "result": "advance=32,ppem=46",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=54,'w'",
+      "result": "advance=249,ppem=47",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=55,'w'",
+      "result": "advance=265,ppem=48",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=56,'w'",
+      "result": "advance=265,ppem=49",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=57,'w'",
+      "result": "advance=36,ppem=50",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=58,'w'",
+      "result": "advance=281,ppem=51",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=59,'w'",
+      "result": "advance=281,ppem=51",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=60,'w'",
+      "result": "advance=281,ppem=52",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=61,'w'",
+      "result": "advance=281,ppem=53",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=62,'w'",
+      "result": "advance=281,ppem=55",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=63,'w'",
+      "result": "advance=281,ppem=55",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=64,'w'",
+      "result": "advance=281,ppem=56",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=65,'w'",
+      "result": "advance=282,ppem=57",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=66,'w'",
+      "result": "advance=282,ppem=57",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=67,'w'",
+      "result": "advance=42,ppem=58",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=68,'w'",
+      "result": "advance=322,ppem=60",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=69,'w'",
+      "result": "advance=322,ppem=61",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=70,'w'",
+      "result": "advance=322,ppem=62",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=71,'w'",
+      "result": "advance=338,ppem=63",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=72,'w'",
+      "result": "advance=338,ppem=63",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=73,'w'",
+      "result": "advance=346,ppem=64",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=74,'w'",
+      "result": "advance=346,ppem=65",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=75,'w'",
+      "result": "advance=346,ppem=66",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=76,'w'",
+      "result": "advance=47,ppem=67",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=77,'w'",
+      "result": "advance=362,ppem=68",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=78,'w'",
+      "result": "advance=370,ppem=69",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=79,'w'",
+      "result": "advance=370,ppem=69",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=80,'w'",
+      "result": "advance=370,ppem=70",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=81,'w'",
+      "result": "advance=378,ppem=71",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=82,'w'",
+      "result": "advance=386,ppem=72",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=83,'w'",
+      "result": "advance=386,ppem=73",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=84,'w'",
+      "result": "advance=386,ppem=74",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=85,'w'",
+      "result": "advance=53,ppem=75",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=86,'w'",
+      "result": "advance=386,ppem=76",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=87,'w'",
+      "result": "advance=386,ppem=76",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=88,'w'",
+      "result": "advance=402,ppem=77",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=89,'w'",
+      "result": "advance=410,ppem=78",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=90,'w'",
+      "result": "advance=418,ppem=79",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=91,'w'",
+      "result": "advance=418,ppem=80",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=92,'w'",
+      "result": "advance=426,ppem=81",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=93,'w'",
+      "result": "advance=426,ppem=81",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=94,'w'",
+      "result": "advance=426,ppem=82",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=95,'w'",
+      "result": "advance=434,ppem=84",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=96,'w'",
+      "result": "advance=434,ppem=84",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=97,'w'",
+      "result": "advance=450,ppem=85",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=98,'w'",
+      "result": "advance=450,ppem=86",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=99,'w'",
+      "result": "advance=458,ppem=87",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=100,'w'",
+      "result": "advance=458,ppem=88",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=101,'w'",
+      "result": "advance=458,ppem=89",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=102,'w'",
+      "result": "advance=458,ppem=89",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=103,'w'",
+      "result": "advance=458,ppem=90",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=104,'w'",
+      "result": "advance=66,ppem=92",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=105,'w'",
+      "result": "advance=67,ppem=93",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=106,'w'",
+      "result": "advance=67,ppem=93",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=107,'w'",
+      "result": "advance=68,ppem=94",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=108,'w'",
+      "result": "advance=69,ppem=95",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=109,'w'",
+      "result": "advance=69,ppem=96",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=110,'w'",
+      "result": "advance=70,ppem=97",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=8,'o'",
+      "result": "advance=4,ppem=7",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=9,'o'",
+      "result": "advance=4,ppem=7",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=10,'o'",
+      "result": "advance=5,ppem=8",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=11,'o'",
+      "result": "advance=5,ppem=9",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=12,'o'",
+      "result": "advance=5,ppem=9",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=13,'o'",
+      "result": "advance=5,ppem=10",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=14,'o'",
+      "result": "advance=6,ppem=11",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=15,'o'",
+      "result": "advance=6,ppem=12",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=16,'o'",
+      "result": "advance=7,ppem=14",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=17,'o'",
+      "result": "advance=7,ppem=15",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=18,'o'",
+      "result": "advance=7,ppem=15",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=19,'o'",
+      "result": "advance=8,ppem=16",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=20,'o'",
+      "result": "advance=9,ppem=18",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=21,'o'",
+      "result": "advance=10,ppem=19",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=22,'o'",
+      "result": "advance=10,ppem=20",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=23,'o'",
+      "result": "advance=11,ppem=21",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=24,'o'",
+      "result": "advance=11,ppem=21",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=25,'o'",
+      "result": "advance=11,ppem=22",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=26,'o'",
+      "result": "advance=12,ppem=23",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=27,'o'",
+      "result": "advance=12,ppem=24",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=28,'o'",
+      "result": "advance=12,ppem=24",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=29,'o'",
+      "result": "advance=13,ppem=25",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=30,'o'",
+      "result": "advance=13,ppem=26",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=31,'o'",
+      "result": "advance=14,ppem=27",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=32,'o'",
+      "result": "advance=14,ppem=27",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=33,'o'",
+      "result": "advance=14,ppem=28",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=34,'o'",
+      "result": "advance=15,ppem=30",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=35,'o'",
+      "result": "advance=15,ppem=31",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=36,'o'",
+      "result": "advance=16,ppem=32",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=37,'o'",
+      "result": "advance=16,ppem=33",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=38,'o'",
+      "result": "advance=16,ppem=33",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=39,'o'",
+      "result": "advance=17,ppem=34",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=40,'o'",
+      "result": "advance=17,ppem=35",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=41,'o'",
+      "result": "advance=18,ppem=36",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=42,'o'",
+      "result": "advance=18,ppem=37",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=43,'o'",
+      "result": "advance=18,ppem=38",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=44,'o'",
+      "result": "advance=19,ppem=39",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=45,'o'",
+      "result": "advance=19,ppem=39",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=46,'o'",
+      "result": "advance=19,ppem=40",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=47,'o'",
+      "result": "advance=20,ppem=41",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=48,'o'",
+      "result": "advance=20,ppem=42",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=49,'o'",
+      "result": "advance=21,ppem=43",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=50,'o'",
+      "result": "advance=21,ppem=43",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=51,'o'",
+      "result": "advance=21,ppem=44",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=52,'o'",
+      "result": "advance=22,ppem=45",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=53,'o'",
+      "result": "advance=22,ppem=46",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=54,'o'",
+      "result": "advance=24,ppem=47",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=55,'o'",
+      "result": "advance=23,ppem=48",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=56,'o'",
+      "result": "advance=25,ppem=49",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=57,'o'",
+      "result": "advance=26,ppem=50",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=58,'o'",
+      "result": "advance=26,ppem=51",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=59,'o'",
+      "result": "advance=26,ppem=51",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=60,'o'",
+      "result": "advance=26,ppem=52",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=61,'o'",
+      "result": "advance=27,ppem=53",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=62,'o'",
+      "result": "advance=28,ppem=55",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=63,'o'",
+      "result": "advance=28,ppem=55",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=64,'o'",
+      "result": "advance=28,ppem=56",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=65,'o'",
+      "result": "advance=29,ppem=57",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=66,'o'",
+      "result": "advance=29,ppem=57",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=67,'o'",
+      "result": "advance=29,ppem=58",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=68,'o'",
+      "result": "advance=30,ppem=60",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=69,'o'",
+      "result": "advance=30,ppem=61",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=70,'o'",
+      "result": "advance=31,ppem=62",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=71,'o'",
+      "result": "advance=31,ppem=63",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=72,'o'",
+      "result": "advance=31,ppem=63",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=73,'o'",
+      "result": "advance=32,ppem=64",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=74,'o'",
+      "result": "advance=32,ppem=65",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=75,'o'",
+      "result": "advance=32,ppem=66",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=76,'o'",
+      "result": "advance=33,ppem=67",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=77,'o'",
+      "result": "advance=33,ppem=68",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=78,'o'",
+      "result": "advance=34,ppem=69",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=79,'o'",
+      "result": "advance=34,ppem=69",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=80,'o'",
+      "result": "advance=34,ppem=70",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=81,'o'",
+      "result": "advance=35,ppem=71",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=82,'o'",
+      "result": "advance=35,ppem=72",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=83,'o'",
+      "result": "advance=36,ppem=73",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=84,'o'",
+      "result": "advance=36,ppem=74",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=85,'o'",
+      "result": "advance=38,ppem=75",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=86,'o'",
+      "result": "advance=37,ppem=76",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=87,'o'",
+      "result": "advance=37,ppem=76",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=88,'o'",
+      "result": "advance=39,ppem=77",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=89,'o'",
+      "result": "advance=38,ppem=78",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=90,'o'",
+      "result": "advance=40,ppem=79",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=91,'o'",
+      "result": "advance=39,ppem=80",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=92,'o'",
+      "result": "advance=41,ppem=81",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=93,'o'",
+      "result": "advance=41,ppem=81",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=94,'o'",
+      "result": "advance=41,ppem=82",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=95,'o'",
+      "result": "advance=42,ppem=84",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=96,'o'",
+      "result": "advance=42,ppem=84",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=97,'o'",
+      "result": "advance=43,ppem=85",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=98,'o'",
+      "result": "advance=43,ppem=86",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=99,'o'",
+      "result": "advance=44,ppem=87",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=100,'o'",
+      "result": "advance=44,ppem=88",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=101,'o'",
+      "result": "advance=44,ppem=89",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=102,'o'",
+      "result": "advance=44,ppem=89",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=103,'o'",
+      "result": "advance=45,ppem=90",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=104,'o'",
+      "result": "advance=46,ppem=92",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=105,'o'",
+      "result": "advance=46,ppem=93",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=106,'o'",
+      "result": "advance=46,ppem=93",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=107,'o'",
+      "result": "advance=47,ppem=94",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=108,'o'",
+      "result": "advance=48,ppem=95",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=109,'o'",
+      "result": "advance=48,ppem=96",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=110,'o'",
+      "result": "advance=49,ppem=97",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=8,'n'",
+      "result": "advance=4,ppem=7",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=9,'n'",
+      "result": "advance=4,ppem=7",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=10,'n'",
+      "result": "advance=4,ppem=8",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=11,'n'",
+      "result": "advance=5,ppem=9",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=12,'n'",
+      "result": "advance=5,ppem=9",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=13,'n'",
+      "result": "advance=5,ppem=10",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=14,'n'",
+      "result": "advance=6,ppem=11",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=15,'n'",
+      "result": "advance=6,ppem=12",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=16,'n'",
+      "result": "advance=7,ppem=14",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=17,'n'",
+      "result": "advance=7,ppem=15",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=18,'n'",
+      "result": "advance=7,ppem=15",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=19,'n'",
+      "result": "advance=7,ppem=16",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=20,'n'",
+      "result": "advance=9,ppem=18",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=21,'n'",
+      "result": "advance=9,ppem=19",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=22,'n'",
+      "result": "advance=9,ppem=20",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=23,'n'",
+      "result": "advance=10,ppem=21",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=24,'n'",
+      "result": "advance=10,ppem=21",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=25,'n'",
+      "result": "advance=10,ppem=22",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=26,'n'",
+      "result": "advance=12,ppem=23",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=27,'n'",
+      "result": "advance=12,ppem=24",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=28,'n'",
+      "result": "advance=12,ppem=24",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=29,'n'",
+      "result": "advance=13,ppem=25",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=30,'n'",
+      "result": "advance=13,ppem=26",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=31,'n'",
+      "result": "advance=14,ppem=27",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=32,'n'",
+      "result": "advance=14,ppem=27",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=33,'n'",
+      "result": "advance=14,ppem=28",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=34,'n'",
+      "result": "advance=15,ppem=30",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=35,'n'",
+      "result": "advance=15,ppem=31",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=36,'n'",
+      "result": "advance=15,ppem=32",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=37,'n'",
+      "result": "advance=16,ppem=33",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=38,'n'",
+      "result": "advance=16,ppem=33",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=39,'n'",
+      "result": "advance=16,ppem=34",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=40,'n'",
+      "result": "advance=18,ppem=35",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=41,'n'",
+      "result": "advance=16,ppem=36",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=42,'n'",
+      "result": "advance=19,ppem=37",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=43,'n'",
+      "result": "advance=19,ppem=38",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=44,'n'",
+      "result": "advance=20,ppem=39",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=45,'n'",
+      "result": "advance=20,ppem=39",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=46,'n'",
+      "result": "advance=20,ppem=40",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=47,'n'",
+      "result": "advance=20,ppem=41",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=48,'n'",
+      "result": "advance=22,ppem=42",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=49,'n'",
+      "result": "advance=21,ppem=43",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=50,'n'",
+      "result": "advance=21,ppem=43",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=51,'n'",
+      "result": "advance=21,ppem=44",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=52,'n'",
+      "result": "advance=22,ppem=45",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=53,'n'",
+      "result": "advance=22,ppem=46",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=54,'n'",
+      "result": "advance=23,ppem=47",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=55,'n'",
+      "result": "advance=23,ppem=48",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=56,'n'",
+      "result": "advance=25,ppem=49",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=57,'n'",
+      "result": "advance=24,ppem=50",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=58,'n'",
+      "result": "advance=26,ppem=51",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=59,'n'",
+      "result": "advance=26,ppem=51",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=60,'n'",
+      "result": "advance=26,ppem=52",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=61,'n'",
+      "result": "advance=27,ppem=53",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=62,'n'",
+      "result": "advance=27,ppem=55",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=63,'n'",
+      "result": "advance=27,ppem=55",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=64,'n'",
+      "result": "advance=28,ppem=56",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=65,'n'",
+      "result": "advance=28,ppem=57",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=66,'n'",
+      "result": "advance=28,ppem=57",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=67,'n'",
+      "result": "advance=28,ppem=58",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=68,'n'",
+      "result": "advance=30,ppem=60",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=69,'n'",
+      "result": "advance=31,ppem=61",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=70,'n'",
+      "result": "advance=31,ppem=62",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=71,'n'",
+      "result": "advance=32,ppem=63",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=72,'n'",
+      "result": "advance=32,ppem=63",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=73,'n'",
+      "result": "advance=32,ppem=64",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=74,'n'",
+      "result": "advance=33,ppem=65",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=75,'n'",
+      "result": "advance=33,ppem=66",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=76,'n'",
+      "result": "advance=34,ppem=67",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=77,'n'",
+      "result": "advance=34,ppem=68",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=78,'n'",
+      "result": "advance=34,ppem=69",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=79,'n'",
+      "result": "advance=34,ppem=69",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=80,'n'",
+      "result": "advance=35,ppem=70",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=81,'n'",
+      "result": "advance=35,ppem=71",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=82,'n'",
+      "result": "advance=36,ppem=72",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=83,'n'",
+      "result": "advance=37,ppem=73",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=84,'n'",
+      "result": "advance=37,ppem=74",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=85,'n'",
+      "result": "advance=38,ppem=75",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=86,'n'",
+      "result": "advance=38,ppem=76",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=87,'n'",
+      "result": "advance=38,ppem=76",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=88,'n'",
+      "result": "advance=39,ppem=77",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=89,'n'",
+      "result": "advance=39,ppem=78",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=90,'n'",
+      "result": "advance=40,ppem=79",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=91,'n'",
+      "result": "advance=40,ppem=80",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=92,'n'",
+      "result": "advance=41,ppem=81",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=93,'n'",
+      "result": "advance=41,ppem=81",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=94,'n'",
+      "result": "advance=41,ppem=82",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=95,'n'",
+      "result": "advance=42,ppem=84",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=96,'n'",
+      "result": "advance=42,ppem=84",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=97,'n'",
+      "result": "advance=43,ppem=85",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=98,'n'",
+      "result": "advance=43,ppem=86",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=99,'n'",
+      "result": "advance=44,ppem=87",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=100,'n'",
+      "result": "advance=44,ppem=88",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=101,'n'",
+      "result": "advance=45,ppem=89",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=102,'n'",
+      "result": "advance=45,ppem=89",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=103,'n'",
+      "result": "advance=45,ppem=90",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=104,'n'",
+      "result": "advance=46,ppem=92",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=105,'n'",
+      "result": "advance=47,ppem=93",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=106,'n'",
+      "result": "advance=47,ppem=93",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=107,'n'",
+      "result": "advance=47,ppem=94",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=108,'n'",
+      "result": "advance=48,ppem=95",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=109,'n'",
+      "result": "advance=48,ppem=96",
+      "section": "one character's advance at every cell height"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=110,'n'",
+      "result": "advance=49,ppem=97",
+      "section": "one character's advance at every cell height"
+    }
+  ]
+}

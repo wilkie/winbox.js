@@ -411,12 +411,12 @@ Run against it, this interpreter agrees on:
 | Arial                | 3,720            | **3,720 (100%)** |
 | Arial Bold           | 3,600            | **3,600 (100%)** |
 | Arial Italic         | 3,624            | 3,620            |
-| Times New Roman      | 3,696            | 3,692            |
+| Times New Roman      | 3,696            | 3,695            |
 | Times New Roman Bold | 3,648            | **3,648 (100%)** |
 | Times New Roman Ital | 3,768            | **3,768 (100%)** |
 
-**22,048 of 22,056**, across all six files that carry the table. Four of the six
-reproduce every advance they tabulate.
+**22,051 of 22,056**, across all six files that carry the table. Four of the six
+reproduce every advance they tabulate, and a fifth is one short.
 
 Every glyph that carries a program, at all twenty-four tabulated sizes. For
 comparison, `glyphs.json` holds ninety records in total.
@@ -487,12 +487,246 @@ Arial and Arial Bold now reproduce every advance they tabulate.
 
 ### What is left
 
-Eight advances still differ, in two glyphs:
+Five advances still differ, in two glyphs:
 
 | Font            | Glyph | Sizes          |
 | --------------- | ----- | -------------- |
 | Arial Italic    | `M`   | 32, 67, 75, 92 |
-| Times New Roman | `w`   | 46, 67, 75     |
+| Times New Roman | `o`   | 75             |
+
+**They are position errors, not rounding-boundary errors.** The advance phantom
+lands where it lands and the rounding of it is not in question: Times New
+Roman's `w` at 46 pixels per em comes out at 32.953 pixels where Windows says 32. A value that far from the boundary is not a rounding dispute; the point is
+most of a pixel from where it belongs.
+
+The four Arial Italic `M` failures share something the four Times ones do not: a
+projection vector of (16037, -3353), which is the face's own slant, against a
+freedom vector of pure x. The Times failures have both vectors on the x axis. So
+it is two classes, and possibly two unrelated faults.
+
+Five candidate explanations have been checked and rejected:
+
+- **`movePoint`'s handling of an off-axis projection.** A point moving along
+  freedom must travel far enough that its _projection_ moves by the distance
+  asked, which means dividing by the dot product of the two vectors. That is
+  done, and correctly.
+- **Rounding the dot product once rather than twice.** The reference sums both
+  products before dividing where this divides each term and adds, which can land
+  a sixty-fourth apart and only where the vector is off-axis -- exactly the
+  Arial Italic case. Changing it moves nothing: the same twelve, unchanged. It
+  was reverted rather than kept, because a change that cannot be measured cannot
+  be justified.
+- **The control value cut-in.** Swept against `hdmx`, which had never been done
+  -- the earlier sweep was against the ninety glyph bitmaps, before most of the
+  fixes above. What `prep` sets is best by a distance: 12 wrong against 40 at a
+  cut-in of two pixels, 362 at one, and 1,577 at zero. It is right as it stands.
+- **The reference-point flag on `MDRP` and `MIRP`.** Bit 4, not bit 0. Correct.
+- **`MIAP`'s cut-in branch**, which is a different rule from `MIRP`'s and easy
+  to conflate. It matches the reference.
+
+### The chain under Arial Italic's `M`
+
+Traced three levels at 92 pixels per em, where the advance comes out 75 against
+Windows' 76. Each level is a single instruction and each is locally correct:
+
+1. The advance phantom is placed by a `MIRP` measuring from **point 10**, which
+   sits at 75.02 pixels. Windows needs 75.5 or more.
+2. Point 10 is placed by a `MIRP` measuring from **point 11**, then rounded to
+   a whole pixel by `MDAP`. It arrives at 65.17 and rounds to 65; 65.5 would
+   have been needed.
+3. Point 11 starts at 57.81, is rounded up to 58.00 by one `MDAP`, pulled to
+   57.28 by a `MIRP`, and rounded down to 57.00 by another. Windows needs 58.
+
+At every step the control value is used unrounded, the cut-in does not fire, and
+the arithmetic checks out against the reference. The error is a third of a pixel
+at step three and a whole pixel by step one, so it is being amplified rather than
+introduced late -- but where it enters is above everything traced.
+
+Starting again at point 11 and working upward, as that note recommended, added
+three more levels and no answer. Point 11 is pulled off its rounded position by a
+`MIRP` measuring from **point 5**, which `RTHG` places at 36.5 pixels from an
+unhinted 36.969 -- and 36.5 is the nearer half-grid point, so that rounding is
+right. Had point 5 gone to 37.5 instead, every number above it would come out as
+Windows has it. But nothing in the instruction justifies 37.5.
+
+Everything checked since, all of it against the reference implementation:
+
+- **All five round states.** `RTG`, `RTHG`, `RTDG`, `RUTG`, `RDTG` and
+  `SROUND`'s super-rounding, each compared term by term with the reference's
+  formula, including the negative-value path. All correct.
+- **Four arithmetic variants**, swept over the whole corpus: `movePoint`
+  truncating or flooring instead of rounding (13 wrong, worse), and `project`
+  rounding once or truncating (12, unchanged). As written is the best of them.
+- **`DELTAC`.** No exception targets the control value in question, and no
+  exception selects 37 pixels per em at all, so the zero that fires there is
+  correct.
+
+**Which instructions the failures lean on.** Counting opcodes across the twelve
+failing runs against a sample of sixty-eight passing ones, four stand out as
+enriched rather than merely common: `MD` (67% of failures, 3% of successes),
+`SHPIX` (67% against 4%), `MUL` (58% against none) and `SFVTL` (58% against 1%).
+That is what pointed at the two reference rules below, both of which turned out
+to be wrong for this rasteriser -- but it is the right way to pick where to look
+next, and the numbers are here so the next attempt need not recount them.
+
+**A rule that is genuinely missing and cannot be tested here.** `MIRP` and
+`MDRP` are both specified to check the distance against the _single width_ --
+`SWV` sets a value and `SWCI` a tolerance, and a distance within the tolerance
+snaps to the value. Both instructions are implemented as setters and the state
+they set is never read: the rule is absent. It makes no difference to any of
+this, because **no font in the installation ever executes either instruction**,
+so the tolerance stays zero and the rule could never fire. It is left unwritten
+rather than written blind, since there is nothing here that could tell whether
+it had been written correctly. **Open**, and a latent gap for any font that does
+use it.
+
+#### Where this rasteriser is not the reference implementation
+
+Two rules that FreeType applies and this does not, both measured against
+`hdmx` and both rejected by it. They are recorded because "the reference does
+X" is the most natural next guess for anyone reading this, and here it is the
+wrong guess twice.
+
+**The phantom points are not rounded to the grid before the glyph program
+runs.** The reference rounds both horizontal phantoms to whole pixels first.
+Doing that here takes 12 wrong advances to **338** -- not a near miss, a
+different rasteriser. Rounding only the origin gives 326 and only the advance 328.
+
+**The original distance is measured on the scaled coordinates, not in font
+units.** `MDRP`, `MIRP` and `MD` all compare against the outline's own distance.
+The reference measures that in font units and scales it once, keeping a separate
+array of unscaled coordinates to do so; this measures the coordinates that were
+already scaled and rounded when the glyph was loaded, which rounds twice.
+Implementing the reference's way -- properly, with the phantoms' font-unit
+positions taken from the font rather than scaled back -- gives **13** where this
+gives 12. Thin evidence, and pointing the wrong way, so it stays as it is.
+
+The margin there is one advance in 22,056 and should not be oversold. What it
+does rule out is the idea that the remaining gap is explained by this rule being
+missing.
+
+#### Control values round halves upward, and a branch hangs on it
+
+Chasing the simplest of the twelve to the bottom found the last arithmetic rule,
+and it was hiding behind a conditional rather than behind a position.
+
+Times New Roman Italic's `!` at 92 pixels per em was a pixel wide. Disassembling
+the `fpgm` function its glyph program calls shows a **rounding-error
+distributor**, an idiom worth recognising because several of these fonts use it:
+
+```
+    total  = ROUND(a + b)
+    parts  = ROUND(a) + ROUND(b)
+    if      (total - parts > 0)  nudge one control value down a pixel
+    else if (0 > total - parts)  nudge the other down a pixel
+                                 otherwise leave both alone
+```
+
+The program is asking whether rounding the whole agrees with rounding the parts,
+and fixing up the discrepancy when it does not. At 83 pixels per em the parts
+fall a pixel short and it adjusts; at 92 they agree exactly and it does nothing.
+Both of those were what our interpreter computed, and both were right for the
+numbers it had.
+
+The numbers were wrong by a sixty-fourth. `cvt[91]` is -36 font units, which at
+92 pixels per em is **-103.5 exactly**. Rounding halves away from zero gives
+-104; rounding them upward gives -103. That one unit decides whether the totals
+agree, which decides whether the branch is taken, which decides a whole pixel of
+advance.
+
+**Control values are scaled with halves rounded upward, not away from zero.**
+
+```
+value = floor((units * ppem * 64 + unitsPerEm / 2) / unitsPerEm)
+```
+
+The two agree on every positive value and differ only on negatives landing
+exactly on a half -- which is what `(value + half) >> shift` does when the shift
+is arithmetic: the addition biases and the shift floors. **Measured**: 12 wrong
+advances to **8**, and Times New Roman Bold and Times New Roman Italic go from
+one and two wrong to none at all.
+
+Applying the same rule to the outline coordinates changes nothing either way, so
+it is left alone: there is no evidence for it here.
+
+This is the fifth fault this session to present as a wrong instruction and turn
+out to be a wrong input, and the first where the amplifier was a branch rather
+than a rounding. It also explains why every arithmetic sweep before it either
+changed nothing or changed everything: a sixty-fourth either flips the
+comparison or it does not, and there is no partial credit on a branch.
+
+### What is left
+
+Eight advances differ: Arial Italic's `M` at four sizes, Times New Roman's `w` at
+three and `o` at one.
+
+#### A differential harness
+
+Everything above was reasoning about our own trace, because Windows reports one
+number per glyph and says nothing about the several dozen points behind it. It
+can be made to say more.
+
+**A glyph's program can be rewritten to report one of its own points as the
+glyph's advance.** Append `SVTCA[x]`, push the advance phantom and the point of
+interest, `GC` the point's coordinate, multiply, and `SCFS` it onto the phantom.
+What Windows then reports as the letter's width is that point's position,
+magnified. `scripts/oracle/fabricate.mjs` builds these and `oracle/probes/
+hinting.c` reads them at every cell height in one recording.
+
+Three things had to be got right, and each was wrong first:
+
+- **The cut has to be statically balanced.** A glyph has exactly the room its
+  own program fills, so the readout replaces the tail -- and the first cut
+  landed inside a conditional, putting the readout in a branch half the sizes
+  never entered. Those sizes reported the advance the glyph would have had
+  anyway, which looks exactly like a reading and is not one.
+- **The truncation must not disturb the point.** Checked by running the full
+  program and the fabricated one through our own interpreter: they agree on the
+  reported point at every size.
+- **The channel has to be calibrated.** A fabrication that reports a constant
+  sixteen pixels reads back as exactly 16 at all 58 readable sizes, so there is
+  no offset hiding in the phantom the advance is measured from.
+
+**`GetTextExtent` reads `hdmx` rather than running the program.** That fell out
+of the calibration: at the two dozen sizes `hdmx` tabulates, the fabricated
+glyph reports the tabulated advance and the readout is invisible. It is only at
+sizes the table misses that Windows runs the program at all. **Recorded**, and
+it is why the harness reads 58 sizes rather than 84.
+
+#### What it found: `SDPVTL` takes its dual from the original outline
+
+The harness read points 32 and 35 at every size Windows will run the program at.
+They agreed exactly at 35 of the 58 and differed by exactly one pixel at the
+other 23 -- never by a fraction, and always both together, so whatever differed
+was upstream of both.
+
+Bisecting the program settled it in five recordings. The same point read after
+241, 359, 481, 600, 660 and 717 bytes agrees everywhere through 600 and differs
+at 23 sizes by 660, which brackets the fault in sixty bytes. Disassembling those
+sixty shows four `SDPVTL` instructions and nothing else that touches a vector.
+
+**`SDPVTL` sets the dual projection vector from where its two points started and
+the projection vector from where they are now.** That is the whole of what makes
+it different from `SPVTL`, which sets both from the current outline: the
+projection says which way to measure the outline as it stands, and the dual says
+which way the line ran before any of it was fitted, so that an `MDRP` comparing
+against the original distance compares along the original direction.
+
+This took both from the current outline. The error is however far the program
+has already moved the two points -- on a line that starts off-axis and is then
+fitted, a fraction of a pixel of angle, which is nothing until it decides a
+rounding.
+
+**Measured**: 8 wrong advances to **5**. Times New Roman's `w` is right at all
+three sizes it was wrong at, and Times New Roman is one advance from exact.
+
+### What is left
+
+Five advances still differ, in two glyphs:
+
+| Font            | Glyph | Sizes          |
+| --------------- | ----- | -------------- |
+| Arial Italic    | `M`   | 32, 67, 75, 92 |
 | Times New Roman | `o`   | 75             |
 
 **They are position errors, not rounding-boundary errors.** The advance phantom
@@ -1015,7 +1249,7 @@ fitted height.
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
 | `font` (2,655 records)                                       | 98.1%     |
 | `glyphs` (90 records)                                        | 92.2%     |
-| `hinting` (309 records)                                      | 90.3%     |
+| `hinting` (309 records)                                      | 95.5%     |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical. The seven
 that differ are all outline faces.

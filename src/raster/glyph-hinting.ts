@@ -1179,20 +1179,40 @@ export class Hinter {
 
         const perpendicular = (opcode & 0x01) !== 0;
 
-        const dx = zoneTwo.x[first] - zoneOne.x[second];
-        const dy = zoneTwo.y[first] - zoneOne.y[second];
+        const vector = this.unitVector(
+          zoneTwo.x[first] - zoneOne.x[second],
+          zoneTwo.y[first] - zoneOne.y[second],
+          perpendicular
+        );
 
-        const vector = this.unitVector(dx, dy, perpendicular);
-
-        if (opcode === 0x06 || opcode === 0x07) {
-          state.projection = vector;
-          state.dual = { ...vector };
-        } else if (opcode === 0x08 || opcode === 0x09) {
+        if (opcode === 0x08 || opcode === 0x09) {
           state.freedom = vector;
-        } else {
-          state.projection = vector;
-          state.dual = { ...vector };
+
+          return at;
         }
+
+        state.projection = vector;
+
+        /* `SDPVTL` takes its dual from where the two points *started*, not from
+         * where they are now, and that is the whole of what makes it different
+         * from `SPVTL`. The projection vector says which way to measure in the
+         * outline as it stands; the dual says which way the line ran before any
+         * of it was fitted, so that a later `MDRP` comparing against the
+         * original distance compares along the original direction.
+         *
+         * Taking both from the current outline is the obvious reading and is
+         * wrong by however far the program has already moved the two points.
+         * On a line that starts off-axis and is then fitted, that is a fraction
+         * of a pixel of angle -- which is nothing until it decides a rounding.
+         */
+        state.dual =
+          opcode === 0x06 || opcode === 0x07
+            ? { ...vector }
+            : this.unitVector(
+                zoneTwo.originalX[first] - zoneOne.originalX[second],
+                zoneTwo.originalY[first] - zoneOne.originalY[second],
+                perpendicular
+              );
 
         return at;
       }

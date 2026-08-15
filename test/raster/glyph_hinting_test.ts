@@ -203,7 +203,7 @@ describe('hinted advances against the tables the font ships', () => {
   );
 
   present(
-    'reproduces all but four of the advances Times New Roman tabulates',
+    'reproduces all but one of the advances Times New Roman tabulates',
     async function () {
       const times: any = await installed('TIMES.TTF');
 
@@ -224,12 +224,12 @@ describe('hinted advances against the tables the font ships', () => {
         }
       }
 
-      /* Pinned rather than asserted to be zero, because it is not: four
-       * advances out of 3,696 come out a pixel from what the font says -- the
-       * `w` at three sizes and the `o` at one. Lowering this number is
-       * progress; raising it is a regression.
+      /* Pinned rather than asserted to be zero, because it is not: one advance
+       * out of 3,696 comes out a pixel from what the font says -- the `o` at
+       * seventy-five pixels per em. Lowering this number is progress; raising
+       * it is a regression.
        */
-      expect(`${agreed} agreed, ${differed} differed`).toEqual('3692 agreed, 4 differed');
+      expect(`${agreed} agreed, ${differed} differed`).toEqual('3695 agreed, 1 differed');
     },
     120000
   );
