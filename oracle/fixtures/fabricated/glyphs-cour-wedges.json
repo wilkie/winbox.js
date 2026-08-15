@@ -4231,7 +4231,7 @@
     {
       "function": "glyph",
       "args": "\"Courier New\",h=16,weight=400,italic=0,'y'",
-      "result": "fffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7fffffff7fffffff7fffffff3fffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "result": "fffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7fffffff7fffffff3fffffff3fffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
       "section": "a wide net over the outline faces, for the rules a handful cannot settle"
     },
     {
@@ -4303,7 +4303,7 @@
     {
       "function": "glyph",
       "args": "\"Courier New\",h=18,weight=400,italic=0,'B'",
-      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffffbfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffffbfffffff9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
       "section": "a wide net over the outline faces, for the rules a handful cannot settle"
     },
     {
@@ -4327,7 +4327,7 @@
     {
       "function": "glyph",
       "args": "\"Courier New\",h=18,weight=400,italic=0,'N'",
-      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffcfffffff87fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffc7ffffff87fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
       "section": "a wide net over the outline faces, for the rules a handful cannot settle"
     },
     {
@@ -4387,7 +4387,7 @@
     {
       "function": "glyph",
       "args": "\"Courier New\",h=18,weight=400,italic=0,'f'",
-      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffdfffffff9fffffff9fffffff8fffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffdfffffff9fffffff9fffffff8fffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
       "section": "a wide net over the outline faces, for the rules a handful cannot settle"
     },
     {
@@ -4447,7 +4447,7 @@
     {
       "function": "glyph",
       "args": "\"Courier New\",h=18,weight=400,italic=0,'y'",
-      "result": "fffffffffffffffffffffffffffffffffffffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "result": "fffffffffffffffffffffffffffffffffffffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffff9fffffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
       "section": "a wide net over the outline faces, for the rules a handful cannot settle"
     },
     {
@@ -4471,7 +4471,7 @@
     {
       "function": "glyph",
       "args": "\"Courier New\",h=18,weight=400,italic=0,'3'",
-      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffefffffffcfffffffcfffffffcfffffff87ffffff87ffffff87ffffff03fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffefffffffcfffffffcfffffffc7ffffff87ffffff87ffffff87ffffff03fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
       "section": "a wide net over the outline faces, for the rules a handful cannot settle"
     },
     {

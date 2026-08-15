@@ -780,10 +780,22 @@ export const FABRICATIONS = [
         const base = BASES[index % BASES.length];
         const height = HEIGHTS[Math.floor(index / BASES.length) % HEIGHTS.length];
 
+        /* Clockwise, which is what TrueType asks an outer contour to be.
+         *
+         * The first version of this went the other way round, and the font was
+         * malformed in a way that nothing complains about: the fill is
+         * non-zero winding, so a reversed contour still comes out solid and
+         * every rescue decision still looks reasonable. What it changed was
+         * which of the two crossings the rasteriser calls the left edge, and
+         * that is exactly what the pixel choice turns on. The bars were
+         * clockwise by luck of how a rectangle is easiest to write down, so
+         * the two fonts disagreed about the pixel for a reason that had
+         * nothing to do with slanted edges.
+         */
         const points = [
           [300, 0],
-          [300 + base, 0],
           [300 + Math.floor(base / 2), height],
+          [300 + base, 0],
         ];
 
         const glyph = glyphFor(bytes, WIDE.charCodeAt(index));

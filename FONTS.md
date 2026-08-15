@@ -1284,13 +1284,41 @@ Windows lands sometimes on the pixel below the span's start and sometimes on the
 one above, and the two cases differ by hundredths of a pixel.
 
 **Measured**, and the negative is the useful part: _the pixel a slanted span
-rescues is not a function of that span_. A scan converter that solves each
-scanline independently -- which is what this one does -- has nothing else to go
-on. One that walks its edges incrementally down the rows, carrying a fixed-point
-accumulator from the row above, has exactly the extra state that would round two
-spans a hundredth of a pixel apart to opposite sides. That is the next
-hypothesis, and it is a different shape of rasteriser rather than another
-expression to fit.
+rescues is not a function of that span_. Four ways of getting at it have now
+been tried and none separates the two fonts.
+
+**The edge walk.** A scan converter of the period does not solve each scanline;
+it splits the outline into runs that only go one way in y and carries each run's
+x down the rows with a Bresenham accumulator, so the sixty-fourths it lands on
+are not the ones an exact solve gives. That was built and measured, and it gives
+the same split: bars 390 of 390 on the first centre at or above the start,
+wedges 115 of 128 on the last centre at or below the end. **The accumulator is
+not what Windows is rounding.**
+
+**The winding.** The first wedge font was wound counterclockwise, which TrueType
+does not allow of an outer contour -- and nothing complains, because a non-zero
+fill draws a reversed contour solid and every rescue decision still looks
+sensible. Rebuilt clockwise and re-recorded, it gives numbers identical to the
+last digit. **Windows does not branch on it**, and the hazard is worth naming:
+a fabricated font can be malformed in a way that changes nothing visible and
+everything about what you conclude.
+
+**A fill in disguise.** If Windows' span were a few sixty-fourths wider than
+ours these would be ordinary fills and there would be no pick to explain.
+Allowing up to four sixty-fourths at each end accounts for 28 of 122 wedge rows
+and 75 of 390 bar rows, so they are rescues.
+
+**And no expression can do it.** For the bar span 5.809 to 6.063 Windows inks 6,
+and for the wedge span 3.547 to 4.359 it inks 3. No `ceil` or `floor` of any
+weighted average of the two endpoints yields both: the bar needs the answer
+above its whole span and the wedge needs it below the middle of its own.
+
+So the deciding information is somewhere other than the span, and the candidate
+left standing is state carried between scanlines -- a rescue placed to continue
+the pixel the row above turned on. The wedges cannot test that, because each has
+only one rescued row. **A thin diagonal bar would have a column of them**, and
+whether its rescued pixels follow the geometry or follow each other is the next
+thing to record.
 
 **What is shipped is knowingly not this.** The measured rule -- no column sweep,
 no threshold, the next centre, and the turn-and-convergence test -- reproduces
