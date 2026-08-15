@@ -35,10 +35,11 @@ const CURVE_STEPS = 8;
  * glyphs, so the recording pins the rule and not the number. Below 0.3 the
  * stubs come back; above 0.5 real dropouts start being refused.
  *
- * Swept again over 846 glyphs rather than 90, and again after the crossing rule
- * was corrected, and the peak is still broad and still not sharp: 0.45 is the
- * best at 700 glyphs exact against 691 here, and 0.325 turns off the fewest
- * wrong pixels at 359 against 418. What the wider
+ * Swept three times now -- on 846 glyphs rather than 90, again after the
+ * crossing rule was corrected, and again after the interpreter was -- and the
+ * peak is broad every time and lands at 0.45 every time, 710 glyphs exact
+ * against 701 here, with the fewest wrong pixels somewhere else again at 0.325.
+ * A number that keeps winning by nine glyphs and never sharpens is a fit. What the wider
  * sweep shows that the narrow one could not is the shape of the curve -- a
  * smooth trade of invented pixels for missing ones with no corner in it, and
  * the best threshold and the best pixel count in different places. That is what

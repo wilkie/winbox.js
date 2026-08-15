@@ -717,6 +717,60 @@ function reporter(name, { font = 'TIMES.TTF', character, point, constant, cut, m
 }
 
 export const FABRICATIONS = [
+  /* Courier New with its `INSTCTRL` turned around.
+   *
+   * Its `prep` executes the instruction twice, both times as `PUSHB[2] 1, 1`
+   * followed by the opcode -- selector 1, value 1, which sets the bit meaning
+   * "do not grid-fit at this size". The first is guarded by `MPPEM < 9`, and
+   * eight pixels per em is the size at which this face is 0 of 36 recorded
+   * glyphs and more than half of every wrong pixel in the fixture.
+   *
+   * Zeroing the *value* byte of each push leaves the selector alone and turns
+   * the instruction from setting the bit into clearing it, so the glyph
+   * programs run where they otherwise would not. One byte each, no lengths
+   * changed, nothing else about the font touched.
+   *
+   * The point is not that Windows should be made to hint. It is that the
+   * recording made with this font and the recording made without it can be
+   * compared: if they are identical, `INSTCTRL` does nothing to what gets
+   * drawn and the reading of it here is wrong; if they differ, it works, and
+   * the fabricated one is a recording of Courier New *hinted* at eight pixels
+   * per em, which nothing else can produce.
+   */
+  {
+    name: 'cour-no-instctrl',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: "Courier New with prep's INSTCTRL clearing the bit instead of setting it",
+
+    edit: (bytes) => {
+      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      const table = tablesOf(view).prep;
+
+      let found = 0;
+
+      for (let at = table.offset; at < table.offset + table.length; at++) {
+        // `PUSHB[2] 1, 1` then `INSTCTRL`, which is the whole of the pattern.
+        if (
+          bytes[at] === 0xb1 &&
+          bytes[at + 1] === 0x01 &&
+          bytes[at + 2] === 0x01 &&
+          bytes[at + 3] === 0x8e
+        ) {
+          // The deeper of the two is the value; the top one is the selector.
+          bytes[at + 1] = 0x00;
+          found++;
+        }
+      }
+
+      if (found !== 2) {
+        throw new Error(`expected two INSTCTRL sites in prep, found ${found}`);
+      }
+
+      return bytes;
+    },
+  },
+
   /* Times New Roman Italic's `j`, which is the last record of `CreateFont`
    * still disagreeing and now also the only record of 927 that the `hinting`
    * sweep disagrees on: at thirty-four pixels per em Windows advances by 8 and

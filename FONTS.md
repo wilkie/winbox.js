@@ -1574,3 +1574,38 @@ string extent, and every hinted advance of six letters at ninety-nine sizes
 each.
 
 What that leaves is the one probe that records pixels.
+
+### What Courier New at eight pixels per em turned out to be
+
+More than half of every wrong pixel in the glyph fixture is one face at one
+size, and the fabrications settle what it is not.
+
+**`INSTCTRL` works, and the recording proves it by exclusion.** Courier New's
+`prep` executes it twice, both times as `PUSHB[2] 1, 1` -- selector 1, value 1,
+setting the bit that means "do not grid-fit at this size" -- and the first is
+guarded by `MPPEM < 9`. Zeroing the _value_ byte of each push turns the
+instruction from setting the bit into clearing it: one byte each, no lengths
+changed. Recording the glyph probe against that font changes **exactly the 36
+records at a ten pixel cell and not one of the other 222.** That is the size the
+guard selects, so the instruction does what it says and Windows honours it.
+
+**And our grid-fitting at that size is right.** The fabricated recording is
+Courier New _hinted_ at eight pixels per em, which nothing else can produce --
+the stock font refuses to hint there and no other size is eight pixels per em.
+Rendering against it gives **25 of 36 exact and 32 wrong pixels**, sixteen of
+them one glyph where Windows draws nothing at all. Against the stock recording
+the same renderer gets 2 of 36 and 217.
+
+So the interpreter is not what is wrong there, and neither is the scan
+converter, since it is the same one in both cases. Putting the two recordings
+and both renderings side by side says the rest: **where we draw anything at all
+the shape agrees with Windows, and we are simply missing ink.** The `M`'s top
+two rows are identical and its bottom three are nearly empty; those three rows
+are the two stems, a third of a pixel wide, which at that size exist only if
+dropout control rescues them.
+
+At eight pixels per em with no grid-fitting, _every_ stroke of this face is a
+dropout candidate, and Windows rescues a particular subset of them. Rescuing all
+of them takes the missing pixels from 207 to 34 and invents 131. **So the ink is
+all reachable and the rule that selects it is the whole of what is left** -- and
+it is the same stub rule section 6 has now failed to fit three ways.
