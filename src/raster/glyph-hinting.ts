@@ -84,7 +84,40 @@ function mulDiv(a: number, b: number, c: number) {
 
 /** A division in the units the format keeps distances in. */
 function divide(a: number, b: number) {
-  return mulDiv(a, ONE, b);
+  if (b === 0) {
+    return 0;
+  }
+
+  /* Truncating, where `mulDiv` rounds.
+   *
+   * `MUL` and `DIV` are not the same operation in two directions: the format
+   * has `MUL` round its result to the nearest sixty-fourth and `DIV` throw the
+   * remainder away. Making both round is the obvious thing to write and is
+   * wrong by one sixty-fourth wherever a division lands mid-way, which is
+   * rarely and consequentially -- a font that divides to get a proportion and
+   * multiplies it back up carries the error into a whole pixel.
+   *
+   * **Measured**: see `FONTS.md`. Arial Bold's `j` at 32, 33 and 37 pixels per
+   * em is the case that shows it, by way of a control value two pixels wide
+   * that should have been three.
+   */
+  let sign = 1;
+  let top = a;
+  let bottom = b;
+
+  if (top < 0) {
+    top = -top;
+    sign = -sign;
+  }
+
+  if (bottom < 0) {
+    bottom = -bottom;
+    sign = -sign;
+  }
+
+  const result = Math.floor((top * ONE) / bottom);
+
+  return sign < 0 ? -result : result;
 }
 
 /** The points of a glyph, in both the state they arrived in and the current one. */

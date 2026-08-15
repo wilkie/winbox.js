@@ -406,12 +406,16 @@ it -- and one that needs no recording, no emulator and no Windows.
 
 Run against it, this interpreter agrees on:
 
-| Font            | Advances checked | Agreeing         |
-| --------------- | ---------------- | ---------------- |
-| Arial           | 3,720            | **3,720 (100%)** |
-| Times New Roman | 3,696            | 3,682 (99.6%)    |
+| Font                 | Advances checked | Agreeing         |
+| -------------------- | ---------------- | ---------------- |
+| Arial                | 3,720            | **3,720 (100%)** |
+| Arial Bold           | 3,600            | **3,600 (100%)** |
+| Arial Italic         | 3,624            | 3,620            |
+| Times New Roman      | 3,696            | 3,691            |
+| Times New Roman Bold | 3,648            | 3,647            |
+| Times New Roman Ital | 3,768            | 3,766            |
 
-Across all six files that carry the table, 22,028 of 22,056.
+**22,044 of 22,056**, across all six files that carry the table.
 
 Every glyph that carries a program, at all twenty-four tabulated sizes. For
 comparison, `glyphs.json` holds ninety records in total.
@@ -438,18 +442,13 @@ forty-six, each pinned to one glyph at one size:
 | Times New Roman Ital | 16 of 3,768 | `)`, `‰`                          |
 
 **The minimum distance takes its sign from the outline, not from the rounded
-distance.** This is the fault the table found, and it is worth stating carefully
-because the difference is invisible almost all of the time.
-
-`MDRP` and `MIRP` both carry a flag asking that the distance they apply never
-fall below `minimumDistance`, so that a feature cannot collapse to nothing at
-small sizes. The obvious reading -- if the magnitude is under the minimum, push
-it out to the minimum, keeping the sign it has -- is right whenever the distance
-is non-zero, and wrong when the rounding lands on exactly zero. Zero is not
-negative, so a point belonging to the _left_ of its reference gets pushed a
-whole pixel to its _right_, and the feature is not merely the wrong size, it is
-inside out. The correct rule takes the sign from the original outline distance,
-and clamps rather than testing magnitude:
+distance.** `MDRP` and `MIRP` both carry a flag asking that the distance they
+apply never fall below `minimumDistance`, so a feature cannot collapse at small
+sizes. The obvious reading -- if the magnitude is under the minimum, push it out
+keeping the sign it has -- is right whenever the distance is non-zero and wrong
+when the rounding lands on exactly zero. Zero is not negative, so a point
+belonging to the _left_ of its reference gets pushed a whole pixel to its
+_right_, and the feature is not merely the wrong size, it is inside out:
 
 ```
 if (opcode & MIN_DISTANCE) {
@@ -458,68 +457,55 @@ if (opcode & MIN_DISTANCE) {
 }
 ```
 
-Times New Roman's guillemet at eleven pixels per em is the case that exposed it.
-The left side bearing is hinted by a `MIRP` whose control value, -23
-sixty-fourths, rounds to zero; the point belongs a third of a pixel left of its
-reference, and the old rule put it a pixel to the right. That moved the origin
-phantom two pixels, and the glyph came out two pixels narrow -- at every size
-from 11 to 19, and correct from 21 up, because at those sizes the control value
-no longer rounds to zero.
+Times New Roman's guillemet at eleven pixels per em is what exposed it: a `MIRP`
+whose control value rounds to zero moved the origin phantom two pixels, and the
+glyph came out two pixels narrow at every size from 11 to 19. **Measured**
+against `hdmx`: 46 wrong advances down to 28, and the recorded glyphs from 73 of
+90 to 78.
 
-Fixing it took the tabulated advances from 46 wrong to 28, and the recorded
-glyph bitmaps from 73 of 90 to **78 of 90**. Five glyphs that Windows draws and
-we did not now come out pixel-identical, and none of them was `»` -- the
-instruction is a general one, and so was the fault. The glyph that found it was
-only the one where a two-pixel error had nowhere to hide.
+**`DIV` truncates where `MUL` rounds.** They are not the same operation in two
+directions. The format has `MUL` round its result to the nearest sixty-fourth
+and `DIV` throw the remainder away, and making both round -- the obvious thing
+to write -- is wrong by one sixty-fourth wherever a division lands mid-way.
+
+That sounds too small to matter and is not, because a font that divides to get a
+proportion and multiplies it back up carries the error into a whole pixel. Arial
+Bold's `j` is the case. Its advance is hinted from a control value that `prep`
+computes like this, at 32 pixels per em:
+
+```
+DIV(82, 220)   ->  23.85, truncated to 23   (we rounded to 24)
+MUL(256, 23)   ->  92                       (we had 96)
+ROUND(92)      ->  64  = one pixel          (we had 128 = two)
+```
+
+One sixty-fourth in the division becomes a whole pixel after the rounding, and
+that pixel is a control value the glyph's own program then reads. **Measured**:
+28 wrong advances down to **12**, and the recorded glyphs from 78 of 90 to 83.
+Arial and Arial Bold now reproduce every advance they tabulate.
 
 ### What is left
 
-Twenty-eight advances still differ, across `j`, `M`, `I`, `k`, `m`, `o`, `w`,
-`y` and three glyphs outside the ANSI range, with no cluster among them: mostly
-single sizes, mostly one pixel. **Open**, and one of them is chased far enough
-below to say what kind of thing it is not.
+Twelve advances still differ: Arial Italic's `M` at four sizes, Times New
+Roman's `w` at three and `o` and one symbol at one each, and three more across
+the bold and italic files. No cluster, mostly one pixel. **Open.**
 
-#### Arial Bold's `j`, traced to a storage location
+### The pattern worth naming
 
-Wrong at 32, 33 and 37 pixels per em and right at the other twenty-one sizes,
-always one pixel narrow. Only one instruction touches the phantom points -- an
-`MSIRP` moving the advance point -- and the distance it is handed is computed as
+Four times in this session a fault has presented as "this instruction is wrong"
+and turned out to be "this instruction is fed the wrong number":
 
-```
-round(cvt[619]) + storage[9]
-```
+| Looked like                                   | Actually was                            |
+| --------------------------------------------- | --------------------------------------- |
+| `MIAP` rounding the cap height wrongly        | never settled; still open               |
+| `MIRP` moving a phantom point it should not   | `MDRP`/`MIRP` minimum-distance sign     |
+| One pixel of internal leading, a rounding bug | reading the wrong `VDMX` ratio group    |
+| `ROUND` producing 128 where Windows has 64    | `DIV` rounding where it should truncate |
 
-Forcing `storage[9]` to 64 fixes 33 and 37 exactly and disturbs nothing else, so
-that location is the fault and not merely correlated with it. (32 stays wrong,
-so it is a second cause sharing a symptom.)
-
-`prep` computes it as `ROUND[White](cvt[618] + |cvt[60]|)`. Every input has been
-checked:
-
-- The round state is **round-to-grid**, set by the font itself one instruction
-  earlier, so it is not a rounding-mode difference.
-- The engine compensation is **zero**, by the sweep above, so the `White` colour
-  changes nothing.
-- `cvt[618]` is **never written** by `fpgm` or `prep`. It is the raw -94 font
-  units scaled linearly, and our scaling agrees with the linear formula to the
-  unit at every size.
-
-With those three fixed, no arithmetic on our inputs reaches Windows' answer: at
-37 pixels per em the sum is 19 sixty-fourths and would have to round to 64, and
-no rounding of 19 does that. Windows is not reaching the instruction with the
-same numbers, and the difference is upstream of everything checked here.
-
-The instruction counts say where to look next: `prep` executes 2,118
-instructions at 29 and 32 pixels per em, 2,124 at 33 and 2,112 at 37. Different
-counts mean different branches, so the divergence is in a conditional -- and
-this formula, derived from four sizes, is probably not even the one being
-evaluated at all of them. **Open.**
-
-This is the fourth time this session that "the instruction is wrong" has turned
-out to be "the input is different". It is worth naming as a pattern: a wrong
-answer from a correct instruction looks exactly like a wrong instruction, and
-the only way to tell is to verify every input rather than to reason about the
-operation.
+Each was localised by tracing one instruction and each was solved one or two
+levels upstream of it. A wrong answer from a correct instruction looks exactly
+like a wrong instruction; the only way to tell them apart is to verify every
+input rather than to reason about the operation.
 
 Of the recorded glyphs that still differ, Times New Roman's `W` at sixteen
 pixels was wrong in one pixel on one row, in the middle of a thin diagonal --
@@ -776,12 +762,10 @@ fitted height.
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
 | `font` (2,655 records)                                       | 98.1%     |
-| `glyphs` (90 records)                                        | 87.8%     |
+| `glyphs` (90 records)                                        | 92.2%     |
 
-Of the glyph records, every bitmap and plotter one is pixel-identical. The
-eleven that differ are all outline faces, and they differ by seventeen pixels in
-total across all of them -- nine Windows inks that we do not, eight we ink that
-it does not.
+Of the glyph records, every bitmap and plotter one is pixel-identical. The seven
+that differ are all outline faces.
 
 `CreateFont face` agrees on every one of the 2,655 records: whatever Windows
 picks for a request, this picks too. That is the section 2 rules above, all of
