@@ -2272,9 +2272,28 @@ export class Hinter {
       return;
     }
 
-    // Proportionally, so the shape between the anchors survives.
+    /* Proportionally, so the shape between the anchors survives -- and the
+     * division **truncates** rather than rounding.
+     *
+     * Rounding here and truncating there is worth six of the 846 recorded
+     * glyphs, and it is visible in them as a shape rather than as a count:
+     * almost every one of the six is a diagonal edge drawn one column across
+     * from where Windows draws it, an `M` and an `i` side by side in the same
+     * row. A diagonal is exactly what this places -- the program hints the
+     * stems and the ends and lets `IUP` carry the slope between them -- so half
+     * a sixty-fourth of bias in the interpolation is enough to move which
+     * column a pixel centre falls in.
+     *
+     * **Measured** against the recorded glyphs, and free against everything
+     * else: `hdmx`, the metrics and the swept advances are unmoved, which is
+     * unsurprising since an advance is a phantom point and phantom points are
+     * touched. Truncating toward zero and truncating downward score the same on
+     * every fixture, so the recording does not say which; toward zero is what
+     * the interpreter's own `divide` does, and following it keeps one rule
+     * rather than two.
+     */
     const across = (original[index] - lowOriginal) / (highOriginal - lowOriginal);
 
-    current[index] = Math.round(low + across * (high - low));
+    current[index] = Math.trunc(low + across * (high - low));
   }
 }

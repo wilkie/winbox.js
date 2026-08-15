@@ -1188,6 +1188,20 @@ extrapolating: it keeps its distance from the nearer one and travels with it.
 **`IUP` moves only untouched points.** Interpolating over a point the program
 moved deliberately drags it back, undoing most of the fitting. **Derived.**
 
+**`IUP`'s interpolation truncates rather than rounding.** Worth six of the 846
+recorded glyphs, and visible in them as a shape rather than as a count: almost
+every one of the six is a diagonal edge drawn one column across from where
+Windows draws it, a missing pixel and an invented one side by side in the same
+row. That is exactly what this instruction places -- a program hints the stems
+and the ends and lets `IUP` carry the slope between them -- so half a
+sixty-fourth of bias is enough to move which column a pixel centre falls in.
+
+**Measured**, and free against everything else: `hdmx`, the metrics and the
+swept advances are all unmoved, which is unsurprising when an advance is a
+phantom point and phantom points are touched. Truncating toward zero and
+truncating downward score identically on every fixture, so the recording does
+not say which; toward zero is what the interpreter's own division does.
+
 **Arithmetic rounds half away from zero.** The format takes the sign off a
 value, works on the magnitude and puts it back. `Math.round` rounds a half
 upwards: the two agree for positive values and disagree for every negative one.
@@ -1348,7 +1362,7 @@ fitted height.
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
 | `font` (2,655 records)                                       | 99.96%    |
-| `glyphs` (846 records)                                       | 80.5%     |
+| `glyphs` (846 records)                                       | 81.2%     |
 | `hinting` (618 records)                                      | 98.9%     |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical -- all
@@ -1363,9 +1377,9 @@ outline faces says something different:
 
 | Face            | Glyphs exact | Pixels missing | Pixels invented |
 | --------------- | ------------ | -------------- | --------------- |
-| Arial           | 236 of 276   | 19             | 48              |
-| Times New Roman | 216 of 264   | 43             | 30              |
-| Courier New     | 181 of 258   | 254            | 43              |
+| Arial           | 242 of 276   | 16             | 42              |
+| Times New Roman | 214 of 264   | 46             | 31              |
+| Courier New     | 183 of 258   | 255            | 40              |
 
 Split by size instead, the error is not spread across them at all. **Courier New
 at a ten pixel cell is 0 of 36 and 301 wrong pixels -- more than half of every
@@ -1398,7 +1412,7 @@ better.** Six letters agreeing to seven pixels was not evidence that the
 rasteriser was within seven pixels of Windows; it was evidence that those six
 letters were. Every rule in section 6 that was fitted against ninety records --
 the stub threshold above all -- now has eight hundred to answer to, and the
-error is no longer one-sided: 316 pixels missing against 121 invented, where the
+error is no longer one-sided: 317 pixels missing against 113 invented, where the
 narrow sample had none invented at all.
 
 `CreateFont face` agrees on every one of the 2,655 records: whatever Windows
