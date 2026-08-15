@@ -510,7 +510,7 @@ projection vector of (16037, -3353), which is the face's own slant, against a
 freedom vector of pure x. Every other failure has both vectors on the x axis. So
 it is at most two classes and possibly two unrelated faults.
 
-Two candidate explanations have been checked and rejected:
+Five candidate explanations have been checked and rejected:
 
 - **`movePoint`'s handling of an off-axis projection.** A point moving along
   freedom must travel far enough that its _projection_ moves by the distance
@@ -522,8 +522,34 @@ Two candidate explanations have been checked and rejected:
   Arial Italic case. Changing it moves nothing: the same twelve, unchanged. It
   was reverted rather than kept, because a change that cannot be measured cannot
   be justified.
+- **The control value cut-in.** Swept against `hdmx`, which had never been done
+  -- the earlier sweep was against the ninety glyph bitmaps, before most of the
+  fixes above. What `prep` sets is best by a distance: 12 wrong against 40 at a
+  cut-in of two pixels, 362 at one, and 1,577 at zero. It is right as it stands.
+- **The reference-point flag on `MDRP` and `MIRP`.** Bit 4, not bit 0. Correct.
+- **`MIAP`'s cut-in branch**, which is a different rule from `MIRP`'s and easy
+  to conflate. It matches the reference.
 
-**Open**, at twelve of 22,056.
+### The chain under Arial Italic's `M`
+
+Traced three levels at 92 pixels per em, where the advance comes out 75 against
+Windows' 76. Each level is a single instruction and each is locally correct:
+
+1. The advance phantom is placed by a `MIRP` measuring from **point 10**, which
+   sits at 75.02 pixels. Windows needs 75.5 or more.
+2. Point 10 is placed by a `MIRP` measuring from **point 11**, then rounded to
+   a whole pixel by `MDAP`. It arrives at 65.17 and rounds to 65; 65.5 would
+   have been needed.
+3. Point 11 starts at 57.81, is rounded up to 58.00 by one `MDAP`, pulled to
+   57.28 by a `MIRP`, and rounded down to 57.00 by another. Windows needs 58.
+
+At every step the control value is used unrounded, the cut-in does not fire, and
+the arithmetic checks out against the reference. The error is a third of a pixel
+at step three and a whole pixel by step one, so it is being amplified rather than
+introduced late -- but where it enters is above everything traced.
+
+**Open**, at twelve of 22,056. The next attempt should start at point 11 and
+work upward rather than starting from the advance again.
 
 ### The pattern worth naming
 
