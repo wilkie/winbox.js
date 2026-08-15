@@ -176,6 +176,24 @@ every size and on every face. The string grows by its own length plus one.
 drawn bold, so a request for bold has nothing to synthesise: no character
 widens, nothing overhangs, and the metrics are the plain ones with a weight of 700. **Recorded.**
 
+**A strike shorter than eleven pixels is not emboldened at all, and the request
+is discarded rather than merely having no effect.** `tmWeight` comes back 400,
+the overhang 0, and every width the plain face's -- as though nothing had been
+asked for.
+
+**Recorded**, and the boundary rests on a single pair. Ask MS Serif for bold at
+ten pixels and every metric matches the plain face exactly; ask at eleven and
+the average width goes 5 to 6, the overhang to 1 and the weight to 700. Small
+Fonts is left alone the same way at three, five, six and eight -- asked for by
+name, so this is not a rule about having fallen back from an outline face.
+Nothing in the recording sits at nine or twelve, so ten and eleven are the whole
+of the evidence for where the line is.
+
+A stroke font is exempt: `Modern`, `Roman` and `Script` all report 700 for a
+bold request at eight pixels, where the smear rounds to nothing and no character
+widens. The request is honoured and happens to do nothing, which is a different
+answer from the request being thrown away.
+
 **Italic leans from the bottom of the cell, not the baseline.** Every row shifts
 right by `floor((rows below it) / 2)`, nothing ever moves left, and the top row
 moves by `floor((cell - 1) / 2)` -- which is exactly the overhang Windows
@@ -358,6 +376,19 @@ Arial or Times New Roman, and those two are answered by a strike below twelve
 pixels -- so the only face that ever reaches the computed range through a real
 request is Courier New, and the only sizes at which it ties there are three and
 eight. Two records out of 2,655, and they carry a rule.
+
+**A height of zero asks for a size, not a cell.** It means the mapper's own
+default of twelve points, which at ninety-six dots to the inch is sixteen
+pixels -- and those sixteen pixels are the em, the way a negative height names
+one, rather than the cell around it. All three outline faces answer a height of
+zero at exactly sixteen pixels per em and at three different cell heights: Arial
+and Courier New at eighteen, Times New Roman at nineteen. **Recorded**, and the
+varying cell is what says which of the two is being asked for.
+
+Reading it as a cell of eighteen gets two of the three right by arithmetic,
+because eighteen is what sixteen pixels of Arial comes out at. Times New Roman
+is the one that tells them apart: nineteen does not fit in eighteen, so a cell
+of eighteen takes the size below it and reports a pixel less of everything.
 
 **A requested `lfWidth` gives the glyphs a horizontal pixel size of their own.**
 It asks for the average character to come out that wide, and Windows answers by

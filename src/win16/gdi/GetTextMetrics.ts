@@ -148,8 +148,8 @@ export function GetTextMetrics(hdc, lptm) {
      * nothing overhangs. Emboldening a face that is bold in the file would
      * make it bolder than Windows ever draws it.
      */
-    const wantsBold = (style.weight ?? 0) >= 700;
-    const bold = wantsBold && header.dfWeight < 700;
+    const wantsBold = font instanceof LogicalFont ? font.emboldens : false;
+    const bold = wantsBold;
 
     /* A scalable face is drawn at exactly the height asked for, and every
      * other vertical measure is its design value scaled to that and rounded on

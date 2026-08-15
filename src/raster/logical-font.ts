@@ -18,6 +18,9 @@ import { Font } from './font.js';
  * that gets lost.
  */
 export class LogicalFont extends Font {
+  /** The shortest strike a request for bold is allowed to thicken. */
+  static EMBOLDEN_FLOOR = 11;
+
   declare _face: any;
   declare _points: any;
   declare _entry: any;
@@ -106,6 +109,41 @@ export class LogicalFont extends Font {
   }
 
   /**
+   * Whether a request for bold actually thickens this face.
+   *
+   * Three things can stop it. The request may not have asked. The file may be
+   * bold already, as the System font is, and drawing it again a pixel across
+   * would make it heavier than Windows ever draws it. And **the strike may be
+   * too small**: below eleven pixels a bold request is not merely drawn without
+   * the smear, it is discarded -- `tmWeight` comes back 400, as though nothing
+   * had been asked for.
+   *
+   * **Recorded**, and the boundary is pinned by a single pair. Ask MS Serif for
+   * bold at ten pixels and every metric matches the plain face exactly; ask at
+   * eleven and the average width goes 5 to 6, the overhang to 1 and the weight
+   * to 700. Small Fonts is left alone at three, five, six and eight the same
+   * way -- by name, so this is not about having fallen back from an outline.
+   * Nothing in the recording sits at nine or twelve, so ten and eleven are the
+   * whole of the evidence for where the line is.
+   *
+   * A stroke font is exempt. `Modern`, `Roman` and `Script` all report 700 for
+   * a bold request at eight pixels, where their smear rounds to nothing and no
+   * character widens -- the request is honoured and simply has no effect at
+   * that size, which is a different thing from being discarded.
+   */
+  get emboldens() {
+    if ((this._style.weight ?? 0) < 700 || this._entry.header.dfWeight >= 700) {
+      return false;
+    }
+
+    if (this.isVector) {
+      return true;
+    }
+
+    return Math.round(this._entry.header.dfPixHeight * this.scale) >= LogicalFont.EMBOLDEN_FLOOR;
+  }
+
+  /**
    * How much room the text takes, with everything the request added to it.
    *
    * The strike is measured first and then adjusted, because none of what a
@@ -174,9 +212,7 @@ export class LogicalFont extends Font {
        * embolden anything. So the ink reaches past the last character by that
        * much even at sizes where the reported overhang is zero.
        */
-      const bold = (this._style.weight ?? 0) >= 700;
-
-      width += bold ? Math.max(1, Math.round(scale)) : 0;
+      width += this.emboldens ? Math.max(1, Math.round(scale)) : 0;
       width += this._style.italic ? Math.floor(cell / 2) : 0;
 
       return { width, height: cell };
@@ -187,7 +223,7 @@ export class LogicalFont extends Font {
     /* Emboldening only happens to a face that is not bold already; see
      * `GetTextMetrics` for why the System font is the case that shows it.
      */
-    const bold = (this._style.weight ?? 0) >= 700 && this._entry.header.dfWeight < 700;
+    const bold = this.emboldens;
 
     /* The same overhang the metrics report, and for the same reasons: one
      * pixel for the smear that makes a bitmap bold, and half the drawn height

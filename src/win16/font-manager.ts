@@ -536,25 +536,37 @@ export class FontManager {
         : 0;
 
     /* A negative height asks for the em rather than the cell, which for an
-     * outline is the pixel size directly. Zero is the mapper's default, which
-     * these fonts answer at the same eighteen pixels a plotter font does.
+     * outline is the pixel size directly.
+     *
+     * **Zero asks for the mapper's default, and that is a size too rather than
+     * a cell** -- twelve points, which is sixteen pixels of em at ninety-six
+     * dots to the inch. All three outline faces answer a height of zero at
+     * exactly sixteen pixels per em and at three different cell heights: Arial
+     * and Courier New at eighteen, Times New Roman at nineteen. **Recorded**,
+     * and the varying cell is what says it is the em being asked for.
+     *
+     * Reading it as a cell of eighteen instead gets two of the three right by
+     * arithmetic -- eighteen is what sixteen pixels of Arial comes out at --
+     * and Times New Roman wrong, because nineteen pixels does not fit in
+     * eighteen and the size below it does. The strike path already had this
+     * right; only this one did not.
      */
-    if (height < 0) {
-      const extent = font.extentAt(-height);
+    if (height <= 0) {
+      const size = height < 0 ? -height : Math.round((FontManager.DEFAULT_POINTS * 96) / 72);
+      const extent = font.extentAt(size);
 
       return extent
         ? {
             entry: null,
-            ppem: -height,
-            xPpem: horizontal || -height,
+            ppem: size,
+            xPpem: horizontal || size,
             ascent: extent.ascent,
             descent: extent.descent,
           }
         : null;
     }
 
-    const wanted = height || 18;
-    const found = font.sizeForHeight(wanted);
+    const found = font.sizeForHeight(height);
 
     if (!found) {
       return null;

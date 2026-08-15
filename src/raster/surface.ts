@@ -271,7 +271,16 @@ export class Surface {
        * width with none of its characters bolder.
        */
       const style = this._font instanceof LogicalFont ? this._font.style : {};
-      const options = { weight: style.weight ?? 400, italic: !!style.italic };
+
+      /* A strike too small to embolden is drawn plainly, and `emboldens` is
+       * what decides -- the same answer the metrics report, so a string that is
+       * measured as unbolded is drawn that way too.
+       */
+      const options = {
+        weight:
+          this._font instanceof LogicalFont && !this._font.emboldens ? 400 : (style.weight ?? 400),
+        italic: !!style.italic,
+      };
 
       // Fill the rectangle behind it
       const font = entryOf(this._font);
