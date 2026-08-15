@@ -408,10 +408,10 @@ Run against it, this interpreter agrees on:
 
 | Font                 | Advances checked | Agreeing         |
 | -------------------- | ---------------- | ---------------- |
-| Arial                | 3,720            | **3,720 (100%)** |
+| Arial                | 3,864            | **3,864 (100%)** |
 | Arial Bold           | 3,600            | **3,600 (100%)** |
 | Arial Italic         | 3,624            | 3,620            |
-| Times New Roman      | 3,696            | 3,695            |
+| Times New Roman      | 3,816            | 3,815            |
 | Times New Roman Bold | 3,648            | **3,648 (100%)** |
 | Times New Roman Ital | 3,768            | **3,768 (100%)** |
 
@@ -1108,7 +1108,7 @@ fitted height.
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
 | `font` (2,655 records)                                       | 98.0%     |
-| `glyphs` (846 records)                                       | 76.0%     |
+| `glyphs` (846 records)                                       | 79.4%     |
 | `hinting` (618 records)                                      | 98.2%     |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical -- all
@@ -1126,6 +1126,18 @@ outline faces says something different:
 | Arial           | 221 of 276   | 88             | 194             |
 | Times New Roman | 208 of 264   | 122            | 84              |
 | Courier New     | 166 of 258   | 268            | 296             |
+
+**`ISECT` was missing, and the wide net is what found it.** Opcode 0x0F puts a
+point where two lines cross, and `X` and `4` use it in all three outline faces --
+letters made of crossing strokes, and neither of them in the six the fixture
+used to hold. Every one of those glyphs was throwing on an unimplemented
+instruction and falling back to an unhinted outline, at every size. Implementing
+it took 643 glyphs to **672**.
+
+It hid from the `hdmx` check too, and instructively: a glyph whose program
+cannot run is not counted there at all, so the missing instruction was removing
+its own evidence. The Arial total went from 3,720 advances to 3,864 when it was
+added, and all 144 of the new ones agree.
 
 Worth stating plainly: **the number went down because the measurement got
 better.** Six letters agreeing to seven pixels was not evidence that the

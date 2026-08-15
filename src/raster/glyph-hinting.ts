@@ -1243,6 +1243,61 @@ export class Hinter {
         return at;
       }
 
+      case 0x0f: {
+        /* ISECT: put a point where two lines cross.
+         *
+         * Five point numbers: the one to move, then the two ends of the line it
+         * should land on, then the two ends of the line that crosses it. The
+         * point goes to the intersection by Cramer's rule, and is touched in
+         * both directions because it has been placed rather than shifted.
+         *
+         * Where the two lines are nearly parallel the intersection runs off to
+         * somewhere useless, so a near-parallel pair falls back to the midpoint
+         * of the two midpoints. The test compares the cross product against the
+         * dot product, which stand in for the sine and cosine of the angle
+         * between them, and the factor of nineteen is the reference's.
+         *
+         * `X` and `4` use this in all three outline faces, and without it every
+         * one of them fell back to an unhinted outline.
+         */
+        const secondB = this.pop();
+        const firstB = this.pop();
+        const secondA = this.pop();
+        const firstA = this.pop();
+        const index = this.pop();
+
+        const zoneA = this.zone(state.zp1);
+        const zoneB = this.zone(state.zp0);
+        const zone = this.zone(state.zp2);
+
+        const bx = zoneB.x[secondB] - zoneB.x[firstB];
+        const by = zoneB.y[secondB] - zoneB.y[firstB];
+        const ax = zoneA.x[secondA] - zoneA.x[firstA];
+        const ay = zoneA.y[secondA] - zoneA.y[firstA];
+        const dx = zoneB.x[firstB] - zoneA.x[firstA];
+        const dy = zoneB.y[firstB] - zoneA.y[firstA];
+
+        zone.touchedX[index] = true;
+        zone.touchedY[index] = true;
+
+        const cross = mulDiv(ax, -by, ONE) + mulDiv(ay, bx, ONE);
+        const along = mulDiv(ax, bx, ONE) + mulDiv(ay, by, ONE);
+
+        if (Math.abs(cross) * 19 > Math.abs(along)) {
+          const reach = mulDiv(dx, -by, ONE) + mulDiv(dy, bx, ONE);
+
+          zone.x[index] = zoneA.x[firstA] + mulDiv(reach, ax, cross);
+          zone.y[index] = zoneA.y[firstA] + mulDiv(reach, ay, cross);
+        } else {
+          zone.x[index] =
+            (zoneA.x[firstA] + zoneA.x[secondA] + zoneB.x[firstB] + zoneB.x[secondB]) / 4;
+          zone.y[index] =
+            (zoneA.y[firstA] + zoneA.y[secondA] + zoneB.y[firstB] + zoneB.y[secondB]) / 4;
+        }
+
+        return at;
+      }
+
       case 0x29:
         // UTP, which unsticks a point so interpolation carries it again.
         {

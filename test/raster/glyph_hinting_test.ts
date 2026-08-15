@@ -214,7 +214,7 @@ describe('hinted advances against the tables the font ships', () => {
       }
 
       // Every glyph that has a program, at all twenty-four tabulated sizes.
-      expect(checked).toEqual(3720);
+      expect(checked).toEqual(3864);
     },
     120000
   );
@@ -242,11 +242,16 @@ describe('hinted advances against the tables the font ships', () => {
       }
 
       /* Pinned rather than asserted to be zero, because it is not: one advance
-       * out of 3,696 comes out a pixel from what the font says -- the `o` at
+       * out of 3,816 comes out a pixel from what the font says -- the `o` at
        * seventy-five pixels per em. Lowering this number is progress; raising
        * it is a regression.
+       *
+       * The total grew when `ISECT` was implemented: glyphs whose programs used
+       * it were throwing, and a glyph that cannot be hinted is not counted here
+       * at all. A missing instruction hides from this check by removing its own
+       * evidence.
        */
-      expect(`${agreed} agreed, ${differed} differed`).toEqual('3695 agreed, 1 differed');
+      expect(`${agreed} agreed, ${differed} differed`).toEqual('3815 agreed, 1 differed');
     },
     120000
   );
