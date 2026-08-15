@@ -567,6 +567,14 @@ Everything checked since, all of it against the reference implementation:
   exception selects 37 pixels per em at all, so the zero that fires there is
   correct.
 
+**Which instructions the failures lean on.** Counting opcodes across the twelve
+failing runs against a sample of sixty-eight passing ones, four stand out as
+enriched rather than merely common: `MD` (67% of failures, 3% of successes),
+`SHPIX` (67% against 4%), `MUL` (58% against none) and `SFVTL` (58% against 1%).
+That is what pointed at the two reference rules below, both of which turned out
+to be wrong for this rasteriser -- but it is the right way to pick where to look
+next, and the numbers are here so the next attempt need not recount them.
+
 **A rule that is genuinely missing and cannot be tested here.** `MIRP` and
 `MDRP` are both specified to check the distance against the _single width_ --
 `SWV` sets a value and `SWCI` a tolerance, and a distance within the tolerance
@@ -578,10 +586,35 @@ rather than written blind, since there is nothing here that could tell whether
 it had been written correctly. **Open**, and a latent gap for any font that does
 use it.
 
-**Open**, at twelve of 22,056. What is left is not a rule that could be found by
-inspection: seven mechanisms have been swept or verified, and the error is a
-third of a pixel entering somewhere above three levels of correct instructions
-and being amplified by the roundings above it.
+#### Where this rasteriser is not the reference implementation
+
+Two rules that FreeType applies and this does not, both measured against
+`hdmx` and both rejected by it. They are recorded because "the reference does
+X" is the most natural next guess for anyone reading this, and here it is the
+wrong guess twice.
+
+**The phantom points are not rounded to the grid before the glyph program
+runs.** The reference rounds both horizontal phantoms to whole pixels first.
+Doing that here takes 12 wrong advances to **338** -- not a near miss, a
+different rasteriser. Rounding only the origin gives 326 and only the advance 328.
+
+**The original distance is measured on the scaled coordinates, not in font
+units.** `MDRP`, `MIRP` and `MD` all compare against the outline's own distance.
+The reference measures that in font units and scales it once, keeping a separate
+array of unscaled coordinates to do so; this measures the coordinates that were
+already scaled and rounded when the glyph was loaded, which rounds twice.
+Implementing the reference's way -- properly, with the phantoms' font-unit
+positions taken from the font rather than scaled back -- gives **13** where this
+gives 12. Thin evidence, and pointing the wrong way, so it stays as it is.
+
+The margin there is one advance in 22,056 and should not be oversold. What it
+does rule out is the idea that the remaining gap is explained by this rule being
+missing.
+
+**Open**, at twelve of 22,056. Nine mechanisms have now been swept or verified.
+What is left is not a rule findable by inspection: the error is a third of a
+pixel entering somewhere above three levels of correct instructions, amplified by
+the roundings above it.
 
 ### The pattern worth naming
 
