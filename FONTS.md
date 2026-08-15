@@ -759,8 +759,34 @@ them some other way -- by whether the contour turns back on itself within the
 scanline, most likely, which is what the specification's word _stub_ actually
 describes and what a width happens to correlate with.
 
-Half a pixel is kept because it is the only value with a reason behind it and
-because it errs toward losing ink rather than inventing it. **Open**, and now
+**The turn-back rule does not crack it either.** The specification's word is
+_stub_, which describes a contour turning back on itself rather than crossing --
+so the test ought to be about the shape and not the width. Along a real stroke
+the two crossings bounding a span come from opposite sides and are far apart on
+the contour; at a tapering tip they are a few vertices either side of the turn.
+That is measurable: tag each edge with its position in its contour and ask how
+far apart the two are.
+
+| rule                               | glyphs   | missing | invented | wrong |
+| ---------------------------------- | -------- | ------- | -------- | ----- |
+| narrower than half a pixel         | 85 of 90 | 8       | 0        | **8** |
+| turns back within 1 vertex         | 84       | 7       | 2        | **9** |
+| narrow **and** turns back within 3 | 85       | 7       | 1        | **8** |
+| narrow and turns back within 40    | 85       | 7       | 1        | **8** |
+
+Every variant lands on eight wrong pixels. Widths from 0.3 to 0.6, turn
+distances from 0 to 40, and the conjunction of the two: the total never moves,
+and all any of them does is trade a pixel Windows inks for one it does not.
+
+That is a floor, and a floor means the rule is not the thing. **Whatever these
+eight pixels are, no refinement of "which thin spans get rescued" reaches them**
+-- the sampling itself must differ, or Windows is inking them for a reason that
+is not dropout control at all.
+
+Half a pixel is kept because it is the only value with a reason behind it, and
+because among rules that are all equally wrong it errs toward losing ink rather
+than inventing it. The conjunction is arguably the better description of what a
+stub is and is not kept, because it measures the same and adds a concept. **Open**, and now
 known to be a rasterisation rule rather than a hinting one -- which is the
 opposite of what the column sweep implied, and was settled by reading the
 points rather than by reasoning about the pixels.
