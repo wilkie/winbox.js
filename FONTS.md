@@ -1397,12 +1397,26 @@ one:
 | 0.50         | 286  | 280                 | `u < 0.721` (96%)     |
 | 1.00         | 359  | 353                 | `u < 0.641` (94%)     |
 
-**The branch is on `u`, and its threshold moves with the lean.** At the three
-smallest leans a threshold near `0.14` separates the two answers without a
-single exception in 443 rows -- which is a real edge in the data, not a fit. It
-holds its value while the lean grows by a factor of six, then loses its grip:
-by a lean of a seventh of a pixel per row almost every row takes the left pixel
-and no threshold explains the rest.
+**The `0.14` in that table is not a threshold, and saying so was a mistake worth
+keeping.** At the two smallest leans there are no left answers at all, so every
+threshold below the smallest `u` present scores 100% and the search returns the
+smallest value it was given. The number is the sampling floor of the fonts -- no
+row in them happens to start closer than 0.137 of a pixel past a centre -- and
+not an edge in the data. Reading a hundred per cent as agreement when one of the
+two classes is empty is the same error as reading `hdmx` agreement as evidence
+about `LTSH`, and this work has now made it twice.
+
+What the table does say, once that is stripped out:
+
+- **Upright is always the right pixel**, over 370 rows with `u` ranging from
+  0.111 to 0.844. That much is real, and it is not a threshold on `u` at all.
+- **One lean has a genuine gap.** At 0.0086 pixels per row, 24 of 149 rows take
+  the left pixel, every one of them with `u` below 0.061, against every right
+  answer above 0.141. A threshold between those two numbers separates them
+  exactly, and it is the only clean separation in the set.
+- **Every larger lean overlaps.** The same `u` gives both answers, so `u` alone
+  does not decide it there, and rows that disagree at the same `u` differ in
+  width -- so at least three quantities are in play.
 
 Written the other way round, `u / |lean| < 4.3` is the best single expression
 over all of it at **95.1%**, and it puts the upright case on the right side for
@@ -1410,9 +1424,10 @@ free, since a vertical edge never passes a centre at all and the ratio is
 infinite. But the per-lean thresholds above are not constant, so that expression
 is a fit and not the mechanism.
 
-What the shape of it says is that the quantity being compared is _how recently
-the edge crossed a pixel centre_, measured in rows -- and that something else
-saturates once the edge crosses one every few rows. **Open**, and now open with
+Read as geometry it says the span Windows uses reaches about four rows' worth of
+lean further left than the span at the scanline does, which would be an edge
+examined over a range of scanlines rather than at one. Read as a fit it is a
+fit, and the per-lean thresholds say so. **Open**, and now open with
 a measured surface rather than a hunch.
 
 One negative worth keeping with it: **removing the column sweep improves every
