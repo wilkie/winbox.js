@@ -1314,11 +1314,48 @@ weighted average of the two endpoints yields both: the bar needs the answer
 above its whole span and the wedge needs it below the middle of its own.
 
 So the deciding information is somewhere other than the span, and the candidate
-left standing is state carried between scanlines -- a rescue placed to continue
-the pixel the row above turned on. The wedges cannot test that, because each has
-only one rescued row. **A thin diagonal bar would have a column of them**, and
-whether its rescued pixels follow the geometry or follow each other is the next
-thing to record.
+left standing was state carried between scanlines -- a rescue placed to continue
+the pixel the row above turned on. The wedges cannot test that, each having only
+one rescued row. A slanted bar has a column of them, so two more fonts were
+built: thirty-six leaning right and thirty-six leaning left, each a
+parallelogram whose horizontal cut is the same width at every row and walks
+sideways by a fixed amount.
+
+**They say the split is not about carried state and not about which way the
+stroke leans. It is about whether the edges are vertical at all**, and it is
+absolute:
+
+| Slant                | pixel to the right | pixel to the left |
+| -------------------- | ------------------ | ----------------- |
+| upright              | **105 of 105**     | 0 of 105          |
+| any lean, either way | 30 of 726          | **704 of 726**    |
+
+Under the rescue rule the shapes settled -- no column sweep, no threshold --
+that is the whole of the disagreement, and it is large:
+
+| Font               | next centre    | last centre |
+| ------------------ | -------------- | ----------- |
+| bars (upright)     | **258 of 258** | 209         |
+| bars leaning right | 99             | **190**     |
+| bars leaning left  | 95             | **180**     |
+| wedges             | 79             | 79          |
+
+A stroke standing exactly upright takes the pixel to the right of the gap; a
+stroke leaning by any amount at all, in either direction, takes the one to the
+left. Nothing in between was found, because the fonts contain nothing in
+between -- the smallest lean tried is a fifth of a pixel per row.
+
+**Why that should be so is open.** The one thing that distinguishes the two
+cases geometrically is that a vertical edge's crossing is the edge's own
+coordinate, already on the sixty-fourth grid, where a slanted edge's is
+interpolated and generally is not. That is a difference of hundredths of a
+pixel deciding a whole pixel, which is the signature of a comparison being made
+on the wrong side of a rounding somewhere -- and it is the same signature the
+letters showed before any of this was measured.
+
+One negative worth keeping with it: **removing the column sweep improves every
+one of the four shape fonts and hurts none**, which is a second confirmation
+from three fonts the horizontal bars never saw.
 
 **What is shipped is knowingly not this.** The measured rule -- no column sweep,
 no threshold, the next centre, and the turn-and-convergence test -- reproduces

@@ -746,6 +746,105 @@ function reporter(name, { font = 'TIMES.TTF', character, point, constant, cut, m
 }
 
 export const FABRICATIONS = [
+  /* The same slanted bars leaning the other way.
+   *
+   * Leaning right, the rescued pixel is the one to the *left* of the span at
+   * every slant tried; upright, it is the one to the right. Either the rule
+   * knows which way the stroke leans, or it knows something else that upright
+   * bars happen not to have. Bars leaning left separate those.
+   */
+  {
+    name: 'cour-backslants',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with its letters replaced by bars leaning the other way',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const WIDTHS = [40, 60, 80, 100, 120, 140];
+      const SLANTS = [0, -200, -400, -700, -1000, -1400];
+      const TALL = 1400;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const width = WIDTHS[index % WIDTHS.length];
+        const slant = SLANTS[Math.floor(index / WIDTHS.length) % SLANTS.length];
+
+        const points = [
+          [1700, 0],
+          [1700 + slant, TALL],
+          [1700 + slant + width, TALL],
+          [1700 + width, 0],
+        ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+        const left = Math.min(...points.map((point) => point[0]));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, points, program: [] });
+        setBearing(bytes, glyph, left);
+      }
+
+      return bytes;
+    },
+  },
+
+  /* Thirty-six slanted bars, to ask whether a rescued pixel remembers the row
+   * above it.
+   *
+   * The upright bars and the wedges between them settled which spans get
+   * rescued and left one thing open: which pixel a rescued span turns on when
+   * its edges slant. No function of the span's two endpoints fits both fonts,
+   * an incremental edge walk gives the same answer an exact solve does, and the
+   * winding makes no difference -- so the deciding information is somewhere
+   * other than the span, and the candidate left is state carried down the
+   * scanlines.
+   *
+   * Neither existing font can test that. A bar's span never moves, so following
+   * the geometry and following the row above are the same thing; a wedge has
+   * only one rescued row, so there is no row above to follow.
+   *
+   * A parallelogram has both. Its horizontal cut is the same width at every
+   * row -- so the span is a stroke, not a taper -- and it walks sideways by a
+   * fixed amount per row, so a column of rescued pixels has to either step
+   * where the geometry steps or step where the row above did. Six widths
+   * against six slants, from upright (which reproduces the bar font, as the
+   * control) to forty-five degrees.
+   */
+  {
+    name: 'cour-slants',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with its letters replaced by slanted bars of known width',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const WIDTHS = [40, 60, 80, 100, 120, 140];
+      const SLANTS = [0, 200, 400, 700, 1000, 1400];
+      const TALL = 1400;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const width = WIDTHS[index % WIDTHS.length];
+        const slant = SLANTS[Math.floor(index / WIDTHS.length) % SLANTS.length];
+
+        // Clockwise, the way an outer contour is meant to go.
+        const points = [
+          [300, 0],
+          [300 + slant, TALL],
+          [300 + slant + width, TALL],
+          [300 + width, 0],
+        ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, points, program: [] });
+        setBearing(bytes, glyph, 300);
+      }
+
+      return bytes;
+    },
+  },
+
   /* Thirty-six wedges, which is the other half of the bar experiment.
    *
    * The bars answer "does Windows rescue a stroke too thin to cover a pixel
