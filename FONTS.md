@@ -1418,16 +1418,56 @@ What the table does say, once that is stripped out:
   does not decide it there, and rows that disagree at the same `u` differ in
   width -- so at least three quantities are in play.
 
-Written the other way round, `u / |lean| < 4.3` is the best single expression
-over all of it at **95.1%**, and it puts the upright case on the right side for
-free, since a vertical edge never passes a centre at all and the ratio is
-infinite. But the per-lean thresholds above are not constant, so that expression
-is a fit and not the mechanism.
+`u / |lean| < 4.3` is the best single expression over all of it at **95.1%**,
+and it puts the upright case on the right side for free, since a vertical edge
+never passes a centre and the ratio is infinite. But the per-lean thresholds are
+not constant, so it is a fit and not the mechanism.
 
-Read as geometry it says the span Windows uses reaches about four rows' worth of
-lean further left than the span at the scanline does, which would be an edge
-examined over a range of scanlines rather than at one. Read as a fit it is a
-fit, and the per-lean thresholds say so. **Open**, and now open with
+### Filling the hole, and what it rules out
+
+The fonts above vary the width across their thirty-six glyphs and keep the
+starting offset fixed, so `u` is very nearly a function of the size alone and
+each font samples about seven values of it. That is what left the smallest leans
+with no left answers to separate. A font that varies the _offset_ instead --
+six leans against six starting positions a sixth of a pixel apart, one fixed
+width -- sweeps `u` across its whole range at every lean.
+
+**With the hole filled, `u` does not decide the branch at any lean.**
+
+| Lean, px/row | rows | left | `u` present  | separable by `u`? |
+| ------------ | ---- | ---- | ------------ | ----------------- |
+| 0.0014       | 146  | 0    | 0.012..0.682 | no left answers   |
+| 0.0036       | 135  | 0    | 0.014..0.685 | no left answers   |
+| 0.0086       | 149  | 10   | 0.001..0.557 | overlaps          |
+| 0.015        | 142  | 22   | 0.001..0.593 | overlaps          |
+| 0.021        | 150  | 38   | 0.006..0.628 | overlaps          |
+| 0.032        | 135  | 51   | 0.001..0.656 | overlaps          |
+
+A stroke leaning by a seven-hundredth of a pixel per row takes the right pixel
+even when its span starts a hundredth of a pixel past a centre. And the one
+clean separation the earlier fonts showed, at a lean of 0.0086, **overlaps once
+the missing rows are recorded** -- it was sparse sampling as well. So the whole
+family of thresholds on `u` is out, and with it the 95% fit, which still scores
+95% here and is therefore describing something that correlates with the answer
+rather than deciding it.
+
+**What the new font shows instead is that the size matters.** With the width
+held fixed in design units, left answers are absent at the two smallest cells at
+every lean, and universal at the largest:
+
+| Lean   | cell 10 | 12   | 14   | 16   | 18    | 20    | 24        |
+| ------ | ------- | ---- | ---- | ---- | ----- | ----- | --------- |
+| 0.0086 | 0/20    | 0/24 | 2/18 | 0/36 | 0/22  | 0/21  | **8/8**   |
+| 0.015  | 0/20    | 0/24 | 4/20 | 0/24 | 0/22  | 4/18  | **14/14** |
+| 0.021  | 0/20    | 0/23 | 6/20 | 1/31 | 6/22  | 9/18  | **16/16** |
+| 0.032  | 0/19    | 2/23 | 9/21 | 3/19 | 10/20 | 14/20 | **13/13** |
+
+The lean is a ratio and does not change with the size, so something absolute
+does: the stroke is half a pixel wide and five rows tall at the smallest cell
+and four fifths of a pixel wide and fourteen rows tall at the largest. Which of
+those it is the font cannot say, because it holds the width fixed in design
+units and both grow together. **That is the next font: the same offsets and
+leans with the width held fixed in _pixels_ instead.** **Open**, and now open with
 a measured surface rather than a hunch.
 
 One negative worth keeping with it: **removing the column sweep improves every

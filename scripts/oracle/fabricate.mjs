@@ -746,6 +746,60 @@ function reporter(name, { font = 'TIMES.TTF', character, point, constant, cut, m
 }
 
 export const FABRICATIONS = [
+  /* Bars that lean a little, at six starting offsets, to fill a hole the other
+   * fonts left.
+   *
+   * The branch between the two candidate pixels is separable by `u` -- how far
+   * the span's start sits past the pixel centre below it -- only where both
+   * answers occur at the same lean. In the earlier slant fonts the starting
+   * offset was the same for all thirty-six glyphs, so `u` is very nearly a
+   * function of the size alone and each font samples about seven values of it.
+   * At the smallest leans none of those seven happened to be small, so there
+   * were no left answers at all, and a threshold search on a class with no
+   * members returns whatever it was handed. It returned 0.137, and 0.137 was
+   * read as a constant.
+   *
+   * This one varies the offset instead of the width: six leans against six
+   * offsets, spaced a sixth of a pixel apart at eight pixels per em so that `u`
+   * sweeps its whole range at every lean. The width is fixed, which costs the
+   * third variable and buys the first one properly.
+   */
+  {
+    name: 'cour-offsets',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with bars leaning a little, at six sub-pixel offsets',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      // A pixel is 256 design units at eight pixels per em.
+      const OFFSETS = [600, 643, 685, 728, 771, 813];
+      const SLANTS = [2, 5, 12, 21, 30, 45];
+      const WIDTH = 80;
+      const TALL = 1400;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const start = OFFSETS[index % OFFSETS.length];
+        const slant = SLANTS[Math.floor(index / OFFSETS.length) % SLANTS.length];
+
+        const points = [
+          [start, 0],
+          [start + slant, TALL],
+          [start + slant + WIDTH, TALL],
+          [start + WIDTH, 0],
+        ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, points, program: [] });
+        setBearing(bytes, glyph, start);
+      }
+
+      return bytes;
+    },
+  },
+
   /* Bars that lean by almost nothing, to ask whether the rasteriser tests for
    * an upright edge or merely fails to notice a small one.
    *
