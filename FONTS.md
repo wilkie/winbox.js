@@ -494,6 +494,51 @@ Five advances still differ, in two glyphs:
 | Arial Italic    | `M`   | 32, 67, 75, 92 |
 | Times New Roman | `o`   | 75             |
 
+The `M` has been through the same harness. Reading point 10 -- the one its
+advance is measured from -- after 121, 216, 328, 344, 359, 366, 380, 394, 412
+and 504 bytes of its program brackets the fault in **fifteen bytes**, between
+344 and 359:
+
+```
+    344  CALL          (agrees to here)
+    345  ROFF
+    346  MIRP[srp0,grey]
+    347  SVTCA[x]
+    348  RTG
+    349  MDAP[rnd]
+    350  CALL
+    351  ROFF
+    352  MIRP[black]
+    353  SVTCA[x]
+    354  RTG
+    355  MDAP[rnd]
+    356  CALL
+    357  SRP0
+    358  MIRP[srp0,white]  (six more sizes disagree from here)
+```
+
+Point 10 is not moved by any of those directly -- every move it gets comes from
+inside a called function, under a projection vector that is different at every
+size because it is computed from the outline. That is as far as the harness
+reaches without reading points inside `fpgm`.
+
+Two candidates were tried and rejected, both principled and both measurably
+wrong:
+
+- **`DELTAP` moving its point through the vectors.** The reference applies a
+  delta the same way `MDRP` moves a point -- along the freedom vector, scaled by
+  the projection-freedom dot product -- where this adds the amount straight to
+  both coordinates. Identical for an axis-aligned vector, which is why it could
+  only matter here. It leaves `hdmx` at five and takes the recorded advances
+  from 295 of 309 to 288, so it is not what Windows does.
+- **The unit vector's rounding.** The reference normalises to 16.16 and shifts
+  right by two, which floors, where this rounds. Sweeping round, floor and
+  truncate gives five wrong every time -- it makes no difference at all.
+
+The `M`'s four sizes are all sizes `hdmx` tabulates, which is where
+`GetTextExtent` stops running the program, so the harness reads it at every
+_neighbouring_ size and not at the four that fail. **Open.**
+
 **They are position errors, not rounding-boundary errors.** The advance phantom
 lands where it lands and the rounding of it is not in question: Times New
 Roman's `w` at 46 pixels per em comes out at 32.953 pixels where Windows says 32. A value that far from the boundary is not a rounding dispute; the point is
@@ -1249,7 +1294,7 @@ fitted height.
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
 | `font` (2,655 records)                                       | 98.1%     |
 | `glyphs` (90 records)                                        | 92.2%     |
-| `hinting` (309 records)                                      | 95.5%     |
+| `hinting` (309 records)                                      | 93.2%     |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical. The seven
 that differ are all outline faces.

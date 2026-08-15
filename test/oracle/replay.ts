@@ -1147,9 +1147,9 @@ const ADAPTERS: Record<
    * fabricated reading is meaningless without knowing which size produced it.
    */
   advance(context, args) {
-    const { hdc, metrics } = context.mappedFont([args[0], args[1]]);
+    const { hdc, metrics } = context.mappedFont(args.slice(0, -1));
 
-    const character = String(args[2] ?? '').replace(/'/g, '');
+    const character = String(args[args.length - 1] ?? '').replace(/'/g, '');
     const extent = GetTextExtent.call(context, hdc, context.lpcstr(character), character.length);
 
     return `advance=${extent & 0xffff},ppem=${metrics.tmHeight - metrics.tmInternalLeading}`;

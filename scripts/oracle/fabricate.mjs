@@ -618,11 +618,11 @@ export function pointCount(bytes, glyph) {
  * Nothing else about the font changes, so the same recording still says what
  * every other letter does and can be checked against the unfabricated one.
  */
-function reporter(name, { character, point, constant, cut, magnify, describe }) {
+function reporter(name, { font = 'TIMES.TTF', character, point, constant, cut, magnify, describe }) {
   return {
     name,
-    from: 'TIMES.TTF',
-    as: 'TIMES.TTF',
+    from: font,
+    as: font,
     describe,
 
     edit: (bytes) => {
@@ -663,35 +663,35 @@ function reporter(name, { character, point, constant, cut, magnify, describe }) 
 }
 
 export const FABRICATIONS = [
-  /* The bisection. The same point read after successively more of the program
-   * has run, so the first cut at which Windows and this disagree brackets the
-   * instruction that puts them apart. Every offset is one the program is
-   * statically balanced at, which is what makes the readout reachable.
-   */
-  reporter('times-w-p35-cut241', {
-    character: 'w',
-    point: 35,
-    cut: 241,
+  reporter('ariali-m-p10-cut344', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 10,
+    cut: 344,
     magnify: 8,
-    describe: "Times New Roman's w reporting point 35 after 241 bytes of its program",
+    describe: "Arial Italic's M reporting point 10 after 344 bytes of its program",
   }),
 
-  reporter('times-w-p35-cut359', {
-    character: 'w',
-    point: 35,
+  reporter('ariali-m-p10-cut359', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 10,
     cut: 359,
     magnify: 8,
-    describe: "Times New Roman's w reporting point 35 after 359 bytes of its program",
+    describe: "Arial Italic's M reporting point 10 after 359 bytes of its program",
   }),
 
-  reporter('times-w-p35-cut481', {
-    character: 'w',
-    point: 35,
-    cut: 481,
-    magnify: 8,
-    describe: "Times New Roman's w reporting point 35 after 481 bytes of its program",
-  }),
-
+  /* The bracket the bisection over Arial Italic's `M` closed on. Reading point
+   * 10 after 344 bytes of its program agrees with Windows at every size and
+   * after 359 disagrees at six more, so whatever differs is in those fifteen
+   * bytes. The intermediate cuts that narrowed it are not kept: the two that
+   * bracket it are the evidence, and the rest were scaffolding.
+   */
+  /* The bracket the bisection over Times New Roman's `w` closed on, which found
+   * `SDPVTL`. Point 35 read after 600 bytes agrees everywhere and after 660
+   * disagrees at 23 sizes; the sixty bytes between hold four `SDPVTL`
+   * instructions and nothing else that touches a vector.
+   */
   reporter('times-w-p35-cut600', {
     character: 'w',
     point: 35,
@@ -713,6 +713,14 @@ export const FABRICATIONS = [
    * touched, so a correct channel reports sixteen at every size. Anything else
    * is an offset every other reading carries too.
    */
+  reporter('ariali-m-constant', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    constant: 16 * 64,
+    cut: 504,
+    describe: "Arial Italic's M reporting a fixed sixteen pixels, to calibrate",
+  }),
+
   reporter('times-w-constant', {
     character: 'w',
     constant: 16 * 64,

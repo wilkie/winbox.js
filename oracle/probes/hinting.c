@@ -33,7 +33,7 @@ static HDC dc;
  * `GetTextExtent` of a single character is its advance: there is no kerning in
  * a string of one and no overhang on a face that has not been synthesised.
  */
-static void probeAdvance(LPCSTR face, int height, char character)
+static void probeAdvance(LPCSTR face, int height, BYTE italic, char character)
 {
     HFONT font;
     HFONT previous;
@@ -44,9 +44,10 @@ static void probeAdvance(LPCSTR face, int height, char character)
     text[0] = character;
     text[1] = '\0';
 
-    wsprintf(probeArgs, "\"%s\",h=%d,'%c'", (LPSTR)face, height, character);
+    wsprintf(probeArgs, "\"%s\",h=%d,italic=%d,'%c'", (LPSTR)face, height,
+             (int)italic, character);
 
-    font = CreateFont(height, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET,
+    font = CreateFont(height, 0, 0, 0, FW_NORMAL, italic, 0, 0, ANSI_CHARSET,
                       OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
                       DEFAULT_PITCH, face);
 
@@ -83,12 +84,12 @@ static void probeAdvance(LPCSTR face, int height, char character)
  * here, because working it out here would be assuming the very mapping the
  * rest of the oracle exists to measure.
  */
-static void probeSweep(LPCSTR face, char character)
+static void probeSweep(LPCSTR face, BYTE italic, char character)
 {
     int height;
 
     for (height = 8; height <= 110; height++) {
-        probeAdvance(face, height, character);
+        probeAdvance(face, height, italic, character);
     }
 }
 
@@ -108,9 +109,9 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      * which is the control.
      */
     probeNote("one character's advance at every cell height");
-    probeSweep("Times New Roman", 'w');
-    probeSweep("Times New Roman", 'o');
-    probeSweep("Times New Roman", 'n');
+    probeSweep("Times New Roman", 0, 'w');
+    probeSweep("Times New Roman", 0, 'o');
+    probeSweep("Arial", 1, 'M');
 
     ReleaseDC(NULL, dc);
 
