@@ -34,6 +34,25 @@ const CURVE_STEPS = 8;
  * broad -- anything from 0.3 to 0.5 agrees on the same 79 of 90 recorded
  * glyphs, so the recording pins the rule and not the number. Below 0.3 the
  * stubs come back; above 0.5 real dropouts start being refused.
+ *
+ * Swept again over 846 glyphs rather than 90, and the peak is still broad and
+ * still not sharp: 0.45 is the best at 684 glyphs exact against 674 here, and
+ * 0.35 turns off the fewest wrong pixels at 419 against 462. What the wider
+ * sweep shows that the narrow one could not is the shape of the curve -- a
+ * smooth trade of invented pixels for missing ones with no corner in it, which
+ * is what a threshold standing in for a rule that is not a threshold looks
+ * like. Half a pixel is kept because it is the one value here that means
+ * something; the two either side of it are a fit to 846 records.
+ *
+ * The rule it stands in for is a question about shape rather than width: a stub
+ * is where the outline turns back, so the two edges bounding an empty span are
+ * two sides of one tip rather than two sides of a stroke. That was implemented
+ * -- pieces grouped into runs that never turn back, so that a tip four curve
+ * segments wide is still one turn, and the span refused when the two runs meet
+ * at this very scanline -- and **it does not beat the threshold**: 661 glyphs
+ * exact against 674, with fewer wrong pixels (444) and fewer whole glyphs
+ * right. Combining the two is no better than the threshold alone. Recorded here
+ * so the next attempt starts further along than this one did.
  */
 const STUB = 0.5;
 
@@ -443,6 +462,12 @@ export function fill(contours, options) {
    * the outline. **Both sweeps keep the pixel at the lower coordinate in the
    * outline's own space.** Taking the other end costs eleven wrong pixels
    * rather than seven.
+   *
+   * Re-measured over 846 glyphs against 90, sweeping both sweeps' choice of
+   * pixel together over the span's start, its end and its middle: this pair is
+   * the best of the nine, at 674 glyphs exact where the next is 646. The rule
+   * fitted on the narrow fixture survives the wide one, which is worth knowing
+   * because several others did not.
    */
   for (let column = 0; column < width; column++) {
     const crossings: any[] = [];

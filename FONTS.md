@@ -952,10 +952,62 @@ The exact curve intersection is what made this findable at all. On the flattened
 outline the same experiment moved nothing, because the spans it needed to see
 were smaller than the flattening error.
 
-What it would have rescued -- the flag of a Courier New `1` at thirteen pixels
-per em, two pixels Windows draws and this does not -- stays **open**. Windows
-gets those pixels by some route this does not have, and a column sweep is not
-it.
+### Both rules re-measured on nine times the evidence
+
+Everything above was fitted against ninety recorded glyphs. The fixture now
+holds 846, and the size that turns dropout control from one contributor into the
+whole story -- Courier New at eight pixels per em, where the font asks for no
+grid-fitting and every stroke is a third of a pixel wide -- was not in the
+narrow one at all.
+
+**Both rules survive.** The pair of pixel choices, swept together over the
+span's start, its end and its middle in both sweeps, is the best of the nine at
+674 glyphs exact against 646 for the next. The stub threshold's peak is still
+broad and still has no corner in it:
+
+| threshold | glyphs exact | missing | invented | wrong |
+| --------- | ------------ | ------- | -------- | ----- |
+| 0.25      | 644          | 128     | 371      | 499   |
+| 0.35      | 679          | 229     | 190      | 419   |
+| 0.45      | **684**      | 287     | 152      | 439   |
+| **0.5**   | 674          | 322     | 140      | 462   |
+| 0.7       | 646          | 405     | 110      | 515   |
+
+A smooth trade of invented pixels for missing ones, with the best threshold and
+the best pixel count in different places. That is what a number standing in for
+a rule looks like, and half a pixel is kept because it is the sampling interval
+-- the two values either side of it are a fit to 846 records and nothing more.
+
+**The rule it stands in for is about shape, and implementing it does not help.**
+A stub is where the outline turns back, so the real question is whether the two
+edges bounding an empty span are two sides of one tip or two sides of a stroke.
+That was built: the pieces of each contour grouped into runs that never turn
+back -- so that a tip four curve segments wide is still one turn -- linked
+around the contour, and a span refused when its two runs meet each other at this
+very scanline. It gives **661 glyphs exact against 674**, with fewer wrong
+pixels (444 against 462) and fewer whole glyphs right. Requiring both tests, or
+either, is no better than the threshold alone. **Measured**, and recorded here
+so the next attempt starts further along than this one did.
+
+### What no rule in this family can reach
+
+Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
+dropout decision, which makes it the sharpest instrument for this there is.
+Sweeping the whole family at once over those 36 -- three stub rules against six
+pixel choices for each sweep, 108 combinations -- the best is 152 wrong pixels
+and 2 glyphs exact. Not 0 wrong: **152**.
+
+So the dropout rule is not what is wrong there. The outline it is being applied
+to must differ from Windows', and the `E` says where: between its arms the
+scaled outline puts a stroke at device x 3.000 to 3.328, and Windows inks the
+pixel from 2 to 3 -- a whole pixel to the left of anything the outline covers.
+No choice of end and no threshold reaches a pixel the span does not touch.
+
+What that means is **open**. Honouring `INSTCTRL` was clearly right in kind --
+it took the same 36 glyphs from 301 wrong pixels to 217, made the `1` exact and
+put the top half of the `E` and `M` on the recorded pixels -- so "run no glyph
+program" is right and "use the plainly scaled outline" is not the whole of it.
+Something else about that size is still being done differently.
 
 ---
 
