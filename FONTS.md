@@ -778,6 +778,24 @@ Every variant lands on eight wrong pixels. Widths from 0.3 to 0.6, turn
 distances from 0 to 40, and the conjunction of the two: the total never moves,
 and all any of them does is trade a pixel Windows inks for one it does not.
 
+**And the flattening interacts with all of it.** How finely a quadratic is
+broken into line segments is a free parameter here, and sweeping it moves the
+same eight pixels:
+
+| segments | 2   | 4   | 6   | **8** | 12  | 16  | 32  | 64  |
+| -------- | --- | --- | --- | ----- | --- | --- | --- | --- |
+| wrong    | 8   | 7   | 7   | **8** | 9   | 9   | 9   | 9   |
+
+The trend is monotonic in the direction that matters: **as the flattening
+converges on the true curve, the disagreement settles at nine.** Eight is what
+eight segments happens to give, and seven is what four gives -- both of them
+flattening error cancelling part of the real difference rather than reducing it.
+A renderer with exact curves would be at nine.
+
+That is worth knowing before anyone tunes it. Two segments scores best of all on
+glyph count, 86 of 90, and two segments is a visibly wrong quadratic. Fitting
+this parameter on ninety small glyphs would buy a number and lose the curve.
+
 That is a floor, and a floor means the rule is not the thing. **Whatever these
 eight pixels are, no refinement of "which thin spans get rescued" reaches them**
 -- the sampling itself must differ, or Windows is inking them for a reason that
@@ -807,6 +825,20 @@ sweeping the sample position against recorded glyph bitmaps: sixteen
 combinations of where in the pixel to test, then twenty-five more at a hundredth
 of a pixel around the best. The centre wins outright, the peak is sharp, and
 every other offset is worse in both directions. **Measured.**
+
+Re-measured since, against a signal ten times cleaner -- eight wrong pixels
+rather than a hundred -- and the peak is sharper still:
+
+| sample at | 0.40 | 0.45 | **0.50** | 0.55 | 0.60 |
+| --------- | ---- | ---- | -------- | ---- | ---- |
+| across    | 98   | 47   | **8**    | 43   | 95   |
+| down      | 42   | 25   | **8**    | 17   | 35   |
+
+**Which end of a span is closed makes no difference.** All four conventions --
+`[from, to)`, `(from, to]`, and both closed or both open -- give the same eight
+wrong pixels. No span boundary in the recorded glyphs lands exactly on a pixel
+centre, so the question does not arise, and the half-open form is kept because
+it is the one that cannot double-ink a shared edge.
 
 There is no sub-pixel bias to correct, which is worth knowing because a
 one-pixel disagreement in a glyph looks exactly like a fill rule problem and
