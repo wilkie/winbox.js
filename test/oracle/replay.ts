@@ -1137,6 +1137,24 @@ const ADAPTERS: Record<
     return `width=${extent & 0xffff},height=${(extent >> 16) & 0xffff}`;
   },
 
+  /**
+   * One character's advance and the size it was drawn at.
+   *
+   * The `hinting` probe's whole purpose is to be pointed at a fabricated font
+   * whose glyph program has been rewritten to report something else through
+   * this channel, so the adapter does nothing clever: it asks for the width the
+   * same way the probe does and reports the pixel size alongside, because a
+   * fabricated reading is meaningless without knowing which size produced it.
+   */
+  advance(context, args) {
+    const { hdc, metrics } = context.mappedFont([args[0], args[1]]);
+
+    const character = String(args[2] ?? '').replace(/'/g, '');
+    const extent = GetTextExtent.call(context, hdc, context.lpcstr(character), character.length);
+
+    return `advance=${extent & 0xffff},ppem=${metrics.tmHeight - metrics.tmInternalLeading}`;
+  },
+
   CreateFontIndirect(context, [face, height]) {
     const { face: resolved, metrics } = context.mappedFont([
       face,
@@ -1258,6 +1276,10 @@ export const KNOWN_GAPS: Record<string, string> = {
   'CreateFont widths': NO_OUTLINE_FONTS,
   'CreateFont style': NO_OUTLINE_FONTS,
   'CreateFont extent': NO_OUTLINE_FONTS,
+  advance:
+    'thirty cell heights of the two letters whose hinted advance still ' +
+    'disagrees, which are the same eight pixel sizes reached through a ' +
+    'different API and asked for more ways',
 };
 
 /**

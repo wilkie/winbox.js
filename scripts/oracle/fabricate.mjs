@@ -280,6 +280,132 @@ export function readoutProgram(index, base, magnify) {
 }
 
 /**
+ * Where a glyph's instructions live, and how much room they have.
+ *
+ * A simple glyph is a count of contours, a bounding box, the index each
+ * contour ends at, then the instruction length and the instructions
+ * themselves, and only then the points. So shortening the instructions means
+ * moving everything after them, and lengthening them means finding the room
+ * first. Both are done in place inside the slot `loca` already allots.
+ */
+function glyphBody(bytes, glyph) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const tables = tablesOf(view);
+
+  const long = view.getInt16(tables.head.offset + 50, false) !== 0;
+  const loca = tables.loca.offset;
+
+  const start = long
+    ? view.getUint32(loca + glyph * 4, false)
+    : view.getUint16(loca + glyph * 2, false) * 2;
+  const end = long
+    ? view.getUint32(loca + (glyph + 1) * 4, false)
+    : view.getUint16(loca + (glyph + 1) * 2, false) * 2;
+
+  const at = tables.glyf.offset + start;
+  const contours = view.getInt16(at, false);
+
+  if (contours < 0) {
+    throw new Error(`glyph ${glyph} is a composite`);
+  }
+
+  const lengthAt = at + 10 + contours * 2;
+  const length = view.getUint16(lengthAt, false);
+
+  return {
+    view,
+    at,
+    room: end - start,
+    lengthAt,
+    program: at + 10 + contours * 2 + 2,
+    length,
+    rest: lengthAt + 2 + length,
+    restLength: at + (end - start) - (lengthAt + 2 + length),
+  };
+}
+
+/**
+ * Rewrites one glyph's instructions, keeping its outline.
+ *
+ * This is what makes a differential harness possible. `hdmx` says what a
+ * glyph's advance comes to once its program has run, and nothing says what any
+ * intermediate point was doing -- but a program that has been cut short and
+ * given a new ending can be made to report one, and Windows will run it.
+ *
+ * @param {Uint8Array} bytes - The whole font.
+ * @param {number} glyph - Which glyph to rewrite.
+ * @param {Array} code - The instructions to put there.
+ */
+export function setGlyphProgram(bytes, glyph, code) {
+  const body = glyphBody(bytes, glyph);
+
+  const tail = [];
+
+  for (let offset = 0; offset < body.restLength; offset++) {
+    tail.push(body.view.getUint8(body.rest + offset));
+  }
+
+  if (2 + code.length + tail.length > body.room - (body.lengthAt - body.at)) {
+    throw new Error(`glyph ${glyph} program of ${code.length} does not fit`);
+  }
+
+  body.view.setUint16(body.lengthAt, code.length, false);
+
+  let write = body.lengthAt + 2;
+
+  for (const byte of code) {
+    body.view.setUint8(write++, byte);
+  }
+
+  for (const byte of tail) {
+    body.view.setUint8(write++, byte);
+  }
+
+  return bytes;
+}
+
+/** A glyph's instructions, as they stand. */
+export function glyphProgram(bytes, glyph) {
+  const body = glyphBody(bytes, glyph);
+  const code = [];
+
+  for (let offset = 0; offset < body.length; offset++) {
+    code.push(body.view.getUint8(body.program + offset));
+  }
+
+  return code;
+}
+
+/**
+ * Instructions that report a point's coordinate as the glyph's advance.
+ *
+ * The advance is the one number a program can hand back to a caller: `hdmx`
+ * tabulates it and `GetTextExtent` reports it. Moving the advance phantom to
+ * wherever some other point ended up turns that channel into a probe for any
+ * position in the glyph.
+ *
+ * Magnified, because a whole pixel of advance is a whole pixel of resolution
+ * and the questions here are worth a sixty-fourth. Multiplying by eight before
+ * reporting turns an eighth of a pixel into a pixel of answer.
+ *
+ * @param {number} point - The point to report.
+ * @param {number} phantom - The index of the advance phantom.
+ * @param {number} magnify - How much to multiply the coordinate by.
+ */
+export function reportPoint(point, phantom, magnify) {
+  return [
+    // Both vectors along x, so a coordinate means the x coordinate.
+    0x01,
+    ...ops.byte(phantom),
+    ...ops.byte(point),
+    0x46,
+    ...ops.word(magnify * 64),
+    ...ops.multiply(),
+    ...ops.setCoordinate(),
+  ];
+}
+
+/**
  * Replaces a glyph with a rectangle and a program.
  *
  * Written over the glyph that is already there, which bounds how long it may
@@ -443,7 +569,139 @@ function readout(name, { index, bases, magnify, describe }) {
   };
 }
 
+/**
+ * Instructions that report a fixed number as the glyph's advance.
+ *
+ * The calibration for `reportPoint`. A readout says where a point is by moving
+ * the advance phantom onto it, and the advance is the distance between the two
+ * phantoms -- so anything that has happened to the *other* phantom lands in
+ * every reading as a constant offset. Reporting a number that is known in
+ * advance is the only way to find out whether there is one.
+ */
+export function reportConstant(value, phantom) {
+  return [0x01, ...ops.byte(phantom), ...ops.word(value), ...ops.setCoordinate()];
+}
+
+/**
+ * How many points a glyph's outline has, so the phantoms can be addressed.
+ *
+ * The phantom points are numbered straight on from the last real one, which
+ * means a program that wants to move the advance has to know how many points
+ * came before it. Every glyph answers differently.
+ */
+export function pointCount(bytes, glyph) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const tables = tablesOf(view);
+
+  const long = view.getInt16(tables.head.offset + 50, false) !== 0;
+  const loca = tables.loca.offset;
+
+  const start = long
+    ? view.getUint32(loca + glyph * 4, false)
+    : view.getUint16(loca + glyph * 2, false) * 2;
+
+  const at = tables.glyf.offset + start;
+  const contours = view.getInt16(at, false);
+
+  return view.getUint16(at + 10 + (contours - 1) * 2, false) + 1;
+}
+
+/**
+ * A fabrication that makes one letter report one of its own points.
+ *
+ * The glyph keeps its outline and its whole program, and gains an ending that
+ * moves the advance phantom onto the point named. What Windows then reports as
+ * the letter's width is that point's position, magnified -- so the `hinting`
+ * probe's sweep over sizes becomes a table of where Windows put it at each of
+ * them.
+ *
+ * Nothing else about the font changes, so the same recording still says what
+ * every other letter does and can be checked against the unfabricated one.
+ */
+function reporter(name, { character, point, constant, cut, magnify, describe }) {
+  return {
+    name,
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe,
+
+    edit: (bytes) => {
+      const glyph = glyphFor(bytes, character.charCodeAt(0));
+      const full = glyphProgram(bytes, glyph);
+
+      /* The readout has to go somewhere, and `loca` gives a glyph exactly the
+       * room its own program already fills -- Times New Roman's `w` has not a
+       * byte to spare. So the tail comes off to make space.
+       *
+       * Where it comes off matters more than how much. The first attempt cut
+       * inside a conditional, which put the readout in a branch that half the
+       * sizes never entered; those sizes reported the advance the glyph would
+       * have had anyway, which looks like a reading and is not one. The cut has
+       * to be at a point the program is statically balanced at -- every `IF`
+       * opened before it also closed -- and 717 is the last such point with
+       * room for the readout.
+       *
+       * Whether the truncation disturbs the point being reported is not assumed.
+       * Our own interpreter runs the full program and the fabricated one, and
+       * the two agree on this point at every size, which is what makes the
+       * reading mean anything.
+       */
+      const ending =
+        constant === undefined
+          ? reportPoint(point, pointCount(bytes, glyph) + 1, magnify)
+          : reportConstant(constant, pointCount(bytes, glyph) + 1);
+
+      const code = [...full.slice(0, cut), ...ending];
+
+      if (code.length > full.length) {
+        throw new Error(`readout of ${code.length} does not fit in ${full.length}`);
+      }
+
+      return setGlyphProgram(bytes, glyph, code);
+    },
+  };
+}
+
 export const FABRICATIONS = [
+  /* The calibration, which has to come before any reading is believed. The
+   * advance phantom is put at exactly sixteen pixels and nothing else is
+   * touched, so a correct channel reports sixteen at every size. Anything else
+   * is an offset every other reading carries too.
+   */
+  reporter('times-w-constant', {
+    character: 'w',
+    constant: 16 * 64,
+    cut: 717,
+    describe: "Times New Roman's w reporting a fixed sixteen pixels as its advance",
+  }),
+
+  /* The differential harness. Times New Roman's `w` is one of two letters whose
+   * advance still disagrees, and it disagrees because of where point 32 ends
+   * up -- everything between that point and the advance has been checked and
+   * is right. This asks Windows where it puts point 32, which nothing else can.
+   *
+   * Magnified eight times, so an eighth of a pixel of position is a pixel of
+   * answer and the sixty-fourths that decide the disagreement are visible.
+   */
+  reporter('times-w-point-32', {
+    character: 'w',
+    point: 32,
+    cut: 717,
+    magnify: 8,
+    describe: "Times New Roman's w reporting point 32's x position as its advance",
+  }),
+
+  /* And point 35, which is what places point 32. If the two disagree the fault
+   * is between them; if only 35 does, it is above.
+   */
+  reporter('times-w-point-35', {
+    character: 'w',
+    point: 35,
+    cut: 717,
+    magnify: 8,
+    describe: "Times New Roman's w reporting point 35's x position as its advance",
+  }),
+
   {
     name: 'times-cvt0-raised',
     from: 'TIMES.TTF',

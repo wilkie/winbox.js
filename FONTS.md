@@ -661,6 +661,58 @@ comparison or it does not, and there is no partial credit on a branch.
 Eight advances differ: Arial Italic's `M` at four sizes, Times New Roman's `w` at
 three and `o` at one.
 
+#### A differential harness
+
+Everything above was reasoning about our own trace, because Windows reports one
+number per glyph and says nothing about the several dozen points behind it. It
+can be made to say more.
+
+**A glyph's program can be rewritten to report one of its own points as the
+glyph's advance.** Append `SVTCA[x]`, push the advance phantom and the point of
+interest, `GC` the point's coordinate, multiply, and `SCFS` it onto the phantom.
+What Windows then reports as the letter's width is that point's position,
+magnified. `scripts/oracle/fabricate.mjs` builds these and `oracle/probes/
+hinting.c` reads them at every cell height in one recording.
+
+Three things had to be got right, and each was wrong first:
+
+- **The cut has to be statically balanced.** A glyph has exactly the room its
+  own program fills, so the readout replaces the tail -- and the first cut
+  landed inside a conditional, putting the readout in a branch half the sizes
+  never entered. Those sizes reported the advance the glyph would have had
+  anyway, which looks exactly like a reading and is not one.
+- **The truncation must not disturb the point.** Checked by running the full
+  program and the fabricated one through our own interpreter: they agree on the
+  reported point at every size.
+- **The channel has to be calibrated.** A fabrication that reports a constant
+  sixteen pixels reads back as exactly 16 at all 58 readable sizes, so there is
+  no offset hiding in the phantom the advance is measured from.
+
+**`GetTextExtent` reads `hdmx` rather than running the program.** That fell out
+of the calibration: at the two dozen sizes `hdmx` tabulates, the fabricated
+glyph reports the tabulated advance and the readout is invisible. It is only at
+sizes the table misses that Windows runs the program at all. **Recorded**, and
+it is why the harness reads 58 sizes rather than 84.
+
+#### What it says about the `w`
+
+Points 32 and 35, read at every size Windows will run the program at:
+
+|                         |                |
+| ----------------------- | -------------- |
+| agree exactly           | 35 of 58 sizes |
+| differ by one pixel     | 23 of 58       |
+| differ by anything else | none           |
+
+Both points move together every time, so whatever differs is upstream of point
+35 as well. And the disagreement is a whole pixel or nothing -- never a
+fraction -- which is the same signature as the control value branch above: some
+comparison lands on the wrong side and the result jumps.
+
+This is the first per-point comparison against Windows in the project, and it
+turns "somewhere in a chain of four instructions" into a bisection with a
+measurement at every step. **Open**, but no longer blind.
+
 The `w` has been disassembled and traced to the bottom of what is reachable. Its
 advance is set by an `fpgm` function that guards against the glyph getting too
 narrow:
@@ -963,6 +1015,7 @@ fitted height.
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
 | `font` (2,655 records)                                       | 98.1%     |
 | `glyphs` (90 records)                                        | 92.2%     |
+| `hinting` (309 records)                                      | 90.3%     |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical. The seven
 that differ are all outline faces.
