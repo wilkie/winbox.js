@@ -746,6 +746,58 @@ function reporter(name, { font = 'TIMES.TTF', character, point, constant, cut, m
 }
 
 export const FABRICATIONS = [
+  /* Bars that lean by almost nothing, to ask whether the rasteriser tests for
+   * an upright edge or merely fails to notice a small one.
+   *
+   * An upright stroke's dropout takes the pixel to the right of the gap and a
+   * leaning one takes the pixel to the left, whichever way it leans -- so the
+   * thing that decides is the slope's magnitude and not its sign. Two shapes of
+   * explanation fit that. Either the rasteriser has a separate path for a
+   * vertical edge, which is worth having because a stem is the commonest thing
+   * in a font and needs no walk at all; or there is one path and something in
+   * it is sensitive to how far the edge moves in a row.
+   *
+   * They differ at the smallest lean. A test for `dx == 0` puts a stroke that
+   * leans by a fiftieth of a pixel per row with the slanted ones; a threshold,
+   * or an accumulator that has to overflow before it moves anything, puts it
+   * with the upright ones. The slants here go down to two design units over
+   * fourteen hundred -- about a five-hundredth of a pixel per row at the sizes
+   * the probe draws.
+   */
+  {
+    name: 'cour-hairslants',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with its letters replaced by bars leaning by almost nothing',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const WIDTHS = [40, 60, 80, 100, 120, 140];
+      const SLANTS = [0, 2, 5, 12, 30, 80];
+      const TALL = 1400;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const width = WIDTHS[index % WIDTHS.length];
+        const slant = SLANTS[Math.floor(index / WIDTHS.length) % SLANTS.length];
+
+        const points = [
+          [600, 0],
+          [600 + slant, TALL],
+          [600 + slant + width, TALL],
+          [600 + width, 0],
+        ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, points, program: [] });
+        setBearing(bytes, glyph, 600);
+      }
+
+      return bytes;
+    },
+  },
+
   /* The same slanted bars leaning the other way.
    *
    * Leaning right, the rescued pixel is the one to the *left* of the span at

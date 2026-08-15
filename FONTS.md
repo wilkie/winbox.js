@@ -1345,13 +1345,38 @@ stroke leaning by any amount at all, in either direction, takes the one to the
 left. Nothing in between was found, because the fonts contain nothing in
 between -- the smallest lean tried is a fifth of a pixel per row.
 
-**Why that should be so is open.** The one thing that distinguishes the two
-cases geometrically is that a vertical edge's crossing is the edge's own
-coordinate, already on the sixty-fourth grid, where a slanted edge's is
-interpolated and generally is not. That is a difference of hundredths of a
-pixel deciding a whole pixel, which is the signature of a comparison being made
-on the wrong side of a rounding somewhere -- and it is the same signature the
-letters showed before any of this was measured.
+**It is not a test for an upright stroke.** That was the obvious reading -- a
+rasteriser has every reason to give a vertical edge its own path, since a stem
+is the commonest thing in a font and needs no walk at all, and a separate path
+is an easy place for a rounding to differ. It predicts something sharp: a stroke
+leaning by any amount at all, however small, goes with the slanted ones.
+
+A third font settles it. Thirty-six bars leaning by two, five, twelve, thirty
+and eighty design units over fourteen hundred -- from a five-hundredth of a
+pixel per row upward:
+
+| Lean, in pixels per row | rows | pixel to the right | pixel to the left |
+| ----------------------- | ---- | ------------------ | ----------------- |
+| 0 (upright)             | 162  | **162**            | 5                 |
+| 0.0014                  | 156  | **156**            | 0                 |
+| 0.0036                  | 138  | **138**            | 0                 |
+| 0.0086                  | 149  | 125                | 24                |
+| 0.021                   | 134  | 106                | 28                |
+| 0.057                   | 106  | 62                 | 44                |
+| 0.14                    | 132  | 14                 | **118**           |
+| 0.5                     | 114  | 1                  | **114**           |
+
+**A stroke leaning by a five-hundredth of a pixel per row behaves exactly like
+an upright one, and the change is gradual.** A test on the edge cannot produce
+that; a `dx == 0` branch would put the 0.0014 column with the leaning ones and
+there would be no ramp. So there is one path, and what varies is not whether the
+edge is vertical but something that accumulates as it leans -- and the
+raggedness in the middle, where the same slant takes one pixel on some rows and
+the other on others, says the answer depends on where in the pixel each row
+falls as well as on the slope. That is the signature of a fixed-point quantity
+carried down the scanlines, which is what the edge walk was built to model and
+did not yet reproduce: **the mechanism is right and the arithmetic in it is
+not.**
 
 One negative worth keeping with it: **removing the column sweep improves every
 one of the four shape fonts and hurts none**, which is a second confirmation
