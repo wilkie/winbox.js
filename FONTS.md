@@ -1009,6 +1009,27 @@ put the top half of the `E` and `M` on the recorded pixels -- so "run no glyph
 program" is right and "use the plainly scaled outline" is not the whole of it.
 Something else about that size is still being done differently.
 
+Two things are known about it, and they are the sharpest statement of the
+question there is. Both are pixels Windows inks that no span touches, and in
+both the pixel is the one _below_ the span in the outline's own coordinates:
+
+- The `E`'s stem between its arms is at outline x 1.000 to 1.328, and Windows
+  inks the pixel from 0 to 1.
+- The `o`'s top bar is at outline y 3.169 to 3.498, and Windows inks the pixel
+  from 2 to 3.
+
+But "the pixel below the span" is not the rule either, because the `o`'s left
+stroke at its bottom row is at outline x 1.012 to 1.498 and Windows inks the
+pixel from 1 to 2 -- the one the span is _in_. Three spans, three different
+answers from the same family of rules, which is why the fit bottoms out at 152.
+
+One plausible explanation was tested and is wrong. `cvt[25]` is a control value
+`prep` sets to exactly one pixel at every size, and the glyph programs place
+their leftmost point at it; if it were zero at eight pixels per em, the `E`'s
+stem would land where Windows draws it. It is the **left side bearing**, and
+zeroing it moves the whole glyph a pixel left rather than the stem alone: 320
+wrong pixels against 301. **Measured**, and the hypothesis is dead.
+
 ---
 
 ## 7. The hinting interpreter
