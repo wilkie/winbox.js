@@ -47,13 +47,22 @@ const CURVE_STEPS = 8;
  *
  * The rule it stands in for is a question about shape rather than width: a stub
  * is where the outline turns back, so the two edges bounding an empty span are
- * two sides of one tip rather than two sides of a stroke. That was implemented
- * -- pieces grouped into runs that never turn back, so that a tip four curve
- * segments wide is still one turn, and the span refused when the two runs meet
- * at this very scanline -- and **it does not beat the threshold**: 661 glyphs
- * exact against 674, with fewer wrong pixels (444) and fewer whole glyphs
- * right. Combining the two is no better than the threshold alone. Recorded here
- * so the next attempt starts further along than this one did.
+ * two sides of one tip rather than two sides of a stroke. **Two ways of asking
+ * that have been implemented and neither beats the threshold.**
+ *
+ * By topology -- the contour's pieces grouped into runs that never turn back,
+ * so a tip four curve segments wide is still one turn, and the span refused
+ * when its two runs meet at this very scanline. 661 glyphs exact against 674.
+ *
+ * By direction -- the two bounding edges' tangents, which point opposite ways
+ * through a stroke and converge at a tip, refused when their normalised dot
+ * product rises above a threshold. This one is clearly measuring something: at
+ * its best it takes the missing pixels from 316 to **99**, so it does find the
+ * strokes Windows rescues. It invents as many as it saves, though, and the
+ * glyph agreement is 679 against 681.
+ *
+ * Both are recorded so the next attempt starts further along than this one did.
+ * What neither has is the rule that stops a rescue Windows does not make.
  */
 const STUB = 0.5;
 

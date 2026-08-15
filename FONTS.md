@@ -991,16 +991,27 @@ in for a rule looks like, and half a pixel is kept because it is the sampling
 interval -- the values either side of it are a fit to 846 records and nothing
 more.
 
-**The rule it stands in for is about shape, and implementing it does not help.**
-A stub is where the outline turns back, so the real question is whether the two
-edges bounding an empty span are two sides of one tip or two sides of a stroke.
-That was built: the pieces of each contour grouped into runs that never turn
-back -- so that a tip four curve segments wide is still one turn -- linked
-around the contour, and a span refused when its two runs meet each other at this
-very scanline. It gives **661 glyphs exact against 674**, with fewer wrong
-pixels (444 against 462) and fewer whole glyphs right. Requiring both tests, or
-either, is no better than the threshold alone. **Measured**, and recorded here
-so the next attempt starts further along than this one did.
+**The rule it stands in for is about shape, and two ways of implementing it do
+not help.** A stub is where the outline turns back, so the real question is
+whether the two edges bounding an empty span are two sides of one tip or two
+sides of a stroke.
+
+_By topology._ The pieces of each contour grouped into runs that never turn back
+-- so a tip four curve segments wide is still one turn -- linked around the
+contour, and a span refused when its two runs meet each other at this very
+scanline. **661 glyphs exact against 674.** Requiring both tests, or either, is
+no better than the threshold alone.
+
+_By direction._ The two bounding edges' tangents point opposite ways through a
+stroke and converge at a tip, so their normalised dot product is near -1 for one
+and above it for the other. This one is clearly measuring something real: at its
+best it takes the missing pixels from 316 to **99**, which says it does find the
+strokes Windows rescues and the threshold does not. It invents as many as it
+saves -- 121 to 262 -- and the glyph agreement is **679 against 681**.
+
+Both **measured**, and recorded so the next attempt starts further along. What
+neither has is the other half of the rule: the test that stops a rescue Windows
+does not make. The direction test says the first half is findable.
 
 ### What no rule in this family can reach
 
