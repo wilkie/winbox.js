@@ -35,9 +35,10 @@ const CURVE_STEPS = 8;
  * glyphs, so the recording pins the rule and not the number. Below 0.3 the
  * stubs come back; above 0.5 real dropouts start being refused.
  *
- * Swept again over 846 glyphs rather than 90, and the peak is still broad and
- * still not sharp: 0.45 is the best at 691 glyphs exact against 681 here, and
- * 0.325 turns off the fewest wrong pixels at 376 against 437. What the wider
+ * Swept again over 846 glyphs rather than 90, and again after the crossing rule
+ * was corrected, and the peak is still broad and still not sharp: 0.45 is the
+ * best at 700 glyphs exact against 691 here, and 0.325 turns off the fewest
+ * wrong pixels at 359 against 418. What the wider
  * sweep shows that the narrow one could not is the shape of the curve -- a
  * smooth trade of invented pixels for missing ones with no corner in it, and
  * the best threshold and the best pixel count in different places. That is what
@@ -529,7 +530,17 @@ export function fill(contours, options) {
    * needed two rules to say and was worth 674 glyphs against **681** here, and
    * 462 wrong pixels against **437**. It is also the rule the format's own
    * scan converter is described as using, so the agreement is with something
-   * outside this fixture as well.
+   * outside this fixture as well. Re-swept after the crossing rule was
+   * corrected and unchanged: 691 against 683 for anything else.
+   *
+   * **The crossing itself is not quantised.** Windows would have computed it in
+   * fixed point, and a stroke whose edge lands within a sixty-fourth of a pixel
+   * centre is exactly where that would show -- Arial's `7` at eighteen pixels
+   * per em has its diagonal cross a row at 5.497 where Windows evidently has it
+   * a shade past 5.5. Rounding the intersection to sixty-fourths costs 26
+   * glyphs, flooring 35, ceiling 10. Exact wins outright, so whatever that
+   * hundredth of a pixel is, it is in the outline and not in the arithmetic
+   * here. **Measured.**
    */
   for (let column = 0; column < width; column++) {
     const crossings: any[] = [];
