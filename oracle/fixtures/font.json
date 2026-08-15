@@ -8,6 +8,7 @@
     "display": "vga",
     "displayDescription": "VGA, 640x480, 16 colours"
   },
+  "font": null,
   "records": [
     {
       "function": "CreateFont face",
@@ -13328,6 +13329,2586 @@
       "args": "\"MS Sans Serif\",h=0,w=8,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
       "result": "width=80,height=20",
       "section": "an average width asked for as well as a height"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Small Fonts\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Small Fonts\"",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Small Fonts\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=8,ascent=7,descent=1,internal=1,external=0",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Small Fonts\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=4,max=7,weight=400,overhang=3",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Small Fonts\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Small Fonts\",h=8,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=36,height=8",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Small Fonts\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Small Fonts\"",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Small Fonts\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=12,ascent=10,descent=2,internal=2,external=0",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Small Fonts\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=6,max=26,weight=400,overhang=5",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Small Fonts\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Small Fonts\",h=13,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=59,height=12",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Symbol\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Symbol\"",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Symbol\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Symbol\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=6,max=15,weight=400,overhang=7",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Symbol\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=17,charset=2",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Symbol\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=70,height=16",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"WingDings\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Arial\"",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"WingDings\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"WingDings\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=6,max=15,weight=400,overhang=0",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"WingDings\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=255,underlined=0,struckout=0,pitch=39,charset=0",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"WingDings\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=66,height=16",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Nonesuch\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Times New Roman\"",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Nonesuch\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=2,external=1",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Nonesuch\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=6,max=16,weight=400,overhang=0",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Nonesuch\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=255,underlined=0,struckout=0,pitch=23,charset=0",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Nonesuch\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=65,height=16",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Arial\"",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=6,max=15,weight=400,overhang=0",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=255,underlined=0,struckout=0,pitch=39,charset=0",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=66,height=16",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Helv\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Helv\"",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Helv\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Helv\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=7,max=14,weight=400,overhang=7",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Helv\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=1,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Helv\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=74,height=16",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Terminal\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Arial\"",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Terminal\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Terminal\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=6,max=15,weight=400,overhang=0",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Terminal\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=255,underlined=0,struckout=0,pitch=39,charset=0",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Terminal\",h=16,w=0,weight=400,italic=1,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=66,height=16",
+      "section": "what decides whether tmItalic is 1 or 255"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=1,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Arial\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=1,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=2,ascent=2,descent=0,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=1,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=1,max=2,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=1,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=39,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=1,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=10,height=2",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=1,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Arial\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=1,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=2,ascent=2,descent=0,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=1,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=1,max=2,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=1,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=39,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=1,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=11,height=2",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Times New Roman\",h=1,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Times New Roman\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Times New Roman\",h=1,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=2,ascent=2,descent=0,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Times New Roman\",h=1,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=1,max=2,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Times New Roman\",h=1,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=23,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Times New Roman\",h=1,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=11,height=2",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=1,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=1,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=3,ascent=2,descent=1,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=1,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=1,max=1,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=1,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=1,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=10,height=3",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=1,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=1,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=3,ascent=2,descent=1,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=1,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=1,max=1,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=1,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=1,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=10,height=3",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=2,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Arial\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=2,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=2,ascent=2,descent=0,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=2,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=1,max=2,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=2,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=39,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=2,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=10,height=2",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=2,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Arial\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=2,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=2,ascent=2,descent=0,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=2,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=1,max=2,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=2,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=39,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=2,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=11,height=2",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Times New Roman\",h=2,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Times New Roman\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Times New Roman\",h=2,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=2,ascent=2,descent=0,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Times New Roman\",h=2,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=1,max=2,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Times New Roman\",h=2,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=23,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Times New Roman\",h=2,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=11,height=2",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=2,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=2,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=3,ascent=2,descent=1,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=2,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=1,max=1,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=2,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=2,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=10,height=3",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=2,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=2,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=3,ascent=2,descent=1,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=2,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=1,max=1,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=2,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=2,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=10,height=3",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=3,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Small Fonts\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=3,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=3,ascent=2,descent=1,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=3,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=1,max=2,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=3,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=3,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=14,height=3",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=3,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Small Fonts\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=3,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=3,ascent=2,descent=1,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=3,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=1,max=2,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=3,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=3,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=14,height=3",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Times New Roman\",h=3,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Small Fonts\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Times New Roman\",h=3,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=3,ascent=2,descent=1,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Times New Roman\",h=3,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=1,max=2,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Times New Roman\",h=3,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Times New Roman\",h=3,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=14,height=3",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=3,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=3,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=3,ascent=2,descent=1,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=3,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=2,max=2,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=3,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=3,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=20,height=3",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=3,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=3,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=3,ascent=2,descent=1,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=3,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=2,max=2,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=3,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=3,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=20,height=3",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=4,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Arial\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=4,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=4,ascent=3,descent=1,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=4,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=1,max=3,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=4,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=39,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=4,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=18,height=4",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=4,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Arial\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=4,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=4,ascent=3,descent=1,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=4,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=1,max=3,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=4,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=39,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=4,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=18,height=4",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Times New Roman\",h=4,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Times New Roman\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Times New Roman\",h=4,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=4,ascent=3,descent=1,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Times New Roman\",h=4,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=1,max=3,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Times New Roman\",h=4,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=23,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Times New Roman\",h=4,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=18,height=4",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=4,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=4,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=4,ascent=3,descent=1,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=4,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=2,max=3,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=4,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=4,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=20,height=4",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=4,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=4,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=4,ascent=3,descent=1,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=4,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=2,max=3,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=4,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=4,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=20,height=4",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=5,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Small Fonts\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=5,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=5,ascent=4,descent=1,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=5,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=3,max=4,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=5,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=5,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=20,height=5",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=5,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Small Fonts\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=5,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=5,ascent=4,descent=1,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=5,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=3,max=4,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=5,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=5,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=20,height=5",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Times New Roman\",h=5,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Small Fonts\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Times New Roman\",h=5,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=5,ascent=4,descent=1,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Times New Roman\",h=5,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=3,max=4,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Times New Roman\",h=5,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Times New Roman\",h=5,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=20,height=5",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=5,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=5,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=4,ascent=3,descent=1,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=5,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=2,max=3,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=5,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=5,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=20,height=4",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=5,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=5,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=4,ascent=3,descent=1,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=5,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=2,max=3,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=5,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=5,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=20,height=4",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=6,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Small Fonts\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=6,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=6,ascent=5,descent=1,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=6,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=3,max=13,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=6,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=6,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=27,height=6",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=6,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Small Fonts\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=6,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=6,ascent=5,descent=1,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=6,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=3,max=13,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=6,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=6,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=27,height=6",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Times New Roman\",h=6,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Small Fonts\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Times New Roman\",h=6,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=6,ascent=5,descent=1,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Times New Roman\",h=6,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=3,max=13,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Times New Roman\",h=6,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Times New Roman\",h=6,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=27,height=6",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=6,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=6,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=6,ascent=4,descent=2,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=6,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=3,max=3,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=6,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=6,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=30,height=6",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=6,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=6,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=6,ascent=4,descent=2,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=6,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=3,max=3,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=6,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=6,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=30,height=6",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=7,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Arial\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=7,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=7,ascent=6,descent=1,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=7,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=3,max=7,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=7,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=39,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=7,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=37,height=7",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=7,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Arial\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=7,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=7,ascent=6,descent=1,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=7,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=3,max=7,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=7,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=39,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=7,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=38,height=7",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Times New Roman\",h=7,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Times New Roman\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Times New Roman\",h=7,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=6,ascent=5,descent=1,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Times New Roman\",h=7,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=2,max=7,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Times New Roman\",h=7,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=23,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Times New Roman\",h=7,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=30,height=6",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=7,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=7,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=7,ascent=5,descent=2,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=7,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=4,max=4,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=7,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=7,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=40,height=7",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=7,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=7,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=7,ascent=5,descent=2,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=7,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=4,max=4,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=7,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=7,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=40,height=7",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=8,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Small Fonts\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=8,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=8,ascent=7,descent=1,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=8,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=4,max=7,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=8,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=8,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=33,height=8",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Small Fonts\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=8,ascent=7,descent=1,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=4,max=7,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=33,height=8",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Times New Roman\",h=8,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Small Fonts\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Times New Roman\",h=8,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=8,ascent=7,descent=1,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Times New Roman\",h=8,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=4,max=7,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Times New Roman\",h=8,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Times New Roman\",h=8,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=33,height=8",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=8,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=8,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=8,ascent=6,descent=2,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=8,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=5,max=5,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=8,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=8,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=50,height=8",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=8,ascent=6,descent=2,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=4,max=5,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=8,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=40,height=8",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=9,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Arial\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=9,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=7,ascent=6,descent=1,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=9,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=3,max=7,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=9,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=39,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=9,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=37,height=7",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=9,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Arial\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=9,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=7,ascent=6,descent=1,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=9,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=3,max=7,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=9,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=39,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=9,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=38,height=7",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Times New Roman\",h=9,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Times New Roman\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Times New Roman\",h=9,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=8,ascent=6,descent=2,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Times New Roman\",h=9,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=3,max=8,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Times New Roman\",h=9,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=23,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Times New Roman\",h=9,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=37,height=8",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=9,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=9,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=8,ascent=6,descent=2,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=9,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=5,max=5,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=9,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=9,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=50,height=8",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=9,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=9,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=8,ascent=6,descent=2,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=9,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=4,max=5,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=9,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=9,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=40,height=8",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=10,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=10,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=10,ascent=8,descent=2,internal=2,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=10,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=4,max=8,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=10,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=10,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=41,height=10",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=10,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=10,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=10,ascent=8,descent=2,internal=2,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=10,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=4,max=8,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=10,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=10,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=41,height=10",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Times New Roman\",h=10,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Times New Roman\",h=10,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=10,ascent=8,descent=2,internal=2,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Times New Roman\",h=10,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=4,max=8,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Times New Roman\",h=10,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Times New Roman\",h=10,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=41,height=10",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=10,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=10,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=8,ascent=6,descent=2,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=10,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=5,max=5,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=10,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=10,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=50,height=8",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=10,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=10,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=8,ascent=6,descent=2,internal=1,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=10,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=4,max=5,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=10,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=10,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=40,height=8",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=11,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=11,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=11,ascent=9,descent=2,internal=2,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=11,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=5,max=9,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=11,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=11,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=41,height=11",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=11,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=11,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=11,ascent=9,descent=2,internal=2,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=11,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=6,max=10,weight=700,overhang=1",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=11,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=11,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=52,height=11",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Times New Roman\",h=11,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"MS Serif\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Times New Roman\",h=11,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=11,ascent=9,descent=2,internal=2,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Times New Roman\",h=11,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=5,max=9,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Times New Roman\",h=11,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Times New Roman\",h=11,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=41,height=11",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=11,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=11,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=8,ascent=6,descent=2,internal=0,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=11,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=5,max=5,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=11,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=11,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=50,height=8",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=11,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=11,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=11,ascent=8,descent=3,internal=3,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=11,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=5,max=6,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=11,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=11,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=50,height=11",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=12,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Arial\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=12,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=12,ascent=9,descent=3,internal=3,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=12,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=4,max=9,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=12,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=39,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=12,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=47,height=12",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Arial\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=12,ascent=10,descent=2,internal=2,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=5,max=10,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=39,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=55,height=12",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Times New Roman\",h=12,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Times New Roman\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Times New Roman\",h=12,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=12,ascent=10,descent=2,internal=3,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Times New Roman\",h=12,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=4,max=10,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Times New Roman\",h=12,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=23,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Times New Roman\",h=12,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=46,height=12",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=12,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=12,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=12,ascent=9,descent=3,internal=3,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=12,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=5,max=6,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=12,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=12,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=50,height=12",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=12,ascent=9,descent=3,internal=3,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=5,max=6,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=12,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=50,height=12",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Arial\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=13,ascent=10,descent=3,internal=3,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=4,max=10,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=39,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=54,height=13",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Arial\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=12,ascent=10,descent=2,internal=2,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=5,max=10,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=39,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=55,height=12",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Times New Roman\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Times New Roman\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Times New Roman\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=12,ascent=10,descent=2,internal=2,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Times New Roman\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=4,max=11,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Times New Roman\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=23,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Times New Roman\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=49,height=12",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=12,ascent=9,descent=3,internal=2,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=6,max=7,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=13,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=60,height=12",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=13,ascent=10,descent=3,internal=3,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=6,max=7,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=13,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=60,height=13",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=14,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Arial\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=14,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=14,ascent=11,descent=3,internal=3,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=14,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=5,max=12,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=14,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=39,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=14,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=54,height=14",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=14,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Arial\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=14,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=14,ascent=11,descent=3,internal=3,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=14,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=5,max=12,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=14,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=39,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=14,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=58,height=14",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Times New Roman\",h=14,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Times New Roman\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Times New Roman\",h=14,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=14,ascent=11,descent=3,internal=3,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Times New Roman\",h=14,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=4,max=12,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Times New Roman\",h=14,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=23,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Times New Roman\",h=14,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=54,height=14",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=14,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=14,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=14,ascent=11,descent=3,internal=3,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=14,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=7,max=7,weight=400,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=14,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=14,w=0,weight=400,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=70,height=14",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier New\",h=14,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "\"Courier New\"",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier New\",h=14,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "height=14,ascent=11,descent=3,internal=3,external=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier New\",h=14,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "ave=7,max=8,weight=700,overhang=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier New\",h=14,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=54,charset=0",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier New\",h=14,w=0,weight=700,italic=0,under=0,strike=0,charset=0,pitch=0",
+      "result": "width=70,height=14",
+      "section": "where a TrueType request stops being answered by the outline"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=16,ascent=13,descent=4,internal=2,external=1",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=6,max=10,weight=400,overhang=0",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=58,height=16",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Courier\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Courier\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=16,ascent=13,descent=4,internal=2,external=1",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Courier\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=6,max=10,weight=400,overhang=0",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Courier\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Courier\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=58,height=16",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"System\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "\"Roman\"",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"System\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "height=16,ascent=13,descent=4,internal=2,external=1",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"System\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "ave=6,max=10,weight=400,overhang=0",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"System\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=19,charset=255",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"System\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=255,pitch=0",
+      "result": "width=58,height=16",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=2,pitch=0",
+      "result": "\"Symbol\"",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=2,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=2,pitch=0",
+      "result": "ave=6,max=15,weight=400,overhang=0",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=2,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=2",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=2,pitch=0",
+      "result": "width=63,height=16",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Arial\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=2,pitch=0",
+      "result": "\"Symbol\"",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Arial\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=2,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Arial\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=2,pitch=0",
+      "result": "ave=6,max=15,weight=400,overhang=0",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Arial\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=2,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=2",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Arial\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=2,pitch=0",
+      "result": "width=63,height=16",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"Symbol\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=2,pitch=0",
+      "result": "\"Symbol\"",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"Symbol\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=2,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"Symbol\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=2,pitch=0",
+      "result": "ave=6,max=15,weight=400,overhang=0",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"Symbol\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=2,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=17,charset=2",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"Symbol\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=2,pitch=0",
+      "result": "width=63,height=16",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=128,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=128,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=128,pitch=0",
+      "result": "ave=7,max=14,weight=400,overhang=0",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=128,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=128,pitch=0",
+      "result": "width=67,height=16",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont face",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=1,pitch=0",
+      "result": "\"MS Sans Serif\"",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont heights",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=1,pitch=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,external=0",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont widths",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=1,pitch=0",
+      "result": "ave=7,max=14,weight=400,overhang=0",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont style",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=1,pitch=0",
+      "result": "italic=0,underlined=0,struckout=0,pitch=33,charset=0",
+      "section": "a character set overriding the face that was named"
+    },
+    {
+      "function": "CreateFont extent",
+      "args": "\"MS Sans Serif\",h=16,w=0,weight=400,italic=0,under=0,strike=0,charset=1,pitch=0",
+      "result": "width=67,height=16",
+      "section": "a character set overriding the face that was named"
     },
     {
       "function": "CreateFontIndirect",

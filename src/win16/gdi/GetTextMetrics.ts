@@ -62,15 +62,36 @@ export function GetTextMetrics(hdc, lptm) {
 
     lptm.tmAveCharWidth = scaled(outline.averageAdvance);
 
-    // The grid-fitted maximum where the font states one, which is not the
-    // scaled outline maximum: hinting can widen a glyph past it.
-    lptm.tmMaxCharWidth = outline.deviceMaxAdvance(ppem) ?? scaled(outline.maxAdvance);
+    /* The font's bounding box, not its widest advance and not the grid-fitted
+     * widths in `hdmx`.
+     *
+     * Measured across three families at every size the probe asks for: it is
+     * `head`'s box scaled to the size, every time. The box counts ink that
+     * hangs outside the advance that carries it, so it is the wider number,
+     * and for an italic face it is wider again -- which is why the gap against
+     * the advance grows with the size rather than sitting at a pixel or two.
+     */
+    lptm.tmMaxCharWidth = scaled(outline.boundingWidth);
 
     // Only a style that had to be made shows up as an overhang.
     const bold = (style.weight ?? 0) >= 700 && !style.exactStyle;
 
     lptm.tmWeight = (style.weight ?? 0) >= 700 ? 700 : outline.weight;
-    lptm.tmItalic = style.italic || outline.italicFace ? 1 : 0;
+    /* 255 rather than 1, which is not the same answer a raster face gives.
+     *
+     * `tmItalic` is documented as non-zero for italic and the two kinds of
+     * font disagree about which non-zero: ask for a slanted `MS Sans Serif`,
+     * `Courier`, `System` or `Roman` and the byte comes back 1; ask for a
+     * slanted Arial, Times New Roman or Courier New and it comes back 255.
+     *
+     * It is not about whether the slant was synthesised. `Small Fonts` asked
+     * for by name at eight pixels synthesises one -- three pixels of overhang
+     * -- and answers 1, and `Arial` at eight pixels lands on that same strike,
+     * synthesises the same slant, and answers 255. What differs is only which
+     * family the mapper settled on, so the flag follows the family chosen
+     * rather than the strike drawn.
+     */
+    lptm.tmItalic = style.italic || outline.italicFace ? 0xff : 0;
     lptm.tmUnderlined = style.underline ? 0xff : 0;
     lptm.tmStruckOut = style.strikeout ? 0xff : 0;
     lptm.tmOverhang = bold ? 1 : 0;

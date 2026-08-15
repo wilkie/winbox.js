@@ -252,6 +252,8 @@ static void probeIndirect(LPCSTR face, int height)
 
 int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int show)
 {
+    int index;
+
     probeOpen(OUTPUT);
 
     dc = GetDC(NULL);
@@ -421,6 +423,71 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeFont(16, 8, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "MS Sans Serif");
     probeFont(16, 16, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "MS Sans Serif");
     probeFont(0, 8, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "MS Sans Serif");
+
+    /* What decides whether `tmItalic` comes back as 1 or as 255.
+     *
+     * Both values occur, and the split is not the obvious one. Every raster
+     * and vector face answers 1; every request naming a TrueType family
+     * answers 255 -- including `Arial` at eight pixels, which is not served by
+     * a TrueType font at all. GDI answers that one with `Small Fonts`, a
+     * raster strike, and synthesises the slant (the overhang is three pixels,
+     * so nothing italic was opened), and it still says 255.
+     *
+     * So it is not the file that was opened and it is not whether the style
+     * was synthesised. The remaining candidate is the name that was asked for,
+     * which these separate: `Small Fonts` requested by name lands on exactly
+     * the font that `Arial` at eight pixels lands on. If the two answer
+     * differently then the request decides it and the realised font does not,
+     * which would be worth knowing and is not written down anywhere.
+     */
+    probeNote("what decides whether tmItalic is 1 or 255");
+    probeFont(8, 0, FW_NORMAL, 1, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "Small Fonts");
+    probeFont(13, 0, FW_NORMAL, 1, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "Small Fonts");
+    probeFont(16, 0, FW_NORMAL, 1, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "Symbol");
+    probeFont(16, 0, FW_NORMAL, 1, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "WingDings");
+    probeFont(16, 0, FW_NORMAL, 1, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "Nonesuch");
+    probeFont(16, 0, FW_NORMAL, 1, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "");
+    probeFont(16, 0, FW_NORMAL, 1, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "Helv");
+    probeFont(16, 0, FW_NORMAL, 1, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "Terminal");
+
+    /* Where a TrueType face stops being used at all.
+     *
+     * Asked for Arial at eight pixels Windows answers with `Small Fonts`; at
+     * twelve it answers with Arial. Somewhere between the two it stops scaling
+     * the outline and reaches for a strike instead, and one size either side of
+     * the change says only that the change exists. Every height from one to
+     * fourteen says where it is, and whether it is a property of the size
+     * alone: `Courier New` at eight stays `Courier New`, so it is not simply
+     * that nothing outlined is used below some size.
+     */
+    probeNote("where a TrueType request stops being answered by the outline");
+    for (index = 1; index <= 14; index++) {
+        probeFont(index, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "Arial");
+        probeFont(index, 0, FW_BOLD, 0, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, "Arial");
+        probeFont(index, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, DEFAULT_PITCH,
+                  "Times New Roman");
+        probeFont(index, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, DEFAULT_PITCH,
+                  "Courier New");
+        probeFont(index, 0, FW_BOLD, 0, 0, 0, ANSI_CHARSET, DEFAULT_PITCH,
+                  "Courier New");
+    }
+
+    /* A character set steers the mapping on its own, and hard enough to
+     * override the name: `MS Sans Serif` asked for with `OEM_CHARSET` comes
+     * back as `Roman`, a vector face in a different family entirely. Which of
+     * the sets do that, and to what, is the question -- a program asking for
+     * OEM text is asking for the line-drawing characters, and getting a face
+     * without them is a visible failure rather than a metric one.
+     */
+    probeNote("a character set overriding the face that was named");
+    probeFont(16, 0, FW_NORMAL, 0, 0, 0, OEM_CHARSET, DEFAULT_PITCH, "Arial");
+    probeFont(16, 0, FW_NORMAL, 0, 0, 0, OEM_CHARSET, DEFAULT_PITCH, "Courier");
+    probeFont(16, 0, FW_NORMAL, 0, 0, 0, OEM_CHARSET, DEFAULT_PITCH, "System");
+    probeFont(16, 0, FW_NORMAL, 0, 0, 0, SYMBOL_CHARSET, DEFAULT_PITCH, "MS Sans Serif");
+    probeFont(16, 0, FW_NORMAL, 0, 0, 0, SYMBOL_CHARSET, DEFAULT_PITCH, "Arial");
+    probeFont(16, 0, FW_NORMAL, 0, 0, 0, SYMBOL_CHARSET, DEFAULT_PITCH, "Symbol");
+    probeFont(16, 0, FW_NORMAL, 0, 0, 0, (BYTE)128, DEFAULT_PITCH, "MS Sans Serif");
+    probeFont(16, 0, FW_NORMAL, 0, 0, 0, (BYTE)1, DEFAULT_PITCH, "MS Sans Serif");
 
     probeNote("the same requests through CreateFontIndirect");
     probeIndirect("MS Sans Serif", 16);

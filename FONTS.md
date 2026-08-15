@@ -76,6 +76,51 @@ sans serif` finds MS Sans Serif; `MSSansSerif` finds nothing. **Recorded.**
 | `VARIABLE_PITCH \| FF_SWISS` | MS Sans Serif |
 | `FIXED_PITCH \| FF_MODERN`   | Courier       |
 
+**A strike at exactly the height asked for can beat a TrueType outline, but
+only at small sizes.** Sweeping every cell height from one to fourteen shows
+where, and the answer is not a threshold:
+
+| height requested | 1   | 2   | 3   | 4   | 5   | 6   | 7   | 8   | 9   | 10  | 11  | 12  | 13  | 14  |
+| ---------------- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `Arial`          | TT  | TT  | SF  | TT  | SF  | SF  | TT  | SF  | TT  | MSS | MSS | TT  | TT  | TT  |
+
+`TT` is Arial itself, `SF` is Small Fonts, `MSS` is MS Serif. `Times New Roman`
+gives the identical pattern; `Courier New` never falls back at any height.
+**Recorded.**
+
+The heights that fall back -- 3, 5, 6, 8, 10, 11 -- are exactly the strikes
+Small Fonts is installed in, and nothing else. So the mapper prefers a strike
+that is _exactly_ the height asked for over scaling an outline to it, which is
+why the pattern is scattered rather than a cut-off.
+
+That is not the whole rule. MS Serif is installed at 10, 11, 13, 16, 19, 21, 27
+and 35; it wins the tie at 10 and 11, where both it and Small Fonts have a
+strike, and loses at 13, where it has one and Small Fonts does not -- Arial wins
+that height outright. Several other families have a 13 too, MS Sans Serif among
+them, which is the same FF_SWISS family Arial is in and ought to be the strongest
+raster candidate there is. So an exact strike stops being preferred somewhere
+between 11 and 13, and what changes there is **open**. Courier New never falling
+back is consistent with pitch being weighed too: no fixed-pitch strike is
+installed below 13.
+
+**A character set outranks the name outright, for two of them.** Asked with
+`OEM_CHARSET`, `Arial`, `Courier` and `System` all come back as `Roman` -- a
+vector face in a different family from any of them -- reporting `tmCharSet` 255.
+Asked with `SYMBOL_CHARSET`, `MS Sans Serif`, `Arial` and `Symbol` all come back
+as `Symbol`, reporting `tmCharSet` 2. Asked with `SHIFTJIS_CHARSET` (128) or
+`UNICODE_CHARSET` (1), the name wins and `tmCharSet` comes back 0. **Recorded.**
+So the two character sets that name a different repertoire of glyphs override
+the request, and the ones with no installed face are ignored rather than
+honoured.
+
+**A request for italic reaches for a face that has one.** In upright, `Terminal`
+in ANSI gives MS Sans Serif, `WingDings` gives MS Sans Serif and an empty name
+gives MS Sans Serif. Ask the same three for italic and all three give **Arial**,
+with an overhang of zero -- a real italic file, not a synthesised slant.
+`Nonesuch` italic gives Times New Roman the same way. **Recorded.** A style the
+mapper cannot find is not simply synthesised onto whatever it would have picked
+anyway; it changes what gets picked.
+
 **`GetTextFace` echoes the request only when `WIN.INI` redirected it.** A
 program asking for `Helv` is told `Helv`, though MS Sans Serif is what gets
 drawn, because `[FontSubstitutes]` redirected the name and the redirect
@@ -225,9 +270,48 @@ fitting quantises -- the choice changes nothing except the internal leading.
 Which one Windows takes is **open**; the smaller is used here and is right more
 often than not.
 
-**`tmMaxCharWidth` comes from `hdmx`** where the table covers the size, and is
-one pixel wider than the scaled outline maximum at sizes it does not. The latter
-is **open**.
+**`tmMaxCharWidth` is the font's bounding box scaled to the size.** Not the
+widest advance, and not the grid-fitted widths in `hdmx`:
+
+```
+tmMaxCharWidth = round((head.xMax - head.xMin) * ppem / unitsPerEm)
+```
+
+**Measured**, against every size the probe asks for across three families and
+all three styles of each. Arial at thirty-two pixels per em: 2142 × 32 / 2048 =
+33.5, and Windows says 33. At a hundred and forty-three: 149.6, and Windows says 150. Times at a hundred and forty-one: 153, and Windows says 153. Courier New at
+eight: 5.25, and Windows says 5.
+
+The box counts ink that hangs outside the advance carrying it, so it is always
+the wider number -- and for an italic face it is wider again, because those
+glyphs lean out of their cells at both ends. Arial's box is 2142 units against a
+widest advance of 2079; Arial Italic's is 2422 against the same 2079. That is
+what gives the rule away: measured against the advance, the error on an italic
+face _grows with the size_ rather than sitting at a pixel or two, and a gap that
+scales is a gap in the multiplicand.
+
+This was previously recorded here as "`hdmx` where the table covers the size,
+one pixel wider where it does not". That description fit the sizes it was drawn
+from and was wrong about the mechanism: Courier New has no `hdmx` at all and
+still follows the box exactly.
+
+**`tmItalic` is 255 for an outline and 1 for a strike.** Both are "non-zero",
+which is all the documentation promises, and the two kinds of font disagree
+about which non-zero. Every raster and vector face -- MS Sans Serif, Courier, MS
+Serif, System, Fixedsys, Roman, Modern, Script, Small Fonts, Symbol -- answers
+
+1. Every request the mapper settles on a TrueType family for answers 255.
+   **Recorded.**
+
+It is not about whether the slant was synthesised, which is the obvious guess
+and is measurably false. `Small Fonts` asked for by name at eight pixels
+synthesises one -- three pixels of overhang, so nothing italic was opened -- and
+answers 1. `Arial` at eight pixels lands on that same strike, synthesises the
+same three pixels, and answers 255. Same file, same shearing, different byte. So
+the flag follows the family the mapper chose and not the strike it drew.
+
+`tmUnderlined` and `tmStruckOut` have no such split: both are 255 whenever set,
+on every face. **Recorded.**
 
 ---
 
@@ -408,9 +492,22 @@ fitted height.
 | Fixture                                                      | Agreement |
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
-| `font` (2,225 records)                                       | 85.5%     |
+| `font` (2,655 records)                                       | 83.3%     |
 | `glyphs` (90 records)                                        | 81.1%     |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical. The
 seventeen that differ are all outline faces, eleven of them by one or two
 pixels.
+
+The font figure fell as it improved, which is worth explaining rather than
+hiding. Against the 2,225 records this document was first written from,
+agreement went 85.5% to 90.4% -- the bounding-box rule above, and nothing else.
+Then the probe grew by 430 records asking where a TrueType request stops being
+answered by the outline, and almost every one of them is a face the mapper gets
+wrong, so the rate dropped to 83.3% on the larger set. The 199 extra agreements
+are real and so is the new gap: it was always there, and until the probe asked
+it was not being counted.
+
+Every remaining `CreateFont style` disagreement is downstream of a face the
+mapper chose wrongly. There are no metric rules left failing on a face we get
+right -- the whole of the remaining font gap is now in section 2.

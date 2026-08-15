@@ -157,6 +157,22 @@ export class TrueTypeFont {
     return this.has('hhea') ? this.unsigned('hhea', 10) : 0;
   }
 
+  /**
+   * How wide the font's bounding box is, in font units.
+   *
+   * This is what `tmMaxCharWidth` is scaled from, which is not the same thing
+   * as the widest advance and is measurably wider. The box is the union of
+   * every glyph's extent, so it counts ink that hangs outside the advance it
+   * was given -- and an italic face, whose glyphs lean out of their cells at
+   * both ends, has a box far wider than any character in it advances. Arial's
+   * box is 2142 units against a widest advance of 2079; Arial Italic's is 2422
+   * against the same 2079, and the difference grows with the size, which is
+   * what gives it away.
+   */
+  get boundingWidth() {
+    return this.has('head') ? this.signed('head', 40) - this.signed('head', 36) : 0;
+  }
+
   /** The average character width the font states for itself. */
   get averageAdvance() {
     return this.has('OS/2') ? this.signed('OS/2', 2) : 0;
