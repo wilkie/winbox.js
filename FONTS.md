@@ -611,6 +611,41 @@ The margin there is one advance in 22,056 and should not be oversold. What it
 does rule out is the idea that the remaining gap is explained by this rule being
 missing.
 
+#### At least one of them is a branch, not an arithmetic difference
+
+Times New Roman Italic's `!` at 92 pixels per em is the simplest of the twelve
+and the only one traced to a mechanism. Its advance phantom is placed by a
+rounding `MIRP` against `cvt[23]`, which the _glyph program_ writes rather than
+`prep`. Ours holds 104 sixty-fourths, which rounds to two pixels; Windows needs
+something under 96, which rounds to one.
+
+Where that value comes from is a conditional, and the conditional goes the other
+way at the two sizes:
+
+```
+        ppem 83 (correct)              ppem 92 (wrong)
+9463    ROUND[grey](397)  -> 384       ROUND[grey](440)  -> 448
+9465    ROUND[white](93)  -> 64        ROUND[white](104) -> 128
+9466    ADD               -> 448       ADD               -> 576
+9467    SUB   512 - 448   -> 64        SUB   576 - 576   -> 0
+9474    GT    64 > 0      -> true      GT    0 > 0       -> false
+9475    JROF  falls through            JROF  jumps
+9498      SUB, writing cvt[26]           (skipped)
+```
+
+At 83 the subtraction leaves 64 and the program writes a control value; at 92 it
+leaves exactly zero, the branch is taken, and the stale value is used. So the
+glyph comes out wrong not because an instruction computed the wrong number but
+because the program **took a different path**, and it took it on a comparison
+against zero that two roundings happened to land on.
+
+That is worth knowing for what it rules out. A difference of one sixty-fourth
+anywhere above this point flips a branch rather than shifting a position, which
+is why the resulting error is a whole pixel and why no adjustment to the
+rounding arithmetic moves it a little in the right direction -- every sweep above
+either changes nothing or changes it completely. It also means the input that
+differs may be far upstream and quite small.
+
 **Open**, at twelve of 22,056. Nine mechanisms have now been swept or verified.
 What is left is not a rule findable by inspection: the error is a third of a
 pixel entering somewhere above three levels of correct instructions, amplified by
