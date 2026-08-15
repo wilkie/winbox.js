@@ -1375,6 +1375,10 @@ export function loadFixtures(): Fixture[] {
     return [];
   }
 
+  /* Only the top level. `fabricated/` holds recordings made against fonts
+   * nobody has, which exist to answer a question about the interpreter and
+   * would be nonsense to compare against the fonts we do have.
+   */
   return readdirSync(FIXTURES)
     .filter((name) => name.endsWith('.json'))
     .sort()

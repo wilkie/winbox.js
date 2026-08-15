@@ -50,6 +50,9 @@ const PER_DISPLAY = new Set(['devcaps']);
 /** Where a probe writes, on the guest and on the host. */
 const OUTPUT_DIR = 'ORACLE';
 
+/** Where `fabricate.mjs` leaves the fonts built to ask a particular question. */
+const FONTS = join(BUILD, 'fonts');
+
 /** Long enough for Windows to boot and a probe to finish; short enough to fail. */
 const TIMEOUT_SECONDS = 300;
 
@@ -198,11 +201,40 @@ async function provenance(display) {
   };
 }
 
-async function record(probe, source, display) {
+/**
+ * Puts a fabricated font on the drive, over the one it was made from.
+ *
+ * The installed `WIN.INI` already names it, so replacing the file is the whole
+ * of installing it -- and replacing rather than adding keeps every other
+ * variable fixed, which is the point of fabricating one at all.
+ */
+async function stageFont(fabrication) {
+  const from = join(FONTS, fabrication);
+
+  const files = await readdir(from).catch(() => null);
+
+  if (!files) {
+    throw new Error(`no fabricated font named ${fabrication}; run fabricate.mjs first`);
+  }
+
+  for (const file of files) {
+    await cp(join(from, file), join(SCRATCH, 'WINDOWS', 'SYSTEM', file));
+  }
+
+  return files;
+}
+
+async function record(probe, source, display, fabrication) {
   const name = basename(source, '.EXE');
 
   await setShell(basename(source));
   await cp(source, join(SCRATCH, 'WINDOWS', basename(source)));
+
+  if (fabrication) {
+    const staged = await stageFont(fabrication);
+
+    log(`  using fabricated ${fabrication} (${staged.join(', ')})`);
+  }
   await rm(join(SCRATCH, OUTPUT_DIR), { recursive: true, force: true });
   await mkdir(join(SCRATCH, OUTPUT_DIR), { recursive: true });
 
@@ -228,10 +260,22 @@ async function record(probe, source, display) {
 
 async function main() {
   const args = process.argv.slice(2);
-  const wanted = args.filter((argument) => !argument.startsWith('-'));
+  /* Flag values are not probe names: `--display vga` must not ask for a probe
+   * called `vga`.
+   */
+  const wanted = args.filter(
+    (argument, index) => !argument.startsWith('-') && !(args[index - 1] ?? '').startsWith('--')
+  );
 
   const at = args.indexOf('--display');
   const display = at === -1 ? 'vga' : args[at + 1];
+
+  /* A fabricated font puts the recording somewhere else. What comes back is
+   * an answer about a font nobody has, so it must not overwrite the fixture
+   * describing the one everybody does.
+   */
+  const fontAt = args.indexOf('--font');
+  const fabrication = fontAt === -1 ? null : args[fontAt + 1];
 
   if (!DISPLAYS[display]) {
     throw new Error(`no display ${display}; try ${Object.keys(DISPLAYS).join(', ')}`);
@@ -268,17 +312,23 @@ async function main() {
     const name = basename(executable, '.EXE').toLowerCase();
     log(`Recording ${name} under Windows (${DISPLAYS[display].description})...`);
 
-    const records = await record(name, join(PROBES, executable), display);
+    const records = await record(name, join(PROBES, executable), display, fabrication);
     const functions = new Set(records.map((entry) => entry.function));
 
     /* A probe whose answers belong to the driver gets a fixture per driver;
      * the rest would only be recorded again under a different name.
      */
-    const fixture = PER_DISPLAY.has(name) ? `${name}-${display}` : name;
+    let fixture = PER_DISPLAY.has(name) ? `${name}-${display}` : name;
+
+    if (fabrication) {
+      fixture = `fabricated/${name}-${fabrication}`;
+
+      await mkdir(join(FIXTURES, 'fabricated'), { recursive: true });
+    }
 
     await writeFile(
       join(FIXTURES, `${fixture}.json`),
-      `${JSON.stringify({ probe: name, display, source, records }, null, 2)}\n`
+      `${JSON.stringify({ probe: name, display, source, font: fabrication ?? null, records }, null, 2)}\n`
     );
 
     log(`  ${records.length} records across ${functions.size} functions -> ${fixture}.json`);

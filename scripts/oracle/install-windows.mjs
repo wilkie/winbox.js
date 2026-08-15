@@ -360,7 +360,13 @@ async function main() {
   log('\nNext: node scripts/oracle/build-drive.mjs');
 }
 
-main().catch((error) => {
-  console.error(`install-windows: ${error.message}`);
-  process.exitCode = 1;
-});
+/* Only when run as a command. This module also exports the drive layout, and
+ * importing it for that should not set an installer going -- `record.mjs` and
+ * `fabricate.mjs` both import it, and both were paying for it.
+ */
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((error) => {
+    console.error(`install-windows: ${error.message}`);
+    process.exitCode = 1;
+  });
+}

@@ -1152,6 +1152,39 @@ styles on outline faces, the maximum character width, and the sizes the fitted
 tables do not cover. Of the glyph fixture's 90, the 42 bitmap ones agree
 exactly and the 42 outline ones do not.
 
+## Fabricated fonts
+
+Everything above records something a program can ask for. The interpreter's own
+workings are not askable: what a control value scaled to, which way a half
+rounded, whether a distance was compensated. Those are decided inside GDI and
+never come out, and reasoning about them from the pixels of a real font ran out
+at three sixty-fourths of a pixel.
+
+`scripts/oracle/fabricate.mjs` builds fonts with known contents so the input can
+be controlled instead. They are patched rather than authored: a TrueType font is
+a dozen interdependent tables and a `.FOT` stub to install it, none of which is
+under test, and starting from a font Windows already has keeps every other
+variable fixed. Changing bytes in place and resealing the checksums avoids
+moving any table, which is why the edits are same-length.
+
+    node scripts/oracle/fabricate.mjs                     # build them
+    node scripts/oracle/record.mjs glyphs --font <name>   # record against one
+
+A recording made against a fabricated font goes to `oracle/fixtures/fabricated/`
+and is deliberately not replayed: it is an answer about a font nobody has.
+
+**The road exists.** Raising Times New Roman's control value 0 -- the one behind
+the cap height -- by 512 font units moved the cap of every one of its sixteen
+pixel glyphs down a row, and nothing else in the recording. So a patched font
+loads, the resealed checksums are accepted, the file is not cached from
+somewhere else, and a change to the control value table reaches the pixels.
+
+That took two attempts and the first one is the useful half. It raised the value
+by a single unit, which is a sixty-fourth of a pixel, and changed nothing --
+and a null result from a change too small to see says nothing at all about
+whether the font was loaded. A proof that an instrument works has to be
+unmistakable or it is not a proof.
+
 ## On the media
 
 Windows 3.1 is thirty-four years old and has not been sold in this form since
