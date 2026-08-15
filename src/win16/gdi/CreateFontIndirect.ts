@@ -82,6 +82,12 @@ export function CreateFontIndirect(lplf) {
      * slanted, and emboldening them again would be drawing them twice.
      */
     exactStyle: found.exactStyle,
+
+    /* Whether the family the mapper settled on was an outline one, even where
+     * a strike ended up being drawn. Only `tmItalic` reads it; see
+     * `GetTextMetrics` for the pair of records that separate the two answers.
+     */
+    outlineFamily: found.outlineFamily,
     ppem: found.ppem,
 
     /* The horizontal pixel size, which differs from `ppem` only when the

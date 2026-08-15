@@ -210,6 +210,15 @@ anything less reports what the file says, which is not always 400. **Recorded.**
 **`tmItalic` is 1 and `tmUnderlined` and `tmStruckOut` are 255.** A program
 comparing all three against 1 is right about one of them. **Recorded.**
 
+**Which of 1 and 255 a synthesised slant reports is decided by the family the
+request settled on, not by the strike the slant was drawn onto.** Eight pixel
+Arial in italic is Small Fonts with a slant sheared into it, and answers 255.
+Small Fonts itself at eight pixels in italic is the same strike with the same
+slant, and answers 1. Nothing about what gets drawn separates them; only the
+request does. **Recorded**, both ways round, and the same holds for every name
+that reaches an outline family by some other route -- `WingDings`, `Terminal`
+and an empty name all land on Arial in italic and all answer 255.
+
 ---
 
 ## 4. Plotter fonts
@@ -1305,7 +1314,7 @@ fitted height.
 | Fixture                                                      | Agreement |
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
-| `font` (2,655 records)                                       | 98.8%     |
+| `font` (2,655 records)                                       | 99.5%     |
 | `glyphs` (846 records)                                       | 80.5%     |
 | `hinting` (618 records)                                      | 98.4%     |
 
@@ -1371,10 +1380,12 @@ wrong, and the rate _fell_ to 83.3% on the larger set. The gap was always there;
 until the probe asked, it was not being counted. Answering it took the figure to
 93.3%.
 
-What is left is thirty-one records, and most of them are no longer a
-font-mapping or metric question at all. Most are the extent of a measured string,
-which is a sum of per-glyph advances -- and those advances now come from running
-the hinting programs, so what remains of the extent gap is the same advances
-section 5 records against `hdmx`, reached by a different route. Fixing the
-interpreter fixes both. The rest are widths, and the `tmItalic` byte of a
-synthesised slant on a strike.
+What is left is **twelve records, and every one of them is the extent of a
+measured string at a large size.** The face the mapper picks, the heights, the
+widths and the style byte all agree on every record of all 2,655.
+
+An extent is a sum of per-glyph advances, and those advances come from running
+the hinting programs -- so what remains here is the same handful of advances
+section 5 records against `hdmx`, reached by a different route and accumulated
+over a ten character string. Fixing the interpreter fixes both, and nothing else
+will.

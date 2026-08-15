@@ -201,7 +201,24 @@ export function GetTextMetrics(hdc, lptm) {
      * bit set, and a program comparing against 1 would get the wrong answer
      * about an underlined font.
      */
-    lptm.tmItalic = style.italic === undefined ? header.dfItalic : style.italic ? 1 : 0;
+    /* 1 for a strike, 255 for an outline family -- and which of the two a
+     * synthesised slant reports is decided by the family the request settled
+     * on, not by the strike the slant was drawn onto.
+     *
+     * Eight pixel Arial in italic is Small Fonts with a slant sheared into it,
+     * and answers 255. Small Fonts itself at eight pixels in italic is the same
+     * strike with the same slant, and answers 1. Nothing about what gets drawn
+     * separates them. `outlineFamily` is the mapper remembering which family it
+     * had settled on before the size sent it to a strike.
+     */
+    lptm.tmItalic =
+      style.italic === undefined
+        ? header.dfItalic
+        : style.italic
+          ? style.outlineFamily
+            ? 0xff
+            : 1
+          : 0;
     lptm.tmUnderlined =
       style.underline === undefined ? header.dfUnderline : style.underline ? 0xff : 0;
     lptm.tmStruckOut =

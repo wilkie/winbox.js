@@ -393,9 +393,20 @@ export class FontManager {
       const strike = this._strikeAt(request.height ?? 0, charset, outline.font.fixedPitch);
 
       if (strike) {
+        /* Which family the mapper had settled on before the size sent it to a
+         * strike, because `tmItalic` still answers for that one.
+         *
+         * Ask for eight pixel Arial in italic and what gets drawn is Small
+         * Fonts with a synthesised slant -- and the byte comes back 255, the
+         * TrueType answer. Ask for Small Fonts itself at the same size and the
+         * same slant is synthesised onto the same strike, and it comes back 1.
+         * The strike cannot tell them apart; only the request can. **Recorded**,
+         * both ways round.
+         */
         return {
           ...FontManager.choose(strike.entries, request),
           face: strike.name,
+          outlineFamily: true,
         };
       }
 
