@@ -1103,6 +1103,29 @@ that could carry an error that size. Changing the raw `cvt[2]` or the fitted
 what produced it, and not in the arithmetic here, which has been checked
 against the reference implementation instruction by instruction.
 
+Two hypotheses were tested against that and both are dead, which is worth
+recording so they are not tested again.
+
+**The pixel size is not fractional.** If Windows worked at a slightly larger
+effective size than the whole number chosen from `VDMX`, every scaled value
+would sit a hair high and this is exactly what that would look like. Sweeping a
+bias into the size, a sixty-fourth of a pixel at a time, never improves Times
+New Roman at any value and damages Arial at most of them. A uniform change of
+scale is not what is happening.
+
+**The engine compensation is zero.** Every distance carries a colour in the low
+bits of the instruction that measures it, and the original rasteriser was
+described as nudging black and white ones before rounding, to stop a feature
+gaining or losing a pixel as it met the grid. These fonts lean on it heavily --
+Times New Roman measures fifty-three black distances and eight white ones in
+the glyphs recorded, and rounds nearly all of them -- so a compensation of even
+a sixteenth of a pixel would move a great deal. Sweeping both peaks at nothing,
+sharply, and falls away monotonically in both directions. Windows 3.1
+compensated by nothing, as the modern interpreter does.
+
+Both were single runs, and both bought a closed question rather than a better
+number. That is the right trade when the alternative is building an instrument.
+
 That is where this stops. The remaining distance is three sixty-fourths of a
 pixel in one control value of one font, it shows up in three recorded glyphs,
 and closing it needs an instruction-by-instruction trace against a known-good

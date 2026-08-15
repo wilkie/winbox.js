@@ -166,6 +166,40 @@ export class Hinter {
     this._ready = false;
   }
 
+  /**
+   * How much a distance of a given colour is nudged before it is rounded.
+   *
+   * Every distance carries a colour in the low bits of the instruction that
+   * measures it -- grey, black or white -- and the original rasteriser was
+   * described as nudging black and white ones before rounding, to stop a
+   * feature gaining or losing a pixel as it met the grid. These fonts lean on
+   * it: Times New Roman measures fifty-three black distances and eight white
+   * ones in the glyphs recorded, and rounds nearly all of them.
+   *
+   * Both are zero, and that is measured rather than inherited. Sweeping them
+   * against what Windows drew peaks at nothing, sharply, and falls away
+   * monotonically in both directions -- so Windows 3.1 compensated by nothing,
+   * as the modern interpreter does. The colour is threaded through anyway,
+   * because masking it off silently would look like an oversight rather than
+   * an answer.
+   */
+  static BLACK = 0;
+  static WHITE = 0;
+
+  static compensation(opcode) {
+    const colour = opcode & 0x03;
+
+    if (colour === 1) {
+      return Hinter.BLACK;
+    }
+
+    if (colour === 2) {
+      return Hinter.WHITE;
+    }
+
+    return 0;
+  }
+
   /** The control value table, in pixels rather than in font units. */
   scaledControlValues() {
     const values: number[] = [];
@@ -435,7 +469,7 @@ export class Hinter {
   }
 
   /** Rounds a distance according to the current round state. */
-  round(value) {
+  round(value, compensation = 0) {
     if (!this.state.rounding) {
       return value;
     }
@@ -443,7 +477,18 @@ export class Hinter {
     const { roundPeriod, roundPhase, roundThreshold } = this.state;
 
     const negative = value < 0;
-    let magnitude = Math.abs(value);
+
+    /* The engine compensation. A distance carries a colour -- grey, black or
+     * white -- and the original rasteriser nudged black and white ones before
+     * rounding, to keep a stem from thickening or thinning as it met the grid.
+     * Whether Windows 3.1 did, and by how much, is measured rather than
+     * assumed: see oracle/README.md.
+     */
+    let magnitude = Math.abs(value) + compensation;
+
+    if (magnitude < 0) {
+      magnitude = 0;
+    }
 
     magnitude += roundThreshold - roundPhase;
     magnitude = Math.floor(magnitude / roundPeriod) * roundPeriod;
@@ -1595,7 +1640,7 @@ export class Hinter {
         zoneOne.originalY[index] - zoneZero.originalY[state.rp0]
       );
 
-      let distance = opcode & 0x04 ? this.round(original) : original;
+      let distance = opcode & 0x04 ? this.round(original, Hinter.compensation(opcode)) : original;
 
       if (opcode & 0x08 && Math.abs(distance) < state.minimumDistance) {
         distance = distance < 0 ? -state.minimumDistance : state.minimumDistance;
@@ -1674,7 +1719,7 @@ export class Hinter {
       }
 
       if (opcode & 0x04) {
-        distance = this.round(distance);
+        distance = this.round(distance, Hinter.compensation(opcode));
       }
 
       if (opcode & 0x08 && Math.abs(distance) < state.minimumDistance) {
