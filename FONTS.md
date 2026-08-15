@@ -360,17 +360,40 @@ implementations, the interpolation that worried us lands somewhere harmless,
 and the difference is downstream of the control value table entirely.
 
 What that leaves is the `MIAP` itself. It rounds the control value -- 640,
-which is already a whole pixel -- and moves the point there, unless the control
-value cut-in decides the outline's own position is too far from it to trust, in
-which case the outline wins and 9.2656 rounds to 9. Ours does not take that
-branch: the distance is 0.734 of a pixel and the cut-in is 1.0625. Windows must
-be taking it, or reaching the instruction with a different position for the
-point. **Open**, and the next thing to measure.
+already a whole pixel -- and moves the point there, unless the control value
+cut-in decides the outline's own position is too far from it to trust, in which
+case the outline wins and 9.2656 rounds to 9. Ours does not take that branch:
+the distance is 0.734 of a pixel and the cut-in `prep` leaves is 255
+sixty-fourths, about four pixels.
+
+Sweeping the cut-in says two useful things at once. Forcing it below 47
+sixty-fourths makes the branch fire and **moves the whole letter onto the rows
+Windows draws it on** -- so the vertical placement really is decided there. But
+it fixes no glyph exactly, and it costs Arial three: 18 of 24 down to 15. So
+Windows is not simply using a smaller cut-in, and whatever it does at this
+instruction is not a constant this one has wrong.
+
+**The `W` is two faults, not one.** With the cap on the right row, the serifs
+are still wrong in the other direction:
+
+```
+    windows             ours
+    ..###..###..###     ....#....#..#.#
+    ...#....#....#      ...#....#....#
+```
+
+Windows draws each serif as a three pixel bar, wider than the stem beneath it;
+ours draws a single pixel, the stem width. That is a horizontal failure with
+nothing to do with cap height, and it was hidden underneath the vertical one --
+which is why the vertical one looked like the whole story for as long as it
+did. **Open**, both.
 
 This is the second time this particular gap has had a confident and wrong
-explanation. Both were arrived at by reasoning carefully from correct
-observations, and both were settled in one recording by asking. The lesson is
-about the method rather than the fonts.
+explanation, and the third time it has turned out to be smaller or different
+than it looked. Each was arrived at by reasoning carefully from correct
+observations; each was settled in one run by measuring instead. The pattern is
+worth more than the fonts: a careful chain of inference from true premises is
+exactly what a wrong answer looks like from the inside.
 
 **Arial's `A` differs by two pixels** on one row where a diagonal edge crosses
 near a pixel centre.
