@@ -1267,11 +1267,30 @@ other, where a wedge's meet at a _point_. So the test is a turn within a row
 what the direction test was reaching for and could not resolve on letters.
 
 **That rule reproduces the bar font exactly** -- 258 records, not one pixel
-wrong, at any convergence threshold. On the wedges it lands within a pixel of
-every row and gets the apex row's _column_ wrong: for the wedge whose apex falls
-at device x 8.67, Windows inks pixel 8 and this inks 9. So what is left of the
-stub rule is not the rescue decision at all but which pixel a rescued tip takes,
-which is a smaller question than the one this started with and a different one.
+wrong, at any convergence threshold. What it does not reproduce is which pixel a
+rescued span takes when the edges bounding it are _slanted_, and that is now the
+whole of what is open.
+
+**For a bar the pixel is the first centre at or above the span's start**, and
+nothing else is close: 390 of 390 rows, topmost included. A bar's edges are
+vertical, so its span is the same wherever in the row it is measured and the
+rule cannot be told apart from any other reading of it.
+
+**For a wedge nothing in that family works.** The span at the scanline gives 15
+of 122; the span at the bottom of the row gives 46; the widest span anywhere in
+the row gives 46; the last centre at or below the span's end gives 90 -- and
+that one gives 5 of 390 on the bars, so it is no unification either. Row by row
+Windows lands sometimes on the pixel below the span's start and sometimes on the
+one above, and the two cases differ by hundredths of a pixel.
+
+**Measured**, and the negative is the useful part: _the pixel a slanted span
+rescues is not a function of that span_. A scan converter that solves each
+scanline independently -- which is what this one does -- has nothing else to go
+on. One that walks its edges incrementally down the rows, carrying a fixed-point
+accumulator from the row above, has exactly the extra state that would round two
+spans a hundredth of a pixel apart to opposite sides. That is the next
+hypothesis, and it is a different shape of rasteriser rather than another
+expression to fit.
 
 **What is shipped is knowingly not this.** The measured rule -- no column sweep,
 no threshold, the next centre, and the turn-and-convergence test -- reproduces
