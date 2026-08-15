@@ -413,7 +413,7 @@ export function reportPoint(point, phantom, magnify) {
  * rewriting every offset after it. The rectangles here are a fraction of the
  * length of the letters they replace, and the slack at the end is never read.
  */
-export function setGlyph(bytes, font, glyph, { width, height, program }) {
+export function setGlyph(bytes, font, glyph, { width, height, program, points }) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const tables = tablesOf(view);
 
@@ -430,7 +430,7 @@ export function setGlyph(bytes, font, glyph, { width, height, program }) {
   const room = end - start;
   const at = tables.glyf.offset + start;
 
-  const points = [
+  const corners = points ?? [
     [0, 0],
     [0, height],
     [width, height],
@@ -447,18 +447,20 @@ export function setGlyph(bytes, font, glyph, { width, height, program }) {
   put16(0);
   put16(width);
   put16(height);
-  put16(3);
+  put16(corners.length - 1);
 
   put16(program.length);
   body.push(...program);
 
   // Every point on the curve, and every coordinate a signed two byte delta.
-  body.push(0x01, 0x01, 0x01, 0x01);
+  for (const _ of corners) {
+    body.push(0x01);
+  }
 
   for (const axis of [0, 1]) {
     let previous = 0;
 
-    for (const point of points) {
+    for (const point of corners) {
       put16(point[axis] - previous);
       previous = point[axis];
     }
@@ -607,6 +609,43 @@ export function pointCount(bytes, glyph) {
 }
 
 /**
+ * A glyph that exists only to run one instruction and report the result.
+ *
+ * Reading a point out of a real letter says where that letter's program put it
+ * and leaves the reason to inference. A glyph whose whole program is the
+ * instruction under test says what the instruction does, because everything
+ * that goes into it was chosen.
+ *
+ * The outline is four points in a row along the baseline, so every original
+ * position is known exactly and the arithmetic can be worked out by hand for
+ * whatever answer comes back.
+ */
+function experiment(name, { font, character, points, body, report, magnify = 8, describe }) {
+  return {
+    name,
+    from: font,
+    as: font,
+    describe,
+
+    edit: (bytes) => {
+      const glyph = glyphFor(bytes, character.charCodeAt(0));
+
+      return setGlyph(bytes, null, glyph, {
+        width: Math.max(...points.map((point) => point[0])),
+        height: Math.max(...points.map((point) => point[1])),
+        points,
+        program: [
+          ...body,
+          ...(magnify === 0
+            ? reportConstant(16 * 64, points.length + 1)
+            : reportPoint(report, points.length + 1, magnify)),
+        ],
+      });
+    },
+  };
+}
+
+/**
  * A fabrication that makes one letter report one of its own points.
  *
  * The glyph keeps its outline and its whole program, and gains an ending that
@@ -663,6 +702,89 @@ function reporter(name, { font = 'TIMES.TTF', character, point, constant, cut, m
 }
 
 export const FABRICATIONS = [
+  /* The calibration for the synthetic glyphs, which has to come first: at the
+   * sizes `hdmx` covers, `GetTextExtent` reports the tabulated advance and the
+   * program's answer never reaches the outside. This says which sizes can be
+   * read at all.
+   */
+  experiment('ip-calibrate', {
+    font: 'ARIALI.TTF',
+    character: 'm',
+    points: [
+      [0, 0],
+      [256, 400],
+      [512, 400],
+      [768, 0],
+    ],
+    body: [0x01],
+    report: 1,
+    magnify: 0,
+    describe: 'the synthetic glyph reporting nothing at all, to find the readable sizes',
+  }),
+
+  /* What `IP` does when its reference points have not moved.
+   *
+   * Ours does nothing: the original distance and the current one are the same
+   * number, so the interpolation is the identity. Windows moves the point
+   * anyway -- that is what the `M` says and this is what asks directly. Four
+   * points at 0, 256, 512 and 768 font units, `rp1` and `rp2` set to the outer
+   * two, and the second interpolated between them without either reference
+   * having been touched.
+   */
+  experiment('ip-identity', {
+    font: 'ARIALI.TTF',
+    character: 'm',
+    points: [
+      [0, 0],
+      [256, 400],
+      [512, 400],
+      [768, 0],
+    ],
+    body: [
+      0x01, // SVTCA[x]
+      ...ops.byte(0),
+      0x11, // SRP1, from point 0
+      ...ops.byte(3),
+      0x12, // SRP2, to point 3
+      ...ops.byte(1),
+      0x39, // IP, on point 1
+    ],
+    report: 1,
+    describe: 'IP with both reference points untouched, reporting the point it interpolated',
+  }),
+
+  /* The same, with `rp2` moved a whole pixel right first. Whatever `IP` does,
+   * it has to do more of it here, and the difference between the two says how
+   * the ratio is taken.
+   */
+  experiment('ip-stretched', {
+    font: 'ARIALI.TTF',
+    character: 'm',
+    points: [
+      [0, 0],
+      [256, 400],
+      [512, 400],
+      [768, 0],
+    ],
+    body: [
+      0x01, // SVTCA[x]
+      ...ops.byte(3),
+      ...ops.byte(3),
+      0x47, // GC[orig] of point 3
+      ...ops.word(64),
+      0x60, // ADD one pixel
+      0x48, // SCFS, putting point 3 one pixel right of where it started
+      ...ops.byte(0),
+      0x11, // SRP1
+      ...ops.byte(3),
+      0x12, // SRP2
+      ...ops.byte(1),
+      0x39, // IP
+    ],
+    report: 1,
+    describe: 'IP with the far reference moved one pixel, reporting the interpolated point',
+  }),
+
   reporter('ariali-m-p10-cut344', {
     font: 'ARIALI.TTF',
     character: 'M',

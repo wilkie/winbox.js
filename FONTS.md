@@ -559,8 +559,47 @@ worse or identical:
   instruction move something here: **60 of 60**, and `hdmx` from 5 wrong to 49.
   Decisively not it.
 
-So `IP` moves the point in Windows, and none of the three obvious accounts of
-how is right. **Open**, and pinned to one instruction.
+#### Asking `IP` directly
+
+An observation of a real letter says where its program put a point and leaves
+the reason to inference. A glyph whose _whole program is the instruction under
+test_ says what the instruction does, because everything going into it was
+chosen. `experiment()` in `fabricate.mjs` builds those: four points along a
+known baseline, a body of a few instructions, and the readout.
+
+The experiment is the `M`'s situation stripped bare. Four points at 0, 256, 512
+and 768 font units; `rp1` set to the first and `rp2` to the last; the second
+interpolated between them with neither reference having been touched:
+
+```
+    SVTCA[x]
+    PUSHB 0   SRP1
+    PUSHB 3   SRP2
+    PUSHB 1   IP
+    ... report point 1 ...
+```
+
+Ours moves nothing, for the reason given above. Windows moves it at 54 of the 61
+sizes the reading is good at, and the calibration agrees with us at all 61 --
+so the outline parses, the program runs, and it is `IP` and nothing else that
+differs.
+
+Where it puts the point, against the scaled original (in sixty-fourths, and the
+readout's resolution is eight of them):
+
+| ppem   | 10  | 18  | 21  | 25  | 30    | 35  | 40  | 45  |
+| ------ | --- | --- | --- | --- | ----- | --- | --- | --- |
+| offset | +24 | -24 | -40 | -8  | **0** | +8  | +24 | +32 |
+
+Not a constant, not a scaling, and not zero except at one size. Repeating the
+experiment with `rp2` moved a whole pixel first shifts every reading but does
+not change the shape of the curve.
+
+**Open**, and now open in the best form it has been: a single instruction, a
+controlled input, and sixty-one measurements of what Windows makes of it. What
+is ruled out is every account under which `IP` leaves this point alone, which
+includes the one implemented here and the one the reference implementation
+uses.
 
 Two further candidates were tried and rejected, both principled and both
 measurably wrong:

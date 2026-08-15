@@ -8,7 +8,7 @@
     "display": "vga",
     "displayDescription": "VGA, 640x480, 16 colours"
   },
-  "font": null,
+  "font": "ip-stretched",
   "records": [
     {
       "function": "advance",
@@ -1873,7 +1873,7 @@
     {
       "function": "advance",
       "args": "\"Arial\",h=9,italic=1,'m'",
-      "result": "advance=5,ppem=7",
+      "result": "advance=12,ppem=7",
       "section": "one character's advance at every cell height"
     },
     {
@@ -1891,13 +1891,13 @@
     {
       "function": "advance",
       "args": "\"Arial\",h=12,italic=1,'m'",
-      "result": "advance=7,ppem=9",
+      "result": "advance=14,ppem=9",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=13,italic=1,'m'",
-      "result": "advance=7,ppem=10",
+      "result": "advance=15,ppem=10",
       "section": "one character's advance at every cell height"
     },
     {
@@ -1951,7 +1951,7 @@
     {
       "function": "advance",
       "args": "\"Arial\",h=22,italic=1,'m'",
-      "result": "advance=14,ppem=18",
+      "result": "advance=18,ppem=18",
       "section": "one character's advance at every cell height"
     },
     {
@@ -1963,7 +1963,7 @@
     {
       "function": "advance",
       "args": "\"Arial\",h=24,italic=1,'m'",
-      "result": "advance=17,ppem=20",
+      "result": "advance=21,ppem=20",
       "section": "one character's advance at every cell height"
     },
     {
@@ -1975,31 +1975,31 @@
     {
       "function": "advance",
       "args": "\"Arial\",h=26,italic=1,'m'",
-      "result": "advance=19,ppem=22",
+      "result": "advance=23,ppem=22",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=27,italic=1,'m'",
-      "result": "advance=19,ppem=22",
+      "result": "advance=23,ppem=22",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=28,italic=1,'m'",
-      "result": "advance=20,ppem=23",
+      "result": "advance=25,ppem=23",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=29,italic=1,'m'",
-      "result": "advance=22,ppem=25",
+      "result": "advance=27,ppem=25",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=30,italic=1,'m'",
-      "result": "advance=22,ppem=26",
+      "result": "advance=28,ppem=26",
       "section": "one character's advance at every cell height"
     },
     {
@@ -2011,13 +2011,13 @@
     {
       "function": "advance",
       "args": "\"Arial\",h=32,italic=1,'m'",
-      "result": "advance=22,ppem=28",
+      "result": "advance=31,ppem=28",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=33,italic=1,'m'",
-      "result": "advance=22,ppem=28",
+      "result": "advance=31,ppem=28",
       "section": "one character's advance at every cell height"
     },
     {
@@ -2029,13 +2029,13 @@
     {
       "function": "advance",
       "args": "\"Arial\",h=35,italic=1,'m'",
-      "result": "advance=25,ppem=30",
+      "result": "advance=34,ppem=30",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=36,italic=1,'m'",
-      "result": "advance=25,ppem=31",
+      "result": "advance=35,ppem=31",
       "section": "one character's advance at every cell height"
     },
     {
@@ -2053,25 +2053,25 @@
     {
       "function": "advance",
       "args": "\"Arial\",h=39,italic=1,'m'",
-      "result": "advance=27,ppem=34",
+      "result": "advance=39,ppem=34",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=40,italic=1,'m'",
-      "result": "advance=29,ppem=35",
+      "result": "advance=40,ppem=35",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=41,italic=1,'m'",
-      "result": "advance=29,ppem=36",
+      "result": "advance=41,ppem=36",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=42,italic=1,'m'",
-      "result": "advance=29,ppem=36",
+      "result": "advance=41,ppem=36",
       "section": "one character's advance at every cell height"
     },
     {
@@ -2083,25 +2083,25 @@
     {
       "function": "advance",
       "args": "\"Arial\",h=44,italic=1,'m'",
-      "result": "advance=31,ppem=38",
+      "result": "advance=44,ppem=38",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=45,italic=1,'m'",
-      "result": "advance=33,ppem=39",
+      "result": "advance=45,ppem=39",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=46,italic=1,'m'",
-      "result": "advance=33,ppem=40",
+      "result": "advance=46,ppem=40",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=47,italic=1,'m'",
-      "result": "advance=33,ppem=41",
+      "result": "advance=47,ppem=41",
       "section": "one character's advance at every cell height"
     },
     {
@@ -2119,19 +2119,19 @@
     {
       "function": "advance",
       "args": "\"Arial\",h=50,italic=1,'m'",
-      "result": "advance=35,ppem=43",
+      "result": "advance=50,ppem=43",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=51,italic=1,'m'",
-      "result": "advance=35,ppem=44",
+      "result": "advance=51,ppem=44",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=52,italic=1,'m'",
-      "result": "advance=38,ppem=45",
+      "result": "advance=52,ppem=45",
       "section": "one character's advance at every cell height"
     },
     {
@@ -2143,19 +2143,19 @@
     {
       "function": "advance",
       "args": "\"Arial\",h=54,italic=1,'m'",
-      "result": "advance=39,ppem=47",
+      "result": "advance=48,ppem=47",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=55,italic=1,'m'",
-      "result": "advance=39,ppem=48",
+      "result": "advance=49,ppem=48",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=56,italic=1,'m'",
-      "result": "advance=41,ppem=49",
+      "result": "advance=51,ppem=49",
       "section": "one character's advance at every cell height"
     },
     {
@@ -2167,25 +2167,25 @@
     {
       "function": "advance",
       "args": "\"Arial\",h=58,italic=1,'m'",
-      "result": "advance=42,ppem=51",
+      "result": "advance=53,ppem=51",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=59,italic=1,'m'",
-      "result": "advance=42,ppem=51",
+      "result": "advance=53,ppem=51",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=60,italic=1,'m'",
-      "result": "advance=42,ppem=51",
+      "result": "advance=53,ppem=51",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=61,italic=1,'m'",
-      "result": "advance=44,ppem=52",
+      "result": "advance=54,ppem=52",
       "section": "one character's advance at every cell height"
     },
     {
@@ -2197,13 +2197,13 @@
     {
       "function": "advance",
       "args": "\"Arial\",h=63,italic=1,'m'",
-      "result": "advance=47,ppem=55",
+      "result": "advance=58,ppem=55",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=64,italic=1,'m'",
-      "result": "advance=47,ppem=56",
+      "result": "advance=59,ppem=56",
       "section": "one character's advance at every cell height"
     },
     {
@@ -2221,103 +2221,103 @@
     {
       "function": "advance",
       "args": "\"Arial\",h=67,italic=1,'m'",
-      "result": "advance=49,ppem=59",
+      "result": "advance=63,ppem=59",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=68,italic=1,'m'",
-      "result": "advance=49,ppem=60",
+      "result": "advance=64,ppem=60",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=69,italic=1,'m'",
-      "result": "advance=51,ppem=62",
+      "result": "advance=67,ppem=62",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=70,italic=1,'m'",
-      "result": "advance=52,ppem=63",
+      "result": "advance=68,ppem=63",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=71,italic=1,'m'",
-      "result": "advance=52,ppem=63",
+      "result": "advance=68,ppem=63",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=72,italic=1,'m'",
-      "result": "advance=52,ppem=63",
+      "result": "advance=68,ppem=63",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=73,italic=1,'m'",
-      "result": "advance=52,ppem=63",
+      "result": "advance=68,ppem=63",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=74,italic=1,'m'",
-      "result": "advance=53,ppem=64",
+      "result": "advance=69,ppem=64",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=75,italic=1,'m'",
-      "result": "advance=55,ppem=65",
+      "result": "advance=71,ppem=65",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=76,italic=1,'m'",
-      "result": "advance=55,ppem=66",
+      "result": "advance=72,ppem=66",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=77,italic=1,'m'",
-      "result": "advance=55,ppem=68",
+      "result": "advance=74,ppem=68",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=78,italic=1,'m'",
-      "result": "advance=57,ppem=69",
+      "result": "advance=76,ppem=69",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=79,italic=1,'m'",
-      "result": "advance=57,ppem=70",
+      "result": "advance=77,ppem=70",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=80,italic=1,'m'",
-      "result": "advance=57,ppem=71",
+      "result": "advance=78,ppem=71",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=81,italic=1,'m'",
-      "result": "advance=60,ppem=72",
+      "result": "advance=80,ppem=72",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=82,italic=1,'m'",
-      "result": "advance=60,ppem=73",
+      "result": "advance=81,ppem=73",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=83,italic=1,'m'",
-      "result": "advance=60,ppem=74",
+      "result": "advance=82,ppem=74",
       "section": "one character's advance at every cell height"
     },
     {
@@ -2335,43 +2335,43 @@
     {
       "function": "advance",
       "args": "\"Arial\",h=86,italic=1,'m'",
-      "result": "advance=64,ppem=76",
+      "result": "advance=85,ppem=76",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=87,italic=1,'m'",
-      "result": "advance=64,ppem=77",
+      "result": "advance=79,ppem=77",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=88,italic=1,'m'",
-      "result": "advance=66,ppem=79",
+      "result": "advance=81,ppem=79",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=89,italic=1,'m'",
-      "result": "advance=67,ppem=80",
+      "result": "advance=83,ppem=80",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=90,italic=1,'m'",
-      "result": "advance=67,ppem=80",
+      "result": "advance=83,ppem=80",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=91,italic=1,'m'",
-      "result": "advance=67,ppem=81",
+      "result": "advance=84,ppem=81",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=92,italic=1,'m'",
-      "result": "advance=69,ppem=82",
+      "result": "advance=85,ppem=82",
       "section": "one character's advance at every cell height"
     },
     {
@@ -2383,55 +2383,55 @@
     {
       "function": "advance",
       "args": "\"Arial\",h=94,italic=1,'m'",
-      "result": "advance=69,ppem=84",
+      "result": "advance=88,ppem=84",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=95,italic=1,'m'",
-      "result": "advance=71,ppem=85",
+      "result": "advance=89,ppem=85",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=96,italic=1,'m'",
-      "result": "advance=71,ppem=85",
+      "result": "advance=89,ppem=85",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=97,italic=1,'m'",
-      "result": "advance=71,ppem=86",
+      "result": "advance=90,ppem=86",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=98,italic=1,'m'",
-      "result": "advance=71,ppem=87",
+      "result": "advance=91,ppem=87",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=99,italic=1,'m'",
-      "result": "advance=71,ppem=88",
+      "result": "advance=93,ppem=88",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=100,italic=1,'m'",
-      "result": "advance=74,ppem=89",
+      "result": "advance=94,ppem=89",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=101,italic=1,'m'",
-      "result": "advance=75,ppem=91",
+      "result": "advance=97,ppem=91",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=102,italic=1,'m'",
-      "result": "advance=75,ppem=91",
+      "result": "advance=97,ppem=91",
       "section": "one character's advance at every cell height"
     },
     {
@@ -2443,43 +2443,43 @@
     {
       "function": "advance",
       "args": "\"Arial\",h=104,italic=1,'m'",
-      "result": "advance=77,ppem=93",
+      "result": "advance=99,ppem=93",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=105,italic=1,'m'",
-      "result": "advance=77,ppem=94",
+      "result": "advance=100,ppem=94",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=106,italic=1,'m'",
-      "result": "advance=77,ppem=94",
+      "result": "advance=100,ppem=94",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=107,italic=1,'m'",
-      "result": "advance=79,ppem=95",
+      "result": "advance=102,ppem=95",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=108,italic=1,'m'",
-      "result": "advance=79,ppem=95",
+      "result": "advance=102,ppem=95",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=109,italic=1,'m'",
-      "result": "advance=79,ppem=96",
+      "result": "advance=103,ppem=96",
       "section": "one character's advance at every cell height"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=110,italic=1,'m'",
-      "result": "advance=80,ppem=97",
+      "result": "advance=104,ppem=97",
       "section": "one character's advance at every cell height"
     }
   ]

@@ -113,6 +113,12 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeSweep("Times New Roman", 0, 'o');
     probeSweep("Arial", 1, 'M');
 
+    /* The letter the synthetic experiments are written over. On a stock font
+     * this is just an `m`; on a fabricated one it is four points and a single
+     * instruction, and its width is the answer.
+     */
+    probeSweep("Arial", 1, 'm');
+
     ReleaseDC(NULL, dc);
 
     probeFinish();
