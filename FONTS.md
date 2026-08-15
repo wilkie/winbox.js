@@ -460,6 +460,39 @@ on every face. **Recorded.**
 
 ---
 
+### Above `LTSH`, the advance is scaled and not hinted
+
+**A glyph's advance comes from three places, asked in this order:**
+
+1. `hdmx`, where it tabulates the size -- two dozen sizes per font.
+2. `LTSH`, where the size is at or above the glyph's linear threshold. The
+   answer there is the **scaled** advance, `round(units * ppem / unitsPerEm)`.
+3. The hinting program.
+
+The middle one is not an optimisation and cannot be skipped: it is a different
+number. Arial's `W` at eighty-nine pixels per em hints to 89 and scales to 84,
+and Windows reports 84.
+
+`LTSH` is one byte per glyph -- the smallest size at or above which that glyph's
+advance is the scaled one, to within a couple of per cent -- and its name is the
+whole of its documentation as far as any manual goes. **Recorded.** Twelve
+measured strings disagreed, every one of them at a size `hdmx` does not
+tabulate, and eleven of the twelve come right on this rule alone. That took
+`CreateFont` from 2,643 of 2,655 to **2,654**.
+
+That it went unnoticed for so long is a consequence of `hdmx` being such a good
+oracle. Every size `hdmx` covers is a size where rule 1 answers first and rule 2
+never runs, so 22,056 agreeing advances say nothing at all about it -- and the
+sizes where it does run are exactly the ones with no table to check against.
+**A check that cannot fail where the rule applies is not evidence about the
+rule.**
+
+Courier New carries neither table, which is why every one of its advances runs
+the program. It is also why it is the only face that can be checked against
+`hdmx` nowhere and the only one that reaches the interpreter everywhere.
+
+---
+
 ### `hdmx` is an oracle for the interpreter
 
 `hdmx` tabulates what each glyph advances by, in whole pixels, at the two dozen
@@ -1314,9 +1347,9 @@ fitted height.
 | Fixture                                                      | Agreement |
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
-| `font` (2,655 records)                                       | 99.5%     |
+| `font` (2,655 records)                                       | 99.96%    |
 | `glyphs` (846 records)                                       | 80.5%     |
-| `hinting` (618 records)                                      | 98.4%     |
+| `hinting` (618 records)                                      | 98.9%     |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical -- all
 forty-two of them, across four faces and two stock handles. That is the control,
@@ -1380,12 +1413,8 @@ wrong, and the rate _fell_ to 83.3% on the larger set. The gap was always there;
 until the probe asked, it was not being counted. Answering it took the figure to
 93.3%.
 
-What is left is **twelve records, and every one of them is the extent of a
-measured string at a large size.** The face the mapper picks, the heights, the
-widths and the style byte all agree on every record of all 2,655.
-
-An extent is a sum of per-glyph advances, and those advances come from running
-the hinting programs -- so what remains here is the same handful of advances
-section 5 records against `hdmx`, reached by a different route and accumulated
-over a ten character string. Fixing the interpreter fixes both, and nothing else
-will.
+What is left is **one record of 2,655**: a ten character string of Times New
+Roman Italic at thirty-four pixels per em, one pixel too wide. Neither `hdmx`
+nor `LTSH` covers that size for the glyph in question, so the interpreter has to
+answer for itself and is a pixel out -- the same fault the `hinting` fixture's
+seven remaining records are, reached by a different route.

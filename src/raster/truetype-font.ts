@@ -649,6 +649,49 @@ export class TrueTypeFont {
   }
 
   /**
+   * A glyph's advance at a size where the font says hinting no longer moves it.
+   *
+   * `LTSH` is a table of one byte per glyph: the smallest pixel size at or
+   * above which that glyph's advance is the scaled one, to within a couple of
+   * per cent. Above the threshold Windows stops asking the interpreter and
+   * scales, which is not an optimisation a caller can ignore -- it is a
+   * different number. Arial's `W` at eighty-nine pixels per em hints to 89 and
+   * scales to 84, and the recorded extent wants 84.
+   *
+   * **Recorded.** Twelve measured strings disagreed, every one of them at a
+   * size `hdmx` does not tabulate, and eleven of the twelve come right on this
+   * rule alone. The twelfth is Times New Roman Italic at thirty-four pixels,
+   * where no table covers the glyph either way and the interpreter is simply a
+   * pixel out -- section 8.
+   *
+   * The three sources are asked in the order Windows can answer them: the
+   * tabulated value where there is one, then this, then the program. Courier
+   * New carries neither table and runs the program at every size.
+   *
+   * @param {number} glyph - The glyph index.
+   * @param {number} ppem - The size in pixels per em.
+   */
+  linearAdvance(glyph, ppem) {
+    if (!this.has('LTSH')) {
+      return null;
+    }
+
+    const table = this._tables['LTSH'];
+    const count = this._view.getUint16(table.offset + 2, false);
+
+    if (glyph >= count) {
+      return null;
+    }
+
+    // One means the advance was never anything but linear.
+    if (ppem < this._view.getUint8(table.offset + 4 + glyph)) {
+      return null;
+    }
+
+    return Math.round((this.advanceOf(glyph) * ppem) / this.unitsPerEm);
+  }
+
+  /**
    * A glyph's outline, fitted to the pixel grid by the font's own program.
    *
    * The program is what decides where the ink goes at text sizes -- see

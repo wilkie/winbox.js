@@ -178,14 +178,20 @@ export class LogicalFont extends Font {
       for (const character of String(text)) {
         const glyph = font.glyphFor(character.charCodeAt(0));
 
-        /* The tabulated advance where the font has one, and otherwise the one
-         * the hinting produces -- which is what the table is a cache of, and
-         * agrees with it on every size it does cover: 3,720 of 3,720 glyphs for
-         * Arial and 3,678 of 3,696 for Times New Roman. Scaling the outline's
-         * own advance is the last resort, for a glyph with no program.
+        /* Three tables and a program, asked in the order Windows can answer
+         * them.
+         *
+         * `hdmx` tabulates the hinted advance at the sizes the font was built
+         * for, and this agrees with it on every one: 3,864 of 3,864 glyphs for
+         * Arial and 3,816 of 3,816 for Times New Roman. `LTSH` says where
+         * hinting stops moving the advance at all, and above that the answer is
+         * the scaled one rather than the hinted one -- a different number, not
+         * a shortcut to the same one. Then the program. Scaling is the last
+         * resort, for a glyph that has none.
          */
         width +=
           font.deviceAdvance(ppem, glyph) ??
+          font.linearAdvance(glyph, ppem) ??
           font.hintedAdvance(glyph, ppem) ??
           Math.round((font.advanceOf(glyph) * ppem) / font.unitsPerEm);
       }

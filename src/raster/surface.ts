@@ -372,9 +372,14 @@ export class Surface {
         }
       }
 
-      const device = outline.deviceAdvance(ppem, glyph);
-
-      pen += device ?? Math.round(outline.advanceOf(glyph) * scale);
+      /* The same three sources `LogicalFont.measure` asks, in the same order,
+       * so that where the pen lands and what a string measures cannot disagree.
+       */
+      pen +=
+        outline.deviceAdvance(ppem, glyph) ??
+        outline.linearAdvance(glyph, ppem) ??
+        outline.hintedAdvance(glyph, ppem) ??
+        Math.round(outline.advanceOf(glyph) * scale);
     }
   }
 
