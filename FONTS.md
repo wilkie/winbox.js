@@ -476,7 +476,50 @@ only the one where a two-pixel error had nowhere to hide.
 
 Twenty-eight advances still differ, across `j`, `M`, `I`, `k`, `m`, `o`, `w`,
 `y` and three glyphs outside the ANSI range, with no cluster among them: mostly
-single sizes, mostly one pixel. **Open.**
+single sizes, mostly one pixel. **Open**, and one of them is chased far enough
+below to say what kind of thing it is not.
+
+#### Arial Bold's `j`, traced to a storage location
+
+Wrong at 32, 33 and 37 pixels per em and right at the other twenty-one sizes,
+always one pixel narrow. Only one instruction touches the phantom points -- an
+`MSIRP` moving the advance point -- and the distance it is handed is computed as
+
+```
+round(cvt[619]) + storage[9]
+```
+
+Forcing `storage[9]` to 64 fixes 33 and 37 exactly and disturbs nothing else, so
+that location is the fault and not merely correlated with it. (32 stays wrong,
+so it is a second cause sharing a symptom.)
+
+`prep` computes it as `ROUND[White](cvt[618] + |cvt[60]|)`. Every input has been
+checked:
+
+- The round state is **round-to-grid**, set by the font itself one instruction
+  earlier, so it is not a rounding-mode difference.
+- The engine compensation is **zero**, by the sweep above, so the `White` colour
+  changes nothing.
+- `cvt[618]` is **never written** by `fpgm` or `prep`. It is the raw -94 font
+  units scaled linearly, and our scaling agrees with the linear formula to the
+  unit at every size.
+
+With those three fixed, no arithmetic on our inputs reaches Windows' answer: at
+37 pixels per em the sum is 19 sixty-fourths and would have to round to 64, and
+no rounding of 19 does that. Windows is not reaching the instruction with the
+same numbers, and the difference is upstream of everything checked here.
+
+The instruction counts say where to look next: `prep` executes 2,118
+instructions at 29 and 32 pixels per em, 2,124 at 33 and 2,112 at 37. Different
+counts mean different branches, so the divergence is in a conditional -- and
+this formula, derived from four sizes, is probably not even the one being
+evaluated at all of them. **Open.**
+
+This is the fourth time this session that "the instruction is wrong" has turned
+out to be "the input is different". It is worth naming as a pattern: a wrong
+answer from a correct instruction looks exactly like a wrong instruction, and
+the only way to tell is to verify every input rather than to reason about the
+operation.
 
 Of the recorded glyphs that still differ, Times New Roman's `W` at sixteen
 pixels was wrong in one pixel on one row, in the middle of a thin diagonal --
@@ -638,6 +681,21 @@ it -- Times New Roman measures 53 black distances and 8 white ones across the
 recorded glyphs and rounds nearly all of them -- so a compensation of even a
 sixteenth of a pixel would move a great deal. Sweeping both peaks at nothing,
 sharply, falling away monotonically in both directions. **Measured.**
+
+Re-measured since against `hdmx`, which is a far better instrument than the
+ninety recorded glyphs: 22,056 advances across six fonts, swept over both
+compensations together from -24 to +40 sixty-fourths.
+
+| black \ white | -8  | -4  | **0**  | +4  | +8  |
+| ------------- | --- | --- | ------ | --- | --- |
+| -8            | 838 | 657 | 439    | 643 | --  |
+| -4            | 666 | 468 | 232    | 460 | --  |
+| **0**         | 485 | 272 | **28** | 279 | 506 |
+| +4            | 641 | 461 | 244    | 483 | --  |
+| +8            | --  | --  | 474    | --  | 879 |
+
+Zero and zero, and nothing else is close. The same conclusion as before, now
+resting on three orders of magnitude more evidence.
 
 ---
 
