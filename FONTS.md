@@ -1245,17 +1245,40 @@ A rectangle has no tips, so the bars cannot say when Windows _refuses_. Thirty-s
 triangles can: a wedge is nothing but a tip, and its apex is the local extremum
 every description of the stub rule is describing.
 
-Windows inks every row of every wedge, right up to the apex. But the rule that
-reproduces the bars exactly **over-inks the wedges** -- 284 invented pixels
-against Windows -- so the refusal is real, it is a property of the shape, and
-these two fonts now separate the two cases with geometry we chose rather than
-geometry a letter happened to have. **That is the instrument the stub rule
-needs, and reading it is the next thing to do.**
+Reading them gives the sharpest statement of the stub rule there is:
 
-**What is shipped is knowingly not this.** The rule measured here scores 571 of
-the 846 recorded letters against 701 for the threshold-and-column-sweep pair in
-the code, because the missing stub rule is doing more damage than the two wrong
-mechanisms it would replace. So the code keeps a column sweep Windows does not
+| Empty spans in                  | Inked by Windows |
+| ------------------------------- | ---------------- |
+| the topmost row of a wedge      | **1 of 177**     |
+| every row of a wedge below that | **121 of 121**   |
+| the topmost row of a bar        | **50 of 50**     |
+| every row of a bar below that   | **340 of 340**   |
+
+**A tip's own row is refused and everything else is rescued** -- and width has
+nothing to do with either side of it. A tip is refused at three quarters of a
+pixel wide; a stroke is rescued at nothing at all.
+
+The bar's topmost row is what stops "the row nearest a turn" from being the
+whole rule, and it is worth the sentence. A bar has a turn at the top too, so
+that alone would refuse it -- and Windows rescues all fifty. What separates them
+is that a bar's two sides are joined by a _top edge_ and run straight past each
+other, where a wedge's meet at a _point_. So the test is a turn within a row
+**and** the two edges converging rather than running opposite ways, which is
+what the direction test was reaching for and could not resolve on letters.
+
+**That rule reproduces the bar font exactly** -- 258 records, not one pixel
+wrong, at any convergence threshold. On the wedges it lands within a pixel of
+every row and gets the apex row's _column_ wrong: for the wedge whose apex falls
+at device x 8.67, Windows inks pixel 8 and this inks 9. So what is left of the
+stub rule is not the rescue decision at all but which pixel a rescued tip takes,
+which is a smaller question than the one this started with and a different one.
+
+**What is shipped is knowingly not this.** The measured rule -- no column sweep,
+no threshold, the next centre, and the turn-and-convergence test -- reproduces
+both fabricated fonts far better than what is in the code and scores **564 of
+the 846 recorded letters against 701**. A rule that is right about shapes we
+chose and worse about letters is a rule with a piece missing, and the apex-row
+pick is the visible piece. So the code keeps a column sweep Windows does not
 have and a threshold Windows does not apply, and both are now marked in place as
 compensating fictions with the evidence against them. That is a worse thing to
 leave behind than a wrong number and a better thing than a wrong number nobody
