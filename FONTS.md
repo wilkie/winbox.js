@@ -335,40 +335,42 @@ sharply, falling away monotonically in both directions. **Measured.**
 ## 8. What is not known
 
 **Times New Roman's `W` and `g` are one pixel of cap height out**, which is
-three recorded glyphs. Traced as far as reading gets:
+three recorded glyphs. `MIAP[round]` places the top point at 10 pixels above
+the baseline where Windows places it at 9, and everything else follows from
+that.
 
-`MIAP[round]` moves the top point from 9.266 pixels to 10.000; Windows puts it
-at 9. What it rounds is `cvt[2]`, and the second of two writes to that entry is
-a plain `RCVT` / `RTG` / `ROUND` / `WCVTP` on a value of 9.5313, which rounds to
-10 under any rule anyone would write down. So the whole error is in the 9.5313,
-and Windows needs 9.4844 or less -- **three sixty-fourths of a pixel**.
+It is _not_ the control value. That was the conclusion for a while, traced
+carefully and written up here: `cvt[2]` is built by interpolation in `prep`,
+comes out at 9.5313, rounds to 10 where Windows would need 9.4844 or less, and
+the whole gap is three sixty-fourths of a pixel. Every step of that is right
+except the conclusion.
 
-That value is built by interpolation rather than scaled from anything:
+Asking Windows directly -- with a fabricated font whose glyphs report a value
+instead of drawing a letter -- says both control values are exactly what ours
+are:
 
-```
-MIAP[0]   place a twilight point at the control value
-SRP1      make another twilight point the reference
-IP        interpolate the first between the two references
-GC        read where it ended up
-WCVTP     write that back over the control value
-```
+| Control value | Ours after `prep` | Windows           |
+| ------------- | ----------------- | ----------------- |
+| `cvt[0]`      | 640 (10.00000 px) | 640 (10.00000 px) |
+| `cvt[2]`      | 640 (10.00000 px) | 640 (10.00000 px) |
 
-which is how a font keeps a family of related heights in step. `cvt[0]` is
-fitted from 9.7188 to 10.0000 and `cvt[2]` at 9.2656 is carried along to
-`9.2656 * 10 / 9.7188 = 9.5313`.
+Two independent readouts agreed on each, and the readouts whose range excluded
+the value correctly showed nothing. So `prep` produces the same numbers in both
+implementations, the interpolation that worried us lands somewhere harmless,
+and the difference is downstream of the control value table entirely.
 
-Working back through that, only one input can carry an error of three
-sixty-fourths: moving the raw `cvt[2]` or the fitted `cvt[0]` would take forty
-sixty-fourths to change the answer, and moving the _raw_ `cvt[0]`, the 622,
-takes three.
+What that leaves is the `MIAP` itself. It rounds the control value -- 640,
+which is already a whole pixel -- and moves the point there, unless the control
+value cut-in decides the outline's own position is too far from it to trust, in
+which case the outline wins and 9.2656 rounds to 9. Ours does not take that
+branch: the distance is 0.734 of a pixel and the cut-in is 1.0625. Windows must
+be taking it, or reaching the instruction with a different position for the
+point. **Open**, and the next thing to measure.
 
-Two hypotheses have been tested and closed:
-
-- **The pixel size is not fractional.** Biasing it a sixty-fourth at a time
-  never improves Times at any value and damages Arial at most of them.
-- **The engine compensation is not it**, per above -- and the chain that builds
-  `cvt[2]` uses only colourless instructions anyway, which is readable straight
-  off the trace.
+This is the second time this particular gap has had a confident and wrong
+explanation. Both were arrived at by reasoning carefully from correct
+observations, and both were settled in one recording by asking. The lesson is
+about the method rather than the fonts.
 
 **Arial's `A` differs by two pixels** on one row where a diagonal edge crosses
 near a pixel centre.

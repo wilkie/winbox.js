@@ -1,0 +1,554 @@
+{
+  "probe": "glyphs",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": "times-cvt2-fine",
+  "records": [
+    {
+      "function": "glyph",
+      "args": "SYSTEM_FONT,'A'",
+      "result": "fffffffffffffffffffffffff9fffffff9fffffff0fffffff0fffffff6ffffffe67fffffe67fffffe07fffffcf3fffffcf3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock bitmap fonts, which are the control"
+    },
+    {
+      "function": "glyph",
+      "args": "SYSTEM_FONT,'W'",
+      "result": "ffffffffffffffffffffffffcf3cffffcf3cffffcf3cffffe619ffffe619fffff2d3fffff0c3fffff9e7fffff9e7fffff9e7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock bitmap fonts, which are the control"
+    },
+    {
+      "function": "glyph",
+      "args": "SYSTEM_FONT,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff07fffffe67fffffe67fffffe67fffffe67fffffe67ffffff07ffffffe7fffffe67ffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock bitmap fonts, which are the control"
+    },
+    {
+      "function": "glyph",
+      "args": "SYSTEM_FONT,'j'",
+      "result": "ffffffffffffffffffffffffe7ffffffe7ffffffffffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock bitmap fonts, which are the control"
+    },
+    {
+      "function": "glyph",
+      "args": "SYSTEM_FONT,'1'",
+      "result": "fffffffffffffffffffffffff9ffffffe1fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock bitmap fonts, which are the control"
+    },
+    {
+      "function": "glyph",
+      "args": "SYSTEM_FONT,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock bitmap fonts, which are the control"
+    },
+    {
+      "function": "glyph",
+      "args": "ANSI_VAR_FONT,'A'",
+      "result": "fffffffffffffffffbfffffffbfffffff5fffffff5ffffffeeffffffeeffffffe0ffffffdf7fffffdf7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock bitmap fonts, which are the control"
+    },
+    {
+      "function": "glyph",
+      "args": "ANSI_VAR_FONT,'W'",
+      "result": "ffffffffffffffffdff7ffffdff7ffffeeefffffeeefffffeeeffffff55ffffff55ffffffbbffffffbbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock bitmap fonts, which are the control"
+    },
+    {
+      "function": "glyph",
+      "args": "ANSI_VAR_FONT,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff0ffffffeeffffffeeffffffeeffffffeefffffff0fffffffeffffffe1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock bitmap fonts, which are the control"
+    },
+    {
+      "function": "glyph",
+      "args": "ANSI_VAR_FONT,'j'",
+      "result": "ffffffffffffffffefffffffffffffffffffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock bitmap fonts, which are the control"
+    },
+    {
+      "function": "glyph",
+      "args": "ANSI_VAR_FONT,'1'",
+      "result": "fffffffffffffffffbffffffe3fffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock bitmap fonts, which are the control"
+    },
+    {
+      "function": "glyph",
+      "args": "ANSI_VAR_FONT,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock bitmap fonts, which are the control"
+    },
+    {
+      "function": "glyph",
+      "args": "ANSI_FIXED_FONT,'A'",
+      "result": "fffffffffffffffff9fffffffdfffffffdfffffffafffffffafffffff77ffffff07ffffff77fffffe23fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock bitmap fonts, which are the control"
+    },
+    {
+      "function": "glyph",
+      "args": "ANSI_FIXED_FONT,'W'",
+      "result": "ffffffffffffffffe23ffffff77ffffff77ffffff77ffffff57ffffff57ffffff57ffffffafffffffaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock bitmap fonts, which are the control"
+    },
+    {
+      "function": "glyph",
+      "args": "ANSI_FIXED_FONT,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff03fffffef7fffffef7fffffef7ffffff07fffffff7fffffff7ffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock bitmap fonts, which are the control"
+    },
+    {
+      "function": "glyph",
+      "args": "ANSI_FIXED_FONT,'j'",
+      "result": "fffffffffffffffffefffffffffffffffffffffff0fffffffefffffffefffffffefffffffefffffffefffffffefffffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock bitmap fonts, which are the control"
+    },
+    {
+      "function": "glyph",
+      "args": "ANSI_FIXED_FONT,'1'",
+      "result": "fffffffffffffffffdfffffff1fffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffff07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock bitmap fonts, which are the control"
+    },
+    {
+      "function": "glyph",
+      "args": "ANSI_FIXED_FONT,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock bitmap fonts, which are the control"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=16,weight=400,italic=0,'A'",
+      "result": "fffffffffffffffffffffffffdfffffffdfffffffafffffffafffffff77ffffff77fffffe03fffffefbfffffdfdfffffdfdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the same faces asked for by name and size"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=16,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffdf7dffffdf7dffffdf7dffffeebbffffeebbfffff5d7fffff5d7fffff5d7fffffbeffffffbefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the same faces asked for by name and size"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=16,weight=400,italic=0,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff17fffffee7fffffef7fffffef7fffffef7fffffee7ffffff17fffffff7fffffff7ffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the same faces asked for by name and size"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=16,weight=400,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffefffffffffffffffffffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the same faces asked for by name and size"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=16,weight=400,italic=0,'1'",
+      "result": "fffffffffffffffffffffffffbffffffe3fffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the same faces asked for by name and size"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=16,weight=400,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the same faces asked for by name and size"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=20,weight=400,italic=0,'A'",
+      "result": "fffffffffffffffffffffffffffffffffefffffffefffffffd7ffffffd7ffffffbbffffffbbffffff7dffffff7dfffffe00fffffefefffffdff7ffffdff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the same faces asked for by name and size"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=20,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffdfff7fffdfbf7fffefbeffffefbeffffef5efffff75dfffff75dfffffaebfffffaebfffffdf7fffffdf7fffffdf7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the same faces asked for by name and size"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=20,weight=400,italic=0,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffff8bffffff73fffffefbfffffefbfffffefbfffffefbfffffefbffffff73ffffff8bfffffffbfffffffbfffffff7ffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the same faces asked for by name and size"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=20,weight=400,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffffffffffefffffffffffffffffffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the same faces asked for by name and size"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=20,weight=400,italic=0,'1'",
+      "result": "fffffffffffffffffffffffffffffffffdfffffff1fffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the same faces asked for by name and size"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=20,weight=400,italic=0,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the same faces asked for by name and size"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Courier\",h=16,weight=400,italic=0,'A'",
+      "result": "fffffffffffffffffffffffff1fffffffdfffffffafffffffafffffff77ffffff77ffffff07fffffefbfffffefbfffffc71fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the same faces asked for by name and size"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Courier\",h=16,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffcf9fffffdfdfffffdddfffffdddfffffeabfffffeabfffffeabffffff77ffffff77ffffff77fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the same faces asked for by name and size"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Courier\",h=16,weight=400,italic=0,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff93fffffe67fffffef7fffffef7fffffe67ffffff97fffffff7fffffef7fffffef7ffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the same faces asked for by name and size"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Courier\",h=16,weight=400,italic=0,'j'",
+      "result": "fffffffffffffffffffffffffefffffffffffffffffffffff8fffffffefffffffefffffffefffffffefffffffefffffffefffffffeffffffeefffffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the same faces asked for by name and size"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Courier\",h=16,weight=400,italic=0,'1'",
+      "result": "fffffffffffffffffffffffffefffffff8fffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffff83fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the same faces asked for by name and size"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Courier\",h=16,weight=400,italic=0,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffcfffffffcffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the same faces asked for by name and size"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=16,weight=400,italic=0,'A'",
+      "result": "fffffffffffffffffffffffffdfffffffafffffffafffffffafffffff77ffffff77fffffe03fffffefbfffffdfdfffffdfdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=16,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffdf7dffffdebdffffeebbffffeebbffffeebbfffff5d7fffff5d7fffff5d7fffffbeffffffbefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=16,weight=400,italic=0,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff2ffffffecffffffeeffffffeeffffffeeffffffecfffffff2fffffffeffffffeefffffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=16,weight=400,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffefffffffffffffffffffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffff9fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=16,weight=400,italic=0,'1'",
+      "result": "fffffffffffffffffffffffffbfffffff3ffffffebfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=16,weight=400,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=24,weight=400,italic=0,'A'",
+      "result": "fffffffffffffffffffffffffffffffffe3ffffffe3ffffffc9ffffffc9ffffffc9ffffff9cffffff9cffffff9cffffff007fffff007ffffe7f3ffffe7f3ffffe7f3ffffcff9ffffcff9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=24,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffcfe3f9ffcfe3f9ffe7c9f3ffe7c9f3ffe7c9f3ffe3cde3fff39ce7fff39ce7fff39ce7fff93e4ffff93e4ffff93e4ffff93e4ffffc7f1ffffc7f1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=24,weight=400,italic=0,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff84ffffff00ffffff38fffffe7cfffffe7cfffffe7cfffffe7cfffffe7cffffff38ffffff00ffffff84fffffffcfffffe78fffffe01ffffff83fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=24,weight=400,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffffffffffe7ffffffe7ffffffffffffffffffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffff87ffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=24,weight=400,italic=0,'1'",
+      "result": "ffffffffffffffffffffffffffffffffff3ffffffe3ffffffc3ffffff03ffffff33fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=24,weight=400,italic=0,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=0,'1'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=0,'1'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Courier New\",h=16,weight=400,italic=0,'A'",
+      "result": "fffffffffffffffffffffffffffffffff1fffffff9fffffff9fffffff6fffffff6fffffff0ffffffef7fffffc63fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Courier New\",h=16,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffe23ffffff77ffffff77ffffff57ffffff57ffffff57ffffff57ffffffaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Courier New\",h=16,weight=400,italic=0,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff13fffffee7fffffef7fffffef7fffffee7ffffff17fffffff7ffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Courier New\",h=16,weight=400,italic=0,'j'",
+      "result": "fffffffffffffffffffffffffffffffffdfffffffffffffff0fffffffefffffffefffffffefffffffefffffffefffffffeffffffe1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Courier New\",h=16,weight=400,italic=0,'1'",
+      "result": "fffffffffffffffffffffffffffffffffdfffffff1fffffffdfffffffdfffffffdfffffffdfffffffdfffffff07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Courier New\",h=16,weight=400,italic=0,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9fffffff9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "TrueType, which is what has no other ground truth"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=16,weight=700,italic=0,'A'",
+      "result": "fffffffffffffffffffffffffcfffffffcfffffff87ffffff87ffffff33ffffff33fffffe01fffffe79fffffcfcfffffcfcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=16,weight=700,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffcf3cffffcf3cffffcf3cffffe619ffffe619fffff0c3fffff0c3fffff0c3fffff9e7fffff9e7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=16,weight=700,italic=0,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff03fffffe63fffffe73fffffe73fffffe73fffffe63ffffff03fffffff3fffffff3ffffff07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=16,weight=700,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffe7ffffffffffffffffffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=16,weight=700,italic=0,'1'",
+      "result": "fffffffffffffffffffffffff9ffffffe1fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=16,weight=700,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=16,weight=400,italic=1,'A'",
+      "result": "fffffffffffffffffffffffffff7ffffffefffffffd7ffffffafffffff77fffffeeffffffc07fffffbeffffff7f7ffffefefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=16,weight=400,italic=1,'W'",
+      "result": "ffffffffffffffffffffffffff7df7fffefbeffffefbeffffeebbffffeebbffffebafffffebafffffd75fffffefbfffffdf7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=16,weight=400,italic=1,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffff17fffffee7fffffdeffffffdeffffffbdffffffb9ffffff8bfffffffbfffffff7ffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=16,weight=400,italic=1,'j'",
+      "result": "ffffffffffffffffffffffffffbffffffffffffffffffffffefffffffefffffffdfffffffdfffffffbfffffffbfffffff7fffffff7ffffffefffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=16,weight=400,italic=1,'1'",
+      "result": "ffffffffffffffffffffffffffefffffff1fffffffdfffffffbfffffffbfffffff7fffffff7ffffffefffffffefffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"MS Sans Serif\",h=16,weight=400,italic=1,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=16,weight=700,italic=0,'A'",
+      "result": "fffffffffffffffffffffffff8fffffff8fffffff27ffffff27ffffff27fffffe73fffffe73fffffe03fffffcf9fffffcf9fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=16,weight=700,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffce39ffffce39ffffe633ffffe493ffffe493ffffe493ffffe493fffff1c7fffff1c7fffff1c7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=16,weight=700,italic=0,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff27fffffe47fffffe67fffffe67fffffe67fffffe47ffffff27ffffffe7fffffee7ffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=16,weight=700,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffe7ffffffe7ffffffffffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=16,weight=700,italic=0,'1'",
+      "result": "fffffffffffffffffffffffff9fffffff1ffffffe1ffffffe9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=16,weight=700,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=16,weight=400,italic=1,'A'",
+      "result": "fffffffffffffffffffffffffefffffffd7ffffffd7ffffffb7ffffffb7ffffff77ffffff03fffffefbfffffefbfffffdfbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=16,weight=400,italic=1,'W'",
+      "result": "ffffffffffffffffffffffffefbeffffef3effffef3dffffeebdfffff6dbfffff5d7fffff5d7fffff3cffffff3cffffff7dfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=16,weight=400,italic=1,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff97ffffff67fffffef7fffffef7fffffeeffffffeefffffff0fffffffeffffffddffffffe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=16,weight=400,italic=1,'j'",
+      "result": "fffffffffffffffffffffffffbfffffffffffffffffffffff7fffffff7fffffff7fffffff7ffffffefffffffefffffffefffffffefffffffefffffff9fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=16,weight=400,italic=1,'1'",
+      "result": "fffffffffffffffffffffffffefffffffdfffffff1ffffffedfffffffdfffffffdfffffffdfffffffbfffffffbfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Arial\",h=16,weight=400,italic=1,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "and the styles, which are synthesised for some faces and not others"
+    }
+  ]
+}

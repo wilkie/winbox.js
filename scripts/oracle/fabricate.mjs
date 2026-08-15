@@ -185,6 +185,216 @@ export function setProgram(bytes, tag, code) {
   return bytes;
 }
 
+/* ---- writing a glyph ---- */
+
+/**
+ * A few instructions, written so the programs below read as programs.
+ *
+ * Only what the readouts need. The stack order is the format's, which is not
+ * always the order the operands are written in: `SCFS` takes the point first
+ * and the coordinate second, so the point is pushed first.
+ */
+export const ops = {
+  /** Point the projection and freedom vectors up the y axis. */
+  yAxis: () => [0x00],
+
+  /** Push a byte. */
+  byte: (value) => [0xb0, value & 0xff],
+
+  /** Push a word, which is how a 26.6 coordinate arrives. */
+  word: (value) => [0xb8, (value >> 8) & 0xff, value & 0xff],
+
+  /** Replace a control value index on the stack with its value. */
+  readControlValue: () => [0x45],
+
+  add: () => [0x60],
+  subtract: () => [0x61],
+
+  /** Multiply, where both operands and the result are in sixty-fourths. */
+  multiply: () => [0x63],
+
+  /** Set a point's coordinate along the projection vector. */
+  setCoordinate: () => [0x48],
+
+  duplicate: () => [0x20],
+  pop: () => [0x21],
+  swap: () => [0x23],
+};
+
+/**
+ * A readout: a bar one pixel tall, placed where a computed value says.
+ *
+ * This is the whole trick. A glyph normally draws where its designer put it;
+ * this one draws where the arithmetic puts it, so the row it lands on is the
+ * answer to a question that has no other way out of GDI.
+ *
+ * The value is offset and magnified before it is used as a position, because a
+ * pixel of cell is a pixel of resolution and that is not enough to settle a
+ * question measured in sixty-fourths. Subtracting a base and multiplying by
+ * eight turns an eighth of a pixel of value into a whole row of answer.
+ *
+ * @param {number} index - Which control value to read.
+ * @param {number} base - Subtracted first, in sixty-fourths of a pixel.
+ * @param {number} magnify - Multiplied after, in whole numbers.
+ */
+export function readoutProgram(index, base, magnify) {
+  /* Worked out once and left on the stack. Recomputing it for each corner is
+   * the obvious way to write this and does not fit: the full stop in Times New
+   * Roman is eighty-eight bytes of glyph, and a program has to live inside the
+   * one it replaces.
+   */
+  const value = [
+    ...ops.byte(index),
+    ...ops.readControlValue(),
+    ...ops.word(base),
+    ...ops.subtract(),
+    ...ops.word(magnify * 64),
+    ...ops.multiply(),
+  ];
+
+  /* `SCFS` wants the point underneath the coordinate, and the coordinate is
+   * what is already on the stack -- so it is duplicated, the point pushed on
+   * top, and the two swapped.
+   */
+  const place = (point, extra) => [
+    ...ops.duplicate(),
+    ...(extra ? [...ops.word(extra), ...ops.add()] : []),
+    ...ops.byte(point),
+    ...ops.swap(),
+    ...ops.setCoordinate(),
+  ];
+
+  /* All four corners are placed outright rather than two of them moved and the
+   * rest interpolated: nothing here is a real letter, so there is no shape to
+   * preserve and no reason to involve `IUP`.
+   */
+  return [
+    ...ops.yAxis(),
+    ...value,
+    ...place(0, 0),
+    ...place(3, 0),
+    ...place(1, 64),
+    ...place(2, 64),
+    ...ops.pop(),
+  ];
+}
+
+/**
+ * Replaces a glyph with a rectangle and a program.
+ *
+ * Written over the glyph that is already there, which bounds how long it may
+ * be -- `loca` says where the next one starts and moving that would mean
+ * rewriting every offset after it. The rectangles here are a fraction of the
+ * length of the letters they replace, and the slack at the end is never read.
+ */
+export function setGlyph(bytes, font, glyph, { width, height, program }) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const tables = tablesOf(view);
+
+  const long = view.getInt16(tables.head.offset + 50, false) !== 0;
+  const loca = tables.loca.offset;
+
+  const start = long
+    ? view.getUint32(loca + glyph * 4, false)
+    : view.getUint16(loca + glyph * 2, false) * 2;
+  const end = long
+    ? view.getUint32(loca + (glyph + 1) * 4, false)
+    : view.getUint16(loca + (glyph + 1) * 2, false) * 2;
+
+  const room = end - start;
+  const at = tables.glyf.offset + start;
+
+  const points = [
+    [0, 0],
+    [0, height],
+    [width, height],
+    [width, 0],
+  ];
+
+  const body = [];
+
+  // One contour, its bounding box, and where it ends.
+  const put16 = (value) => body.push((value >> 8) & 0xff, value & 0xff);
+
+  put16(1);
+  put16(0);
+  put16(0);
+  put16(width);
+  put16(height);
+  put16(3);
+
+  put16(program.length);
+  body.push(...program);
+
+  // Every point on the curve, and every coordinate a signed two byte delta.
+  body.push(0x01, 0x01, 0x01, 0x01);
+
+  for (const axis of [0, 1]) {
+    let previous = 0;
+
+    for (const point of points) {
+      put16(point[axis] - previous);
+      previous = point[axis];
+    }
+  }
+
+  if (body.length > room) {
+    throw new Error(`glyph ${glyph} needs ${body.length} bytes and has ${room}`);
+  }
+
+  for (let offset = 0; offset < body.length; offset++) {
+    view.setUint8(at + offset, body[offset]);
+  }
+
+  return bytes;
+}
+
+/** The glyph a character maps to, so a readout can replace the right one. */
+export function glyphFor(bytes, code) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const base = tablesOf(view).cmap.offset;
+  const count = view.getUint16(base + 2, false);
+
+  let chosen = -1;
+
+  for (let index = 0; index < count; index++) {
+    const at = base + 4 + index * 8;
+
+    if (view.getUint16(at, false) === 3 || chosen < 0) {
+      chosen = base + view.getUint32(at + 4, false);
+    }
+  }
+
+  const segments = view.getUint16(chosen + 6, false) / 2;
+
+  const ends = chosen + 14;
+  const starts = ends + segments * 2 + 2;
+  const deltas = starts + segments * 2;
+  const ranges = deltas + segments * 2;
+
+  for (let segment = 0; segment < segments; segment++) {
+    const last = view.getUint16(ends + segment * 2, false);
+    const first = view.getUint16(starts + segment * 2, false);
+
+    if (code < first || code > last) {
+      continue;
+    }
+
+    const delta = view.getInt16(deltas + segment * 2, false);
+    const range = view.getUint16(ranges + segment * 2, false);
+
+    if (range === 0) {
+      return (code + delta) & 0xffff;
+    }
+
+    const glyph = view.getUint16(ranges + segment * 2 + range + (code - first) * 2, false);
+
+    return glyph ? (glyph + delta) & 0xffff : 0;
+  }
+
+  return 0;
+}
+
 /* ---- what gets built ---- */
 
 /**
@@ -195,6 +405,44 @@ export function setProgram(bytes, tag, code) {
  * through `WIN.INI`, which the installer already wrote, so nothing else has to
  * be told about it.
  */
+/**
+ * The characters the glyph probe draws, which are the readouts available.
+ *
+ * Six per recording, so six questions per two minutes of DOSBox. Each can
+ * carry a different base, which is what turns a sequence of yes-or-no answers
+ * into a number.
+ */
+const READOUT_CHARACTERS = ['A', 'W', 'g', 'j', '1', '.'];
+
+/**
+ * A font whose glyphs report a control value instead of drawing a letter.
+ *
+ * Each character reads the same control value and places its bar at
+ * `(value - base) * magnify`, with a different base. The row a bar lands on
+ * says where the value sits relative to that base, and six of them at
+ * increasing bases bracket it.
+ */
+function readout(name, { index, bases, magnify, describe }) {
+  return {
+    name,
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe,
+
+    edit: (bytes) => {
+      READOUT_CHARACTERS.forEach((character, at) => {
+        setGlyph(bytes, null, glyphFor(bytes, character.charCodeAt(0)), {
+          width: 400,
+          height: 40,
+          program: readoutProgram(index, bases[at], magnify),
+        });
+      });
+
+      return bytes;
+    },
+  };
+}
+
 export const FABRICATIONS = [
   {
     name: 'times-cvt0-raised',
@@ -215,6 +463,47 @@ export const FABRICATIONS = [
      */
     edit: (bytes) => setControlValue(bytes, 0, controlValueOf(bytes, 0) + 512),
   },
+
+  /* The first readout, at whole pixel resolution, to check the mechanism
+   * before anything is asked of it. Control value 0 scales to about 9.7
+   * pixels, so with no offset and no magnification the bar should land a
+   * little under ten pixels above the baseline -- and if it does, a glyph
+   * that reports arithmetic instead of drawing a letter works.
+   */
+  readout('times-cvt0-plain', {
+    index: 0,
+    bases: [0, 0, 0, 0, 0, 0],
+    magnify: 1,
+    describe: 'control value 0 as a bar, unmagnified, to prove the readout',
+  }),
+
+  /* The measurement. Magnified sixty-four times, one whole row of answer per
+   * sixty-fourth of a pixel of value, with each character offset eight
+   * sixty-fourths further along so that between them they cover the range the
+   * value could be in. A character whose window does not contain it puts its
+   * bar off the top or below the baseline, and says so by where it lands.
+   *
+   * The value is known to be near 9.7 pixels, which is 622 sixty-fourths; the
+   * question is whether Windows agrees or holds something three higher.
+   */
+  readout('times-cvt0-fine', {
+    index: 0,
+    bases: [608, 616, 624, 632, 640, 648],
+    magnify: 64,
+    describe: 'control value 0 magnified sixty-four times, to read it exactly',
+  }),
+
+  /* And the one the whole chase is about. Control value 2 is what `MIAP`
+   * rounds to place the top of a `W`, and ours comes out of `prep` at 640 --
+   * ten pixels exactly, which rounds to ten. Windows draws that cap at nine,
+   * so its value must be 607 or less. This asks it directly.
+   */
+  readout('times-cvt2-fine', {
+    index: 2,
+    bases: [592, 600, 608, 616, 624, 632],
+    magnify: 64,
+    describe: 'control value 2 magnified sixty-four times, which decides a cap height',
+  }),
 ];
 
 /** Reads a control value back, so an edit can be relative to what is there. */
