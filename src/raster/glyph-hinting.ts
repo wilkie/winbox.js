@@ -345,6 +345,18 @@ export class Hinter {
 
     this.run(program, at, at + length);
 
+    /* What the glyph advances by, once the program has had its say.
+     *
+     * The two horizontal phantom points are the pen position before the glyph
+     * and after it, and a program is free to move them -- that is how hinting
+     * changes a glyph's width and not just its shape. The distance between
+     * them afterwards is the advance, and it is exactly what `hdmx` tabulates,
+     * which makes that table a check on this one.
+     */
+    const last = zone.x.length;
+
+    this.advance = Math.round((zone.x[last - 3] - zone.x[last - 4]) / ONE);
+
     // Back into contours, in font units scaled to pixels.
     const hinted: any[] = [];
 

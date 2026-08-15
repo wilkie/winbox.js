@@ -135,3 +135,103 @@ whenBuilt('the hinting interpreter', () => {
     expect(fitted.contours.length).toEqual(2);
   });
 });
+
+/**
+ * The interpreter checked against the font's own answers.
+ *
+ * `hdmx` tabulates what each glyph advances by, in whole pixels, at two dozen
+ * sizes -- and those numbers are the output of running the hinting programs,
+ * computed offline by whoever built the font. So the table is an oracle for
+ * the interpreter that ships inside the font, and a far larger one than the
+ * recording: 3,720 answers for Arial where `glyphs.json` holds ninety.
+ *
+ * It only checks the horizontal, since an advance is all it holds. But it
+ * checks it across every glyph and every tabulated size, which is enough to
+ * say whether the machine is right rather than whether it runs.
+ */
+describe('hinted advances against the tables the font ships', () => {
+  const present = existsSync(IMAGE) ? it : it.skip;
+
+  /** Every `(ppem, glyph, advance)` the table states. */
+  function tabulated(font: any) {
+    const view = font._view;
+    const base = font._tables['hdmx'].offset;
+
+    const count = view.getInt16(base + 2, false);
+    const stride = view.getInt32(base + 4, false);
+
+    const rows: { ppem: number; glyph: number; advance: number }[] = [];
+
+    for (let index = 0; index < count; index++) {
+      const record = base + 8 + index * stride;
+      const ppem = view.getUint8(record);
+
+      for (let glyph = 0; glyph < stride - 2; glyph++) {
+        rows.push({ ppem, glyph, advance: view.getUint8(record + 2 + glyph) });
+      }
+    }
+
+    return rows;
+  }
+
+  present(
+    'reproduces every advance Arial tabulates',
+    async function () {
+      const arial: any = await installed('ARIAL.TTF');
+
+      let checked = 0;
+
+      for (const row of tabulated(arial)) {
+        const advance = arial.hintedAdvance(row.glyph, row.ppem);
+
+        // A glyph with no program of its own has nothing to check.
+        if (advance === null) {
+          continue;
+        }
+
+        expect(`${row.ppem}/${row.glyph}: ${advance}`).toEqual(
+          `${row.ppem}/${row.glyph}: ${row.advance}`
+        );
+
+        checked++;
+      }
+
+      // Every glyph that has a program, at all twenty-four tabulated sizes.
+      expect(checked).toEqual(3720);
+    },
+    120000
+  );
+
+  present(
+    'reproduces all but eighteen of the advances Times New Roman tabulates',
+    async function () {
+      const times: any = await installed('TIMES.TTF');
+
+      let agreed = 0;
+      let differed = 0;
+
+      for (const row of tabulated(times)) {
+        const advance = times.hintedAdvance(row.glyph, row.ppem);
+
+        if (advance === null) {
+          continue;
+        }
+
+        if (advance === row.advance) {
+          agreed++;
+        } else {
+          differed++;
+        }
+      }
+
+      /* Pinned rather than asserted to be zero, because it is not: eighteen
+       * advances out of 3,696 come out a pixel from what the font says. They
+       * are the same gap the recorded glyphs show, measured somewhere much
+       * easier to look at. Lowering this number is progress; raising it is a
+       * regression.
+       */
+      expect(`${agreed} agreed, ${differed} differed`).toEqual('3678 agreed, 18 differed');
+    },
+    120000
+  );
+});

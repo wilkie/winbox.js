@@ -358,6 +358,45 @@ on every face. **Recorded.**
 
 ---
 
+### `hdmx` is an oracle for the interpreter
+
+`hdmx` tabulates what each glyph advances by, in whole pixels, at the two dozen
+sizes it covers. Those numbers are the output of running the font's own hinting
+programs, worked out offline by whoever built the font. So a font file carries,
+inside itself, a large and independent check on any interpreter claiming to run
+it -- and one that needs no recording, no emulator and no Windows.
+
+Run against it, this interpreter agrees on:
+
+| Font            | Advances checked | Agreeing         |
+| --------------- | ---------------- | ---------------- |
+| Arial           | 3,720            | **3,720 (100%)** |
+| Times New Roman | 3,696            | 3,678 (99.5%)    |
+
+Every glyph that carries a program, at all twenty-four tabulated sizes. For
+comparison, `glyphs.json` holds ninety records in total.
+
+Two things follow. The first is that the interpreter is substantially correct:
+the stack machine, the graphics state, the rounding and the control values all
+produce the right answer several thousand times running, which is not something
+a broken machine does by accident. The second is where the remaining glyph gap
+must be -- because if the advances are right and the pixels are not, what is
+wrong is not the arithmetic.
+
+The eighteen Times New Roman disagreements are the same gap the recorded glyphs
+show, measured somewhere far easier to look at: no emulator, no recording, and
+a specific glyph and size for each one. That is the place to chase it from.
+**Open**, and much better posed than it was.
+
+**A string is measured with these advances where `hdmx` has no entry for the
+size.** Arial's table covers 11, 12, 13, 15, 16, 17, 19, 21, 24, 27, 29, 32, 33,
+37, 42, 46, 50, 54, 58, 67, 75, 83, 92 and 100 pixels per em, and nothing else --
+Times New Roman asked for a sixteen pixel cell settles at fourteen, which is not
+among them. Windows still answers, so it is running the programs. **Derived**,
+and worth 30 records when implemented.
+
+---
+
 ## 6. Rasterisation
 
 **Non-zero winding, sampled at the exact centre of each pixel.** Established by
@@ -535,7 +574,7 @@ fitted height.
 | Fixture                                                      | Agreement |
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
-| `font` (2,655 records)                                       | 94.7%     |
+| `font` (2,655 records)                                       | 95.9%     |
 | `glyphs` (90 records)                                        | 81.1%     |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical. The

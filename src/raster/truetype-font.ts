@@ -671,6 +671,56 @@ export class TrueTypeFont {
     }
   }
 
+  /**
+   * A glyph's advance at a size, taken from the hinting rather than a table.
+   *
+   * `hdmx` holds the same numbers for the two dozen sizes it covers, and this
+   * agrees with it there -- which is the only reason to trust it at the sizes
+   * it does not. Windows measures a string at an uncovered size by running the
+   * program, since that is what the table would have been a cache of.
+   *
+   * @returns {number|null} The advance in whole pixels, or null if the glyph
+   *                        has no program to run.
+   */
+  hintedAdvance(glyph, ppem) {
+    const range = this.glyphRange(glyph);
+
+    if (!range || !ppem) {
+      return null;
+    }
+
+    const count = this._view.getInt16(range.start, false);
+
+    if (count < 0) {
+      return null;
+    }
+
+    const instructions = range.start + 10 + count * 2;
+    const length = this._view.getUint16(instructions, false);
+
+    if (!length) {
+      return null;
+    }
+
+    try {
+      const hinter = this.hinterAt(ppem);
+
+      hinter.hint(
+        this.outlineOf(glyph),
+        this.advanceOf(glyph),
+        this.bearingOf(glyph),
+        this._view.getInt16(range.start + 2, false),
+        this._view,
+        instructions + 2,
+        length
+      );
+
+      return hinter.advance ?? null;
+    } catch {
+      return null;
+    }
+  }
+
   /** The interpreter for a size, built once and kept. */
   hinterAt(ppem) {
     this._hinters = this._hinters ?? new Map();
