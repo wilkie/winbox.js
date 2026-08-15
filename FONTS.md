@@ -921,8 +921,8 @@ chosen because it is the sampling interval and so the only value with a reason
 behind it rather than a fit. Below 0.3 the stubs return; above 0.5 real dropouts
 start being refused.
 
-**Columns are swept as well as rows, and which pixel each one keeps is not the
-same end.** A stroke can be too shallow to cover a row centre as easily as too
+**Columns are swept as well as rows, and both keep the same pixel -- once the
+rule is stated about pixel centres rather than about pixels.** A stroke can be too shallow to cover a row centre as easily as too
 narrow to cover a column one, and a sweep along rows provably cannot see the
 first kind -- every scanline either crosses such a stroke properly or misses it
 whole. The flag of a Courier New `1` at thirteen pixels per em is exactly that:
@@ -941,10 +941,21 @@ examined. Sweeping the choice:
 
 Taking the far end sounds arbitrary until the axes are put back the way the
 glyph has them. Device rows count downward and glyph coordinates count up, so
-the last row of a span is the first in the outline. **Both sweeps keep the pixel
-at the lower coordinate in the outline's own space** -- and the row sweep is
-unchanged, because taking its far end costs eleven wrong pixels rather than
-seven.
+the last row of a span is the first in the outline.
+
+That was the rule for a while, fitted on ninety glyphs, and it needed two
+sentences to say. On 846 it is one sentence and a better fit: **the pixel turned
+on is the last one whose _centre_ lies at or below the span's upper end, in the
+outline's own coordinates.** In device coordinates that reads `floor(to - 0.5)`
+along a row and `ceil(from - 0.5)` down a column -- the same sentence along
+opposite axes -- and it scores **681 glyphs exact against 674**, with 437 wrong
+pixels against 462.
+
+Two things make it worth more than the seven glyphs. Writing the column rule the
+other way round, as the mirror of the row rule rather than as the pixel the span
+ends in, changes not one record of the 846 -- so the symmetry is real and not a
+coincidence of this fixture. And it is the rule the format's own scan converter
+is described as using, which is agreement with something outside the recording.
 
 The half-pixel stub is the same on both. No second constant.
 
@@ -960,23 +971,25 @@ whole story -- Courier New at eight pixels per em, where the font asks for no
 grid-fitting and every stroke is a third of a pixel wide -- was not in the
 narrow one at all.
 
-**Both rules survive.** The pair of pixel choices, swept together over the
-span's start, its end and its middle in both sweeps, is the best of the nine at
-674 glyphs exact against 646 for the next. The stub threshold's peak is still
-broad and still has no corner in it:
+**One survives and one improves.** The stub threshold's peak is still broad and
+still has no corner in it. The pixel choice turned out to be stateable as a
+single rule about pixel centres rather than two about pixels, which section 6
+gives: 681 glyphs exact against 674. The sweep below is at the new choice.
 
-| threshold | glyphs exact | missing | invented | wrong |
-| --------- | ------------ | ------- | -------- | ----- |
-| 0.25      | 644          | 128     | 371      | 499   |
-| 0.35      | 679          | 229     | 190      | 419   |
-| 0.45      | **684**      | 287     | 152      | 439   |
-| **0.5**   | 674          | 322     | 140      | 462   |
-| 0.7       | 646          | 405     | 110      | 515   |
+| threshold | glyphs exact | missing | invented | wrong   |
+| --------- | ------------ | ------- | -------- | ------- |
+| 0.2       | 650          | 91      | 335      | 426     |
+| 0.325     | 681          | 109     | 267      | **376** |
+| 0.4       | 687          | 251     | 151      | 402     |
+| 0.45      | **691**      | 281     | 134      | 415     |
+| **0.5**   | 681          | 316     | 121      | 437     |
+| 0.7       | 650          | 399     | 95       | 494     |
 
-A smooth trade of invented pixels for missing ones, with the best threshold and
-the best pixel count in different places. That is what a number standing in for
-a rule looks like, and half a pixel is kept because it is the sampling interval
--- the two values either side of it are a fit to 846 records and nothing more.
+A smooth trade of invented pixels for missing ones, with the most glyphs exact
+and the fewest wrong pixels in different places. That is what a number standing
+in for a rule looks like, and half a pixel is kept because it is the sampling
+interval -- the values either side of it are a fit to 846 records and nothing
+more.
 
 **The rule it stands in for is about shape, and implementing it does not help.**
 A stub is where the outline turns back, so the real question is whether the two
@@ -1251,7 +1264,7 @@ fitted height.
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
 | `font` (2,655 records)                                       | 98.8%     |
-| `glyphs` (846 records)                                       | 79.7%     |
+| `glyphs` (846 records)                                       | 80.5%     |
 | `hinting` (618 records)                                      | 98.4%     |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical -- all
@@ -1266,9 +1279,9 @@ outline faces says something different:
 
 | Face            | Glyphs exact | Pixels missing | Pixels invented |
 | --------------- | ------------ | -------------- | --------------- |
-| Arial           | 232 of 276   | 22             | 64              |
+| Arial           | 236 of 276   | 19             | 48              |
 | Times New Roman | 216 of 264   | 43             | 30              |
-| Courier New     | 178 of 258   | 257            | 46              |
+| Courier New     | 181 of 258   | 254            | 43              |
 
 Split by size instead, the error is not spread across them at all. **Courier New
 at a ten pixel cell is 0 of 36 and 301 wrong pixels -- more than half of every
@@ -1301,7 +1314,7 @@ better.** Six letters agreeing to seven pixels was not evidence that the
 rasteriser was within seven pixels of Windows; it was evidence that those six
 letters were. Every rule in section 6 that was fitted against ninety records --
 the stub threshold above all -- now has eight hundred to answer to, and the
-error is no longer one-sided: 322 pixels missing against 140 invented, where the
+error is no longer one-sided: 316 pixels missing against 121 invented, where the
 narrow sample had none invented at all.
 
 `CreateFont face` agrees on every one of the 2,655 records: whatever Windows

@@ -36,13 +36,14 @@ const CURVE_STEPS = 8;
  * stubs come back; above 0.5 real dropouts start being refused.
  *
  * Swept again over 846 glyphs rather than 90, and the peak is still broad and
- * still not sharp: 0.45 is the best at 684 glyphs exact against 674 here, and
- * 0.35 turns off the fewest wrong pixels at 419 against 462. What the wider
+ * still not sharp: 0.45 is the best at 691 glyphs exact against 681 here, and
+ * 0.325 turns off the fewest wrong pixels at 376 against 437. What the wider
  * sweep shows that the narrow one could not is the shape of the curve -- a
- * smooth trade of invented pixels for missing ones with no corner in it, which
- * is what a threshold standing in for a rule that is not a threshold looks
- * like. Half a pixel is kept because it is the one value here that means
- * something; the two either side of it are a fit to 846 records.
+ * smooth trade of invented pixels for missing ones with no corner in it, and
+ * the best threshold and the best pixel count in different places. That is what
+ * a threshold standing in for a rule that is not a threshold looks like. Half a
+ * pixel is kept because it is the one value here that means something; the two
+ * either side of it are a fit to 846 records.
  *
  * The rule it stands in for is a question about shape rather than width: a stub
  * is where the outline turns back, so the two edges bounding an empty span are
@@ -434,7 +435,11 @@ export function fill(contours, options) {
         continue;
       }
 
-      const column = Math.floor(from);
+      /* Which pixel gets turned on: the last one whose *centre* lies at or
+       * below the far end of the span. `Hinter` and the column sweep below say
+       * the rest of it.
+       */
+      const column = Math.floor(to - 0.5);
 
       if (column >= 0 && column < width) {
         pixels[row * width + column] = 1;
@@ -454,20 +459,24 @@ export function fill(contours, options) {
    * whole. The flag of a Courier New `1` at thirteen pixels per em is the case
    * -- two pixels Windows draws that nothing along a row can find.
    *
-   * Which pixel gets turned on had to be measured, and it is not the same end
-   * as the row sweep takes. That one keeps the pixel the span *starts* in and
-   * this one keeps the pixel it *ends* in, which sounds arbitrary until the
-   * axes are put back the way the glyph has them: device rows count downward
-   * and glyph coordinates count up, so the last row of a span is the first in
-   * the outline. **Both sweeps keep the pixel at the lower coordinate in the
-   * outline's own space.** Taking the other end costs eleven wrong pixels
-   * rather than seven.
+   * Which pixel gets turned on is **one rule for both sweeps**, and it is
+   * about pixel centres rather than about pixels: the last centre lying at or
+   * below the span's upper end, measured in the outline's own coordinates.
    *
-   * Re-measured over 846 glyphs against 90, sweeping both sweeps' choice of
-   * pixel together over the span's start, its end and its middle: this pair is
-   * the best of the nine, at 674 glyphs exact where the next is 646. The rule
-   * fitted on the narrow fixture survives the wide one, which is worth knowing
-   * because several others did not.
+   * Written in device coordinates that is two different-looking expressions,
+   * because device rows count downward and glyph coordinates count up. Along a
+   * row, `floor(to - 0.5)`; down a column, `ceil(from - 0.5)`. They are the
+   * same sentence read along opposite axes, and on 846 recorded glyphs they
+   * score identically to each other whichever way round they are written --
+   * which is what says the symmetry is real and not a coincidence of this
+   * fixture.
+   *
+   * This replaces a pair fitted on ninety glyphs -- the row sweep keeping the
+   * pixel a span started in and the column sweep the one it ended in -- which
+   * needed two rules to say and was worth 674 glyphs against **681** here, and
+   * 462 wrong pixels against **437**. It is also the rule the format's own
+   * scan converter is described as using, so the agreement is with something
+   * outside this fixture as well.
    */
   for (let column = 0; column < width; column++) {
     const crossings: any[] = [];
@@ -494,7 +503,7 @@ export function fill(contours, options) {
         continue;
       }
 
-      const row = Math.floor(to);
+      const row = Math.ceil(from - 0.5);
 
       if (row >= 0 && row < height) {
         pixels[row * width + column] = 1;
