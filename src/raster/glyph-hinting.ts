@@ -425,7 +425,17 @@ export class Hinter {
     this.state = this.glyphState();
     this.stack = [];
 
-    this.run(program, at, at + length);
+    /* A font that asked for no grid-fitting at this size gets none.
+     *
+     * The scaling above still happens, and so does everything `prep` settled
+     * -- the dropout rule among it -- because what is being refused is the
+     * glyph's own program, not the size. The points come back where the
+     * outline put them, quantised to sixty-fourths, which is what a rasteriser
+     * with hinting switched off draws.
+     */
+    if (this.gridFit) {
+      this.run(program, at, at + length);
+    }
 
     /* What the glyph advances by, once the program has had its say.
      *
@@ -1074,10 +1084,26 @@ export class Hinter {
         state.deltaShift = this.pop();
         return at;
 
-      case 0x8e: // INSTCTRL
-        this.pop();
-        this.pop();
+      /* INSTCTRL: the font's own switch for turning hinting off at a size.
+       *
+       * The selector is a bit to change and the value carries what to change
+       * it to, so it is a masked assignment rather than a store. Bit 0 says
+       * "do not grid-fit at this size"; bit 1 says "ignore what `prep` did to
+       * the control values". A font sets it from `prep`, where it knows the
+       * size and can decide that its own instructions do more harm than good.
+       *
+       * Courier New does exactly that below nine pixels per em, and it is the
+       * only path in any installed font that reaches this. `Hinter.gridFit`
+       * is where the answer is read.
+       */
+      case 0x8e: {
+        const selector = this.pop();
+        const value = this.pop();
+
+        state.instructionControl = (state.instructionControl & ~selector) | (value & selector);
+
         return at;
+      }
 
       /* SCANCTRL and SCANTYPE: what the scan converter should do about strokes
        * too thin to cover a pixel centre. Neither moves a point, so the
@@ -2033,6 +2059,25 @@ export class Hinter {
     }
 
     move(Math.round((steps * ONE) / (1 << state.deltaShift)));
+  }
+
+  /**
+   * Whether glyph programs run at this size at all.
+   *
+   * A font can say no, from `prep`, through `INSTCTRL`. Courier New says no
+   * below nine pixels per em -- at eight its stems are a third of a pixel wide
+   * and its serifs a sixth, and grid-fitting them means rounding every one of
+   * them up to a whole pixel and drawing a letter made entirely of features
+   * that are three times too heavy. The font would rather be blurred than
+   * shouted, and says so.
+   *
+   * It is the only path in any installed font that reaches `INSTCTRL`, and no
+   * other measurement we have could have found it: Arial and Times are
+   * answered by a strike below twelve pixels, so eight pixels per em is a size
+   * only Courier New is ever asked to draw.
+   */
+  get gridFit() {
+    return !(this.defaults?.instructionControl & 1);
   }
 
   /**
