@@ -371,7 +371,9 @@ Run against it, this interpreter agrees on:
 | Font            | Advances checked | Agreeing         |
 | --------------- | ---------------- | ---------------- |
 | Arial           | 3,720            | **3,720 (100%)** |
-| Times New Roman | 3,696            | 3,678 (99.5%)    |
+| Times New Roman | 3,696            | 3,682 (99.6%)    |
+
+Across all six files that carry the table, 22,028 of 22,056.
 
 Every glyph that carries a program, at all twenty-four tabulated sizes. For
 comparison, `glyphs.json` holds ninety records in total.
@@ -397,28 +399,60 @@ forty-six, each pinned to one glyph at one size:
 | Times New Roman Bold | 5 of 3,648  | `k`, `m`                          |
 | Times New Roman Ital | 16 of 3,768 | `)`, `‰`                          |
 
-Two of those clusters are the same fault: Times Italic `)` and Times `»` come
-out **exactly two pixels narrow at every size from 11 to 19 and are right from
-21 up**. Following one instruction at a time, the fault is a single `MIRP` (both
-glyphs, opcodes `0xE4` and `0xE6`) applied to the **left phantom point** -- the
-glyph's origin. Moving that point rightward narrows the advance, and at these
-sizes it moves when Windows leaves it alone.
+**The minimum distance takes its sign from the outline, not from the rounded
+distance.** This is the fault the table found, and it is worth stating carefully
+because the difference is invisible almost all of the time.
 
-For Times `»` at eleven pixels per em the instruction reads `cvt[23]` as -23
-sixty-fourths, measures the outline's own distance at -22, keeps the control
-value because the cut-in is nowhere near, rounds it to zero, and so moves the
-origin the whole -128 it currently sits at: two pixels. Windows ends with the
-origin where it started, which means its distance came out -128 and not zero.
-Neither the control value nor the outline distance rounds to -128 under any
-round state, so Windows is not reaching that instruction with the same numbers.
+`MDRP` and `MIRP` both carry a flag asking that the distance they apply never
+fall below `minimumDistance`, so that a feature cannot collapse to nothing at
+small sizes. The obvious reading -- if the magnitude is under the minimum, push
+it out to the minimum, keeping the sign it has -- is right whenever the distance
+is non-zero, and wrong when the rounding lands on exactly zero. Zero is not
+negative, so a point belonging to the _left_ of its reference gets pushed a
+whole pixel to its _right_, and the feature is not merely the wrong size, it is
+inside out. The correct rule takes the sign from the original outline distance,
+and clamps rather than testing magnitude:
 
-At sixteen pixels the same instruction rounds to zero in both, moves the origin
-one pixel in both, and agrees.
+```
+if (opcode & MIN_DISTANCE) {
+  if (original >= 0) distance = max(distance, minimumDistance);
+  else               distance = min(distance, -minimumDistance);
+}
+```
 
-**Open.** But it is open in a form that costs nothing to work on: one glyph, one
-size, one instruction, no emulator and no recording. Every previous statement of
-this gap was "the outlines come out wrong", which is not something you can put a
-breakpoint in.
+Times New Roman's guillemet at eleven pixels per em is the case that exposed it.
+The left side bearing is hinted by a `MIRP` whose control value, -23
+sixty-fourths, rounds to zero; the point belongs a third of a pixel left of its
+reference, and the old rule put it a pixel to the right. That moved the origin
+phantom two pixels, and the glyph came out two pixels narrow -- at every size
+from 11 to 19, and correct from 21 up, because at those sizes the control value
+no longer rounds to zero.
+
+Fixing it took the tabulated advances from 46 wrong to 28, and the recorded
+glyph bitmaps from 73 of 90 to **78 of 90**. Five glyphs that Windows draws and
+we did not now come out pixel-identical, and none of them was `»` -- the
+instruction is a general one, and so was the fault. The glyph that found it was
+only the one where a two-pixel error had nowhere to hide.
+
+### What is left
+
+Twenty-eight advances still differ, across `j`, `M`, `I`, `k`, `m`, `o`, `w`,
+`y` and three glyphs outside the ANSI range, with no cluster among them: mostly
+single sizes, mostly one pixel. **Open.**
+
+Of the twelve recorded glyphs that still differ, Times New Roman's `W` at
+sixteen pixels is now wrong in **one pixel**, on one row, in the middle of a
+thin diagonal:
+
+```
+    windows                   ours
+    ....#.#..#.#..........    ....#....#.#..........
+```
+
+That is not hinting -- the outline is in the right place, and a stroke a
+fraction of a pixel wide failed to ink a cell. It is dropout control, which
+section 6 does not implement at all, and it is the next thing to measure rather
+than the next thing to reason about.
 
 **A string is measured with these advances where `hdmx` has no entry for the
 size.** Arial's table covers 11, 12, 13, 15, 16, 17, 19, 21, 24, 27, 29, 32, 33,
@@ -607,11 +641,11 @@ fitted height.
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
 | `font` (2,655 records)                                       | 95.9%     |
-| `glyphs` (90 records)                                        | 81.1%     |
+| `glyphs` (90 records)                                        | 86.7%     |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical. The
-seventeen that differ are all outline faces, eleven of them by one or two
-pixels.
+twelve that differ are all outline faces, and several are now a single pixel of
+dropout rather than a misplaced stroke.
 
 `CreateFont face` agrees on every one of the 2,655 records: whatever Windows
 picks for a request, this picks too. That is the section 2 rules above, all of

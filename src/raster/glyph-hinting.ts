@@ -1654,8 +1654,33 @@ export class Hinter {
 
       let distance = opcode & 0x04 ? this.round(original, Hinter.compensation(opcode)) : original;
 
-      if (opcode & 0x08 && Math.abs(distance) < state.minimumDistance) {
-        distance = distance < 0 ? -state.minimumDistance : state.minimumDistance;
+      /* The minimum distance keeps a feature from collapsing, and it takes its
+       * sign from the outline rather than from the rounded distance.
+       *
+       * That distinction only shows when the rounding lands on exactly zero,
+       * and then it decides which side of the reference point the feature ends
+       * up on. Asking whether the rounded distance is negative gets it wrong in
+       * precisely that case -- zero is not negative -- so a point to the left
+       * of its reference is pushed a whole pixel to the right of it, and the
+       * feature is not merely the wrong size but inside out.
+       *
+       * It is also a clamp and not a magnitude test: a distance already past
+       * the minimum in the wrong direction is brought back to the minimum on
+       * the outline's side, not left where it is.
+       *
+       * Times New Roman's guillemet at eleven pixels per em is the case that
+       * shows it. The left side bearing is hinted by a `MIRP` whose control
+       * value rounds to zero; the point belongs a fifth of a pixel left of its
+       * reference and this put it a pixel to the right, which moved the origin
+       * two pixels and made the glyph two pixels narrow. **Measured** against
+       * `hdmx`, which is what says the sign is the outline's.
+       */
+      if (opcode & 0x08) {
+        if (original >= 0) {
+          distance = Math.max(distance, state.minimumDistance);
+        } else {
+          distance = Math.min(distance, -state.minimumDistance);
+        }
       }
 
       const current = this.project(
@@ -1734,8 +1759,33 @@ export class Hinter {
         distance = this.round(distance, Hinter.compensation(opcode));
       }
 
-      if (opcode & 0x08 && Math.abs(distance) < state.minimumDistance) {
-        distance = distance < 0 ? -state.minimumDistance : state.minimumDistance;
+      /* The minimum distance keeps a feature from collapsing, and it takes its
+       * sign from the outline rather than from the rounded distance.
+       *
+       * That distinction only shows when the rounding lands on exactly zero,
+       * and then it decides which side of the reference point the feature ends
+       * up on. Asking whether the rounded distance is negative gets it wrong in
+       * precisely that case -- zero is not negative -- so a point to the left
+       * of its reference is pushed a whole pixel to the right of it, and the
+       * feature is not merely the wrong size but inside out.
+       *
+       * It is also a clamp and not a magnitude test: a distance already past
+       * the minimum in the wrong direction is brought back to the minimum on
+       * the outline's side, not left where it is.
+       *
+       * Times New Roman's guillemet at eleven pixels per em is the case that
+       * shows it. The left side bearing is hinted by a `MIRP` whose control
+       * value rounds to zero; the point belongs a fifth of a pixel left of its
+       * reference and this put it a pixel to the right, which moved the origin
+       * two pixels and made the glyph two pixels narrow. **Measured** against
+       * `hdmx`, which is what says the sign is the outline's.
+       */
+      if (opcode & 0x08) {
+        if (original >= 0) {
+          distance = Math.max(distance, state.minimumDistance);
+        } else {
+          distance = Math.min(distance, -state.minimumDistance);
+        }
       }
 
       const current = this.project(

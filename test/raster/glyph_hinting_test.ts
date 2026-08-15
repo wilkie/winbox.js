@@ -203,7 +203,7 @@ describe('hinted advances against the tables the font ships', () => {
   );
 
   present(
-    'reproduces all but eighteen of the advances Times New Roman tabulates',
+    'reproduces all but fourteen of the advances Times New Roman tabulates',
     async function () {
       const times: any = await installed('TIMES.TTF');
 
@@ -224,13 +224,13 @@ describe('hinted advances against the tables the font ships', () => {
         }
       }
 
-      /* Pinned rather than asserted to be zero, because it is not: eighteen
+      /* Pinned rather than asserted to be zero, because it is not: fourteen
        * advances out of 3,696 come out a pixel from what the font says. They
        * are the same gap the recorded glyphs show, measured somewhere much
        * easier to look at. Lowering this number is progress; raising it is a
        * regression.
        */
-      expect(`${agreed} agreed, ${differed} differed`).toEqual('3678 agreed, 18 differed');
+      expect(`${agreed} agreed, ${differed} differed`).toEqual('3682 agreed, 14 differed');
     },
     120000
   );
