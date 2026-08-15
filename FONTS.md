@@ -726,8 +726,44 @@ made it attractive turns out to be beside the point.
 
 Of the four failures in proportional faces, three are at sizes `hdmx` covers,
 where `GetTextExtent` stops running the program. Times New Roman's `W` at
-fourteen pixels per em is the only one of the five the instrument can currently
-reach, and it is the next thing to read.
+fourteen pixels per em is the only one of the five the instrument can reach, and
+reading it settles which half of the pipeline is at fault.
+
+**The outline is right.** Five points of the `W`'s two inner diagonals -- 9, 10,
+26, 27 and 28, which bracket the missing pixel -- were read out of Windows at
+every size. All five agree at every size the readout is visible at, ppem 14
+among them; the sizes they differ at are exactly the sizes `hdmx` covers, where
+nothing is being read. So Windows puts those points where this does, and still
+inks a pixel this does not.
+
+**It is the stub rule.** At the row in question the scanline crosses the outline
+at 3.337, 4.275, 7.840, 8.297, 8.448, 9.338, 12.250 and 13.220. The span from
+7.840 to 8.297 covers no pixel centre -- it is 0.457 of a pixel wide and falls
+between 7.5 and 8.5 -- so it is a dropout, and the half-pixel stub threshold
+refuses it by four hundredths of a pixel.
+
+Lowering the threshold rescues it and costs a pixel elsewhere:
+
+| stub    | glyphs   | missing | invented |
+| ------- | -------- | ------- | -------- |
+| 0.3     | 85 of 90 | 7       | 2        |
+| 0.4     | 85       | 7       | 1        |
+| 0.45    | 85       | 7       | 1        |
+| **0.5** | **85**   | **8**   | **0**    |
+| 0.6     | 84       | 10      | 0        |
+
+Eight wrong pixels either way, and the glyph count never moves. **So "excluding
+stubs" is not a width test.** No threshold separates the stroke that should be
+rescued from the one that should not, which means the real rule distinguishes
+them some other way -- by whether the contour turns back on itself within the
+scanline, most likely, which is what the specification's word _stub_ actually
+describes and what a width happens to correlate with.
+
+Half a pixel is kept because it is the only value with a reason behind it and
+because it errs toward losing ink rather than inventing it. **Open**, and now
+known to be a rasterisation rule rather than a hinting one -- which is the
+opposite of what the column sweep implied, and was settled by reading the
+points rather than by reasoning about the pixels.
 
 **A string is measured with these advances where `hdmx` has no entry for the
 size.** Arial's table covers 11, 12, 13, 15, 16, 17, 19, 21, 24, 27, 29, 32, 33,
@@ -996,7 +1032,7 @@ fitted height.
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
 | `font` (2,655 records)                                       | 98.0%     |
 | `glyphs` (90 records)                                        | 94.4%     |
-| `hinting` (412 records)                                      | 97.6%     |
+| `hinting` (618 records)                                      | 98.2%     |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical. The five
 that differ are all outline faces, and between them they miss eight pixels

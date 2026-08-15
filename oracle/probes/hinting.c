@@ -123,6 +123,7 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      * every size can be read. It is the best host the fabrications have.
      */
     probeSweep("Courier New", 0, '1');
+    probeSweep("Times New Roman", 0, 'W');
 
     ReleaseDC(NULL, dc);
 

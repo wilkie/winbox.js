@@ -717,6 +717,51 @@ function reporter(name, { font = 'TIMES.TTF', character, point, constant, cut, m
 }
 
 export const FABRICATIONS = [
+  /* Times New Roman's capital `W`, the one glyph of the five still differing
+   * that the instrument can reach: its failing size is fourteen pixels per em,
+   * which `hdmx` does not tabulate. Points 9, 10, 26, 27 and 28 are the two
+   * inner diagonals, which is where the missing pixel is.
+   */
+  reporter('times-cap-w-p9', {
+    character: 'W',
+    point: 9,
+    cut: 623,
+    magnify: 8,
+    describe: "Times New Roman's W reporting point 9",
+  }),
+
+  reporter('times-cap-w-p10', {
+    character: 'W',
+    point: 10,
+    cut: 623,
+    magnify: 8,
+    describe: "Times New Roman's W reporting point 10",
+  }),
+
+  reporter('times-cap-w-p26', {
+    character: 'W',
+    point: 26,
+    cut: 623,
+    magnify: 8,
+    describe: "Times New Roman's W reporting point 26",
+  }),
+
+  reporter('times-cap-w-p27', {
+    character: 'W',
+    point: 27,
+    cut: 623,
+    magnify: 8,
+    describe: "Times New Roman's W reporting point 27",
+  }),
+
+  reporter('times-cap-w-p28', {
+    character: 'W',
+    point: 28,
+    cut: 623,
+    magnify: 8,
+    describe: "Times New Roman's W reporting point 28",
+  }),
+
   /* Courier New's `1`, whose flag this draws and Windows draws two pixels more
    * of. Points 17 to 27 are the flag; 17 is where it meets the stem and 22 is
    * its far end. Courier New has no `hdmx`, so every size can be read.
