@@ -708,6 +708,27 @@ Every one is the end of a thin stroke, which is what a dropout rule is for, and
 section 6 records why it is not one. **Open**, and now known to be in the
 hinting rather than the rasteriser.
 
+Courier New's `1` is the clearest of them, and its outline says what shape the
+problem is. The flag is points 17 to 27, and fitted at thirteen pixels per em it
+runs from x 1.45 to x 4.00 at a height of y 7.00 to 7.38 -- a stroke **four
+tenths of a pixel tall**, lying wholly between two row centres. Nothing samples
+it, which is why nothing is drawn. Windows draws three pixels there, so its flag
+is either thicker or sits somewhere else.
+
+**But `GetTextExtent` on a fixed-pitch face returns the face's width and not the
+glyph's**, so Courier New cannot host a readout. Four different points of that
+`1`, fabricated to report four different coordinates, come back identical at all
+eighty-three sizes -- and the value is the face's fixed advance scaled and
+rounded, which explains 83 of 83 readings with a number that has nothing to do
+with the glyph. **Recorded.** The face looked like the ideal host because it
+carries no `hdmx` and so runs the program at every size; the one property that
+made it attractive turns out to be beside the point.
+
+Of the four failures in proportional faces, three are at sizes `hdmx` covers,
+where `GetTextExtent` stops running the program. Times New Roman's `W` at
+fourteen pixels per em is the only one of the five the instrument can currently
+reach, and it is the next thing to read.
+
 **A string is measured with these advances where `hdmx` has no entry for the
 size.** Arial's table covers 11, 12, 13, 15, 16, 17, 19, 21, 24, 27, 29, 32, 33,
 37, 42, 46, 50, 54, 58, 67, 75, 83, 92 and 100 pixels per em, and nothing else --

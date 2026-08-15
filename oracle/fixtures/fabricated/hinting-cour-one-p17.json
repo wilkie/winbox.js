@@ -8,7 +8,7 @@
     "display": "vga",
     "displayDescription": "VGA, 640x480, 16 colours"
   },
-  "font": null,
+  "font": "cour-one-p17",
   "records": [
     {
       "function": "advance",

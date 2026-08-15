@@ -119,6 +119,11 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      */
     probeSweep("Arial", 1, 'm');
 
+    /* Courier New carries no `hdmx` at all, so every size runs the program and
+     * every size can be read. It is the best host the fabrications have.
+     */
+    probeSweep("Courier New", 0, '1');
+
     ReleaseDC(NULL, dc);
 
     probeFinish();

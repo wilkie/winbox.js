@@ -717,6 +717,46 @@ function reporter(name, { font = 'TIMES.TTF', character, point, constant, cut, m
 }
 
 export const FABRICATIONS = [
+  /* Courier New's `1`, whose flag this draws and Windows draws two pixels more
+   * of. Points 17 to 27 are the flag; 17 is where it meets the stem and 22 is
+   * its far end. Courier New has no `hdmx`, so every size can be read.
+   */
+  reporter('cour-one-p17', {
+    font: 'COUR.TTF',
+    character: '1',
+    point: 17,
+    cut: 158,
+    magnify: 8,
+    describe: "Courier New's 1 reporting point 17, which is on the flag",
+  }),
+
+  reporter('cour-one-p18', {
+    font: 'COUR.TTF',
+    character: '1',
+    point: 18,
+    cut: 158,
+    magnify: 8,
+    describe: "Courier New's 1 reporting point 18, which is on the flag",
+  }),
+
+  reporter('cour-one-p22', {
+    font: 'COUR.TTF',
+    character: '1',
+    point: 22,
+    cut: 158,
+    magnify: 8,
+    describe: "Courier New's 1 reporting point 22, which is on the flag",
+  }),
+
+  reporter('cour-one-p27', {
+    font: 'COUR.TTF',
+    character: '1',
+    point: 27,
+    cut: 158,
+    magnify: 8,
+    describe: "Courier New's 1 reporting point 27, which is on the flag",
+  }),
+
   /* The calibration for the synthetic glyphs, which has to come first: at the
    * sizes `hdmx` covers, `GetTextExtent` reports the tabulated advance and the
    * program's answer never reaches the outside. This says which sizes can be
