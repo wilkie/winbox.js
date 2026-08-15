@@ -1498,9 +1498,50 @@ pixels:
 
 A stroke that leans by less than an eighth of a pixel over its entire length is
 drawn as though it were upright; one that leans by more than three eighths never
-is. The transition is a ramp rather than a step, so this is not the whole rule
-either -- but it is a stroke-level quantity with a plain geometric meaning, and
-it is the first thing found that orders the data at all. **Open**, and now open with
+is.
+
+### What the ramp is
+
+It is a ramp and not a step, and the reason turns out to be that the shift is
+not what is being tested -- it only predicts what is.
+
+Inside the transition band, one thing separates the two answers almost
+completely: **the phase at the stroke's first rescued row.** Of the 110 strokes
+whose shift falls between a tenth and a half of a pixel, those starting less
+than a quarter of a pixel past a centre go left 44 times in 49, and those
+starting further past it go left **0 times in 61**.
+
+Put with the shift, that has a plain reading. Going down a leaning stroke the
+span's start moves steadily towards the centre below it, and it reaches it after
+`firstU / lean` rows. The stroke is `shift / lean` rows long. So `firstU <
+shift` is exactly **"the edge passes a pixel centre somewhere within the
+stroke's own length"** -- and a stroke that passes one takes the left pixel.
+
+That explains the ramp rather than replacing it. A stroke that shifts by a
+quarter of a pixel crosses a centre for about a quarter of the phases it might
+have; one that shifts by more than a pixel crosses for all of them. **The ramp
+is the marginal distribution over phase of a condition that is itself a step**,
+and the observed left fractions rise over the same range as the crossing chance
+does:
+
+| Shift | strokes | left, observed | crossing chance |
+| ----- | ------- | -------------- | --------------- |
+| 0     | 311     | 13%            | 4%              |
+| 1/8   | 72      | 24%            | 16%             |
+| 1/4   | 30      | 60%            | 29%             |
+| 3/8   | 11      | 73%            | 43%             |
+| 5/8   | 9       | 89%            | 71%             |
+| 1     | 20      | 85%            | 100%            |
+| 2+    | 100+    | ~100%          | 100%            |
+
+**It is an account and not yet the rule.** Tested as a predicate over 687
+strokes across all six shape fonts it gets **95.5%**, and it wants a coefficient
+-- `firstU < 1.46 x shift` rather than `firstU < shift`. On the three fonts it
+was first fitted to it reached 99.5% with a coefficient of 0.8, and that figure
+did not survive the other three, which is the second time in this section a
+number has been better than the evidence behind it. What is solid is the shape
+of the thing: a step on whether the edge crosses a centre, seen through a phase
+that varies from stroke to stroke. **Open**, and now open with
 a measured surface rather than a hunch.
 
 One negative worth keeping with it: **removing the column sweep improves every
