@@ -659,9 +659,36 @@ comparison or it does not, and there is no partial credit on a branch.
 ### What is left
 
 Eight advances differ: Arial Italic's `M` at four sizes, Times New Roman's `w` at
-three and `o` at one. Both remaining glyphs have been traced three levels deep
-with every instruction locally correct, and ten mechanisms have now been swept or
-verified against them. **Open.**
+three and `o` at one.
+
+The `w` has been disassembled and traced to the bottom of what is reachable. Its
+advance is set by an `fpgm` function that guards against the glyph getting too
+narrow:
+
+```
+if (ppem in range && MD(a, b) > ROUND(cvt)) SCFS(phantom, GC(p) + ROUND(cvt))
+```
+
+The guard fires correctly, and everything it reads is correct given its inputs.
+The chain behind `GC(p)` is four instructions long and every one of them is
+right:
+
+|                     |                                                                                           |
+| ------------------- | ----------------------------------------------------------------------------------------- |
+| the advance phantom | set from point 33                                                                         |
+| point 33            | untouched; `IUP` gives it point 32's shift, since they share an original x                |
+| point 32            | fitted to exactly 32 pixels, then dragged off it by an **unrounded** `MDRP` from point 35 |
+| point 35            | placed by a rounding `MDRP` from point 36, along a vector that is not the x axis          |
+
+At the third step the program deliberately un-fits a point it had just put on a
+whole pixel, which is legitimate and is what the bytecode says. At the fourth the
+projection stops being axial and the arithmetic stops being checkable by hand.
+
+What this rules out is everything above it: the guard, the interpolation and the
+two relative moves are all doing what the instructions specify. The interpolation
+arithmetic was swept three ways -- floating point on scaled coordinates, fixed
+point on scaled coordinates, and fixed point on font units, which is what the
+reference uses -- and all three give the same eight. **Open.**
 
 ### The pattern worth naming
 
