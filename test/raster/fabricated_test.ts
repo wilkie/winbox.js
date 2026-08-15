@@ -33,6 +33,7 @@ const FACES: Record<string, { face: string; italic: string }> = {
   'ARIAL.TTF': { face: 'Arial', italic: '0' },
   'COUR.TTF': { face: 'Courier New', italic: '0' },
   'TIMES.TTF': { face: 'Times New Roman', italic: '0' },
+  'TIMESI.TTF': { face: 'Times New Roman', italic: '1' },
 };
 
 interface Reading {
@@ -52,6 +53,10 @@ interface Reading {
  *   else is itself a confirmation of the order the two are consulted in.
  * - Cells below twelve pixels, where the mapper answers with a strike rather
  *   than with this face at all, so the number is some other font's.
+ * - Sizes at or above the glyph's `LTSH` threshold, where Windows scales the
+ *   advance instead of running the program -- the same reason as `hdmx` and
+ *   found the same way, by a control that stopped reading its constant back at
+ *   exactly the tabulated threshold and not a pixel before.
  * - Readings the readout could not carry. The coordinate is multiplied by the
  *   magnification and by sixty-four before `GetTextExtent` returns it in a
  *   sixteen bit word, and past about eight thousand sixty-fourths that wraps.
@@ -80,6 +85,7 @@ function readings(fixture: any, font: any) {
       windows < 0 ||
       Number(asked[2]) < 12 ||
       font.deviceAdvance(ppem, glyph) !== null ||
+      font.linearAdvance(glyph, ppem) !== null ||
       seen.has(ppem)
     ) {
       continue;
@@ -157,6 +163,41 @@ describe('the fabricated recordings', () => {
 
     // Sixteen recordings of five points at fifty readable sizes each.
     expect(compared).toBeGreaterThan(700);
+  });
+
+  /* Times New Roman Italic's `j`, which was the last disagreeing record of
+   * `CreateFont` and the only one of the 927 the `hinting` sweep holds. Its
+   * readout is the advance phantom itself rather than an interior point, and
+   * the cut that mattered was **nothing at all** -- with no instruction run,
+   * the phantom was already a pixel out. What that says is in section 5: the
+   * advance is rounded to the grid and the origin added afterwards, not the
+   * other way round.
+   */
+  present('agree on the advance phantom of Times New Roman Italic’s j', function () {
+    const wrong: string[] = [];
+
+    let compared = 0;
+
+    for (const recording of all) {
+      if (!recording.name.includes('timesi-j-p50')) {
+        continue;
+      }
+
+      for (const reading of readings(recording.fixture, recording.font)) {
+        compared++;
+
+        if (reading.ours !== reading.windows) {
+          wrong.push(
+            `${recording.name} at ${reading.ppem}: Windows ${reading.windows}, ours ${reading.ours}`
+          );
+        }
+      }
+    }
+
+    expect(wrong).toEqual([]);
+
+    // Eight cuts, at the sizes between a twelve pixel cell and the threshold.
+    expect(compared).toBeGreaterThan(100);
   });
 
   /* The control, and the reason any of the rest means anything. This one's

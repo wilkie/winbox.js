@@ -125,6 +125,23 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeSweep("Courier New", 0, '1');
     probeSweep("Times New Roman", 0, 'W');
 
+    /* Times New Roman Italic's capital W, which is the last record of the
+     * `font` probe still disagreeing: a ten character string of it at
+     * thirty-four pixels per em comes out a pixel wide, and of the ten only
+     * the W and the j are below their `LTSH` threshold and so being hinted at
+     * all. Sweeping it alone separates the two, and gives the fabrications
+     * somewhere to report into.
+     */
+    probeSweep("Times New Roman", 1, 'W');
+
+    /* The other two characters of that string whose width could be the odd
+     * one: `j` because it is the only other one still below its `LTSH`
+     * threshold at that size and so still being hinted, and `1` as the control
+     * for the ones above it, which are answered by scaling.
+     */
+    probeSweep("Times New Roman", 1, 'j');
+    probeSweep("Times New Roman", 1, '1');
+
     ReleaseDC(NULL, dc);
 
     probeFinish();

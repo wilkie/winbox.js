@@ -717,6 +717,88 @@ function reporter(name, { font = 'TIMES.TTF', character, point, constant, cut, m
 }
 
 export const FABRICATIONS = [
+  /* Times New Roman Italic's `j`, which is the last record of `CreateFont`
+   * still disagreeing and now also the only record of 927 that the `hinting`
+   * sweep disagrees on: at thirty-four pixels per em Windows advances by 8 and
+   * this by 9.
+   *
+   * The advance phantom is point 50 -- the glyph has 49 of its own -- so
+   * reporting that one reads the answer itself rather than an interior point,
+   * and a sweep of cuts says which byte of the program moves it.
+   */
+  reporter('timesi-j-p50-cut0', {
+    font: 'TIMESI.TTF',
+    character: 'j',
+    point: 50,
+    cut: 0,
+    magnify: 8,
+    describe: "Times New Roman Italic's j reporting its advance after 0 bytes",
+  }),
+  reporter('timesi-j-p50-cut50', {
+    font: 'TIMESI.TTF',
+    character: 'j',
+    point: 50,
+    cut: 50,
+    magnify: 8,
+    describe: "Times New Roman Italic's j reporting its advance after 50 bytes",
+  }),
+  reporter('timesi-j-p50-cut88', {
+    font: 'TIMESI.TTF',
+    character: 'j',
+    point: 50,
+    cut: 88,
+    magnify: 8,
+    describe: "Times New Roman Italic's j reporting its advance after 88 bytes",
+  }),
+  reporter('timesi-j-p50-cut107', {
+    font: 'TIMESI.TTF',
+    character: 'j',
+    point: 50,
+    cut: 107,
+    magnify: 8,
+    describe: "Times New Roman Italic's j reporting its advance after 107 bytes",
+  }),
+  reporter('timesi-j-p50-cut140', {
+    font: 'TIMESI.TTF',
+    character: 'j',
+    point: 50,
+    cut: 140,
+    magnify: 8,
+    describe: "Times New Roman Italic's j reporting its advance after 140 bytes",
+  }),
+  reporter('timesi-j-p50-cut160', {
+    font: 'TIMESI.TTF',
+    character: 'j',
+    point: 50,
+    cut: 160,
+    magnify: 8,
+    describe: "Times New Roman Italic's j reporting its advance after 160 bytes",
+  }),
+  reporter('timesi-j-p50-cut180', {
+    font: 'TIMESI.TTF',
+    character: 'j',
+    point: 50,
+    cut: 180,
+    magnify: 8,
+    describe: "Times New Roman Italic's j reporting its advance after 180 bytes",
+  }),
+  reporter('timesi-j-p50-cut202', {
+    font: 'TIMESI.TTF',
+    character: 'j',
+    point: 50,
+    cut: 202,
+    magnify: 8,
+    describe: "Times New Roman Italic's j reporting its advance after 202 bytes",
+  }),
+  reporter('timesi-j-constant', {
+    font: 'TIMESI.TTF',
+    character: 'j',
+    constant: 16 * 64,
+    cut: 202,
+    describe: "Times New Roman Italic's j reporting a constant, as the control",
+  }),
+
+
   /* Times New Roman's capital `W`, the one glyph of the five still differing
    * that the instrument can reach: its failing size is fourteen pixels per em,
    * which `hdmx` does not tabulate. Points 9, 10, 26, 27 and 28 are the two

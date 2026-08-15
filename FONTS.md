@@ -722,6 +722,21 @@ size the readout is visible at. **The advance phantom is rounded to the grid
 before the glyph program runs.** **Recorded**, directly, with no inference in
 between.
 
+**It is the advance that is rounded, and the origin added afterwards.** Written
+as `round(origin + advance)` rather than `origin + round(advance)` it is the
+same thing whenever the origin is a whole number of pixels, which it nearly
+always is -- the origin is `xMin - lsb` scaled, and that difference is zero for
+most glyphs. Times New Roman Italic's `j` is one where it is not: four design
+units, a sixteenth of a pixel at thirty-four pixels per em, and exactly enough
+to carry an advance of 9.4531 across the halfway mark and round it to ten.
+Windows rounds 9.4531 to nine and adds the sixteenth after.
+
+That one distinction was the last disagreeing record of `CreateFont` and the
+only disagreeing record of the 927 the `hinting` sweep now holds. **Recorded**,
+and by the bluntest use of the readout there is: the `j`'s program cut back to
+nothing, so that what came back was the phantom's starting position with no
+instruction having run.
+
 **And implementing it costs 5 wrong `hdmx` advances and gains 321.** Both of
 those are true and they are not in conflict, because they are measurements of
 two different rasterisers:
@@ -1487,9 +1502,9 @@ fitted height.
 | Fixture                                                      | Agreement |
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
-| `font` (2,655 records)                                       | 99.96%    |
+| `font` (2,655 records)                                       | **100%**  |
 | `glyphs` (846 records)                                       | 82.9%     |
-| `hinting` (618 records)                                      | **100%**  |
+| `hinting` (927 records)                                      | **100%**  |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical -- all
 forty-two of them, across four faces and two stock handles. That is the control,
@@ -1553,10 +1568,9 @@ wrong, and the rate _fell_ to 83.3% on the larger set. The gap was always there;
 until the probe asked, it was not being counted. Answering it took the figure to
 93.3%.
 
-What is left is **one record of 2,655**: a ten character string of Times New
-Roman Italic at thirty-four pixels per em, one pixel too wide. Neither `hdmx`
-nor `LTSH` covers that size for the glyph in question, so the interpreter has to
-answer for itself.
+Nothing is left. **All 2,655 records agree**, and so do all 927 of the `hinting`
+sweep -- every face the mapper picks, every height, width, style byte and
+string extent, and every hinted advance of six letters at ninety-nine sizes
+each.
 
-The `hinting` fixture, which asks the same question of single letters at
-ninety-nine sizes each, now agrees on **all 618**.
+What that leaves is the one probe that records pixels.

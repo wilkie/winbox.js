@@ -1241,20 +1241,6 @@ export class Unimplemented extends Error {}
  * starts agreeing and the entry becomes stale.
  */
 /**
- * Two separate things are missing, and they are worth keeping apart.
- *
- * The bitmap strikes and the plotter fonts agree throughout. The outline faces
- * agree on everything their own fitted tables cover -- which is the face, the
- * height, the ascent, the descent and the leadings at every size the font was
- * built for -- and disagree on the synthesised styles, on the maximum
- * character width, and at sizes the tables skip. See oracle/README.md.
- */
-const NO_OUTLINE_FONTS =
-  'one record of 2,655: a ten character string of Times New Roman Italic at ' +
-  'thirty-four pixels per em, one pixel wide, at a size neither `hdmx` nor ' +
-  '`LTSH` covers and where the interpreter has to answer for itself';
-
-/**
  * The one probe that records pixels, and the one that cannot be satisfied by
  * reading a table.
  *
@@ -1265,14 +1251,13 @@ const NO_OUTLINE_FONTS =
  * and at the sizes text is read at that decides where about half the ink goes.
  */
 const NO_HINTING =
-  'every bitmap and stroke face agrees exactly, and about three quarters of ' +
-  'the outline glyphs do; what is left is a thousand pixels across two ' +
-  'hundred letters, most of them at the edge of a stroke, and section 6 of ' +
+  'every bitmap and stroke face agrees exactly, and five sixths of the ' +
+  'outline glyphs do; what is left is four hundred pixels across a hundred ' +
+  'and forty letters, half of them one face at one size, and section 6 of ' +
   'FONTS.md records what has been ruled out';
 
 export const KNOWN_GAPS: Record<string, string> = {
   glyph: NO_HINTING,
-  'CreateFont extent': NO_OUTLINE_FONTS,
 };
 
 /**

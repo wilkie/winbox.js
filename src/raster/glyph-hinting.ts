@@ -405,11 +405,29 @@ export class Hinter {
      * times out of 90 without and 85 with. The pixels are what Windows drew.
      */
     const grid = (value) => Math.floor((value + ONE / 2) / ONE) * ONE;
-    const width = origin + mulDiv(advance, this.pixels, this.font.unitsPerEm);
+
+    /* The **advance** is what gets rounded, and the origin is added after.
+     *
+     * Rounding the sum instead is the same thing whenever the origin is a whole
+     * number of pixels, which it nearly always is -- it is `xMin - lsb` scaled,
+     * and that difference is zero for most glyphs. Times New Roman Italic's `j`
+     * is one where it is not: four design units, a sixteenth of a pixel at
+     * thirty-four pixels per em, and enough to carry an advance of 9.4531
+     * across the halfway mark and round it to ten. Windows rounds 9.4531 to
+     * nine and then adds the sixteenth. **Recorded**, by reading the phantom
+     * itself out of a running Windows with a glyph whose whole program is the
+     * readout -- so no instruction had run and the disagreement was already
+     * there.
+     */
+    const width =
+      origin +
+      (this.roundPhantoms
+        ? grid(mulDiv(advance, this.pixels, this.font.unitsPerEm))
+        : mulDiv(advance, this.pixels, this.font.unitsPerEm));
 
     const phantom = [
       { x: origin, y: 0 },
-      { x: this.roundPhantoms ? grid(width) : width, y: 0 },
+      { x: width, y: 0 },
       { x: 0, y: 0 },
       { x: 0, y: 0 },
     ];
