@@ -486,9 +486,44 @@ Arial and Arial Bold now reproduce every advance they tabulate.
 
 ### What is left
 
-Twelve advances still differ: Arial Italic's `M` at four sizes, Times New
-Roman's `w` at three and `o` and one symbol at one each, and three more across
-the bold and italic files. No cluster, mostly one pixel. **Open.**
+Twelve advances still differ, and they have been characterised even though they
+are not fixed:
+
+| Font                 | Glyph    | Sizes          |
+| -------------------- | -------- | -------------- |
+| Arial Italic         | `M`      | 32, 67, 75, 92 |
+| Times New Roman      | `w`      | 46, 67, 75     |
+| Times New Roman      | `o`      | 75             |
+| Times New Roman      | U+00BA   | 16             |
+| Times New Roman Bold | U+2219   | 42             |
+| Times New Roman Ital | `!`, `%` | 92             |
+
+**They are position errors, not rounding-boundary errors.** The advance phantom
+lands where it lands and the rounding of it is not in question: Times New
+Roman's `w` at 46 pixels per em comes out at 32.953 pixels where Windows says
+32, and Times Italic's `!` at 92 comes out at **exactly 31.000** where Windows
+says 30. A value sitting precisely on an integer is not a rounding dispute; the
+point is a whole pixel from where it belongs.
+
+The four Arial Italic `M` failures share something the others do not: a
+projection vector of (16037, -3353), which is the face's own slant, against a
+freedom vector of pure x. Every other failure has both vectors on the x axis. So
+it is at most two classes and possibly two unrelated faults.
+
+Two candidate explanations have been checked and rejected:
+
+- **`movePoint`'s handling of an off-axis projection.** A point moving along
+  freedom must travel far enough that its _projection_ moves by the distance
+  asked, which means dividing by the dot product of the two vectors. That is
+  done, and correctly.
+- **Rounding the dot product once rather than twice.** The reference sums both
+  products before dividing where this divides each term and adds, which can land
+  a sixty-fourth apart and only where the vector is off-axis -- exactly the
+  Arial Italic case. Changing it moves nothing: the same twelve, unchanged. It
+  was reverted rather than kept, because a change that cannot be measured cannot
+  be justified.
+
+**Open**, at twelve of 22,056.
 
 ### The pattern worth naming
 
