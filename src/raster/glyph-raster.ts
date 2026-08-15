@@ -47,6 +47,14 @@ const CURVE_STEPS = 8;
  * pixel is kept because it is the one value here that means something; the two
  * either side of it are a fit to 846 records.
  *
+ * **A font of bars says there is no threshold at all.** Thirty-six of Courier
+ * New's letters replaced by rectangles of known width at known offsets, drawn
+ * at seven sizes: Windows rescues a span 0.16 of a pixel wide exactly as often
+ * as one 0.78 wide -- 47 per cent either way, and the 47 turns out to be the
+ * proportion of them that are upright. Every one of the 390 upright spans is
+ * rescued and not one of the 424 on its side. See `FONTS.md`; the threshold
+ * here is standing in for something and is now known not to be a threshold.
+ *
  * The rule it stands in for is a question about shape rather than width: a stub
  * is where the outline turns back, so the two edges bounding an empty span are
  * two sides of one tip rather than two sides of a stroke. **Two ways of asking
@@ -506,7 +514,22 @@ export function fill(contours, options) {
     return pixels;
   }
 
-  /* The same test down each column.
+  /* The same test down each column -- **which Windows does not do.**
+   *
+   * A font of thirty-six bars settles it: a bar 0.156 of a pixel wide standing
+   * upright is drawn as a full column of pixels, and bars 0.156, 0.234 and
+   * 0.313 of a pixel tall lying on their side are drawn as nothing at all.
+   * Across seven sizes that is 424 spans down columns and not one of them
+   * rescued, against 390 along rows and every one. Deleting this sweep makes
+   * all 126 records of the bars on their side agree exactly, where with it they
+   * do not.
+   *
+   * It is kept anyway, and knowingly, because deleting it alone costs 47 of the
+   * 846 recorded letters. What it is compensating for is the stub rule above:
+   * with no threshold and no column sweep the bars come out perfect, 258 of 258
+   * records and not one pixel wrong, and the letters fall to 571. The
+   * compensation is a fiction and the note is here so that the next person does
+   * not have to rediscover that it is one. `FONTS.md` has the numbers.
    *
    * A stroke can be too shallow to cover a row centre as easily as too narrow
    * to cover a column one, and a sweep along rows provably cannot see the first

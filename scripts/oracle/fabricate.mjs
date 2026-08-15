@@ -493,6 +493,35 @@ export function setGlyph(bytes, font, glyph, { width, height, program, points })
 }
 
 /** The glyph a character maps to, so a readout can replace the right one. */
+/**
+ * Sets a glyph's left side bearing, in `hmtx`.
+ *
+ * A rewritten outline needs this or it will not be drawn where it was put.
+ * Windows places a glyph at `pen + lsb + (x - xMin)`, so the bearing and the
+ * bounding box are two statements of the same thing and a font that has been
+ * edited on one side only is drawn shifted by the difference. Real fonts always
+ * agree, which is why nothing noticed until a fabrication disagreed: bars
+ * placed at six different offsets all came back at the same place, because the
+ * offset was being cancelled by the bearing it did not match.
+ *
+ * @param {Uint8Array} bytes - The whole font.
+ * @param {number} glyph - The glyph index.
+ * @param {number} bearing - The bearing to write, in font units.
+ */
+export function setBearing(bytes, glyph, bearing) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const tables = tablesOf(view);
+  const count = view.getUint16(tables.hhea.offset + 34, false);
+  const base = tables.hmtx.offset;
+
+  // The long entries carry an advance each; the short tail is bearings only.
+  const at = glyph < count ? base + glyph * 4 + 2 : base + count * 4 + (glyph - count) * 2;
+
+  view.setInt16(at, bearing, false);
+
+  return bytes;
+}
+
 export function glyphFor(bytes, code) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const base = tablesOf(view).cmap.offset;
@@ -717,6 +746,130 @@ function reporter(name, { font = 'TIMES.TTF', character, point, constant, cut, m
 }
 
 export const FABRICATIONS = [
+  /* Thirty-six wedges, which is the other half of the bar experiment.
+   *
+   * The bars answer "does Windows rescue a stroke too thin to cover a pixel
+   * centre", and they answer it yes, at every width and without a threshold in
+   * sight. They cannot answer "does it refuse a *stub*", because a rectangle
+   * has no tips: every span in that font is a genuine stroke.
+   *
+   * A triangle is nothing but a tip. Scanlines up it give spans that narrow
+   * continuously to nothing, and the apex is a local extremum in y -- which is
+   * the shape every description of the stub rule is describing. If Windows inks
+   * every one of those rows, tips are rescued too and the refusal in real
+   * letters is not about tips at all; if it stops, where it stops is the rule,
+   * read off directly instead of fitted.
+   *
+   * Six base widths against six heights, so the taper varies from blunt to
+   * sharp and the width at a given row is separable from how far that row is
+   * from the apex.
+   */
+  {
+    name: 'cour-wedges',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with its letters replaced by wedges tapering to a point',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const BASES = [200, 300, 400, 500, 600, 700];
+      const HEIGHTS = [400, 600, 800, 1000, 1200, 1400];
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const base = BASES[index % BASES.length];
+        const height = HEIGHTS[Math.floor(index / BASES.length) % HEIGHTS.length];
+
+        const points = [
+          [300, 0],
+          [300 + base, 0],
+          [300 + Math.floor(base / 2), height],
+        ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, points, program: [] });
+        setBearing(bytes, glyph, 300);
+      }
+
+      return bytes;
+    },
+  },
+
+  /* Thirty-six bars, to ask about dropout control with one variable at a time.
+   *
+   * The stub rule has now failed to fit three ways -- by width, by topology and
+   * by the direction of the two bounding edges -- and every attempt has been an
+   * inference from letters, where each scanline crosses several strokes of
+   * different widths at different angles next to tips of their own. A letter
+   * cannot separate them.
+   *
+   * A bar can. Each of the thirty-six characters the glyph probe draws becomes
+   * a single rectangle of a chosen width at a chosen sub-pixel offset: the
+   * first eighteen upright, so a scanline across one is a span of known width
+   * and known phase, and the last eighteen on their side for the sweep down
+   * columns. Nothing else is in the glyph -- no program, so nothing is
+   * grid-fitted and the outline is exactly what was asked for; no second
+   * contour, so no winding to reason about; no tips at all, so **every span is
+   * a genuine stroke and nothing in the font is a stub**.
+   *
+   * That last is the point. If Windows rescues all of them the rescue is not a
+   * function of width and the whole rule is about shape, which is a thing the
+   * letters cannot say and this says in one recording. If it refuses some, the
+   * width and phase at which it starts refusing are read straight off.
+   *
+   * Seven cells in the probe give seven pixel sizes for each bar, so the six
+   * widths cover about a sixth of a pixel to a pixel and a half.
+   */
+  {
+    name: 'cour-bars',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with its letters replaced by bars of known width and offset',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      // In design units, with 2,048 to the em: at eight pixels per em a pixel
+      // is 256 of them, so these are a sixth to a half of one.
+      const WIDTHS = [40, 60, 80, 100, 120, 140];
+      const PHASES = [0, 85, 170];
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const width = WIDTHS[index % WIDTHS.length];
+        const phase = PHASES[Math.floor(index / WIDTHS.length) % PHASES.length];
+        const upright = index < WIDE.length / 2;
+
+        const low = 600 + phase;
+
+        const points = upright
+          ? [
+              [low, 0],
+              [low, 1400],
+              [low + width, 1400],
+              [low + width, 0],
+            ]
+          : [
+              [200, low],
+              [200, low + width],
+              [1800, low + width],
+              [1800, low],
+            ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, points, program: [] });
+
+        /* The bearing has to say the same thing the box does, or Windows draws
+         * the bar at `pen + lsb` and the offset chosen above is cancelled.
+         */
+        setBearing(bytes, glyph, Math.min(...points.map((point) => point[0])));
+      }
+
+      return bytes;
+    },
+  },
+
   /* Courier New with its `INSTCTRL` turned around.
    *
    * Its `prep` executes the instruction twice, both times as `PUSHB[2] 1, 1`

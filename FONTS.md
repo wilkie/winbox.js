@@ -1201,6 +1201,66 @@ Both **measured**, and recorded so the next attempt starts further along. What
 neither has is the other half of the rule: the test that stops a rescue Windows
 does not make. The direction test says the first half is findable.
 
+### Asking with shapes instead of letters
+
+Every attempt at the stub rule above is an inference from letters, and a letter
+is the wrong instrument: each scanline crosses several strokes of different
+widths at different angles next to tips of their own, and no sweep can separate
+them. A shape chosen for the purpose can.
+
+`setGlyph` replaces a glyph with points of our choosing, and the glyph probe
+draws thirty-six characters of one face at seven cells. So **thirty-six
+rectangles of known width at known offset, with no program at all** -- nothing
+grid-fitted, one contour, no tips anywhere, every span a genuine stroke -- is one
+recording and 258 records. Half stand upright, for the sweep along rows; half lie
+on their side, for the sweep down columns.
+
+**A rewritten outline needs its bearing rewritten too.** The first recording
+came back with all six offsets at the same place, because Windows draws a glyph
+at `pen + lsb + (x - xMin)` and `hmtx` still held the letter's old bearing. The
+box and the bearing are two statements of the same thing; real fonts always
+agree, so nothing had ever noticed. `setBearing` writes the second one.
+
+**Three things fall straight out of the recording.**
+
+**There is no threshold.** Windows rescues a span 0.16 of a pixel wide exactly as
+often as one 0.78 wide -- 47 per cent either way, at every size.
+
+**There is no column sweep.** The 47 per cent is not a proportion of widths at
+all; it is the proportion of the bars that stand upright. **390 of 390 spans
+along rows are rescued, and 0 of 424 down columns.** A bar 0.156 of a pixel wide
+standing up is drawn as a full column of pixels; bars of 0.156, 0.234 and 0.313
+lying down are drawn as nothing whatever. Delete our column sweep and all 126
+records of the bars on their side agree exactly.
+
+**And the pixel is the next centre, not the previous one.** For a span from
+4.637 to 4.813 Windows inks the pixel whose centre is 5.5, not the one whose
+centre is 4.5. With those three together -- no column sweep, no threshold, the
+next centre at or above the span's start -- **the bar font is reproduced exactly:
+258 records, not one pixel wrong.**
+
+### What the wedges say, and what is still open
+
+A rectangle has no tips, so the bars cannot say when Windows _refuses_. Thirty-six
+triangles can: a wedge is nothing but a tip, and its apex is the local extremum
+every description of the stub rule is describing.
+
+Windows inks every row of every wedge, right up to the apex. But the rule that
+reproduces the bars exactly **over-inks the wedges** -- 284 invented pixels
+against Windows -- so the refusal is real, it is a property of the shape, and
+these two fonts now separate the two cases with geometry we chose rather than
+geometry a letter happened to have. **That is the instrument the stub rule
+needs, and reading it is the next thing to do.**
+
+**What is shipped is knowingly not this.** The rule measured here scores 571 of
+the 846 recorded letters against 701 for the threshold-and-column-sweep pair in
+the code, because the missing stub rule is doing more damage than the two wrong
+mechanisms it would replace. So the code keeps a column sweep Windows does not
+have and a threshold Windows does not apply, and both are now marked in place as
+compensating fictions with the evidence against them. That is a worse thing to
+leave behind than a wrong number and a better thing than a wrong number nobody
+has noticed.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
