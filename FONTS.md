@@ -980,6 +980,15 @@ The same rule has to be applied per _monotonic arc_ rather than per piece, since
 a quadratic that turns over in the sweep direction has two of them and two
 chances to share a vertex.
 
+**The intersection itself is not quantised.** Windows computed these in fixed
+point, and a stroke whose edge lands within a sixty-fourth of a pixel centre is
+exactly where that would show: Arial's `7` at eighteen pixels per em has its
+diagonal cross one row at 5.497, and Windows evidently has it a shade past 5.5,
+which is a hundredth of a pixel. Rounding the intersection to sixty-fourths
+costs 26 glyphs of 846, flooring 35, ceiling 10. Exact wins outright.
+**Measured**, and it says the hundredth of a pixel is in the outline rather than
+in the arithmetic that reads it.
+
 There is no sub-pixel bias to correct, which is worth knowing because a
 one-pixel disagreement in a glyph looks exactly like a fill rule problem and
 usually is not.
@@ -1075,18 +1084,19 @@ grid-fitting and every stroke is a third of a pixel wide -- was not in the
 narrow one at all.
 
 **One survives and one improves.** The stub threshold's peak is still broad and
-still has no corner in it. The pixel choice turned out to be stateable as a
-single rule about pixel centres rather than two about pixels, which section 6
-gives: 681 glyphs exact against 674. The sweep below is at the new choice.
+still has no corner in it -- swept once on the wider fixture and again after the
+crossing rule was corrected, with the same shape both times. The pixel choice
+turned out to be stateable as a single rule about pixel centres rather than two
+about pixels, which section 6 gives. The sweep below is the second one.
 
 | threshold | glyphs exact | missing | invented | wrong   |
 | --------- | ------------ | ------- | -------- | ------- |
-| 0.2       | 650          | 91      | 335      | 426     |
-| 0.325     | 681          | 109     | 267      | **376** |
-| 0.4       | 687          | 251     | 151      | 402     |
-| 0.45      | **691**      | 281     | 134      | 415     |
-| **0.5**   | 681          | 316     | 121      | 437     |
-| 0.7       | 650          | 399     | 95       | 494     |
+| 0.2       | 662          | 89      | 319      | 408     |
+| 0.325     | 692          | 109     | 250      | **359** |
+| 0.4       | 699          | 248     | 136      | 384     |
+| 0.45      | **700**      | 277     | 122      | 399     |
+| **0.5**   | 691          | 312     | 106      | 418     |
+| 0.7       | 661          | 393     | 80       | 473     |
 
 A smooth trade of invented pixels for missing ones, with the most glyphs exact
 and the fewest wrong pixels in different places. That is what a number standing
