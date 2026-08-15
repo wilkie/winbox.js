@@ -399,8 +399,12 @@ export function reportPoint(point, phantom, magnify) {
     ...ops.byte(phantom),
     ...ops.byte(point),
     0x46,
-    ...ops.word(magnify * 64),
-    ...ops.multiply(),
+
+    /* The multiply is what buys the resolution, and it is also a step that can
+     * be wrong on its own -- so a magnification of one leaves it out entirely
+     * and reads the coordinate as it stands.
+     */
+    ...(magnify === 1 ? [] : [...ops.word(magnify * 64), ...ops.multiply()]),
     ...ops.setCoordinate(),
   ];
 }
@@ -442,11 +446,22 @@ export function setGlyph(bytes, font, glyph, { width, height, program, points })
   // One contour, its bounding box, and where it ends.
   const put16 = (value) => body.push((value >> 8) & 0xff, value & 0xff);
 
+  /* The bounding box has to be the box the points are actually in. Writing a
+   * zero-based one and then placing the points elsewhere leaves `xMin`
+   * disagreeing with the outline, and `xMin` is what the origin phantom is
+   * computed from -- so every coordinate read out of the glyph comes back
+   * shifted, by an amount too small to see at whole-pixel resolution and
+   * plainly visible once magnified. That looked like an instruction misbehaving
+   * for as long as it took to run the control.
+   */
+  const xs = corners.map((point) => point[0]);
+  const ys = corners.map((point) => point[1]);
+
   put16(1);
-  put16(0);
-  put16(0);
-  put16(width);
-  put16(height);
+  put16(Math.min(...xs));
+  put16(Math.min(...ys));
+  put16(Math.max(...xs));
+  put16(Math.max(...ys));
   put16(corners.length - 1);
 
   put16(program.length);
@@ -711,15 +726,57 @@ export const FABRICATIONS = [
     font: 'ARIALI.TTF',
     character: 'm',
     points: [
-      [0, 0],
-      [256, 400],
-      [512, 400],
-      [768, 0],
+      [67, 0],
+      [323, 400],
+      [579, 400],
+      [835, 0],
     ],
     body: [0x01],
     report: 1,
     magnify: 0,
     describe: 'the synthetic glyph reporting nothing at all, to find the readable sizes',
+  }),
+
+  /* The same reading with no multiply at all, which separates `GC` from `MUL`.
+   */
+  experiment('ip-plain', {
+    font: 'ARIALI.TTF',
+    character: 'm',
+    points: [
+      [67, 0],
+      [323, 400],
+      [579, 400],
+      [835, 0],
+    ],
+    body: [0x01],
+    report: 1,
+    magnify: 1,
+    describe: 'the coordinate of an untouched point, read with no magnification',
+  }),
+
+  /* The control that says the channel reads a *point* correctly, not just a
+   * constant: the same program as the identity experiment with the `IP` taken
+   * out. Whatever this reports is what the readout makes of an untouched point,
+   * and any difference between it and the identity experiment is `IP` alone.
+   */
+  experiment('ip-absent', {
+    font: 'ARIALI.TTF',
+    character: 'm',
+    points: [
+      [67, 0],
+      [323, 400],
+      [579, 400],
+      [835, 0],
+    ],
+    body: [
+      0x01, // SVTCA[x]
+      ...ops.byte(0),
+      0x11, // SRP1
+      ...ops.byte(3),
+      0x12, // SRP2
+    ],
+    report: 1,
+    describe: 'the identity experiment with the IP removed, which is the control for it',
   }),
 
   /* What `IP` does when its reference points have not moved.
@@ -735,10 +792,10 @@ export const FABRICATIONS = [
     font: 'ARIALI.TTF',
     character: 'm',
     points: [
-      [0, 0],
-      [256, 400],
-      [512, 400],
-      [768, 0],
+      [67, 0],
+      [323, 400],
+      [579, 400],
+      [835, 0],
     ],
     body: [
       0x01, // SVTCA[x]
@@ -761,10 +818,10 @@ export const FABRICATIONS = [
     font: 'ARIALI.TTF',
     character: 'm',
     points: [
-      [0, 0],
-      [256, 400],
-      [512, 400],
-      [768, 0],
+      [67, 0],
+      [323, 400],
+      [579, 400],
+      [835, 0],
     ],
     body: [
       0x01, // SVTCA[x]
