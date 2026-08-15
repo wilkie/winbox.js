@@ -586,13 +586,12 @@ what reading the documentation would suggest.
 reads back as `  kept  `. Both quote characters work. Since the whitespace
 around a value is otherwise trimmed away, quoting is the only way for a value
 to have any, which makes it the mechanism rather than a nicety -- and it is
-also what the *writer* does: a value written with spaces around it comes back
+also what the _writer_ does: a value written with spaces around it comes back
 with them, which only works if `WritePrivateProfileString` adds the quotes.
 
 **`GetProfileInt` is not the string call with a conversion on the end.** It
-reads digits and stops at the first character that is not one, so `40two` is
-40. It reads a leading minus and returns a `UINT`, so `-1` is 65535. And it
-does *not* remove quotes, so `"7"` -- which the string form reads as `7` --
+reads digits and stops at the first character that is not one, so `40two` is 40. It reads a leading minus and returns a `UINT`, so `-1` is 65535. And it
+does _not_ remove quotes, so `"7"` -- which the string form reads as `7` --
 begins with a character that is not a digit and is therefore zero. Three
 different rules, in one function, none of them `atoi`.
 
@@ -600,7 +599,7 @@ different rules, in one function, none of them `atoi`.
 for `value` with five bytes of room, the string form returns 4 and writes
 `valu\0`: the count is the buffer less one. Asked to enumerate a section with
 six bytes of room, the list form returns 4 and writes `onl\0\0`: the count is
-the buffer less *two*, because the closing null needs room of its own, and the
+the buffer less _two_, because the closing null needs room of its own, and the
 name loses a character rather than its terminator. Guessing one from the other
 gives the wrong answer, which is what this probe was written to catch.
 
@@ -616,6 +615,11 @@ returned before them, which is the check that says so.
 
 ### The font probe
 
+> The findings below, and those of the plotter, TrueType and glyph probes, are
+> collected as a specification of Windows' own behaviour in
+> [FONTS.md](../FONTS.md). This section records how each was arrived at; that
+> one records what the answers are.
+
 A program does not choose a font. It describes one -- a name, a height, a
 weight, a pitch -- and GDI answers with the closest thing installed. Almost
 none of that matching is written down, and it is where an implementation
@@ -629,7 +633,7 @@ when the same question was asked at several sizes.
 **The character set outranks the name, but only for OEM fonts.** Asking for
 Terminal with `ANSI_CHARSET` does not give Terminal, it gives MS Sans Serif:
 Terminal is an OEM font, and for this purpose that is the same as not being
-installed. Asking for Symbol with `ANSI_CHARSET` *does* give Symbol, though its
+installed. Asking for Symbol with `ANSI_CHARSET` _does_ give Symbol, though its
 character set does not match either. Probing only Terminal would have produced
 the rule "the character sets must match", which is wrong; it took both to see
 that only the OEM set disqualifies a face.
@@ -687,15 +691,14 @@ in it, and the first recording measured each style at a single size -- where an
 emboldening that adds 1 and a slant that adds 7 both look like constants.
 Measuring three faces at eight sizes each separates them: the bold overhang
 really is 1 everywhere, and the slant's is `floor((height - 1) / 2)`, the cell
-leaning over by half its own height. It follows the height being *drawn*, so a
+leaning over by half its own height. It follows the height being _drawn_, so a
 strike stretched to a size it was never installed at leans further in
 proportion -- which is the case that could not have been guessed from the
 strike alone. Asking for both adds both.
 
 **A face that is already bold is not emboldened again.** The System font is
 drawn bold, so a request for bold has nothing to synthesise: no character
-widens, nothing overhangs, and the metrics are the plain ones with a weight of
-700. Only a face lighter than bold gets the extra pixel.
+widens, nothing overhangs, and the metrics are the plain ones with a weight of 700. Only a face lighter than bold gets the extra pixel.
 
 The probe also caught a defect in itself. Its first recording wrote the request
 into the argument field without the underline and strikeout flags, so three
@@ -752,7 +755,7 @@ again exactly one pixel across at every size. Strokes are drawn again a scaled
 pixel across: the offset is the width scale rounded to a whole number, which is
 zero until the font is drawn at about half its design width, one from there to
 about one and a half times, and three by the time it reaches three times. It
-follows the *width* scale rather than the height, which is why Roman and Script
+follows the _width_ scale rather than the height, which is why Roman and Script
 stop agreeing at the same requested height -- their designs are different sizes
 and the same request produces different scales.
 
@@ -795,7 +798,7 @@ work as drawing the glyphs, and so no cheaper than a rasteriser.
 
 That conclusion was wrong, and the thing that showed it was looking at what
 else is in the file. Arial carries a `VDMX` table of six thousand bytes and an
-`hdmx` of five thousand, and both are tables of *results*: `VDMX` states what
+`hdmx` of five thousand, and both are tables of _results_: `VDMX` states what
 the whole face came out as at every pixel size once hinted, and `hdmx` states
 what each glyph's advance came out as at a couple of dozen of them. They were
 computed when the font was built, by whoever built it, precisely so that a
@@ -849,11 +852,11 @@ of the outline numbers meant anything.
 
 The outlines are filled without hinting, and the measurement is:
 
-| face | exact | pixels differing, of ink |
-| --- | --- | --- |
-| Arial | 3 of 24 | 16 of 32 |
-| Times New Roman | 0 of 12 | 15 of 33 |
-| Courier New | 0 of 6 | 12 of 17 |
+| face            | exact   | pixels differing, of ink |
+| --------------- | ------- | ------------------------ |
+| Arial           | 3 of 24 | 16 of 32                 |
+| Times New Roman | 0 of 12 | 15 of 33                 |
+| Courier New     | 0 of 6  | 12 of 17                 |
 
 So the shape is right -- an unhinted Arial `A` is recognisably the same letter
 in the same place at the same size -- and about half the ink is in a different
@@ -935,7 +938,7 @@ one. Courier New averages 0.7 pixels of difference per glyph, against 11.7
 unhinted.
 
 One measurement is worth keeping in view: after the first two fixes the average
-difference per glyph was *worse* than not hinting at all, while more glyphs were
+difference per glyph was _worse_ than not hinting at all, while more glyphs were
 exactly right. Only the exact count means anything. A glyph is either the pixels
 Windows drew or it is not, and "closer on average" is what you measure when you
 have not got there.
@@ -964,7 +967,7 @@ fixture from 57.8% to 64.4%.
 For the outline faces the answer was that they should not be synthesised at
 all. The recorded metrics say so plainly, and it took looking at them to see
 it: a slanted outline reports an overhang of **zero**, and Arial's italic is
-*narrower* than its regular at twenty-four pixels -- 101 against 106 -- which
+_narrower_ than its regular at twenty-four pixels -- 101 against 106 -- which
 no amount of shearing produces. Windows is not slanting anything. It is opening
 `ARIALI.TTF`.
 
@@ -1005,7 +1008,7 @@ start from the same wrong place.
 
 It looked like the serifs were failing to snap: Windows draws the top of a `W`
 as a clean three-pixel bar on one row, and ours scatters single pixels across
-two. Reading the hinted coordinates says otherwise. They *are* snapping -- the
+two. Reading the hinted coordinates says otherwise. They _are_ snapping -- the
 serif tops come back at exactly 10.00 and 11.00 pixels, whole numbers, which is
 the interpreter doing its job.
 
@@ -1017,16 +1020,16 @@ and not the anchor question that the italic work turned out to be.
 
 Tracing it the rest of the way, one instruction at a time:
 
-* `MIAP[round]` moves point 0 from 9.266 pixels to 10.000. That single move is
+- `MIAP[round]` moves point 0 from 9.266 pixels to 10.000. That single move is
   the whole error -- every other point of the serif is placed relative to this
   one and inherits it.
-* What it rounds is `cvt[2]`, which is 9.2656 in the font and which `prep`
+- What it rounds is `cvt[2]`, which is 9.2656 in the font and which `prep`
   raises to **9.5313** before any glyph runs.
-* That rise is not arbitrary and looks correct. `prep` rounds `cvt[0]` from
+- That rise is not arbitrary and looks correct. `prep` rounds `cvt[0]` from
   9.7188 to 10.0000 -- a rise of 0.2656 -- and shifts the entries related to it
   by the same amount, which is how a font keeps a family of heights in step
   once the first of them has been fitted. `cvt[2]` gets 9.2656 + 0.2656.
-* And 9.5313 rounds to 10. It is a thirty-second of a pixel above the halfway
+- And 9.5313 rounds to 10. It is a thirty-second of a pixel above the halfway
   mark, and that is the entire difference: Windows' value must sit just under
   9.5 and round to 9.
 
@@ -1043,7 +1046,7 @@ size -- and not one of the two thousand three hundred and thirty-seven control
 values across the three fonts differs between the two paths. Worth checking
 before rewriting anything on the strength of it.
 
-What *is* different is the sign. The format takes the sign off a value, does
+What _is_ different is the sign. The format takes the sign off a value, does
 the arithmetic on the magnitude, and puts it back, so a half rounds away from
 zero in both directions. `Math.round` rounds a half upwards, which agrees for
 positive values and disagrees for every negative one: -2.5 is -3 there and -2
@@ -1069,14 +1072,14 @@ value, and it is not a scaling at all. The sequence is:
     GC        read where it ended up
     WCVTP     write that back over the control value
 
-So the control value is *constructed*, by placing a point, interpolating it
+So the control value is _constructed_, by placing a point, interpolating it
 against two others that have already been fitted, and reading it back. That is
 how a font keeps a family of related heights in step: fit the first, then carry
 the rest along with it in proportion. `cvt[0]` is fitted from 9.7188 to
 10.0000, and `cvt[2]` at 9.2656 is carried to 9.2656 x 10 / 9.7188 = 9.5313 --
 which rounds to 10 where Windows lands on 9.
 
-One real omission surfaced while reading it. `IP` places a point *outside* its
+One real omission surfaced while reading it. `IP` places a point _outside_ its
 two references by shifting it, not by extrapolating: it keeps its distance from
 the nearer reference and travels with it. Extrapolating looks reasonable and is
 wrong. Correcting it changed nothing here -- the interpolation that builds
@@ -1098,7 +1101,7 @@ sixty-fourths of a pixel** away.
 Working backwards through the interpolation that built it -- `mulDiv(593, 640,
 622)` in the units the format keeps distances in -- there is only one input
 that could carry an error that size. Changing the raw `cvt[2]` or the fitted
-`cvt[0]` would take forty sixty-fourths to move the answer; changing the *raw*
+`cvt[0]` would take forty sixty-fourths to move the answer; changing the _raw_
 `cvt[0]`, the 622, takes three. So whatever is different is in that value or in
 what produced it, and not in the arithmetic here, which has been checked
 against the reference implementation instruction by instruction.
@@ -1135,8 +1138,8 @@ checked against the specification matches; what is left is not a misunderstandin
 of the format but a discrepancy too small to find by reading.
 
 Two spec omissions were closed while looking, neither of which these glyphs
-touch. `MIRP` places a twilight point being measured *to*, the way `MIAP`
-places one being measured *from* -- an untouched twilight point has always been
+touch. `MIRP` places a twilight point being measured _to_, the way `MIAP`
+places one being measured _from_ -- an untouched twilight point has always been
 at the origin, so a distance measured from one is otherwise whatever the
 reference happens to be. That one is correct and changed nothing here.
 

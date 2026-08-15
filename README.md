@@ -212,3 +212,9 @@ still means something in CI. Errors are reserved for newly introduced problems.
 Likewise, `tsconfig.json` runs with `strict` and `noImplicitAny` off. Class
 members carry `declare` annotations that the migration generated, and are typed
 `any`. Tightening these one flag and one module at a time is the intended path.
+
+## Documentation
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) — how the emulator is put together.
+- [FONTS.md](FONTS.md) — what Windows 3.1 does with fonts, as measured against the real thing.
+- [oracle/README.md](oracle/README.md) — the pipeline that measures it.
