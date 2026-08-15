@@ -548,8 +548,40 @@ the arithmetic checks out against the reference. The error is a third of a pixel
 at step three and a whole pixel by step one, so it is being amplified rather than
 introduced late -- but where it enters is above everything traced.
 
-**Open**, at twelve of 22,056. The next attempt should start at point 11 and
-work upward rather than starting from the advance again.
+Starting again at point 11 and working upward, as that note recommended, added
+three more levels and no answer. Point 11 is pulled off its rounded position by a
+`MIRP` measuring from **point 5**, which `RTHG` places at 36.5 pixels from an
+unhinted 36.969 -- and 36.5 is the nearer half-grid point, so that rounding is
+right. Had point 5 gone to 37.5 instead, every number above it would come out as
+Windows has it. But nothing in the instruction justifies 37.5.
+
+Everything checked since, all of it against the reference implementation:
+
+- **All five round states.** `RTG`, `RTHG`, `RTDG`, `RUTG`, `RDTG` and
+  `SROUND`'s super-rounding, each compared term by term with the reference's
+  formula, including the negative-value path. All correct.
+- **Four arithmetic variants**, swept over the whole corpus: `movePoint`
+  truncating or flooring instead of rounding (13 wrong, worse), and `project`
+  rounding once or truncating (12, unchanged). As written is the best of them.
+- **`DELTAC`.** No exception targets the control value in question, and no
+  exception selects 37 pixels per em at all, so the zero that fires there is
+  correct.
+
+**A rule that is genuinely missing and cannot be tested here.** `MIRP` and
+`MDRP` are both specified to check the distance against the _single width_ --
+`SWV` sets a value and `SWCI` a tolerance, and a distance within the tolerance
+snaps to the value. Both instructions are implemented as setters and the state
+they set is never read: the rule is absent. It makes no difference to any of
+this, because **no font in the installation ever executes either instruction**,
+so the tolerance stays zero and the rule could never fire. It is left unwritten
+rather than written blind, since there is nothing here that could tell whether
+it had been written correctly. **Open**, and a latent gap for any font that does
+use it.
+
+**Open**, at twelve of 22,056. What is left is not a rule that could be found by
+inspection: seven mechanisms have been swept or verified, and the error is a
+third of a pixel entering somewhere above three levels of correct instructions
+and being amplified by the roundings above it.
 
 ### The pattern worth naming
 
