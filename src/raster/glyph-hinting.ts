@@ -193,14 +193,21 @@ export class Hinter {
   declare defaults: any;
 
   declare _ready: boolean;
+  declare roundPhantoms: boolean;
 
   /**
    * @param {TrueTypeFont} font - The font whose programs these are.
    * @param {number} ppem - The size everything is being fitted to.
+   * @param {boolean} roundPhantoms - Whether the advance phantom starts on the
+   *                                  grid, which is what Windows does and what
+   *                                  the rasteriser that filled in `hdmx` did
+   *                                  not. Only the comparison against that
+   *                                  table wants it off.
    */
-  constructor(font, ppem) {
+  constructor(font, ppem, roundPhantoms = true) {
     this.font = font;
     this.ppem = ppem;
+    this.roundPhantoms = roundPhantoms;
     this.scale = ppem / font.unitsPerEm;
 
     /* The size in the units distances are kept in, so a scaling is one whole
@@ -375,9 +382,28 @@ export class Hinter {
      */
     const origin = mulDiv(xMin - leftSideBearing, this.pixels, this.font.unitsPerEm);
 
+    /* The advance phantom starts on the grid.
+     *
+     * Windows rounds it to a whole pixel before the program runs, and the
+     * program can see that it has: the `M` in Arial Italic interpolates a
+     * contour point between the two phantoms, so where the advance one sits
+     * moves ink. **Recorded**, by reading the phantom out of a running Windows
+     * with a glyph whose program is nothing but the readout -- at every size,
+     * what comes back is the scaled advance rounded to a whole number of
+     * pixels.
+     *
+     * `hdmx` says otherwise, and `hdmx` is not Windows: it is a table computed
+     * by whoever built the font, and the rasteriser that filled it in did not
+     * round. Ours reproduces that table 22,051 times out of 22,056 without this
+     * rounding and 21,735 with it -- and reproduces the *recorded pixels* 83
+     * times out of 90 without and 85 with. The pixels are what Windows drew.
+     */
+    const grid = (value) => Math.floor((value + ONE / 2) / ONE) * ONE;
+    const width = origin + mulDiv(advance, this.pixels, this.font.unitsPerEm);
+
     const phantom = [
       { x: origin, y: 0 },
-      { x: origin + mulDiv(advance, this.pixels, this.font.unitsPerEm), y: 0 },
+      { x: this.roundPhantoms ? grid(width) : width, y: 0 },
       { x: 0, y: 0 },
       { x: 0, y: 0 },
     ];

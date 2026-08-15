@@ -706,7 +706,7 @@ export class TrueTypeFont {
    * @returns {number|null} The advance in whole pixels, or null if the glyph
    *                        has no program to run.
    */
-  hintedAdvance(glyph, ppem) {
+  hintedAdvance(glyph, ppem, roundPhantoms = true) {
     const range = this.glyphRange(glyph);
 
     if (!range || !ppem) {
@@ -727,7 +727,7 @@ export class TrueTypeFont {
     }
 
     try {
-      const hinter = this.hinterAt(ppem);
+      const hinter = this.hinterAt(ppem, roundPhantoms);
 
       hinter.hint(
         this.outlineOf(glyph),
@@ -746,14 +746,16 @@ export class TrueTypeFont {
   }
 
   /** The interpreter for a size, built once and kept. */
-  hinterAt(ppem) {
+  hinterAt(ppem, roundPhantoms = true) {
     this._hinters = this._hinters ?? new Map();
 
-    if (!this._hinters.has(ppem)) {
-      this._hinters.set(ppem, new Hinter(this, ppem));
+    const key = roundPhantoms ? ppem : `${ppem}-unrounded`;
+
+    if (!this._hinters.has(key)) {
+      this._hinters.set(key, new Hinter(this, ppem, roundPhantoms));
     }
 
-    return this._hinters.get(ppem);
+    return this._hinters.get(key);
   }
 
   /** A glyph's left side bearing, in font units. */

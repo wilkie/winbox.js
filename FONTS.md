@@ -644,10 +644,22 @@ about the advance itself. Times New Roman's `o`, one of the five still failing,
 is fixed by the rounding: 17 of 18 tabulated sizes to 18, and 57 of 66 measured
 advances to 65.
 
-**Open**: whether Windows 3.1 rounds the phantom for the program's benefit and
-reports the unrounded advance, or rounds throughout. Deciding that needs the
-recorded bitmaps rather than either advance, because only they say where Windows
-actually put the ink.
+**The recorded pixels settle it.** They are the one oracle that is not an
+advance, and the only one that says where Windows actually put the ink:
+
+|                             | glyphs       | pixels missing | pixels invented |
+| --------------------------- | ------------ | -------------- | --------------- |
+| phantom left as scaled      | 83 of 90     | 9              | 2               |
+| **advance phantom rounded** | **85 of 90** | **8**          | **0**           |
+
+Two more glyphs exact, and the two pixels this drew that Windows does not are
+gone. The single-character advances agree at 402 of 412 rather than 391. So the
+rounding is what Windows does, and it is implemented.
+
+`hdmx` is kept as a check with the rounding turned off, because it is still
+worth reproducing: twenty-two thousand answers to the same instruction set from
+an implementation nobody here wrote, and everything it disagrees about now is a
+difference in this interpreter rather than in the phantom.
 
 The second thing the real glyph still says. The bisection that pointed at byte
 340 used a **real** outline with only its program rewritten, so the bounding box
@@ -930,12 +942,13 @@ fitted height.
 | Fixture                                                      | Agreement |
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
-| `font` (2,655 records)                                       | 98.1%     |
-| `glyphs` (90 records)                                        | 92.2%     |
-| `hinting` (412 records)                                      | 94.9%     |
+| `font` (2,655 records)                                       | 98.0%     |
+| `glyphs` (90 records)                                        | 94.4%     |
+| `hinting` (412 records)                                      | 97.6%     |
 
-Of the glyph records, every bitmap and plotter one is pixel-identical. The seven
-that differ are all outline faces.
+Of the glyph records, every bitmap and plotter one is pixel-identical. The five
+that differ are all outline faces, and between them they miss eight pixels
+Windows inks and invent none.
 
 `CreateFont face` agrees on every one of the 2,655 records: whatever Windows
 picks for a request, this picks too. That is the section 2 rules above, all of

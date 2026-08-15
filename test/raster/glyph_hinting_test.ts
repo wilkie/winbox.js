@@ -150,6 +150,23 @@ whenBuilt('the hinting interpreter', () => {
  * say whether the machine is right rather than whether it runs.
  */
 describe('hinted advances against the tables the font ships', () => {
+  /* Run with the advance phantom left where the scaling put it, rather than
+   * rounded onto the grid as Windows rounds it.
+   *
+   * `hdmx` is not a recording of Windows. It is a table computed by whoever
+   * built the font, and the rasteriser that filled it in did not round the
+   * phantom -- so comparing against it means asking this interpreter to do what
+   * that one did. Windows' own answer is in `glyphs.json` and `hinting.json`,
+   * and both are better with the rounding on: 83 recorded glyphs of 90 become
+   * 85, and 391 recorded advances of 412 become 402.
+   *
+   * The table is still worth reproducing. It is twenty-two thousand answers to
+   * the same instruction set from an implementation nobody here wrote, and
+   * everything it disagrees about is a difference in this interpreter rather
+   * than in the phantom.
+   */
+  const UNROUNDED = false;
+
   const present = existsSync(IMAGE) ? it : it.skip;
 
   /** Every `(ppem, glyph, advance)` the table states. */
@@ -182,7 +199,7 @@ describe('hinted advances against the tables the font ships', () => {
       let checked = 0;
 
       for (const row of tabulated(arial)) {
-        const advance = arial.hintedAdvance(row.glyph, row.ppem);
+        const advance = arial.hintedAdvance(row.glyph, row.ppem, UNROUNDED);
 
         // A glyph with no program of its own has nothing to check.
         if (advance === null) {
@@ -211,7 +228,7 @@ describe('hinted advances against the tables the font ships', () => {
       let differed = 0;
 
       for (const row of tabulated(times)) {
-        const advance = times.hintedAdvance(row.glyph, row.ppem);
+        const advance = times.hintedAdvance(row.glyph, row.ppem, UNROUNDED);
 
         if (advance === null) {
           continue;
