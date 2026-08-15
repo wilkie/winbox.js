@@ -108,6 +108,46 @@ static void probeFace(LPCSTR name, HFONT font)
 }
 
 /* A named font at a size, described the way the font probe describes one. */
+/*
+ * Every character of a face at a spread of sizes.
+ *
+ * The six letters above were chosen to exercise particular features and are
+ * enough to say whether a rasteriser is broadly right. They are not enough to
+ * settle a rule: the scan converter's treatment of a stroke too thin to cover a
+ * pixel centre turns on maybe a dozen spans across all of them, and a dozen
+ * examples will fit almost any rule offered. This is the wide net -- a few
+ * hundred glyphs, so that a rule has something to be wrong about.
+ *
+ * Small sizes, because that is where a stroke is thin enough for the question
+ * to arise at all.
+ */
+static void probeWide(LPCSTR face)
+{
+    static const char WIDE[] = "ABEKMNRSWXZabdefgjkmnostwy0123456789";
+    static const int SIZES[] = { 10, 12, 14, 16, 18, 20, 24 };
+
+    int size;
+    int index;
+    char name[64];
+
+    for (size = 0; size < sizeof(SIZES) / sizeof(SIZES[0]); size++) {
+        HFONT font = CreateFont(SIZES[size], 0, 0, 0, FW_NORMAL, 0, 0, 0,
+                                ANSI_CHARSET, OUT_DEFAULT_PRECIS,
+                                CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+                                DEFAULT_PITCH, face);
+
+        wsprintf(name, "\"%s\",h=%d,weight=400,italic=0", (LPSTR)face, SIZES[size]);
+
+        for (index = 0; WIDE[index]; index++) {
+            probeGlyph(name, font, WIDE[index]);
+        }
+
+        if (font) {
+            DeleteObject(font);
+        }
+    }
+}
+
 static void probeSized(LPCSTR face, int height, int weight, BYTE italic)
 {
     char name[64];
@@ -176,6 +216,11 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeSized("Times New Roman", 16, FW_NORMAL, 0);
     probeSized("Times New Roman", 24, FW_NORMAL, 0);
     probeSized("Courier New", 16, FW_NORMAL, 0);
+
+    probeNote("a wide net over the outline faces, for the rules a handful cannot settle");
+    probeWide("Arial");
+    probeWide("Times New Roman");
+    probeWide("Courier New");
 
     probeNote("and the styles, which are synthesised for some faces and not others");
     probeSized("MS Sans Serif", 16, FW_BOLD, 0);

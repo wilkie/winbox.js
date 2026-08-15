@@ -1266,9 +1266,10 @@ const NO_OUTLINE_FONTS =
  * and at the sizes text is read at that decides where about half the ink goes.
  */
 const NO_HINTING =
-  "the outlines are filled without running the font's hinting bytecode, so " +
-  'the shapes are right and roughly half the pixels are not; the bitmap and ' +
-  'stroke faces in this fixture agree exactly';
+  'every bitmap and stroke face agrees exactly, and about three quarters of ' +
+  'the outline glyphs do; what is left is a thousand pixels across two ' +
+  'hundred letters, most of them at the edge of a stroke, and section 6 of ' +
+  'FONTS.md records what has been ruled out';
 
 export const KNOWN_GAPS: Record<string, string> = {
   glyph: NO_HINTING,

@@ -1108,12 +1108,32 @@ fitted height.
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
 | `font` (2,655 records)                                       | 98.0%     |
-| `glyphs` (90 records)                                        | 94.4%     |
+| `glyphs` (846 records)                                       | 76.0%     |
 | `hinting` (618 records)                                      | 98.2%     |
 
-Of the glyph records, every bitmap and plotter one is pixel-identical. The five
-that differ are all outline faces, and between them they miss seven pixels
-Windows inks and invent none.
+Of the glyph records, every bitmap and plotter one is pixel-identical -- all
+forty-two of them, across four faces and two stock handles. That is the control,
+and it still holds.
+
+The outline faces are three quarters right and were reported as ninety-four per
+cent until the probe was widened. The old figure was six characters -- `A`, `W`,
+`g`, `j`, `1` and `.` -- at a handful of sizes, chosen early to exercise
+particular features. Thirty-six characters at seven sizes across the three
+outline faces says something different:
+
+| Face            | Glyphs exact | Pixels missing | Pixels invented |
+| --------------- | ------------ | -------------- | --------------- |
+| Arial           | 221 of 276   | 88             | 194             |
+| Times New Roman | 208 of 264   | 122            | 84              |
+| Courier New     | 166 of 258   | 268            | 296             |
+
+Worth stating plainly: **the number went down because the measurement got
+better.** Six letters agreeing to seven pixels was not evidence that the
+rasteriser was within seven pixels of Windows; it was evidence that those six
+letters were. Every rule in section 6 that was fitted against ninety records --
+the stub threshold above all -- now has eight hundred to answer to, and the
+error is no longer one-sided: 478 pixels missing against 574 invented, where the
+narrow sample had none invented at all.
 
 `CreateFont face` agrees on every one of the 2,655 records: whatever Windows
 picks for a request, this picks too. That is the section 2 rules above, all of
