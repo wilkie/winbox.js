@@ -507,6 +507,8 @@ export class TrueTypeFont {
      * soon as something fits exactly -- there is nothing better to find. The
      * scan that stops early keeps the first of the tie; the scan that runs to
      * the end keeps the last.
+     *
+     * The sizes below the table are the exception, and the loop below says why.
      */
     const consider = (ppem, ascent, descent) => {
       const cell = ascent + descent;
@@ -542,8 +544,23 @@ export class TrueTypeFont {
 
     let exact = false;
 
-    for (let ppem = TrueTypeFont.MIN_PPEM; !exact && ppem < smallest; ppem++) {
-      exact = consider(
+    /* A computed size never ends the search, however well it fits.
+     *
+     * The stop-on-exact rule above is a rule about the *table*, and letting a
+     * size below the table trigger it gets two answers wrong. Courier New asked
+     * for an eight pixel cell fits it at seven pixels per em, computed, and at
+     * eight, tabulated -- and Windows answers eight. Asked for three it fits at
+     * two and at three, both computed, and Windows answers three. Both are the
+     * larger of the tie, where every tie inside the table takes the smaller.
+     *
+     * **Measured**, over all sixteen ties the recording contains: the six that
+     * take the first of the tie are tabulated on both sides, and the only two
+     * exceptions to that are the two above. Stated as a loop it is again the
+     * obvious thing -- the fallback fills the answer in and the table settles
+     * it -- and worth 15 records on `CreateFont`.
+     */
+    for (let ppem = TrueTypeFont.MIN_PPEM; ppem < smallest; ppem++) {
+      consider(
         ppem,
         Math.round((this.ascender * ppem) / this.unitsPerEm),
         Math.round((this.descender * ppem) / this.unitsPerEm)

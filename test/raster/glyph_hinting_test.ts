@@ -256,3 +256,96 @@ describe('hinted advances against the tables the font ships', () => {
     120000
   );
 });
+
+/**
+ * Every glyph of every installed outline font, run to completion.
+ *
+ * The interpreter refuses an instruction it does not implement rather than
+ * guessing at it, and a glyph that refuses falls back to an unhinted outline --
+ * which looks like a rasteriser being slightly wrong rather than an interpreter
+ * being absent. `ISECT` hid there for a long time: it is used by `X` and `4` in
+ * all three text faces and by nothing else the recorded fixtures happened to
+ * hold, so the only evidence of it missing was a handful of letters that came
+ * out badly.
+ *
+ * This is the check that would have found it in a second. It says nothing about
+ * whether the answers are right -- `hdmx` above says that -- only that every
+ * program the installation contains runs to the end.
+ */
+describe('the whole installation', () => {
+  const present = existsSync(IMAGE) ? it : it.skip;
+
+  present(
+    'runs every glyph of every outline font without refusing an instruction',
+    async function () {
+      const bytes = new Uint8Array(readFileSync(IMAGE));
+      const disk = new Disk(bytes.byteLength, 512, 32768);
+
+      disk.load(bytes);
+
+      const fileSystem: any = new FAT16(disk);
+      await fileSystem.mount();
+
+      let ran = 0;
+
+      const refused: string[] = [];
+
+      for (const entry of await fileSystem.list(['WINDOWS', 'SYSTEM'])) {
+        if (!/\.TTF$/i.test(entry.info.name)) {
+          continue;
+        }
+
+        const file = await fileSystem.open(['WINDOWS', 'SYSTEM', entry.info.name]);
+        const font: any = new TrueTypeFont(new Uint8Array(await file.read(0, file.size)));
+
+        for (let glyph = 0; glyph < (font.has('maxp') ? font.unsigned('maxp', 4) : 0); glyph++) {
+          const range = font.glyphRange(glyph);
+
+          if (!range) {
+            continue;
+          }
+
+          const contours = font._view.getInt16(range.start, false);
+
+          // A composite carries no program of its own to run.
+          if (contours < 0) {
+            continue;
+          }
+
+          const at = range.start + 10 + contours * 2;
+          const length = font._view.getUint16(at, false);
+
+          if (!length) {
+            continue;
+          }
+
+          for (const ppem of [8, 11, 16, 24, 40]) {
+            ran++;
+
+            try {
+              new Hinter(font, ppem).hint(
+                font.outlineOf(glyph),
+                font.advanceOf(glyph),
+                font.bearingOf(glyph),
+                font._view.getInt16(range.start + 2, false),
+                font._view,
+                at + 2,
+                length
+              );
+            } catch (trouble) {
+              if (refused.length < 8) {
+                refused.push(`${entry.info.name} glyph ${glyph} at ${ppem}: ${trouble}`);
+              }
+            }
+          }
+        }
+      }
+
+      expect(refused).toEqual([]);
+
+      // Eleven fonts, every glyph that carries a program, at five sizes each.
+      expect(ran).toBeGreaterThan(8000);
+    },
+    300000
+  );
+});

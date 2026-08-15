@@ -335,6 +335,30 @@ The ppem each row implies is confirmed independently by the widths, which are
 scaled from it by a different constant, so this does not rest on the leading
 alone.
 
+**A size below the table never ends the search, however exactly it fits.** The
+sizes `VDMX` does not cover are computed rather than looked up -- the section
+below says how -- and the stop-on-exact rule turns out to be a rule about the
+table alone. Courier New asked for an eight pixel cell fits it at seven pixels
+per em computed and at eight tabulated, and Windows answers eight; asked for
+three it fits at two and at three, both computed, and Windows answers three.
+Both take the larger of the tie where every tie inside the table takes the
+smaller.
+
+| Request       | Tie                  | Cell | Windows |               |
+| ------------- | -------------------- | ---- | ------- | ------------- |
+| Courier New 3 | 2, 3 (both below)    | 3    | **3**   | exact, larger |
+| Courier New 8 | 7 below, 8 in `VDMX` | 8    | **8**   | exact, larger |
+
+**Measured**, over all sixteen ties the recording contains: the six that take the
+first of the tie are tabulated on both sides, the nine that fall short take the
+last as the rule already said, and these two are the whole of the exception.
+
+It is worth being clear about why this was hidden. Every earlier tie came from
+Arial or Times New Roman, and those two are answered by a strike below twelve
+pixels -- so the only face that ever reaches the computed range through a real
+request is Courier New, and the only sizes at which it ties there are three and
+eight. Two records out of 2,655, and they carry a rule.
+
 **A requested `lfWidth` gives the glyphs a horizontal pixel size of their own.**
 It asks for the average character to come out that wide, and Windows answers by
 scaling the outline to a second size rather than by stretching what the height
@@ -1029,6 +1053,25 @@ compensations together from -24 to +40 sixty-fourths.
 Zero and zero, and nothing else is close. The same conclusion as before, now
 resting on three orders of magnitude more evidence.
 
+### The instruction set is complete for this installation
+
+Every glyph of every TrueType face installed by Windows 3.1 -- eleven files,
+including Symbol and Wingdings -- runs to the end of its program at eight, eleven,
+sixteen, twenty-four and forty pixels per em. **9,020 runs, none refused.**
+
+This is a cheap check and it should have been written far earlier. The
+interpreter refuses an instruction it does not implement rather than guessing,
+and a glyph that refuses falls back to an unhinted outline -- which reads as a
+rasteriser being slightly wrong rather than an interpreter being absent. `ISECT`
+hid there for a long time on exactly that: `X` and `4` use it in all three text
+faces and nothing else does, so the only evidence of the missing instruction was
+a few letters coming out badly, and the `hdmx` check that would have caught it
+skips any glyph whose program cannot run -- the absence was removing its own
+evidence.
+
+The check says nothing about whether the answers are right; `hdmx` says that. It
+says only that no question is going unasked.
+
 ---
 
 ## 8. What is not known
@@ -1107,9 +1150,9 @@ fitted height.
 | Fixture                                                      | Agreement |
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
-| `font` (2,655 records)                                       | 98.0%     |
+| `font` (2,655 records)                                       | 98.5%     |
 | `glyphs` (846 records)                                       | 79.4%     |
-| `hinting` (618 records)                                      | 98.2%     |
+| `hinting` (618 records)                                      | 98.4%     |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical -- all
 forty-two of them, across four faces and two stock handles. That is the control,
@@ -1123,9 +1166,21 @@ outline faces says something different:
 
 | Face            | Glyphs exact | Pixels missing | Pixels invented |
 | --------------- | ------------ | -------------- | --------------- |
-| Arial           | 221 of 276   | 88             | 194             |
-| Times New Roman | 208 of 264   | 122            | 84              |
-| Courier New     | 166 of 258   | 268            | 296             |
+| Arial           | 232 of 276   | 22             | 64              |
+| Times New Roman | 216 of 264   | 43             | 30              |
+| Courier New     | 176 of 258   | 161            | 226             |
+
+Split by size instead, the error is not spread across them at all. **Courier New
+at a ten pixel cell is 0 of 36 and 301 wrong pixels -- more than half of every
+wrong pixel in the fixture, at one face and one size.** Arial and Times at that
+same cell are 36 of 36, because below twelve pixels they are answered by a
+strike and only Courier New stays on its outline. So the largest single piece of
+the rasterisation gap is one face at eight pixels per em, and it is a hinting
+question rather than a scan-conversion one: the fill of the outline the
+interpreter hands over is right -- traced by hand at one scanline of the `E`, the
+non-zero winding really does cover the three pixels Windows leaves white -- and
+the outline handed over is wrong. Windows keeps a one pixel stem where the
+interpreter collapses it into the arm beside it. **Open.**
 
 **`ISECT` was missing, and the wide net is what found it.** Opcode 0x0F puts a
 point where two lines cross, and `X` and `4` use it in all three outline faces --
@@ -1159,9 +1214,10 @@ wrong, and the rate _fell_ to 83.3% on the larger set. The gap was always there;
 until the probe asked, it was not being counted. Answering it took the figure to
 93.3%.
 
-What is left is fifty-one records, and most of them are no longer a font-mapping
-or metric question at all. Thirty are the extent of a measured string, which is a
-sum of per-glyph advances -- and those advances now come from running the hinting
-programs, so what remains of the extent gap is the same twenty-eight advances
-section 5 records against `hdmx`, reached by a different route. Fixing the
-interpreter fixes both.
+What is left is thirty-nine records, and most of them are no longer a
+font-mapping or metric question at all. Twenty-eight are the extent of a measured
+string, which is a sum of per-glyph advances -- and those advances now come from
+running the hinting programs, so what remains of the extent gap is the same
+advances section 5 records against `hdmx`, reached by a different route. Fixing
+the interpreter fixes both. Eight more are widths, two are the `tmItalic` byte of
+a synthesised slant on a strike, and one is a height.
