@@ -768,10 +768,63 @@ interpolating a contour point between the two phantoms, and it is the phantoms,
 not `IP`, that the two implementations must disagree about. **Open**, and
 pointed somewhere new.
 
+### Reading an intermediate value out of a running Windows
+
+Everything else in this document was established from what a program can ask
+for. The interpreter's interior is not askable: a glyph program moves several
+dozen points and hands back one number, and no API asks it where any of the
+others went.
+
+The way in is to make the one number that does come back say something else.
+Take the real font, rewrite the end of one glyph's program so that it moves the
+advance phantom onto a point of interest and multiplies, and `GetTextExtent` of
+that letter now reports that point's position, magnified, at every size in a
+single recording. `scripts/oracle/fabricate.mjs` builds them; the recordings
+live in `oracle/fixtures/fabricated/` and `test/raster/fabricated_test.ts`
+replays them.
+
+**Four things have to be right for a reading to mean anything**, and each was
+learned by getting it wrong first:
+
+- **The cut has to be at a statically balanced point.** The readout needs room,
+  so the tail of the program comes off -- and the first attempt cut inside a
+  conditional, which put the readout in a branch half the sizes never entered.
+  Those sizes reported the letter's ordinary width, which looks like a reading
+  and is not one.
+- **Sizes `hdmx` tabulates say nothing.** The fabrication rewrites a program and
+  not a table, so at those sizes Windows answers from the table and never runs
+  the readout. That the dead sizes are _exactly_ the tabulated ones is a
+  confirmation of the order the two are consulted in, arrived at sideways.
+- **Sizes below a twelve pixel cell say nothing**, because the mapper answers
+  with a strike rather than with this face.
+- **The readout itself overflows.** The coordinate is multiplied by the
+  magnification and by sixty-four, and `GetTextExtent` returns a sixteen bit
+  word. Past about eight thousand sixty-fourths it wraps, and Windows reports
+  the wrap as a negative number.
+
+And there has to be a control. `ariali-m-constant` reports a fixed 16 instead of
+a point: every readable size must come back 16, and if the channel were not
+working it would come back with the letter's own width instead. Four of the
+fifty recordings fail exactly that way -- `cour-one-p17`, `p18`, `p22` and `p27`
+are byte-identical to the unfabricated recording at every size, so the font
+never reached the rasteriser. They are kept, and the test names them, because a
+recording that failed is worth knowing about and the failure is not visible in
+the file.
+
+**What it bought.** Arial Italic's `M` had its advance a pixel out at seven of
+ninety-nine sizes, and sweeping every arithmetic convention in the interpreter
+moved none of them. Reading its interior points bisected the divergence to two
+bytes of its program -- point 5 is right after byte 340 and wrong after byte
+341 -- and byte 340 is an `IP`. Reading that instruction's inputs said the
+instruction was fine and its arguments were not.
+
+That took `hinting` from 611 of 618 to **all 618**, and `glyphs` from 691 to 701. Sixteen recordings of five points at fifty readable sizes each now agree
+without exception.
+
 ### The pattern worth naming
 
-Four times in this session a fault has presented as "this instruction is wrong"
-and turned out to be "this instruction is fed the wrong number":
+Five times now a fault has presented as "this instruction is wrong" and turned
+out to be "this instruction is fed the wrong number":
 
 | Looked like                                   | Actually was                            |
 | --------------------------------------------- | --------------------------------------- |
@@ -779,6 +832,13 @@ and turned out to be "this instruction is fed the wrong number":
 | `MIRP` moving a phantom point it should not   | `MDRP`/`MIRP` minimum-distance sign     |
 | One pixel of internal leading, a rounding bug | reading the wrong `VDMX` ratio group    |
 | `ROUND` producing 128 where Windows has 64    | `DIV` rounding where it should truncate |
+| `IP` interpolating to the wrong place         | `IP` fed coordinates already quantised  |
+
+The last of those is the sharpest case of the pattern there is. `IP`'s own
+arithmetic was swept over five rounding conventions and not one of them moved
+the answer by a single pixel, because the arithmetic was never wrong -- the two
+numbers going into the ratio had been rounded to sixty-fourths before it saw
+them.
 
 Each was localised by tracing one instruction and each was solved one or two
 levels upstream of it. A wrong answer from a correct instruction looks exactly
@@ -1225,6 +1285,24 @@ in the glyph against one in the twilight zone compares two different things.
 extrapolating: it keeps its distance from the nearer one and travels with it.
 **Derived.**
 
+**`IP` takes its proportion from the design coordinates, not from the scaled
+ones.** The scaled originals have already been quantised to sixty-fourths of a
+pixel, and a ratio computed from two quantised numbers has lost exactly the
+precision the ratio needed. There are 2,048 design units to the em and no
+quantisation at all, so the proportion comes out right and only the result is
+rounded.
+
+**Recorded**, and this is the one thing in the whole document that no amount of
+reasoning about outputs could have reached -- it took reading an intermediate
+value out of a running Windows. The next section is how.
+
+The phantom points need design coordinates of their own for this, which is not
+obvious until it bites: a program is free to interpolate between them, and
+Arial Italic's `M` does. Their design positions are `xMin - lsb` and that plus
+the unscaled advance. A twilight point has no design coordinates at all, so its
+scaled position stands in -- `IP` only ever divides one by another, and the
+units cancel as long as they agree.
+
 **`IUP` moves only untouched points.** Interpolating over a point the program
 moved deliberately drags it back, undoing most of the fitting. **Derived.**
 
@@ -1410,8 +1488,8 @@ fitted height.
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
 | `font` (2,655 records)                                       | 99.96%    |
-| `glyphs` (846 records)                                       | 81.7%     |
-| `hinting` (618 records)                                      | 98.9%     |
+| `glyphs` (846 records)                                       | 82.9%     |
+| `hinting` (618 records)                                      | **100%**  |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical -- all
 forty-two of them, across four faces and two stock handles. That is the control,
@@ -1425,9 +1503,9 @@ outline faces says something different:
 
 | Face            | Glyphs exact | Pixels missing | Pixels invented |
 | --------------- | ------------ | -------------- | --------------- |
-| Arial           | 245 of 276   | 12             | 35              |
-| Times New Roman | 214 of 264   | 46             | 31              |
-| Courier New     | 184 of 258   | 254            | 40              |
+| Arial           | 248 of 276   | 11             | 34              |
+| Times New Roman | 217 of 264   | 41             | 28              |
+| Courier New     | 188 of 258   | 249            | 36              |
 
 Split by size instead, the error is not spread across them at all. **Courier New
 at a ten pixel cell is 0 of 36 and 301 wrong pixels -- more than half of every
@@ -1460,7 +1538,7 @@ better.** Six letters agreeing to seven pixels was not evidence that the
 rasteriser was within seven pixels of Windows; it was evidence that those six
 letters were. Every rule in section 6 that was fitted against ninety records --
 the stub threshold above all -- now has eight hundred to answer to, and the
-error is no longer one-sided: 312 pixels missing against 106 invented, where the
+error is no longer one-sided: 301 pixels missing against 98 invented, where the
 narrow sample had none invented at all.
 
 `CreateFont face` agrees on every one of the 2,655 records: whatever Windows
@@ -1478,5 +1556,7 @@ until the probe asked, it was not being counted. Answering it took the figure to
 What is left is **one record of 2,655**: a ten character string of Times New
 Roman Italic at thirty-four pixels per em, one pixel too wide. Neither `hdmx`
 nor `LTSH` covers that size for the glyph in question, so the interpreter has to
-answer for itself and is a pixel out -- the same fault the `hinting` fixture's
-seven remaining records are, reached by a different route.
+answer for itself.
+
+The `hinting` fixture, which asks the same question of single letters at
+ninety-nine sizes each, now agrees on **all 618**.

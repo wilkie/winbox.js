@@ -1273,10 +1273,6 @@ const NO_HINTING =
 export const KNOWN_GAPS: Record<string, string> = {
   glyph: NO_HINTING,
   'CreateFont extent': NO_OUTLINE_FONTS,
-  advance:
-    'seven cell heights of one letter -- Arial Italic capital M, whose hinted ' +
-    'advance is a pixel out at seven of the ninety-nine sizes swept, pinned ' +
-    'to a single `IP` in its glyph program',
 };
 
 /**

@@ -149,6 +149,8 @@ export class Zone {
   declare y: number[];
   declare originalX: number[];
   declare originalY: number[];
+  declare unscaledX: number[];
+  declare unscaledY: number[];
   declare onCurve: boolean[];
   declare touchedX: boolean[];
   declare touchedY: boolean[];
@@ -159,6 +161,8 @@ export class Zone {
     this.y = new Array(count).fill(0);
     this.originalX = new Array(count).fill(0);
     this.originalY = new Array(count).fill(0);
+    this.unscaledX = new Array(count).fill(0);
+    this.unscaledY = new Array(count).fill(0);
     this.onCurve = new Array(count).fill(true);
     this.touchedX = new Array(count).fill(false);
     this.touchedY = new Array(count).fill(false);
@@ -365,6 +369,8 @@ export class Hinter {
       for (const point of contour) {
         zone.x.push(mulDiv(point.x, this.pixels, this.font.unitsPerEm));
         zone.y.push(mulDiv(point.y, this.pixels, this.font.unitsPerEm));
+        zone.unscaledX.push(point.x);
+        zone.unscaledY.push(point.y);
         zone.onCurve.push(point.on);
         zone.touchedX.push(false);
         zone.touchedY.push(false);
@@ -408,9 +414,28 @@ export class Hinter {
       { x: 0, y: 0 },
     ];
 
-    for (const point of phantom) {
+    /* The phantoms in design units, which is not the same list.
+     *
+     * `IP` takes its proportion from the design coordinates, and a program is
+     * free to interpolate between the phantoms -- Arial Italic's `M` does
+     * exactly that. Leaving them in pixels while every other point is in font
+     * units puts a ratio of two different things in the middle of the
+     * calculation.
+     */
+    const originUnits = xMin - leftSideBearing;
+
+    const design = [
+      { x: originUnits, y: 0 },
+      { x: originUnits + advance, y: 0 },
+      { x: 0, y: 0 },
+      { x: 0, y: 0 },
+    ];
+
+    for (const [index, point] of phantom.entries()) {
       zone.x.push(point.x);
       zone.y.push(point.y);
+      zone.unscaledX.push(design[index].x);
+      zone.unscaledY.push(design[index].y);
       zone.onCurve.push(false);
       zone.touchedX.push(false);
       zone.touchedY.push(false);
@@ -1511,6 +1536,13 @@ export class Hinter {
 
         zone.originalX[index] = zone.x[index];
         zone.originalY[index] = zone.y[index];
+
+        /* A twilight point has no design coordinates of its own, so its scaled
+         * position stands in for them. `IP` only ever divides one by another,
+         * so the units cancel as long as they agree.
+         */
+        zone.unscaledX[index] = zone.x[index];
+        zone.unscaledY[index] = zone.y[index];
       }
 
       const current = this.project(zone.x[index], zone.y[index]);
@@ -1711,23 +1743,33 @@ export class Hinter {
       const zoneZero = this.zone(state.zp0);
       const zoneOne = this.zone(state.zp1);
 
-      const originalOne = this.projectDual(
-        zoneZero.originalX[state.rp1],
-        zoneZero.originalY[state.rp1]
-      );
-      const originalTwo = this.projectDual(
-        zoneOne.originalX[state.rp2],
-        zoneOne.originalY[state.rp2]
-      );
+      /* The proportion is taken between the two references, and **in design
+       * units rather than in the scaled originals**.
+       *
+       * The scaled originals have already been quantised to sixty-fourths of a
+       * pixel, and interpolating a ratio out of two quantised numbers loses
+       * exactly the precision the ratio needed. Design units have not been
+       * quantised at all -- there are 2,048 of them to the em -- so the
+       * proportion comes out right and only the result is rounded.
+       */
+      const design = (zone, index) =>
+        this.projectDual(zone.unscaledX[index], zone.unscaledY[index]);
+
+      const originalOne = design(zoneZero, state.rp1);
+      const originalTwo = design(zoneOne, state.rp2);
 
       const currentOne = this.project(zoneZero.x[state.rp1], zoneZero.y[state.rp1]);
       const currentTwo = this.project(zoneOne.x[state.rp2], zoneOne.y[state.rp2]);
+
+      // Design units into pixels, for a point that falls outside the two.
+      const scaled = (value) => mulDiv(value, this.pixels, this.font.unitsPerEm);
 
       while (count-- > 0) {
         const index = this.pop();
         const zone = this.zone(state.zp2);
 
-        const original = this.projectDual(zone.originalX[index], zone.originalY[index]);
+        const original = design(zone, index);
+
         const current = this.project(zone.x[index], zone.y[index]);
 
         /* A point between the two references is placed proportionally: the gap
@@ -1745,9 +1787,9 @@ export class Hinter {
         let wanted;
 
         if (ascending ? original <= originalOne : original >= originalOne) {
-          wanted = currentOne + (original - originalOne);
+          wanted = currentOne + scaled(original - originalOne);
         } else if (ascending ? original >= originalTwo : original <= originalTwo) {
-          wanted = currentTwo + (original - originalTwo);
+          wanted = currentTwo + scaled(original - originalTwo);
         } else {
           wanted =
             currentOne +
@@ -1921,6 +1963,10 @@ export class Hinter {
 
         zoneOne.x[index] = zoneOne.originalX[index];
         zoneOne.y[index] = zoneOne.originalY[index];
+
+        // The same stand-in as `MIAP` uses; see there.
+        zoneOne.unscaledX[index] = zoneOne.originalX[index];
+        zoneOne.unscaledY[index] = zoneOne.originalY[index];
       }
 
       const original = this.projectDual(
