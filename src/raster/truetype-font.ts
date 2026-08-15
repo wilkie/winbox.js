@@ -663,9 +663,11 @@ export class TrueTypeFont {
       );
 
       /* The points come back already in pixels, so the caller must not scale
-       * them again -- which is what `scaled` says.
+       * them again -- which is what `scaled` says. `dropout` is what the font's
+       * own `SCANCTRL` asked for at this size, which the rasteriser needs and
+       * only the interpreter has seen.
        */
-      return { contours: fitted, hinted: true, scaled: true };
+      return { contours: fitted, hinted: true, scaled: true, dropout: hinter.dropout };
     } catch {
       return { contours, hinted: false, scaled: false };
     }

@@ -997,9 +997,22 @@ export class Hinter {
         this.pop();
         return at;
 
-      case 0x85: // SCANCTRL
-      case 0x8d: // SCANTYPE
-        this.pop();
+      /* SCANCTRL and SCANTYPE: what the scan converter should do about strokes
+       * too thin to cover a pixel centre. Neither moves a point, so the
+       * interpreter only has to remember them for the rasteriser to read.
+       *
+       * `SCANCTRL`'s low byte is a size and its bit 8 says "switch dropout
+       * control on at or below that size"; bits 9 and 10 do the same for
+       * rotated and stretched text, which nothing here produces. `SCANTYPE`
+       * chooses among the rules -- all four installed families ask for 1,
+       * simple dropout control excluding stubs.
+       */
+      case 0x85:
+        this.scanControl = this.pop();
+        return at;
+
+      case 0x8d:
+        this.scanType = this.pop();
         return at;
 
       /* -- functions -- */
@@ -1863,6 +1876,24 @@ export class Hinter {
     }
 
     move(Math.round((steps * ONE) / (1 << state.deltaShift)));
+  }
+
+  /**
+   * Whether the scan converter should rescue dropouts at this size.
+   *
+   * Read after the programs have run, since `prep` sets it and a glyph program
+   * may set it again. Only the size condition is implemented: the other two ask
+   * about rotated and stretched text, and this draws neither.
+   */
+  get dropout() {
+    const control = this.scanControl ?? 0;
+
+    // Bit 11 turns it off above the size, and outranks bit 8 turning it on.
+    if (control & 0x800 && this.ppem > (control & 0xff)) {
+      return false;
+    }
+
+    return !!(control & 0x100) && this.ppem <= (control & 0xff);
   }
 
   /** Runs a defined function. */

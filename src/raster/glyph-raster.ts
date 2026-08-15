@@ -22,6 +22,22 @@
 const CURVE_STEPS = 8;
 
 /**
+ * How wide a span has to be before dropout control will rescue it.
+ *
+ * `SCANTYPE` 1, which all four installed families ask for, is "simple dropout
+ * control **excluding stubs**", and a stub is the tapering tip of a stroke
+ * rather than the stroke itself -- the point of a `1`'s flag, the top of a
+ * `W`'s diagonal. Inking those puts a pixel where Windows leaves none.
+ *
+ * Half a pixel separates the two: the sampling interval, and the only value
+ * here with a reason behind it rather than a fit. **Measured**, but the peak is
+ * broad -- anything from 0.3 to 0.5 agrees on the same 79 of 90 recorded
+ * glyphs, so the recording pins the rule and not the number. Below 0.3 the
+ * stubs come back; above 0.5 real dropouts start being refused.
+ */
+const STUB = 0.5;
+
+/**
  * Flattens one contour into a closed polygon.
  *
  * @param {Array} contour - Points, each `{x, y, on}` in font units.
@@ -107,7 +123,7 @@ export function flatten(contour) {
  * @returns {Uint8Array} One byte per pixel, non-zero where inked.
  */
 export function fill(contours, options) {
-  const { scale, originX = 0, originY = 0, width, height } = options;
+  const { scale, originX = 0, originY = 0, width, height, dropout = false } = options;
 
   const pixels = new Uint8Array(width * height);
 
@@ -177,10 +193,37 @@ export function fill(contours, options) {
       const from = crossings[index].x;
       const to = crossings[index + 1].x;
 
-      for (let column = Math.ceil(from - 0.5); column < to - 0.5; column++) {
-        if (column >= 0 && column < width) {
-          pixels[row * width + column] = 1;
+      const first = Math.ceil(from - 0.5);
+
+      if (first < to - 0.5) {
+        for (let column = first; column < to - 0.5; column++) {
+          if (column >= 0 && column < width) {
+            pixels[row * width + column] = 1;
+          }
         }
+
+        continue;
+      }
+
+      /* Dropout control: this span turned on no pixel at all.
+       *
+       * A stroke thinner than the gap between two pixel centres can pass
+       * between them and leave nothing behind, and the letter comes apart --
+       * the crossbar of an `A` loses its end, a thin diagonal breaks in half.
+       * Where that happens one pixel is turned on anyway. The fonts ask for it
+       * outright: Arial's `prep` sets `SCANCTRL` to 0x111, Times New Roman's to
+       * 0x17c and Courier New's to 0x12c, which are the same instruction saying
+       * "below seventeen, a hundred and twenty-four, and forty-four pixels per
+       * em" respectively. All three set `SCANTYPE` to 1.
+       */
+      if (!dropout || to - from < STUB) {
+        continue;
+      }
+
+      const column = Math.floor(from);
+
+      if (column >= 0 && column < width) {
+        pixels[row * width + column] = 1;
       }
     }
   }

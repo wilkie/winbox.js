@@ -440,19 +440,11 @@ Twenty-eight advances still differ, across `j`, `M`, `I`, `k`, `m`, `o`, `w`,
 `y` and three glyphs outside the ANSI range, with no cluster among them: mostly
 single sizes, mostly one pixel. **Open.**
 
-Of the twelve recorded glyphs that still differ, Times New Roman's `W` at
-sixteen pixels is now wrong in **one pixel**, on one row, in the middle of a
-thin diagonal:
-
-```
-    windows                   ours
-    ....#.#..#.#..........    ....#....#.#..........
-```
-
-That is not hinting -- the outline is in the right place, and a stroke a
-fraction of a pixel wide failed to ink a cell. It is dropout control, which
-section 6 does not implement at all, and it is the next thing to measure rather
-than the next thing to reason about.
+Of the recorded glyphs that still differ, Times New Roman's `W` at sixteen
+pixels was wrong in one pixel on one row, in the middle of a thin diagonal --
+the outline in the right place and a stroke a fraction of a pixel wide failing
+to ink a cell. That was dropout control, and section 6 now measures and
+implements it.
 
 **A string is measured with these advances where `hdmx` has no entry for the
 size.** Arial's table covers 11, 12, 13, 15, 16, 17, 19, 21, 24, 27, 29, 32, 33,
@@ -480,6 +472,53 @@ ANSI variable and ANSI fixed fonts, and of MS Sans Serif and Courier asked for
 by name. **Recorded.** This is the control that says the comparison is sound
 rather than accidentally lenient, and it had to be established before any
 outline number meant anything.
+
+### Dropout control
+
+A stroke thinner than the gap between two pixel centres can pass between them
+and leave nothing behind. The letter then comes apart -- the crossbar of an `A`
+loses its end, a thin diagonal breaks in half -- and the scan converter turns on
+one pixel anyway to prevent it.
+
+**The fonts ask for this outright, and each asks for something different.**
+Read out of `prep` by an interpreter that records the instruction instead of
+discarding it:
+
+| Font            | `SCANCTRL` | Means                            | `SCANTYPE` |
+| --------------- | ---------- | -------------------------------- | ---------- |
+| Arial           | `0x111`    | on at 17 pixels per em and below | 1          |
+| Times New Roman | `0x17c`    | on at 124 and below              | 1          |
+| Courier New     | `0x12c`    | on at 44 and below               | 1          |
+
+**Recorded.** The low byte is the size, bit 8 says "switch on at or below it".
+Type 1 is simple dropout control **excluding stubs**.
+
+**The stub rule is the whole of the difficulty.** Implemented without it,
+dropout control fixes six of the fourteen pixels Windows inks and we did not,
+and invents four Windows does not ink -- a wash, and a worse kind of wrong,
+since inventing ink is more visible than losing it. The four are all at
+_tapering tips_: the point of a `1`'s flag, the top of a `W`'s diagonal. Those
+are the stubs, and they are what type 1 excludes.
+
+Refusing spans narrower than **half a pixel** separates them. **Measured**, but
+honestly: the peak is broad, and 0.3 through 0.5 all agree on the same 79 of 90
+recorded glyphs. The recording pins the rule and not the number; half a pixel is
+chosen because it is the sampling interval and so the only value with a reason
+behind it rather than a fit. Below 0.3 the stubs return; above 0.5 real dropouts
+start being refused.
+
+**Sweeping rows is enough, and sweeping columns is not the other half.** A
+stroke can be too shallow to cover a row centre as easily as too narrow to cover
+a column one, and a row sweep provably cannot see the first kind -- every
+scanline either crosses such a stroke properly or misses it entirely. So a
+column sweep ought to be needed. It is not: added with the same stub rule it
+rescues nothing and inks one pixel Windows leaves blank. **Measured**, and
+against expectation, which is why it is written down rather than kept.
+
+What it would have rescued -- the flag of a Courier New `1` at thirteen pixels
+per em, two pixels Windows draws and this does not -- stays **open**. Windows
+gets those pixels by some route this does not have, and a column sweep is not
+it.
 
 ---
 
@@ -641,11 +680,12 @@ fitted height.
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
 | `font` (2,655 records)                                       | 95.9%     |
-| `glyphs` (90 records)                                        | 86.7%     |
+| `glyphs` (90 records)                                        | 87.8%     |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical. The
-twelve that differ are all outline faces, and several are now a single pixel of
-dropout rather than a misplaced stroke.
+eleven that differ are all outline faces, and they differ by seventeen pixels in
+total across all of them -- nine Windows inks that we do not, eight we ink that
+it does not.
 
 `CreateFont face` agrees on every one of the 2,655 records: whatever Windows
 picks for a request, this picks too. That is the section 2 rules above, all of

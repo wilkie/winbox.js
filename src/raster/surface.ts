@@ -347,6 +347,7 @@ export class Surface {
           originY: baseline,
           width: this.width,
           height: this.height,
+          dropout: true,
         });
 
         for (let row = 0; row < this.height; row++) {
