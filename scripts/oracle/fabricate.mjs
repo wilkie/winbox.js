@@ -1022,6 +1022,64 @@ export const FABRICATIONS = [
     describe: "Arial Italic's M reporting point 5 after 340 bytes of its program",
   }),
 
+  /* The two phantom points, which is what the `IP` at byte 340 interpolates
+   * between: the `M` has twenty-five points, so 25 and 26 are phantom 0 and
+   * phantom 1. Read at the start and either side of that instruction.
+   */
+  reporter('ariali-m-p25-cut0', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 25,
+    cut: 0,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 25 after 0 bytes of its program",
+  }),
+
+  reporter('ariali-m-p26-cut0', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 26,
+    cut: 0,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 26 after 0 bytes of its program",
+  }),
+
+  reporter('ariali-m-p25-cut340', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 25,
+    cut: 340,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 25 after 340 bytes of its program",
+  }),
+
+  reporter('ariali-m-p26-cut340', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 26,
+    cut: 340,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 26 after 340 bytes of its program",
+  }),
+
+  reporter('ariali-m-p25-cut341', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 25,
+    cut: 341,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 25 after 341 bytes of its program",
+  }),
+
+  reporter('ariali-m-p26-cut341', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 26,
+    cut: 341,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 26 after 341 bytes of its program",
+  }),
+
   /* The bracket the bisection over Arial Italic's `M` closed on. Reading point
    * 10 after 344 bytes of its program agrees with Windows at every size and
    * after 359 disagrees at six more, so whatever differs is in those fifteen

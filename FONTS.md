@@ -601,7 +601,55 @@ and the slope decoded to 67 sixty-fourths per pixel per em, which is exactly the
 contribute. A wrong instrument does not produce noise. It produces a clean
 answer to a question nobody asked.
 
-The second is what the real glyph still says. The bisection that pointed at byte
+#### The advance phantom is rounded, and `hdmx` is a different rasteriser
+
+Chasing the phantoms answered a question and raised a better one.
+
+The `IP` at byte 340 interpolates between `rp1` = 26 and `rp2` = 25, and the `M`
+has twenty-five points, so those are phantom 1 and phantom 0. Reading both
+directly: phantom 0 agrees at 59 of 60 sizes at every cut. **Phantom 1 disagrees
+at 53 of 60, from cut zero -- before a single instruction has run.**
+
+And Windows' values are whole pixels. Reading phantom 1 with nothing else in the
+program at all:
+
+| ppem | scaled advance | ours | Windows          |
+| ---- | -------------- | ---- | ---------------- |
+| 10   | 533 (8.33 px)  | 533  | **512 = 8 px**   |
+| 20   | 1066 (16.66)   | 1066 | **1088 = 17 px** |
+| 22   | 1173 (18.33)   | 1173 | **1152 = 18 px** |
+| 45   | 2399 (37.48)   | 2399 | **2368 = 37 px** |
+
+`8 × round(scaled advance to whole pixels)` reproduces Windows exactly at every
+size the readout is visible at. **The advance phantom is rounded to the grid
+before the glyph program runs.** **Recorded**, directly, with no inference in
+between.
+
+**And implementing it costs 5 wrong `hdmx` advances and gains 321.** Both of
+those are true and they are not in conflict, because they are measurements of
+two different rasterisers:
+
+- `hdmx` is a table **baked into the font file by whoever built it**. It records
+  what the builder's rasteriser produced. Our interpreter reproduces it 22,051
+  times out of 22,056, so it matches that rasteriser very closely -- and that
+  rasteriser does not round the phantom.
+- `GetTextExtent` at a size `hdmx` does not cover is **Windows 3.1 running the
+  program itself**, and it does.
+
+This has been the ground under several rounds of work and was not stated. Using
+`hdmx` as an oracle for Windows is right about everything that decides where the
+ink goes -- the phantoms carry the advance and nothing else, which is why the
+recorded glyph bitmaps agree at 83 of 90 while the advance does not -- and wrong
+about the advance itself. Times New Roman's `o`, one of the five still failing,
+is fixed by the rounding: 17 of 18 tabulated sizes to 18, and 57 of 66 measured
+advances to 65.
+
+**Open**: whether Windows 3.1 rounds the phantom for the program's benefit and
+reports the unrounded advance, or rounds throughout. Deciding that needs the
+recorded bitmaps rather than either advance, because only they say where Windows
+actually put the ink.
+
+The second thing the real glyph still says. The bisection that pointed at byte
 340 used a **real** outline with only its program rewritten, so the bounding box
 fault never touched it, and it stands: point 5 agrees at every size before that
 `IP` and at seventeen of sixty after. What the trace adds is that the `IP` there
@@ -884,7 +932,7 @@ fitted height.
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
 | `font` (2,655 records)                                       | 98.1%     |
 | `glyphs` (90 records)                                        | 92.2%     |
-| `hinting` (309 records)                                      | 93.2%     |
+| `hinting` (412 records)                                      | 94.9%     |
 
 Of the glyph records, every bitmap and plotter one is pixel-identical. The seven
 that differ are all outline faces.
