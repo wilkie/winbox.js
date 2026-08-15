@@ -1374,9 +1374,46 @@ edge is vertical but something that accumulates as it leans -- and the
 raggedness in the middle, where the same slant takes one pixel on some rows and
 the other on others, says the answer depends on where in the pixel each row
 falls as well as on the slope. That is the signature of a fixed-point quantity
-carried down the scanlines, which is what the edge walk was built to model and
-did not yet reproduce: **the mechanism is right and the arithmetic in it is
-not.**
+carried down the scanlines.
+
+### The branch, as measured
+
+The recordings are enough to map the branch itself rather than guess at it. Take
+`u` to be how far the span's start sits past the pixel centre below it, so the
+two candidates are the pixel that centre belongs to and the one above; the
+question is which of them Windows inks. Over 2,452 rows where it inked exactly
+one:
+
+| Lean, px/row | rows | took the left pixel | best threshold on `u` |
+| ------------ | ---- | ------------------- | --------------------- |
+| 0 (upright)  | 370  | 0                   | never                 |
+| 0.0014       | 156  | 0                   | `u < 0.137` (100%)    |
+| 0.0036       | 138  | 0                   | `u < 0.139` (100%)    |
+| 0.0086       | 149  | 24                  | `u < 0.141` (100%)    |
+| 0.021        | 134  | 28                  | `u < 0.147` (93%)     |
+| 0.057        | 106  | 44                  | `u < 0.165` (91%)     |
+| 0.14         | 245  | 194                 | `u < 0.611` (85%)     |
+| 0.29         | 239  | 232                 | `u < 0.774` (97%)     |
+| 0.50         | 286  | 280                 | `u < 0.721` (96%)     |
+| 1.00         | 359  | 353                 | `u < 0.641` (94%)     |
+
+**The branch is on `u`, and its threshold moves with the lean.** At the three
+smallest leans a threshold near `0.14` separates the two answers without a
+single exception in 443 rows -- which is a real edge in the data, not a fit. It
+holds its value while the lean grows by a factor of six, then loses its grip:
+by a lean of a seventh of a pixel per row almost every row takes the left pixel
+and no threshold explains the rest.
+
+Written the other way round, `u / |lean| < 4.3` is the best single expression
+over all of it at **95.1%**, and it puts the upright case on the right side for
+free, since a vertical edge never passes a centre at all and the ratio is
+infinite. But the per-lean thresholds above are not constant, so that expression
+is a fit and not the mechanism.
+
+What the shape of it says is that the quantity being compared is _how recently
+the edge crossed a pixel centre_, measured in rows -- and that something else
+saturates once the edge crosses one every few rows. **Open**, and now open with
+a measured surface rather than a hunch.
 
 One negative worth keeping with it: **removing the column sweep improves every
 one of the four shape fonts and hurts none**, which is a second confirmation
