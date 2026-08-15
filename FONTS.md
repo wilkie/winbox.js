@@ -897,30 +897,36 @@ chosen because it is the sampling interval and so the only value with a reason
 behind it rather than a fit. Below 0.3 the stubs return; above 0.5 real dropouts
 start being refused.
 
-**Sweeping rows is enough, and sweeping columns is not the other half.** A
-stroke can be too shallow to cover a row centre as easily as too narrow to cover
-a column one, and a row sweep provably cannot see the first kind -- every
-scanline either crosses such a stroke properly or misses it entirely. So a
-column sweep ought to be needed. It is not: added with the same stub rule it
-rescues nothing and inks one pixel Windows leaves blank. **Measured**, and
-against expectation, which is why it is written down rather than kept.
+**Columns are swept as well as rows, and which pixel each one keeps is not the
+same end.** A stroke can be too shallow to cover a row centre as easily as too
+narrow to cover a column one, and a sweep along rows provably cannot see the
+first kind -- every scanline either crosses such a stroke properly or misses it
+whole. The flag of a Courier New `1` at thirteen pixels per em is exactly that:
+two pixels Windows draws that nothing along a row can find.
 
-Tested again after the phantom rounding, when the remaining differences were
-eight missing pixels and none invented -- exactly the shape a missing dropout
-rule leaves -- and at four stub thresholds:
+This was tried twice before and rejected twice, both times on the evidence. It
+rescued nothing because it was inking the wrong pixel, and it was inking the
+wrong pixel because the row sweep's rule had been copied across without being
+examined. Sweeping the choice:
 
-| column sweep      | glyphs   | missing | invented |
-| ----------------- | -------- | ------- | -------- |
-| off               | 85 of 90 | 8       | 0        |
-| stub half a pixel | 85       | 8       | 1        |
-| stub a quarter    | 81       | 8       | 7        |
-| stub a tenth      | 81       | 8       | 9        |
-| no stub at all    | 81       | 8       | 9        |
+| column sweep keeps           | glyphs   | missing | invented |
+| ---------------------------- | -------- | ------- | -------- |
+| the pixel the span starts in | 84 of 90 | 9       | 2        |
+| **the pixel it ends in**     | **85**   | **7**   | **0**    |
+| the nearest pixel            | 85       | 8       | 1        |
 
-The missing count never moves. Not once, at any threshold. A column sweep that
-finds nothing to rescue means there is no thin span at those columns to rescue --
-the outline does not reach them at all -- so what is left is a difference in
-where the hinting put the outline, and not in how it was sampled.
+Taking the far end sounds arbitrary until the axes are put back the way the
+glyph has them. Device rows count downward and glyph coordinates count up, so
+the last row of a span is the first in the outline. **Both sweeps keep the pixel
+at the lower coordinate in the outline's own space** -- and the row sweep is
+unchanged, because taking its far end costs eleven wrong pixels rather than
+seven.
+
+The half-pixel stub is the same on both. No second constant.
+
+The exact curve intersection is what made this findable at all. On the flattened
+outline the same experiment moved nothing, because the spans it needed to see
+were smaller than the flattening error.
 
 What it would have rescued -- the flag of a Courier New `1` at thirteen pixels
 per em, two pixels Windows draws and this does not -- stays **open**. Windows
@@ -1102,11 +1108,11 @@ fitted height.
 | ------------------------------------------------------------ | --------- |
 | `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
 | `font` (2,655 records)                                       | 98.0%     |
-| `glyphs` (90 records)                                        | 93.3%     |
+| `glyphs` (90 records)                                        | 94.4%     |
 | `hinting` (618 records)                                      | 98.2%     |
 
-Of the glyph records, every bitmap and plotter one is pixel-identical. The six
-that differ are all outline faces, and between them they miss nine pixels
+Of the glyph records, every bitmap and plotter one is pixel-identical. The five
+that differ are all outline faces, and between them they miss seven pixels
 Windows inks and invent none.
 
 `CreateFont face` agrees on every one of the 2,655 records: whatever Windows

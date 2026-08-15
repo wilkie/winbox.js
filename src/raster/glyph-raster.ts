@@ -258,6 +258,70 @@ function crossesAt(piece, y, into) {
 }
 
 /**
+ * The same, along a vertical line: where a piece crosses `x`, exactly.
+ */
+function crossesDown(piece, x, into) {
+  const [x0, y0] = piece.from;
+  const [x2, y2] = piece.to;
+
+  if (!piece.control) {
+    if (x0 === x2) {
+      return;
+    }
+
+    const t = (x - x0) / (x2 - x0);
+
+    if (t < 0 || t >= 1) {
+      return;
+    }
+
+    into.push({ y: y0 + t * (y2 - y0), winding: x2 > x0 ? 1 : -1 });
+
+    return;
+  }
+
+  const [x1, y1] = piece.control;
+
+  const a = x0 - 2 * x1 + x2;
+  const b = 2 * (x1 - x0);
+  const c = x0 - x;
+
+  const roots: number[] = [];
+
+  if (a === 0) {
+    if (b !== 0) {
+      roots.push(-c / b);
+    }
+  } else {
+    const under = b * b - 4 * a * c;
+
+    if (under < 0) {
+      return;
+    }
+
+    const root = Math.sqrt(under);
+
+    roots.push((-b + root) / (2 * a), (-b - root) / (2 * a));
+  }
+
+  for (const t of roots) {
+    if (t < 0 || t >= 1) {
+      continue;
+    }
+
+    const slope = 2 * a * t + b;
+
+    if (slope === 0) {
+      continue;
+    }
+
+    const u = 1 - t;
+
+    into.push({ y: u * u * y0 + 2 * u * t * y1 + t * t * y2, winding: slope > 0 ? 1 : -1 });
+  }
+}
+
+/**
  * Fills a set of contours into a bitmap.
  *
  * The winding rule is the non-zero one TrueType specifies: a pixel is inside
@@ -354,6 +418,60 @@ export function fill(contours, options) {
       const column = Math.floor(from);
 
       if (column >= 0 && column < width) {
+        pixels[row * width + column] = 1;
+      }
+    }
+  }
+
+  if (!dropout) {
+    return pixels;
+  }
+
+  /* The same test down each column.
+   *
+   * A stroke can be too shallow to cover a row centre as easily as too narrow
+   * to cover a column one, and a sweep along rows provably cannot see the first
+   * kind: every scanline either crosses such a stroke properly or misses it
+   * whole. The flag of a Courier New `1` at thirteen pixels per em is the case
+   * -- two pixels Windows draws that nothing along a row can find.
+   *
+   * Which pixel gets turned on had to be measured, and it is not the same end
+   * as the row sweep takes. That one keeps the pixel the span *starts* in and
+   * this one keeps the pixel it *ends* in, which sounds arbitrary until the
+   * axes are put back the way the glyph has them: device rows count downward
+   * and glyph coordinates count up, so the last row of a span is the first in
+   * the outline. **Both sweeps keep the pixel at the lower coordinate in the
+   * outline's own space.** Taking the other end costs eleven wrong pixels
+   * rather than seven.
+   */
+  for (let column = 0; column < width; column++) {
+    const crossings: any[] = [];
+
+    for (const piece of pieces) {
+      crossesDown(piece, column + 0.5, crossings);
+    }
+
+    crossings.sort((left, right) => left.y - right.y);
+
+    let winding = 0;
+
+    for (let index = 0; index < crossings.length - 1; index++) {
+      winding += crossings[index].winding;
+
+      if (winding === 0) {
+        continue;
+      }
+
+      const from = crossings[index].y;
+      const to = crossings[index + 1].y;
+
+      if (Math.ceil(from - 0.5) < to - 0.5 || to - from < STUB) {
+        continue;
+      }
+
+      const row = Math.floor(to);
+
+      if (row >= 0 && row < height) {
         pixels[row * width + column] = 1;
       }
     }
