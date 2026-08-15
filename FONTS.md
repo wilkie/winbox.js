@@ -518,12 +518,52 @@ and 504 bytes of its program brackets the fault in **fifteen bytes**, between
 ```
 
 Point 10 is not moved by any of those directly -- every move it gets comes from
-inside a called function, under a projection vector that is different at every
-size because it is computed from the outline. That is as far as the harness
-reaches without reading points inside `fpgm`.
+inside a called function. But reading the points it is placed _from_ does not
+need to go inside `fpgm` at all, because every byte in the bracket is its own
+instruction and so its own cut. Reading point 11, then point 5, walks the chain
+back:
 
-Two candidates were tried and rejected, both principled and both measurably
-wrong:
+| Point read | Cut     | Sizes disagreeing |
+| ---------- | ------- | ----------------- |
+| 5          | 240     | 0 of 60           |
+| 5          | 300     | 0 of 60           |
+| 5          | 328     | 1 of 60           |
+| 5          | **340** | **1 of 60**       |
+| 5          | **341** | **43 of 60**      |
+| 5          | 344     | 8 of 60           |
+| 11         | 347     | 8 of 60           |
+| 10         | 353     | 13 of 60          |
+
+**Byte 340 is an `IP`, and it is where the `M` comes apart.** Point 5 agrees at
+every size up to it and at forty-three of sixty after it. The eight at cut 344
+are not a recovery: the `MDAP[rnd]` at 341 snaps the point to a whole pixel and
+hides most of the difference, which is exactly how a fault this size stays
+invisible until something downstream reads it back.
+
+**And our `IP` moves nothing there.** Its two reference points have not been
+touched, so the original distance and the current one are the same number and
+the interpolation is the identity. Windows moves the point anyway. So this is
+not a rounding difference in an instruction that ran -- it is an instruction
+doing nothing where Windows does something.
+
+Three readings of `IP` have been tried against the harness and all three are
+worse or identical:
+
+- **Extrapolating rather than clamping** points outside the reference range, as
+  the reference implementation does: identical, at 43 of 60 and 5 wrong
+  advances. Point 5 is between the references, so the branch never fires.
+- **Projecting differences rather than differencing projections**, which is one
+  rounding rather than two: identical again.
+- **Measuring the original distances in font units** and letting the ratio carry
+  the scaling, which is what the reference does and what would make the
+  instruction move something here: **60 of 60**, and `hdmx` from 5 wrong to 49.
+  Decisively not it.
+
+So `IP` moves the point in Windows, and none of the three obvious accounts of
+how is right. **Open**, and pinned to one instruction.
+
+Two further candidates were tried and rejected, both principled and both
+measurably wrong:
 
 - **`DELTAP` moving its point through the vectors.** The reference applies a
   delta the same way `MDRP` moves a point -- along the freedom vector, scaled by

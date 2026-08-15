@@ -681,6 +681,168 @@ export const FABRICATIONS = [
     describe: "Arial Italic's M reporting point 10 after 359 bytes of its program",
   }),
 
+  reporter('ariali-m-p10-cut345', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 10,
+    cut: 345,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 10 after 345 bytes of its program",
+  }),
+
+  reporter('ariali-m-p10-cut347', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 10,
+    cut: 347,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 10 after 347 bytes of its program",
+  }),
+
+  reporter('ariali-m-p10-cut349', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 10,
+    cut: 349,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 10 after 349 bytes of its program",
+  }),
+
+  reporter('ariali-m-p10-cut351', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 10,
+    cut: 351,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 10 after 351 bytes of its program",
+  }),
+
+  reporter('ariali-m-p10-cut353', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 10,
+    cut: 353,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 10 after 353 bytes of its program",
+  }),
+
+  reporter('ariali-m-p10-cut355', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 10,
+    cut: 355,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 10 after 355 bytes of its program",
+  }),
+
+  reporter('ariali-m-p10-cut357', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 10,
+    cut: 357,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 10 after 357 bytes of its program",
+  }),
+
+  reporter('ariali-m-p10-cut358', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 10,
+    cut: 358,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 10 after 358 bytes of its program",
+  }),
+
+  reporter('ariali-m-p11-cut344', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 11,
+    cut: 344,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 11 after 344 bytes of its program",
+  }),
+
+  reporter('ariali-m-p11-cut347', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 11,
+    cut: 347,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 11 after 347 bytes of its program",
+  }),
+
+  reporter('ariali-m-p11-cut351', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 11,
+    cut: 351,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 11 after 351 bytes of its program",
+  }),
+
+  reporter('ariali-m-p5-cut344', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 5,
+    cut: 344,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 5 after 344 bytes of its program",
+  }),
+
+  reporter('ariali-m-p5-cut341', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 5,
+    cut: 341,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 5 after 341 bytes of its program",
+  }),
+
+  reporter('ariali-m-p5-cut240', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 5,
+    cut: 240,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 5 after 240 bytes of its program",
+  }),
+
+  reporter('ariali-m-p5-cut300', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 5,
+    cut: 300,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 5 after 300 bytes of its program",
+  }),
+
+  reporter('ariali-m-p5-cut328', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 5,
+    cut: 328,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 5 after 328 bytes of its program",
+  }),
+
+  reporter('ariali-m-p5-cut336', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 5,
+    cut: 336,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 5 after 336 bytes of its program",
+  }),
+
+  reporter('ariali-m-p5-cut340', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    point: 5,
+    cut: 340,
+    magnify: 8,
+    describe: "Arial Italic's M reporting point 5 after 340 bytes of its program",
+  }),
+
   /* The bracket the bisection over Arial Italic's `M` closed on. Reading point
    * 10 after 344 bytes of its program agrees with Windows at every size and
    * after 359 disagrees at six more, so whatever differs is in those fifteen
