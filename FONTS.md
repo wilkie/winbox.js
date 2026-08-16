@@ -3022,6 +3022,50 @@ neighbour at all.
 Both instruments, both counts. The recorded letters are six sevenths exact, from
 two thirds when this section began.
 
+### The outline arrives in sixty-fourths
+
+Decomposing what the guard left, one kind stands out for being almost never
+wrong. Of **18,662 ordinary fills** -- pixels lit because their centre lies
+inside a span, the commonest thing the rasteriser does -- only **56** disagree
+with Windows. And those 56 are not scattered:
+
+| distance from the pixel's centre to the nearer edge of its span |                                                  |
+| --------------------------------------------------------------- | ------------------------------------------------ |
+| the 56 that are wrong                                           | min 0.000, q1 0.005, **median 0.016**, max 1.004 |
+| the 18,606 that are right                                       | min 0.000, q1 0.401, **median 0.500**            |
+
+They sit a sixty-fourth of a pixel inside the span, where a correct one sits half
+a pixel in. So Windows' edge is a hair the other side of the centre from ours,
+and the hair is about the size of a fixed-point unit.
+
+**It is not the crossing's arithmetic.** Rounding the computed intersection to
+sixty-fourths costs 36 letters, flooring 51, ceiling 10 -- exact wins outright,
+which is the third time that has been measured and the first time on this
+rasteriser.
+
+**It is the coordinates.** The scaler's interface hands the scan converter
+outline points "in fixed-point representation", and F26Dot6 is what a scaled
+TrueType outline is carried in. Placing every point on that grid before
+intersecting anything:
+
+|                   | letters                 | fabricated cells              |
+| ----------------- | ----------------------- | ----------------------------- |
+| exact             | **731**/846, **264** px | 3,865/4,950, 4,666 px         |
+| rounded to 1/64   | 727/846, 266 px         | **3,904**/4,950, **4,505** px |
+| truncated to 1/64 | 729/846, 268 px         | 3,818/4,950, 4,800 px         |
+| ceiled to 1/64    | 727/846, 266 px         | 3,838/4,950, 4,661 px         |
+
+Rounding beats truncating by 86 cells and ceiling by 66, so it is rounding
+specifically and not merely quantising -- which is what the interpreter's own
+`mulDiv` does everywhere else.
+
+**Shipped**, at a cost of four recorded letters and two wrong pixels. That is the
+one change in this section made against the letters rather than for them, and the
+reason is that it models the machine: a hinted glyph already arrives on the
+sixty-fourth grid, so this changes nothing for most of the fixture and everything
+for the two places where the outline is scaled here instead -- the shape fonts,
+and Courier New at the size where `INSTCTRL` turns grid-fitting off.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

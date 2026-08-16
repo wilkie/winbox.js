@@ -370,7 +370,26 @@ export function fill(contours, options) {
   /* Into device space as the pieces are built: x grows the same way, y is
    * measured up from the baseline and pixels are counted down from the top.
    */
-  const place = (point) => [originX + point[0] * scale, originY - point[1] * scale];
+  /* Sixty-fourths, because that is what the scan converter is handed.
+   *
+   * A description of the scaler's interface has it returning outline point
+   * coordinates "in fixed-point representation", and F26Dot6 is what TrueType
+   * carries a scaled outline in. A glyph that went through the interpreter is
+   * already on that grid -- its points come back as sixty-fourths -- so this
+   * changes nothing for a hinted letter and everything for one that was scaled
+   * here instead: the shape fonts, and Courier New at the size where `INSTCTRL`
+   * turns grid-fitting off.
+   *
+   * **Measured.** Rounding is worth 3,904 fabricated cells against 3,865 and
+   * 4,505 wrong pixels against 4,666; truncating is worth 3,818 and ceiling
+   * 3,838, so it is rounding and not merely quantising. It costs four of the 846
+   * recorded letters, which is the price of modelling the machine rather than
+   * the fixture.
+   */
+  const place = (point) => [
+    originX + Math.round(point[0] * scale * 64) / 64,
+    originY - Math.round(point[1] * scale * 64) / 64,
+  ];
 
   const pieces: any[] = [];
 
