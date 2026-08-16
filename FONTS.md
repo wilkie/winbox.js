@@ -3116,6 +3116,48 @@ which is not a result -- reordering the blocks left `touching` used before it wa
 declared, so every glyph threw and drew nothing. Recorded because a number that
 absurd is easy to catch and a number merely wrong is not.
 
+### The bottom bar of an `E`
+
+Half of what is left is one cell -- 135 of 266 wrong pixels at Courier New,
+eight pixels per em -- and looking at its worst letters shows one shape over and
+over. The bottom bars of `E`, `B` and `d`:
+
+```
+        windows    ours
+   4    ..#.....   ..#.....
+   5    ..####..   ........
+   6    ........   ...##...
+```
+
+Windows draws the bar at row 5 across four columns. This draws two pixels at
+row 6. The geometry is not in doubt: the bar gives a column span of `[5.672,
+6.000]` at columns 2, 3, 4 and 5, and Windows inks exactly those four columns.
+
+Two things are wrong and they are different things. The **row** is one too low:
+`ceil(from − 0.5)` is 6 where `floor(to − 0.5)` is 5, and Windows takes 5. And
+**two of the four columns are suppressed**, by the guard or the tip rule.
+
+Neither has a fix that survives contact with the rest of the fixture.
+
+**The row.** Re-sweeping the column pick now that the guard exists -- the two
+interact, so the earlier sweep does not settle it -- leaves `ceil(from − 0.5)`
+ahead by a distance: 727 letters and 266 wrong pixels against 644 and 470 for
+`floor(to − 0.5)`, and 682 and 351 for the midpoint. The `E` is a minority of its
+own kind.
+
+**Nearest is not it either.** For this bar the centre at 5.5 is 0.172 away and
+the one at 6.5 is 0.5 away, so "take the pixel whose centre is closest to the
+stroke" gets it right. Implemented on both axes it is worse everywhere: 677
+letters when applied down columns, 677 when applied along rows, 629 when applied
+to both, against 727.
+
+So the cell that carries half the error carries it in a shape this can see, name
+and reproduce, and cannot fix without losing more elsewhere. That is a different
+position from not knowing what is wrong, and it is where this stops for now:
+every knob at its measured optimum, the geometry complete, and one recurring
+figure -- a horizontal bar lying between two scanlines at the bottom of a letter
+-- that the rules get a row low.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
