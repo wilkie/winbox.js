@@ -2394,6 +2394,48 @@ one land differently inside. The row loss at both ends of the stroke is the part
 that most resembles a real mechanism -- it is stub exclusion appearing where it
 was absent, and it appears whenever the glyph gets wider, on either side.
 
+### The rows the wide glyph loses are stubs, not a band
+
+A band -- a strip of the output rasterised at a time because the whole will not
+fit in memory -- would explain a change in x costing rows in y, and it is worth
+ruling out rather than assuming. It does not fit, on two counts.
+
+The display driver says it does not band: `RASTERCAPS` for VGA reads 18,137,
+which is `0x46D9`, and `RC_BANDING` is bit 1 -- clear. Banding in GDI is a
+printing mechanism, driven by the `NEXTBAND` escape, and nothing in this
+project's recordings touches a printer.
+
+And the rows lost are the wrong rows. Reading which ones actually disappear when
+the glyph is widened:
+
+| size | the stroke's rows | left after widening | lost  |
+| ---- | ----------------- | ------------------- | ----- |
+| 10   | 1 2 3 4 5         | 2 3 4               | 1, 5  |
+| 12   | 3 4 5 6 7 8       | 4 5 6 7             | 3, 8  |
+| 14   | 3 … 10            | 4 … 9               | 3, 10 |
+| 18   | 3 … 13            | 4 … 12              | 3, 13 |
+| 20   | 3 … 14            | 4 … 13              | 3, 14 |
+
+**Always the first row and the last row, never an interior one.** A band boundary
+falls at a fixed device row and would cut a tall stroke somewhere in the middle;
+at twenty pixels the stroke is twelve rows long and loses only its two tips.
+
+That is not a buffer running out. It is **stub exclusion** -- `SCANTYPE` 1 is
+"simple dropout control excluding stubs", all three families ask for it, and the
+tip of a stroke is what a stub is. The letters said the same thing much earlier
+and it was never explained: 176 of 177 tip rows carry no ink, against 121 of 121
+and 390 of 390 for everything else.
+
+So the width of the glyph does not move ink around. **It switches stub exclusion
+on.** A narrow glyph gets none and inks its stroke end to end; a wide one gets it
+and drops both tips -- and the same switch changes which of the two candidate
+pixels the rescue takes. One decision with two visible consequences, which is
+what the pair moving together always suggested.
+
+Every real letter is wide enough to be on the far side of that switch, which is
+why the letters have always shown both halves of the behaviour and why the shape
+fonts showed neither.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
