@@ -2718,6 +2718,56 @@ worth the experiment and, having run it, a coincidence. What that distance
 measures is how far a scanline near a curve's apex is from where the curve turns
 over.
 
+### What a description of the scaler's interface settles, and what it does not
+
+`FONT_SCALER.md` describes the engine's data structures and client interface. It
+is a description rather than a recording, so nothing in it is taken on its word
+here; what follows is what it explains about measurements already made, and what
+it makes newly worth measuring.
+
+**It explains the width switch.** The interface sizes a monochrome bitmap from
+the outline and reports its bounds -- the client asks "how much memory does this
+outline need" before scan-converting. A glyph whose whole outline falls between
+two pixel centres has a bitmap **zero pixels wide**, which is a case any
+implementation must handle specially. The predicate this now ships,
+`ceil(leftmost − 0.5) < rightmost − 0.5`, is the fill's own coverage test applied
+to the entire outline rather than to one span; it was arrived at by sweeping a
+font, and it turns out to be asking exactly whether that bitmap exists.
+
+It also accounts for an asymmetry that had no explanation. A glyph covering no
+_row_ gets no ink at all -- 27 of 27 sideways bars -- while a glyph covering no
+_column_ gets ink anyway. A bitmap zero pixels tall has no scanlines to sweep, so
+the loop never runs; one zero pixels wide still has rows, and each row's span
+still has to put its ink somewhere.
+
+**It says banding is real, and that dropout control is entangled with it.** There
+are `lowerClip` and `upperClip` scanline boundaries, two banding strategies, and
+the explicit note that the faster one "can preserve dropout-control behavior" --
+which says the other does not. Banding was ruled out here as the cause of the
+rows a widened glyph loses, and that stands: those are always the stroke's first
+and last row at every size, never an interior one, where a band boundary falls at
+a fixed device row and would cut a tall stroke in the middle. But dropout control
+being something a band boundary can lose is a mechanism this had no idea existed,
+and it predicts something testable -- at a size tall enough to need more than one
+band, rescued pixels should fail on a fixed device row. Every size recorded here
+is between eight and twenty-two pixels per em, which is almost certainly one
+band, so the fixture cannot see it.
+
+**It names a pixel diameter.** `pixelDiameter`, "effective pixel diameter used to
+compensate for non-ideal pixel geometry", is an input to establishing a
+transformation, alongside point size and resolution. So the engine does have the
+concept -- but as a parameter of _scaling_, set once per transformation, not as a
+sampling rule inside the scan converter. That is consistent with the measurement:
+a disc of any radius applied at scan-conversion time paints a halo round every
+glyph, 28,322 wrong pixels against 388, because straight vertical edges are
+already exact. What is not known is what GDI passes for it, and a probe could
+find out only indirectly, since it would show up as a change in scale rather than
+in shape -- and the scale is already right, 927 of 927 swept advances and every
+`hdmx` entry of two faces.
+
+Nothing here contradicts anything shipped. The two things it adds to the list are
+a parameter this does not model and a mechanism this cannot currently see.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

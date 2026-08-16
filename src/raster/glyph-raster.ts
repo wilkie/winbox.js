@@ -347,6 +347,20 @@ export function fill(contours, options) {
     }
   }
 
+  /* Written the same way a span's coverage is, and that is the point: this is
+   * `first < to - 0.5` applied to the whole outline instead of to one span, so
+   * it asks whether the glyph's bitmap has any width at all. A description of
+   * the scaler's interface says the engine sizes a monochrome bitmap from the
+   * outline and hands back its bounds, which makes a glyph that covers no
+   * column a bitmap zero pixels wide -- a case something has to special-case,
+   * and the measurements say what it does.
+   *
+   * It also accounts for the asymmetry. A glyph covering no *row* gets no ink
+   * at all -- thirty-six fabricated bars lying on their side say so, 27 of 27 --
+   * because a bitmap zero pixels tall has no scanlines to sweep and the loop
+   * never runs. A bitmap zero pixels wide still has rows, and each row's span
+   * still has to put its ink somewhere.
+   */
   const sampled = Math.ceil(leftmost - 0.5) < rightmost - 0.5;
 
   /* Every pixel dropout control would turn on, kept until the whole glyph has
