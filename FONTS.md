@@ -2083,6 +2083,68 @@ horizontal stroke, not that the stroke is what Windows drew there -- in a letter
 the same pixel is usually reachable from a stem as well, and that ambiguity is
 what has made every attribution in this section harder than it looks.
 
+### The pixel the rescue picks is not one rule
+
+The shape fonts have the property the letters lack: one stroke per glyph, so
+which stroke Windows meant is never in doubt. Reading all seven of them row by
+row, keeping only rows with a single span that is a genuine dropout and a single
+inked pixel, gives five thousand cases where the answer is unambiguous -- and
+they do not agree with each other.
+
+| font                 | clean dropouts | `floor(to − 0.5)` | `ceil(from − 0.5)` |
+| -------------------- | -------------- | ----------------- | ------------------ |
+| cour-bars            | 372            | 1%                | **100%**           |
+| cour-hairslants      | 805            | 13%               | **88%**            |
+| cour-offsets         | 803            | 15%               | **85%**            |
+| cour-slants          | 748            | **86%**           | 14%                |
+| cour-backslants      | 785            | **84%**           | 17%                |
+| cour-phases          | 750            | **90%**           | 10%                |
+| cour-leftband        | 753            | **77%**           | 23%                |
+| the recorded letters | 66             | **95%**           | 6%                 |
+
+The three that want the other rule are the three whose strokes are upright or
+nearly so. Pooling all 5,016 and banding them by how far the stroke moves
+sideways per scanline says it outright:
+
+| lean, pixels per row          | < 0.02  | 0.02--0.1 | 0.1--0.25 | > 0.25 |
+| ----------------------------- | ------- | --------- | --------- | ------ |
+| Windows takes the right pixel | **97%** | 58%       | 16%       | **2%** |
+
+An upright stroke takes `ceil(from − 0.5)` -- which is the pixel the ordinary
+fill loop would have started at, and so the single most natural thing a scan
+converter can do when that loop turns out to be empty. A leaning stroke takes
+the pixel to the left of it.
+
+Two ways of making that one rule were tried and neither works. **Sampling the
+edges at a different height in the row** would move a leaning stroke and leave an
+upright one alone, which is exactly the right shape -- but no offset does it, the
+best being 65% at a quarter-row above centre against 97% and 98% for the
+conditional in its two halves. **Carrying the choice down the stroke**, so that
+only the first scanline decides, reaches 69.8% against 44.9% and 55.4% for the
+two fixed rules -- better than either and far short of both.
+
+**And the conditional itself is a fit, not a rule.** Implemented with the edge's
+own slope and swept, it is spectacular on the fonts it was read from and wrong
+where it counts:
+
+| threshold on the lean | fabricated cells   | recorded letters | Courier New at 8 ppem |
+| --------------------- | ------------------ | ---------------- | --------------------- |
+| off (shipped)         | 6,892 wrong px     | 369 wrong px     | **109** wrong px      |
+| 0.05                  | **2,787** wrong px | 470 wrong px     | 198 wrong px          |
+
+Cutting the fabricated error by sixty per cent is the most any single change has
+been worth all section, and it is still not shipped, because the cell it has to
+answer to is Courier New at eight pixels per em -- **the one cell of real letters
+whose outline is exact, where a fair comparison with the shape fonts is
+possible** -- and there it nearly doubles the error. A rule that is right about
+fabricated bars and wrong about real glyphs at the same size, with neither one
+hinted, is measuring something about the bars.
+
+What the bars have that the letters do not is that their edges are straight
+lines running the whole height of the glyph, and perfectly upright in a third of
+the cases. The letters' dropouts are curves. That is the next variable, and it
+is one the existing recordings can answer without another font.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
