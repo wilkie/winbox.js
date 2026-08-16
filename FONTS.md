@@ -1909,6 +1909,75 @@ New's sits nowhere near it -- which is `INSTCTRL` doing exactly what section 5
 says it does, measured here from a direction that knows nothing about advances
 or about the fabricated font that first found it.
 
+### Three thousand cells that were never read
+
+Sixteen of the fabricated recordings were made with the glyph probe rather than
+the hinting one, so each holds 846 monochrome cells drawn by Windows from a font
+we built -- twelve shape fonts and four alterations of Times New Roman's `cvt`.
+They had been read once each by hand and then left. Replaying all of them is now
+a test of its own, and it is a better instrument than the 846 recorded letters
+for one reason: **nothing in a shape font is hinted.** It carries no glyph
+program, so the outline the rasteriser is handed is exactly the outline that was
+drawn, to the design unit. A disagreement here cannot be blamed on the
+interpreter, which is the one thing a disagreement about a letter can always be
+blamed on.
+
+That is what decides the sweep down columns, and it decides it against itself:
+
+|                       | recorded letters | fabricated cells                    |
+| --------------------- | ---------------- | ----------------------------------- |
+| with the column sweep | **307** wrong px | 7,171 wrong px, 1,776 exact         |
+| without it            | 369 wrong px     | **6,892** wrong px, **1,816** exact |
+
+Deleting it helps by 279 pixels and 40 cells on geometry we chose and hurts by
+62 pixels on the letters. The two only look contradictory until the difference
+between them is named: **the letters are hinted and the shapes are not.** A rule
+that helps where the outline came through an interpreter and hurts where it did
+not is not a rule about scan conversion at all. It is compensation for the
+interpreter, and the bar font was right the first time.
+
+The same split shows inside the fabricated set. `cour-no-instctrl` is not a
+shape font -- it is real Courier New with grid-fitting switched back on at eight
+pixels per em, so its glyphs _are_ hinted -- and it is the one recording of the
+sixteen that the column sweep improves, 105 wrong pixels against 129. Twelve
+shape fonts say delete it and the one hinted font in the same set says keep it.
+
+So the remaining glyph error is a hinting error wearing a rasteriser's clothes,
+and the instrument for it already exists: `cour-no-instctrl` is Courier New
+hinted at the smallest size in the fixture, with 258 cells of ground truth and
+105 wrong pixels to account for.
+
+### What the near-horizontal strokes are not
+
+Three formulations were built and measured before the split above made them
+unnecessary, and all three fail in a way worth keeping.
+
+**Consecutive-scanline gap.** Where a stroke passes between two scanlines, the
+spans above and below it are disjoint in x, and the pixel should go in the gap.
+It is true of the geometry -- 99 of the 104 cases have such a gap -- and useless
+as a rule. Firing on every disjoint pair invents 568 pixels. Requiring the two
+spans to be bounded by the same contour piece fires almost never and recovers
+none of the wanted pixels. Requiring them to be bounded by _adjacent_ pieces
+invents 934. There is no setting between "never" and "far too often".
+
+**Turning points.** A bowl's apex has a local extremum in y and a bar lying on
+its side has not, which is exactly the difference between the letters and the
+bar font. Inking the pixel at every curve's turn-over adds 45 wrong pixels and
+recovers none of the wanted ones.
+
+The tell is the same in all three: the missing-pixel count stays at exactly 215
+whatever the rule. **Not one of the 83 pixels the column sweep gets right is
+reachable by any rule that reads only the spans along rows** -- which is the
+strongest possible statement that the feature is not in the rows, and, with the
+fabricated cells above, that it is not in Windows either.
+
+One correction while the numbers are in front of us. It was recorded here that
+the column sweep "invents nothing", on the grounds that all 104 of its pixels
+are within one column of ink Windows has. That was too generous: 83 are exactly
+right and the other 21 sit beside ink that the ordinary fill puts there anyway,
+so those 21 are invented after all. The claim should have been that it is right
+four times in five, which is a different and much less interesting thing.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
