@@ -2198,6 +2198,50 @@ What is shipped therefore stays as it is -- `floor(to − 0.5)`, which the lette
 say by 93 to 7 -- and the bars are recorded as a measurement that does not
 transfer rather than as a rule that was not implemented.
 
+### No rule that reads the span can fit both
+
+Before hunting further, the recordings themselves were checked: every one of the
+sixteen fabricated glyph files differs from the stock recording on 257 of the 258
+records naming the face it replaces, and no two are byte-identical. The fonts
+reached Windows, and none is a stale copy of another.
+
+Then the family was searched exhaustively rather than guessed at. Over the pooled
+372 bar dropouts and 100 letter dropouts, every rule of the form
+`floor(a·from + b·to + c)` on a quarter-step grid:
+
+| rule                                | bars        | letters    |
+| ----------------------------------- | ----------- | ---------- |
+| best fit found, `a=1, b=0, c=0.375` | **372/372** | 48/100     |
+| `floor(to − 0.5)` (shipped)         | 5/372       | **93/100** |
+| `ceil(from − 0.5)`                  | **372/372** | 7/100      |
+
+The best single rule the family contains is exactly `ceil(from − 0.5)` in
+disguise, and it fails half the letters. **No function of the span's two edges
+fits both**, which retires the whole family rather than any one member of it.
+
+Two structural candidates went the same way. An **exactly vertical edge** is the
+sort of thing a scan converter special-cases, and the shape fonts are 504 of 504
+for the right pixel when both edges are exactly vertical -- but they are also 411
+of 411 when the lean is merely under a two-hundredth, so there is no
+discontinuity at zero, only the same smooth threshold as before. And the
+**direction of the crossing** is −1 in every case measured, in the letters and in
+the shape fonts alike, so the contour orientation cannot be what separates them.
+
+That leaves exactly one difference, and it is not about the span at all. **Every
+shape font is a single contour of three or four points** -- `setGlyph` writes one
+contour and the fabrications hand it a triangle or a parallelogram -- while every
+real letter is several contours of dozens of points. Nothing recorded so far
+varies that, because all twelve shape fonts were built the same way.
+
+So the experiment that would settle it is now specified rather than guessed: a
+font whose glyphs carry **the same bar at the same place, drawn with more
+outline around it** -- a second contour far off in the corner where no scanline
+of interest can reach it, or the bar's own edges subdivided into a dozen
+collinear segments. The span the rasteriser measures would be identical to the
+bar font's to the last bit, and only the outline's complexity would differ. If
+the pixel moves, the rule is not about geometry at all; if it does not, the bars
+are sound and something in the letters is still misattributed.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
