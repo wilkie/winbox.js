@@ -2645,19 +2645,26 @@ Total, both ways. That is the mechanism behind the missing pixels, and it also
 retires a worry: the twenty-seven sideways bars that got no ink were not saying
 "Windows never rescues a horizontal stroke", they were saying "not a flat one".
 
-**But this already draws the apexes.** Where the arch and the letters disagree is
-the shallow flanks, and reading one exactly says what the difference is. At
-twenty-two pixels per em, row 9 of an arch: the scanline crosses the outer curve
-at 7.38 and 18.10 and nothing else, so the span is `[7.38, 18.10]` and the
-columns whose centres lie inside it are 7 to 17. **Windows inks 6 to 18** -- one
-column beyond the outline at each end, a pixel whose centre is half a pixel
-outside the shape.
+**But this already draws the apexes**, and where it does not the reason is not
+what was first written here. That paragraph claimed Windows inks a column beyond
+the outline at each end of a shallow flank; it was arithmetic done by hand rather
+than a reading of the renderer, and the renderer disagrees with it. Asked for its
+own spans on that arch at twenty-two pixels per em, rows 8, 9 and 11 match
+Windows **exactly**, column for column. Only row 10 differs, and by a span edge
+at 17.52 against a pixel centre at 17.50 -- two hundredths of a pixel, the same
+class of near-miss the crossing rule has always had.
 
-So it is not that Windows finds strokes this misses. It is that Windows' ink
-reaches half a pixel further than the outline does, wherever the boundary is
-nearly horizontal. Being _wider_ than the exact geometry is the useful part of
-that sentence: no sampling rule that asks whether a centre is inside can produce
-it.
+What the arch errors actually are is visible at the apex. At twenty pixels per em
+Windows draws the top of one arch as a solid run of ten pixels and this draws the
+two flanks with a hole between them. The scanline there passes _above_ the inner
+curve's apex for Windows and _below_ it here, so Windows crosses one curve and
+sees one span where this crosses two and sees two. **Near a turning point the
+curve is flat, so a sixty-fourth of a pixel in where the apex sits moves the
+crossing by whole pixels** -- which is why 402 of the 420 missing pixels in this
+font are on arches and only 18 on the flat bars.
+
+It is not the arithmetic's grain: quantising every placed point to sixty-fourths,
+as fixed point would, takes the arches from 443 wrong pixels to 440.
 
 One measurement worth keeping against the obvious explanation. If Windows worked
 from a coarsely flattened curve rather than the curve, its spans would differ --
@@ -2677,6 +2684,39 @@ and not the mechanism. **Subdividing by flatness instead** -- the principled
 version, splitting until the curve strays less than a tolerance from its chord --
 is worse at every tolerance tried, 431 wrong pixels at an eighth of a pixel and
 1,215 at a whole one. Nothing is shipped from this.
+
+### A pixel with a diameter
+
+Worth asking, because "the ink reaches further than the outline" is exactly what
+a pixel with extent would produce, and because nothing here has ever had one: the
+sweep samples a dimensionless point at the row's centre, and the fill asks
+whether a centre lies inside a span. A pixel that is a disc rather than a point
+-- the circle circumscribing the square, diameter root two -- would light whenever
+the outline passed within 0.7071 of its centre.
+
+Measured, in the general form and the restricted one, and it is not that:
+
+|                                                       | letters          | fabricated cells | arches  |
+| ----------------------------------------------------- | ---------------- | ---------------- | ------- |
+| a point at the centre (shipped)                       | **388** wrong px | **4,338**        | **443** |
+| a disc of radius 0.7071 anywhere on the outline       | 28,322           | 69,215           | 4,336   |
+| ...radius 0.5                                         | 22,544           | 45,709           | 2,895   |
+| ...radius 0.25                                        | 4,643            | 18,552           | 1,517   |
+| a disc used only where the fill found nothing, 0.7071 | 632              | 11,508           | 443     |
+| ...0.25                                               | 585              | 11,531           | 443     |
+
+The general form paints a halo round every glyph, which is what a disc must do to
+a straight vertical edge -- and straight vertical edges are the part this already
+gets exactly right, so there is no radius small enough to help the shallow case
+without ruining the upright one. The restricted form leaves the arches at 443
+unchanged, which is its own result: **the arch errors are not in rescued rows at
+all**, they are in rows the ordinary fill drew.
+
+One number in it is worth keeping. The missing pixels sit a median of 0.694 of a
+pixel from the nearest span edge in their own row, close enough to 0.7071 to be
+worth the experiment and, having run it, a coincidence. What that distance
+measures is how far a scanline near a curve's apex is from where the curve turns
+over.
 
 ### What no rule in this family can reach
 
