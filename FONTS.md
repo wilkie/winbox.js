@@ -2573,6 +2573,57 @@ and a rasteriser deciding that from coordinates rather than from which contour a
 edge came from is both what the recordings say and the simpler thing to have
 written. The threshold is the sampling interval, and it stays.
 
+### What the remaining letter errors are
+
+388 wrong pixels across 191 letters, sorted by what put them there or failed to:
+
+|                                                             | count   |
+| ----------------------------------------------------------- | ------- |
+| Windows inks it and **nothing here produced a span at all** | **215** |
+| a rescue this makes and Windows does not                    | 59      |
+| Windows inks it and **the stub rule refused it**            | 58      |
+| an ordinary fill this makes and Windows does not            | 56      |
+
+And by cell, the stub rule's mistakes are not spread at all:
+
+| cell                 | none | stub   | rescue | fill | total   |
+| -------------------- | ---- | ------ | ------ | ---- | ------- |
+| **Courier New h=10** | 75   | **53** | 13     | 2    | **143** |
+| Times New Roman h=16 | 10   | 0      | 4      | 7    | 21      |
+| Courier New h=14     | 15   | 1      | 4      | 0    | 20      |
+| ...sixteen more      | 115  | 4      | 38     | 47   | 204     |
+
+**Fifty-three of the fifty-eight are one cell**, and every other cell has none or
+one. That cell is the unhinted one, where a stroke is sub-pixel and almost every
+row of it is a rescue rather than a fill.
+
+Looking at what it refuses there says why, and says the rule is too broad. In an
+`n` at eight pixels per em the stem spans three rows: the middle fills
+ordinarily and the top and bottom are rescued. This refuses both, because
+neither has a span beyond it -- and Windows keeps both, because they are where
+the letter ends rather than where a stroke tapers away.
+
+Two ways of narrowing it were built and measured and neither is right:
+
+|                                             | letters | Courier New h=10 | fabricated cells    |
+| ------------------------------------------- | ------- | ---------------- | ------------------- |
+| refuse every tip (shipped)                  | 388 px  | 143 px           | **3,463**, 3,895 px |
+| only in strokes of six rows or more         | 367 px  | **109** px       | 3,226, 4,504 px     |
+| only in strokes that are rescued end to end | 374 px  | 116 px           | 3,121, 4,629 px     |
+| only in strokes with a filled row in them   | 383 px  | 136 px           | 3,283, 4,690 px     |
+
+Each buys the letters something and costs the fabricated cells more than it
+buys, which is the signature of a fit rather than a rule -- and the first of them
+is a bare length threshold with nothing behind it.
+
+So the shipped rule stays as it is, and the map of what is left is worth more
+than another sweep: **the largest single category is not the stub rule at all**.
+215 of the 388 are pixels Windows inks where nothing here produces a span --
+which is the near-horizontal features the sweep down columns used to cover
+before it was deleted for not existing. That is the same open question as
+section 6, now stated in pixels rather than in mechanisms, and it is more than
+half of everything left.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
