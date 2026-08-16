@@ -489,9 +489,12 @@ export function setGlyph(bytes, font, glyph, { width, height, program, points, c
   put16(program.length);
   body.push(...program);
 
-  // Every point on the curve, and every coordinate a signed two byte delta.
-  for (const _ of corners) {
-    body.push(0x01);
+  /* Flags: bit zero says the point is on the curve. A third element of `false`
+   * marks a control point, which is how a fabrication draws anything that is
+   * not made of straight lines -- an arch over a scanline, say.
+   */
+  for (const point of corners) {
+    body.push(point[2] === false ? 0x00 : 0x01);
   }
 
   for (const axis of [0, 1]) {
@@ -1781,6 +1784,79 @@ export const FABRICATIONS = [
 
         setGlyph(bytes, null, glyph, { width: 0, height: 0, contours: loops, program: [] });
         setBearing(bytes, glyph, LOW);
+      }
+
+      return bytes;
+    },
+  },
+
+  /* Near-horizontal strokes that are curves rather than bars.
+   *
+   * More than half of what is still wrong about the recorded letters is pixels
+   * Windows inks where nothing here produces a span at all: a stroke lying
+   * between two scanlines, half to one pixel tall, missing the nearer by less
+   * than a quarter of a pixel. They occur almost entirely in round letters --
+   * `S a b d e g m n s 6 9 3` -- so they are the apexes of bowls.
+   *
+   * The bar font already asked whether a flat stroke between two scanlines gets
+   * ink and the answer was no, twenty-seven times out of twenty-seven. But a
+   * bar is not a bowl: its edges are horizontal lines meeting corners, and an
+   * apex is a curve turning over, where the scanline below it cuts the outline
+   * twice and the one above not at all. That difference has never been tested,
+   * and it is the only one left.
+   *
+   * So: a wide shallow arch, thin enough that its apex falls between two
+   * scanlines, drawn eighteen ways -- three thicknesses by six heights, moving
+   * the apex through a whole pixel -- and the same eighteen again as flat bars
+   * at the same place, as the control. The glyph is wide either way, so both
+   * sit on the far side of the switch that `cour-widths` found.
+   */
+  {
+    name: 'cour-arches',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with shallow arches and flat bars of the same thickness and height',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const THICK = [60, 100, 140];
+      const PHASE = [0, 40, 80, 120, 160, 200];
+      const RISE = 200;
+      const LEFT = 200;
+      const RIGHT = 1800;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const arch = index < 18;
+        const rest = index % 18;
+        const thick = THICK[rest % THICK.length];
+        const base = 700 + PHASE[Math.floor(rest / THICK.length)];
+
+        /* The arch: a quadratic over the top from left to right, down the right
+         * side, a matching quadratic back along the bottom, up the left side.
+         * The control point sits twice the rise above the ends, which puts the
+         * curve's own apex exactly one rise above them.
+         */
+        const points = arch
+          ? [
+              [LEFT, base],
+              [(LEFT + RIGHT) / 2, base + RISE * 2, false],
+              [RIGHT, base],
+              [RIGHT, base - thick],
+              [(LEFT + RIGHT) / 2, base - thick + RISE * 2, false],
+              [LEFT, base - thick],
+            ]
+          : [
+              [LEFT, base - thick],
+              [LEFT, base],
+              [RIGHT, base],
+              [RIGHT, base - thick],
+            ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, points, program: [] });
+        setBearing(bytes, glyph, LEFT);
       }
 
       return bytes;

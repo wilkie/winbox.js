@@ -2624,6 +2624,60 @@ before it was deleted for not existing. That is the same open question as
 section 6, now stated in pixels rather than in mechanisms, and it is more than
 half of everything left.
 
+### A curve gets ink where a bar does not
+
+`cour-arches` asks the one thing the bar font could not. Half the letters'
+remaining error is a stroke lying between two scanlines that Windows inks and
+this does not, and those occur almost entirely in round letters -- so the thing
+to vary is whether the near-horizontal stroke is a **curve turning over** or a
+**flat bar**. The font draws a wide shallow arch, thin enough that its apex falls
+between two scanlines, at three thicknesses and six heights, and the same
+eighteen again as flat bars at the same place. Both are wide glyphs, so both sit
+on the far side of the switch `cour-widths` found. It needed off-curve points,
+which `setGlyph` now writes.
+
+| the stroke at its apex, when it misses every scanline | Windows inks it |
+| ----------------------------------------------------- | --------------- |
+| a curve turning over                                  | **51 of 51**    |
+| a flat bar of the same thickness at the same height   | **0 of 30**     |
+
+Total, both ways. That is the mechanism behind the missing pixels, and it also
+retires a worry: the twenty-seven sideways bars that got no ink were not saying
+"Windows never rescues a horizontal stroke", they were saying "not a flat one".
+
+**But this already draws the apexes.** Where the arch and the letters disagree is
+the shallow flanks, and reading one exactly says what the difference is. At
+twenty-two pixels per em, row 9 of an arch: the scanline crosses the outer curve
+at 7.38 and 18.10 and nothing else, so the span is `[7.38, 18.10]` and the
+columns whose centres lie inside it are 7 to 17. **Windows inks 6 to 18** -- one
+column beyond the outline at each end, a pixel whose centre is half a pixel
+outside the shape.
+
+So it is not that Windows finds strokes this misses. It is that Windows' ink
+reaches half a pixel further than the outline does, wherever the boundary is
+nearly horizontal. Being _wider_ than the exact geometry is the useful part of
+that sentence: no sampling rule that asks whether a centre is inside can produce
+it.
+
+One measurement worth keeping against the obvious explanation. If Windows worked
+from a coarsely flattened curve rather than the curve, its spans would differ --
+and flattening every quadratic into a fixed number of chords does help a little,
+uniformly:
+
+| chords per quadratic | exact | 2     | 3     | 5     | **8**     | 12    | 24    |
+| -------------------- | ----- | ----- | ----- | ----- | --------- | ----- | ----- |
+| letters, wrong px    | 388   | 404   | 366   | 364   | 380       | 381   | 385   |
+| fabricated, wrong px | 4,338 | 4,559 | 4,357 | 4,327 | **4,306** | 4,312 | 4,335 |
+| arches, wrong px     | 443   | 649   | 469   | 435   | **412**   | 418   | 440   |
+
+It converges back to the exact answer by twenty-four chords, which says the
+solver is right; the best count differs by instrument, three to five for the
+letters and eight to twelve for the arches, which says the improvement is a fit
+and not the mechanism. **Subdividing by flatness instead** -- the principled
+version, splitting until the curve strays less than a tolerance from its chord --
+is worse at every tolerance tried, 431 wrong pixels at an eighth of a pixel and
+1,215 at a whole one. Nothing is shipped from this.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
