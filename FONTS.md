@@ -2533,6 +2533,46 @@ therefore defensible, but it is a threshold standing in a place where the real
 rule is about which edges belong to which contour, and that is the next thing to
 measure rather than the last word.
 
+### What counts as one stroke is geometry, not topology
+
+The pixel of slack was shipped as a threshold standing where a rule about edges
+ought to be. Measured against the rules about edges, it is the rule.
+
+Every criterion below decides the same question -- whether a span on one row and
+a span on the next belong to the same stroke, and so whether a rescued pixel is
+at a tip and should be refused. The outline's own structure is available to all
+of them: each crossing knows which piece of which contour produced it.
+
+| what makes two spans one stroke         | letters         | fabricated cells    |
+| --------------------------------------- | --------------- | ------------------- |
+| **their x ranges come within a pixel**  | **655**, 388 px | **3,463**, 3,895 px |
+| the same two edges bound both           | 607, 509 px     | 3,439, 3,933 px     |
+| the same edge on either side            | 636, 428 px     | 3,448, 3,916 px     |
+| both edges from the same contour        | 640, 423 px     | 3,449, 3,918 px     |
+| edges within one place in contour order | 621, 469 px     | 3,442, 3,921 px     |
+| ...within eight places                  | 630, 435 px     | 3,447, 3,914 px     |
+| the pixels they ink are adjacent        | 642, 404 px     | 3,453, 3,906 px     |
+| within a pixel **and** the same contour | 656, 386 px     | 3,456, 3,905 px     |
+
+**Every appeal to the outline's structure is worse than the plain geometric
+test**, and the gap is not small: requiring the same two edges costs 48 letters
+and 121 wrong pixels. Loosening it towards geometry -- one edge instead of two,
+then the same contour, then adjacency in contour order out to eight segments --
+climbs steadily back towards the geometric answer without reaching it. That
+shape is what a proxy converging on the real variable looks like, read
+backwards.
+
+The one criterion that ties is proximity **with** contour identity added, and it
+is a wash: a letter and two wrong pixels better on one instrument, seven cells
+and ten pixels worse on the other. Contour identity buys nothing on top of being
+close.
+
+So the slack is not standing in for anything. **Two spans a row apart are one
+stroke when they come within a pixel of each other, whatever they are made of**,
+and a rasteriser deciding that from coordinates rather than from which contour an
+edge came from is both what the recordings say and the simpler thing to have
+written. The threshold is the sampling interval, and it stays.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
