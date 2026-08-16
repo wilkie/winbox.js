@@ -1978,6 +1978,56 @@ right and the other 21 sit beside ink that the ordinary fill puts there anyway,
 so those 21 are invented after all. The claim should have been that it is right
 four times in five, which is a different and much less interesting thing.
 
+### Four things the smallest cell is not
+
+With the fabricated cells saying the remaining error is the interpreter's, the
+obvious place to look was Courier New at eight pixels per em -- except that it is
+the one size where the interpreter does nothing, because `INSTCTRL` turns
+grid-fitting off. **That makes it the cleanest instrument in the fixture rather
+than the dirtiest**: the outline handed to the rasteriser is the design outline
+scaled, so every one of its 111 wrong pixels is scan conversion and nothing else.
+Four candidates were measured against it and all four are out.
+
+**Not the fixed point.** Windows works in F26Dot6 and this works in doubles, so
+scaled coordinates that fall between sixty-fourths are rounded there and not
+here. Quantising every placed point to 1/64 moves the fixture from 307 wrong
+pixels to 307, and the cell from 111 to 109. Coarser grains are worse -- 345 at
+1/32, 420 at 1/16 -- which is what says the measurement is live and the answer
+is genuinely nothing.
+
+**Not the pixel the rescue picks.** `floor(to - 0.5)` had only ever been fitted
+on whole-letter counts, which the last few sections have shown to be the wrong
+yardstick. Re-swept on wrong pixels it wins by more than it ever did on letters:
+
+| rule     | floor(to−0.5) | floor(from) | round(mid−0.5) | ceil(from−0.5) |
+| -------- | ------------- | ----------- | -------------- | -------------- |
+| wrong px | **307**       | 382         | 496            | 741            |
+
+**Not grid-fitting after all.** The strokes it gets wrong look exactly like
+strokes that should have been snapped -- a `M` whose left stem lands at
+[2.594, 2.922] where Windows inks pixel 3, which is what a stem rounded to a
+whole pixel would do. Forcing the interpreter to grid-fit regardless of
+`INSTCTRL` settles it the other way: the cell goes from 111 wrong pixels to
+**305** and the fixture from 307 to 501. So Windows really is drawing this size
+unhinted, and the `INSTCTRL` reading now rests on three independent
+measurements -- the fabricated font that changed exactly the 36 records at this
+cell, the census showing 2% of its points on the grid against 40--60% at every
+hinted size, and this.
+
+**Not a directional bias in the rescue, on the evidence.** Of the 183 rescues in
+this cell, 151 land exactly where Windows has ink, 27 land one column left of it
+and only one lands right -- which looks like a systematic pull. It is mostly not:
+the count comes from asking which pixel within two columns Windows inked, and on
+rows carrying several strokes that finds a neighbour belonging to a different
+one. Restricted to rows with a single span and a single inked pixel the rule is
+exact. The apparent asymmetry is an artefact of the attribution, and is recorded
+here because it took a second look to see that.
+
+What is left after all four is 111 wrong pixels in a cell where the outline is
+known exactly, the pick rule is known to be right, and the arithmetic is known
+not to matter -- which is a smaller and much better-posed question than the one
+this section started with.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
