@@ -2487,6 +2487,52 @@ centres, so every real letter is on the far side of this switch** -- which is wh
 the letters showed both halves of the behaviour from the start and why no font
 of lone bars could ever show either.
 
+### Both halves, implemented
+
+The rule is in `fill` now, and it is two things that switch together on whether
+the glyph touches a sample column at all.
+
+**The narrow case costs nothing and pays a great deal.** A glyph lying entirely
+between two pixel centres takes `ceil(from − 0.5)`, the pixel the ordinary fill
+loop would have started at, instead of `floor(to − 0.5)`. No real letter is ever
+that narrow, so the recorded letters do not move by a single pixel -- and the
+fabricated cells fall from 12,916 wrong pixels to **5,424**.
+
+**Stub exclusion is the other half**, and it needed one thing measured before it
+worked. A rescued pixel is refused when its span has no neighbour in the row
+above or none in the row below -- when it is at the end of its stroke. Chaining
+by strict overlap in x is wrong: a diagonal steps sideways faster than it is
+wide, so every one of its scanlines looks like a tip and the rule eats the whole
+stroke. Two spans a row apart are the same stroke when they come within **a
+pixel**, which is the sampling interval, and the sweep is flat from 0.9 to 1.25:
+
+| within               | 0     | 0.5   | 0.75  | **1.0**   | 1.25  | 2.0   |
+| -------------------- | ----- | ----- | ----- | --------- | ----- | ----- |
+| letters, wrong px    | 464   | 406   | 391   | **388**   | 388   | 392   |
+| fabricated, wrong px | 5,149 | 4,200 | 3,932 | **3,895** | 3,895 | 3,898 |
+
+Refusing a tip at either end is right, and it is not close: taking only the top
+or only the bottom leaves the fabricated cells at 3,172 and 2,957 against 3,463,
+and refusing only pixels that are isolated at both ends is worse still.
+
+Where that leaves the two instruments:
+
+|        | letters                   | fabricated cells                    |
+| ------ | ------------------------- | ----------------------------------- |
+| before | 654/846, 369 wrong px     | 2,489/4,434, 12,916 wrong px        |
+| after  | **655**/846, 388 wrong px | **3,463**/4,434, **3,895** wrong px |
+
+A thousand more cells exact and nine thousand fewer wrong pixels on geometry we
+chose, for nineteen pixels on the letters. The letters' cell count goes up as
+well, which it had not done for any change in this section.
+
+The nineteen are worth naming rather than absorbing: stub exclusion is now on for
+every real letter, and where this refuses a pixel Windows keeps, the reason will
+be in what counts as one stroke. A pixel of slack is the sampling interval and
+therefore defensible, but it is a threshold standing in a place where the real
+rule is about which edges belong to which contour, and that is the next thing to
+measure rather than the last word.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

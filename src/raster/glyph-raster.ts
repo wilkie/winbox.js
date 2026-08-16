@@ -312,6 +312,55 @@ export function fill(contours, options) {
     return pixels;
   }
 
+  /* Whether the glyph is wide enough to touch a sample column at all.
+   *
+   * A glyph whose whole outline falls between two pixel centres would sample to
+   * nothing and disappear, and Windows treats that case differently: it inks
+   * the pixel the ordinary fill would have started at rather than the one below
+   * it, and it does not apply the stub rule that would take the ends off what
+   * little it drew. As soon as any part of the outline reaches a centre, both
+   * come back.
+   *
+   * **Measured**, by a font that holds one bar still and sweeps only how wide
+   * the glyph around it is. The switch lands on the pixel centre every time:
+   * at eight pixels per em between right edges of 5.485 and 5.567, at nine
+   * between 5.458 and 5.550, at eleven between 6.452 and 6.565, at seventeen
+   * between 8.358 and 8.533. Read as a rule it is 144 of 144 on that font and
+   * 94 of 96 on another built for a different question. `FONTS.md` section 6.
+   *
+   * The extent is taken from the points, including the control points, and not
+   * from the glyph's own header -- a fabricated glyph whose header claims a box
+   * twice its size draws exactly as one that tells the truth, in all 84
+   * comparisons.
+   */
+  let leftmost = Infinity;
+  let rightmost = -Infinity;
+
+  for (const piece of pieces) {
+    for (const point of [piece.from, piece.to, piece.control]) {
+      if (!point) {
+        continue;
+      }
+
+      leftmost = Math.min(leftmost, point[0]);
+      rightmost = Math.max(rightmost, point[0]);
+    }
+  }
+
+  const sampled = Math.ceil(leftmost - 0.5) < rightmost - 0.5;
+
+  /* Every pixel dropout control would turn on, kept until the whole glyph has
+   * been swept because whether one survives depends on its neighbours.
+   */
+  const rescues: any[] = [];
+
+  /* Every span the sweep found, rescued or not. A rescued pixel at the end of a
+   * run of them is not necessarily at the end of the stroke -- the rest of the
+   * stroke may have been wide enough to fill ordinarily -- so the tips have to
+   * be looked for among all the spans and not only among the rescues.
+   */
+  const strokes: any[] = [];
+
   for (let row = 0; row < height; row++) {
     // The centre of the row, so a shape has to cover the pixel to fill it.
     const y = row + 0.5;
@@ -343,6 +392,8 @@ export function fill(contours, options) {
       const first = Math.ceil(from - 0.5);
 
       if (first < to - 0.5) {
+        strokes.push({ row, from, to });
+
         for (let column = first; column < to - 0.5; column++) {
           if (column >= 0 && column < width) {
             pixels[row * width + column] = 1;
@@ -371,12 +422,46 @@ export function fill(contours, options) {
        * below the far end of the span. `Hinter` and the column sweep below say
        * the rest of it.
        */
-      const column = Math.floor(to - 0.5);
+      const column = sampled ? Math.floor(to - 0.5) : Math.ceil(from - 0.5);
 
       if (column >= 0 && column < width) {
-        pixels[row * width + column] = 1;
+        rescues.push({ row, from, to, column });
       }
     }
+  }
+
+  /* Stubs: the tip of a stroke rather than the stroke itself.
+   *
+   * `SCANTYPE` 1, which all four installed families ask for, is "simple dropout
+   * control **excluding stubs**", and what it excludes is the scanline where a
+   * stroke ends: the point of a `1`'s flag, the top of a `W`'s diagonal.
+   *
+   * A span belongs to the same stroke as one on the row above when the two
+   * overlap in x. A rescue with nothing above it, or nothing below it, is at a
+   * tip and is refused. It applies only to a glyph wide enough to touch a
+   * sample column -- see `sampled` above.
+   */
+  const all = [...strokes, ...rescues];
+
+  /* Two spans a row apart are the same stroke when they come within a pixel of
+   * each other. Requiring them to overlap outright is too strict for a
+   * diagonal, whose spans step sideways faster than they are wide, and every
+   * scanline of one then looks like a tip; a pixel is the sampling interval and
+   * the sweep is flat from 0.9 to 1.25 either side of it.
+   */
+  const touching = (one, two) => one.from - 1 < two.to && two.from - 1 < one.to;
+
+  for (const rescue of rescues) {
+    if (sampled) {
+      const above = all.some((span) => span.row === rescue.row - 1 && touching(span, rescue));
+      const below = all.some((span) => span.row === rescue.row + 1 && touching(span, rescue));
+
+      if (!above || !below) {
+        continue;
+      }
+    }
+
+    pixels[rescue.row * width + rescue.column] = 1;
   }
 
   return pixels;
