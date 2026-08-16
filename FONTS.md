@@ -3066,6 +3066,56 @@ sixty-fourth grid, so this changes nothing for most of the fixture and everythin
 for the two places where the outline is scaled here instead -- the shape fonts,
 and Courier New at the size where `INSTCTRL` turns grid-fitting off.
 
+### Everything left is a decision, not a gap
+
+With the guard shipped and the outline on the sixty-fourth grid, the 266 wrong
+pixels were re-decomposed and every knob re-swept. Nothing moved, and the reason
+is worth recording as clearly as a change would be.
+
+**The geometry is complete.** For each pixel Windows inks and this does not,
+asking whether either sweep found a span near it:
+
+|                                         | count |
+| --------------------------------------- | ----- |
+| a row span **and** a column span nearby | 133   |
+| a row span only                         | 10    |
+| a column span only                      | 7     |
+| **neither**                             | **2** |
+
+Two pixels in the whole fixture are out of reach of both sweeps. Everything else
+was found and then declined. So there is no missing mechanism left to look for in
+this part of the rasteriser -- what remains is entirely which of the found spans
+gets ink.
+
+**Both stub rules earn their place**, and the tension is the familiar one:
+
+|                           | letters         | fabricated cells    |
+| ------------------------- | --------------- | ------------------- |
+| both (shipped)            | 727, 266 px     | **3,904**, 4,505 px |
+| no stub rule along rows   | **728, 244 px** | 3,372, 6,019 px     |
+| no stub rule down columns | 706, 323 px     | 3,651, 5,376 px     |
+| neither                   | 696, 293 px     | 2,920, 6,934 px     |
+
+Dropping the row rule buys 22 wrong pixels on the letters and costs 532
+fabricated cells. The fabricated set is the one with exact outlines, so it is the
+better witness about a rule; the letters are the target. Kept.
+
+**Refusing a tip at either end is still right on both axes.** Refusing only when
+a rescue is isolated at both ends is worth 730 letters and 241 pixels -- better
+than shipped -- and 3,405 fabricated cells against 3,904. Every other mode is
+worse on both.
+
+**Rows before columns.** The two sweeps are not commutative now that a rescue
+declines when the other candidate is already lit, so which runs first is a real
+choice: rows first is 727 letters and 266 wrong pixels, columns first 721 and
+306, with the fabricated cells 3,904 against 3,889. Rows first, which is also the
+order the sweep is written in.
+
+Two earlier attempts at that last measurement returned 211,871 wrong pixels,
+which is not a result -- reordering the blocks left `touching` used before it was
+declared, so every glyph threw and drew nothing. Recorded because a number that
+absurd is easy to catch and a number merely wrong is not.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
