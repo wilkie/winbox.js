@@ -2966,6 +2966,62 @@ pixels, **238 are one rule deciding a rescue one way where Windows decides it th
 other**, and the question is the same question on both axes: which of two
 adjacent pixels a rescue belongs in, and whether it belongs at all.
 
+### A rescue does not fire when the other candidate is already lit
+
+Two hundred and thirty-eight of the 344 wrong pixels were one rule deciding a
+rescue one way where Windows decided it the other, on both axes. The rule turns
+out to be one sentence, and it comes out of a control rather than a sweep.
+
+Of the 104 column rescues Windows does not make, **100 have Windows' ink one row
+above instead.** That looked like a wrong pick, and the pick was already swept:
+moving every column rescue up a row is worth 630 letters against 685, because
+the 194 that are right go wrong. Two adjacent rows, 194 to 104, and no function
+of the span's ends separates them -- eleven were tried and none beats simply
+always taking the lower.
+
+The control is what breaks it. Among the column rescues that are **right**,
+Windows also inks the row above only 9% of the time; among the wrong ones, 96%.
+So "one row up" is not the background rate of ink in a letter, it is a real
+signal. And asking what _this_ draws rather than what Windows draws finds the
+mechanism:
+
+|                               | we already ink the row above | the row below |
+| ----------------------------- | ---------------------------- | ------------- |
+| column rescues that are right | 13%                          | 19%           |
+| column rescues that are wrong | **75%**                      | 30%           |
+
+**We are inking two pixels where Windows inks one.** The feature was already on
+the grid, put there by an ordinary fill or an earlier rescue, and the rescue adds
+a second below it.
+
+So: **a rescue does not fire when the other candidate is already lit.** A rescue
+always chooses between two adjacent pixels, because the span lies between their
+centres; if the one it did not choose already has ink, whatever it was going to
+save is drawn and a second pixel only thickens it. That is what dropout control
+is _for_, which makes declining the rule rather than an exception to it.
+
+It applies on both axes, and which neighbour is "the other candidate" follows
+from the pick:
+
+|               | the pick takes                    | so the guard is            | letters                             |
+| ------------- | --------------------------------- | -------------------------- | ----------------------------------- |
+| along a row   | `floor(to − 0.5)`, the left pixel | the pixel to the **right** | **731**, against 699 guarding left  |
+| down a column | `ceil(from − 0.5)`, the lower row | the row **above**          | **713**, against 688 guarding below |
+
+Guarding on the neighbour the rescue actually chose is worth much less, which is
+the check that it is the _other_ candidate that matters and not merely having a
+neighbour at all.
+
+**Shipped, and it is the largest single gain in this section.**
+
+|        | letters                       | fabricated cells                    |
+| ------ | ----------------------------- | ----------------------------------- |
+| before | 685/846, 344 wrong px         | 3,824/4,950, 5,049 wrong px         |
+| after  | **731**/846, **264** wrong px | **3,865**/4,950, **4,666** wrong px |
+
+Both instruments, both counts. The recorded letters are six sevenths exact, from
+two thirds when this section began.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

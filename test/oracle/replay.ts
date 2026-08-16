@@ -1251,9 +1251,9 @@ export class Unimplemented extends Error {}
  * and at the sizes text is read at that decides where about half the ink goes.
  */
 const NO_HINTING =
-  'every bitmap and stroke face agrees exactly, and four fifths of the ' +
-  'outline glyphs do; what is left is three hundred and forty-four pixels ' +
-  'across a hundred and sixty-one letters, and section 6 of FONTS.md ' +
+  'every bitmap and stroke face agrees exactly, and six sevenths of the ' +
+  'outline glyphs do; what is left is two hundred and sixty-four pixels ' +
+  'across a hundred and fifteen letters, and section 6 of FONTS.md ' +
   'records what has been ruled out';
 
 export const KNOWN_GAPS: Record<string, string> = {
