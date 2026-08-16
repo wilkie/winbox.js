@@ -2436,6 +2436,57 @@ Every real letter is wide enough to be on the far side of that switch, which is
 why the letters have always shown both halves of the behaviour and why the shape
 fonts showed neither.
 
+### What turns stub exclusion on
+
+A glyph too narrow to touch a single sample column.
+
+`cour-widths` puts the same bar in the same place in all thirty-six glyphs and
+sweeps only the glyph's total width, by moving a small box below the baseline
+further and further to the right. The box is on the right so `xMin` never moves
+and the bar's placement is identical everywhere; seven recorded sizes turn
+thirty-six widths in design units into a fine sweep in pixels. The bar keeps its
+full height up to a point and then loses its first and last row:
+
+| pixels per em | the bar          | switches between glyph widths |
+| ------------- | ---------------- | ----------------------------- |
+| 8             | 5 rows, then 3   | 0.81 and 0.89 px              |
+| 9             | 6 rows, then 4   | 0.45 and 0.54 px              |
+| 11            | 8 rows, then 6   | 0.77 and 0.89 px              |
+| 17            | 12 rows, then 10 | 0.67 and 0.85 px              |
+| 13, 16, 22    | no switch at all | --                            |
+
+The three that never switch are the three where this bar happens to cover a
+pixel centre and is filled ordinarily, so there is no rescued pixel for a stub
+rule to take away. That is the first confirmation.
+
+The four thresholds are different numbers, so it is not a width in pixels, and
+they are different numbers of design units too. What they are is the same event:
+**the glyph's outline reaching the next pixel centre.** At eight pixels per em
+the bar begins at 4.676 and the switch falls between a right edge of 5.485 and
+one of 5.567 -- across 5.5. At nine, between 5.458 and 5.550 -- across 5.5. At
+eleven, between 6.452 and 6.565 -- across 6.5. At seventeen, between 8.358 and
+8.533 -- across 8.5.
+
+Stated as a rule and tested against the whole sweep: **stub exclusion applies
+when the glyph's outline spans at least one pixel centre, and does not when the
+whole glyph falls between two.** That is 144 of 144 on `cour-widths` and 94 of 96
+on `cour-sides`, which was built for a different question.
+
+It also settles every earlier case at once. The lone bar of `cour-bars` runs from
+4.676 to 4.832 and covers no centre -- no exclusion, and the other candidate
+pixel. A box directly above or below it does not widen the glyph past a centre --
+no change. A box to the left or the right does -- exclusion, and leftward also
+moves `xMin` and the column with it. A false `xMin` in the header does not move
+any point -- no change.
+
+And it is a sensible thing for a rasteriser to do. A glyph lying entirely between
+two sample columns would otherwise disappear completely; drawing it anyway, and
+declining to apply a stub rule that would erase what little is left, is what
+keeping a sub-pixel glyph visible looks like. **Every real letter spans many
+centres, so every real letter is on the far side of this switch** -- which is why
+the letters showed both halves of the behaviour from the start and why no font
+of lone bars could ever show either.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

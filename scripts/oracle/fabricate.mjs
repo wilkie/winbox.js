@@ -1724,6 +1724,69 @@ export const FABRICATIONS = [
     },
   },
 
+  /* Where stub exclusion switches on, as a function of the glyph's width.
+   *
+   * `cour-sides` narrowed it to this: a glyph wide enough loses the first and
+   * last row of its stroke and takes the other candidate pixel, and a narrow one
+   * does neither. The narrow case is very narrow indeed -- a lone bar is forty
+   * to a hundred and forty design units across, which is a sixth to a half of a
+   * pixel at the sizes recorded, so the whole glyph is thinner than the grid it
+   * is drawn on. The obvious threshold to look for is one pixel.
+   *
+   * So: the same bar in the same place in all thirty-six glyphs, and a small box
+   * below the baseline whose distance from it sweeps the glyph's total width
+   * from a quarter of a pixel to about three. The box sits to the **right**, so
+   * `xMin` never moves and the bar's placement is identical everywhere -- the
+   * only thing changing is how wide the glyph is. Seven recorded sizes turn
+   * thirty-six widths in design units into a fine sweep in pixels.
+   */
+  {
+    name: 'cour-widths',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with one bar and a box sweeping the glyph width from a quarter pixel to three',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const LOW = 685;
+      const BAR = 40;
+      const TALL = 1400;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        // The glyph's whole width, in design units: 60 to 795, evenly.
+        const span = 60 + index * 21;
+
+        const bar = [
+          [LOW, 0],
+          [LOW, TALL],
+          [LOW + BAR, TALL],
+          [LOW + BAR, 0],
+        ];
+
+        /* Twenty units wide, ending exactly where the glyph is meant to, and
+         * below the baseline so it shares no row with the bar.
+         */
+        const right = LOW + span;
+        const box = [
+          [right - 20, -400],
+          [right - 20, -200],
+          [right, -200],
+          [right, -400],
+        ];
+
+        const loops = span <= BAR ? [bar] : [bar, box];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, contours: loops, program: [] });
+        setBearing(bytes, glyph, LOW);
+      }
+
+      return bytes;
+    },
+  },
+
   /* Courier New with its `INSTCTRL` turned around.
    *
    * Its `prep` executes the instruction twice, both times as `PUSHB[2] 1, 1`
