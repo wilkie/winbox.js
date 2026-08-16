@@ -2028,6 +2028,61 @@ known exactly, the pick rule is known to be right, and the arithmetic is known
 not to matter -- which is a smaller and much better-posed question than the one
 this section started with.
 
+### The sweep down columns is gone
+
+Thirty-six fabricated bars had said Windows has no such sweep, and that reading
+had twice been set aside because deleting it cost recorded letters. Reading the
+bars properly settles it. Taking only the sideways bars that **miss every
+scanline** -- the ones a vertical rescue would exist to save -- and asking
+whether Windows drew anything at all:
+
+| bar height   | 0.2--0.3 | 0.3--0.4 | 0.4--0.5 | 0.5--0.6 | 0.6--0.8 |
+| ------------ | -------- | -------- | -------- | -------- | -------- |
+| Windows inks | 0 of 5   | 0 of 8   | 0 of 5   | 0 of 3   | 0 of 6   |
+
+Twenty-seven of twenty-seven, at every height up to a full pixel and every
+phase, and in the same recordings where all 390 upright bars **are** rescued.
+That is a controlled comparison inside one font at one size: dropout control is
+demonstrably running, and it never once fires down a column.
+
+So it is deleted, knowing what that costs:
+
+|        | recorded letters          | fabricated cells                    |
+| ------ | ------------------------- | ----------------------------------- |
+| before | 307 wrong px, 692/846     | 7,171 wrong px, 1,776/3,144         |
+| after  | **369** wrong px, 654/846 | **6,892** wrong px, **1,816**/3,144 |
+
+Worse on the letters by 62 pixels, better on chosen geometry by 279, and better
+by two at Courier New at eight pixels per em -- the one cell of letters where
+nothing is hinted, and so the one cell where a fair comparison is possible. The
+letters lose because the sweep was compensating for something else, and leaving
+a mechanism in that Windows provably lacks keeps whatever that is invisible.
+
+### What is left, and where it is not
+
+Decomposing the 111 wrong pixels of the unhinted cell by where each came from
+gives the shape of what remains:
+
+|                                                        | count  |
+| ------------------------------------------------------ | ------ |
+| Windows inks it, a span was there, we inked nothing    | **73** |
+| we inked it from a rescue, Windows has nothing         | 32     |
+| we inked it from the column sweep, Windows has nothing | 3      |
+| we inked it from an ordinary fill, Windows has nothing | 2      |
+| Windows inks it and there is no span anywhere near     | 1      |
+
+The dominant failure is a pixel Windows draws where the outline passes close by
+and this draws nothing. Of those, 56 have a span down the column overlapping
+them, every one between 0.32 and 0.42 of a pixel tall -- the bottom bar of a
+`B`, the arm of a `K`, the crossbar of an `a`. It is tempting, and wrong, to
+read that as the vertical threshold refusing them: sweeping the column
+threshold and its row pick together over twelve combinations makes every one
+worse than what was already there, and the bars above say the mechanism does not
+exist at all. What those 56 have in common is that they are _near_ a thin
+horizontal stroke, not that the stroke is what Windows drew there -- in a letter
+the same pixel is usually reachable from a stem as well, and that ambiguity is
+what has made every attribution in this section harder than it looks.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

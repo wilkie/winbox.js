@@ -1251,12 +1251,14 @@ export class Unimplemented extends Error {}
  * and at the sizes text is read at that decides where about half the ink goes.
  */
 const NO_HINTING =
-  'every bitmap and stroke face agrees exactly, and four fifths of the ' +
-  'outline glyphs do; what is left is three hundred and seven pixels across ' +
-  'a hundred and fifty-four letters, of which a hundred and eleven are ' +
+  'every bitmap and stroke face agrees exactly, and three quarters of the ' +
+  'outline glyphs do; what is left is three hundred and sixty-nine pixels ' +
+  'across a hundred and ninety-two letters, of which a hundred and nine are ' +
   'Courier New at eight pixels per em, where its own INSTCTRL turns ' +
-  'grid-fitting off and dropout control draws the whole letter; section 6 of ' +
-  'FONTS.md records what has been ruled out';
+  'grid-fitting off so the outline is exact and every wrong pixel is scan ' +
+  'conversion; this went up when the sweep down columns was deleted, which ' +
+  'thirty-six fabricated bars and three thousand fabricated cells all say ' +
+  'Windows does not have -- section 6 of FONTS.md records what it was hiding';
 
 export const KNOWN_GAPS: Record<string, string> = {
   glyph: NO_HINTING,

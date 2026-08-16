@@ -18,13 +18,15 @@
  * cannot be blamed on the interpreter, which is the one thing a disagreement
  * about a letter can always be blamed on.
  *
- * That is what makes them decide the column sweep. Scored here, deleting the
- * sweep down columns is better on both counts -- 1,816 cells exact against
- * 1,776 and 6,892 wrong pixels against 7,171 -- while on the recorded letters
- * deleting it is worse, 369 wrong pixels against 307. The two only look
- * contradictory until the difference between them is named: the letters are
- * hinted and these are not. A rule that helps where the outline came through an
- * interpreter and hurts where it did not is not a rule about scan conversion.
+ * That is what decided the column sweep, which is now gone: scored here,
+ * deleting it was better on both counts -- 1,816 cells exact against 1,776 and
+ * 6,892 wrong pixels against 7,171 -- while on the recorded letters deleting it
+ * is worse, 369 wrong pixels against 307. The two only look contradictory until
+ * the difference between them is named: the letters are hinted and these are
+ * not. A rule that helps where the outline came through an interpreter and
+ * hurts where it did not is not a rule about scan conversion, and the bars
+ * settled it outright -- of the 27 sideways bars that miss every scanline, not
+ * one is inked by Windows at any height up to a full pixel or at any phase.
  * `FONTS.md` section 6 has the rest.
  */
 
@@ -76,8 +78,8 @@ describe('the fabricated glyph recordings', () => {
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 1776;
-  const WRONG = 7171;
+  const EXACT = 1816;
+  const WRONG = 6892;
 
   present(
     'agree with Windows on three thousand cells of chosen geometry',
