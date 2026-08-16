@@ -2242,6 +2242,41 @@ bar font's to the last bit, and only the outline's complexity would differ. If
 the pixel moves, the rule is not about geometry at all; if it does not, the bars
 are sound and something in the letters is still misattributed.
 
+### The origin is not rounded, and neither is the bearing
+
+The two code paths that reach the rasteriser are not the same: a glyph with
+instructions goes through the interpreter and comes back in sixty-fourths of a
+pixel, and a glyph without any -- which is every glyph of every shape font -- is
+scaled here in floating point. That is a real asymmetry between the two
+instruments, and if the interpreter moved a glyph even when it moves no point,
+the letters would see it and the bars never would.
+
+It does not, and the first half of that is settled by reading rather than
+measuring. The origin phantom is `xMin − lsb`, which is zero for any
+conventionally built glyph and is zero by construction for the shape fonts,
+since `setBearing` writes the bearing from the points themselves. There is
+nothing there to round.
+
+The second half is the live version: Windows places a glyph at
+`pen + lsb + (x − xMin)`, and rounding that bearing to the grid before placing
+is a thing a rasteriser of the period might well do. Measured at three grains:
+
+| bearing rounded to | letters          | fabricated cells   | the bars         |
+| ------------------ | ---------------- | ------------------ | ---------------- |
+| nothing (shipped)  | **369** wrong px | **6,892** wrong px | **770** wrong px |
+| a whole pixel      | 3,462            | 14,521             | 1,002            |
+| half a pixel       | 1,909            | 11,988             | 936              |
+| a sixty-fourth     | 399              | 6,874              | 770              |
+
+Whole-pixel rounding is a catastrophe -- nine times the error on the letters --
+and half a pixel is barely better. A sixty-fourth changes nothing either way,
+which is the same answer quantising the placed points gave earlier and says the
+same thing: the arithmetic is fine and the placement is unrounded.
+
+So the asymmetry between the two code paths is real but empty. Both place the
+glyph at the same unrounded position, Windows agrees with both, and the
+contradiction between the bars and the letters survives it.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
