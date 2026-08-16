@@ -417,7 +417,7 @@ export function reportPoint(point, phantom, magnify) {
  * rewriting every offset after it. The rectangles here are a fraction of the
  * length of the letters they replace, and the slack at the end is never read.
  */
-export function setGlyph(bytes, font, glyph, { width, height, program, points, contours }) {
+export function setGlyph(bytes, font, glyph, { width, height, program, points, contours, box }) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const tables = tablesOf(view);
 
@@ -466,11 +466,16 @@ export function setGlyph(bytes, font, glyph, { width, height, program, points, c
   const xs = corners.map((point) => point[0]);
   const ys = corners.map((point) => point[1]);
 
+  /* The box is the one the points are in unless a different one is asked for.
+   * Writing a false one is how `cour-lies` separates what the header says from
+   * what the outline is, which is otherwise impossible: Windows places a glyph
+   * at `pen + lsb + (x - xMin)`, so the two always move together.
+   */
   put16(loops.length);
-  put16(Math.min(...xs));
-  put16(Math.min(...ys));
-  put16(Math.max(...xs));
-  put16(Math.max(...ys));
+  put16(box ? box[0] : Math.min(...xs));
+  put16(box ? box[1] : Math.min(...ys));
+  put16(box ? box[2] : Math.max(...xs));
+  put16(box ? box[3] : Math.max(...ys));
 
   // Where each contour ends, as an index into the flattened list of points.
   let ended = -1;
@@ -1460,6 +1465,254 @@ export const FABRICATIONS = [
 
         const loops =
           variant === 0 ? [plain] : variant === 1 ? [subdivided] : [plain, elsewhere];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, contours: loops, program: [] });
+        setBearing(bytes, glyph, Math.min(...loops.flat().map((point) => point[0])));
+      }
+
+      return bytes;
+    },
+  },
+
+  /* Why a second contour changes the drawing, which `cour-crowd` established
+   * that it does.
+   *
+   * That font moved the second contour far to the left and well below the
+   * baseline, so it changed three things at once: the glyph gained a contour,
+   * its `xMin` fell from 685 to 100, and its `yMin` fell from 0 to −400. Any of
+   * the three could be what the rasteriser is reacting to, and they can be
+   * separated by moving the extra contour rather than by adding more of them.
+   *
+   * Six widths and phases, each drawn six ways. Every extra contour is kept out
+   * of the rows the bar occupies -- below the baseline, or above the ascender --
+   * so the bar's own crossings are identical in all six.
+   *
+   *  - **plain**: the bar alone, one contour, as the control;
+   *  - **far**: a second contour low and to the left, which is what `cour-crowd`
+   *    did -- `xMin` and `yMin` both move;
+   *  - **near**: the same contour just left of the bar, so `xMin` moves a
+   *    little rather than a lot and `yMin` moves the same as `far`;
+   *  - **under**: directly beneath the bar at its own x, so `xMin` does not move
+   *    at all and only `yMin` does;
+   *  - **over**: directly above the bar at its own x, so only `yMax` moves and
+   *    `yMin` does not;
+   *  - **three**: the bar and two extra contours, to ask whether the effect
+   *    counts contours or merely notices that there is more than one.
+   *
+   * If `under` behaves like `far`, the bounding box in x is not it. If `over`
+   * behaves like `plain`, the direction the box grows matters. If `three`
+   * behaves like `far`, the count does not.
+   */
+  {
+    name: 'cour-boxes',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with one bar and an extra contour moved about to isolate why it matters',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const WIDTHS = [40, 80, 140];
+      const PHASES = [85, 170];
+      const TALL = 1400;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const variant = Math.floor(index / 6);
+        const which = index % 6;
+        const width = WIDTHS[which % WIDTHS.length];
+        const phase = PHASES[Math.floor(which / WIDTHS.length)];
+        const low = 600 + phase;
+
+        const bar = [
+          [low, 0],
+          [low, TALL],
+          [low + width, TALL],
+          [low + width, 0],
+        ];
+
+        // A small box, wherever it is asked for, wound the same way as the bar.
+        const box = (x0, x1, y0, y1) => [
+          [x0, y0],
+          [x0, y1],
+          [x1, y1],
+          [x1, y0],
+        ];
+
+        const far = box(100, 300, -400, -200);
+        const near = box(low - 200, low - 20, -400, -200);
+        const under = box(low, low + width, -400, -200);
+        const over = box(low, low + width, TALL + 100, TALL + 300);
+
+        const loops = [
+          [bar],
+          [bar, far],
+          [bar, near],
+          [bar, under],
+          [bar, over],
+          [bar, far, over],
+        ][variant];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, contours: loops, program: [] });
+        setBearing(bytes, glyph, Math.min(...loops.flat().map((point) => point[0])));
+      }
+
+      return bytes;
+    },
+  },
+
+  /* What the header says against what the outline is.
+   *
+   * `cour-boxes` narrowed it: an extra contour above or below the bar changes
+   * nothing at all, one to its left changes the drawing, and far and near
+   * change it identically. So it is the glyph's left extent that matters, not
+   * how many contours there are nor how far away they sit.
+   *
+   * But `xMin` and the left side bearing always move together -- Windows places
+   * a glyph at `pen + lsb + (x - xMin)`, and a fabrication that keeps the bar
+   * where it was has to change both. Writing a false `xMin` into the glyph
+   * header separates them, because the outline is then not where the header
+   * says it begins.
+   *
+   *  - **plain**: the bar, its true box, `lsb` matching -- the control;
+   *  - **lying**: the same single-contour bar, unchanged to the last point, with
+   *    `xMin` written as 100 and `lsb` written as 100 to match, so the bar lands
+   *    in exactly the same place and only the header differs;
+   *  - **crowded**: the bar with a real second contour out at 100, which is what
+   *    `cour-boxes` called `far`.
+   *
+   * If lying behaves like crowded, it is the number in the header and the
+   * arithmetic done with it. If lying behaves like plain, the header is
+   * innocent and something about a real second contour is what counts.
+   */
+  {
+    name: 'cour-lies',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with a bar whose header claims a wider box than its outline has',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const WIDTHS = [40, 80, 120, 140];
+      const PHASES = [0, 85, 170];
+      const TALL = 1400;
+      const CLAIM = 100;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const variant = Math.floor(index / 12);
+        const which = index % 12;
+        const width = WIDTHS[which % WIDTHS.length];
+        const phase = PHASES[Math.floor(which / WIDTHS.length)];
+        const low = 600 + phase;
+
+        const bar = [
+          [low, 0],
+          [low, TALL],
+          [low + width, TALL],
+          [low + width, 0],
+        ];
+
+        const far = [
+          [CLAIM, -400],
+          [CLAIM, -200],
+          [CLAIM + 200, -200],
+          [CLAIM + 200, -400],
+        ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        if (variant === 1) {
+          setGlyph(bytes, null, glyph, {
+            width: 0,
+            height: 0,
+            contours: [bar],
+            program: [],
+            box: [CLAIM, -400, low + width, TALL],
+          });
+          setBearing(bytes, glyph, CLAIM);
+        } else {
+          const loops = variant === 0 ? [bar] : [bar, far];
+
+          setGlyph(bytes, null, glyph, { width: 0, height: 0, contours: loops, program: [] });
+          setBearing(bytes, glyph, Math.min(...loops.flat().map((point) => point[0])));
+        }
+      }
+
+      return bytes;
+    },
+  },
+
+  /* Which side the extra contour is on.
+   *
+   * `cour-lies` showed the glyph header is innocent -- a single bar whose box
+   * and bearing both claim to start at 100 draws exactly as one that tells the
+   * truth, in all 84 comparisons. So it takes a real contour, and `cour-boxes`
+   * showed one directly above or below the bar does nothing while one to its
+   * left changes the drawing whether it is near or far.
+   *
+   * That was never tested on the other side, and "anything to the left" and
+   * "anything not directly above or below" are different claims. Six widths and
+   * phases, six placements, every extra contour kept out of the bar's own rows:
+   *
+   *  - **plain**, the bar alone;
+   *  - **left**, a box out at 100, below the baseline -- the known case;
+   *  - **right**, the mirror of it, out beyond the bar at 1700;
+   *  - **rightNear**, just beyond the bar's right edge;
+   *  - **leftAbove**, out at 100 but above the ascender rather than below the
+   *    baseline, to ask whether the side is about x alone;
+   *  - **both**, one box on each side.
+   */
+  {
+    name: 'cour-sides',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with a bar and an extra contour to its left, its right, or both',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const WIDTHS = [40, 80, 140];
+      const PHASES = [85, 170];
+      const TALL = 1400;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const variant = Math.floor(index / 6);
+        const which = index % 6;
+        const width = WIDTHS[which % WIDTHS.length];
+        const phase = PHASES[Math.floor(which / WIDTHS.length)];
+        const low = 600 + phase;
+
+        const bar = [
+          [low, 0],
+          [low, TALL],
+          [low + width, TALL],
+          [low + width, 0],
+        ];
+
+        const box = (x0, x1, y0, y1) => [
+          [x0, y0],
+          [x0, y1],
+          [x1, y1],
+          [x1, y0],
+        ];
+
+        const left = box(100, 300, -400, -200);
+        const right = box(1700, 1900, -400, -200);
+        const rightNear = box(low + width + 20, low + width + 200, -400, -200);
+        const leftAbove = box(100, 300, TALL + 100, TALL + 300);
+
+        const loops = [
+          [bar],
+          [bar, left],
+          [bar, right],
+          [bar, rightNear],
+          [bar, leftAbove],
+          [bar, left, right],
+        ][variant];
 
         const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
 

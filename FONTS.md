@@ -2339,6 +2339,61 @@ up, or in how its ink is transferred. Losing a row at each end is stub exclusion
 appearing where it was absent, and stepping a column is the other pixel of the
 pair; both switch on together, which suggests one decision rather than two.
 
+### It is the width of the glyph
+
+Three more fonts answer why. Each draws the same bar at the same place and moves
+one extra contour around it, always keeping it out of the bar's own rows so the
+crossings the rasteriser computes are identical every time.
+
+| the extra contour                             | x extent moves | column shifts | rows lost |
+| --------------------------------------------- | -------------- | ------------- | --------- |
+| none (`plain`)                                | --             | --            | --        |
+| directly below the bar, its own x             | no             | no            | **no**    |
+| directly above the bar, its own x             | no             | no            | **no**    |
+| to the left, near or far                      | `xMin`         | **−1**        | **2**     |
+| to the left but above the ascender            | `xMin`         | **−1**        | **2**     |
+| to the right, near or far                     | `xMax`         | no            | **2**     |
+| one on each side                              | both           | **−1**        | **2**     |
+| **none, but the header claims `xMin` is 100** | no             | **no**        | **no**    |
+
+Two readings fall out and a third follows.
+
+**It is not the number of contours.** A second contour directly under or over
+the bar leaves all 42 comparisons untouched. Distance does not matter either:
+near and far are identical to the last pixel.
+
+**It is not the header.** `cour-lies` writes a false `xMin` of 100 into the
+glyph and a matching bearing, so the bar lands in the same place and only the
+header differs -- and it draws identically to the truthful control in **all 84**
+comparisons. Windows takes the glyph's extent from the points, not from what the
+glyph claims.
+
+**It is the width.** Widening the outline in x -- either side, by any amount --
+costs the bar its first and last inked row, and widening it leftward moves the
+bar a column as well. Widening it in y alone does nothing.
+
+That closes the contradiction that has stood since the bar font was built. The
+same bar, at the same size and phase, with the glyph narrow and then widened by
+a contour nowhere near it:
+
+| the glyph                  | cases | `ceil(from − 0.5)` | `floor(to − 0.5)` |
+| -------------------------- | ----- | ------------------ | ----------------- |
+| narrow -- the bar alone    | 16    | **16**             | 0                 |
+| widened -- a box elsewhere | 16    | 0                  | **16**            |
+
+**Sixteen of sixteen each way.** The rule was never in dispute between fabricated
+bars and real letters; it was between narrow glyphs and wide ones, and every real
+letter is a wide one. `floor(to − 0.5)` -- what is shipped, and what the recorded
+letters said by 93 to 7 -- is right, and nine shape fonts disagreed with it only
+because a lone rectangle is a narrower glyph than any letter.
+
+Why a rasteriser should care how wide the glyph is remains open, and it is now a
+question with a shape: something sized or positioned from the outline's extent,
+computed before any scanline is drawn, that a single narrow contour and a wide
+one land differently inside. The row loss at both ends of the stroke is the part
+that most resembles a real mechanism -- it is stub exclusion appearing where it
+was absent, and it appears whenever the glyph gets wider, on either side.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

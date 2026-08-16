@@ -29,13 +29,15 @@
  * one is inked by Windows at any height up to a full pixel or at any phase.
  * `FONTS.md` section 6 has the rest.
  *
- * `cour-crowd` is the seventeenth and answers a different question: it draws the
+ * Four of them -- `cour-crowd`, `cour-boxes`, `cour-lies` and `cour-sides` --
+ * answer a different question: it draws the
  * same bar three ways -- plain, subdivided into three times as many collinear
  * points, and beside a second contour down in the descender that shares no row
  * and no column with it. Windows draws the first two identically in all 84
  * comparisons and the third differently in 29 of them. Outline complexity is
- * therefore something the rasteriser notices, and it is the number of contours
- * that it notices rather than the number of points.
+ * therefore something the rasteriser notices, and the three that follow narrow
+ * it to the glyph's width in x, measured from the points rather than from the
+ * header. Section 6 of `FONTS.md` has the matrix.
  */
 
 'use strict';
@@ -86,8 +88,8 @@ describe('the fabricated glyph recordings', () => {
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 1985;
-  const WRONG = 7882;
+  const EXACT = 2470;
+  const WRONG = 10609;
 
   present(
     'agree with Windows on three thousand cells of chosen geometry',
