@@ -1663,9 +1663,39 @@ is to say there is no coefficient and the rule is what it looks like. Leaning
 left it is 1.4 on one set and 1.8 on another, and neither reaches 93%. A
 constant that moves when the sample moves is not a constant.
 
-**Open.** The instrument is built and the question is one cell wide: a
-left-leaning edge is credited with less reach than its geometry gives it, by an
-amount that is not a fixed multiple, not a fixed offset, and not the phase. **Open**, and now open with
+### The shape of the fit says the variable is wrong
+
+Chasing the coefficient further is what shows there is not one. Sweeping it and
+watching how sharply it peaks separates a variable that governs an answer from
+one that merely correlates with it:
+
+| Coefficient   | 0.8   | 0.9       | 1.0       | 1.2   | 1.4       | 1.6       | 2.0   | 2.5   |
+| ------------- | ----- | --------- | --------- | ----- | --------- | --------- | ----- | ----- |
+| leaning right | 97.7% | **98.4%** | **98.3%** | 93.0% | --        | --        | 86.0% | --    |
+| leaning left  | --    | --        | 89.5%     | 91.3% | **92.6%** | **92.6%** | 91.4% | 85.3% |
+
+**Leaning right the peak is sharp and sits at one**, falling five points by 1.2
+and twelve by 2.0 -- which is what a governing variable looks like, and it says
+the coefficient is not a coefficient at all but the absence of one. Leaning left
+the curve is a plateau two-tenths wide that never reaches 93, and the best value
+moves with the sample: 2.0 on the backslants, 1.0 on the band font, 2.0 on the
+mirrored band, 1.4 over all of them together. Two free parameters instead of one
+buy four points and stop at 94%.
+
+A variable that governed the answer would not do that. So the reading is not
+that a left-leaning edge is credited with the wrong amount of reach -- it is
+that **for a left-leaning stroke the reach is not what is being tested**, and the
+travel and the distance to a centre are standing in for something they only
+partly track.
+
+Two things were ruled out along the way, both worth having: measuring to a pixel
+boundary instead of a centre is worse in both directions (87% and 82%), and so
+is testing the span's right edge instead of its left (86% and 88%). It is the
+left edge and it is centres.
+
+**Open**, with nine shape fonts and some 1,300 strokes of chosen geometry behind
+it, every other cell of the table exact, and the next move a variable nobody has
+thought of rather than a constant nobody has fitted. **Open**, and now open with
 a measured surface rather than a hunch.
 
 One negative worth keeping with it: **removing the column sweep improves every
