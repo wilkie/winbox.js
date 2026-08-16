@@ -1782,6 +1782,67 @@ does not have. That -- not a coefficient -- is the remaining unknown, and it is
 now a question about what a scanline is allowed to notice rather than about
 where a stroke's edge reaches.
 
+### The threshold was real, but only in one direction
+
+Splitting the constant in two is what the two instruments had been saying
+separately all along. The bar font's finding was never "there is no threshold" --
+it was two findings, and only one of them was about width:
+
+- every one of the **390 upright spans** is rescued, whatever its width, which
+  says the sweep **along rows** has no threshold;
+- not one of the **424 spans on their side** is rescued, which says nothing
+  about a threshold at all -- it says there is no sweep down columns.
+
+Applying one number to both sweeps forced those two into one, and the number
+that resulted was a compromise that refused real rescues along rows in order to
+suppress invented ones down columns. Scoring the two thresholds independently
+separates them:
+
+| along rows | down columns | letters | wrong px | Courier New at 8 ppem |
+| ---------- | ------------ | ------- | -------- | --------------------- |
+| 0.5        | 0.5 (before) | 701/846 | 399      | 2/36, 217 px          |
+| 0.5        | none         | 671/846 | 485      | 0/36, 249 px          |
+| none       | none         | 654/846 | 369      | 8/36, 109 px          |
+| **none**   | **0.5**      | 692/846 | **307**  | 7/36, 111 px          |
+
+**Shipped.** Dropping the threshold along rows is supported by both instruments
+at once -- the bars say it outright, and the letters say it where it costs most.
+Total error falls by a quarter, 399 wrong pixels to 307, and the worst cell by
+half. The nine letters given up are the price of no longer suppressing 174
+rescues to avoid 22 wrong ones.
+
+Sweeping the column threshold on its own is flat from 0.4 to 0.5 -- 303 wrong
+pixels against 307 -- so half a pixel is kept for being the sampling interval
+rather than for winning a sweep.
+
+### What the column sweep is actually compensating for
+
+It is not a scan-conversion rule Windows has and this lacks. Tracing which
+sweep sets each pixel, the sweep down columns supplies **124 pixels the sweep
+along rows cannot reach, and Windows wants 102 of them**. Measuring how far each
+of those strokes lies from the nearest scanline settles what they are:
+
+| gap to a scanline | 0 -- 0.02 | 0.02 -- 0.05 | 0.05 -- 0.1 | 0.1 -- 0.2 | over 0.2 |
+| ----------------- | --------- | ------------ | ----------- | ---------- | -------- |
+| Windows wants it  | 26        | 15           | 19          | 40         | 2        |
+| Windows does not  | 6         | 2            | 9           | 4          | 1        |
+
+**Every one of them misses a scanline by less than a quarter of a pixel**, median
+0.08, and none by more than 0.21. A stroke that Windows inks and a sweep along
+rows cannot see is not a stroke lying somewhere a row sweep is blind to -- it is
+a stroke this puts a tenth of a pixel away from where Windows puts it. The
+column sweep is compensating for **sub-pixel error in the outline**, not for a
+missing mechanism, and it happens to work because a stroke displaced by a tenth
+of a pixel is still within the band a perpendicular sweep will find.
+
+Which relocates the question. Ninety-four of the 102 are at sizes where the
+glyph programs run, so the first place to look is the interpreter rather than
+the rasteriser -- a tenth of a pixel is six units of F26Dot6, far more than
+arithmetic drift and about what one wrong rounding in one instruction costs.
+The gap does not separate the wanted from the unwanted, so it is not itself the
+rule; it is a measurement of how wrong the outline is, and the number to drive
+to zero.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

@@ -22,7 +22,21 @@
 const CURVE_STEPS = 8;
 
 /**
- * How wide a span has to be before dropout control will rescue it.
+ * How tall a span has to be before the sweep down columns will rescue it.
+ *
+ * **The sweep along rows has no threshold**, and removing it is what this
+ * constant no longer does. Both instruments agree on that: the bar font
+ * rescues every one of its 390 upright spans whatever their width, and the
+ * letters agree once the worst cell is looked at -- Courier New at eight
+ * pixels per em has 183 of its 300 spans covering no pixel centre, 174 of them
+ * narrower than half a pixel, and Windows inks 138 of those. Refusing them was
+ * 217 of the 399 wrong pixels in the whole fixture, and dropping the threshold
+ * along rows takes the fixture from 399 wrong pixels to 307.
+ *
+ * What is left applies only to the sweep down columns, which is a fiction in
+ * its own right -- see below. It is kept at half a pixel because that is the
+ * sampling interval, and because sweeping it is flat from 0.4 to 0.5 and so
+ * says nothing sharper.
  *
  * `SCANTYPE` 1, which all four installed families ask for, is "simple dropout
  * control **excluding stubs**", and a stub is the tapering tip of a stroke
@@ -74,7 +88,7 @@ const CURVE_STEPS = 8;
  * Both are recorded so the next attempt starts further along than this one did.
  * What neither has is the rule that stops a rescue Windows does not make.
  */
-const STUB = 0.5;
+const SHALLOW = 0.5;
 
 /**
  * Flattens one contour into a closed polygon.
@@ -494,7 +508,7 @@ export function fill(contours, options) {
        * "below seventeen, a hundred and twenty-four, and forty-four pixels per
        * em" respectively. All three set `SCANTYPE` to 1.
        */
-      if (!dropout || to - from < STUB) {
+      if (!dropout) {
         continue;
       }
 
@@ -587,7 +601,7 @@ export function fill(contours, options) {
       const from = crossings[index].y;
       const to = crossings[index + 1].y;
 
-      if (Math.ceil(from - 0.5) < to - 0.5 || to - from < STUB) {
+      if (Math.ceil(from - 0.5) < to - 0.5 || to - from < SHALLOW) {
         continue;
       }
 
