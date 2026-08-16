@@ -28,6 +28,14 @@
  * settled it outright -- of the 27 sideways bars that miss every scanline, not
  * one is inked by Windows at any height up to a full pixel or at any phase.
  * `FONTS.md` section 6 has the rest.
+ *
+ * `cour-crowd` is the seventeenth and answers a different question: it draws the
+ * same bar three ways -- plain, subdivided into three times as many collinear
+ * points, and beside a second contour down in the descender that shares no row
+ * and no column with it. Windows draws the first two identically in all 84
+ * comparisons and the third differently in 29 of them. Outline complexity is
+ * therefore something the rasteriser notices, and it is the number of contours
+ * that it notices rather than the number of points.
  */
 
 'use strict';
@@ -78,8 +86,8 @@ describe('the fabricated glyph recordings', () => {
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 1816;
-  const WRONG = 6892;
+  const EXACT = 1985;
+  const WRONG = 7882;
 
   present(
     'agree with Windows on three thousand cells of chosen geometry',

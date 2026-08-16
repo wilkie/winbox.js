@@ -2277,6 +2277,68 @@ So the asymmetry between the two code paths is real but empty. Both place the
 glyph at the same unrounded position, Windows agrees with both, and the
 contradiction between the bars and the letters survives it.
 
+### A second contour changes what is drawn
+
+The font the last section specified is built, recorded and read. `cour-crowd`
+draws the same bar three ways at twelve widths and phases: **plain**, four
+points and one contour; **subdivided**, the identical rectangle with four extra
+collinear points up each side, twelve points describing exactly the same region;
+and **crowded**, the plain bar plus a second contour down in the descender, well
+below the baseline and well to the left, sharing no scanline and no column with
+it. Our own renderer draws all three byte-identically, as it must -- the
+crossings are the same numbers.
+
+Windows does not.
+
+| comparison, over 84 size-and-phase pairs | agree  | differ |
+| ---------------------------------------- | ------ | ------ |
+| plain against subdivided                 | **84** | 0      |
+| plain against crowded                    | 55     | **29** |
+
+**Three times as many points on the same outline changes nothing. One extra
+contour, disjoint and distant, changes the drawing.** And it changes it the same
+way every time:
+
+| effect on the bar             | count    |
+| ----------------------------- | -------- |
+| moved exactly one column left | 29 of 29 |
+| first inked row one lower     | 29 of 29 |
+| last inked row one higher     | 25 of 29 |
+
+So the bar loses a row at each end and steps one column to the left. Written out
+at eight pixels per em, for the bar at `[4.676, 4.832]` -- which is the very case
+section 6 could not reconcile, the one where `cour-bars` says pixel 5 and a real
+letter's stem in the same position says pixel 4:
+
+```
+        plain            crowded
+   1    . . # . .        . . . . .
+   2    . . # . .        . # . . .
+   3    . . # . .        . # . . .
+   4    . . # . .        . # . . .
+   5    . . # . .        . . . . .
+```
+
+**The crowded bar takes pixel 4 -- the letters' answer.** The contradiction that
+has stood through nine fonts is not between fabricated bars and real letters at
+all. It is between glyphs with one contour and glyphs with more than one, and
+every real letter has more than one.
+
+That does not yet give the rule, and it is worth being exact about what it does
+give. It says the rasteriser's behaviour depends on something outside the span
+being measured, which no rule of the form tried so far can express -- and it says
+the shape fonts have been answering a question about lone rectangles, which is
+why nine of them agreed with each other and none of them agreed with a letter.
+The bar font's 372-of-372 for `ceil(from − 0.5)` is a fact about single-contour
+glyphs and nothing more.
+
+What it does not say is why. A second contour that shares no row with the bar
+cannot change the bar's crossings, so whatever is different is happening before
+the crossings are computed or after they are resolved -- in how the glyph is set
+up, or in how its ink is transferred. Losing a row at each end is stub exclusion
+appearing where it was absent, and stepping a column is the other pixel of the
+pair; both switch on together, which suggests one decision rather than two.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

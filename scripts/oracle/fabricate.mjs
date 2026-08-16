@@ -417,7 +417,7 @@ export function reportPoint(point, phantom, magnify) {
  * rewriting every offset after it. The rectangles here are a fraction of the
  * length of the letters they replace, and the slack at the end is never read.
  */
-export function setGlyph(bytes, font, glyph, { width, height, program, points }) {
+export function setGlyph(bytes, font, glyph, { width, height, program, points, contours }) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const tables = tablesOf(view);
 
@@ -434,12 +434,21 @@ export function setGlyph(bytes, font, glyph, { width, height, program, points })
   const room = end - start;
   const at = tables.glyf.offset + start;
 
-  const corners = points ?? [
-    [0, 0],
-    [0, height],
-    [width, height],
-    [width, 0],
+  /* One contour unless several are asked for. A glyph made of two shapes says
+   * something a glyph made of one cannot: whether anything the rasteriser does
+   * depends on how much outline is around the stroke being measured, rather
+   * than on the stroke. See `cour-crowd`.
+   */
+  const loops = contours ?? [
+    points ?? [
+      [0, 0],
+      [0, height],
+      [width, height],
+      [width, 0],
+    ],
   ];
+
+  const corners = loops.flat();
 
   const body = [];
 
@@ -457,12 +466,20 @@ export function setGlyph(bytes, font, glyph, { width, height, program, points })
   const xs = corners.map((point) => point[0]);
   const ys = corners.map((point) => point[1]);
 
-  put16(1);
+  put16(loops.length);
   put16(Math.min(...xs));
   put16(Math.min(...ys));
   put16(Math.max(...xs));
   put16(Math.max(...ys));
-  put16(corners.length - 1);
+
+  // Where each contour ends, as an index into the flattened list of points.
+  let ended = -1;
+
+  for (const loop of loops) {
+    ended += loop.length;
+
+    put16(ended);
+  }
 
   put16(program.length);
   body.push(...program);
@@ -1355,6 +1372,99 @@ export const FABRICATIONS = [
          * the bar at `pen + lsb` and the offset chosen above is cancelled.
          */
         setBearing(bytes, glyph, Math.min(...points.map((point) => point[0])));
+      }
+
+      return bytes;
+    },
+  },
+
+  /* The same bar, drawn three ways, to ask whether the rest of the outline
+   * matters.
+   *
+   * Everything else has been ruled out. A lone fabricated bar and a real
+   * letter's stem can present the rasteriser with the same span, at the same
+   * size, in the same font, with the same lean, the same winding, the same
+   * placement verified to an eighth of a pixel and nothing else in the row --
+   * and Windows inks a different pixel. No function of the span's two edges
+   * fits both; the family was searched, not guessed at. See `FONTS.md`.
+   *
+   * The one difference left is that a shape font's glyph is a single contour of
+   * three or four points and a letter is several contours of dozens. That is
+   * not a property a scan converter ought to notice, which is exactly why it
+   * has to be measured rather than argued about.
+   *
+   * So: twelve widths and phases, each drawn three times.
+   *
+   *  - **plain**, four points, one contour -- the control, and the same shape
+   *    the bar font already recorded, so a disagreement with it would mean
+   *    something else had moved;
+   *  - **subdivided**, the identical rectangle with four extra collinear points
+   *    up each side, so the outline has twelve points and describes exactly the
+   *    same region -- every crossing the rasteriser computes is unchanged, to
+   *    the last bit;
+   *  - **crowded**, the plain bar plus a second contour in the descender, well
+   *    below the baseline and well to the left, sharing no scanline and no
+   *    column with the bar.
+   *
+   * If the three groups agree, outline complexity is not it and the bars are
+   * sound. If the plain group takes one pixel and the other two take the other,
+   * the rasteriser is answering a question about the glyph rather than about
+   * the stroke, and every rule tried so far has been the wrong shape.
+   */
+  {
+    name: 'cour-crowd',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with one bar drawn plain, subdivided, and beside a second contour',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      // The same widths and phases the bar font used, so the two can be compared.
+      const WIDTHS = [40, 80, 120, 140];
+      const PHASES = [0, 85, 170];
+      const TALL = 1400;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const variant = Math.floor(index / 12);
+        const which = index % 12;
+        const width = WIDTHS[which % WIDTHS.length];
+        const phase = PHASES[Math.floor(which / WIDTHS.length)];
+        const low = 600 + phase;
+
+        const plain = [
+          [low, 0],
+          [low, TALL],
+          [low + width, TALL],
+          [low + width, 0],
+        ];
+
+        /* Four extra points up each side, on the line and evenly spaced. The
+         * region is identical; only the number of segments describing it is not.
+         */
+        const step = TALL / 5;
+        const subdivided = [
+          ...[0, 1, 2, 3, 4, 5].map((at) => [low, Math.round(at * step)]),
+          ...[5, 4, 3, 2, 1, 0].map((at) => [low + width, Math.round(at * step)]),
+        ];
+
+        /* Somewhere no scanline crossing the bar can reach: below the baseline,
+         * where the bar has nothing, and left of it, where the bar has nothing.
+         */
+        const elsewhere = [
+          [100, -400],
+          [100, -200],
+          [300, -200],
+          [300, -400],
+        ];
+
+        const loops =
+          variant === 0 ? [plain] : variant === 1 ? [subdivided] : [plain, elsewhere];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, contours: loops, program: [] });
+        setBearing(bytes, glyph, Math.min(...loops.flat().map((point) => point[0])));
       }
 
       return bytes;
