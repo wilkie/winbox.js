@@ -2145,6 +2145,59 @@ lines running the whole height of the glyph, and perfectly upright in a third of
 the cases. The letters' dropouts are curves. That is the next variable, and it
 is one the existing recordings can answer without another font.
 
+### The two instruments contradict each other
+
+The lean was a proxy, and following it to the end produces a contradiction worth
+stating exactly, because it bounds the problem better than any of the rules
+tried so far.
+
+Widening the letters from 66 clean cases to 100 -- taking any dropout whose two
+candidate pixels are more than three columns from every other span in the row --
+and splitting them the same way as the shape fonts:
+
+| letters, by edge       | cases | took the right pixel | took the left |
+| ---------------------- | ----- | -------------------- | ------------- |
+| straight line          | 41    | 1                    | 40            |
+| curve                  | 59    | 6                    | 53            |
+| **upright, straight, ` | lean  | < 0.02`**            | **11**        | **0** | **11** |
+
+That last row is the same configuration as `cour-bars`, which is 372 for the
+right pixel and 5 for the left. Both are Courier New. Both are at eight pixels
+per em, where nothing is grid-fitted. Both are a single upright span bounded by
+two straight lines, alone in its row. They give opposite answers.
+
+Everything local was checked and none of it accounts for the difference:
+
+- **Not the lean.** The letters' upright cases behave exactly like their leaning
+  ones.
+- **Not curvature.** Lines and curves in letters are 1 of 41 and 6 of 59 for the
+  right pixel -- both overwhelmingly left.
+- **Not the contour direction.** All seven shape fonts write their points in the
+  same order, bottom-left to top-left to top-right to bottom-right.
+- **Not how many strokes share the row.** The letters' single-span rows are 3
+  right and 63 left, the same as the whole set, and ten of the eleven upright
+  cases are single-span rows.
+- **Not the placement.** Every row of every shape font that fills normally
+  agrees with Windows pixel for pixel -- 867 of 867 for the bars, near enough all
+  of some 9,600 across the seven. And the check is sharp: shifting the outline by
+  an eighth of a pixel drops that to 73%, and the +0.6875 shift that would
+  reconcile the bars' dropouts drops it to **7.4%**. There is no offset.
+- **Not the fabricated glyph's bounding box**, which `setGlyph` writes from the
+  points themselves, and which carries a comment recording that this precise bug
+  was found and fixed once already.
+
+So the thing that decides is not a property of the span, of its edges, of its
+row, or of where the glyph sits. Which means one of the two instruments is not
+measuring what it appears to, and the honest reading is that a font of thirty-six
+identical bars is a stranger object than it looks -- every glyph the same shape,
+every one a lone rectangle spanning the full height of the em, nothing else in
+the outline at all. The letters are the target and the bars are the model, and
+where they disagree the letters are what has to be matched.
+
+What is shipped therefore stays as it is -- `floor(to − 0.5)`, which the letters
+say by 93 to 7 -- and the bars are recorded as a measurement that does not
+transfer rather than as a rule that was not implemented.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
