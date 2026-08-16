@@ -746,6 +746,170 @@ function reporter(name, { font = 'TIMES.TTF', character, point, constant, cut, m
 }
 
 export const FABRICATIONS = [
+  /* The mirror pairs again, this time inside the band.
+   *
+   * The first mirror font holds everything but the direction fixed and finds no
+   * difference -- but every stroke in it travels two pixels or more, and the
+   * rule's misses are all in the half-to-two band. So it tested the direction
+   * where the direction was never in doubt.
+   *
+   * These are the same matched pairs with the leans cut to land in the band:
+   * three magnitudes against six offsets, in both directions, one width, one
+   * height.
+   */
+  {
+    name: 'cour-mirrorband',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with matched pairs of strokes leaning each way, in the band',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const OFFSETS = [600, 643, 685, 728, 771, 813];
+      const SLANTS = [140, 240, 380];
+      const WIDTH = 80;
+      const TALL = 1400;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const rightward = index < WIDE.length / 2;
+        const within = index % 18;
+        const start = OFFSETS[within % OFFSETS.length];
+        const slant = SLANTS[Math.floor(within / OFFSETS.length) % SLANTS.length];
+
+        const points = rightward
+          ? [
+              [start, 0],
+              [start + slant, TALL],
+              [start + slant + WIDTH, TALL],
+              [start + WIDTH, 0],
+            ]
+          : [
+              [start + slant, 0],
+              [start, TALL],
+              [start + WIDTH, TALL],
+              [start + slant + WIDTH, 0],
+            ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, points, program: [] });
+        setBearing(bytes, glyph, start);
+      }
+
+      return bytes;
+    },
+  },
+
+  /* Left-leaning strokes in the band where the rule fails.
+   *
+   * Splitting the rule's misses by shift and direction puts them all in one
+   * cell: strokes leaning left whose edge travels between half a pixel and two
+   * pixels over the stroke, where it accounts for 22 of 34. Everywhere else it
+   * is 96% or better and mostly exact. That band is also the least sampled --
+   * the left-leaning font's smallest lean already travels three quarters of a
+   * pixel at the smallest size, and the mirror font's smallest travels two.
+   *
+   * Six leans chosen to land in the band across the probe's sizes, against six
+   * offsets so the phase sweeps, all leaning left.
+   */
+  {
+    name: 'cour-leftband',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with left-leaning strokes in the band the rule misses',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const OFFSETS = [600, 643, 685, 728, 771, 813];
+      const SLANTS = [60, 100, 160, 240, 350, 500];
+      const WIDTH = 80;
+      const TALL = 1400;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const start = OFFSETS[index % OFFSETS.length];
+        const slant = SLANTS[Math.floor(index / OFFSETS.length) % SLANTS.length];
+
+        // Head at the offset, foot a slant to the right: leaning left.
+        const points = [
+          [start + slant, 0],
+          [start, TALL],
+          [start + WIDTH, TALL],
+          [start + slant + WIDTH, 0],
+        ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, points, program: [] });
+        setBearing(bytes, glyph, start);
+      }
+
+      return bytes;
+    },
+  },
+
+  /* Eighteen strokes leaning right against eighteen leaning left, alike in
+   * everything else.
+   *
+   * The two slant fonts differ in more than their direction -- they start at
+   * different places and so present different phases -- which is enough to
+   * leave a comparison between them arguable. Here the same width, the same
+   * height, the same three lean magnitudes and the same six starting offsets
+   * appear in both directions, so every stroke has a mirror twin that differs
+   * from it in nothing else.
+   *
+   * Both forms are wound clockwise and both have the same bounding box: the
+   * right-leaning one puts its foot at the offset and its head a slant to the
+   * right, the left-leaning one puts its head at the offset and its foot a
+   * slant to the right. The leans are large on purpose -- between two and five
+   * pixels of travel over the stroke -- because that is where the rule says
+   * left with an enormous margin and the left-leaning strokes say right anyway.
+   */
+  {
+    name: 'cour-mirror',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with matched pairs of strokes leaning each way',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const OFFSETS = [600, 643, 685, 728, 771, 813];
+      const SLANTS = [700, 1000, 1400];
+      const WIDTH = 80;
+      const TALL = 1400;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const rightward = index < WIDE.length / 2;
+        const within = index % 18;
+        const start = OFFSETS[within % OFFSETS.length];
+        const slant = SLANTS[Math.floor(within / OFFSETS.length) % SLANTS.length];
+
+        const points = rightward
+          ? [
+              [start, 0],
+              [start + slant, TALL],
+              [start + slant + WIDTH, TALL],
+              [start + WIDTH, 0],
+            ]
+          : [
+              [start + slant, 0],
+              [start, TALL],
+              [start + WIDTH, TALL],
+              [start + slant + WIDTH, 0],
+            ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, points, program: [] });
+        setBearing(bytes, glyph, start);
+      }
+
+      return bytes;
+    },
+  },
+
   /* Width against height, at one lean, to separate two things that had been
    * growing together.
    *

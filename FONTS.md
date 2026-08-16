@@ -1590,12 +1590,45 @@ it must -- the travel is the same either way -- so the rule does not care which
 end the rasteriser starts at. The right edge is worse than the left everywhere,
 so it is the left edge that is being tested.
 
-What is left is sixteen left-leaning strokes, every one of them with a shift
-large enough that the edge crosses a centre several times over -- up to five
-pixels of travel -- and every one of them taking the right pixel anyway. **Open**,
-and now with the shape of the question fixed: not which edge, not which end, not
-which centre, but something that a stroke leaning one way has and a stroke
-leaning the other way does not. **Open**, and now open with
+### Three more fonts, and the asymmetry survives them
+
+Comparing the two slant fonts is arguable, because they differ in more than
+their direction. So: **matched pairs.** The same width, height, lean magnitude
+and starting offset in both directions, so every stroke has a twin differing in
+nothing else.
+
+**At large travel the direction makes no difference at all** -- 83 of 85 pairs
+agree. But every stroke in that font travels two pixels or more, which is where
+the rule was never in doubt, so it tested the question in the one place it was
+not being asked. Two further fonts fix that: one filling the half-to-two band
+with left-leaning strokes, and the matched pairs rebuilt inside the band.
+
+**Inside the band the pairs differ 15 times in 124** -- and in every one of the
+fifteen, the left-leaning twin is the one that has further to travel before its
+edge meets a centre. That is a flaw in the mirror as a control: reflecting a
+stroke moves its head to the other corner, so the pairs vary the direction and
+the starting phase together, exactly the confound the font was built to avoid.
+
+Splitting on that distance instead controls for it, and the asymmetry is still
+there:
+
+| Distance to a centre | leaning right | leaning left | upright |
+| -------------------- | ------------- | ------------ | ------- |
+| under half a pixel   | 98%           | 98%          | 100%    |
+| over half a pixel    | **98%**       | **81%**      | 100%    |
+
+So it is not the phase, and it is not the direction on its own either -- both
+directions agree when the edge has little way to go. **The rule is exact except
+for strokes leaning left whose edge must travel more than half a pixel to reach
+a centre**, and there it is wrong one time in five.
+
+Fitting the reach separately for each direction -- `toGo x c < shift` with `c`
+free -- gives 0.84 leaning right at 99.5% and 1.24 leaning left at 93.1%, which
+is 96.8% together against 95.8% for a single constant. Two constants buy one
+point, so that is not the shape of it either.
+
+**Open**, and localised: over 1,300 strokes in eight fonts, one cell of the
+table is wrong. **Open**, and now open with
 a measured surface rather than a hunch.
 
 One negative worth keeping with it: **removing the column sweep improves every
