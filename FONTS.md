@@ -1534,14 +1534,44 @@ does:
 | 1     | 20      | 85%            | 100%            |
 | 2+    | 100+    | ~100%          | 100%            |
 
-**It is an account and not yet the rule.** Tested as a predicate over 687
-strokes across all six shape fonts it gets **95.5%**, and it wants a coefficient
--- `firstU < 1.46 x shift` rather than `firstU < shift`. On the three fonts it
-was first fitted to it reached 99.5% with a coefficient of 0.8, and that figure
-did not survive the other three, which is the second time in this section a
-number has been better than the evidence behind it. What is solid is the shape
-of the thing: a step on whether the edge crosses a centre, seen through a phase
-that varies from stroke to stroke. **Open**, and now open with
+**The coefficient was the instrument, not the rule.** Measuring where the stroke
+begins and ends from the rows Windows made a decision on leaves out every row it
+filled, so both the starting phase and the distance travelled are taken over the
+wrong interval -- and the predicate then needs a coefficient to make up for it,
+1.46 over six fonts and 0.8 over the three it was first fitted to. Measured over
+the rows the outline actually spans, filled ones included, **the coefficient
+goes away**:
+
+| Extent measured over           | best coefficient | agreement |
+| ------------------------------ | ---------------- | --------- |
+| rows Windows decided           | 1.46             | 95.5%     |
+| rows with an empty span        | 1.40             | 96.2%     |
+| **every row the stroke spans** | **0.97**         | **96.8%** |
+
+So the rule is `firstU < shift` with nothing in front of it: **a stroke whose
+edge passes a pixel centre somewhere within its own length takes the left pixel,
+and one whose edge never reaches a centre takes the right.** It reduces to the
+upright case for free -- a vertical edge travels no distance and reaches nothing.
+
+**And it is exact, except in a mirror.** Of the six shape fonts it accounts for
+every stroke in five of them:
+
+| Font                   | strokes | agreement |
+| ---------------------- | ------- | --------- |
+| bars (upright)         | 50      | **100%**  |
+| offsets                | 132     | **100%**  |
+| hairslants             | 118     | **100%**  |
+| shapes                 | 62      | **100%**  |
+| slants (leaning right) | 164     | 99.4%     |
+| **backslants (left)**  | **161** | **87%**   |
+
+Twenty-one of the twenty-two exceptions are strokes leaning left. Measuring the
+distance in the direction the edge actually travels -- to the centre above
+rather than the one below -- is the obvious repair and recovers only five of
+them. So the asymmetry is real and is not simply which centre is being aimed at:
+a rule symmetric in the lean would not do this, and the mirror font is the only
+reason it is visible at all. **Open**, and localised to one sign of one
+variable. **Open**, and now open with
 a measured surface rather than a hunch.
 
 One negative worth keeping with it: **removing the column sweep improves every
