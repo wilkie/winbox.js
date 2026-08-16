@@ -1627,8 +1627,45 @@ free -- gives 0.84 leaning right at 99.5% and 1.24 leaning left at 93.1%, which
 is 96.8% together against 95.8% for a single constant. Two constants buy one
 point, so that is not the shape of it either.
 
-**Open**, and localised: over 1,300 strokes in eight fonts, one cell of the
-table is wrong. **Open**, and now open with
+### The distance on its own
+
+A ninth font puts that distance on the axis instead of leaving it a side effect:
+one lean, one width, one height, and eighteen starting positions a fourteenth of
+a pixel apart, in each direction. Nothing else moves.
+
+**Leaning right, the rule holds at every distance.** Leaning left it holds up to
+four tenths of a pixel and then falls away:
+
+| Distance to a centre | leaning right | leaning left |
+| -------------------- | ------------- | ------------ |
+| 0.0 -- 0.4           | 73 -- 100%    | **100%**     |
+| 0.5                  | 100%          | 77%          |
+| 0.6                  | 91%           | 62%          |
+| 0.7                  | 100%          | 45%          |
+| 0.8                  | 86%           | 36%          |
+
+And what brings it back is more travel. At a distance of six tenths the answer
+is the right pixel while the stroke travels 0.73, 0.91 or 1.28 pixels, and the
+left pixel once it travels 1.46 or more -- so the condition is still "the edge
+reaches a centre", but a left-leaning edge has to reach further to count.
+
+**How much further will not settle.** Fitting the reach separately:
+
+|                            | needed travel         | agreement |
+| -------------------------- | --------------------- | --------- |
+| leaning right, all fonts   | `shift > 0.88 x toGo` | **98.4%** |
+| leaning right, phase sweep | `shift > 0.90 x toGo` | 93.8%     |
+| leaning left, all fonts    | `shift > 1.40 x toGo` | 92.6%     |
+| leaning left, phase sweep  | `shift > 1.80 x toGo` | 88.2%     |
+
+Leaning right the coefficient is one, within measurement, on both sets -- which
+is to say there is no coefficient and the rule is what it looks like. Leaning
+left it is 1.4 on one set and 1.8 on another, and neither reaches 93%. A
+constant that moves when the sample moves is not a constant.
+
+**Open.** The instrument is built and the question is one cell wide: a
+left-leaning edge is credited with less reach than its geometry gives it, by an
+amount that is not a fixed multiple, not a fixed offset, and not the phase. **Open**, and now open with
 a measured surface rather than a hunch.
 
 One negative worth keeping with it: **removing the column sweep improves every

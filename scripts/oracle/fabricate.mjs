@@ -746,6 +746,65 @@ function reporter(name, { font = 'TIMES.TTF', character, point, constant, cut, m
 }
 
 export const FABRICATIONS = [
+  /* One lean, both directions, eighteen phases each: the distance to a centre
+   * swept on its own.
+   *
+   * The rule misses only where the edge has more than half a pixel to travel
+   * before it meets a centre, and only when the stroke leans left. Every font
+   * so far varies that distance as a side effect of varying something else --
+   * the offset, the width, the direction -- so it has never been the thing on
+   * the axis.
+   *
+   * Here it is. The lean is fixed at a quarter of the height, which puts the
+   * travel at a pixel at the smallest size and two and a half at the largest,
+   * inside the band or near it throughout. The width and height are fixed. The
+   * only thing that changes is where the stroke starts, in eighteen steps of a
+   * fourteenth of a pixel, in each direction -- so the distance to a centre
+   * sweeps its whole range twice over, once each way, with nothing else moving.
+   */
+  {
+    name: 'cour-phases',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New sweeping the distance to a pixel centre, both directions',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const SLANT = 256;
+      const WIDTH = 80;
+      const TALL = 1400;
+      const STEP = 14;
+      const BASE = 600;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const rightward = index < WIDE.length / 2;
+        const start = BASE + (index % 18) * STEP;
+
+        const points = rightward
+          ? [
+              [start, 0],
+              [start + SLANT, TALL],
+              [start + SLANT + WIDTH, TALL],
+              [start + WIDTH, 0],
+            ]
+          : [
+              [start + SLANT, 0],
+              [start, TALL],
+              [start + WIDTH, TALL],
+              [start + SLANT + WIDTH, 0],
+            ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, points, program: [] });
+        setBearing(bytes, glyph, start);
+      }
+
+      return bytes;
+    },
+  },
+
   /* The mirror pairs again, this time inside the band.
    *
    * The first mirror font holds everything but the direction fixed and finds no
