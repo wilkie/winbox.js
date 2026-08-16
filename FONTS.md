@@ -2915,6 +2915,57 @@ is often a glyph the rasteriser handles specially. Three separate conclusions in
 this section have now come from fonts too degenerate to answer the question they
 were built for.
 
+### What 344 wrong pixels are made of
+
+With the sweep down columns restored, the remaining letter error sorts into six
+kinds by tracing which line of the rasteriser put each pixel there, or would
+have:
+
+|                                                         | count  |
+| ------------------------------------------------------- | ------ |
+| **extra**: a rescue down a column Windows does not make | **82** |
+| missing: nothing here produced it at all                | 69     |
+| extra: a rescue along a row Windows does not make       | 59     |
+| extra: an ordinary fill Windows does not make           | 56     |
+| missing: the stub rule refused a row rescue             | 54     |
+| missing: the stub rule refused a column rescue          | 24     |
+
+Courier New at eight pixels per em is 137 of the 344 and still the worst cell by
+four times.
+
+The largest kind is the new sweep firing where it should not, and it has a very
+sharp property. Asking, for each of the 82, whether Windows has ink in an
+adjacent pixel instead:
+
+| Windows' ink is   | count  |
+| ----------------- | ------ |
+| **one row above** | **78** |
+| one row below     | 3      |
+| one column left   | 1      |
+| nowhere adjacent  | 0      |
+
+**Seventy-eight of eighty-two are a single row too low.** That looks exactly like
+a wrong pick, and it is not: moving every column rescue up a row costs far more
+than it gains, because the 122 that are already right go wrong --
+
+| the row a column rescue takes     | letters                 | fabricated cells |
+| --------------------------------- | ----------------------- | ---------------- |
+| `ceil(from − 0.5)` (shipped)      | **685**/846, **344** px | **3,824**/4,950  |
+| one row above that                | 630/846, 526 px         | 3,610/4,950      |
+| the row nearest the span's middle | 649/846, 419 px         | 3,685/4,950      |
+
+-- so 200 column rescues split 122 to 78 between two adjacent rows, and no
+function of the span's own ends separates them. Neither does the span's height:
+the spurious ones run 0.00 to 0.97 of a pixel and the correct ones 0.00 to 0.98,
+medians 0.33 against 0.59. Nor does how far the feature runs sideways: both are
+runs of one column in 95% of cases.
+
+The other half of the error is the mirror image -- 78 pixels the stub rule
+refuses that Windows draws, 54 along rows and 24 down columns. So of 344 wrong
+pixels, **238 are one rule deciding a rescue one way where Windows decides it the
+other**, and the question is the same question on both axes: which of two
+adjacent pixels a rescue belongs in, and whether it belongs at all.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
