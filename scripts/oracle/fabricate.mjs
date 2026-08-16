@@ -2079,6 +2079,62 @@ export const FABRICATIONS = [
     },
   },
 
+  /* A foot under a post, which is the shape half the remaining error is in.
+   *
+   * The bottom bars of `E`, `B` and `d` at eight pixels per em are a horizontal
+   * stroke lying between two scanlines with an inked stem standing on it, and
+   * Windows draws them a row above where this does -- and draws four columns
+   * where this draws two. `cour-shelves` established that such a stroke gets ink
+   * at all, 134 times of 134, but its shelf stood in open space beside a post.
+   * It never put one *underneath* something already drawn, which is the
+   * configuration the guard and the tip rule both react to.
+   *
+   * So: one contour shaped like a post standing on a foot. The post is wide
+   * enough to fill ordinarily at every size, so there is always ink directly
+   * above the foot; the foot is wider than the post on both sides, so it has
+   * columns of its own where nothing else reaches. Six thicknesses, all under
+   * half a pixel at the sizes recorded, by six heights moving the foot through a
+   * whole pixel.
+   */
+  {
+    name: 'cour-feet',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with a post standing on a foot thinner than a scanline gap',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const THICK = [30, 45, 60, 75, 90, 105];
+      const PHASE = [0, 42, 85, 128, 170, 213];
+      const TALL = 1400;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const thick = THICK[index % THICK.length];
+        const base = 100 + PHASE[Math.floor(index / THICK.length) % PHASE.length];
+        const top = base + thick;
+
+        const points = [
+          [300, base],
+          [300, top],
+          [600, top],
+          [600, TALL],
+          [900, TALL],
+          [900, top],
+          [1300, top],
+          [1300, base],
+        ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, points, program: [] });
+        setBearing(bytes, glyph, 300);
+      }
+
+      return bytes;
+    },
+  },
+
   /* Courier New with its `INSTCTRL` turned around.
    *
    * Its `prep` executes the instruction twice, both times as `PUSHB[2] 1, 1`

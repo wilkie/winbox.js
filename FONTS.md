@@ -3158,6 +3158,47 @@ every knob at its measured optimum, the geometry complete, and one recurring
 figure -- a horizontal bar lying between two scanlines at the bottom of a letter
 -- that the rules get a row low.
 
+### A stroke joins what it is attached to
+
+The bottom bar of an `E` is a horizontal stroke between two scanlines with a stem
+standing on it. `cour-shelves` had established that such a stroke gets ink, but
+its shelf stood in open space beside a post; it never put one _underneath_
+something already drawn. `cour-feet` does -- one contour shaped like a post on a
+foot, six thicknesses by six heights -- and it reproduces the letter exactly:
+Windows draws the foot on the post's last row and across all four of its columns,
+where this draws two pixels a row below.
+
+The two fonts settle the question between them, and they disagree completely:
+
+| the row a column rescue takes | cour-shelves | cour-feet   |
+| ----------------------------- | ------------ | ----------- |
+| `ceil(from − 0.5)`, the lower | **258/258**  | 142/258     |
+| `floor(to − 0.5)`, the upper  | 122/258      | **258/258** |
+
+Each font is perfect under one and poor under the other, which is what two
+populations look like when a font has been built for each. What separates them is
+not the span: it is whether the stroke is **attached to something already drawn**.
+A shelf in open space starts its own row; a foot joins the row the stem ends on.
+
+So the rule is continuity, and it can only be asked once the sweep along rows has
+run: **take the other of the two candidate rows when a column beside this one
+already has ink there and none in the row this would otherwise take.** The second
+half matters -- joining whenever a neighbour has ink above, without requiring it
+to have none below, drags every rescue toward any ink at all and is worth 647
+letters against 722.
+
+**Shipped**, and it is the first change here that improves the wrong-pixel count
+on both instruments at once while costing exact cells on one:
+
+|        | letters             | fabricated cells              |
+| ------ | ------------------- | ----------------------------- |
+| before | 727/846, 266 px     | 4,046/5,208, 5,155 px         |
+| after  | 722/846, **249** px | **4,084**/5,208, **5,082** px |
+
+`cour-feet` goes from 142 exact to 214 and `cour-shelves` stays at 258 of 258 --
+the rule fires where it was derived and not where it would do harm. The five
+letters lost are the price of a mechanism that two fonts agree on.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
