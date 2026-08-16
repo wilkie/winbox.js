@@ -1565,13 +1565,37 @@ every stroke in five of them:
 | slants (leaning right) | 164     | 99.4%     |
 | **backslants (left)**  | **161** | **87%**   |
 
-Twenty-one of the twenty-two exceptions are strokes leaning left. Measuring the
-distance in the direction the edge actually travels -- to the centre above
-rather than the one below -- is the obvious repair and recovers only five of
-them. So the asymmetry is real and is not simply which centre is being aimed at:
-a rule symmetric in the lean would not do this, and the mirror font is the only
-reason it is visible at all. **Open**, and localised to one sign of one
-variable. **Open**, and now open with
+Twenty-one of the twenty-two exceptions are strokes leaning left.
+
+Measuring the distance in the direction the edge actually travels -- to the
+centre above when it is moving right, the one below when moving left -- is the
+obvious repair, and it is a real improvement: **97.5% over all 687 strokes**,
+and it is the best form found. It takes the left-leaning font from 87% to 90%
+and stops there.
+
+Everything else that can be varied about the statement has been, and none of it
+touches the remaining sixteen:
+
+| Variant                                        | all       | leaning right | leaning left |
+| ---------------------------------------------- | --------- | ------------- | ------------ |
+| the span's left edge, toward the centre below  | 96.8%     | 99%           | 87%          |
+| **the left edge, in the direction it travels** | **97.5%** | **99%**       | **90%**      |
+| the span's right edge instead                  | 83.1%     | --            | 87%          |
+| either edge                                    | 89.7%     | --            | 87%          |
+| measured from the bottom of the stroke         | 97.5%     | 99%           | 90%          |
+| either end                                     | 89.8%     | 99%           | 87%          |
+
+Measuring from the bottom gives exactly the same answer as from the top, which
+it must -- the travel is the same either way -- so the rule does not care which
+end the rasteriser starts at. The right edge is worse than the left everywhere,
+so it is the left edge that is being tested.
+
+What is left is sixteen left-leaning strokes, every one of them with a shift
+large enough that the edge crosses a centre several times over -- up to five
+pixels of travel -- and every one of them taking the right pixel anyway. **Open**,
+and now with the shape of the question fixed: not which edge, not which end, not
+which centre, but something that a stroke leaning one way has and a stroke
+leaning the other way does not. **Open**, and now open with
 a measured surface rather than a hunch.
 
 One negative worth keeping with it: **removing the column sweep improves every
