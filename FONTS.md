@@ -2813,6 +2813,52 @@ implementation has no size limit and no banding, so it would agree by
 construction, and a test that cannot fail is worth less than the recording it is
 made from.
 
+### The remaining letter error is a dilation
+
+Measuring where each of the 388 wrong pixels sits relative to the outline -- the
+distance from its centre to the nearest point of the glyph's own boundary, and
+which side of it -- separates them completely:
+
+|                                | pixels | inside the shape | outside | median distance |
+| ------------------------------ | ------ | ---------------- | ------- | --------------- |
+| Windows inks it, this does not | 273    | **2**            | **271** | 0.131 px        |
+| this inks it, Windows does not | 115    | 51               | 64      | 0.037 px        |
+
+**Two hundred and seventy-one of two hundred and seventy-three fall outside.**
+Where this over-inks it is boundary noise -- half in, half out, sitting within
+four hundredths of a pixel of the edge, which is what disagreement about a
+rounding looks like. Where it under-inks it is not noise at all: Windows is
+putting ink on pixels whose centres are outside the glyph, by a median of an
+eighth of a pixel and 79% of them within a quarter.
+
+So the residual is a **dilation**, and that is a different kind of thing from
+everything chased in this section. A sampling rule decides whether a centre is
+covered; no such rule can light a centre that is not.
+
+Three things it is not.
+
+**Not the scanline's height.** Sampling at `row + 0.5 + d` and sweeping `d` gives
+a sharp optimum at zero -- a sixty-fourth either way costs seventy wrong pixels,
+a sixteenth costs three hundred. Vertical placement is exact, which is worth
+knowing on its own after so many fits with broad plateaus.
+
+**Not a pixel with a diameter.** Already measured: any radius applied at
+scan-conversion time paints a halo, because a straight vertical edge dilates as
+readily as a shallow one and vertical edges are already right.
+
+**Not a property of the boundary's slope.** Splitting the 271 by the gradient of
+the nearest edge spreads them everywhere -- 34 where the edge is within a quarter
+of vertical, 64 up to forty-five degrees, 116 on moderate diagonals, 34 nearly
+flat. If the dilation only happened where a boundary was shallow it would be
+implementable; it does not.
+
+What is left is a well-posed question that did not exist before: **what makes
+Windows ink a pixel an eighth of a pixel outside the shape, when the same rule
+must not ink one on a straight edge?** Every earlier framing of the residual --
+missing near-horizontal features, a rescue that picks the wrong pixel, a stub
+rule that fires too often -- was a description of symptoms. This is a
+description of the error.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
