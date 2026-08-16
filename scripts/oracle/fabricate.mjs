@@ -2010,6 +2010,75 @@ export const FABRICATIONS = [
     },
   },
 
+  /* A flat shelf between two scanlines, in a glyph that has scanlines.
+   *
+   * The bar font asked whether Windows inks a horizontal stroke that misses
+   * every scanline and answered no, 27 times of 27 -- and that answer has been
+   * load-bearing ever since: it is why the sweep down columns was deleted.
+   *
+   * But those bars were the whole glyph. A lone sideways bar thinner than the
+   * gap between two scanlines is a glyph covering no row centre at all, which
+   * `cour-widths` later showed is a degenerate case the rasteriser treats
+   * differently -- and in the vertical direction degenerate means there are no
+   * scanlines to sweep, so nothing could have been drawn whatever the rule. The
+   * bars never tested a shelf inside a glyph; they tested a glyph that was a
+   * shelf.
+   *
+   * A real letter's is inside. The bottom bar of Courier New's `E` at eight
+   * pixels per em runs from 5.672 to 6.000 in device coordinates -- a third of a
+   * pixel tall, lying wholly between the scanlines at 5.5 and 6.5, invisible to
+   * a sweep along rows -- and Windows draws it.
+   *
+   * So: a tall post to give the glyph its rows, and beside it a thin shelf whose
+   * height sweeps a whole pixel and whose thickness runs from an eighth of one
+   * to a half. The post is wide enough to be drawn ordinarily and sits well left
+   * of the shelf, so the two share no span. If the shelf gets ink, dropout
+   * control works down columns after all and the bar font was answering a
+   * different question.
+   */
+  {
+    name: 'cour-shelves',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with a tall post and a thin horizontal shelf between scanlines',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const THICK = [30, 45, 60, 75, 90, 105];
+      const PHASE = [0, 42, 85, 128, 170, 213];
+      const TALL = 1400;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const thick = THICK[index % THICK.length];
+        const phase = PHASE[Math.floor(index / THICK.length) % PHASE.length];
+        const base = 600 + phase;
+
+        // Wide enough to fill ordinarily at every size recorded.
+        const post = [
+          [200, 0],
+          [200, TALL],
+          [500, TALL],
+          [500, 0],
+        ];
+
+        const shelf = [
+          [900, base],
+          [900, base + thick],
+          [1700, base + thick],
+          [1700, base],
+        ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, contours: [post, shelf], program: [] });
+        setBearing(bytes, glyph, 200);
+      }
+
+      return bytes;
+    },
+  },
+
   /* Courier New with its `INSTCTRL` turned around.
    *
    * Its `prep` executes the instruction twice, both times as `PUSHB[2] 1, 1`

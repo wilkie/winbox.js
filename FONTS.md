@@ -2859,6 +2859,62 @@ missing near-horizontal features, a rescue that picks the wrong pixel, a stub
 rule that fires too often -- was a description of symptoms. This is a
 description of the error.
 
+### The sweep down columns was deleted on a degenerate glyph
+
+It is back, and the reason it was ever removed is worth stating plainly, because
+it is the same mistake this section has made twice before.
+
+Chasing the dilation to one pixel settled it. Courier New's `E` at eight pixels
+per em: the bottom bar runs from 5.672 to 6.000 in device coordinates -- **a
+third of a pixel tall, lying wholly between the scanlines at 5.5 and 6.5** -- so
+nothing swept along rows can see it, and Windows draws it. The bar font had said
+Windows never inks a horizontal stroke that misses every scanline, 0 of 27, and
+that answer is why the column sweep was deleted.
+
+Those bars were the whole glyph. A lone sideways bar thinner than the gap
+between two scanlines is a glyph covering no row centre at all -- the degenerate
+case `cour-widths` found in the other direction -- and in the vertical direction
+degenerate means **there are no scanlines to sweep**, so nothing could have been
+drawn whatever the rule. The bars were answering a different question.
+
+`cour-shelves` asks it properly: a tall post to give the glyph its rows, and
+beside it a thin shelf whose height sweeps a whole pixel and whose thickness runs
+from an eighth of a pixel to three quarters.
+
+| shelves covering no scanline | Windows inks |
+| ---------------------------- | ------------ |
+| **134**                      | **134**      |
+
+All of them, at every thickness -- 0.12 px through 0.75, six of six and ten of
+ten in every band. There is no width threshold and never was; the one the old
+code carried was suppressing the degenerate case, not measuring a rule.
+
+Restoring it took one thing beyond the code that was deleted. Which row gets the
+ink matters enormously and the two candidates are not close:
+
+| the row a column rescue takes | letters                 | fabricated cells |
+| ----------------------------- | ----------------------- | ---------------- |
+| `ceil(from − 0.5)`            | **685**/846, **344** px | **3,824**/4,950  |
+| `floor(to − 0.5)`             | 631/846, 511 px         | 3,610/4,950      |
+| no column sweep at all        | 655/846, 388 px         | 3,724/4,950      |
+
+`ceil(from − 0.5)` is the same sentence as `floor(to − 0.5)` along a row, read
+down the other axis, because device rows count downward where glyph coordinates
+count up -- which is what the deleted code's own comment said. The stub rule
+mirrors too: a column rescue with no neighbouring column's span beyond it either
+way is a tip, and applying it is worth 685 letters against 666.
+
+**Shipped.** The recorded letters go from 655 exact and 388 wrong pixels to
+**685 and 344**, the best either number has been, and the fabricated cells from
+3,724 to 3,824. The fabricated pixel count rises, 4,692 to 5,049, which is the
+one thing this change makes worse and is worth naming rather than burying.
+
+The lesson is the one from `cour-crowd` and `cour-widths` again: a shape font
+tests the shape it was given, and a shape that is _only_ the feature under test
+is often a glyph the rasteriser handles specially. Three separate conclusions in
+this section have now come from fonts too degenerate to answer the question they
+were built for.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

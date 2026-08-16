@@ -22,6 +22,82 @@
 const CURVE_STEPS = 8;
 
 /**
+ * The same, along a vertical line: where a piece crosses `x`, exactly.
+ */
+function crossesDown(piece, x, into) {
+  const [x0, y0] = piece.from;
+  const [x2, y2] = piece.to;
+
+  if (!piece.control) {
+    if (x0 === x2) {
+      return;
+    }
+
+    if (!keeps(x, Math.min(x0, x2), Math.max(x0, x2))) {
+      return;
+    }
+
+    const t = (x - x0) / (x2 - x0);
+
+    into.push({ y: y0 + t * (y2 - y0), winding: x2 > x0 ? 1 : -1 });
+
+    return;
+  }
+
+  const [x1, y1] = piece.control;
+
+  const a = x0 - 2 * x1 + x2;
+  const b = 2 * (x1 - x0);
+  const c = x0 - x;
+
+  const roots: number[] = [];
+
+  if (a === 0) {
+    if (b !== 0) {
+      roots.push(-c / b);
+    }
+  } else {
+    const under = b * b - 4 * a * c;
+
+    if (under < 0) {
+      return;
+    }
+
+    const root = Math.sqrt(under);
+
+    roots.push((-b + root) / (2 * a), (-b - root) / (2 * a));
+  }
+
+  // The same turning point and the same half-open test, along the other axis.
+  const turn = a === 0 ? null : -b / (2 * a);
+  const at = (t) => (1 - t) * (1 - t) * x0 + 2 * (1 - t) * t * x1 + t * t * x2;
+  const splits = turn !== null && turn > 0 && turn < 1;
+
+  for (const t of roots) {
+    if (t < 0 || t > 1) {
+      continue;
+    }
+
+    const lo = splits && t > turn ? turn : 0;
+    const hi = splits && t > turn ? 1 : splits ? turn : 1;
+
+    if (!keeps(x, Math.min(at(lo), at(hi)), Math.max(at(lo), at(hi)))) {
+      continue;
+    }
+
+    const slope = 2 * a * t + b;
+
+    if (slope === 0) {
+      continue;
+    }
+
+    const u = 1 - t;
+
+    into.push({ y: u * u * y0 + 2 * u * t * y1 + t * t * y2, winding: slope > 0 ? 1 : -1 });
+  }
+}
+
+/**
  * Flattens one contour into a closed polygon.
  *
  * @param {Array} contour - Points, each `{x, y, on}` in font units.
@@ -471,6 +547,86 @@ export function fill(contours, options) {
       const below = all.some((span) => span.row === rescue.row + 1 && touching(span, rescue));
 
       if (!above || !below) {
+        continue;
+      }
+    }
+
+    pixels[rescue.row * width + rescue.column] = 1;
+  }
+
+  /* The same sweep down each column.
+   *
+   * A stroke can lie between two scanlines as easily as between two pixel
+   * centres -- the bottom bar of Courier New's `E` at eight pixels per em runs
+   * from 5.672 to 6.000, a third of a pixel tall, and nothing along a row can
+   * see it. Windows draws it.
+   *
+   * **This was deleted once, on the strength of a bar font in which not one of
+   * 27 sideways bars got ink.** Those bars were the whole glyph, and a glyph
+   * thinner than the gap between two scanlines has no scanlines at all -- the
+   * degenerate case `cour-widths` found in the other direction, where nothing
+   * can be drawn whatever the rule. The bars were answering a different
+   * question. Asked properly, with a shelf beside a post tall enough to give
+   * the glyph its rows, Windows inks **134 of 134** shelves that cover no
+   * scanline, at every thickness from an eighth of a pixel to three quarters.
+   *
+   * Which row gets the ink is the same sentence as along a row, read down the
+   * other axis, and the same stub rule applies: a rescue with nothing beyond it
+   * either way is a tip.
+   */
+  const down: any[] = [];
+  const downAll: any[] = [];
+
+  for (let column = 0; column < width; column++) {
+    const crossings: any[] = [];
+
+    for (const piece of pieces) {
+      crossesDown(piece, column + 0.5, crossings);
+    }
+
+    crossings.sort((left, right) => left.y - right.y);
+
+    let winding = 0;
+
+    for (let index = 0; index < crossings.length - 1; index++) {
+      winding += crossings[index].winding;
+
+      if (winding === 0) {
+        continue;
+      }
+
+      const from = crossings[index].y;
+      const to = crossings[index + 1].y;
+
+      downAll.push({ column, from, to });
+
+      if (Math.ceil(from - 0.5) < to - 0.5) {
+        continue;
+      }
+
+      /* The last centre at or above the span's near end -- which is the same
+       * sentence as `floor(to - 0.5)` along a row, read down the other axis,
+       * because device rows count downward where glyph coordinates count up.
+       * Written the other way it is worth 631 letters against 685.
+       */
+      const row = Math.ceil(from - 0.5);
+
+      if (row >= 0 && row < height) {
+        down.push({ row, column, from, to });
+      }
+    }
+  }
+
+  for (const rescue of down) {
+    if (sampled) {
+      const left = downAll.some(
+        (span) => span.column === rescue.column - 1 && touching(span, rescue)
+      );
+      const right = downAll.some(
+        (span) => span.column === rescue.column + 1 && touching(span, rescue)
+      );
+
+      if (!left || !right) {
         continue;
       }
     }
