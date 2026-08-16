@@ -1843,6 +1843,72 @@ The gap does not separate the wanted from the unwanted, so it is not itself the
 rule; it is a measurement of how wrong the outline is, and the number to drive
 to zero.
 
+### The column sweep invents nothing
+
+Tracing which sweep sets each pixel again, now that the sweep along rows has no
+threshold, says something the earlier reading of the bar font could not: of the
+**104 pixels the sweep down columns supplies and the sweep along rows cannot
+reach, 83 are exactly where Windows has ink and the other 21 are one column
+away. None is anywhere else.**
+
+| where Windows has the ink | count |
+| ------------------------- | ----- |
+| exactly there             | 83    |
+| one column to the left    | 16    |
+| one column to the right   | 5     |
+| nowhere near              | **0** |
+
+A mechanism that fires 104 times and is never wrong about _whether_ -- only
+sometimes about _which_ -- is not a fiction inventing ink. It is finding a real
+feature by the wrong route. So the sweep down columns stops being a thing to
+delete and becomes a thing to explain: Windows has no such sweep, and its sweep
+along rows finds these same 104 places.
+
+What the feature is, is now pinned. Every one of them is a stroke lying strictly
+between two scanlines, half to one pixel tall, missing the nearer scanline by a
+median of 0.08 of a pixel and never by more than 0.21. And the letters they
+occur in are almost all round -- `S a b d e g m n s 6 9 3` -- so these are the
+apexes of bowls, where a curve turns over, rather than the flat tops of stems.
+The bounding edges sit a third of a pixel off the grid, which is what an
+`IUP`-interpolated point looks like: the program hints the stems and the
+extremes and lets interpolation carry the curve between them.
+
+**It is not the interpolation's rounding.** Sweeping `IUP`'s divide over all
+four modes, scored on wrong pixels rather than whole letters, is flat:
+
+| mode     | trunc | round | floor | ceil |
+| -------- | ----- | ----- | ----- | ---- |
+| wrong px | 307   | 307   | 308   | 306  |
+| letters  | 692   | 688   | 692   | 684  |
+
+Four modes inside two pixels of each other is no signal at all, and it retires
+an earlier reading: truncation was recorded as worth six of the 846 letters, and
+on the pixel metric that six is worth one. It was the whole-letter yardstick
+again, not a fact about the instruction.
+
+**Nor is it a uniform displacement.** Eight transforms of the stroke's geometry
+were tried -- rounding both edges to the grid, to the half, growing the stroke
+by an eighth or a quarter, forcing its height to a whole pixel -- and every one
+that brings all 102 wanted strokes onto a scanline brings all 22 unwanted ones
+too. Nothing about where these strokes sit separates the ones Windows inks from
+the ones it does not, so "the outline is a tenth of a pixel out" is too simple:
+the two populations are geometrically the same.
+
+One thing did fall out for free, from the other direction entirely. Counting how
+much of each hinted outline lands exactly on the pixel grid:
+
+| face, size                 | points on the grid, x / y |
+| -------------------------- | ------------------------- |
+| Courier New at 11 ppem     | 61% / 57%                 |
+| Arial at 11 ppem           | 45% / 51%                 |
+| Times New Roman at 14 ppem | 40% / 47%                 |
+| **Courier New at 8 ppem**  | **2% / 7%**               |
+
+Half a healthy hinted outline sits on the grid. At eight pixels per em Courier
+New's sits nowhere near it -- which is `INSTCTRL` doing exactly what section 5
+says it does, measured here from a direction that knows nothing about advances
+or about the fabricated font that first found it.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
