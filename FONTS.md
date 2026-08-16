@@ -1713,6 +1713,75 @@ compensating fictions with the evidence against them. That is a worse thing to
 leave behind than a wrong number and a better thing than a wrong number nobody
 has noticed.
 
+### Where the error actually is
+
+Sweeping shape fonts for a coefficient was the wrong instrument, and counting
+the gap says so. The 145 disagreeing letters are 399 wrong pixels, and they are
+not spread:
+
+| face / size          | letters | wrong px |
+| -------------------- | ------- | -------- |
+| **Courier New h=10** | 34 / 36 | **217**  |
+| Times New Roman h=16 | 10      | 17       |
+| Arial h=24           | 11      | 15       |
+| ...sixteen more      | 90      | 150      |
+
+One cell is 54% of everything left, and the tail is a real tail -- 69 of the 145
+letters are wrong by exactly one pixel.
+
+That cell is `lfHeight` 10 asking for Courier New, which the mapper answers with
+**the outline at eight pixels per em** -- below the nine where the face's own
+`INSTCTRL` turns grid-fitting off. So the fill is handed a raw scaled outline
+with sub-pixel stems, and **183 of its 300 spans cover no pixel centre at all**.
+At that size dropout control is not a correction applied to a rendered glyph; it
+_is_ the renderer. Windows lays down 355 pixels of ink across the 36 letters and
+this lays down 158.
+
+Three things follow, and they are separable.
+
+**The pixel choice is already exact.** Taking the rows where a glyph has one
+dropout span and Windows inked one pixel, the shipped `floor(to - 0.5)` is 23 of
+23 -- against 2 of 23 for `ceil(from - 0.5)` and 6 of 23 for `floor(to)`. The
+rule for _which_ pixel is not in question at this size or any other.
+
+**The width threshold is the single most expensive fiction in the file.** 174 of
+the 183 dropout spans are narrower than `STUB`, so the code refuses to rescue
+them -- and Windows has ink at 138 of those. The width bands run the wrong way
+for a stub rule outright:
+
+| span width   | 0 -- 0.25 | 0.25 -- 0.5 | 0.5 -- 0.75 | 0.75 -- 1 |
+| ------------ | --------- | ----------- | ----------- | --------- |
+| Windows inks | 100%      | 76%         | 50%         | 100%      |
+
+**And the metric was hiding it.** Scoring the four combinations by wrong pixels
+rather than by whole letters reverses the answer:
+
+| threshold | column sweep | letters     | wrong px | Courier New h=10 |
+| --------- | ------------ | ----------- | -------- | ---------------- |
+| 0.5       | on (shipped) | **701**/846 | 399      | 2/36, 217 px     |
+| 0.5       | off          | 645/846     | 479      | 2/36, 222 px     |
+| none      | on           | 656/846     | 409      | 0/36, 165 px     |
+| none      | off          | 654/846     | **369**  | **8/36, 109 px** |
+
+The measured rule -- the one the shape fonts proved -- has the lowest true error
+of the four and halves the worst cell. Counting whole letters rewards a rule
+that is right about easy letters and gives up on hard ones, which is exactly
+what the fictions do. The 564-against-701 that kept this unshipped was measured
+with the wrong yardstick.
+
+What stops it being shipped outright is that the win is one cell and the losses
+are eighteen: every other cell gets between one and eleven pixels worse. Reading
+the errors by direction says why, and says it is two effects rather than one --
+dropping the threshold adds ink that Windows does not have (98 extra pixels
+become 154) and dropping the column sweep removes ink that Windows does have
+(and the missing count outside the worst cell rises with it). The column sweep
+is compensating for **near-horizontal thin strokes that a sweep along rows
+provably cannot see**, and since thirty-six fabricated bars say Windows has no
+column sweep, Windows' sweep along rows must be seeing them by some means this
+does not have. That -- not a coefficient -- is the remaining unknown, and it is
+now a question about what a scanline is allowed to notice rather than about
+where a stroke's edge reaches.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
