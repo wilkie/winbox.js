@@ -1863,6 +1863,153 @@ export const FABRICATIONS = [
     },
   },
 
+  /* Hairlines tall enough to cross a band boundary.
+   *
+   * The scaler's interface rasterises a scanline range at a time and offers two
+   * banding strategies, of which only the costlier "can preserve dropout-control
+   * behaviour". If GDI bands, and if a boundary loses what dropout control
+   * carries across it, a stroke rescued on every scanline should break on one
+   * fixed device row. Every rule found so far breaks a stroke at its own ends,
+   * which move with the stroke; a band would break it in the middle, in the same
+   * place for every glyph at that size.
+   *
+   * The `bands` probe draws these two hundred pixels tall, which is where the
+   * question lives -- the glyph probe's sizes are one band by any reckoning.
+   *
+   * Six widths from four to fourteen design units, which stay under a pixel from
+   * fifty pixels per em to a hundred and sixty, by six sub-pixel phases. The bar
+   * runs from below the baseline to above the ascender so that it is as long as
+   * the cell allows, and a small box sits well below it so the glyph is wide
+   * enough to be on the far side of the switch `cour-widths` found -- a lone
+   * hairline is a narrow glyph, and narrow glyphs are drawn by the other rule.
+   */
+  {
+    name: 'cour-hairs',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with tall hairlines, for the bands probe',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const WIDTHS = [4, 6, 8, 10, 12, 14];
+      const PHASES = [0, 42, 85, 128, 170, 213];
+      const LOW = -300;
+      const HIGH = 1500;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const width = WIDTHS[index % WIDTHS.length];
+        const phase = PHASES[Math.floor(index / WIDTHS.length) % PHASES.length];
+        const left = 600 + phase;
+
+        const bar = [
+          [left, LOW],
+          [left, HIGH],
+          [left + width, HIGH],
+          [left + width, LOW],
+        ];
+
+        // Well below the bar, so it widens the glyph and shares no scanline.
+        const ballast = [
+          [1700, -700],
+          [1700, -500],
+          [1900, -500],
+          [1900, -700],
+        ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: 0,
+          height: 0,
+          contours: [bar, ballast],
+          program: [],
+        });
+        setBearing(bytes, glyph, left);
+      }
+
+      return bytes;
+    },
+  },
+
+  /* The same hairlines in the face whose dropout control lasts.
+   *
+   * `cour-hairs` asked the band question of Courier New and could not answer
+   * it: that face's `prep` sets `SCANCTRL` to switch dropout control off above
+   * forty-four pixels per em, so at the sizes a band boundary needs there is no
+   * rescue left to break -- 79 of its 144 hairlines are simply not drawn.
+   *
+   * Times New Roman sets the same control to a hundred and twenty-four, so a
+   * hairline is still rescued at a size where the glyph is over a hundred
+   * scanlines tall. That is the only face installed that can be asked.
+   *
+   * The scaler's interface rasterises a scanline range at a time and offers two
+   * banding strategies, of which only the costlier "can preserve dropout-control
+   * behaviour". If GDI bands, and if a boundary loses what dropout control
+   * carries across it, a stroke rescued on every scanline should break on one
+   * fixed device row. Every rule found so far breaks a stroke at its own ends,
+   * which move with the stroke; a band would break it in the middle, in the same
+   * place for every glyph at that size.
+   *
+   * The `bands` probe draws these two hundred pixels tall, which is where the
+   * question lives -- the glyph probe's sizes are one band by any reckoning.
+   *
+   * Six widths from four to fourteen design units, which stay under a pixel from
+   * fifty pixels per em to a hundred and sixty, by six sub-pixel phases. The bar
+   * runs from below the baseline to above the ascender so that it is as long as
+   * the cell allows, and a small box sits well below it so the glyph is wide
+   * enough to be on the far side of the switch `cour-widths` found -- a lone
+   * hairline is a narrow glyph, and narrow glyphs are drawn by the other rule.
+   */
+  {
+    name: 'times-hairs',
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: 'Times New Roman with tall hairlines, whose dropout control survives to 124 ppem',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const WIDTHS = [4, 6, 8, 10, 12, 14];
+      const PHASES = [0, 42, 85, 128, 170, 213];
+      const LOW = -300;
+      const HIGH = 1500;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const width = WIDTHS[index % WIDTHS.length];
+        const phase = PHASES[Math.floor(index / WIDTHS.length) % PHASES.length];
+        const left = 600 + phase;
+
+        const bar = [
+          [left, LOW],
+          [left, HIGH],
+          [left + width, HIGH],
+          [left + width, LOW],
+        ];
+
+        // Well below the bar, so it widens the glyph and shares no scanline.
+        const ballast = [
+          [1700, -700],
+          [1700, -500],
+          [1900, -500],
+          [1900, -700],
+        ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: 0,
+          height: 0,
+          contours: [bar, ballast],
+          program: [],
+        });
+        setBearing(bytes, glyph, left);
+      }
+
+      return bytes;
+    },
+  },
+
   /* Courier New with its `INSTCTRL` turned around.
    *
    * Its `prep` executes the instruction twice, both times as `PUSHB[2] 1, 1`

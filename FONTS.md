@@ -2768,6 +2768,51 @@ in shape -- and the scale is already right, 927 of 927 swept advances and every
 Nothing here contradicts anything shipped. The two things it adds to the list are
 a parameter this does not model and a mechanism this cannot currently see.
 
+### A band boundary does not break a rescued stroke
+
+The scaler's interface says a glyph is rasterised over a scanline range and that
+only the costlier of two banding strategies "can preserve dropout-control
+behaviour". If GDI bands and loses that, a stroke rescued on every scanline
+should fail on **one fixed device row** -- the same row for every glyph at that
+size. Nothing else measured here does that: every rule found so far breaks a
+stroke at its own ends, which move with the stroke.
+
+The glyph probe cannot ask. It draws at eight to twenty-two pixels per em into a
+thirty-two pixel cell, which is one band by any reckoning. So there is a second
+probe, `bands`, which draws the same fabricated hairlines two hundred pixels
+tall and records a **column profile** rather than a bitmap -- for each row, the
+leftmost inked column, or `ff` for a row with none. A hairline standing upright
+gives the same column on every row it occupies, so a break is an `ff` between two
+identical values and needs no interpreting; and a profile fits the record format,
+which a two hundred row bitmap does not.
+
+It took two fonts to ask properly. `cour-hairs` could not answer: Courier New's
+`prep` switches dropout control off above forty-four pixels per em, so at the
+sizes a band needs there is no rescue left to break, and 79 of its 144 hairlines
+are simply not drawn. **That is a confirmation of the `SCANCTRL` reading from a
+direction nothing else has taken** -- the threshold was read out of the font's
+program, and here it is visible as ink disappearing. `times-hairs` is the same
+hairlines in the one installed face whose control lasts, to a hundred and
+twenty-four.
+
+|                 | strokes drawn covering no pixel centre | tallest  | with a hole |
+| --------------- | -------------------------------------- | -------- | ----------- |
+| Courier New     | 9                                      | 114 rows | **0**       |
+| Times New Roman | 29                                     | 108 rows | **0**       |
+
+Thirty-eight strokes that exist only because dropout control rescued them, up to
+a hundred and fourteen scanlines tall, and **not one of them breaks**. So either
+GDI does not band a glyph, or it uses the strategy that preserves dropout
+control, or a band is at least a hundred and fourteen scanlines -- and for a
+display that never draws a glyph taller than that, the three are the same answer.
+The prediction the scaler's description made is testable, was tested, and did not
+happen.
+
+The `bands` fixtures are recorded and kept, but nothing replays them yet: the
+implementation has no size limit and no banding, so it would agree by
+construction, and a test that cannot fail is worth less than the recording it is
+made from.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
