@@ -3252,6 +3252,39 @@ chosen position "based on the scan kind (smart or simple)". Neither crossing
 counts nor a smart/simple branch exists here -- `SCANTYPE` is read from the
 font's `prep` and then used only as a yes or no.
 
+### The crossing counts, tried three ways
+
+`ProcessContour` verifies "if the contour is near the edges by counting vertical
+and horizontal crossings" before it sets a dropout pixel, and `CountHorizCrossings`
+and `CountVertCrossings` are described but not written out -- the document gives
+their purpose and parameters and stops. So this is three readings of an English
+sentence, measured against the recordings.
+
+**That the pixel must have contour in it.** The most literal reading: the cell a
+rescue lights has to be one the span actually passes through. Preferring the
+candidate whose cell holds the span is worth 714 letters against 722; requiring
+it, 713. Both are worse on the fabricated cells too, 4,045 and 4,025 against
+4,084.
+
+**That the counts are a parity test**, which is what crossing counts classically
+compute -- walk the crossings recorded for a scanline, count how many lie beyond
+a given x, and an odd answer means inside. Preferring the candidate the parity
+favours changes **nothing at all**: 722 letters and 4,084 cells, identical to the
+last digit, because the parity is the same on both candidate rows in every case
+this fixture contains. Requiring it is much worse, 663 letters and 366 wrong
+pixels.
+
+So the mechanism named in the pseudocode does not, in any reading this could
+find, improve on what the recordings already produced. That is worth recording
+for the same reason the negatives about FreeType-shaped ideas were: a description
+of the real routine is a strong hypothesis and still only a hypothesis, and three
+attempts to turn one sentence of it into a rule all lost to a rule measured from
+the pixels.
+
+What would settle it is the body of those two functions rather than their
+purpose. Until then the sentence is a lead that has been followed as far as it
+goes.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
