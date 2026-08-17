@@ -3199,6 +3199,59 @@ on both instruments at once while costing exact cells on one:
 the rule fires where it was derived and not where it would do harm. The five
 letters lost are the price of a mechanism that two fonts agree on.
 
+### What the pseudocode confirms, and what it does not
+
+`FONT_PSEUDOCODE.md` describes the rendering routines rather than the interface.
+It is still a description and not a recording, so what follows is what it says
+about decisions already measured here, and it is worth reading in that order:
+four of them were arrived at from the recordings and are confirmed, which is a
+better result than being told them would have been.
+
+**Scanlines are at pixel centres.** `CalcHorizLineSubpix` computes its crossing
+at `yScan << SUBSHFT + SUBHALF` -- the row plus half a pixel, in sixty-fourths.
+Sweeping the sampling height found a sharp optimum at exactly that and nowhere
+else.
+
+**The sweep down columns exists, and only when dropout control does.** `CalcLine`
+has two branches. Without dropout control it walks each edge adding _horizontal_
+scan entries only; with it, the same walk adds a **vertical** entry whenever the
+DDA steps in x and a horizontal one whenever it steps in y. So Windows does not
+run a second pass down columns -- it emits both lists from one edge walk -- but
+the crossings that pass produces are the crossings a column sweep produces, and
+they exist exactly when `SCANCTRL` says they do. Deleting that sweep on the
+strength of a degenerate bar font was wrong, and `cour-shelves` had already said
+so.
+
+**A rescue looks at pixels that are already set.** `ProcessContour`, whose stated
+purpose is "process a contour for dropout control", checks "if there are pixels
+above or below the current point to determine if dropout is needed". That is the
+guard, which was derived here from 200 column rescues and a control, and shipped
+two commits ago.
+
+**The outline is in fixed point**, which was shipped last commit on the strength
+of the interface description and 56 misplaced fills.
+
+**A stub is a question about topology.** `CheckHorizTopology` branches entirely
+on the relative order of the three points around a vertex -- whether `x1` lies
+between `x0` and `x2` or turns back -- which is the "outline turns back" reading
+that was tried here and lost to a geometric test. The geometric test wins on the
+recordings by a distance, so this stays as it is; but it says the shape of the
+real rule is topological and the tip test is standing in for it.
+
+One thing in it was testable and is measured. `AddVertOn` computes its scanline
+as `(fxY1 + SUBHALF - 1) >> SUBSHFT` where `AddVertOff` uses `(fxY1 + SUBHALF)`,
+and the horizontal pair are identical to each other -- a one-subpixel asymmetry
+that exists only down columns and only for a vertex landing exactly on a
+scanline. Flipping the half-open test in `crossesDown` to match is worth **one
+wrong pixel**, 248 against 249, with the fabricated cells unmoved. Exact ties are
+too rare in this fixture to say more, so nothing is shipped from it.
+
+What it offers that has not been tried: `ProcessContour` decides "if the contour
+is near the edges by counting vertical and horizontal crossings", and adjusts its
+chosen position "based on the scan kind (smart or simple)". Neither crossing
+counts nor a smart/simple branch exists here -- `SCANTYPE` is read from the
+font's `prep` and then used only as a yes or no.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
