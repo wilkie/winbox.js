@@ -3689,6 +3689,53 @@ question is what the crossing counts do for a glyph one column wide, where a
 stroke has no neighbouring column to continue into. **Recorded as the remaining
 divergence.**
 
+### What the banding machinery is for
+
+The scan converter renders a glyph in as many passes as the caller asks for, and
+`saveRow` is not the reason for that -- it is the reason multiple passes give the
+same answer as one.
+
+**Where the two are told apart.** `AddHoriz` dispatches on
+`hiScanBand == boxTop && loScanBand == boxBottom`: when the scan band covers the
+whole box it appends through `AddHorizSimpleScan`, and otherwise through
+`AddHorizSimpleBand`, which range-checks `y < loScanBand || y >= hiScanBand` and
+**discards** anything outside. The two variants also normalise differently --
+`y -= boxBottom` against `y -= loScanBand` -- which is what makes the band's lists
+band-sized. That is the small-memory strategy: scan the whole outline again for
+each band and keep only the rows that band covers.
+
+**What breaks when you do that, and what `saveRow` fixes.** Dropout control reads
+pixels that are already drawn. `PerformHorizDropout` reads `GetBit` twice in its
+own row, which is always inside the current band. `PerformVertDropout` reads
+`GetBit(xDrop, yDrop − 1)` -- **the row below** -- which at the bottom edge of a
+band belongs to the previous pass and has already been emitted. Without something
+kept back, a vertical dropout on a band boundary would decide differently from
+the way it decides in a single pass, and a stroke would gain or lose a pixel at a
+seam invisible to the font.
+
+So the band is rendered one row taller than it emits. `Blit`'s tail, taken only
+when `originalLoBand != loScanBand` -- that is, only when banding -- pulls back
+twice, "to the overscan row" and then "to the low row", copies the saved row into
+place, and records `lastRowIndex = loBitBand + 1` for the next pass. `GetBit`'s
+second branch is the other half: a read at exactly `lastRowIndex` is answered from
+the kept row rather than refused as out of range. `Setup` starts it at infinity so
+that the first band, which has nothing below it, falls through to the `return 0`
+and reads clear.
+
+That is what the interface description means by one strategy costing "additional
+persistent workspace" and being the one that "can preserve dropout-control
+behaviour": the persistent workspace is the kept row.
+
+**A note on the estimate.** `GetBit`'s cached branch reads
+`BITMAP[hiBitBand − 1 − y][x]`, but it is reached only when `y` is _outside_
+`[loBitBand, hiBitBand)` -- the first branch would have caught it otherwise -- so
+that index is out of the bitmap by construction. The kept row is `pulLastRow`,
+which `Setup` allocates and nothing else in the transcription reads, so the branch
+is presumably `pulLastRow[x]`. It makes no difference here: **nothing in this
+project bands.** Every glyph recorded is drawn in one pass, `hiScanBand` and
+`loScanBand` equal the box, `lastRowIndex` stays at its sentinel, and both
+branches are unreachable.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
