@@ -3518,6 +3518,37 @@ by measurement.
 
 The recorded letters are **747 of 846** at 184 wrong pixels.
 
+### Two corrections the comparison found, worth no pixels
+
+Reading the two implementations side by side turns up places where this is
+knowingly doing something the scan converter does not, whether or not the fixture
+can see it.
+
+**Dropout control was hardcoded on.** `Surface.outlineText` passed `dropout:
+true` to every fill, while the interpreter has been computing the real answer
+from `SCANCTRL` all along and handing it back as `fitted.dropout`. It is not
+always yes: **Arial turns dropout control off above sixteen pixels per em**, so
+`lfHeight` 24 -- twenty-one pixels per em, forty-two of the recorded glyphs -- was
+being drawn as though the font had asked for rescues it explicitly declined.
+
+**The sweep down columns ran unconditionally.** `Setup` allocates the vertical
+lists only `if !(scanKind & NoDropout)`, `CalcLine`'s no-dropout branch emits no
+vertical entries at all, and `Blit` calls `FindDropouts` only when dropout
+control is on. A glyph drawn without it has no column sweep to make.
+
+Both are now right, and **neither changes a single pixel**: 747 letters and 184
+wrong pixels before and after, 4,375 fabricated cells and 4,657 either way, and
+Arial at `lfHeight` 24 is 31 of 42 with 15 wrong pixels in both. At twenty-one
+pixels per em nothing in that face is thin enough to need rescuing, so the
+mechanism that was wrongly enabled never fired.
+
+They are kept anyway, which is a different judgement from the one made about the
+turning-vertex pairs a moment ago. That was twenty lines of new machinery
+supported by no measurement; these are two lines removing a known incorrectness,
+and a font asking for no dropout control at a size where strokes _are_ thin would
+show the difference immediately. The fixture has no such font, which is a fact
+about the fixture.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

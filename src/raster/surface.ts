@@ -356,7 +356,12 @@ export class Surface {
           originY: baseline,
           width: this.width,
           height: this.height,
-          dropout: true,
+          /* What the font's own `SCANCTRL` asked for at this size, which is
+           * not always yes: Arial turns dropout control off above sixteen
+           * pixels per em and this was drawing every size as though it were on.
+           * An unhinted outline has no answer, so it keeps the default.
+           */
+          dropout: fitted.dropout ?? true,
         });
 
         for (let row = 0; row < this.height; row++) {

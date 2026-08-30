@@ -606,7 +606,11 @@ export function fill(contours, options) {
   const down: any[] = [];
   const downAll: any[] = [];
 
-  for (let column = 0; column < width; column++) {
+  /* `Setup` allocates the vertical lists only when dropout control is on, and
+   * `CalcLine`'s no-dropout branch emits no vertical entries at all -- so a
+   * glyph drawn without dropout control has no sweep down columns to make.
+   */
+  for (let column = 0; dropout && column < width; column++) {
     const crossings: any[] = [];
 
     for (const piece of pieces) {
