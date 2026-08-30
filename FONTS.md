@@ -3822,6 +3822,43 @@ underneath it -- whether `FixedMulDiv` truncates, rounds, or rounds away from
 zero, and how `>>` behaves on the negative intermediates the conic form produces
 -- and those decide exactly the ties this is losing.
 
+### `FixedDiv` rounds unlike anything here, and it is still not the answer
+
+The real divide turns out to round in a way none of the three guesses did.
+`FixedDiv` strips the sign, divides the magnitudes, and then increments the
+quotient when the remainder reaches `divisor >> 1` -- so it rounds **away from
+zero**, and because `divisor >> 1` is the _floor_ of half, an odd divisor rounds
+up from below a half as well:
+
+|                | 7/2   | −7/2   | 7/5   | 2/5   | −3/5   | 10/4  |
+| -------------- | ----- | ------ | ----- | ----- | ------ | ----- |
+| `Math.trunc`   | 3     | −3     | 1     | 0     | 0      | 2     |
+| `Math.round`   | 4     | −3     | 1     | 0     | −1     | 3     |
+| `Math.floor`   | 3     | −4     | 1     | 0     | −1     | 2     |
+| **`FixedDiv`** | **4** | **−4** | **2** | **1** | **−1** | **3** |
+
+Two fifths comes out as one. That is a real bias and it is nothing any of the
+earlier readings captured.
+
+Implemented exactly -- `FixedMulDiv(a, b, c)` as `FixedDiv(a · b, c)`, applied to
+the crossing of every straight edge -- it is **still worse**: 729 letters and 201
+wrong pixels against 763 and 144, and 4,259 fabricated cells against 4,442.
+
+That is not a contradiction; it is the confirmation. **In simple dropout control,
+no subpixel crossing is ever computed.** `CalcHorizLineSubpix` and its three
+relatives are reached from exactly two places, both inside
+`if scanKind & ScanKind.Smart`, and all four installed faces ask for `SCANTYPE`
+
+1. The fill's boundaries are pixel indices the DDA emitted while walking; nothing
+   in the simple path divides anything. So applying the scan converter's divide to
+   this rasteriser's analytic crossings produces a hybrid that matches neither --
+   Windows' arithmetic on a quantity Windows never computes.
+
+Four separate roundings have now been tried on the crossings and exact beats all
+four. The remaining 53 curve-bounded errors are not in the arithmetic; they are in
+the walk, which for a spline is a conic forward difference with a per-curve
+precision shift, and which this project does not have.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

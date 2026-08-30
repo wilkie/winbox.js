@@ -101,11 +101,85 @@ ScanBelow(p):
 ```
 
 ```
+# Upcasted integers to big integers (64-bit)
+int64 FixedMul(int64 a, int64 b):
+  # 64-bit integer multiplication
+  return a * b
+```
+
+```
+# Produces 32-bit result from manual 64-bit division
+int FixedDiv(int64 dividend, int denominator):
+  high = (int32)((dividend >> 32) & 0xffffffff)
+  low = (int32)(dividend & 0xffffffff)
+
+  negate = (int32)(denominator ^ high)
+  if denominator == 0:
+    if negate < 0:
+      return -Infinity
+    else:
+      return Infinity
+
+  if denominator < 0:
+    denominator = -denominator
+
+  if high < 0:
+    low = -low
+    if low != 0:
+      high = ~high
+    else:
+      high = -high
+
+  divisor = (uint32)denominator
+  remainder = (uint32)high
+  if divisor <= remainder:
+    if negate < 0:
+      return -Infinity
+    else:
+      return Infinity
+
+  # apply division... note: quotient is considered an unsigned value
+  quotient = (uint32)low
+
+  # Perform the x86 div routine to perform the 64-bit divide and retain
+  # the remainder
+  asm {
+    mov edx, remainder
+    mov eax, quotient
+    div divisor
+    mov remainder, edx
+    mov quotient, eax
+  }
+
+  # adjust quotient by applying remainder carry
+  if remainder >= (divisor >> 1):
+    quotient++
+    if quotient == 0:
+      if negate < 0:
+        return -Infinity
+      else:
+        return Infinity
+
+  # finalize result by reapplying sign
+  result = (int32)quotient
+  if negate >= 0:
+    if result >= 0:
+      return result
+    else:
+      return Infinity
+
+  if (result >= 0) || ((result < 0) && (quotient == 0x80000000)):
+    return -result
+  else:
+    return -Infinity
+```
+
+```
 # Just some wrapper for the fixed point multiplication and then divide
 # I don't put the actual Fixed point 26.6 math here, just presume it
 FixedMulDiv(a, b, c):
   # perform the fixed multiplication and then division
-  return (a * b) / c
+  return FixedDiv(FixedMul(a, b), c)
 ```
 
 Initialization of state occurs at the beginning of the scan.
@@ -497,7 +571,7 @@ CalcSpline(
 
     # Shift pixel coordinates to the 32 or 16 subpixel grid
     controlX = (controlX + zRound) >> zShift
-    controlY = (controlX + zRound) >> zShift
+    controlY = (controlY + zRound) >> zShift
     terminalX = (terminalX + zRound) >> zShift
     terminalY = (terminalY + zRound) >> zShift
 
@@ -525,7 +599,7 @@ CalcSpline(
   zSubpix = 1 << zBits
   if xyBits <= 7:
     # Q can fit in our precision without approximating
-    q += (((r * initialXStep) + ((s2 << 1) * initialYStep) + (u2 << 1)) * initialXStep) + (((T * initialYStep) + (v2 << 1)) * initialYStep)
+    q += (((r * initialXStep) + ((s2 << 1) * initialYStep) + (u2 << 1)) * initialXStep) + (((t * initialYStep) + (v2 << 1)) * initialYStep)
     dQx = ((r * ((initialXStep << 1) + zSubpix)) + (((s2 << 1) * initialYStep) + (u2 << 1))) << zBits
     dQy = ((t * ((initialYStep << 1) + zSubpix)) + (((s2 << 1) * initialXStep) + (v2 << 1))) << zBits
 
@@ -535,9 +609,9 @@ CalcSpline(
     tZ = t << (zBits << 1)
   else:
     # We need to approximate Q since it won't fit: so take out a '2z'
-    q += (((((r >> 1) * initialStepX) + (s2 * initialStepY) + u2) >> zBits) * initialStepX) + (((((t >> 1) * initialStepY) + v2) >> zBits) * initialStepY)
-    dQx = (r * (initialStepX + (zSubpix >> 1))) + (s2 * initialStepY) + u2
-    dQy = (t * (initialStepY + (zSubpix >> 1))) + (s2 * initialStepX) + v2
+    q += (((((r >> 1) * initialXStep) + (s2 * initialYStep) + u2) >> zBits) * initialXStep) + (((((t >> 1) * initialYStep) + v2) >> zBits) * initialYStep)
+    dQx = (r * (initialXStep + (zSubpix >> 1))) + (s2 * initialYStep) + u2
+    dQy = (t * (initialYStep + (zSubpix >> 1))) + (s2 * initialXStep) + v2
 
     rZ = r << (zBits - 1)
     sZ = s2 << zBits
