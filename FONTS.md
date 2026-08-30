@@ -3588,6 +3588,60 @@ counts have since replaced that.
 
 **760 of 846 recorded letters exact** -- nine tenths -- at 199 wrong pixels.
 
+### What still does not map, stated as questions
+
+Everything invented here that the scan converter contradicts has now been
+removed. What is left that has no counterpart in `FONT_PIXEL_CANDIDATES.md` is
+three things, and none of them can be resolved by reading it again -- so they are
+recorded as questions rather than guessed at.
+
+**1. The narrow-glyph rule has no counterpart, and is not the bounding-box clamp.**
+A glyph whose whole outline falls between two pixel centres takes
+`ceil(from − 0.5)` here where every other glyph takes `floor(to − 0.5)`. It was
+measured on `cour-widths` -- 144 of 144, the switch landing on the pixel centre at
+four different sizes -- and removing it costs **451 fabricated cells and 6,494
+wrong pixels**, while leaving the recorded letters untouched at 760 and 199,
+because no letter is ever that narrow.
+
+`PerformHorizDropout` has no such branch: simple placement is `xDrop--`, always.
+The one mechanism in it that could produce the same effect is the clamp,
+
+```
+if xDrop < boxLeft:   xDrop = boxLeft
+if xDrop >= boxRight: xDrop = boxRight - 1
+```
+
+but the pseudocode never says how `boxLeft` and `boxRight` are computed, and no
+definition tried reproduces the behaviour. Taking `boxLeft = ceil(xMin − 0.5)`
+makes the narrow case right and breaks wide glyphs whose ink starts near the left
+edge -- 19,867 of 132,208 dropout spans placed differently. Taking
+`boxLeft = floor(xMin)` leaves wide glyphs alone and makes the narrow bar land on
+pixel 4 where Windows draws pixel 5. **The open question is what the glyph's box
+is measured from.**
+
+**2. The frame mapping for the sweep down columns is unverified.** The row pick
+is `floor(to − 0.5)`, which is provably `xDrop--`. The column pick is
+`ceil(from − 0.5)`, which beats the other candidate 685 to 631 -- but whether it
+_is_ `yDrop--` depends on how the pseudocode's y-up row index maps onto a device
+row counting down, and every attempt to derive that from the text has had to be
+settled by measurement instead. The stub counts down columns needed the same
+treatment: `yDrop + 1` had to be read as the device row _below_ rather than
+above, worth 733 letters against 631. **The open question is the sign convention
+between `CONTEXT`'s rows and the bitmap's.**
+
+**3. A vertex exactly on a scanline where the outline turns back.**
+`CheckHorizTopology` emits an `on` and an `off` there -- a zero-length run, so a
+dropout pixel -- and a half-open sweep emits nothing. It is implementable and was
+implemented; it fires four times in 846 glyphs and changes no pixel, so it is not
+carried. **No question outstanding, only a note that the fixture cannot exercise
+it.**
+
+Two things were confirmed still to be earning their place while checking the
+above. The `GetBit` guard is worth 34 letters and 61 wrong pixels -- without it
+760 and 199 become 726 and 260 -- and it is in the pseudocode, so it stays. And
+the narrow-glyph rule's effect is confined entirely to the fabricated fonts,
+which is what one would expect of a rule about glyphs narrower than a pixel.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
