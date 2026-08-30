@@ -3406,6 +3406,62 @@ in cases nothing else could have reached.
 The recorded letters are 744 of 846 at 180 wrong pixels, from 654 and 369 when
 this section began.
 
+### The architectural difference, measured and mostly retracted
+
+It was claimed here that Windows filling both crossing lists from one DDA walk,
+where this runs a second analytic sweep down columns, was the likely reason the
+crossing counts help along rows and hurt down them. That claim was asserted, not
+measured. Measured, it is wrong.
+
+`CalcLine` was implemented exactly as the pseudocode gives it -- `ScanAbove`,
+`ScanBelow`, the quadrant reflection, the cross-product DDA -- and its emitted
+crossings compared with this rasteriser's analytic ones over two hundred thousand
+random segments in sixty-fourths:
+
+|                    | identical | differing |
+| ------------------ | --------- | --------- |
+| horizontal entries | 196,649   | 3,351     |
+| vertical entries   | 196,670   | 3,330     |
+
+**98.3% identical**, and the differences are not spread. Of 6,593 segments where
+the two disagree, **6,522 have an endpoint lying exactly on a scanline centre** --
+where the DDA deliberately emits nothing and the topology functions take over --
+and the remaining 71 are a crossing landing exactly on a pixel centre in the
+other axis, the same tie the on/off pair rounds in opposite directions. There is
+no general disagreement between a DDA and an exact sweep to explain anything.
+
+**What the topology functions do differ on is real, and rarer than it looks.**
+For a vertex lying exactly on a scanline, comparing the half-open test against
+`CheckHorizTopology`:
+
+| the outline at that vertex    | this emits | Windows emits |
+| ----------------------------- | ---------- | ------------- |
+| passes through, rising        | 1          | 1             |
+| passes through, falling       | 1          | 1             |
+| turns back, local minimum     | 2          | 2             |
+| **turns back, local maximum** | **0**      | **2**         |
+
+Two entries at one place is a run of zero length, which is a dropout: Windows
+draws a pixel at a local maximum sitting on a scanline and a half-open sweep
+draws nothing there. It cannot be reproduced by any adjustment of `keeps`.
+
+Counting how often that arises: 661 of the fixture's 22,106 vertices sit exactly
+on a scanline, but only **four** of them are local maxima. Implemented -- the
+turning vertices collected per contour and an `on`/`off` pair pushed at each --
+it changes **not one pixel**: 744 letters and 180 wrong pixels either way, 4,367
+fabricated cells either way. So the code is not kept.
+
+That also corrects a figure quoted a moment earlier. Sixty-one per cent of glyphs
+have a vertex exactly on a scanline, which sounded like a common case; almost all
+of them are pass-throughs, where the half-open test already emits the one
+crossing Windows emits. The interesting case is four vertices in eight hundred
+and forty-six glyphs.
+
+So the two implementations are not architecturally apart in the way that was
+claimed. Why the crossing counts help along rows and hurt down columns is
+**unexplained**, and the explanation offered before was a guess that did not
+survive being checked.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
