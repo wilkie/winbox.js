@@ -3859,6 +3859,49 @@ four. The remaining 53 curve-bounded errors are not in the arithmetic; they are 
 the walk, which for a spline is a conic forward difference with a per-curve
 precision shift, and which this project does not have.
 
+### The edge walk, implemented and not yet shipped
+
+`CalcLine`, `CalcSpline` and the endpoint topology are implemented in
+`src/raster/scan-walk.ts`, and `fillWalked` fills a glyph from the four lists
+they produce -- the scan converter's own method, where this project computes
+where the outline crosses each scanline and rounds. It is behind a flag because
+it is not yet as good: **436 of the 846 recorded letters against 763**.
+
+It is worth keeping and worth saying exactly where it stands, because four things
+were learnt building it and three of them are settled.
+
+**Straight edges are exact.** Arial's `A` at twenty-four pixels per em -- fifteen
+line segments, no curves -- comes out with **not one pixel wrong** under the walk.
+Everything still failing involves a spline.
+
+**The endpoint topology is not optional, and an earlier measurement here badly
+understated it.** Section 6 records the topology functions firing "four times in
+846 glyphs" and changing no pixel. That counted _local maxima only_. What matters
+far more is the ordinary case: a walk starts at `ScanAbove(y1)`, which for a
+vertex already on a scanline is the _next_ one, so two edges meeting there record
+nothing between them and the row cannot be paired into runs at all. Arial's `o`
+has exactly that at `(5.000, 13.500)` and loses its middle. With the topology
+implemented, **98.2% of rows balance**; without it the walk is unusable.
+
+**`CalcEndPoint` must not re-consume the first vertex.** A closed contour's last
+piece ends where the first began, so by the time the walk finishes the running
+vertex already _is_ the first one. Calling the endpoint check again with the
+first point makes `x1 == x2 && y1 == y2` and the topology is skipped -- which is
+the bug that made the `o` fail even after the machinery existed.
+
+**The no-dropout branch is a different walk, not the same walk with the vertical
+list switched off.** It tests `dQy > tZ` where the dropout branch tests
+`dQx > rZ`, it emits `AddHoriz(x, y)` where the other emits `AddHoriz(x + xOffset,
+y)`, and it advances `x` and `xStop` by `xOffset` before starting. Arial above
+sixteen pixels per em runs it, and using the wrong one puts the top of an `o` two
+pixels wide.
+
+What remains is unmeasured: 1.8% of rows still do not balance, and most of the
+shortfall is rows that balance and come out wrong, so there are further
+differences in the spline walk that have not been found. Each one fixed so far
+has been worth ten to twenty letters -- 328, then 416, then 421, then 436 -- which
+is the shape of a thing with several small faults left rather than one large one.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
