@@ -3642,6 +3642,53 @@ above. The `GetBit` guard is worth 34 letters and 61 wrong pixels -- without it
 the narrow-glyph rule's effect is confined entirely to the fabricated fonts,
 which is what one would expect of a rule about glyphs narrower than a pixel.
 
+### The narrow-glyph rule was the bounding-box clamp after all
+
+`Setup` takes the bounding box as a **parameter** -- it is the caller's, not
+computed in the scan converter -- and that is what makes it findable: everything
+else indexes from it. `Blit` fills at `onList[i] - boxLeft`, `GetBit` reads
+`BITMAP[hiBitBand - 1 - y][x - boxLeft]`, and `PerformHorizDropout` clamps its
+chosen pixel into it. So the box is the extent of the bitmap the runs are written
+into, and it can be measured the same way the runs are.
+
+Two readings were tried. **From the runs** -- the leftmost pixel any run starts at
+-- fails for exactly the case in question: a glyph narrower than the gap between
+two pixel centres has no runs at all, every span being a dropout, so there is
+nothing to measure. It scores 3,700 fabricated cells against 4,443. **From the
+outline**, rounded as the on and off pixels are:
+
+```
+boxLeft  = ceil(xMin - 0.5)
+boxRight = max(boxLeft + 1, floor(xMax + 0.5))
+```
+
+That is it.
+
+|                                  | letters                 | fabricated cells          | bars and widths       |
+| -------------------------------- | ----------------------- | ------------------------- | --------------------- |
+| the invented narrow-glyph branch | 760/846, 199 px         | 4,443/5,208, 4,597 px     | 324/516, 1,832 px     |
+| **the box clamp**                | **761**/846, **178** px | 4,442/5,208, **3,087** px | 324/516, **1,090** px |
+| neither                          | 760/846, 199 px         | 3,992/5,208, 11,091 px    | 275/516, 2,730 px     |
+
+**A third off the fabricated wrong pixels**, 4,597 to 3,087, and forty per cent
+off the two fonts built to test glyph width. The invented branch is gone; what
+replaces it is one line of the pseudocode.
+
+Why it works is worth stating, because it is not obvious from the clamp: a glyph
+narrower than a pixel has every span a dropout, so its ink is placed at
+`floor(to − 0.5)`, one pixel left of the only column it occupies -- and the clamp
+puts it back. `boxRight` is at least one past `boxLeft` because a bitmap cannot be
+zero pixels wide, which is the whole of the special-casing.
+
+One thing did **not** come from the pseudocode and is kept as a divergence. The
+stub test is gated here on the glyph being wide enough to cover a sample column,
+where `PerformHorizDropout` applies it whenever stub control is on. Removing the
+gate costs 451 fabricated cells and 3,761 wrong pixels. Every one of those is a
+narrow glyph -- the letters do not move at all, 761 and 178 either way -- so the
+question is what the crossing counts do for a glyph one column wide, where a
+stroke has no neighbouring column to continue into. **Recorded as the remaining
+divergence.**
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

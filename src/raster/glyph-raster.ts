@@ -407,26 +407,17 @@ export function fill(contours, options) {
     return pixels;
   }
 
-  /* Whether the glyph is wide enough to touch a sample column at all.
+  /* The glyph's bitmap box, which `Setup` is handed and everything else indexes
+   * from: `Blit` fills at `onList[i] - boxLeft`, `GetBit` reads
+   * `BITMAP[hiBitBand - 1 - y][x - boxLeft]`, and `PerformHorizDropout` clamps
+   * its chosen pixel into it. Measured the way the runs written into it are, so
+   * that the leftmost run starts at `boxLeft` exactly.
    *
-   * A glyph whose whole outline falls between two pixel centres would sample to
-   * nothing and disappear, and Windows treats that case differently: it inks
-   * the pixel the ordinary fill would have started at rather than the one below
-   * it, and it does not apply the stub rule that would take the ends off what
-   * little it drew. As soon as any part of the outline reaches a centre, both
-   * come back.
-   *
-   * **Measured**, by a font that holds one bar still and sweeps only how wide
-   * the glyph around it is. The switch lands on the pixel centre every time:
-   * at eight pixels per em between right edges of 5.485 and 5.567, at nine
-   * between 5.458 and 5.550, at eleven between 6.452 and 6.565, at seventeen
-   * between 8.358 and 8.533. Read as a rule it is 144 of 144 on that font and
-   * 94 of 96 on another built for a different question. `FONTS.md` section 6.
-   *
-   * The extent is taken from the points, including the control points, and not
-   * from the glyph's own header -- a fabricated glyph whose header claims a box
-   * twice its size draws exactly as one that tells the truth, in all 84
-   * comparisons.
+   * The clamp is what draws a glyph narrower than the gap between two pixel
+   * centres. Its every span is a dropout, its ink would be placed one pixel
+   * left of the only column it occupies, and the clamp puts it back. A bitmap
+   * cannot be zero pixels wide, which is why `boxRight` is at least one past
+   * `boxLeft`.
    */
   let leftmost = Infinity;
   let rightmost = -Infinity;
@@ -442,26 +433,17 @@ export function fill(contours, options) {
     }
   }
 
-  /* Written the same way a span's coverage is, and that is the point: this is
-   * `first < to - 0.5` applied to the whole outline instead of to one span, so
-   * it asks whether the glyph's bitmap has any width at all. A description of
-   * the scaler's interface says the engine sizes a monochrome bitmap from the
-   * outline and hands back its bounds, which makes a glyph that covers no
-   * column a bitmap zero pixels wide -- a case something has to special-case,
-   * and the measurements say what it does.
-   *
-   * It also accounts for the asymmetry. A glyph covering no *row* gets no ink
-   * at all -- thirty-six fabricated bars lying on their side say so, 27 of 27 --
-   * because a bitmap zero pixels tall has no scanlines to sweep and the loop
-   * never runs. A bitmap zero pixels wide still has rows, and each row's span
-   * still has to put its ink somewhere.
-   */
-  const sampled = Math.ceil(leftmost - 0.5) < rightmost - 0.5;
+  const boxLeft = Math.ceil(leftmost - 0.5);
+  const boxRight = Math.max(boxLeft + 1, Math.floor(rightmost + 0.5));
+
+  // Whether the glyph is wide enough to cover a sample column at all.
+  const sampled = boxLeft < rightmost - 0.5;
 
   /* Every pixel dropout control would turn on, kept until the whole glyph has
    * been swept because whether one survives depends on its neighbours.
    */
   const rescues: any[] = [];
+  const runs: any[] = [];
 
   /* Every span the sweep found, rescued or not. A rescued pixel at the end of a
    * run of them is not necessarily at the end of the stroke -- the rest of the
@@ -554,6 +536,7 @@ export function fill(contours, options) {
 
       if (first < last) {
         strokes.push({ row, from, to });
+        runs.push([first, last]);
 
         for (let column = first; column < last; column++) {
           if (column >= 0 && column < width) {
@@ -583,12 +566,22 @@ export function fill(contours, options) {
        * below the far end of the span. `Hinter` and the column sweep below say
        * the rest of it.
        */
-      const column = sampled ? Math.floor(to - 0.5) : Math.ceil(from - 0.5);
-
-      if (column >= 0 && column < width) {
-        rescues.push({ row, from, to, column });
-      }
+      rescues.push({ row, from, to, column: 0 });
     }
+  }
+
+  for (const rescue of rescues) {
+    let column = Math.floor(rescue.to - 0.5);
+
+    if (column < boxLeft) {
+      column = boxLeft;
+    }
+
+    if (column >= boxRight) {
+      column = boxRight - 1;
+    }
+
+    rescue.column = column;
   }
 
   /* Stubs: the tip of a stroke rather than the stroke itself.
@@ -600,7 +593,7 @@ export function fill(contours, options) {
    * A span belongs to the same stroke as one on the row above when the two
    * overlap in x. A rescue with nothing above it, or nothing below it, is at a
    * tip and is refused. It applies only to a glyph wide enough to touch a
-   * sample column -- see `sampled` above.
+   * sample column.
    */
 
   const down: any[] = [];

@@ -111,7 +111,26 @@ FixedMulDiv(a, b, c):
 Initialization of state occurs at the beginning of the scan.
 
 ```
-Setup(ScanKind scanKind, bool saveRow):
+Setup(
+  ScanKind scanKind,
+  # Top limit for scan
+  int hiBand,
+  # Bottom limit
+  int loBand,
+  # Bounding box to render
+  Rectangle boundingBox,
+  # Whether to save the last row for dropout purposes
+  bool saveRow
+):
+  # Retain parameters into global context
+  CONTEXT.hiScanBand = hiBand
+  CONTEXT.loScanBand = loBand
+
+  CONTEXT.boxTop = boundingBox.top
+  CONTEXT.boxLeft = boundingBox.left
+  CONTEXT.boxRight = boundingBox.right
+  CONTEXT.boxBottom = boundingBox.bottom
+
   # Maintaining lists for each on and off marker
   CONTEXT.horizOnBegin = [[]] * (CONTEXT.hiScanBand - CONTEXT.loScanBand)
   CONTEXT.horizOffBegin = [[]] * (CONTEXT.hiScanBand - CONTEXT.loScanBand)
