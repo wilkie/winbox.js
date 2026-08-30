@@ -470,6 +470,31 @@ export function fill(contours, options) {
    */
   const strokes: any[] = [];
 
+  /* The crossing lists a scan converter keeps, as pixel indices.
+   *
+   * Every span contributes two entries to its row: the pixel its left edge
+   * rounds into and the pixel its right edge rounds into, both by the same
+   * `ceil(edge - 0.5)` that decides where a run starts. A stub test asks how
+   * many crossings a neighbouring cell has.
+   */
+  const horizAt = new Map();
+  const vertAt = new Map();
+
+  const note = (into, key, value) => {
+    const list = into.get(key);
+
+    if (list) {
+      list.push(value);
+    } else {
+      into.set(key, [value]);
+    }
+  };
+
+  // Filled from every edge crossing, not only the spans winding keeps.
+
+  const countHoriz = (x, y) => (horizAt.get(y) ?? []).filter((at) => at === x).length;
+  const countVert = (x, y) => (vertAt.get(x) ?? []).filter((at) => at === y).length;
+
   for (let row = 0; row < height; row++) {
     // The centre of the row, so a shape has to cover the pixel to fill it.
     const y = row + 0.5;
@@ -482,6 +507,10 @@ export function fill(contours, options) {
 
     if (crossings.length === 0) {
       continue;
+    }
+
+    for (const crossing of crossings) {
+      note(horizAt, row, Math.ceil(crossing.x - 0.5));
     }
 
     crossings.sort((left, right) => left.x - right.x);
@@ -560,10 +589,79 @@ export function fill(contours, options) {
    */
   const touching = (one, two) => one.from - 1 < two.to && two.from - 1 < one.to;
 
+  const down: any[] = [];
+  const downAll: any[] = [];
+
+  for (let column = 0; column < width; column++) {
+    const crossings: any[] = [];
+
+    for (const piece of pieces) {
+      crossesDown(piece, column + 0.5, crossings);
+    }
+
+    for (const crossing of crossings) {
+      note(vertAt, column, Math.ceil(crossing.y - 0.5));
+    }
+
+    crossings.sort((left, right) => left.y - right.y);
+
+    let winding = 0;
+
+    for (let index = 0; index < crossings.length - 1; index++) {
+      winding += crossings[index].winding;
+
+      if (winding === 0) {
+        continue;
+      }
+
+      const from = crossings[index].y;
+      const to = crossings[index + 1].y;
+
+      downAll.push({ column, from, to });
+
+      if (Math.ceil(from - 0.5) < to - 0.5) {
+        continue;
+      }
+
+      /* The last centre at or above the span's near end -- which is the same
+       * sentence as `floor(to - 0.5)` along a row, read down the other axis,
+       * because device rows count downward where glyph coordinates count up.
+       * Written the other way it is worth 631 letters against 685.
+       */
+      const row = Math.ceil(from - 0.5);
+      const other = Math.floor(to - 0.5);
+
+      if (row >= 0 && row < height) {
+        down.push({ row, other, column, from, to });
+      }
+    }
+  }
+
+  /* The stub test as a scan converter states it: a dropout continues in a
+   * direction when the cells that way carry two crossings between them.
+   */
+  const continues = (x, y, step) => {
+    const at = step < 0 ? y : y + 1;
+    const near = countVert(x - 1, at) + countVert(x, at);
+
+    return countHoriz(x, y + step) + near >= 2;
+  };
+
   for (const rescue of rescues) {
     if (sampled) {
-      const above = all.some((span) => span.row === rescue.row - 1 && touching(span, rescue));
-      const below = all.some((span) => span.row === rescue.row + 1 && touching(span, rescue));
+      /* The stroke continues above and below, counted the way a scan converter
+       * counts it rather than measured. `PerformHorizDropout` asks whether the
+       * cells beyond carry two crossings between them -- one along the row it
+       * is stepping to, and two down the columns either side of the dropout --
+       * and calls anything with fewer a stub.
+       *
+       * `xDrop` there is the span's **on** pixel and the ink goes one to its
+       * left, so the counts are taken about `column + 1` rather than about the
+       * pixel being lit.
+       */
+      const on = rescue.column + 1;
+      const above = continues(on, rescue.row, -1);
+      const below = continues(on, rescue.row, 1);
 
       if (!above || !below) {
         continue;
@@ -612,52 +710,13 @@ export function fill(contours, options) {
    * other axis, and the same stub rule applies: a rescue with nothing beyond it
    * either way is a tip.
    */
-  const down: any[] = [];
-  const downAll: any[] = [];
-
-  for (let column = 0; column < width; column++) {
-    const crossings: any[] = [];
-
-    for (const piece of pieces) {
-      crossesDown(piece, column + 0.5, crossings);
-    }
-
-    crossings.sort((left, right) => left.y - right.y);
-
-    let winding = 0;
-
-    for (let index = 0; index < crossings.length - 1; index++) {
-      winding += crossings[index].winding;
-
-      if (winding === 0) {
-        continue;
-      }
-
-      const from = crossings[index].y;
-      const to = crossings[index + 1].y;
-
-      downAll.push({ column, from, to });
-
-      if (Math.ceil(from - 0.5) < to - 0.5) {
-        continue;
-      }
-
-      /* The last centre at or above the span's near end -- which is the same
-       * sentence as `floor(to - 0.5)` along a row, read down the other axis,
-       * because device rows count downward where glyph coordinates count up.
-       * Written the other way it is worth 631 letters against 685.
-       */
-      const row = Math.ceil(from - 0.5);
-      const other = Math.floor(to - 0.5);
-
-      if (row >= 0 && row < height) {
-        down.push({ row, other, column, from, to });
-      }
-    }
-  }
-
   for (const rescue of down) {
     if (sampled) {
+      /* Down columns the same counting is worth 691 letters against 722, so
+       * this keeps the measured proximity test. The two are not symmetric here
+       * because the vertical crossing lists are built from a separate sweep
+       * rather than from the same edge walk that fills them in Windows.
+       */
       const left = downAll.some(
         (span) => span.column === rescue.column - 1 && touching(span, rescue)
       );

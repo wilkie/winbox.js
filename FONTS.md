@@ -3285,6 +3285,70 @@ What would settle it is the body of those two functions rather than their
 purpose. Until then the sentence is a lead that has been followed as far as it
 goes.
 
+### The stub test is a crossing count
+
+`FONT_PIXEL_CANDIDATES.md` gives the scan converter in full -- the DDA that walks
+each edge, the lists it fills, the dropout pass and both placement modes. It is
+itself a reconstruction "as determined by test fixtures and observation", so it
+is a hypothesis; but it is a detailed one, and it can be checked against six
+things already measured here.
+
+**Five of them agree, and two are provable rather than merely consistent.**
+
+`ScanAbove(p) = ((p + 32) & -64) + 32` is, in pixels, `ceil(p − 0.5)` -- the pick
+this ships. And the dropout condition is not "no centre inside the span" but a
+**zero-length run**, `onList[i] == offList[i]`: the two edges of a span rounding
+into the same pixel. Those are the same test. Writing `a = ceil(from − 0.5)`, a
+span covers a centre exactly when `a < to − 0.5`, and since `ceil(to − 0.5) ≥ a`
+always, failing that is exactly `ceil(to − 0.5) == a`. Two descriptions of one
+line of arithmetic.
+
+The scanline sits at `(y << 6) + 32`, a row plus half a pixel. Simple placement
+is `xDrop--`, one pixel left of the on pixel, which is `floor(to − 0.5)`. And the
+guard is two calls: `GetBit(xDrop − 1)` and `GetBit(xDrop)` -- the candidate
+itself and its neighbour. In simple mode the first is vacuous, because the
+candidate _is_ `xDrop − 1` and setting an already-set pixel changes nothing. **So
+the one-sided guard shipped here is what the two-sided one reduces to**, which is
+why it measured as well as it did.
+
+**All four installed faces ask for `SCANTYPE` 1** -- simple dropout control
+excluding stubs -- so the smart branch, which averages the two edges' subpixel
+intersections and places the ink at their midpoint, never runs. That retires the
+midpoint rules swept earlier: they were not close, and now they are not
+applicable.
+
+**The sixth is new, and it is worth 55 wrong pixels.** Stub exclusion is a
+crossing count:
+
+```
+cross  = CountHorizCrossings(xDrop, yDrop + 1)
+cross += CountVertCrossings(xDrop - 1, yDrop + 1)
+cross += CountVertCrossings(xDrop, yDrop + 1)
+if cross < 2: return          # does not continue above
+```
+
+-- and the same below. Two crossings between three neighbouring cells, or the
+stroke does not continue that way and gets no pixel. Implemented with the
+crossing lists kept as pixel indices, and taken about the **on** pixel rather
+than the pixel being lit:
+
+|                               | letters                 | fabricated cells              |
+| ----------------------------- | ----------------------- | ----------------------------- |
+| proximity, both axes (before) | 722/846, 249 px         | 4,084/5,208, 5,082 px         |
+| counts along rows             | **733**/846, **194** px | **4,346**/5,208, **4,660** px |
+| counts down columns as well   | 701/846, 249 px         | 4,317/5,208, 4,659 px         |
+| counts down columns only      | 691/846, 295 px         | 3,998/5,208, 5,063 px         |
+
+**Shipped along rows**, where it improves every count at once -- eleven letters,
+55 wrong pixels, 262 fabricated cells and 422 fabricated pixels. Not down
+columns, where it is worse: the vertical lists here are built by a second sweep,
+where Windows fills both from the one edge walk, so the counts down a column are
+not the same numbers.
+
+The y sense had to be measured rather than read: the pseudocode counts upward and
+this counts down, and taking `yDrop + 1` as the device row below rather than above
+is worth 631 letters against 733.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
