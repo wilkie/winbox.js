@@ -3549,6 +3549,45 @@ and a font asking for no dropout control at a size where strokes _are_ thin woul
 show the difference immediately. The fixture has no such font, which is a fact
 about the fixture.
 
+### An invented rule removed, and the fixture improves
+
+Comparing further turned up an ordering effect that should not have existed.
+Applying the column rescues in reverse -- last column first, and bottom to top
+within each -- was worth 748 letters against 747 and 4,384 fabricated cells
+against 4,375. Nothing in `PerformVertDropout` depends on the order columns are
+swept in: it reads `GetBit` twice, both times in its **own** column.
+
+The order-dependence was entirely from a rule invented here. Section 6 records a
+continuity rule -- a rescued stroke taking the other of its two candidate rows
+when a column beside it had already been decided into that row -- derived from
+`cour-feet` and shipped for five letters. It reads its _neighbours'_ pixels, so
+which neighbour has been decided first changes the answer. The scan converter has
+no such rule.
+
+Removing it:
+
+|                          | letters             | fabricated cells              |
+| ------------------------ | ------------------- | ----------------------------- |
+| with the continuity rule | 747/846, 184 px     | 4,375/5,208, 4,657 px         |
+| **without it**           | **760**/846, 199 px | **4,443**/5,208, **4,597** px |
+
+Thirteen more letters exact, sixty-eight more fabricated cells, sixty fewer
+fabricated wrong pixels -- three of the four counts better, and the fourth
+fifteen pixels worse. And with it gone the sweep order stops mattering: 199
+pixels natural against 195 reversed, where before it was 184 against 175. The
+order the pseudocode gives -- columns ascending, and within a column the list
+walked back to front, which works out as top of the glyph downward, exactly what
+this does naturally -- is now what is shipped, because there is no longer a
+reason to prefer anything else.
+
+That the rule was worth five letters when it was fitted and costs thirteen once
+the rest of the rasteriser is right is the ordinary fate of a compensating
+fiction. It was measured on two fabricated fonts and it was real; what it was
+compensating for was the stub test being a proximity heuristic, and the crossing
+counts have since replaced that.
+
+**760 of 846 recorded letters exact** -- nine tenths -- at 199 wrong pixels.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

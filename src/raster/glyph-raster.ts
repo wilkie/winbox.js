@@ -650,10 +650,9 @@ export function fill(contours, options) {
        * Written the other way it is worth 631 letters against 685.
        */
       const row = Math.ceil(from - 0.5);
-      const other = Math.floor(to - 0.5);
 
       if (row >= 0 && row < height) {
-        down.push({ row, other, column, from, to });
+        down.push({ row, column, from, to });
       }
     }
   }
@@ -757,35 +756,14 @@ export function fill(contours, options) {
      * above: 713 letters against 685, and guarding on the row below instead is
      * worth 688.
      */
-    /* Which of the two rows, when a neighbouring column has already decided.
-     *
-     * A span lying between two scanlines could go in either of the rows either
-     * side of it, and `ceil(from - 0.5)` takes the lower. That is right for a
-     * stroke standing on its own and wrong for one attached to something
-     * already drawn: the bottom bar of an `E` joins the stem's last row rather
-     * than starting a new one below it.
-     *
-     * Two fabricated fonts separate the cases exactly. A shelf in open space is
-     * 258 of 258 cells with the lower row and 122 with the upper; a foot under a
-     * post is 258 of 258 with the upper and 142 with the lower. What tells them
-     * apart is whether a column beside this one already has ink in the upper
-     * row, which is what "attached" means once the row sweep has run.
+    /* `PerformVertDropout` places the ink at `yDrop - 1` and asks nothing about
+     * the columns either side. A continuity rule was tried here -- taking the
+     * other candidate row when a neighbour had already been decided into it --
+     * and it is worth 747 letters against 760 and 4,375 fabricated cells
+     * against 4,443. It also made the result depend on the order the columns
+     * are swept in, which nothing in the scan converter does.
      */
-    const beside = (row) =>
-      row >= 0 &&
-      row < height &&
-      ((rescue.column > 0 && pixels[row * width + rescue.column - 1]) ||
-        (rescue.column + 1 < width && pixels[row * width + rescue.column + 1]));
-
-    /* The neighbour has to be undecided in the row this would otherwise take.
-     * Joining whenever a neighbour has ink in the upper row -- without also
-     * requiring it to have none in the lower -- is worth 647 letters against
-     * 722, because it drags every rescue up towards any ink at all.
-     */
-    const row =
-      rescue.other !== rescue.row && beside(rescue.other) && !beside(rescue.row)
-        ? rescue.other
-        : rescue.row;
+    const row = rescue.row;
 
     if (row > 0 && pixels[(row - 1) * width + rescue.column]) {
       continue;
