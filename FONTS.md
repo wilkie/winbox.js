@@ -3462,6 +3462,62 @@ claimed. Why the crossing counts help along rows and hurt down columns is
 **unexplained**, and the explanation offered before was a guess that did not
 survive being checked.
 
+### Why the column counts hurt: they were written symmetric
+
+The answer was in the pseudocode all along, and the reason it was missed is that
+the two stub tests **are not mirror images of each other**. Set side by side:
+
+```
+PerformHorizDropout, at (xDrop, yDrop)
+  above:  CountHoriz(xDrop, yDrop+1) + CountVert(xDrop-1, yDrop+1) + CountVert(xDrop, yDrop+1)
+  below:  CountHoriz(xDrop, yDrop-1) + CountVert(xDrop-1, yDrop)   + CountVert(xDrop, yDrop)
+
+PerformVertDropout, at (xDrop, yDrop)
+  left:   CountVert(xDrop-1, yDrop)  + CountHoriz(xDrop, yDrop)    + CountHoriz(xDrop, yDrop-1)
+  right:  CountVert(xDrop+1, yDrop)  + CountHoriz(xDrop+1, yDrop)  + CountHoriz(xDrop+1, yDrop-1)
+```
+
+The horizontal pair reads its vertical counts from columns `xDrop − 1` **and**
+`xDrop` in both directions. The vertical pair does not do the matching thing: its
+left test reads horizontal counts from column **`xDrop`** and its right test from
+column **`xDrop + 1`**. Neither test reads `xDrop − 1`.
+
+The implementation here had been written the symmetric way -- far column for both
+sides, `x − 1` on the left and `x + 1` on the right -- because that is what a rule
+about "does the stroke continue that way" looks like when you write it yourself.
+It is off by one column on one side only. Corrected:
+
+| the vertical stub test                 | letters             | fabricated cells          |
+| -------------------------------------- | ------------------- | ------------------------- |
+| proximity, as before                   | 744/846, 180 px     | 4,367/5,208, 4,610 px     |
+| counts, written symmetric              | 691/846, 295 px     | 3,998/5,208, 5,063 px     |
+| **counts, as the pseudocode has them** | **747**/846, 184 px | **4,375**/5,208, 4,657 px |
+
+Fifty-six letters between the symmetric version and the faithful one, on one
+column of difference.
+
+The asymmetry has a reason: a vertical crossing recorded at column `c` lies
+between columns `c − 1` and `c`, so the horizontal crossings bounding it on the
+left are the ones at `c` and on the right the ones at `c + 1`. The horizontal
+test's own `xDrop − 1` and `xDrop` pair is the same fact seen from the other
+side.
+
+**Shipped**, with the cost named: three more letters exact and eight more
+fabricated cells, against four and forty-seven more wrong pixels. It goes in
+because it replaces a proximity heuristic invented here with the mechanism the
+scan converter actually states, and because the count of glyphs drawn exactly --
+which is what the fixture reports -- improves on both instruments at once. The
+same reasoning shipped fixed-point placement against a four-letter cost.
+
+The tie sense on the horizontal crossing list was corrected with it. A crossing
+belongs to the `on` list when its edge travels **up the glyph**, which is
+_decreasing_ device y, so the winding recorded here -- positive where device y
+increases -- marks the `off` crossings, not the on ones. It had been the wrong way
+round, worth three fabricated pixels, and is now right for the reason rather than
+by measurement.
+
+The recorded letters are **747 of 846** at 184 wrong pixels.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

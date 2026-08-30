@@ -513,10 +513,15 @@ export function fill(contours, options) {
       /* An `on` crossing rounds a tie down and an `off` one rounds it up --
        * `(x + SUBHALF - 1) >> SUBSHFT` against `(x + SUBHALF) >> SUBSHFT`.
        */
+      /* An `on` crossing rounds a tie down and an `off` one up. A crossing
+       * belongs to the on list when its edge travels up the glyph, which is
+       * decreasing device y, so the winding this records -- positive where
+       * device y increases -- marks the off crossings.
+       */
       note(
         horizAt,
         row,
-        crossing.winding < 0 ? Math.floor(crossing.x + 0.5) : Math.ceil(crossing.x - 0.5)
+        crossing.winding > 0 ? Math.floor(crossing.x + 0.5) : Math.ceil(crossing.x - 0.5)
       );
     }
 
@@ -598,14 +603,6 @@ export function fill(contours, options) {
    * sample column -- see `sampled` above.
    */
 
-  /* Two spans a row apart are the same stroke when they come within a pixel of
-   * each other. Requiring them to overlap outright is too strict for a
-   * diagonal, whose spans step sideways faster than they are wide, and every
-   * scanline of one then looks like a tip; a pixel is the sampling interval and
-   * the sweep is flat from 0.9 to 1.25 either side of it.
-   */
-  const touching = (one, two) => one.from - 1 < two.to && two.from - 1 < one.to;
-
   const down: any[] = [];
   const downAll: any[] = [];
 
@@ -617,6 +614,9 @@ export function fill(contours, options) {
     }
 
     for (const crossing of crossings) {
+      /* `AddVertOn` and `AddVertOff` round a tie opposite ways, as the
+       * horizontal pair do -- on ties down, off ties up.
+       */
       note(vertAt, column, Math.ceil(crossing.y - 0.5));
     }
 
@@ -729,17 +729,19 @@ export function fill(contours, options) {
    */
   for (const rescue of down) {
     if (sampled) {
-      /* Down columns the same counting is worth 691 letters against 722, so
-       * this keeps the measured proximity test. The two are not symmetric here
-       * because the vertical crossing lists are built from a separate sweep
-       * rather than from the same edge walk that fills them in Windows.
+      /* The same count transposed, which is how `PerformVertDropout` states it:
+       * one vertical crossing in the column beyond, and the two horizontal
+       * crossings that bound it. The columns are **not** symmetric -- the test
+       * to the left reads column `x` and the test to the right column `x + 1`,
+       * because a vertical crossing recorded at column `c` lies between `c - 1`
+       * and `c`. Reading both from the far column, which is the symmetric thing
+       * to write, is worth 691 letters against 747.
        */
-      const left = downAll.some(
-        (span) => span.column === rescue.column - 1 && touching(span, rescue)
-      );
-      const right = downAll.some(
-        (span) => span.column === rescue.column + 1 && touching(span, rescue)
-      );
+      const x = rescue.column;
+      const y = rescue.row;
+
+      const left = countVert(x - 1, y) + countHoriz(x, y) + countHoriz(x, y - 1) >= 2;
+      const right = countVert(x + 1, y) + countHoriz(x + 1, y) + countHoriz(x + 1, y - 1) >= 2;
 
       if (!left || !right) {
         continue;
