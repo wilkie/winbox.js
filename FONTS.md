@@ -3364,6 +3364,48 @@ in every case**. So the ordinary fill, which is 18,606 of 18,662 pixels right,
 needs no change, and the one part of the rasteriser that was never in question is
 now confirmed from the other direction.
 
+### On and off round a tie in opposite directions
+
+`BeginElement` is in the file after all -- it was missed by reading around it,
+not absent -- and it settles the on/off question in four lines: a crossing goes
+in the **on** list when its edge travels up (quadrant 1 or 2) and the **off**
+list when it travels down, and correspondingly left or right for the vertical
+lists. That is the winding sign this already computes, so the two implementations
+agree, and it also shows the crossing counts sum **both** lists, which is why the
+count test shipped without needing the split.
+
+What it did carry was an asymmetry visible in the four endpoint adders:
+
+|               | rounds an edge at                                | ties     |
+| ------------- | ------------------------------------------------ | -------- |
+| `AddHorizOn`  | `(x + SUBHALF − 1) >> SUBSHFT` = `ceil(p − 0.5)` | **down** |
+| `AddHorizOff` | `(x + SUBHALF) >> SUBSHFT` = `floor(p + 0.5)`    | **up**   |
+
+The two agree at every position except one exactly on a pixel centre, where the
+edge that opens a run rounds down and the edge that closes one rounds up. So a
+run that ends exactly on a centre is a pixel **longer** than this was drawing it.
+`Blit`'s range is `xStart` to `xStop` -- the `xStop - 1` in the pseudocode was a
+transcription slip, confirmed -- so the fill bound is the off pixel, and the off
+pixel is `floor(to + 0.5)`.
+
+Both halves measured, and both improve every count:
+
+|                                    | letters                 | fabricated cells              |
+| ---------------------------------- | ----------------------- | ----------------------------- |
+| before                             | 733/846, 194 px         | 4,346/5,208, 4,660 px         |
+| the off pixel in the fill bound    | 744/846, 180 px         | 4,365/5,208, 4,614 px         |
+| the same tie in the crossing lists | 733/846, 194 px         | 4,348/5,208, 4,656 px         |
+| **both**                           | **744**/846, **180** px | **4,367**/5,208, **4,610** px |
+
+**Shipped.** The fill bound is worth eleven letters and fourteen wrong pixels on
+its own; the crossing lists add two fabricated cells. Neither is a fit -- both are
+one line of the scan converter's own arithmetic, and they only ever act on an
+edge landing exactly on a centre, which is rare enough that the gain is entirely
+in cases nothing else could have reached.
+
+The recorded letters are 744 of 846 at 180 wrong pixels, from 654 and 369 when
+this section began.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

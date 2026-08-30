@@ -510,7 +510,14 @@ export function fill(contours, options) {
     }
 
     for (const crossing of crossings) {
-      note(horizAt, row, Math.ceil(crossing.x - 0.5));
+      /* An `on` crossing rounds a tie down and an `off` one rounds it up --
+       * `(x + SUBHALF - 1) >> SUBSHFT` against `(x + SUBHALF) >> SUBSHFT`.
+       */
+      note(
+        horizAt,
+        row,
+        crossing.winding < 0 ? Math.floor(crossing.x + 0.5) : Math.ceil(crossing.x - 0.5)
+      );
     }
 
     crossings.sort((left, right) => left.x - right.x);
@@ -529,10 +536,21 @@ export function fill(contours, options) {
 
       const first = Math.ceil(from - 0.5);
 
-      if (first < to - 0.5) {
+      /* Where the run ends: the span's `off` pixel.
+       *
+       * `Blit` fills from a run's on pixel up to its off pixel, and the two are
+       * not rounded the same way -- `AddHorizOn` takes `(x + SUBHALF - 1) >>
+       * SUBSHFT` and `AddHorizOff` takes `(x + SUBHALF) >> SUBSHFT`, so an edge
+       * landing exactly on a pixel centre rounds down when it opens a run and
+       * up when it closes one. The two agree everywhere else, and the tie is
+       * worth eleven letters and fourteen wrong pixels.
+       */
+      const last = Math.floor(to + 0.5);
+
+      if (first < last) {
         strokes.push({ row, from, to });
 
-        for (let column = first; column < to - 0.5; column++) {
+        for (let column = first; column < last; column++) {
           if (column >= 0 && column < width) {
             pixels[row * width + column] = 1;
           }
@@ -579,7 +597,6 @@ export function fill(contours, options) {
    * tip and is refused. It applies only to a glyph wide enough to touch a
    * sample column -- see `sampled` above.
    */
-  const all = [...strokes, ...rescues];
 
   /* Two spans a row apart are the same stroke when they come within a pixel of
    * each other. Requiring them to overlap outright is too strict for a
