@@ -3902,6 +3902,24 @@ differences in the spline walk that have not been found. Each one fixed so far
 has been worth ten to twenty letters -- 328, then 416, then 421, then 436 -- which
 is the shape of a thing with several small faults left rather than one large one.
 
+**And the two things named here as worth asking about are not gaps.** `CalcLine`
+was said to have no-dropout tail loops that might be missing; it has no tail
+loops at all -- neither branch has anything after its `for i in range(0, xSteps +
+ySteps)`. The tails belong to `CalcSpline`, which has one in its no-dropout
+branch and two in its dropout branch, and both are implemented. That request
+conflated the two functions.
+
+`AddHorizScan` and `AddVertScan` are a real inconsistency of spelling and resolve
+to nothing. They appear three times, all inside `CalcSpline` -- the near-horizontal
+early-out and the two no-dropout loops -- where everything else says `AddHoriz`
+and `AddVert`. But `AddHoriz` dispatches to `AddHorizSimpleScan` whenever the
+scan band covers the whole box, which is every render here, and `AddVert` has no
+band variant at all. In a single pass they are the same function.
+
+So what is left is debugging rather than description: the algorithm is fully
+given, and where the walk still disagrees the fault is in this implementation of
+it.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
