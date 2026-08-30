@@ -450,6 +450,32 @@ CalcSpline(
   Fixed26Dot6 y3,
   ScanKind scanKind,
 ):
+  Fixed26Dot6 initialX = 0
+  Fixed26Dot6 initialY = 0
+  Fixed26Dot6 initialXStep = 0
+  Fixed26Dot6 initialYStep = 0
+  Fixed26Dot6 terminalX = 0
+  Fixed26Dot6 terminalY = 0
+  Fixed26Dot6 controlX = 0
+  Fixed26Dot6 controlY = 0
+
+  int32 aBits = 0
+  int32 xyBits = 0
+  int32 zBits = 0
+  int32 zShift = 0
+  int32 quadrant = 0
+  Fixed26Dot6 zRound = 0
+  Fixed26Dot6 zSubpix = 0
+
+  int32 x = 0
+  int32 y = 0
+  int32 xStop = 0
+  int32 yStop = 0
+  int32 xIncrement = 0
+  int32 yIncrement = 0
+  int32 xOffset = 0
+  int32 yOffset = 0
+
   zShiftTable = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -514,7 +540,7 @@ CalcSpline(
     terminalX = x1 - x3
 
   # control points (x2, y2) and (x3, y3) embedded with possible tags
-  points = [[[x2, 0], [y2, 0]], [[x3, 0], [y3, 0]]]
+  Fixed26Dot6[][2][] points = [[[x2, 0], [y2, 0]], [[x3, 0], [y3, 0]]]
 
   # set context state according to control points and quadrant for splines
   BeginElement(scanKind, quadrant, ScanCode.Spline, points)
@@ -556,7 +582,7 @@ CalcSpline(
       return SUCCESS
 
   # precision for curve parameter
-  alpha = ((controlX * terminalY) - (controlY * terminalX)) * 2
+  Fixed26Dot6 alpha = ((controlX * terminalY) - (controlY * terminalX)) * 2
 
   aBits = PowerOf2(alpha)
   xyBits = terminalX > terminalY ? PowerOf2(terminalX) : PowerOf2(terminalY)
@@ -582,15 +608,21 @@ CalcSpline(
     alpha = ((controlX * terminalY) - (controlY * terminalX)) * 2
 
   # Calculate curve parametrics
-  aX = terminalX - (controlX << 1)
-  aY = terminalY - (controlY << 1)
+  Fixed26Dot6 aX = terminalX - (controlX << 1)
+  Fixed26Dot6 aY = terminalY - (controlY << 1)
 
   # terms for Q = Rx^2 + Sxy + Ty^2 + Ux + Vy (conic quadratic form)
-  r = aY * aY
-  s2 = -aX * aY
-  t = aX * aX
-  u2 = controlY * alpha
-  v2 = -controlX * alpha
+  int32 r = aY * aY
+  int32 s2 = -aX * aY
+  int32 t = aX * aX
+  int32 u2 = controlY * alpha
+  int32 v2 = -controlX * alpha
+
+  int32 q = 0
+  int32 dQx = 0
+  int32 dQy = 0
+  int32 ddQx = 0
+  int32 ddQy = 0
 
   # Calculate starting forward difference terms
   # q = Q(x,y) = Rx^2 + Sxy + Ty^2 + Ux + Vy
@@ -640,7 +672,7 @@ CalcSpline(
           # adjust the derivative cross term
           dQy += sZ
         else:
-          AddHorizScan(x, y)
+          AddHoriz(scanKind, x, y)
           # Advance the y scan position (moving either up or down)
           y += yIncrement
           # apply change to cross product
@@ -653,7 +685,7 @@ CalcSpline(
       # curves down
       while (x != xStop) && (y != yStop):
         if (q < 0) || (dQx > rZ):
-          AddHorizScan(x, y)
+          AddHoriz(scanKind, x, y)
           # Advance the y scan position (moving either up or down)
           y += yIncrement
           # apply change to cross product
@@ -683,7 +715,7 @@ CalcSpline(
       # curves up
 
       while (x != xStop) && (y != yStop):
-        if (q < 0) || (dQx > rZ):
+        if (q < 0) || (dQy > tZ):
           AddVert(scanKind, x, y + yOffset)
           x += xIncrement
           q += dQx

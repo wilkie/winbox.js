@@ -580,7 +580,7 @@ export function fillWalked(contours, options) {
 export function fill(contours, options) {
   /* `fillWalked` is the scan converter's own method and is not yet the one used.
    * See its own comment for where it stands: exact on straight-edged glyphs and
-   * behind on curves, 572 of the 846 recorded letters against 763 here.
+   * behind on curves, 586 of the 846 recorded letters against 763 here.
    */
   if (process.env.WB_WALK === '1') {
     return fillWalked(contours, options);

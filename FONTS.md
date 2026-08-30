@@ -3966,7 +3966,32 @@ most of what looked like missing crossings was the harness, not the walk. And a
 vertical dropout pass was added to `fillWalked`, matching `FindDropouts`; it is
 worth nothing at all, 569 letters against 572, which is its own open question.
 
-Still behind the shipped path at 572 against 763, and still behind the flag.
+**And the guard was not wrong, only the pairing of it.** The correction is that
+the two branches guard on _different_ derivatives -- curving up compares `dQy`
+against `tZ`, curving down `dQx` against `rZ` -- where the transcription had both
+dropout branches comparing `dQx` to `rZ`. Applied that way round each half earns
+its keep:
+
+|                              | recorded letters | wrong pixels |
+| ---------------------------- | ---------------- | ------------ |
+| neither guard, `q < 0` alone | 569/846          | 648          |
+| the curving-up guard only    | 576/846          | 607          |
+| **both, correctly paired**   | **586**/846      | **580**      |
+
+So the earlier conclusion here -- that the guard "does not run" and should be
+dropped -- was half right and half wrong. It does not run when both branches use
+`dQx > rZ`, which is what made all of the sideways steps happen first; paired
+properly it runs and helps. What was measured as evidence against the guard was
+evidence against the pairing.
+
+**The `int32` question settles empirically.** `q`, the derivative terms and `r`,
+`s2`, `t`, `u2`, `v2` are all `int32`, so a shift that leaves the word should
+wrap. Over every curve in the fixture none does: the largest `rZ` is 1.5 x 10^8
+against a limit of 2.1 x 10^9, and computing the conic terms with thirty-two bit
+shifts throughout gives the **identical** result, 586 letters and 580 wrong
+pixels either way. At these sizes the width does not bite.
+
+Still behind the shipped path at 586 against 763, and still behind the flag.
 
 ### What no rule in this family can reach
 
