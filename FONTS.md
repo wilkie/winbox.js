@@ -3736,6 +3736,48 @@ project bands.** Every glyph recorded is drawn in one pass, `hiScanBand` and
 `loScanBand` equal the box, `lastRowIndex` stays at its sentinel, and both
 branches are unreachable.
 
+### The banding is ignorable; the box is not
+
+Banding can be left out, and the evidence for that is not just that memory is
+cheap now. The display driver declares `RC_BANDING` clear. The `bands` probe drew
+fabricated hairlines two hundred pixels tall and found **no seam in 38 rescued
+strokes up to 114 scanlines**, which is what a band boundary losing dropout
+control would have shown. And every glyph recorded here is drawn in one pass, so
+`hiScanBand` equals `boxTop`, `loScanBand` equals `boxBottom`, `lastRowIndex`
+never leaves its sentinel, and both of `GetBit`'s band branches are unreachable.
+
+But when the band collapses into the box, **the box does not collapse with it**.
+It is a separate parameter and it is load-bearing in four places -- `Blit` offsets
+by `boxLeft`, `GetBit` and `SetBit` index from it, and both dropout routines cap
+their chosen pixel into it. The horizontal cap turned out to be the whole of the
+narrow-glyph behaviour. The vertical one is its exact mirror and had not been
+implemented:
+
+```
+if yDrop < boxBottom: yDrop = boxBottom
+if yDrop >= boxTop:   yDrop = boxTop - 1
+```
+
+This had been discarding a column rescue that fell outside the bitmap instead of
+capping it into the glyph's box. Measured, with the box taken from the outline's
+y extent the way the horizontal one is taken from its x extent -- and the ends
+swapped, because device rows count down where the scan converter's count up:
+
+|             | letters                 | fabricated cells          |
+| ----------- | ----------------------- | ------------------------- |
+| discarding  | 761/846, 178 px         | 4,442/5,208, 3,087 px     |
+| **capping** | **763**/846, **144** px | 4,442/5,208, **2,755** px |
+
+Two more letters and **thirty-four fewer wrong pixels**, with 332 off the
+fabricated count. Nothing traded.
+
+So the reading is: ignore the banding, keep the box. The two are easy to conflate
+because `Setup` takes them together and they are equal in every case this
+project renders -- which is exactly why the box's own role stayed invisible until
+it was looked for.
+
+**763 of 846 recorded letters exact at 144 wrong pixels.**
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

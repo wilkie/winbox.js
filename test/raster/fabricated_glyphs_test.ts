@@ -89,7 +89,7 @@ describe('the fabricated glyph recordings', () => {
    * is the property the recordings had lost by not being replayed at all.
    */
   const EXACT = 4442;
-  const WRONG = 3087;
+  const WRONG = 2755;
 
   present(
     'agree with Windows on three thousand cells of chosen geometry',

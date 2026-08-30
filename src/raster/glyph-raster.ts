@@ -436,6 +436,28 @@ export function fill(contours, options) {
   const boxLeft = Math.ceil(leftmost - 0.5);
   const boxRight = Math.max(boxLeft + 1, Math.floor(rightmost + 0.5));
 
+  /* The same box down the other axis. `PerformVertDropout` caps its chosen row
+   * into `[boxBottom, boxTop)` exactly as the horizontal pass caps its column,
+   * and device rows count down where the scan converter's count up, so the pair
+   * swaps ends.
+   */
+  let highest = Infinity;
+  let lowest = -Infinity;
+
+  for (const piece of pieces) {
+    for (const point of [piece.from, piece.to, piece.control]) {
+      if (!point) {
+        continue;
+      }
+
+      highest = Math.min(highest, point[1]);
+      lowest = Math.max(lowest, point[1]);
+    }
+  }
+
+  const boxTop = Math.ceil(highest - 0.5);
+  const boxBottom = Math.max(boxTop + 1, Math.floor(lowest + 0.5));
+
   // Whether the glyph is wide enough to cover a sample column at all.
   const sampled = boxLeft < rightmost - 0.5;
 
@@ -644,8 +666,18 @@ export function fill(contours, options) {
        */
       const row = Math.ceil(from - 0.5);
 
-      if (row >= 0 && row < height) {
-        down.push({ row, column, from, to });
+      let at = row;
+
+      if (at < boxTop) {
+        at = boxTop;
+      }
+
+      if (at >= boxBottom) {
+        at = boxBottom - 1;
+      }
+
+      if (at >= 0 && at < height) {
+        down.push({ row: at, column, from, to });
       }
     }
   }

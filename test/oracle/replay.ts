@@ -1252,9 +1252,9 @@ export class Unimplemented extends Error {}
  */
 const NO_HINTING =
   'every bitmap and stroke face agrees exactly, and nine tenths of the ' +
-  'outline glyphs do; what is left is a hundred and seventy-eight pixels ' +
-  'across eighty-five letters, and section 6 of FONTS.md records what has ' +
-  'been ruled out';
+  'outline glyphs do; what is left is a hundred and forty-four pixels ' +
+  'across eighty-three letters, and section 6 of FONTS.md records what ' +
+  'has been ruled out';
 
 export const KNOWN_GAPS: Record<string, string> = {
   glyph: NO_HINTING,
