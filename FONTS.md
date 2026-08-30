@@ -3778,6 +3778,50 @@ it was looked for.
 
 **763 of 846 recorded letters exact at 144 wrong pixels.**
 
+### The last of the fill error is on curves
+
+Decomposing what is left -- 144 wrong pixels -- puts the largest single kind back
+where it was before the box clamps: **58 ordinary fills Windows does not make**,
+against 37 pixels nothing produced, 31 the stub rules refused and 14 rescues too
+many. The cell distribution has flattened as well: Courier New at eight pixels
+per em is 38 of the 144, where before the clamps it was 135 of 266.
+
+Those 58 have a sharp home. Sorting every filled pixel by whether it sits at the
+end of its run and what kind of edge bounds that end:
+
+| the run's end                 | wrong | of    | rate      |
+| ----------------------------- | ----- | ----- | --------- |
+| **bounded by a curve, left**  | 33    | 4,037 | **0.82%** |
+| **bounded by a curve, right** | 20    | 1,800 | **1.11%** |
+| bounded by a line, left       | 3     | 7,083 | 0.04%     |
+| bounded by a line, right      | 1     | 2,092 | 0.05%     |
+| in the middle of a run        | 1     | 3,680 | 0.03%     |
+
+**A curve-bounded run end is twenty times likelier to be wrong than a
+line-bounded one**, and 53 of the 58 are curves. The lines are essentially
+solved; the curves are not.
+
+It is not the arithmetic of the crossing. `FixedMulDiv` is a fixed-point multiply
+and divide, so the offset from an edge's own start lands on the sixty-fourth
+grid; implemented that way it is worse at every rounding -- 722 letters
+truncating, 728 rounding, 734 flooring, against 763 exact. Nor is it a coarser
+grid: `CalcSpline` shifts its coordinates down by `zShift` before walking, and
+quantising curve crossings uniformly is monotonically worse -- 757 letters at a
+sixty-fourth, 747 at a thirty-second, 718 at a sixteenth.
+
+So it is the **walk**. `CalcSpline` steps a conic forward difference -- `Q = Rx² +
+Sxy + Ty² + Ux + Vy`, with second-derivative terms and a per-curve precision
+shift chosen from `PowerOf2(alpha)` and the extent -- and emits whichever column
+it is standing in. This computes the crossing and rounds it. For a straight edge
+the two agree to 98.3% and disagree only at ties; for a curve the walk accumulates
+its own error, and the pixels it lands on are what Windows draws.
+
+That is an implementation gap rather than a gap in what is known: the walk is
+given in full. What is not settled in the transcription is the integer arithmetic
+underneath it -- whether `FixedMulDiv` truncates, rounds, or rounds away from
+zero, and how `>>` behaves on the negative intermediates the conic form produces
+-- and those decide exactly the ties this is losing.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
