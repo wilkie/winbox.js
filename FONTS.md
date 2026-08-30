@@ -3920,6 +3920,54 @@ So what is left is debugging rather than description: the algorithm is fully
 given, and where the walk still disagrees the fault is in this implementation of
 it.
 
+### The walk's branch condition, as transcribed, does not run
+
+Debugging the walk one spline at a time -- each curve compared against an exact
+solve of the same quadratic, with the curves whose endpoints lie on a sample line
+set aside because those belong to the topology -- localises the largest fault to
+a single line.
+
+`CalcSpline`'s loop decides at each step whether to move sideways or down. The
+pseudocode gives that decision **two different ways**:
+
+| branch              | condition             |
+| ------------------- | --------------------- |
+| dropout control on  | `q < 0 \|\| dQx > rZ` |
+| dropout control off | `q < 0 \|\| dQy > tZ` |
+
+They cannot both be the same decision, and neither runs. The derivative term is
+already several times its comparand before the first step: for one curve of
+Arial's `R` at twelve pixels per em -- `(7.078, 12.203)` via `(7.500, 12.406)` to
+`(7.750, 12.906)` -- `dQx` starts at 5,417,728 against an `rZ` of 1,478,656, and
+grows by `2·rZ` every sideways step. So the guard fires immediately and forever,
+the walk takes all of its sideways steps before any of its downward ones, and the
+crossing lands a column late: 8 where the curve actually crosses at 7.475 and the
+run should end at 7.
+
+Testing the sign of the conic form on its own -- which is what a forward
+difference walk tests, the guard being presumably a degenerate-case escape that
+has come across garbled:
+
+| the step decision     | curves agreeing with an exact solve | recorded letters |
+| --------------------- | ----------------------------------- | ---------------- |
+| `q < 0 \|\| dQx > rZ` | 5,744 of 6,303 (91.1%)              | 436/846          |
+| `q < 0 \|\| dQy > tZ` | 5,727 of 6,303 (90.9%)              | 436/846          |
+| **`q < 0`**           | **6,269 of 6,303 (99.5%)**          | **572/846**      |
+
+An eight-point-eight per cent per-curve error compounds to a fifty per cent
+per-glyph error, because a letter has a dozen curves and one wrong column spoils
+it. With the plain condition the walk goes from 436 recorded letters to 572 and
+its wrong pixels from 1,386 to 648.
+
+Two other things were settled in the same pass. Excluding the curves whose
+endpoints sit on a sample line -- 1,151 of 7,454, all of them the topology's
+business rather than the walk's -- takes the comparison from 81.6% to 91.1%, so
+most of what looked like missing crossings was the harness, not the walk. And a
+vertical dropout pass was added to `fillWalked`, matching `FindDropouts`; it is
+worth nothing at all, 569 letters against 572, which is its own open question.
+
+Still behind the shipped path at 572 against 763, and still behind the flag.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

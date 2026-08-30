@@ -519,13 +519,68 @@ export function fillWalked(contours, options) {
     }
   }
 
+  /* And the same down each column, which `FindDropouts` does after the rows.
+   * The vertical lists hold walk rows, so they come back as `-row - 1`, and
+   * they are sorted ascending in the walk's frame -- which is bottom to top on
+   * screen, so the pairing is done there and converted after.
+   */
+  if (!dropout) {
+    return pixels;
+  }
+
+  const rows = runs.map((run) => run.row);
+  const boxTop = rows.length ? Math.min(...rows) : 0;
+  const boxBottom = Math.max(boxTop + 1, rows.length ? Math.max(...rows) + 1 : height);
+
+  for (const [column, ons] of lists.vertOn) {
+    const offs = lists.vertOff.get(column) ?? [];
+
+    for (let index = 0; index < ons.length && index < offs.length; index++) {
+      if (ons[index] !== offs[index]) {
+        continue;
+      }
+
+      const row = -ons[index] - 1;
+
+      const continues = (step) => {
+        const near = step < 0 ? column : column + 1;
+
+        return (
+          countVert(column + step, row) + countHoriz(near, row) + countHoriz(near, row - 1) >= 2
+        );
+      };
+
+      if (!continues(-1) || !continues(1)) {
+        continue;
+      }
+
+      let at = row;
+
+      if (at < boxTop) {
+        at = boxTop;
+      }
+
+      if (at >= boxBottom) {
+        at = boxBottom - 1;
+      }
+
+      if (at > 0 && pixels[(at - 1) * width + column]) {
+        continue;
+      }
+
+      if (column >= 0 && column < width && at >= 0 && at < height) {
+        pixels[at * width + column] = 1;
+      }
+    }
+  }
+
   return pixels;
 }
 
 export function fill(contours, options) {
   /* `fillWalked` is the scan converter's own method and is not yet the one used.
    * See its own comment for where it stands: exact on straight-edged glyphs and
-   * behind on curves, 436 of the 846 recorded letters against 763 here.
+   * behind on curves, 572 of the 846 recorded letters against 763 here.
    */
   if (process.env.WB_WALK === '1') {
     return fillWalked(contours, options);

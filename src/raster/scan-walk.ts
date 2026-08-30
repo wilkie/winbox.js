@@ -640,9 +640,26 @@ export function calcSpline(
     return;
   }
 
+  /* Which way to step.
+   *
+   * The pseudocode gives this as `q < 0 || dQx > rZ` in the dropout branch and
+   * `q < 0 || dQy > tZ` in the other, which cannot both be the same decision.
+   * Neither works: the derivative term is already several times its comparand
+   * when the walk starts -- for one curve of Arial's `R` at twelve pixels per
+   * em, `dQx` is 5,417,728 against an `rZ` of 1,478,656 -- so the guard fires on
+   * the first step and every step after, and the walk takes all of its sideways
+   * steps before any of its downward ones.
+   *
+   * The sign of the conic form on its own is what a forward-difference walk
+   * tests, and measured it is right: 99.5% of curves then step where an exact
+   * solve puts them, against 91.1% for the first reading and 90.9% for the
+   * second.
+   */
+  const stepX = () => q < 0;
+
   if (alpha > 0) {
     while (x !== xStop && y !== yStop) {
-      if (q < 0 || dQx > rZ) {
+      if (stepX()) {
         addVert(x, y + yOffset);
         x += xIncrement;
         q += dQx;
@@ -658,7 +675,7 @@ export function calcSpline(
     }
   } else {
     while (x !== xStop && y !== yStop) {
-      if (q < 0 || dQx > rZ) {
+      if (stepX()) {
         addHoriz(x + xOffset, y);
         y += yIncrement;
         q += dQy;
