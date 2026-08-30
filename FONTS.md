@@ -3349,6 +3349,21 @@ The y sense had to be measured rather than read: the pseudocode counts upward an
 this counts down, and taking `yDrop + 1` as the device row below rather than above
 is worth 631 letters against 733.
 
+### The fill bound, confirmed
+
+`Blit` fills `range(xStart, xStop)` where `xStart` and `xStop` are a run's on and
+off pixels -- the pseudocode's `xStop - 1` was a transcription slip. Since the on
+pixel is `ceil(from − 0.5)` and the off pixel `ceil(to − 0.5)`, that fills
+`ceil(from − 0.5)` up to `ceil(to − 0.5) − 1` inclusive.
+
+This fills `column < to − 0.5` from the same start, and the two are the same set:
+for any `to`, `column < to − 0.5` holds exactly when `column ≤ ceil(to − 0.5) − 1`,
+including when `to − 0.5` is an integer and the bound is a tie. Checked over four
+hundred thousand random spans and every half-integer pair in range -- **identical
+in every case**. So the ordinary fill, which is 18,606 of 18,662 pixels right,
+needs no change, and the one part of the rasteriser that was never in question is
+now confirmed from the other direction.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

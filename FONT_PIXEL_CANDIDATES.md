@@ -1168,11 +1168,11 @@ Blit(hiBand, loBand, width, originalLoBand, ScanKind scanKind):
 
       if xStart < xStop:
         # A run in the positive direction
-        for x in range(xStart, xStop - 1):
+        for x in range(xStart, xStop):
           errCode |= SetBit(x, y)
       elif xStart > xStop:
         # A run in the negative direction
-        for x in range(xStop, xStart - 1):
+        for x in range(xStop, xStart):
           errCode |= SetBit(x, y)
 
       if errCode != SUCCESS:
