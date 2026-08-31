@@ -4712,6 +4712,30 @@ it was findable only because the fabrication has no program in it: with nothing
 hinted and the outline known exactly, there was nowhere else for the difference
 to come from.
 
+**The rule is close and not yet right.** `edge-sweep` moves an edge and crossed
+the turning-point case once, by accident, so a second fabrication asks for it:
+each glyph is a rectangle with one curved side whose control point is a font
+unit further out than the last, which steps the extreme across a sample column
+in halves of a sixty-fourth. Eighteen bulge right, where the turn is a maximum,
+and eighteen left, where it is a minimum.
+
+Nineteen of 216 cells still disagree, and they are two different things.
+
+At sixteen pixels of cell height the extreme reaches a sample column two steps
+before Windows lets it on the right, and one step early on the left. So rounding
+the turn toward the curve was enough for the single case `edge-sweep` found and
+is not enough for these: the reach is still a little long, in both directions,
+which is what one would expect if the split point is right and the walked halves
+still cover a shade more than the whole ever did.
+
+At eighteen the outermost column agrees for every one of the eighteen variants
+and sixteen of them still differ -- by one pixel on the bottom row, which is the
+end of the curve rather than its extreme. That is the same signature the
+recorded letters have, ink at the end of a run on a row with nothing below it,
+and this is the first time it has been reproduced with nothing hinted at all. It
+is a second defect and not this one, and having it in a fabrication with a known
+outline is worth more than the twenty-nine occurrences of it in the letters.
+
 ## 9. Where the numbers stand
 
 | Fixture                                                      | Agreement |

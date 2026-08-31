@@ -88,8 +88,8 @@ describe('the fabricated glyph recordings', () => {
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 4814;
-  const WRONG = 1892;
+  const EXACT = 5059;
+  const WRONG = 1913;
 
   /* The one place an unhinted outline is drawn differently.
    *
@@ -110,6 +110,83 @@ describe('the fabricated glyph recordings', () => {
    * which does not subdivide at all -- never saw the reach. Rounding the turn
    * toward the curve instead settles it. See `FONTS.md`.
    */
+  /* And the same sweep aimed at a curve's turning point rather than its edge.
+   *
+   * `edge-sweep` crossed the turning-point case once, by accident. `turn-sweep`
+   * asks for it: each glyph is a rectangle with one curved side whose control
+   * point is a font unit further out than the last, so the extreme -- the
+   * average of the two scaled ends and the scaled control -- steps across a
+   * sample column in halves of a sixty-fourth. Eighteen bulge right, where the
+   * turn is a maximum, and eighteen left, where it is a minimum, and each is
+   * given a bearing equal to its own `xMin` so the outline is carried onto
+   * nothing.
+   *
+   * Nineteen of 216 cells still disagree and they are named rather than
+   * excluded, because they are two different things and both are open.
+   *
+   * At sixteen pixels of cell height the extreme reaches a sample column two
+   * steps before Windows lets it, on the right, and one step early on the
+   * left. Rounding the turn toward the curve was enough for the single case
+   * `edge-sweep` found and is not enough for these, so the rule is close but
+   * not yet right.
+   *
+   * At eighteen the outermost column agrees for every variant and sixteen of
+   * them still differ, by one pixel on the bottom row -- the end of the curve
+   * rather than its extreme. That is the signature the recorded letters have
+   * too, ink at the end of a run on a row with nothing below it, and this is
+   * the first time it has been reproduced with nothing hinted.
+   */
+  const TURNS = 19;
+
+  present('sweep a turning point across a sample column', async function () {
+    const recording = all.find((entry) => entry.name === 'glyphs-turn-sweep');
+
+    if (!recording) {
+      return;
+    }
+
+    const manager: any = await prepareFonts();
+    const font: any = new TrueTypeFont(new Uint8Array(readFileSync(recording.file)));
+    const face = font.faceName;
+    const installed = manager._outlines[face];
+
+    manager._outlines[face] = { regular: font };
+
+    const wide = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+    const seen = new Set<string>();
+
+    let differing = 0;
+
+    try {
+      for (const record of recording.fixture.records) {
+        const asked = /^"([^"]+)",h=(\d+),weight=(\d+),italic=(\d+),'(.)'$/.exec(record.args);
+
+        if (!asked || asked[1] !== face || asked[3] !== '400' || asked[4] !== '0') {
+          continue;
+        }
+
+        const index = wide.indexOf(asked[5]);
+
+        if (index < 0 || Number(asked[2]) < 12 || seen.has(`${asked[2]}|${asked[5]}`)) {
+          continue;
+        }
+
+        seen.add(`${asked[2]}|${asked[5]}`);
+
+        const replayed = await replayRecord(record, recording.fixture.display ?? 'vga');
+
+        if (replayed.outcome !== 'agreed') {
+          differing++;
+        }
+      }
+    } finally {
+      manager._outlines[face] = installed;
+    }
+
+    expect(seen.size).toBeGreaterThan(200);
+    expect(differing).toBeLessThanOrEqual(TURNS);
+  });
+
   present('draw an unhinted edge the same except where it grazes a sample', async function () {
     const recording = all.find((entry) => entry.name === 'glyphs-edge-sweep');
 

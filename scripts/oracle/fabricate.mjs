@@ -2377,6 +2377,78 @@ export const FABRICATIONS = [
     },
   },
 
+  /* A curve's turning point carried across a column of sample points.
+   *
+   * `edge-sweep` moved an edge across the sample columns and found one cell
+   * where the two walks disagreed; tracing it showed why. Windows walks a whole
+   * quadratic, and this implementation splits one at its turning point so that
+   * both halves are monotonic -- which creates an endpoint the original never
+   * had, and that endpoint has to be put on the grid. Rounded to the nearest
+   * sixty-fourth it can land half of one beyond where the curve actually
+   * reaches, and a pixel whose centre falls in that half is lit here and not
+   * there. Rounding the turn toward the curve instead settles it.
+   *
+   * That rule now wants a sweep of its own, because `edge-sweep` moves an edge
+   * and not an extreme: it crossed the case by accident, once. These glyphs
+   * move the turning point itself. Each is a rectangle with one curved side
+   * whose control point is one font unit further out than the last, so the
+   * extreme -- which is the average of the two scaled ends and the scaled
+   * control -- steps across a sample column in halves of a sixty-fourth. The
+   * cases either side of a sample and the case exactly on it are what the rule
+   * is about, and here they are asked for rather than stumbled onto.
+   *
+   * Eighteen bulge right, where the turn is a maximum and the rule rounds down,
+   * and eighteen bulge left, where it is a minimum and the rule rounds up. Each
+   * is given a bearing equal to its own `xMin` so that the outline is carried
+   * onto nothing and the only thing moving is the curve.
+   */
+  {
+    name: 'turn-sweep',
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: "a curve's extreme stepped across a sample column, both ways",
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const TALL = 900;
+
+      WIDE.split('').forEach((character, index) => {
+        const control = index % 18;
+
+        /* Bulging right, the curve runs down the right side of a rectangle
+         * standing at nothing; bulging left, up the left side of one standing
+         * further over, so that no coordinate goes negative.
+         */
+        const points =
+          index < 18
+            ? [
+                [0, 0],
+                [0, TALL],
+                [200, TALL],
+                [230 + control, TALL / 2, false],
+                [200, 0],
+              ]
+            : [
+                [400, 0],
+                [30 + control, TALL / 2, false],
+                [400, TALL],
+                [600, TALL],
+                [600, 0],
+              ];
+
+        const glyph = glyphFor(bytes, character.charCodeAt(0));
+
+        setGlyph(bytes, null, glyph, { width: 1024, height: TALL, points, program: [] });
+
+        // The bearing its own left edge, so the outline is carried onto nothing.
+        setBearing(bytes, glyph, Math.min(...points.map((point) => point[0])));
+      });
+
+      return bytes;
+    },
+  },
+
   /* Courier New with its `INSTCTRL` turned around.
    *
    * Its `prep` executes the instruction twice, both times as `PUSHB[2] 1, 1`
