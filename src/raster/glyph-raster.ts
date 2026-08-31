@@ -381,9 +381,20 @@ export function fillWalked(contours, options) {
   const { scale, originX = 0, originY = 0, width, height, dropout = false } = options;
 
   const pixels = new Uint8Array(width * height);
+  /* Halves go away from zero, not upward.
+   *
+   * `Math.round` sends a half toward positive infinity, so it and the
+   * interpreter's `mulDiv` -- which takes the sign off, rounds, and puts it
+   * back -- part company on negative coordinates landing exactly between two
+   * sixty-fourths. A glyph that has been hinted arrives already on the grid and
+   * never notices; one scaled here does.
+   */
+  const sixtyFourth = (value: number) =>
+    Math.sign(value) * Math.round(Math.abs(value) * scale * 64);
+
   const place = (point) => [
-    originX + Math.round(point[0] * scale * 64) / 64,
-    originY - Math.round(point[1] * scale * 64) / 64,
+    originX + sixtyFourth(point[0]) / 64,
+    originY - sixtyFourth(point[1]) / 64,
   ];
 
   const lists = empty();
@@ -650,9 +661,20 @@ export function fill(contours, options) {
    * recorded letters, which is the price of modelling the machine rather than
    * the fixture.
    */
+  /* Halves go away from zero, not upward.
+   *
+   * `Math.round` sends a half toward positive infinity, so it and the
+   * interpreter's `mulDiv` -- which takes the sign off, rounds, and puts it
+   * back -- part company on negative coordinates landing exactly between two
+   * sixty-fourths. A glyph that has been hinted arrives already on the grid and
+   * never notices; one scaled here does.
+   */
+  const sixtyFourth = (value: number) =>
+    Math.sign(value) * Math.round(Math.abs(value) * scale * 64);
+
   const place = (point) => [
-    originX + Math.round(point[0] * scale * 64) / 64,
-    originY - Math.round(point[1] * scale * 64) / 64,
+    originX + sixtyFourth(point[0]) / 64,
+    originY - sixtyFourth(point[1]) / 64,
   ];
 
   const pieces: any[] = [];

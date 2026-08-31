@@ -4988,6 +4988,22 @@ So the phenomenon is not curve-specific at all. It is any edge passing within a
 fraction of a sixty-fourth of a sample point, `CalcLine` included, which puts it
 back in the general scan conversion rather than in the spline path.
 
+Three more places have been looked at since and none of them is it either.
+`Setup` records the band and the box it is handed and allocates the lists, and
+the one thing it says that this did not already do is that those lists are fixed
+arrays -- horizontal indexed by `y - boxBottom`, vertical by `x - boxLeft` -- so
+a crossing outside the box has nowhere to go, where the maps here would hold it.
+Dropping them changes nothing: nothing lands outside. The scaling the rasteriser
+does for a glyph that was never hinted is its own, in floating point, and had
+never been checked against the interpreter's; the two part company only on a
+negative coordinate landing exactly between two sixty-fourths, and no such
+coordinate occurs in any fixture, so making them agree changes nothing either.
+It is done anyway, since two roundings that are meant to be the same thing
+should be.
+
+What is left after all of it is a difference of under a sixty-fourth, on every
+kind of edge, that no stage of the documented algorithm accounts for.
+
 ## 9. Where the numbers stand
 
 | Fixture                                                      | Agreement |

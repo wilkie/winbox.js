@@ -211,8 +211,8 @@ Setup(
 
   # Horizontal intersections, if dropout occurs
   if !(scanKind & ScanKind.NoDropout):
-    CONTEXT.vertOnBegin = [[]] * (prectBox->right - prectBox->left)
-    CONTEXT.vertOffBegin = [[]] * (prectBox->right - prectBox->left)
+    CONTEXT.vertOnBegin = [[]] * (boundingBox.bottom - boundingBox.top)
+    CONTEXT.vertOffBegin = [[]] * (boundingBox.right - boundingBox.left)
 
     if saveRow:
       # for fast banding and dropout
