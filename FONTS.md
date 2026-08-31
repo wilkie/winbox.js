@@ -5203,6 +5203,41 @@ of those wrong makes flattening worse than the conic walk, which is exactly what
 was measured. A negative result about a hand-chosen approximation said nothing
 about the real one.
 
+### The thirty-three that are left
+
+Named rather than counted, because a rate cannot say whether a change fixed four
+letters and broke three. `test/oracle/disputed_glyphs_test.ts` lists them and
+holds both counts as ceilings.
+
+Thirty-three records, fifty-eight pixels. Eleven in Arial, thirteen in Times New
+Roman, nine in Courier New; twenty-four of the thirty-three are wrong by one or
+two pixels. What is left is thinly spread rather than concentrated, and it is not
+one shape: `a m B S 7 0 3 9 2 5` in Arial, `X y 3 8 R 2 9` in Times, `g t S 5 Z 2`
+in Courier. Digits are still over-represented -- fifteen of the thirty-three --
+which was true before the flattening as well.
+
+The one outlier is Times New Roman's `8` at sixteen pixels, wrong by nine, and it
+is worth recording what it looks like because it is the only place left with
+enough wrong pixels to have a shape. It is the waist, where the two bowls cross:
+
+    rows 6-9      Windows            ours
+    row 6         columns 4, 6       columns 3, 7
+    row 7         column  5          columns 4, 5, 6
+    row 8         columns 4, 6       columns 5, 6
+    row 9         columns 3, 7       columns 3, 4, 7
+
+Windows draws a clean symmetric X closing to a single pixel at row 7. Ours is
+wider at row 6, three pixels across at row 7 where Windows has one, and -- the
+telling part -- not symmetric at row 8, where a stroke that should mirror row 6
+sits a column to the right. So the two strokes are crossing at a different place
+rather than being drawn a pixel thick in the wrong direction.
+
+One thing that is ruled out. The order in which a chord's endpoint is registered
+against the chord being drawn makes no difference at all: registering after
+rather than before leaves the fabricated set at 6,441 cells and 1,818 pixels,
+unchanged. Whatever the waist is, it is not the endpoint bookkeeping around the
+flattening.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
