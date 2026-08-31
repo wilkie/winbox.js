@@ -2133,7 +2133,7 @@ export const FABRICATIONS = [
     },
   },
 
-  /* Three instructions, and one of them is a control.
+  /* Reading a point back out of three glyphs with three side bearings.
    *
    * The last hundred wrong pixels are not the rasteriser's: an exact solve of
    * the outline and an integer walk over it now agree with each other and
@@ -2144,20 +2144,64 @@ export const FABRICATIONS = [
    *
    * The `hinting` probe sweeps three characters of this face -- `W`, `o` and
    * `w` -- across ninety-nine sizes, so a fabrication gets three questions per
-   * recording and no more. The first is spent on a control: a glyph that runs
-   * no instruction at all and reports the same point. Whatever that reads is
-   * what the channel makes of an untouched point, and the other two mean
-   * nothing without it.
+   * recording and no more. One of the three is always spent on a control: a
+   * glyph that runs no instruction at all and reports the same point. Whatever
+   * that reads is what the channel makes of an untouched point, and the other
+   * two mean nothing without it.
    *
    * Every glyph has the same outline, four points along the baseline at 0, 256,
    * 512 and 768 font units, so the distance under test is exactly an eighth of
-   * an em and its scaled value is a number that can be worked out by hand.
+   * an em and its scaled value is a number that can be worked out by hand. What
+   * the three do not share is the side bearing they inherit from the letter
+   * they are written over -- 27 units for the `W`, 69 for the `o` and 13 for
+   * the `w` -- and that turned out to be the variable that mattered.
+   *
+   * @param {string} name - What the fabrication is called.
+   * @param {string} describe - What it is for.
+   * @param {Function} bodies - Given the three characters, the program each
+   *                            runs before the readout and how far to magnify.
    */
-  {
-    name: 'times-rounding',
+  ...[
+    {
+      name: 'times-rounding',
+      describe: 'MDRP with and without rounding, against a control that runs nothing',
+      W: () => ({ body: [] }),
+      o: (setup) => ({ body: [...setup, 0x18, ...ops.byte(1), 0xc4] }),
+      w: (setup) => ({ body: [...setup, 0x18, ...ops.byte(1), 0xc0] }),
+    },
+
+    /* The same three experiments moved onto different glyphs, which is how the
+     * one that looked like a rounding bug turned out to belong to the glyph it
+     * was sitting on rather than to the instruction.
+     */
+    {
+      name: 'times-swapped',
+      describe: 'the same three experiments, moved onto different glyphs',
+      W: (setup) => ({ body: [...setup, 0x18, ...ops.byte(1), 0xc4] }),
+      o: () => ({ body: [] }),
+      w: (setup) => ({ body: [...setup, 0x18, ...ops.byte(1), 0xc0] }),
+    },
+
+    /* Three controls at three magnifications.
+     *
+     * The readout multiplies the coordinate it reads before reporting it, and
+     * the two accounts of what the side bearing does to that reading differ
+     * only in whether the magnification multiplies the bearing along with the
+     * point. At eightfold they are the same number; at fourfold and twofold
+     * they are not, and nothing else about the three glyphs changes.
+     */
+    {
+      name: 'times-magnified',
+      describe: 'the same control read back at three magnifications',
+      W: () => ({ body: [], magnify: 8 }),
+      o: () => ({ body: [], magnify: 4 }),
+      w: () => ({ body: [], magnify: 2 }),
+    },
+  ].map(({ name, describe, ...bodies }) => ({
+    name,
     from: 'TIMES.TTF',
     as: 'TIMES.TTF',
-    describe: 'MDRP with and without rounding, against a control that runs nothing',
+    describe,
 
     edit: (bytes) => {
       const POINTS = [
@@ -2173,29 +2217,27 @@ export const FABRICATIONS = [
         0x10, // SRP0
       ];
 
-      const bodies = {
-        // The control: nothing runs, so this is the point where it started.
-        W: [0x01],
+      for (const [character, of] of Object.entries(bodies)) {
+        const { body, magnify = 8 } = of(setup);
 
-        // The same distance measured and rounded to the grid.
-        o: [...setup, 0x18 /* RTG */, ...ops.byte(1), 0xc4 /* MDRP round */],
-
-        // And measured without rounding, which should leave it where it was.
-        w: [...setup, 0x18 /* RTG */, ...ops.byte(1), 0xc0 /* MDRP plain */],
-      };
-
-      for (const [character, body] of Object.entries(bodies)) {
         setGlyph(bytes, null, glyphFor(bytes, character.charCodeAt(0)), {
           width: 768,
           height: 0,
           points: POINTS,
-          program: [...body, ...reportPoint(1, POINTS.length + 1, 8)],
+
+          /* A control still needs the `SVTCA` the others get from their setup,
+           * because the readout reads along whichever axis is current.
+           */
+          program: [
+            ...(body.length ? body : [0x01]),
+            ...reportPoint(1, POINTS.length + 1, magnify),
+          ],
         });
       }
 
       return bytes;
     },
-  },
+  })),
 
   /* Courier New with its `INSTCTRL` turned around.
    *

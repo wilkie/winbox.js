@@ -4268,6 +4268,53 @@ the fabricated shape fonts, whose glyphs were written over letters whose bearing
 they did not inherit -- 4,551 cells exact to 4,560, and 1,900 wrong pixels to
 1,874 -- and it is right for a reason that does not depend on either.
 
+### The side bearing is split between the outline and the bitmap
+
+The whole-pixel part of the bearing does not live in the outline. A bitmap's
+left edge is a whole pixel, because bitmaps are pixel aligned; an outline's is a
+sixty-fourth, because outlines are 26.6. So the shift is divided between the
+two: the whole pixels are carried outside the outline, in the integer the bitmap
+is placed at, and only the remainder -- which is all a sixty-fourth can hold --
+stays in it. The origin phantom stands behind the outline by exactly the part
+that came out, so the distance between the phantoms, which is the advance, comes
+out as though neither had moved.
+
+**Recorded.** The readout multiplies the coordinate it reads before reporting
+it, which magnifies whatever is inside the outline and leaves whatever is
+outside alone -- so reading the same point at three magnifications tells the two
+apart. Across three fabrications, three bearings and magnifications of eight,
+four and two, all 549 readings come back at `magnify * (point - whole) + whole`
+and none at `magnify * point`. At eightfold the deficit is seven pixels for
+every whole pixel of bearing, at fourfold three, at twofold one, which is
+`magnify - 1` each time.
+
+The rounding that decides `whole` is toward zero, and it is not the one
+`mulDiv` does. One reading proves they differ: the `w`'s bearing of 13 units
+scales to exactly 32 sixty-fourths at eighty pixels per em and to 32.9 at
+eighty-one, and Windows carries a whole pixel out at eighty-one and none at
+eighty. `mulDiv` rounds both to 33 and cannot tell them apart. Rounding it that
+way everywhere instead is measurably wrong, so this is its own rounding.
+
+This is why a fabricated readout stops tracking its point at a size that depends
+on which glyph it was written over -- 39 pixels per em for a bearing of 27
+units, 15 for one of 69, 79 for one of 13. Nothing goes wrong at those sizes:
+the scaled bearing reaches half a pixel and a whole pixel of it steps outside
+the outline. For a real glyph the two numbers agree and the split is of nothing.
+
+### `MDRP` rounds the way it is supposed to
+
+It was suspected of not doing, on a fabrication where the glyph carrying it
+disagreed at every size above eighteen pixels per em by as much as seven eighths
+of a pixel. Moving the same three experiments onto different glyphs settled it:
+the disagreement stayed with the glyph and not with the instruction. It was the
+side bearing above, and the glyph that had looked wrong had the largest bearing
+of the three.
+
+With that accounted for, `MDRP` with the round flag agrees at every size on both
+glyphs it has been asked on, including the sizes where the distance falls exactly
+on a half pixel and the round-to-grid has to break the tie upward: 2.5 pixels at
+twenty per em becomes 3, and Windows puts the point where that says.
+
 ### The twilight zone
 
 Zone 0: a small array of points, sized by `maxp`, that are not part of any
@@ -4431,28 +4478,16 @@ says only that no question is going unasked.
 
 ## 8. What is not known
 
-**`MDRP` that rounds moves a point further than Windows moves it.** The same
-fabricated Times that settled the side bearing carries a third glyph, whose
-program measures the distance from point zero to point one with `MDRP` and
-rounds it to the grid. The two glyphs beside it -- one that runs nothing, one
-that measures the same distance and does not round it -- now agree with Windows
-at every size. This one does not, and the gap is large: at twenty pixels per em
-the point lands seven eighths of a pixel further right than Windows puts it, and
-the disagreement grows with size rather than staying at a sixty-fourth.
-
-The distance under test is 256 design units, which is 2.5 pixels at twenty per
-em, and rounding to grid takes it to 3. Windows leaves the point where 2.08
-pixels would put it, which is neither the rounded distance nor the unrounded
-one. Whatever it is, it is not a rounding rule applied to that distance, so the
-next thing to establish is what `MDRP` is measuring rather than how it rounds.
-
-**The readout stops tracking above thirty-eight pixels per em.** Every
-fabricated sweep reads a point back by moving the advance phantom onto it, and
-above that size the numbers that come back follow neither the point nor the
-stock advance of the letter that was written over. They are not the wrap that a
-sixteen bit result would give, and they are not `hdmx` or `LTSH`, both of which
-are checked for and excluded before a reading is believed. Every fabricated
-finding here is asserted only below that size for this reason.
+**Halves are reported low, and nowhere the rounding could live fits.** Six
+readings of 549 across the three fabricated bearing recordings disagree, and
+every one of them is a value landing exactly halfway between two pixels which
+Windows reports as the lower. Three places that rounding could go have each
+been tried and each contradicts something else recorded: scaling every
+coordinate with halves toward zero breaks the interior points of Arial Italic's
+`M`; so does scaling only the outline that way; and rounding the advance that
+way breaks the advances `hdmx` tabulates, which are reproduced 22,051 times out
+of 22,056 with halves going up. So the halves go down somewhere else, and the
+six readings are named in `test/raster/fabricated_test.ts` rather than excused.
 
 **Times New Roman's `W` and `g` are one pixel of cap height out**, which is
 three recorded glyphs. `MIAP[round]` places the top point at 10 pixels above

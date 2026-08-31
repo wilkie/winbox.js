@@ -391,9 +391,47 @@ export class Hinter {
      */
     const shift = leftSideBearing - xMin;
 
+    /* And only the part of the shift that a fixed point number can hold.
+     *
+     * A bitmap's left edge is a whole pixel, because bitmaps are pixel
+     * aligned; an outline's is a sixty-fourth, because outlines are 26.6. So
+     * the shift is split between the two. The whole pixels of it come off the
+     * outline here and are carried outside it, and the remainder -- which is
+     * all a sixty-fourth can carry -- stays in.
+     *
+     * **Recorded.** The readout in a fabricated glyph multiplies the
+     * coordinate it reads before reporting it, so anything inside the outline
+     * is magnified and anything outside is not, and reading the same point at
+     * eight, four and twofold tells the two apart. Across three fabrications,
+     * three side bearings and those three magnifications, all 294 readings
+     * come back at `magnify * (point - whole) + whole` and none of them at
+     * `magnify * point`. The whole pixels are not magnified, so they are not
+     * in the outline.
+     *
+     * This is why a readout stops tracking its point at a size that depends on
+     * the glyph: nothing goes wrong there, the scaled bearing simply reaches
+     * half a pixel and a whole pixel of it steps outside.
+     *
+     * The rounding is toward zero, which is not what `mulDiv` does. One
+     * reading proves they differ: the `w` bearing of 13 units scales to
+     * exactly 32 sixty-fourths at eighty pixels per em and to 32.9 at
+     * eighty-one, and Windows carries a whole pixel out at eighty-one and none
+     * at eighty. `mulDiv` rounds both to 33 and cannot tell them apart.
+     * Rounding it toward zero everywhere instead is measurably wrong -- it
+     * breaks the recorded interior points of Arial Italic's `M` -- so this is
+     * its own rounding and not that one.
+     */
+    const toward = (value: number, by: number) =>
+      Math.sign(value) * Math.ceil(Math.abs(value) / by - 0.5) * by;
+
+    const whole = toward(
+      toward(shift * this.pixels, this.font.unitsPerEm) / this.font.unitsPerEm,
+      ONE
+    );
+
     for (const contour of outline) {
       for (const point of contour) {
-        zone.x.push(mulDiv(point.x + shift, this.pixels, this.font.unitsPerEm));
+        zone.x.push(mulDiv(point.x + shift, this.pixels, this.font.unitsPerEm) - whole);
         zone.y.push(mulDiv(point.y, this.pixels, this.font.unitsPerEm));
         zone.unscaledX.push(point.x + shift);
         zone.unscaledY.push(point.y);
@@ -407,10 +445,11 @@ export class Hinter {
 
     /* The phantom points: the glyph's origin, its advance, and two more for
      * the vertical direction. The origin is where the pen stands, which is
-     * nothing -- the outline has already been carried onto it by `shift`
-     * above, so there is nowhere else for it to be.
+     * behind the outline by exactly the whole pixels that were taken out of
+     * it -- so that the distance between the two phantoms, which is the
+     * advance, comes out the same as if neither had moved.
      */
-    const origin = 0;
+    const origin = -whole;
 
     /* The advance phantom starts on the grid.
      *
@@ -515,7 +554,15 @@ export class Hinter {
 
     this.advance = Math.round((zone.x[last - 3] - zone.x[last - 4]) / ONE);
 
-    // Back into contours, in font units scaled to pixels.
+    /* Back into contours, in font units scaled to pixels, and with the whole
+     * pixels of the side bearing put back.
+     *
+     * They came out before the program ran because that is where Windows keeps
+     * them -- outside the outline, in the integer the bitmap is placed at.
+     * Nothing here places a bitmap, so the last thing to happen to the outline
+     * is to carry it back onto the pen. A whole number of pixels is the one
+     * translation that changes no sampling decision the rasteriser makes.
+     */
     const hinted: any[] = [];
 
     let index = 0;
@@ -525,7 +572,7 @@ export class Hinter {
 
       for (let point = 0; point < contour.length; point++) {
         shape.push({
-          x: zone.x[index] / ONE,
+          x: (zone.x[index] + whole) / ONE,
           y: zone.y[index] / ONE,
           on: zone.onCurve[index],
         });

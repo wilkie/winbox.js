@@ -165,63 +165,77 @@ describe('the fabricated recordings', () => {
     expect(compared).toBeGreaterThan(700);
   });
 
-  /* The glyph carried onto its side bearing.
+  /* The glyph carried onto its side bearing, and the bearing split in two.
    *
    * `hmtx` says where a glyph's ink begins relative to the pen and `glyf` says
-   * where it begins relative to the outline's own zero, and for most glyphs of
-   * most faces those are the same number, so nothing ever depended on which of
-   * them the outline was laid out against. Three glyphs of a fabricated Times
-   * were given the same four points on the baseline -- at 0, 256, 512 and 768
-   * units -- and three different side bearings, inherited from the `W`, the `o`
-   * and the `w` they were written over.
+   * where it begins relative to the outline's own zero. For most glyphs of most
+   * faces those are the same number, so which of the two the outline is laid
+   * out against never comes up. Three fabrications ask directly: each gives
+   * three glyphs the same four points on the baseline -- at 0, 256, 512 and 768
+   * design units -- and a program that reads point one back out magnified, and
+   * what differs between the three is the side bearing each inherits from the
+   * letter it was written over, 27, 69 and 13 units against an `xMin` of
+   * nothing.
    *
-   * One of the three runs no instruction at all, so what it reports is the bare
-   * scaling and nothing else; a second measures the same distance with `MDRP`
-   * and does not round it, which should leave the point where it already was.
-   * Both came back shifted by the whole of the bearing, and by the two
-   * different bearings in the ratio the two bearings are in. Those two are the
-   * ones asserted here. The third rounds the distance it measures and is still
-   * disagreeing, which is a separate question and an open one.
+   * One glyph of each is a control that runs no instruction at all, so what it
+   * reports is the bare scaling. Between them the three recordings put the
+   * control on all three bearings, put `MDRP` with and without rounding on two
+   * of them, and read the same control back at eight, four and twofold
+   * magnification -- which is what tells apart the part of the bearing that
+   * lives in the outline from the part that does not. `FONTS.md` has what they
+   * settled.
    *
-   * Only the sizes up to thirty-eight pixels per em are asserted, and that
-   * bound is a piece of ignorance rather than a rule. From thirty-nine up the
-   * sweep's answers stop tracking the readout: they do not follow the point,
-   * and they are not the stock advance of the letter that was written over
-   * either, so there is no account of what they are. What is asserted is the
-   * range where the readout is understood, which is every size from the
-   * smallest the mapper will use this face at. See `FONTS.md`.
+   * Six readings of 549 disagree and they are named here rather than excluded,
+   * because they have something in common: in every one of them the value lands
+   * exactly halfway between two pixels and Windows reports the lower. Where
+   * that rounding lives is not known. The three places it could go have each
+   * been tried and each contradicts something else already recorded -- scaling
+   * every coordinate that way breaks the interior points of Arial Italic's `M`,
+   * and rounding the advance that way breaks the advances `hdmx` tabulates.
    */
-  const CARRIED = 38;
+  const HALVES = [
+    'times-magnified W ppem 80: windows 81, ours 82',
+    'times-magnified o ppem 48: windows 24, ours 25',
+    'times-rounding W ppem 80: windows 81, ours 82',
+    'times-rounding w ppem 48: windows 50, ours 51',
+    'times-swapped W ppem 80: windows 81, ours 82',
+    'times-swapped w ppem 48: windows 50, ours 51',
+  ];
 
   present('agree on a glyph carried onto its side bearing', function () {
-    const recording = all.find((entry) => entry.name === 'hinting-times-rounding');
+    const wanted = ['times-rounding', 'times-swapped', 'times-magnified'];
+    const found: string[] = [];
 
-    if (!recording) {
-      return;
+    let total = 0;
+
+    for (const recording of all.filter((entry) => wanted.includes(entry.name.slice(8)))) {
+      /* One character at a time. The reader keeps one reading per size and the
+       * three glyphs are swept at the same sizes, so handing it the whole file
+       * would quietly measure the first of them three times over.
+       */
+      for (const character of ['W', 'o', 'w']) {
+        const only = {
+          ...recording.fixture,
+          records: recording.fixture.records.filter((record: any) =>
+            String(record.args).endsWith(`'${character}'`)
+          ),
+        };
+
+        for (const reading of readings(only, recording.font)) {
+          total++;
+
+          if (reading.ours !== reading.windows) {
+            found.push(
+              `${recording.name.slice(8)} ${character} ppem ${reading.ppem}: ` +
+                `windows ${reading.windows}, ours ${reading.ours}`
+            );
+          }
+        }
+      }
     }
 
-    /* One character at a time. The reader keeps one reading per size and these
-     * three glyphs are swept at the same sizes, so handing it the whole file
-     * would quietly measure the first of them three times over.
-     */
-    const wrong: Record<string, Reading[]> = {};
-
-    for (const character of ['W', 'w']) {
-      const only = {
-        ...recording.fixture,
-        records: recording.fixture.records.filter((record: any) =>
-          String(record.args).endsWith(`'${character}'`)
-        ),
-      };
-
-      const found = readings(only, recording.font).filter((reading) => reading.ppem <= CARRIED);
-
-      expect(found.length).toBeGreaterThan(15);
-
-      wrong[character] = found.filter((reading) => reading.ours !== reading.windows);
-    }
-
-    expect(wrong).toEqual({ W: [], w: [] });
+    expect(total).toBeGreaterThan(500);
+    expect(found.sort()).toEqual(HALVES);
   });
 
   /* Times New Roman Italic's `j`, which was the last disagreeing record of
