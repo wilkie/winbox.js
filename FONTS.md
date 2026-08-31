@@ -4592,11 +4592,24 @@ the shape barely moving:
   half the total while being a quarter of the cells: `8` alone accounts for
   seventeen. The characters never wrong at any size in any face are `4`, `A`,
   `E`, `M`, `N`, `W`, `f`, `k` and `w`.
-- **It grows faster than the glyph does.** Per cell drawn: 0.028 wrong pixels at
-  ten pixels of cell height, 0.065 at twelve, 0.148 at fourteen, 0.175 at
-  twenty, 0.300 at twenty-four. A tenfold rise for a size that not quite
-  two-and-a-half times. The number of places an edge can cross a sample grows
-  with the perimeter, which is linear, so something else is compounding.
+- **It grows faster than the glyph does, and that is opportunity rather than
+  decay.** Per cell drawn: 0.028 wrong pixels at ten pixels of cell height,
+  0.065 at twelve, 0.148 at fourteen, 0.175 at twenty, 0.300 at twenty-four --
+  a tenfold rise for a size not quite two and a half times. It looked like
+  something whose error grows with the coordinates, which would have pointed at
+  the forward difference terms, since those scale with the square of a spline's
+  extent.
+
+  It is not. Measuring how far each disputed pixel's centre lies from the
+  nearest crossing gives a median of 2.57 sixty-fourths at ten pixels of cell
+  height, 3.70 at fourteen, 1.14 at eighteen and 1.75 at twenty-four: noisy
+  between one and four, with no trend. What does grow is the number of chances.
+  Crossings per cell go from 6.0 at ten to 47.5 at twenty-four, which is
+  superlinear because it counts a perimeter against every row it spans, and the
+  rate of disagreement per crossing is flat -- between 2.8 and 6.3 per thousand
+  at every size. Bigger glyphs are not drawn worse; they simply offer the knife
+  edge more often.
+
 - **On a steep diagonal the ink sits a pixel further out.** Times New Roman's
   `8` at sixteen pixels per em is the worst cell in the fixture at seven pixels,
   and all seven are at the waist where the two bowls cross: `....#.#` against
