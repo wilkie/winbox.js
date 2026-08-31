@@ -4478,16 +4478,43 @@ says only that no question is going unasked.
 
 ## 8. What is not known
 
-**Halves are reported low, and nowhere the rounding could live fits.** Six
-readings of 549 across the three fabricated bearing recordings disagree, and
-every one of them is a value landing exactly halfway between two pixels which
-Windows reports as the lower. Three places that rounding could go have each
-been tried and each contradicts something else recorded: scaling every
-coordinate with halves toward zero breaks the interior points of Arial Italic's
-`M`; so does scaling only the outline that way; and rounding the advance that
-way breaks the advances `hdmx` tabulates, which are reproduced 22,051 times out
-of 22,056 with halves going up. So the halves go down somewhere else, and the
-six readings are named in `test/raster/fabricated_test.ts` rather than excused.
+**Two recordings disagree about which way a half goes, and no single rule can
+satisfy both.** Scaling a font unit to a pixel lands exactly halfway between two
+sixty-fourths now and again, and what Windows does then is measured twice, in
+opposite directions.
+
+Six readings of 549 across the three fabricated bearing recordings want the half
+to go toward zero: at eighty pixels per em the `W`'s point scales to 707.5
+sixty-fourths and Windows reports it as though it were 707, and the same happens
+to two others at forty-eight. Rounding the conversion that way fixes all six and
+leaves nothing behind.
+
+It also breaks six others. Arial Italic's `M` is read at two sizes -- thirty
+pixels per em and sixty-two -- where a coordinate lands on the same kind of half,
+and there Windows reports the value one higher, which is the half going away from
+zero. One advance of Arial's `hdmx` moves the wrong way with it, and three of
+Times New Roman's, taking that table from one disagreement in 3,816 to four.
+
+So the exchange is exact, six for six, and it is not a matter of choosing the
+better rule: both sets are measurements of the same Windows, and no single tie
+rule in the conversion can produce both. That is a fact about the shape of the
+arithmetic rather than about its rounding. The conversion is not one `a * b / c`
+with a rounding on the end -- which fits `FONT_SCALER.md` listing "fixed and
+fractional scaling factors" among the global state, a precomputed factor being
+multiplied rather than a ratio being divided, since then whether a coordinate
+lands on a half depends on the factor and not on the exact ratio.
+
+The other places the rounding could have lived are ruled out and not merely
+untried. The interpreter's own arithmetic -- projecting onto a unit vector,
+multiplying two 26.6 values, interpolating -- is now a separate function from the
+conversion, and rounding it toward zero changes none of the six. So is the
+control value table's, which has always had a rule of its own; rounding that way
+breaks the `M`, both `hdmx` tables and a recorded `CreateFont` extent. Rounding
+the finished advance that way breaks the advances recorded from Windows
+directly.
+
+The six are named in `test/raster/fabricated_test.ts` so that anything which
+moves them says so.
 
 **Times New Roman's `W` and `g` are one pixel of cap height out**, which is
 three recorded glyphs. `MIAP[round]` places the top point at 10 pixels above

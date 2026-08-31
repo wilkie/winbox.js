@@ -267,6 +267,21 @@ export class Hinter {
     return 0;
   }
 
+  /**
+   * Font units into pixels.
+   *
+   * Distinct from `mulDiv`, which is the arithmetic the interpreter does on
+   * numbers that are already in pixels -- projecting onto a unit vector,
+   * multiplying two 26.6 values, interpolating between two points. That one is
+   * the format's own `a * b / c`; this one is a conversion, and the pseudocode
+   * for the scan converter keeps its equivalent separate too. They round the
+   * same way here because nothing has been measured that says otherwise, and
+   * `scaleToPixels` above is a third rule again, for the control values.
+   */
+  toPixels(units: number) {
+    return mulDiv(units, this.pixels, this.font.unitsPerEm);
+  }
+
   /** The control value table, in pixels rather than in font units. */
   scaledControlValues() {
     const values: number[] = [];
@@ -431,8 +446,8 @@ export class Hinter {
 
     for (const contour of outline) {
       for (const point of contour) {
-        zone.x.push(mulDiv(point.x + shift, this.pixels, this.font.unitsPerEm) - whole);
-        zone.y.push(mulDiv(point.y, this.pixels, this.font.unitsPerEm));
+        zone.x.push(this.toPixels(point.x + shift) - whole);
+        zone.y.push(this.toPixels(point.y));
         zone.unscaledX.push(point.x + shift);
         zone.unscaledY.push(point.y);
         zone.onCurve.push(point.on);
@@ -482,10 +497,7 @@ export class Hinter {
      * and the disagreement was already there.
      */
     const width =
-      origin +
-      (this.roundPhantoms
-        ? grid(mulDiv(advance, this.pixels, this.font.unitsPerEm))
-        : mulDiv(advance, this.pixels, this.font.unitsPerEm));
+      origin + (this.roundPhantoms ? grid(this.toPixels(advance)) : this.toPixels(advance));
 
     const phantom = [
       { x: origin, y: 0 },
@@ -1001,7 +1013,7 @@ export class Hinter {
         const value = this.pop();
         const index = this.pop();
 
-        this.cvt[index] = mulDiv(value, this.pixels, this.font.unitsPerEm);
+        this.cvt[index] = this.toPixels(value);
 
         return at;
       }
@@ -1850,7 +1862,7 @@ export class Hinter {
       const currentTwo = this.project(zoneOne.x[state.rp2], zoneOne.y[state.rp2]);
 
       // Design units into pixels, for a point that falls outside the two.
-      const scaled = (value) => mulDiv(value, this.pixels, this.font.unitsPerEm);
+      const scaled = (value) => this.toPixels(value);
 
       while (count-- > 0) {
         const index = this.pop();
