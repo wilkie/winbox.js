@@ -4752,6 +4752,33 @@ same code. One crossing in sixty still comes out differently, and the geometry
 says this implementation has it correct. Every part of the scan converter that
 can be read has now been read, and the difference is not in any of them.
 
+`scanlist.c` closes the last routine in the path. `fsc_BeginElement` chooses the
+`on` lists for quadrants one and two and the `off` lists otherwise, takes the
+vertical pair only when dropout control is on, and stores control points only
+under `SK_SMART`, which is the model here exactly. `AddHorizSimpleScan` is an
+insertion sort that leaves equal values in the order they arrived, which a
+stable sort matches. And `fsc_FillBitMap` pairs the two lists by index and draws
+`BLTHoriz(start, stop - 1)` for a positive run and `BLTHoriz(stop, start - 1)`
+for a negative one, which is the half-open span in both directions that this now
+draws.
+
+So every part of the scan converter that can be read has been read against what
+it produces, and the difference is in none of them.
+
+**A mutation search says the same from the other side.** Rather than reason
+about which constant might be wrong, the walk was mutated programmatically and
+each variant scored against `times-bare`: the two step comparisons made
+inclusive, the branch test on `alpha` made inclusive, the sample rounding in
+`above` and `below` moved a sixty-fourth each way, the second derivative terms
+halved, the reflection offsets dropped from the entries. Five of those change
+nothing at all -- those comparisons never sit on their own boundary -- and every
+one of the rest is worse, from 79 wrong pixels for a halved `ddQx` to 2,113 for
+dropping `xOffset`. Nothing in that space beats what is there.
+
+The search is worth keeping as a method even though this pass found nothing, and
+it needs one guard: a mutation to a stop value makes the walk run forever, and a
+harness that only scores will hang rather than report.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
