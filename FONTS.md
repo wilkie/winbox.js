@@ -4301,6 +4301,36 @@ units, 15 for one of 69, 79 for one of 13. Nothing goes wrong at those sizes:
 the scaled bearing reaches half a pixel and a whole pixel of it steps outside
 the outline. For a real glyph the two numbers agree and the split is of nothing.
 
+### The coordinate and the bearing are scaled separately
+
+Not summed in font units and scaled once. Each is converted to its own
+sixty-fourth and the two are added afterwards, and the two conversions do not
+round the same way: the coordinate's halves go away from zero and the bearing's
+go toward it.
+
+**Recorded, exactly.** A magnification of sixty-four makes the reported advance
+in whole pixels equal the stored coordinate in whole sixty-fourths, because the
+coordinate is a whole number of them -- so the stored value is read rather than
+inferred. Three glyphs were given points that put the sum of coordinate and
+bearing at 144, 80 and 16 font units, each of which is sixteen more than a
+multiple of thirty-two and therefore lands that sum exactly on a half at every
+odd size. That is fifty-odd halves a glyph instead of the two or three a sweep
+stumbles onto.
+
+What came back was not one rule but no rule. The direction varied with the size,
+and at the same size it varied between the three glyphs. No error in a single
+scale factor can do that: a factor multiplies every coordinate, so it pushes
+them all the same way. Of 165 exact readings, scaling the two parts separately
+accounts for 165 and scaling the sum once accounts for 126.
+
+So they were never halves, and the twelve readings that had looked like a
+contradiction were two different things. The six that wanted the half to go
+toward zero all had a bearing in them, and were sums that Windows never formed.
+The six that wanted it to go away -- Arial Italic's `M` at two sizes and four
+`hdmx` advances -- are in faces where the bearing and `xMin` agree, so there was
+no second part, and the coordinate's own rounding is what they measure. Both are
+now reproduced.
+
 ### `MDRP` rounds the way it is supposed to
 
 It was suspected of not doing, on a fabrication where the glyph carrying it
@@ -4477,44 +4507,6 @@ says only that no question is going unasked.
 ---
 
 ## 8. What is not known
-
-**Two recordings disagree about which way a half goes, and no single rule can
-satisfy both.** Scaling a font unit to a pixel lands exactly halfway between two
-sixty-fourths now and again, and what Windows does then is measured twice, in
-opposite directions.
-
-Six readings of 549 across the three fabricated bearing recordings want the half
-to go toward zero: at eighty pixels per em the `W`'s point scales to 707.5
-sixty-fourths and Windows reports it as though it were 707, and the same happens
-to two others at forty-eight. Rounding the conversion that way fixes all six and
-leaves nothing behind.
-
-It also breaks six others. Arial Italic's `M` is read at two sizes -- thirty
-pixels per em and sixty-two -- where a coordinate lands on the same kind of half,
-and there Windows reports the value one higher, which is the half going away from
-zero. One advance of Arial's `hdmx` moves the wrong way with it, and three of
-Times New Roman's, taking that table from one disagreement in 3,816 to four.
-
-So the exchange is exact, six for six, and it is not a matter of choosing the
-better rule: both sets are measurements of the same Windows, and no single tie
-rule in the conversion can produce both. That is a fact about the shape of the
-arithmetic rather than about its rounding. The conversion is not one `a * b / c`
-with a rounding on the end -- which fits `FONT_SCALER.md` listing "fixed and
-fractional scaling factors" among the global state, a precomputed factor being
-multiplied rather than a ratio being divided, since then whether a coordinate
-lands on a half depends on the factor and not on the exact ratio.
-
-The other places the rounding could have lived are ruled out and not merely
-untried. The interpreter's own arithmetic -- projecting onto a unit vector,
-multiplying two 26.6 values, interpolating -- is now a separate function from the
-conversion, and rounding it toward zero changes none of the six. So is the
-control value table's, which has always had a rule of its own; rounding that way
-breaks the `M`, both `hdmx` tables and a recorded `CreateFont` extent. Rounding
-the finished advance that way breaks the advances recorded from Windows
-directly.
-
-The six are named in `test/raster/fabricated_test.ts` so that anything which
-moves them says so.
 
 **Times New Roman's `W` and `g` are one pixel of cap height out**, which is
 three recorded glyphs. `MIAP[round]` places the top point at 10 pixels above

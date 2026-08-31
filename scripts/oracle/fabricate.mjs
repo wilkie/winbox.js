@@ -2239,6 +2239,63 @@ export const FABRICATIONS = [
     },
   })),
 
+  /* Reading the stored coordinate itself, exactly, at every half.
+   *
+   * Twelve readings say the conversion from font units to pixels rounds a half
+   * two different ways, six each, and no single rule produces both. The next
+   * thing to know is what the arithmetic actually is, and for that it is no
+   * good inferring the stored coordinate from a magnified reading -- it has to
+   * be read.
+   *
+   * A magnification of sixty-four does that. The readout reports the advance in
+   * whole pixels and the coordinate is a whole number of sixty-fourths, so
+   * multiplying by sixty-four before reporting makes the reported number of
+   * pixels equal the stored number of sixty-fourths. Nothing is rounded on the
+   * way and nothing has to be assumed about the channel.
+   *
+   * The price is range: the advance is carried in sixteen bits of 26.6, so a
+   * reading much past five hundred wraps. Every point here is therefore chosen
+   * to scale to under eight pixels at the largest size swept.
+   *
+   * Each point sits so that its distance from the outline's zero, once the side
+   * bearing of the letter it is written over is added, is 144, 80 and 16 font
+   * units. All three are sixteen more than a multiple of thirty-two, which puts
+   * the scaled value exactly on a half at every odd size -- fifty-odd halves per
+   * glyph rather than the two or three a sweep stumbles onto. The three differ
+   * by a factor of nine in magnitude, which is the point: a rounding rule does
+   * not care how large the coordinate is, and a scale factor carrying a
+   * relative error does.
+   */
+  {
+    name: 'times-halves',
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: 'the scaled coordinate read back exactly, on a half at every odd size',
+
+    edit: (bytes) => {
+      // The bearing each glyph inherits, and what it must add up to.
+      const WANTED = { W: [27, 144], o: [69, 80], w: [13, 16] };
+
+      for (const [character, [bearing, total]] of Object.entries(WANTED)) {
+        const at = total - bearing;
+
+        setGlyph(bytes, null, glyphFor(bytes, character.charCodeAt(0)), {
+          width: 768,
+          height: 0,
+          points: [
+            [0, 0],
+            [at, 0],
+            [at + 256, 0],
+            [at + 512, 0],
+          ],
+          program: [0x01, ...reportPoint(1, 5, 64)],
+        });
+      }
+
+      return bytes;
+    },
+  },
+
   /* Courier New with its `INSTCTRL` turned around.
    *
    * Its `prep` executes the instruction twice, both times as `PUSHB[2] 1, 1`

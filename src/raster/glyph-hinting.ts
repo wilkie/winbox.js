@@ -439,14 +439,13 @@ export class Hinter {
     const toward = (value: number, by: number) =>
       Math.sign(value) * Math.ceil(Math.abs(value) / by - 0.5) * by;
 
-    const whole = toward(
-      toward(shift * this.pixels, this.font.unitsPerEm) / this.font.unitsPerEm,
-      ONE
-    );
+    const bearing = toward(shift * this.pixels, this.font.unitsPerEm) / this.font.unitsPerEm;
+
+    const whole = toward(bearing, ONE);
 
     for (const contour of outline) {
       for (const point of contour) {
-        zone.x.push(this.toPixels(point.x + shift) - whole);
+        zone.x.push(this.toPixels(point.x) + bearing - whole);
         zone.y.push(this.toPixels(point.y));
         zone.unscaledX.push(point.x + shift);
         zone.unscaledY.push(point.y);

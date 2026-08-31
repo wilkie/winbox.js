@@ -185,25 +185,23 @@ describe('the fabricated recordings', () => {
    * lives in the outline from the part that does not. `FONTS.md` has what they
    * settled.
    *
-   * Six readings of 549 disagree and they are named here rather than excluded,
-   * because they have something in common: in every one of them the value lands
-   * exactly halfway between two pixels and Windows reports the lower. Where
-   * that rounding lives is not known. The three places it could go have each
-   * been tried and each contradicts something else already recorded -- scaling
-   * every coordinate that way breaks the interior points of Arial Italic's `M`,
-   * and rounding the advance that way breaks the advances `hdmx` tabulates.
+   * A fourth recording asks what the arithmetic is rather than what it rounds
+   * to. At a magnification of sixty-four the reported advance in whole pixels
+   * is the stored coordinate in whole sixty-fourths, so nothing is inferred;
+   * and each point is placed so that its distance from the outline's zero, once
+   * the bearing is added, is 144, 80 or 16 font units, all of which put that
+   * sum exactly on a half at every odd size. What came back was not one rule
+   * but no rule: the direction varied with the size, and varied between the
+   * three glyphs at the same size, which no error in a single scale factor can
+   * do -- a factor pushes every coordinate the same way.
+   *
+   * They were never halves. The outline coordinate and the bearing are scaled
+   * separately, each rounded to its own sixty-fourth, and added afterwards, so
+   * a sum landing on a half means nothing. Of the 165 exact readings, that
+   * account gets 165 and scaling the sum once gets 126.
    */
-  const HALVES = [
-    'times-magnified W ppem 80: windows 81, ours 82',
-    'times-magnified o ppem 48: windows 24, ours 25',
-    'times-rounding W ppem 80: windows 81, ours 82',
-    'times-rounding w ppem 48: windows 50, ours 51',
-    'times-swapped W ppem 80: windows 81, ours 82',
-    'times-swapped w ppem 48: windows 50, ours 51',
-  ];
-
   present('agree on a glyph carried onto its side bearing', function () {
-    const wanted = ['times-rounding', 'times-swapped', 'times-magnified'];
+    const wanted = ['times-rounding', 'times-swapped', 'times-magnified', 'times-halves'];
     const found: string[] = [];
 
     let total = 0;
@@ -234,8 +232,8 @@ describe('the fabricated recordings', () => {
       }
     }
 
-    expect(total).toBeGreaterThan(500);
-    expect(found.sort()).toEqual(HALVES);
+    expect(total).toBeGreaterThan(700);
+    expect(found.sort()).toEqual([]);
   });
 
   /* Times New Roman Italic's `j`, which was the last disagreeing record of
