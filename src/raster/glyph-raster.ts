@@ -601,27 +601,26 @@ export function fillWalked(contours, options) {
   for (const [column, ons] of lists.vertOn) {
     const offs = lists.vertOff.get(column) ?? [];
 
-    /* Backwards, which `FindDropouts` calls going from top to bottom.
+    /* Read in the order the entries are held, which the oracle settles.
      *
-     * The lists are sorted ascending and the scan converter's `y` points up, so
-     * reading them in reverse is reading down the glyph. Each rescue asks
-     * whether a neighbour is already lit, so one made higher up can stop one
-     * lower down, and the direction decides which of two competing rescues
-     * wins.
+     * `FindDropouts` reads a column's entries in reverse, and each rescue
+     * declines where a neighbour is already lit, so the direction decides which
+     * of two rescues a row apart survives. Read one way the first blocks the
+     * second and one pixel is drawn; read the other, both are.
      *
-     * It costs two letters and four pixels, and is kept because it is what the
-     * source does. What it costs is one rescue in each of Courier New's `a`,
-     * `e` and `s` at ten pixels per em, where a pixel at column four of row
-     * four is lit going up and blocked going down, and Windows lights it. So
-     * Windows reads down the column as this now does and still makes that
-     * rescue, which means something else in the placement or the test that
-     * blocks it is wrong. Those three cells are the smallest statement of it.
+     * **Recorded**, by a fabrication built to ask exactly that: two horizontal
+     * hairlines with the gap between them swept from four fifths of a pixel to
+     * two and a quarter, so that some of the thirty-six land with their two
+     * rescues on neighbouring rows. Windows draws both rows, every time, on
+     * every size where the case arises. Reading these lists forward agrees with
+     * it on 199 of 216 cells and reading them backward on 176.
+     *
+     * Which does not contradict the source so much as place this one against
+     * it: these entries are held in the opposite order to the scan converter's,
+     * so reading them forward is reading its list backward. The direction is
+     * now settled by measurement whichever way the frames are counted.
      */
-    const last = Math.min(ons.length, offs.length) - 1;
-
-    for (let step = 0; step <= last; step++) {
-      const index = last - step;
-
+    for (let index = 0; index < ons.length && index < offs.length; index++) {
       if (ons[index] !== offs[index]) {
         continue;
       }

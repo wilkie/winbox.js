@@ -2503,6 +2503,63 @@ export const FABRICATIONS = [
     },
   },
 
+  /* Two vertical dropouts in one column, to see which end the column is read
+   * from.
+   *
+   * `FindDropouts` walks a column's entries in reverse, which is down the
+   * glyph, and `PerformVertDropout` declines where a neighbour is already lit.
+   * Put two rescues one row apart in the same column and the direction decides
+   * the answer: read downward, the upper one is made and then blocks the lower;
+   * read upward, the lower one is made first, its neighbour above is still
+   * clear, and both survive. One pixel against two, in the bitmap, where the
+   * oracle can be asked.
+   *
+   * A stroke too thin to cover a sample down a column is a vertical dropout, so
+   * what this needs is two horizontal hairlines, close enough together that
+   * their rescues land on neighbouring rows. Each glyph gets the same two bars
+   * with a different gap between them -- from about four fifths of a pixel to
+   * about two and a quarter at the sizes the probe draws -- so whatever the
+   * rounding does, several of the thirty-six land on the case that matters.
+   */
+  {
+    name: 'twin-bars',
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: 'two hairlines a row apart, so the column tells which way it is read',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const WIDTH = 900;
+      const THICK = 50;
+      const LOW = 200;
+
+      WIDE.split('').forEach((character, index) => {
+        const gap = 120 + index * 6;
+
+        const bar = (bottom) => [
+          [0, bottom],
+          [WIDTH, bottom],
+          [WIDTH, bottom + THICK],
+          [0, bottom + THICK],
+        ];
+
+        const glyph = glyphFor(bytes, character.charCodeAt(0));
+
+        setGlyph(bytes, null, glyph, {
+          width: 1024,
+          height: LOW + gap + THICK,
+          contours: [bar(LOW), bar(LOW + gap)],
+          program: [],
+        });
+
+        setBearing(bytes, glyph, 0);
+      });
+
+      return bytes;
+    },
+  },
+
   /* Courier New with its `INSTCTRL` turned around.
    *
    * Its `prep` executes the instruction twice, both times as `PUSHB[2] 1, 1`
