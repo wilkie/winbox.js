@@ -2560,6 +2560,66 @@ export const FABRICATIONS = [
     },
   },
 
+  /* The letters that disagree, with their hinting taken away.
+   *
+   * The recorded letters are hinted and the fabricated sweeps are not, and
+   * their residues look alike -- an edge landing on the wrong side of a sample
+   * -- so one has been read as evidence about the other. It need not be. Strip
+   * the program from a glyph that disagrees and both sides scan-convert the
+   * same outline, scaled once by arithmetic already confirmed elsewhere. If
+   * they then agree, what was wrong was the outline the interpreter produced;
+   * if they still disagree, it was the scan conversion.
+   *
+   * Only the instruction length is touched, so the points, the contours and
+   * every table around them are the font's own. `prep` and `fpgm` still run --
+   * they set up a size, they do not move a glyph's points -- and the phantom
+   * points are still placed and still rounded, so the advance is unchanged and
+   * the letter lands where it did.
+   *
+   * Times rather than Arial because Arial is the shell's own font: stripped of
+   * its hinting it never gets as far as the probe, and the recording times out
+   * twice out of two. Times carries a third of the disagreeing pixels and is
+   * not load-bearing for the desktop.
+   */
+  {
+    name: 'times-bare',
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: 'Times New Roman with the glyph programs removed, hinting and all',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+
+      for (const character of WIDE) {
+        const glyph = glyphFor(bytes, character.charCodeAt(0));
+        const body = glyphBody(bytes, glyph);
+
+        if (body.contours < 0) {
+          // A composite keeps its own arrangement; there is nothing to strip.
+          continue;
+        }
+
+        /* Filled with `SVTCA[x]` rather than shortened.
+         *
+         * A glyph's points are stored after its instructions, so setting the
+         * instruction length to nothing does not remove them -- it moves where
+         * the flags and coordinates are read from, and the outline comes back
+         * as whatever the old instruction bytes happen to decode to. Windows
+         * does not survive the attempt; the recording crashed the emulator.
+         *
+         * Overwriting each byte with an opcode that takes no operands and moves
+         * no point leaves the layout untouched and the program inert.
+         */
+        for (let at = 0; at < body.length; at++) {
+          view.setUint8(body.program + at, 0x01);
+        }
+      }
+
+      return bytes;
+    },
+  },
+
   /* Courier New with its `INSTCTRL` turned around.
    *
    * Its `prep` executes the instruction twice, both times as `PUSHB[2] 1, 1`

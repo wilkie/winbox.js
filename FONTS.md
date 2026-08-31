@@ -4628,20 +4628,29 @@ it is shifted bodily by one, and two others. Twenty-three of the ninety hold a
 rescue, so about a quarter involve dropout at all.
 
 So the dominant mode is a run one column too wide, split evenly between its
-ends, which is what the pixel counts already said. What is new is the size of
-the discrepancy behind it. The disputed crossings sit a median of one to four
-sixty-fourths from the sample they are argued over, not a hair, and this walk
-is exact for the outline it is given -- 20,110 entries checked. A crossing four
-sixty-fourths past a sample is not a knife edge that could fall either way: for
-Windows to have put it on the other side, **the outline it walked was different
-from this one by about that much**.
+ends, which is what the pixel counts already said.
 
-Which is not what the fabricated sweeps say, and both are true. Those glyphs
-carry no program, so their disagreements -- twelve cells of the edge sweep and
-twenty-five of the turning-point sweep -- are the rasteriser's. The recorded
-letters are hinted, and theirs look like the interpreter's. Two residues that
-resemble each other because both end at a pixel boundary, and one of them was
-being read as evidence about the other.
+**And it is not the interpreter.** That was worth asking directly rather than
+inferring, so Times New Roman was fabricated with every glyph program filled
+with an opcode that moves nothing -- the same points, the same tables, the same
+phantom rounding, and a program that does nothing. Both sides then scan-convert
+the same outline.
+
+They agree _less_. Over the same 264 cells, the real font disagrees on 35 pixels
+and the stripped one on 62, which is 0.133 a cell against 0.235. If the outline
+the interpreter produced were what was wrong, taking the interpreter away would
+have settled it; instead it nearly doubles the disagreement. Hinting is
+_hiding_ some of this, which makes sense of it -- a hinted stem is snapped onto
+whole pixels, so its edges land where both implementations agree, and an
+unhinted one lands anywhere.
+
+That corrects a reading made here from the crossing distances: that a disputed
+crossing sitting one to four sixty-fourths from its sample, with a walk known to
+be exact, meant Windows had walked a different outline. The walk is exact in the
+sense measured -- it names the column an exact solve of its own input names --
+which does not pin a crossing to a sixty-fourth, and the distance from a pixel
+centre to a crossing bounds nothing about how two implementations differ. Handed
+the same outline, they still disagree. It is the scan conversion.
 
 Steep diagonals and the waists of digits are where a letter offers the most
 chances for either of them, which is why they dominate the list whichever
