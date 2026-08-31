@@ -4847,6 +4847,32 @@ and this is the first time it has been reproduced with nothing hinted at all. It
 is a second defect and not this one, and having it in a fabrication with a known
 outline is worth more than the twenty-nine occurrences of it in the letters.
 
+### The two sweeps and the letters are one problem
+
+The thirty-seven cells the fabricated sweeps still disagree on hold fifty
+disputed pixels between them, and every one of the fifty is within three
+sixty-fourths of where the outline crosses that row's sample line -- thirty-nine
+of them within one. The smallest is a single pixel: a rectangle whose left side
+curves out to 222 sixty-fourths, drawn at sixteen pixels of cell height, where
+row 9's crossing solves to 223.52 and the sample sits at 224. Half a
+sixty-fourth inside, and this lights it where Windows does not.
+
+That is the same thing the 107 wrong pixels of the recorded letters turned out
+to be, so the two are one problem and not two. What the sweeps add is that they
+have no interpreter in them: the outline is written into the font, nothing is
+hinted, and the scaling is one multiply that other measurements have already
+confirmed. Whatever resolves a sample the outline passes within a sixty-fourth
+of, it is in the rasteriser.
+
+They add one thing more. In the letters the disagreements fall on both sides of
+the sample with no bias -- mean 0.29 sixty-fourths, median 0.07. In the sweeps
+forty-eight of the fifty fall on one side: the crossing is past the pixel centre
+by a fraction of a sixty-fourth, this implementation counts the centre as
+covered, and Windows does not. An exact solve agrees with this implementation
+every time. So on this geometry Windows is reliably the less generous of the
+two, by less than a sixty-fourth, and it is not a tie rule, a rounding or an
+overflow -- all three have been tried and measured.
+
 ## 9. Where the numbers stand
 
 | Fixture                                                      | Agreement |
