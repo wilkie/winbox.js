@@ -4729,8 +4729,28 @@ which is neither an initialisation going wrong nor an accumulation building up.
 So lines are exact, splines are wrong on one crossing in sixty, neither the
 approximation nor the guard nor the starting value explains it, the error
 neither starts at the beginning nor grows toward the end, and an exact solve of
-the same outline sides with this implementation on 59 of the 62. Whatever is
-missing is in `CalcSpline`'s stepping and nowhere else in the scan converter.
+the same outline sides with this implementation on 59 of the 62.
+
+**And `CalcSpline` is not where it is.** `spline.c` is the routine itself rather
+than a description of it, and this implementation is the same code: the
+reflection into a quadrant, the two early exits, `PowerOf2` and the shift table,
+both branches of the forward difference with their groupings intact, the four
+stepping loops and the two tails after them. Line for line, including
+`lQuadrant = (lQuadrant == 1) ? 2 : 3` where the reading here adds `yIncrement`
+and gets the same two answers. The only parts of that file this does not have
+are `CalcHorizSpSubpix` and `CalcVertSpSubpix`, which serve smart dropout and
+never run for a face asking `SCANTYPE` 1.
+
+Nor is it the subdivision. Across `times-bare`, six crossings in 3,827 come from
+a piece that was cut at all, and every one of the 62 disputes is on a piece that
+was not. The curves handed to the walk are the outline's own.
+
+So the position is this: the outline is right, since half the crossings come
+from straight edges and not one of those is ever drawn differently; the pieces
+are right, since nothing is subdivided; and the walk is right, since it is the
+same code. One crossing in sixty still comes out differently, and the geometry
+says this implementation has it correct. Every part of the scan converter that
+can be read has now been read, and the difference is not in any of them.
 
 ### There is no threshold, because the decision is not local
 
