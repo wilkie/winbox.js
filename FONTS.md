@@ -4872,6 +4872,25 @@ where the curve is. This implementation's walk agrees with an exact solve of its
 own input at all 20,110 entries measured; if Windows' does not, then reproducing
 it means reproducing its arithmetic step for step rather than its answers.
 
+**And step for step it already is.** `CalcSpline` was transcribed a second time,
+from the document rather than from the implementation, and the two run against
+each other: over every spline the recorded letters walk, 10,234 of them, they
+emit the same entries in the same order, and over twenty thousand generated
+shapes they fill the same lists. `ScanAbove`, `ScanBelow` and `OnScanline` match
+the document exactly, the initial conditions and stop values match, the
+precision reduction matches, both branches of the forward difference match, and
+the tails match. `test/raster/spline_walk_test.ts` keeps the two in step, and
+what it catches was checked rather than assumed -- displacing an emitted
+coordinate by one fails it, adding one to `rZ` does not.
+
+So the walk is not where the last hundred pixels are, and neither is anything
+else that has been written down. Every stage of the scan converter given in
+`FONT_PIXEL_CANDIDATES.md` is now implemented as given and verified against it:
+the subdivision, the walk, the topology, the endpoint handling, the pairing.
+What remains is either in a stage not written down -- `Setup`, `BeginElement`'s
+finer detail, whatever hands the outline over -- or in a difference between the
+document and the code it describes.
+
 The step decision is not the place. The guard the pseudocode gives -- the
 derivative against its comparand, alongside the sign of the conic form -- was
 suspected here of being either wrong or inert. Counted: over the recorded
