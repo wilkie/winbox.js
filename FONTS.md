@@ -4687,6 +4687,39 @@ implementation is a faithful transcription of them, proved against a second
 reading over 10,234 splines. Closing the last hundred pixels means reproducing
 an inaccuracy the documentation does not describe.
 
+### And the inaccuracy is in the spline walk alone
+
+Attributing each disputed crossing to the piece that made it puts the whole of
+it in one place:
+
+| crossings on offer                | count | disputed | rate |
+| :-------------------------------- | ----: | -------: | ---: |
+| straight lines                    | 3,673 |    **0** | none |
+| splines, the exact branch         | 2,785 |       43 | 1.5% |
+| splines, the approximating branch | 1,042 |       19 | 1.8% |
+
+`CalcLine` never disagrees. Half the crossings in the fixture come from it and
+not one of them is ever drawn differently, which is a strong statement about
+everything the two share -- the reflection into a quadrant, `ScanAbove` and
+`ScanBelow`, the entry lists, the pairing, the fill. All of that is right, and
+what is left is the conic stepping that only splines use.
+
+Two things inside it are cleared. It is not the approximation: the branch that
+takes a `2z` out because `Q` will not fit disagrees on 1.8 per cent of its
+crossings against 1.5 for the branch that does not, which is the same rate
+either way. And it is not the derivative guard's threshold. That guard is the
+one part of the walk which is a heuristic rather than an exact test -- the sign
+of the conic form is exact arithmetic, the guard is a comparison of a derivative
+against a comparand -- and it fires on about 1.6 per cent of steps, a rate that
+matches the disputes suspiciously well. But its threshold is a clear optimum:
+doubling the comparand gives 76 wrong pixels and quadrupling 83, halving gives
+74 and quartering 87, removing it altogether 85, against 62 as written.
+
+So lines are exact, splines are wrong on one crossing in sixty, neither the
+approximation nor the guard explains it, and an exact solve of the same outline
+sides with this implementation on 59 of the 62. Whatever is missing is in
+`CalcSpline`'s stepping and nowhere else in the scan converter.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
