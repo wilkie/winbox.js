@@ -4685,10 +4685,11 @@ bearing of the letter it was written over, the outline is carried onto a
 different one in every glyph, and the left side of the rectangle moves along with
 the right.
 
-Both implementations lit the same columns in 215 of 216 cells, with the
-thresholds falling in the same place at every size for both kinds of edge. The
-one exception was the first curved variant at sixteen pixels of cell height, and
-tracing it settled the question.
+The thresholds fall in the same place at every size for both kinds of edge, and
+ten of the 216 cells disagree in some other pixel. Every one of the ten is a
+curved variant: the straight edges, walked by `CalcLine`, agree everywhere, so
+the whole of the difference is in `CalcSpline`. Tracing the first of them
+settled where some of it comes from.
 
 Its right side is a quadratic whose ends scale to 216 sixty-fourths and whose
 control scales to 233, so its outermost point is at `(216 + 2*233 + 216) / 4`,
@@ -4702,10 +4703,17 @@ is lit.
 
 **So the turn is rounded toward the curve**: down when it is a maximum in that
 direction and up when it is a minimum, which is the one choice that cannot
-manufacture coverage. The split point becomes 224, the walk stops at the sample
-rather than past it, and all 216 cells agree. It is worth three pixels and two
-cells across the fabricated glyph recordings and none of the 107, whose faces do
-not happen to put a turning point on a sample.
+manufacture coverage. The split point becomes 224 and the walk stops at the
+sample rather than past it. It is worth three wrong pixels and two cells across
+the fabricated recordings and none of the 107, whose faces do not happen to put
+a turning point on a sample.
+
+It does not settle the recording. An earlier note here said it did -- that all
+216 cells agreed afterwards -- and that was wrong twice over: the measurement
+compared the rightmost lit column rather than the whole cell, and the test
+written to compare whole cells looked the recording up by a name it does not
+have and returned before asserting anything. Ten cells disagree, all of them
+curved.
 
 This is the first thing found in the rasteriser rather than the interpreter, and
 it was findable only because the fabrication has no program in it: with nothing
