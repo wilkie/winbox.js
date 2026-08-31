@@ -5053,11 +5053,36 @@ were already right and two were not.
   | reversed here | above     | 778, 109 wrong | 176 of 216 |
   | reversed here | below     | 749, 150 wrong | 177 of 216 |
 
-  So the observable is settled and the mapping is not. Something between the
-  walk's vertical entries, the order they are sorted into and the frame they are
-  counted in is off by a reflection, and it is off in a way that two of the four
-  readings partly hide. What can be said is that the arrangement in the first row
-  of that table is what Windows draws, on a fixture built to ask nothing else.
+  **The frame is not where the reflection is, and that was checked rather than
+  assumed.** The pseudocode's `y` grows upward: `ScanAbove` returns the larger
+  value, `y3 > y1` is "moving up", and `Blit` walks its list from the high index
+  down and calls that top to bottom. This walk is in the same orientation, being
+  handed the device `y` negated. So a list sorted ascending does hold the topmost
+  entry last in both, and reading it in reverse is reading downward in both.
+
+  Every degree of freedom around it has now been swept -- the row conversion, the
+  direction, the neighbour tested, and which of the two lists a quadrant feeds --
+  and the arrangement Windows draws is not the one that reasoning predicts:
+
+  | row      | direction | neighbour |               letters |  twin bars |
+  | :------- | :-------- | :-------- | --------------------: | ---------: |
+  | `-v`     | forward   | above     |        780, 105 wrong | 199 of 216 |
+  | `-v`     | forward   | below     |        750, 150 wrong | 154 of 216 |
+  | `-v`     | reversed  | above     |        778, 109 wrong | 176 of 216 |
+  | `-v`     | reversed  | below     |        749, 150 wrong | 177 of 216 |
+  | `-v - 1` | any       | any       | 677 to 680, 310 wrong | 104 of 216 |
+
+  Swapping which list a quadrant feeds costs three letters and eight pixels and
+  leaves the twin bars where they are, so that is right as well.
+
+  What the sweep says is that the `+ yOffset` an entry is recorded with is not a
+  row index that can be reasoned about on its own. It is part of a paired
+  encoding: the `on` and the `off` of a column carry it together, the test for a
+  dropout compares them, and the conversion `-v` is right for the pair however it
+  reads for either half -- which is why `-v - 1`, the conversion the frame
+  arithmetic gives for a single entry, loses a hundred letters. The order that
+  matches Windows follows from that encoding and not from which way the screen
+  is counted, and it is settled by a fixture built to ask nothing else.
 
   It also disposes of what looked for a while like a defect in the neighbour
   test. Reading the column the other way, Courier New's `a`, `e` and `s` at ten

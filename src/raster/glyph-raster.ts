@@ -601,24 +601,24 @@ export function fillWalked(contours, options) {
   for (const [column, ons] of lists.vertOn) {
     const offs = lists.vertOff.get(column) ?? [];
 
-    /* Read in the order the entries are held, which the oracle settles.
+    /* Read in the order these entries are held, which the oracle settles.
      *
      * `FindDropouts` reads a column's entries in reverse, and each rescue
      * declines where a neighbour is already lit, so the direction decides which
-     * of two rescues a row apart survives. Read one way the first blocks the
-     * second and one pixel is drawn; read the other, both are.
+     * of two rescues a row apart survives: read one way the first blocks the
+     * second and one pixel is drawn, read the other and both are.
      *
-     * **Recorded**, by a fabrication built to ask exactly that: two horizontal
-     * hairlines with the gap between them swept from four fifths of a pixel to
-     * two and a quarter, so that some of the thirty-six land with their two
-     * rescues on neighbouring rows. Windows draws both rows, every time, on
-     * every size where the case arises. Reading these lists forward agrees with
-     * it on 199 of 216 cells and reading them backward on 176.
+     * **Recorded**, by a fabrication built to ask that and nothing else -- two
+     * horizontal hairlines with the gap between them swept from four fifths of
+     * a pixel to two and a quarter, so that some of the thirty-six land with
+     * their rescues on neighbouring rows. Windows draws both rows, every time.
+     * Reading these lists forward agrees with it on 199 of 216 cells and
+     * backward on 176, and the recorded letters are 780 and 105 wrong pixels
+     * against 778 and 109.
      *
-     * Which does not contradict the source so much as place this one against
-     * it: these entries are held in the opposite order to the scan converter's,
-     * so reading them forward is reading its list backward. The direction is
-     * now settled by measurement whichever way the frames are counted.
+     * The frame reasoning points the other way and is measurably wrong; every
+     * combination of this, the neighbour tested and the row conversion has been
+     * swept, and `FONTS.md` has the table.
      */
     for (let index = 0; index < ons.length && index < offs.length; index++) {
       if (ons[index] !== offs[index]) {
