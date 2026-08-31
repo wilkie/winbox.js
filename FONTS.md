@@ -4882,6 +4882,32 @@ easy time turning that particular table into arithmetic, since nought below
 thirty and then 1, 1, 1, 2, 2, 2, 3, 3 is a formula rather than data. Its
 absence is consistent with a different vintage and equally consistent with an
 optimiser, and nothing here distinguishes the two.
+
+### Where the scan converter is in GDI.EXE
+
+Enough of a disassembly to be worth writing down for whoever goes further. The
+file is a plain `NE` image with forty-eight segments, forty-six of them code,
+the largest being segment 36 at 28,843 bytes.
+
+The scan converter is in segment 36, and what finds it is `ScanAbove`. Its
+`((p + 32) & -64) + 32` compiles to an `add` of 32 against an `and` with -64,
+and that mask is rare: across all forty-six code segments there are eight uses
+of a mask with -64 at all, four in segment 36 and four in segment 42. Segment
+42's are `(p + 31) & -64`, which is rounding up to a multiple of sixty-four and
+not this. Segment 36's at 0x4895 is `add si, +0x20` followed by `and si, -0x40`,
+which is `ScanAbove` itself.
+
+Two things that did not work, so they need not be tried again. Searching for
+loops carrying an indirect call and a 32-bit addition finds three similar ones
+at 0x31e6, 0x324d and 0x32d4 in the same segment, but they step 16-bit values
+through a global pointer and call through `[bp+0x18]` -- some other
+callback-driven routine, not the conic walk. And disassembling forward from a
+single offset through twenty-eight kilobytes desynchronises, since `ndisasm`
+resynchronises after each patch of data, so a loop search over that output finds
+nothing once the addresses have drifted.
+
+Going further needs function boundaries and applied relocations, which a linear
+sweep does not give. The address to start from is segment 36 around 0x4890.
 scan converter.
 
 ### There is no threshold, because the decision is not local
