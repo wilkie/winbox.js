@@ -5019,11 +5019,22 @@ were already right and two were not.
 - **`FindDropouts` goes down the rows from the top of the band.** Sorting the
   rescues that way changes nothing; the order they came out in was already
   equivalent.
-- **It also reads each column's vertical entries backwards, and that is worse**
-  -- two letters and four pixels. That block is the one place in the
-  transcription with a plain slip in it, drawing both of its lists from
-  `vertOnBegin` so that its test for a zero-length run is always true, and its
-  ordering is not to be trusted until the slip is resolved.
+- **It also reads each column's vertical entries backwards**, which is going
+  down the glyph, the lists being sorted ascending with `y` pointing up. That is
+  done here now and it costs two letters and four pixels, 778 and 109 against
+  780 and 105.
+
+  It is kept because it is what the source does, and because what it costs is
+  worth more than what it costs. All of it is one rescue in each of Courier
+  New's `a`, `e` and `s` at ten pixels per em: a pixel at column four of row
+  four, lit when the column is read upward and blocked when it is read downward,
+  because a rescue made earlier lights a neighbour and `PerformVertDropout`
+  declines where a neighbour is already lit. Windows reads downward, as this now
+  does, and lights it anyway.
+
+  So the placement or the neighbour test is wrong, and three cells of one face
+  at one size is the smallest statement of it this fixture can make. Reading the
+  column the other way was hiding it.
 
 What is left after all of it is a difference of under a sixty-fourth, on every
 kind of edge, that no stage of the documented algorithm accounts for.

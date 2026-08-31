@@ -601,15 +601,27 @@ export function fillWalked(contours, options) {
   for (const [column, ons] of lists.vertOn) {
     const offs = lists.vertOff.get(column) ?? [];
 
-    /* Forwards, though `FindDropouts` reads its column entries backwards.
+    /* Backwards, which `FindDropouts` calls going from top to bottom.
      *
-     * Taking them backwards costs two letters and four pixels, and the block
-     * that says to is the one place in the transcription with a plain slip in
-     * it -- it draws both of its lists from `vertOnBegin`, so its test for a
-     * zero-length run is always true. Its order is not to be trusted either
-     * until the slip is resolved.
+     * The lists are sorted ascending and the scan converter's `y` points up, so
+     * reading them in reverse is reading down the glyph. Each rescue asks
+     * whether a neighbour is already lit, so one made higher up can stop one
+     * lower down, and the direction decides which of two competing rescues
+     * wins.
+     *
+     * It costs two letters and four pixels, and is kept because it is what the
+     * source does. What it costs is one rescue in each of Courier New's `a`,
+     * `e` and `s` at ten pixels per em, where a pixel at column four of row
+     * four is lit going up and blocked going down, and Windows lights it. So
+     * Windows reads down the column as this now does and still makes that
+     * rescue, which means something else in the placement or the test that
+     * blocks it is wrong. Those three cells are the smallest statement of it.
      */
-    for (let index = 0; index < ons.length && index < offs.length; index++) {
+    const last = Math.min(ons.length, offs.length) - 1;
+
+    for (let step = 0; step <= last; step++) {
+      const index = last - step;
+
       if (ons[index] !== offs[index]) {
         continue;
       }

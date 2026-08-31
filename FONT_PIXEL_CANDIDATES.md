@@ -1642,7 +1642,7 @@ FindDropouts(ScanKind scanKind):
   
   for index in range(0, width):
     onList = CONTEXT.vertOnBegin[index]
-    offList = CONTEXT.vertOnBegin[index]
+    offList = CONTEXT.vertOffBegin[index]
     
     # Go from top to bottom
     for itemIndex in reversed(range(0, len(onList))):

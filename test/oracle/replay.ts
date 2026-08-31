@@ -1252,7 +1252,7 @@ export class Unimplemented extends Error {}
  */
 const NO_HINTING =
   'every bitmap and stroke face agrees exactly, and ninety-two per cent of ' +
-  'the outline glyphs do; what is left is a hundred and seven pixels across ' +
+  'the outline glyphs do; what is left is a hundred and nine pixels across ' +
   'sixty-eight letters, and section 6 of FONTS.md records what has been ' +
   'ruled out';
 
