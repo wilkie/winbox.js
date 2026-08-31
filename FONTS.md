@@ -4817,13 +4817,16 @@ same outline, solved exactly.
   lists disagreed with themselves, which is why the audit found it and the
   fixtures never could.
 
-- **The fill lights a sample lying exactly on the closing crossing.** Thirty-six
-  rows differ from the winding solve, 35 of them that way and 12 the other. They
-  all look alike: a span from 6.578 to 7.500 with a sample at 7.5, and the run
-  covers it. Whether Windows covers it is not settled here -- this compares the
-  implementation against its own geometry, not against Windows -- but it is a
-  convention that can only be one way, and it is worth 35 pixels of the
-  difference between this fill and an exact one.
+- **The fill lights a sample lying exactly on the closing crossing, and so does
+  Windows.** Thirty-six rows differ from the winding solve, 35 of them that way
+  and 12 the other, and they all look alike: a span from 6.578 to 7.500 with a
+  sample at 7.5, and the run covers it. That is not a defect. The asymmetry is
+  written down -- an `off` entry takes `(x + 32) >> 6` where an `on` entry takes
+  `(x + 31) >> 6`, so a vertex sitting exactly on a sample lights that column
+  from both ends -- and flipping it costs three letters and four pixels, 780 of
+  846 and 105 wrong pixels becoming 777 and 109. The reference the audit
+  compared against was half-open at the closing end and Windows is not, so the
+  35 are the measurement's convention and not the implementation's.
 
 That also corrects a guess made earlier here from reading `ScanAbove` and
 `ScanBelow`, that the walk excludes a sample sitting exactly on either end. It
