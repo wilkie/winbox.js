@@ -2296,6 +2296,87 @@ export const FABRICATIONS = [
     },
   },
 
+  /* An edge walked across a sample point, with the interpreter taken out.
+   *
+   * The last hundred wrong pixels are all one situation: the outline passes
+   * within thousandths of a pixel of a sample point, and Windows calls it one
+   * way and this implementation the other. Two things could do that. The
+   * outline reaching the rasteriser might differ by a sixty-fourth or less,
+   * which would be the interpreter and invisible anywhere but on a sample
+   * point; or the walk might resolve the sample differently, which would be the
+   * rasteriser. Nothing measured so far separates them, because every recorded
+   * letter has been through both.
+   *
+   * These glyphs have no program at all. Nothing is hinted, so the outline
+   * Windows rasterises is the one written here scaled once -- and that scaling
+   * is already known to agree, since it is what the `hdmx` advances and Arial
+   * Italic's `M` measure. Whatever disagreement is left has only the walk to
+   * come from.
+   *
+   * Each of the thirty-six characters the glyph probe draws gets a rectangle
+   * whose right edge is three font units further out than the last. At the
+   * sizes the probe uses that is about two thirds of a sixty-fourth a step, so
+   * the sweep carries the edge across rather more than half a pixel and over at
+   * least one column of sample points. Eighteen of them have a straight right
+   * edge, walked by `CalcLine`, and eighteen a gently curved one, walked by
+   * `CalcSpline`, over the same ground. Where each implementation stops
+   * lighting the last column is a threshold, and the two thresholds either
+   * coincide or they do not.
+   */
+  {
+    name: 'edge-sweep',
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: 'an unhinted edge carried across a column of sample points',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const TALL = 900;
+      const BULGE = 40;
+
+      WIDE.split('').forEach((character, index) => {
+        const curved = index >= 18;
+        const at = 200 + (index % 18) * 3;
+
+        /* Anticlockwise in font coordinates, which is the filled direction:
+         * up the left side, across the top, down the right.
+         */
+        const points = curved
+          ? [
+              [0, 0],
+              [0, TALL],
+              [at, TALL],
+              [at + BULGE, TALL / 2, false],
+              [at, 0],
+            ]
+          : [
+              [0, 0],
+              [0, TALL],
+              [at, TALL],
+              [at, 0],
+            ];
+
+        setGlyph(bytes, null, glyphFor(bytes, character.charCodeAt(0)), {
+          width: 1024,
+          height: TALL,
+          points,
+          program: [],
+        });
+
+        /* All thirty-six on the same bearing, so that the only thing the sweep
+         * varies is the edge. Without this each keeps the bearing of the letter
+         * it was written over, the outline is carried onto a different one in
+         * every glyph, and the left side of the rectangle moves along with the
+         * right.
+         */
+        setBearing(bytes, glyphFor(bytes, character.charCodeAt(0)), 0);
+      });
+
+      return bytes;
+    },
+  },
+
   /* Courier New with its `INSTCTRL` turned around.
    *
    * Its `prep` executes the instruction twice, both times as `PUSHB[2] 1, 1`

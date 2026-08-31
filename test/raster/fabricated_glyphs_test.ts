@@ -88,8 +88,80 @@ describe('the fabricated glyph recordings', () => {
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 4560;
-  const WRONG = 1874;
+  const EXACT = 4812;
+  const WRONG = 1895;
+
+  /* The one place an unhinted outline is drawn differently.
+   *
+   * `edge-sweep` exists to take the interpreter out of the question. Its
+   * glyphs have no program at all, so the outline Windows rasterises is the one
+   * written into the font and scaled once, and that scaling is already known to
+   * agree -- it is what the `hdmx` advances and Arial Italic's `M` measure.
+   * Every one of the thirty-six is a rectangle on a bearing of nothing whose
+   * right edge is three font units further out than the last, eighteen of them
+   * straight and eighteen with a gently curved right side, so the sweep carries
+   * an edge across a column of sample points twice over the same ground.
+   *
+   * Both implementations then light the same columns everywhere except one
+   * cell. At sixteen pixels of cell height the first curved variant reaches a
+   * sample point by four thousandths of a pixel and this implementation lights
+   * the column while Windows does not.
+   *
+   * That is the whole of what is left of the glyph fixture's disagreement,
+   * reproduced with nothing hinted: the outline passes within a hair of a
+   * sample point and the two walks call it differently. It is the rasteriser
+   * and not the interpreter. See `FONTS.md`.
+   */
+  present('draw an unhinted edge the same except where it grazes a sample', async function () {
+    const recording = all.find((entry) => entry.name === 'glyphs-edge-sweep');
+
+    if (!recording) {
+      return;
+    }
+
+    const manager: any = await prepareFonts();
+    const font: any = new TrueTypeFont(new Uint8Array(readFileSync(recording.file)));
+    const face = font.faceName;
+    const installed = manager._outlines[face];
+
+    manager._outlines[face] = { regular: font };
+
+    const wide = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+    const seen = new Set<string>();
+    const differing: string[] = [];
+
+    try {
+      for (const record of recording.fixture.records) {
+        const asked = /^"([^"]+)",h=(\d+),weight=(\d+),italic=(\d+),'(.)'$/.exec(record.args);
+
+        if (!asked || asked[1] !== face || asked[3] !== '400' || asked[4] !== '0') {
+          continue;
+        }
+
+        const index = wide.indexOf(asked[5]);
+
+        // Below twelve the mapper answers with a strike rather than this face.
+        if (index < 0 || Number(asked[2]) < 12 || seen.has(`${asked[2]}|${asked[5]}`)) {
+          continue;
+        }
+
+        seen.add(`${asked[2]}|${asked[5]}`);
+
+        const replayed = await replayRecord(record, recording.fixture.display ?? 'vga');
+
+        if (replayed.outcome !== 'agreed') {
+          differing.push(
+            `${index >= 18 ? 'curved' : 'straight'} h=${asked[2]} at=${200 + (index % 18) * 3}`
+          );
+        }
+      }
+    } finally {
+      manager._outlines[face] = installed;
+    }
+
+    expect(seen.size).toBeGreaterThan(200);
+    expect(differing.sort()).toEqual(['curved h=16 at=200']);
+  });
 
   present(
     'agree with Windows on three thousand cells of chosen geometry',

@@ -4667,6 +4667,36 @@ Four more things are ruled out, each measured rather than argued:
   exactly, and the reduction does fire -- `aBits + xyBits` reaches into the
   non-zero part of the table at these sizes.
 
+**And it is the rasteriser, not the interpreter.** Those two are the only things
+that could put the outline on the sample point, and every recorded letter has
+been through both, so nothing above separates them. A fabrication does. Its
+glyphs carry no program at all: nothing is hinted, so the outline Windows
+rasterises is the one written into the font and scaled once, and that scaling is
+already known to agree, since it is what the `hdmx` advances and Arial Italic's
+`M` measure. Whatever is left has only the walk to come from.
+
+Each of the thirty-six characters the glyph probe draws gets a rectangle whose
+right edge is three font units further out than the last -- about two thirds of
+a sixty-fourth a step at these sizes, so the sweep carries the edge across more
+than half a pixel. Eighteen have a straight right edge, walked by `CalcLine`,
+and eighteen a gently curved one, walked by `CalcSpline`, over the same ground.
+All thirty-six are given a side bearing of nothing, without which each keeps the
+bearing of the letter it was written over, the outline is carried onto a
+different one in every glyph, and the left side of the rectangle moves along with
+the right.
+
+Both implementations then light the same columns in 215 of 216 cells, and the
+thresholds fall in the same place at every size for both kinds of edge. The
+exception is one cell. At sixteen pixels of cell height the first curved variant
+has its outermost point four thousandths of a pixel past a sample point; this
+implementation lights that column and Windows does not.
+
+That is the whole of the remaining disagreement, reproduced with nothing hinted
+and an outline known exactly: a curve grazing a sample point, called one way by
+one walk and the other way by the other. The straight edges never disagree, so
+it is `CalcSpline` and not `CalcLine`, and it is the rasteriser and not the
+interpreter.
+
 ## 9. Where the numbers stand
 
 | Fixture                                                      | Agreement |
