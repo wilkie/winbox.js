@@ -2449,6 +2449,60 @@ export const FABRICATIONS = [
     },
   },
 
+  /* A crossing carried across a sample point a twentieth of a sixty-fourth at a
+   * time.
+   *
+   * Everything still disagreeing about is a curve passing within a sixty-fourth
+   * of a sample point, so the thing to measure is where exactly the threshold
+   * sits. The other sweeps move an edge or an extreme by about half a
+   * sixty-fourth a step, which brackets the answer and does not locate it.
+   *
+   * The lever here is the curve's own parameter. A quadratic's control point
+   * moves the curve by `2t(1-t)` of the way it is displaced, which is a half at
+   * the middle and much less near either end -- so a row near the top of a tall
+   * curve moves a small fraction of however far the control moves. At these
+   * sizes a font unit of control is under half a sixty-fourth to begin with,
+   * and a tenth of the way along the curve it is a twelfth of one.
+   *
+   * So: a rectangle two thousand units tall with one curved side, thirty-six of
+   * them, the control a unit further out each time. Every row is a separate
+   * reading, and the rows near the ends are the fine ones. Where Windows starts
+   * lighting a column, against where the outline actually crosses that row,
+   * is the threshold.
+   */
+  {
+    name: 'fine-sweep',
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: 'a curve crossing a sample point in the smallest steps a font unit allows',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const TALL = 2000;
+      const LEFT = 200;
+
+      WIDE.split('').forEach((character, index) => {
+        const control = LEFT + 90 + index;
+
+        const points = [
+          [0, 0],
+          [0, TALL],
+          [LEFT, TALL],
+          [control, TALL / 2, false],
+          [LEFT, 0],
+        ];
+
+        const glyph = glyphFor(bytes, character.charCodeAt(0));
+
+        setGlyph(bytes, null, glyph, { width: 1024, height: TALL, points, program: [] });
+        setBearing(bytes, glyph, 0);
+      });
+
+      return bytes;
+    },
+  },
+
   /* Courier New with its `INSTCTRL` turned around.
    *
    * Its `prep` executes the instruction twice, both times as `PUSHB[2] 1, 1`

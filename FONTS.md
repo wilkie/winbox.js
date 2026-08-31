@@ -4847,6 +4847,38 @@ and this is the first time it has been reproduced with nothing hinted at all. It
 is a second defect and not this one, and having it in a fabrication with a known
 outline is worth more than the twenty-nine occurrences of it in the letters.
 
+### There is no threshold, because the decision is not local
+
+If everything left is a curve passing within a sixty-fourth of a sample, the
+next question is where the line falls, so a third fabrication moves a crossing
+across one in the smallest steps a font unit allows. The lever is the curve's
+own parameter: a control point moves a quadratic by `2t(1-t)` of the way it is
+displaced, a half at the middle and much less near either end, so a row near the
+top of a tall curve moves a fraction of however far the control moves. Thirty-six
+rectangles two thousand units tall with one curved side, the control a unit
+further out each time, put the resolution at about a twelfth of a sixty-fourth.
+
+There is no threshold. Sorting every reading by how far the outline reaches past
+the column's sample and asking who lights it gives, between a sixth of a
+sixty-fourth and one and a tenth, an alternation: Windows lights it at 0.483,
+not at 0.514, lights it at 0.542, not at 0.557, lights it at 0.768, not at
+0.783. The same reach is decided both ways.
+
+So it is not a threshold, a tie rule or a rounding, and no local rule of any
+kind will produce it -- which is why every one tried here has failed. It is what
+a walk looks like: a forward difference carries state from one row to the next,
+and what it does at a row depends on the path that reached it and not only on
+where the curve is. This implementation's walk agrees with an exact solve of its
+own input at all 20,110 entries measured; if Windows' does not, then reproducing
+it means reproducing its arithmetic step for step rather than its answers.
+
+The step decision is not the place. The guard the pseudocode gives -- the
+derivative against its comparand, alongside the sign of the conic form -- was
+suspected here of being either wrong or inert. Counted: over the recorded
+letters the walk takes 750 steps, the sign decides 535, and the guard is true on
+twelve and decides seven of them. It is neither. A note here that had it firing
+on every step was describing a shift out of place in `rZ` and `tZ`, fixed since.
+
 ### The two sweeps and the letters are one problem
 
 The thirty-seven cells the fabricated sweeps still disagree on hold fifty

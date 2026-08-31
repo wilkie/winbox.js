@@ -794,20 +794,20 @@ export function calcSpline(
     return;
   }
 
-  /* Which way to step.
+  /* Which way to step: the sign of the conic form, or the derivative running
+   * ahead of its comparand.
    *
-   * The pseudocode gives this as `q < 0 || dQx > rZ` in the dropout branch and
-   * `q < 0 || dQy > tZ` in the other, which cannot both be the same decision.
-   * Neither works: the derivative term is already several times its comparand
-   * when the walk starts -- for one curve of Arial's `R` at twelve pixels per
-   * em, `dQx` is 5,417,728 against an `rZ` of 1,478,656 -- so the guard fires on
-   * the first step and every step after, and the walk takes all of its sideways
-   * steps before any of its downward ones.
+   * The guard reads differently in the two branches the pseudocode gives --
+   * `dQy` against `tZ` where the curve bends one way and `dQx` against `rZ`
+   * where it bends the other -- which is not a contradiction but the same test
+   * taken along whichever axis is doing the leading.
    *
-   * The sign of the conic form on its own is what a forward-difference walk
-   * tests, and measured it is right: 99.5% of curves then step where an exact
-   * solve puts them, against 91.1% for the first reading and 90.9% for the
-   * second.
+   * It earns its place and barely speaks. Over the recorded letters the walk
+   * takes 750 steps, of which the sign of the form decides 535 and the guard is
+   * true on twelve, deciding seven the sign alone would have sent the other way.
+   * An earlier reading here had the derivative several times its comparand on
+   * every step and the guard firing always, which was a shift out of place in
+   * `rZ` and `tZ` rather than anything about the rule.
    */
 
   if (alpha > 0) {
