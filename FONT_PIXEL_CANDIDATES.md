@@ -1212,13 +1212,13 @@ PerformHorizDropout(Fixed26Dot6[] ons, Fixed26Dot6[] offs, int yDrop, ScanKind s
     onPt = onTag >> 2
     onCode = onTag & 3
 
-    x1 = CalcHorizSubpix(onCode, yDrop, CONTEXT.controlPoints[onPt][0], CONTEXT.controlPoints[onPt][1], CONTEXT.controlPoints[onPt + 1][0], CONTEXT.controlPoints[onPt + 1][1], CONTEXT.controlPoints[onPt + 2][0], CONTEXT.controlPoints[onPt + 2][1])
+    x1 = CalcHorizSubpix(onCode, yDrop, CONTEXT.controlPoints[onPt][0][0], CONTEXT.controlPoints[onPt][1][0], CONTEXT.controlPoints[onPt + 1][0][0], CONTEXT.controlPoints[onPt + 1][1][0], CONTEXT.controlPoints[onPt + 2][0][0], CONTEXT.controlPoints[onPt + 2][1][0])
     
     offTag = offs[1]
     offPt = offTag >> 2
     offCode = offTag & 3
 
-    x2 = CalcHorizSubpix(offCode, yDrop, CONTEXT.controlPoints[offPt][0], CONTEXT.controlPoints[offPt][1], CONTEXT.controlPoints[offPt + 1][0], CONTEXT.controlPoints[offPt + 1][1], CONTEXT.controlPoints[offPt + 2][0], CONTEXT.controlPoints[offPt + 2][1])
+    x2 = CalcHorizSubpix(offCode, yDrop, CONTEXT.controlPoints[offPt][0][0], CONTEXT.controlPoints[offPt][1][0], CONTEXT.controlPoints[offPt + 1][0][0], CONTEXT.controlPoints[offPt + 1][1][0], CONTEXT.controlPoints[offPt + 2][0][0], CONTEXT.controlPoints[offPt + 2][1][0])
     
     # Average the two points for the subpixel
     xDrop = (x1 + x2 - 1) >> (SUB_PIXEL_SHIFT + 1)
@@ -1279,13 +1279,13 @@ PerformVertDropout(Fixed26Dot6[] ons, Fixed26Dot6[] offs, int xDrop, ScanKind sc
     onPt = onTag >> 2
     onCode = onTag & 3
 
-    y1 = CalcVertSubpix(onCode, xDrop, CONTEXT.controlPoints[onPt][0], CONTEXT.controlPoints[onPt][1], CONTEXT.controlPoints[onPt + 1][0], CONTEXT.controlPoints[onPt + 1][1], CONTEXT.controlPoints[onPt + 2][0], CONTEXT.controlPoints[onPt + 2][1])
+    y1 = CalcVertSubpix(onCode, xDrop, CONTEXT.controlPoints[onPt][0][0], CONTEXT.controlPoints[onPt][1][0], CONTEXT.controlPoints[onPt + 1][0][0], CONTEXT.controlPoints[onPt + 1][1][0], CONTEXT.controlPoints[onPt + 2][0][0], CONTEXT.controlPoints[onPt + 2][1][0])
     
     offTag = offs[1]
     offPt = offTag >> 2
     offCode = offTag & 3
 
-    y2 = CalcVertSubpix(offCode, xDrop, CONTEXT.controlPoints[offPt][0], CONTEXT.controlPoints[offPt][1], CONTEXT.controlPoints[offPt + 1][0], CONTEXT.controlPoints[offPt + 1][1], CONTEXT.controlPoints[offPt + 2][0], CONTEXT.controlPoints[offPt + 2][1])
+    y2 = CalcVertSubpix(offCode, xDrop, CONTEXT.controlPoints[offPt][0][0], CONTEXT.controlPoints[offPt][1][0], CONTEXT.controlPoints[offPt + 1][0][0], CONTEXT.controlPoints[offPt + 1][1][0], CONTEXT.controlPoints[offPt + 2][0][0], CONTEXT.controlPoints[offPt + 2][1][0])
     
     # Average the two points for the subpixel
     yDrop = (y1 + y2 - 1) >> (SUB_PIXEL_SHIFT + 1)
@@ -1369,6 +1369,180 @@ GetBit(Fixed26Dot6 x, Fixed26Dot6 y):
 SetBit(Fixed26Dot6 x, Fixed26Dot6 y):
   x = x - CONTEXT.boxLeft
   BITMAP[CONTEXT.hiBitBand - 1 - y][x] = 1
+```
+
+```
+FillGlyph(
+  Contour[] contours,
+  ScanKind scanKind,
+  bool withFastBanding,
+  int hiBand,
+  int loBand,
+  Rectangle boundingBox,
+  bool noDimensions,
+):
+  originalLoBand = loBand
+
+  if boundingBox.top <= boundingBox.bottom:
+    # null glyph
+    return SUCCESS
+
+  if noDimensions:
+    # no dimensions
+    scanKind &= ~ScanKind.StubControl
+
+  if scanKind & ScanKind.NoDropout:
+    loBand--
+
+  if hiBand > boundingBox.top:
+    hiBand = boundingBox.top
+
+  if loBand < boundingBox.bottom:
+    loBand = boundingBox.bottom
+
+  if withFastBanding:
+    hiScanBand = boundingBox.top
+    loScanBand = boundingBox.bottom
+    saveRow = true
+  else:
+    hiScanBand = hiBand
+    loScanBand = loBand
+    saveRow = false
+
+  # We want to prune band lines and splines
+  bool isInBand = (hiScanBand >= height) && (loScanBand <= 0)
+  Fixed26Dot6 hiBandY = (hiScanBand << SUB_PIXEL_SHIFT) - SUB_PIXEL_HALF
+  Fixed26Dot6 loBandY = (loScanBand << SUB_PIXEL_SHIFT) + SUB_PIXEL_HALF
+
+  errCode = Setup(scanKind, hiScanBand, loScanBand, boundingBox, saveRow)
+  if errCode != SUCCESS:
+    return errCode
+
+  for contour in contours:
+    if len(contour.points) == 0:
+      continue
+
+    end = len(contour.points) - 1
+ 
+    x = contour.points[0].x
+    y = contour.points[0].y
+    onCurve = contour.points[0].onCurve
+
+    if contour.points[end].onCurve:
+      # end point is 'oncurve'
+      x1 = contour.points[end].x
+      y1 = contour.points[end].y
+      x2 = x
+      y2 = y
+    else:
+      x1 = contour.points[end - 1].x
+      y1 = contour.points[end - 1].y
+      x2 = contour.points[end].x
+      y2 = contour.points[end].y
+
+      if !contour.points[end - 1].onCurve:
+        # use midpoint
+        x1 = (x1 + x2 + 1) >> 1
+        y1 = (y1 + y2 + 1) >> 1
+
+      end--
+
+    BeginContourEndpoint(x1, y1)
+
+    # Add the point as a control point for dropout control
+    if !(scanKind & ScanKind.NoDropout) && (scanKind & ScanKind.Smart):
+      CONTEXT.controlPoints.append([[x1, 0], [y1, 0]])
+
+    if isInBand
+      i = 0
+      while i < end:
+        if onCurve:
+          errCode = EvaluateEndPoint(x2, y2, scanKind)
+          if errCode != SUCCESS:
+            return errCode
+
+          errCode = CalcLine(x1, y1, x2, y2, scanKind)
+          if errCode != SUCCESS:
+            return errCode
+
+          x1 = x2
+          y1 = y2
+          i++
+        else:
+          i++
+          x3 = contour.points[i].x
+          y3 = contour.points[i].y
+
+          if contour.points[i].onCurve:
+            i++
+          else:
+            # Use midpoint
+            x3 = (x2 + x3 + 1) >> 1
+            y3 = (y2 + y3 + 1) >> 1
+
+          errCode = EvaluateSpline(x1, y1, x2, y2, x3, y3, scanKind)
+          if errCode != SUCCESS:
+            return errCode
+
+          x1 = x3
+          y1 = y3
+
+        x2 = contour.points[i].x
+        y2 = contour.points[i].y
+        onCurve = contour.points[i].onCurve
+    else:
+      # band checking
+      i = 0
+      while i < end:
+        if onCurve:
+          errCode = EvaluateEndPoint(x2, y2, scanKind)
+          if errCode != SUCCESS:
+            return errCode
+
+          if !(((y1 > hiBand) && (y2 > hiBand)) || ((y1 < loBand) && (y2 < loBand))):
+            errCode = CalcLine(x1, y1, x2, y2, scanKind)
+            if errCode != SUCCESS:
+              return errCode
+
+          x1 = x2
+          y1 = y2
+          i++
+        else:
+          i++
+          x3 = contour.points[i].x
+          y3 = contour.points[i].y
+
+          if contour.points[i].onCurve:
+            i++
+          else:
+            x3 = (x2 + x3 + 1) >> 1
+            y3 = (y2 + y3 + 1) >> 1
+
+          if !(((y1 > hiBand) && (y2 > hiBand) && (y3 > hiBand)) || ((y1 < loBand) && (y2 < loBand) && (y3 < loBand))):
+            errCode = EvaluateSpline(x1, y1, x2, y2, x3, y3, scanKind)
+            if errCode != SUCCESS:
+              return errCode
+          else:
+            # Spline is outside of the band
+            errCode = EvaluateEndPoint(x3, y3, scanKind)
+            if errCode != SUCCESS:
+              return errCode
+
+          x1 = x3
+          y1 = y3
+        x2 = contour.points[i].x
+        y2 = contour.points[i].y
+        onCurve = contour.points[i].onCurve
+
+    errCode = CalcEndPoint(scanKind)
+    if errCode != SUCCESS:
+      return errCode
+
+  errCode = Blit(hiBand, loBand, width, originalLoBand, scanKind)
+  if errCode != SUCCESS:
+    return errCode
+	
+  return SUCCESS
 ```
 
 ```

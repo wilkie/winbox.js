@@ -5001,6 +5001,30 @@ coordinate occurs in any fixture, so making them agree changes nothing either.
 It is done anyway, since two roundings that are meant to be the same thing
 should be.
 
+**`FillGlyph` and `Blit` supply the caller, and four details with it.** Three
+were already right and two were not.
+
+- **The implied midpoint is `(a + b + 1) >> 1` on the scaled coordinates**,
+  which is a half rounded up and is what this does. The earlier test that
+  rounded it down was measuring the wrong direction.
+- **`EvaluateEndPoint` comes before `CalcLine` for a line and is absent before a
+  spline**, since `EvaluateSpline` makes the call itself once per monotonic
+  piece. That is the arrangement here.
+- **`CalcEndPoint` closes each contour**, which is `end()`.
+- **`Blit` fills a run either way round.** `xStart < xStop` fills forwards and
+  `xStart > xStop` fills backwards, where this filled only forwards and left a
+  reversed pair undrawn -- not caught as a dropout either, since that is the
+  case where the two are equal. No reversed pair occurs in any fixture, so it
+  changes nothing measured, but it was a hole.
+- **`FindDropouts` goes down the rows from the top of the band.** Sorting the
+  rescues that way changes nothing; the order they came out in was already
+  equivalent.
+- **It also reads each column's vertical entries backwards, and that is worse**
+  -- two letters and four pixels. That block is the one place in the
+  transcription with a plain slip in it, drawing both of its lists from
+  `vertOnBegin` so that its test for a zero-length run is always true, and its
+  ordering is not to be trusted until the slip is resolved.
+
 What is left after all of it is a difference of under a sixty-fourth, on every
 kind of edge, that no stage of the documented algorithm accounts for.
 

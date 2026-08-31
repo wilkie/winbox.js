@@ -519,7 +519,18 @@ export function fillWalked(contours, options) {
       continue;
     }
 
-    for (let column = run.on; column < run.off; column++) {
+    /* Either way round.
+     *
+     * `Blit` fills from `xStart` to `xStop` when the first is the smaller and
+     * from `xStop` to `xStart` when it is not, so a pair whose `on` lies to the
+     * right of its `off` is still a run. Filling only the first way leaves that
+     * ink undrawn, and it is not caught as a dropout either, since that is the
+     * case where the two are equal.
+     */
+    const from = Math.min(run.on, run.off);
+    const to = Math.max(run.on, run.off);
+
+    for (let column = from; column < to; column++) {
       if (column >= 0 && column < width && run.row >= 0 && run.row < height) {
         pixels[run.row * width + column] = 1;
       }
@@ -538,6 +549,13 @@ export function fillWalked(contours, options) {
   const countVert = (x, row) =>
     (lists.vertOn.get(x) ?? []).filter((at) => -at === row).length +
     (lists.vertOff.get(x) ?? []).filter((at) => -at === row).length;
+
+  /* `FindDropouts` goes down the rows from the top of the band, and each
+   * rescue asks whether its neighbours are already lit, so a rescue made on one
+   * row is visible to the next. The order is part of the answer. Here the runs
+   * come out in whatever order the walk first touched a row.
+   */
+  rescues.sort((one, two) => one.row - two.row);
 
   for (const rescue of rescues) {
     const on = rescue.on;
@@ -583,6 +601,14 @@ export function fillWalked(contours, options) {
   for (const [column, ons] of lists.vertOn) {
     const offs = lists.vertOff.get(column) ?? [];
 
+    /* Forwards, though `FindDropouts` reads its column entries backwards.
+     *
+     * Taking them backwards costs two letters and four pixels, and the block
+     * that says to is the one place in the transcription with a plain slip in
+     * it -- it draws both of its lists from `vertOnBegin`, so its test for a
+     * zero-length run is always true. Its order is not to be trusted either
+     * until the slip is resolved.
+     */
     for (let index = 0; index < ons.length && index < offs.length; index++) {
       if (ons[index] !== offs[index]) {
         continue;
