@@ -4628,10 +4628,44 @@ cells have exactly the same ink bounding box as Windows -- not a row taller, not
 a column wider. Whatever is wrong is inside a shape whose extent is right, which
 rules out the placement, the scaling and the box clamps together.
 
-What is left is narrow: on the topmost and bottommost row of a bowl, where a
-scanline cuts a shallow arc and the span is at its widest and its ends at their
-most sensitive, our run is a pixel too long. That is the part of `CalcSpline`
-where `dQy` is small and the walk takes many steps in x for each one in y.
+**What the disputed pixels have in common is that the curve passes through the
+sample point.** Instrumenting the walk to dump its crossing lists and solving
+the same outline exactly, cell by cell, gives the distance from each disputed
+pixel's centre to the crossing nearest it. Eighty-seven of the 107 are within an
+eighth of a pixel of a crossing and thirty-one are within _half a sixty-fourth_
+of the centre itself. The sample points sit at the pixel centres, so these are
+the cases where the outline goes through one.
+
+Times New Roman's `o` at twenty-four pixels per em is the whole of it in two
+rows. On row 16 the outline crosses at 4.2179 and 6.4820; the pixel centre at
+6.5 is eighteen thousandths of a pixel beyond where the curve turns back, and
+Windows lights it and we do not. On row 17 it crosses at 5.4807 and 9.4763; the
+centre at 5.5 is nineteen thousandths inside, and Windows skips it and we do not.
+
+**There is no bias to it.** Signed so that positive means Windows behaved as
+though the curve reached further, the eighty-seven have a mean of 0.29
+sixty-fourths and a median of 0.07, spread either way. So it is not an offset,
+and not a rounding that leans one way; it is a coin landing on its edge, and
+Windows and this implementation call it differently.
+
+Four more things are ruled out, each measured rather than argued:
+
+- **Not the amplification of a shallow edge.** A sixty-fourth of error in `y`
+  moves the disputed crossings sideways by a median of 0.9 sixty-fourths, and 44
+  of the 87 sit on an edge steep enough to move less than one. Only one of the
+  87 is on an edge shallow enough to move three or more. Whatever puts the curve
+  on the sample point, it is not a small vertical error magnified.
+- **Not the arithmetic overflowing.** The walk's terms are 32-bit integers in
+  the original and exact numbers here, which would differ if they wrapped. The
+  widest any of them reaches across the whole fixture is `dQx` at 3.0e8, against
+  the 2.1e9 a signed 32-bit integer holds.
+- **Not the tie-breaking in the stepping loop.** Turning `q < 0` into `q <= 0`
+  and `dQy > tZ` into `dQy >= tZ`, in each of the four branches and in every
+  combination, moves not one pixel of the 107. The comparisons never sit on
+  their own boundary; the tie is in the geometry, not in them.
+- **Not `PowerOf2` or the precision reduction.** Both match the pseudocode
+  exactly, and the reduction does fire -- `aBits + xyBits` reaches into the
+  non-zero part of the table at these sizes.
 
 ## 9. Where the numbers stand
 
