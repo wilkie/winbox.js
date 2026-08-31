@@ -5019,54 +5019,55 @@ were already right and two were not.
 - **`FindDropouts` goes down the rows from the top of the band.** Sorting the
   rescues that way changes nothing; the order they came out in was already
   equivalent.
-- **It also reads each column's vertical entries backwards**, which is going
-  down the glyph, the lists being sorted ascending with `y` pointing up. That is
-  done here now and it costs two letters and four pixels, 778 and 109 against
-  780 and 105.
+- **It also reads each column's vertical entries backwards, and the oracle can
+  be asked which end that is.** The direction only shows when two rescues in one
+  column land a row apart, since each declines where a neighbour is already lit:
+  read one way the first blocks the second and one pixel is drawn, read the
+  other and both are. So a fabrication asks. Thirty-six glyphs, each two
+  horizontal hairlines -- a stroke too thin to cover a sample down a column is a
+  vertical dropout -- with the gap between them swept from four fifths of a
+  pixel to two and a quarter, so that some of them land with their two rescues
+  on neighbouring rows whatever the rounding does.
 
-  It is kept because it is what the source does, and because what it costs is
-  worth more than what it costs. All of it is one rescue in each of Courier
-  New's `a`, `e` and `s` at ten pixels per em: a pixel at column four of row
-  four, lit when the column is read upward and blocked when it is read downward,
-  because a rescue made earlier lights a neighbour and `PerformVertDropout`
-  declines where a neighbour is already lit. Windows reads downward, as this now
-  does, and lights it anyway.
+  **Windows draws both rows.** Every time, at every size where the case arises:
+  `[8:5 9:3]` where this drew `[8:5]`. Reading these lists forward agrees with it
+  on 199 of 216 cells and reading them backward on 176, and the recorded letters
+  are 780 of 846 and 105 wrong pixels with it against 778 and 109 without.
 
-  Tracing it says more than that. Courier New's `a` at ten pixels per em
-  attempts five vertical rescues, in this order: column 4 row 3, lit; column 4
-  row 4, declined because the pixel above it is lit; column 4 row 6, lit at row
-  5 after the clamp; column 3 row 4, lit; column 3 row 6, declined. The pixel
-  Windows draws and this does not is column 4 of row 4, and by the time it is
-  considered _both_ of its neighbours are lit -- the one above by the rescue
-  made a moment earlier, the one below by the ordinary fill. No test of a
-  neighbour, in any form, can let it through.
+  The frame reasoning does not come out where the measurement does, and that is
+  worth stating rather than smoothing over. In the scan converter `y` points
+  up, so `boxTop` is the larger number, a list sorted ascending holds the
+  topmost entry last, and reading it in reverse is reading from the top down --
+  which is what its comment says. By the same token `yDrop - 1` is one row
+  _down_ the screen, so the neighbour it tests is the one below.
 
-  Which narrows it usefully. The test is not simply wrong: taking it out
-  entirely costs twenty-seven letters and forty pixels. Guarding it on the box
-  rather than the bitmap, which is what `PerformVertDropout` does, changes
-  nothing here. Discarding a vertical dropout outside the band instead of
-  clamping it in, which `PerformVertDropout` also does and this now does too,
-  changes nothing either -- nothing falls outside.
+  Both halves of that read worse. Taken as a pair -- top to bottom, testing the
+  neighbour below -- it agrees on 177 of 216 twin-bar cells and 749 of 846
+  letters, against 199 and 780 for reading these lists forward and testing the
+  neighbour above. Every one of the four combinations was tried:
 
-  Following it all the way through the cell closes off the obvious escapes. The
-  horizontal pass leaves rows three, four and five holding column five and
-  nothing else, and rescues column three on rows four and five. So the two
-  pixels at column four, rows three and four, cannot come from a run or from a
-  horizontal rescue in either implementation -- Windows draws them both, and the
-  only thing left that can draw them is the vertical pass.
+  | direction     | neighbour |        letters |  twin bars |
+  | :------------ | :-------- | -------------: | ---------: |
+  | forward here  | above     | 780, 105 wrong | 199 of 216 |
+  | forward here  | below     | 750, 150 wrong | 154 of 216 |
+  | reversed here | above     | 778, 109 wrong | 176 of 216 |
+  | reversed here | below     | 749, 150 wrong | 177 of 216 |
 
-  Which means Windows makes both of those rescues, one directly above the other,
-  with the column read downward. A test that declines where the pixel above is
-  lit cannot do that. And the test is not simply absent: removing it costs
-  twenty-seven letters and forty pixels, reading it as the pixel about to be
+  So the observable is settled and the mapping is not. Something between the
+  walk's vertical entries, the order they are sorted into and the frame they are
+  counted in is off by a reflection, and it is off in a way that two of the four
+  readings partly hide. What can be said is that the arrangement in the first row
+  of that table is what Windows draws, on a fixture built to ask nothing else.
+
+  It also disposes of what looked for a while like a defect in the neighbour
+  test. Reading the column the other way, Courier New's `a`, `e` and `s` at ten
+  pixels per em each lost a rescue that Windows makes, and the whole of the rest
+  of those cells could be accounted for -- which made it look as though the test
+  that declines where the pixel above is lit had to be wrong. It was the
+  direction. The test stands, and the readings taken at the time still hold:
+  removing it costs twenty-seven letters, reading it as the pixel about to be
   written never fires at all, and reading it as the pixel below costs
-  twenty-nine letters.
-
-  So one of three things is not as it is read here -- the direction the column
-  is walked, the pixel the test looks at, or which entries are in the column's
-  list at all -- and every variant of the first two that can be tried has been.
-  One pixel, in three cells of one face at one size, with the whole of the rest
-  of the cell accounted for. That is where this stands.
+  twenty-nine.
 
 What is left after all of it is a difference of under a sixty-fourth, on every
 kind of edge, that no stage of the documented algorithm accounts for.
