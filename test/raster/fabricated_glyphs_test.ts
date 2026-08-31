@@ -88,8 +88,8 @@ describe('the fabricated glyph recordings', () => {
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 5061;
-  const WRONG = 1911;
+  const EXACT = 5048;
+  const WRONG = 1930;
 
   /* The one place an unhinted outline is drawn differently.
    *
@@ -137,7 +137,7 @@ describe('the fabricated glyph recordings', () => {
    * too, ink at the end of a run on a row with nothing below it, and this is
    * the first time it has been reproduced with nothing hinted.
    */
-  const TURNS = 17;
+  const TURNS = 25;
 
   present('sweep a turning point across a sample column', async function () {
     const recording = all.find((entry) => entry.name === 'turn-sweep');
@@ -186,7 +186,7 @@ describe('the fabricated glyph recordings', () => {
     expect(differing).toBeLessThanOrEqual(TURNS);
   });
 
-  const EDGES = 10;
+  const EDGES = 12;
 
   present('draw an unhinted edge the same except where it grazes a sample', async function () {
     const recording = all.find((entry) => entry.name === 'edge-sweep');

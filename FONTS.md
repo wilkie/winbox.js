@@ -4727,7 +4727,7 @@ unit further out than the last, which steps the extreme across a sample column
 in halves of a sixty-fourth. Eighteen bulge right, where the turn is a maximum,
 and eighteen left, where it is a minimum.
 
-Seventeen of 216 cells still disagree, and they are two different things.
+Twenty-five of 216 cells disagree, and they are two different things.
 
 At sixteen pixels of cell height the extreme reaches a sample column two steps
 before Windows lets it on the right, and one step early on the left. So rounding
@@ -4736,47 +4736,46 @@ is not enough for these: the reach is still a little long, in both directions,
 which is what one would expect if the split point is right and the walked halves
 still cover a shade more than the whole ever did.
 
-**The two controls move with the split point.** A quadratic split at its turning
-point has no slope there, which is the same as saying that on that axis the
-control of the piece arriving and the control of the piece leaving both sit
-exactly on the split point. Rounding the split point onto the grid breaks that:
-the controls stay where they were and end up a sixty-fourth beyond the endpoint
-they belong to, so each half bulges back past its own end and is no longer
-monotonic -- which is the one thing splitting was for. **Traced**: a rectangle
-with one curved side at eighteen pixels of cell height came out with a half
-running from 231 to 222 sixty-fourths and its control at 232, outside both.
-Setting both controls to the rounded split point restores the property and takes
-the turning-point sweep from 19 disagreements to 17.
+**The subdivision is `EvaluateSpline`, and it is now implemented as written.**
+The hand-rolled split that stood here -- turning points solved in floating
+point, rounded to the grid, both controls carried with them -- is gone. Four
+details of the real one are not guesses and could not have been arrived at:
 
-**Windows subdivides too, and the pseudocode for it says how.** Every glyph of
-that sweep has a control point outside its endpoints, so every one of its
-quadratics is non-monotonic. Walking them whole here gets 86 of 216 cells right
-against 199 with the subdivision, and tracing one says why: with the two ends at
-the same `x`, `CalcSpline` reflects the curve into a quadrant whose `x` range is
-empty, `x` equals `xStop` before the walk starts, and the "almost vertical"
-shortcut draws the whole thing as one column -- never seeing the nineteen
-sixty-fourths the curve actually bulges.
+- **A delta of nothing is not a turn.** The test is `(dy0 > 0 && dy1 < 0) ||
+(dy0 < 0 && dy1 > 0)`, strictly, so a control level with an end leaves the
+  spline whole. Solving for a turning parameter inside `(0, 1)` splits some of
+  those.
+- **The `y` turn is cut first and the `x` turn second**, each by its own test,
+  and the recursion re-examines what it produces rather than cutting both at
+  once.
+- **The cut is computed in fixed point**, as `x1 + FixedMulDiv(dx0, dx0, dx0 -
+dx1)` on the axis being split, with `FixedMulDiv`'s own rounding -- a half
+  away from zero, on magnitudes. Not solved and rounded afterwards. For the
+  quadratic traced above that gives 232 sixty-fourths where the true extreme is
+  231.5, so it rounds _outward_, which is the opposite of what was guessed here.
+- **Both halves are built to share the split coordinate**: for an `x` cut both
+  controls and the joining point take `midX`. The property is imposed rather
+  than computed, which is why the halves are monotonic however the cut rounds.
 
-That is what `EvaluateSpline` in `FONT_PSEUDOCODE.md` exists to prevent: it
-recursively splits a spline that is non-monotonic, or longer than
-`MAXSPLINELENGTH`, into ones `CalcSpline` can handle. So the subdivision here is
-right in principle and wrong in its details, and the details are written down.
-Two of them matter and this implementation does neither:
+Two more come from `EvaluateEndPoint`, which is called once per monotonic piece
+and not once per segment: a step that goes nowhere returns _before_ the running
+vertex is shifted, and the vertical topology pass exists only when dropout
+control does.
 
-- **The split point is computed in fixed point**, as `start + LongMulDiv(d21,
-d21, d21 - d32)` on the axis being split, rather than in floating point and
-  rounded afterwards.
-- **The halves are built so their controls share the split coordinate.** For a
-  split at the `y` turn both controls take `fxY456` and the joining point is
-  `(fxX5, fxY456)`; for an `x` turn both take `fxX456`. That is the same
-  property restored above by moving the controls with the split point, which is
-  some evidence the reading is right.
+**It is better on the letters and worse on the two sweeps.** The recorded
+letters go from 778 of 846 and 107 wrong pixels to 780 and 105. The fabricated
+sweeps go the other way, the edge sweep from 10 disagreements to 12 and the
+turning-point sweep from 17 to 25.
 
-An earlier note here said Windows walks these whole. It does not; that was
-inferred from `CalcSpline` alone, before `EvaluateSpline` was found.
+That is worth stating plainly rather than tuning away, because a faithful
+subdivision should not make anything worse. Something else is wrong, and the
+sweeps are where it shows because they were built to put an extreme within a
+sixty-fourth of a sample column and nothing else in this fixture does that. The
+hand-rolled split was rounding the cut inward, which happened to cancel it; the
+real one rounds outward, and the cancellation is gone.
 
 At eighteen the outermost column agrees for every one of the eighteen variants
-and fourteen of them still differ -- by one pixel on the bottom row, which is the
+and sixteen of them still differ -- by one pixel on the bottom row, which is the
 end of the curve rather than its extreme. That is the same signature the
 recorded letters have, ink at the end of a run on a row with nothing below it,
 and this is the first time it has been reproduced with nothing hinted at all. It

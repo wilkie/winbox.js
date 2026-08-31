@@ -1,6 +1,6 @@
 'use strict';
 
-import { Endpoints, calcLine, calcSpline, empty } from './scan-walk.js';
+import { Endpoints, calcLine, empty, evaluateSpline } from './scan-walk.js';
 
 /**
  * Turning an outline into pixels.
@@ -377,107 +377,6 @@ function crossesAt(piece, y, into) {
  * The walk works in sixty-fourths with y pointing up, so device coordinates are
  * negated going in and the emitted scan rows come back as `-row - 1`.
  */
-/**
- * A quadratic cut at its turning points, so every piece walked is monotonic.
- *
- * De Casteljau at the parameter where the derivative vanishes, in each axis
- * that turns. A curve with no turn comes back as itself.
- */
-function split(from, control, to) {
-  const turns: { at: number; axis: number; opens: number }[] = [];
-
-  for (const axis of [0, 1]) {
-    const divisor = from[axis] - 2 * control[axis] + to[axis];
-
-    if (divisor === 0) {
-      continue;
-    }
-
-    const at = (from[axis] - control[axis]) / divisor;
-
-    // Far enough inside to leave two pieces the walk can step through.
-    if (at > 1 / 4096 && at < 1 - 1 / 4096) {
-      turns.push({ at, axis, opens: Math.sign(divisor) });
-    }
-  }
-
-  if (!turns.length) {
-    return [[from, control, to]];
-  }
-
-  turns.sort((one, two) => one.at - two.at);
-
-  const pieces: any[] = [];
-
-  let start = from;
-  let hold = control;
-  let last = 0;
-
-  for (const turn of turns) {
-    const t = (turn.at - last) / (1 - last);
-    const first = [start[0] + t * (hold[0] - start[0]), start[1] + t * (hold[1] - start[1])];
-    const second = [hold[0] + t * (to[0] - hold[0]), hold[1] + t * (to[1] - hold[1])];
-    const at = [first[0] + t * (second[0] - first[0]), first[1] + t * (second[1] - first[1])];
-
-    /* The turn lands on the far side of the sixty-fourth it rounds to, half
-     * the time, and rounding it there is this implementation inventing reach
-     * the scan converter never sees.
-     *
-     * Windows does not subdivide at all: `CalcSpline` reflects a spline into a
-     * quadrant using its endpoints and walks the whole of it. Splitting a
-     * quadratic at its turning point is this implementation's way of keeping
-     * every walked piece monotonic, and the new endpoint it creates has to be
-     * put on the grid, which the original never had to be. Rounding it to the
-     * nearest sixty-fourth carries the outline outward by as much as half of
-     * one, and a pixel whose centre falls in that half is lit here and not
-     * there. So the turn is rounded toward the curve instead: down when it is
-     * a maximum in that direction and up when it is a minimum, which is the
-     * one choice that cannot manufacture coverage.
-     *
-     * **Measured.** An unhinted quadratic whose outermost point lands half a
-     * sixty-fourth past a sample column is drawn one pixel wider here than by
-     * Windows, and it is the only cell of 216 in that fabrication that
-     * disagrees. See `FONTS.md`.
-     */
-    const grid = 1 / 64;
-
-    at[turn.axis] =
-      turn.opens < 0
-        ? Math.floor(at[turn.axis] / grid) * grid
-        : Math.ceil(at[turn.axis] / grid) * grid;
-
-    /* And the two controls move with it.
-     *
-     * A quadratic split at its turning point has no slope there, which is the
-     * same as saying that on that axis the control of the piece arriving and
-     * the control of the piece leaving both sit exactly on the split point.
-     * Rounding the split point onto the grid breaks that: the controls stay
-     * where they were and are left a sixty-fourth beyond the endpoint they
-     * belong to, so each half bulges back past its own end and is no longer
-     * monotonic -- which is the one thing splitting was for, and what the walk
-     * assumes.
-     *
-     * **Traced.** A rectangle with one curved side, drawn unhinted at eighteen
-     * pixels of cell height, came out with a half running from 231 to 222
-     * sixty-fourths and its control at 232, outside both. The walk read that as
-     * reaching a sample column it never reaches, and lit a pixel on the bottom
-     * row that Windows does not.
-     */
-    first[turn.axis] = at[turn.axis];
-    second[turn.axis] = at[turn.axis];
-
-    pieces.push([start, first, at]);
-
-    start = at;
-    hold = second;
-    last = turn.at;
-  }
-
-  pieces.push([start, hold, to]);
-
-  return pieces;
-}
-
 export function fillWalked(contours, options) {
   const { scale, originX = 0, originY = 0, width, height, dropout = false } = options;
 
@@ -510,39 +409,24 @@ export function fillWalked(contours, options) {
       if (piece.control) {
         const control = place(piece.control);
 
-        /* Split where the curve turns.
-         *
-         * The walk takes its extent from the two endpoints, so a quadratic that
-         * rises and comes back looks to it like one spanning no scanline at all
-         * -- and its "almost horizontal" shortcut then draws the whole thing as
-         * one row. A well-built font puts an on-curve point at every extreme
-         * and the case does not arise; a fabricated arch with its control twice
-         * the height of its ends is exactly the case, and `EvaluateSpline`
-         * subdividing splines before they are walked is what handles it.
+        /* Cut the turns out before walking, which is what `EvaluateSpline`
+         * exists for: the walk takes a spline's extent from its two ends, so a
+         * quadratic that goes out and comes back looks to it like one spanning
+         * nothing at all. The endpoint check goes with each piece rather than
+         * with the segment, since each is a spline as far as the walk is
+         * concerned. See `scan-walk.ts`.
          */
-        const halves = split(from, control, to);
-
-        for (const [one, mid, two] of halves) {
-          /* A split can leave a piece so short that both ends round onto the
-           * same sixty-fourth, which the walk cannot step through.
-           */
-          if (sub(one[0]) === sub(two[0]) && sub(one[1]) === sub(two[1])) {
-            continue;
-          }
-
-          calcSpline(
-            lists,
-            sub(one[0]),
-            -sub(one[1]),
-            sub(mid[0]),
-            -sub(mid[1]),
-            sub(two[0]),
-            -sub(two[1]),
-            dropout
-          );
-        }
-
-        ends.check(sub(to[0]), -sub(to[1]));
+        evaluateSpline(
+          lists,
+          ends,
+          sub(from[0]),
+          -sub(from[1]),
+          sub(control[0]),
+          -sub(control[1]),
+          sub(to[0]),
+          -sub(to[1]),
+          dropout
+        );
 
         continue;
       }

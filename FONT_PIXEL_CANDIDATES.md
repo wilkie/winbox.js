@@ -441,6 +441,85 @@ AddVert(ScanKind scanKind, Fixed26Dot6 x, Fixed26Dot6 y):
 ```
 
 ```
+EvaluateSpline(
+  Fixed26Dot6 x1,
+  Fixed26Dot6 y1,
+  Fixed26Dot6 x2,
+  Fixed26Dot6 y2,
+  Fixed26Dot6 x3,
+  Fixed26Dot6 y3,
+  ScanKind scanKind,
+):
+  Fixed26Dot6 deltaX0 = x2 - x1
+  Fixed26Dot6 deltaX1 = x3 - x2
+  Fixed26Dot6 deltaY0 = y2 - y1
+  Fixed26Dot6 deltaY1 = y3 - y2
+
+  if (deltaY0 > 0 && deltaY1 < 0) || (deltaY0 < 0 && deltaY1 > 0):
+    # Spline goes up and down
+    # Subdivide the spline at the midpoint
+    denominator = deltaY0 - deltaY1
+    midX1 = x1 + FixedMulDiv(deltaX0, deltaY0, denominator)
+    midX3 = x2 + FixedMulDiv(deltaX1, deltaY0, denominator)
+    midX2 = midX1 + FixedMulDiv(midX3 - midX1, deltaY0, denominator)
+    midY = y1 + FixedMulDiv(deltaY0, deltaY0, denominator)
+
+    errCode = EvaluateSpline(x1, y1, midX1, midY, mixX2, midY, scanKind)
+    if errCode != SUCCESS:
+      return errCode
+
+    return EvaluateSpline(midX2, midY, midX3, midY, x3, y3, scanKind)
+
+  if (deltaX0 > 0 && deltaX1 < 0) || (deltaX0 < 0 && deltaX1 > 0):
+    # Spline goes left and right
+    # Subdivide it at the midpoint
+    denominator = deltaX0 - deltaX1
+    midY1 = y1 + FixedMulDiv(deltaY0, deltaX0, denominator)
+    midY3 = y2 + FixedMulDiv(deltaY1, deltaX0, denominator)
+    midY2 = midY1 + FixedMulDiv(midY3 - midY1, deltaX0, denominator)
+    midX = x1 + FixedMulDiv(deltaX0, deltaX0, denominator)
+
+    errCode = EvaluateSpline(x1, y1, midX, midY1, midX, midY2, scanKind)
+    if errCode != SUCCESS:
+      return errCode
+
+    return EvaluateSpline(midX, midY2, midX, midY3, x3, y3, scanKind)
+
+  # The spline is now monotonic (only goes in one direction)
+  # Deltas show full change in dimension
+  deltaX = x3 - x1
+  deltaY = y3 - y1
+  absDeltaX = deltaX >= 0 ? deltaX : -deltaX
+  absDeltaY = deltaY >= 0 ? deltaY : -deltaY
+
+  if absDeltaX > 3200 || absDeltaY > 3200:
+    # Split a large spline
+    midX1 = (x1 + x2) >> 1
+    midY1 = (y1 + y2) >> 1
+    midX3 = (x2 + x3) >> 1
+    midY3 = (y2 + y3) >> 1
+    midX2 = (midX1 + midX3) >> 1
+    midY2 = (midY1 + midY3) >> 1
+
+    errCode = EvaluateSpline(x1, y1, midX1, midY1, midX2, midY2, scanKind)
+    if errCode != SUCCESS:
+      return errCode
+
+    return EvaluateSpline(midX2, midY2, midX3, midY3, x3, y3, scanKind)
+
+  # We now have a monotonic spline that's reasonably sized
+  errCode = EvaluateEndPoint(x3, y3, scanKind)
+  if errCode != SUCCESS:
+    return errCode
+
+  if (deltaX0 * deltaY1) == (deltaY0 * deltaX1):
+    # this spline is represented as a line
+    return CalcLine(x1, y1, x3, y3, scanKind)
+
+  return CalcSpline(x1, y1, x2, y2, x3, y3, scanKind)
+```
+
+```
 CalcSpline(
   Fixed26Dot6 x1,
   Fixed26Dot6 y1,
@@ -754,6 +833,36 @@ CalcSpline(
       y += yIncrement
 
   return SUCCESS
+```
+
+```
+EvaluateEndPoint(Fixed26Dot6 x2, Fixed26Dot6 y2, ScanKind scanKind):
+  if OnScanline(CONTEXT.y1):
+    if CONTEXT.x1 == x2 && CONTEXT.y1 == y2:
+      return SUCCESS
+
+    if CONTEXT.x0 == Infinity:
+      CONTEXT.x2Save = x2
+      CONTEXT.y2Save = y2
+    else:
+      CheckHorizTopology(x2, y2, scanKind)
+
+  if !(scanKind & ScanKind.NoDropout):
+    if OnScanline(CONTEXT.x1):
+      if CONTEXT.x1 == x2 && CONTEXT.y1 == y2:
+        return SUCCESS
+
+      if CONTEXT.x0 == Infinity:
+        CONTEXT.x2Save = x2
+        CONTEXT.y2Save = y2
+      else:
+        CheckVertTopology(x2, y2, scanKind)
+
+  # Shift points
+  CONTEXT.x0 = CONTEXT.x1
+  CONTEXT.y0 = CONTEXT.y1
+  CONTEXT.x1 = x2
+  CONTEXT.y1 = y2
 ```
 
 ```

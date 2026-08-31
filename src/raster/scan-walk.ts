@@ -244,28 +244,42 @@ export class Endpoints {
   }
 
   /** The next point along the contour. */
-  check(x: number, y: number) {
+  check(x: number, y: number, dropout = true) {
+    /* A step that goes nowhere leaves the running vertex alone.
+     *
+     * `EvaluateEndPoint` returns before it shifts, so the vertex before this
+     * one is still the vertex before the one that stayed put. Skipping only the
+     * topology and shifting anyway makes a glyph's own point its predecessor,
+     * which decides the topology at the next real vertex. It never showed while
+     * this was called once a segment, because a segment of no length is rare;
+     * a subdivision that cuts a spline into pieces makes them ordinary.
+     */
     if (this.onScanline(this.y1)) {
-      if (!(this.x1 === x && this.y1 === y)) {
-        if (this.x0 === Infinity) {
-          this.secondX = x;
-          this.secondY = y;
-          this.started = true;
-        } else {
-          this.horizTopology(x, y);
-        }
+      if (this.x1 === x && this.y1 === y) {
+        return;
+      }
+
+      if (this.x0 === Infinity) {
+        this.secondX = x;
+        this.secondY = y;
+        this.started = true;
+      } else {
+        this.horizTopology(x, y);
       }
     }
 
-    if (this.onScanline(this.x1)) {
-      if (!(this.x1 === x && this.y1 === y)) {
-        if (this.x0 === Infinity) {
-          this.secondX = x;
-          this.secondY = y;
-          this.started = true;
-        } else {
-          this.vertTopology(x, y);
-        }
+    // And the vertical pass only exists when dropout control asked for it.
+    if (dropout && this.onScanline(this.x1)) {
+      if (this.x1 === x && this.y1 === y) {
+        return;
+      }
+
+      if (this.x0 === Infinity) {
+        this.secondX = x;
+        this.secondY = y;
+        this.started = true;
+      } else {
+        this.vertTopology(x, y);
       }
     }
 
@@ -407,6 +421,120 @@ export function calcLine(lists: Lists, x1: number, y1: number, x2: number, y2: n
 }
 
 /** A quadratic, walked as a conic forward difference. */
+/**
+ * `a * b / c` the way the scan converter's own `FixedMulDiv` does it.
+ *
+ * `FixedMul` is a plain sixty-four bit multiply and `FixedDiv` divides it back
+ * down, carrying the remainder into the quotient when it reaches half the
+ * divisor -- which is a half rounded away from zero, on magnitudes, with the
+ * sign put back afterwards.
+ */
+function fixedMulDiv(a: number, b: number, c: number) {
+  if (c === 0) {
+    return 0;
+  }
+
+  const sign = Math.sign(a) * Math.sign(b) * Math.sign(c);
+  const top = Math.abs(a) * Math.abs(b);
+  const bottom = Math.abs(c);
+
+  return sign * (Math.floor(top / bottom) + (top % bottom >= bottom >> 1 ? 1 : 0));
+}
+
+/** Splines longer than this are halved, in sixty-fourths: fifty pixels. */
+const LONGEST = 3200;
+
+/**
+ * Cutting a spline down to pieces the walk can handle, then walking them.
+ *
+ * `CalcSpline` reflects a spline into one quadrant using nothing but its two
+ * ends, so it can only walk a spline that goes one way in each direction. A
+ * quadratic whose control lies outside its ends does not, and handing it one
+ * anyway is not a small error: with both ends on the same `x` the reflected
+ * range is empty, the walk takes its "almost vertical" shortcut, and a curve
+ * that bulges nineteen sixty-fourths is drawn as a single column.
+ *
+ * So the turns are cut out first. The cut is at the turning point, computed in
+ * fixed point rather than worked out in floating point and rounded after, and
+ * the two halves are built so that both of their controls and the point they
+ * meet at share the coordinate being split on -- which is what having no slope
+ * there means, and is imposed here rather than arrived at.
+ *
+ * The `y` turn goes first and the `x` turn second, and a delta of nothing is
+ * not a turn: a control level with an end leaves the spline alone. After both,
+ * anything longer than fifty pixels is halved for precision, and what is left
+ * is walked -- as a line if the three points are collinear, since then the
+ * spline is a line written the long way.
+ */
+export function evaluateSpline(
+  lists: Lists,
+  ends: Endpoints,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  x3: number,
+  y3: number,
+  dropout = true,
+  depth = 0
+) {
+  const dx0 = x2 - x1;
+  const dx1 = x3 - x2;
+  const dy0 = y2 - y1;
+  const dy1 = y3 - y2;
+
+  /* The recursion halves a spline each time and every branch shortens it, so
+   * it ends; the guard is against a subdivision that rounds to a piece the
+   * same size as the one it came from, which fixed point can do.
+   */
+  if (depth < 16) {
+    if ((dy0 > 0 && dy1 < 0) || (dy0 < 0 && dy1 > 0)) {
+      const denominator = dy0 - dy1;
+      const midX1 = x1 + fixedMulDiv(dx0, dy0, denominator);
+      const midX3 = x2 + fixedMulDiv(dx1, dy0, denominator);
+      const midX2 = midX1 + fixedMulDiv(midX3 - midX1, dy0, denominator);
+      const midY = y1 + fixedMulDiv(dy0, dy0, denominator);
+
+      evaluateSpline(lists, ends, x1, y1, midX1, midY, midX2, midY, dropout, depth + 1);
+
+      return evaluateSpline(lists, ends, midX2, midY, midX3, midY, x3, y3, dropout, depth + 1);
+    }
+
+    if ((dx0 > 0 && dx1 < 0) || (dx0 < 0 && dx1 > 0)) {
+      const denominator = dx0 - dx1;
+      const midY1 = y1 + fixedMulDiv(dy0, dx0, denominator);
+      const midY3 = y2 + fixedMulDiv(dy1, dx0, denominator);
+      const midY2 = midY1 + fixedMulDiv(midY3 - midY1, dx0, denominator);
+      const midX = x1 + fixedMulDiv(dx0, dx0, denominator);
+
+      evaluateSpline(lists, ends, x1, y1, midX, midY1, midX, midY2, dropout, depth + 1);
+
+      return evaluateSpline(lists, ends, midX, midY2, midX, midY3, x3, y3, dropout, depth + 1);
+    }
+
+    if (Math.abs(x3 - x1) > LONGEST || Math.abs(y3 - y1) > LONGEST) {
+      const midX1 = (x1 + x2) >> 1;
+      const midY1 = (y1 + y2) >> 1;
+      const midX3 = (x2 + x3) >> 1;
+      const midY3 = (y2 + y3) >> 1;
+      const midX2 = (midX1 + midX3) >> 1;
+      const midY2 = (midY1 + midY3) >> 1;
+
+      evaluateSpline(lists, ends, x1, y1, midX1, midY1, midX2, midY2, dropout, depth + 1);
+
+      return evaluateSpline(lists, ends, midX2, midY2, midX3, midY3, x3, y3, dropout, depth + 1);
+    }
+  }
+
+  ends.check(x3, y3, dropout);
+
+  if (dx0 * dy1 === dy0 * dx1) {
+    return calcLine(lists, x1, y1, x3, y3);
+  }
+
+  return calcSpline(lists, x1, y1, x2, y2, x3, y3, dropout);
+}
+
 export function calcSpline(
   lists: Lists,
   x1: number,
