@@ -5007,6 +5007,67 @@ trees and the reason they agree are recorded in
 from a change to both. What this does settle is that the endpoint topology is not
 where the remaining pixels come from.
 
+### The element walk, and where the trail stops
+
+Past the endpoint topology, 0x150f begins the walk itself, and the first thing it
+does is take two shortcuts. If the scanline index of the start equals that of the
+end in y, the element crosses no horizontal scanline at all, and a loop walks the
+column range adding the one row index to each vertical list; if the two agree in
+x instead, the mirrored loop walks the row range. Only when the element crosses
+in both does control reach the general case at 0x1609.
+
+That case sets up four things and then leaves. It widens both steps to 32 bits by
+sixty-four, `dx << 6` and `dy << 6`, by the usual trick of a `cwd`, a byte move
+and a shift. It adjusts the two half-pixel offsets: if the start sits exactly on
+a scanline and the step travels the positive way along that axis, the scan index
+is incremented, the list pointer advanced by one entry, and the offset moved a
+whole sixty-four -- the scanline you are standing on is the one you skip. It
+takes a determinant of the distance to the first crossing in each axis against
+the opposite step, which is what decides whether a horizontal or a vertical
+scanline is met first. And then:
+
+    168b  and bx,byte +0xe
+    168e  add bx,[0x1ce]
+    1692  call [bx+0x4a4]
+
+The walk proper is behind a function table, indexed by the quadrant with its low
+bit masked off and by the scan kind. Two things follow from that. The scan kind
+is not a bitfield but a byte offset into this table, which is why the code tests
+it with `cmp word [0x1ce], byte +0xa` rather than a bit test -- a detail that had
+looked odd. And the table is addressed through `ds`, so it lives in the data
+segment, and reading it means resolving DGROUP and its relocations. A static
+sweep of the code segments cannot follow this call, and that is where the trail
+stops for now.
+
+### One walk, no second setup, and a theory that fails
+
+Two things came out of looking for the conic walk that are worth keeping even
+though neither settles it.
+
+The first is a count. `SCANABOVE` and `SCANBELOW` have to mask to a multiple of
+sixty-four, and across the whole file, in every encoding a sixteen bit compiler
+can emit for that mask -- register and accumulator forms, byte forms, the 386
+form -- there are twenty-four such masks. Thirteen are in the scaler in segment
+36, four are the bounding box in `fsc_SetupScan`, three are unrelated, and the
+remaining four are the ones in `CalcLine` at 0x126c, 0x1289, 0x12a6 and 0x12b6.
+There is no second scanline-index setup anywhere. Whatever draws a curve does not
+begin the way `CalcSpline` begins. (An earlier narrower pattern found the same
+four and missed several other masks entirely, so the count here is the one to
+trust.)
+
+The obvious theory from that is that the shipped code has no conic walk at all
+and flattens curves into chords. It does not survive contact. Subdividing every
+spline to straight segments and handing those to `calcLine`, at thresholds of
+128, 64, 32, 16 and 8 sixty-fourths, gives 2,347, 2,332, 2,794, 3,463 and 4,274
+wrong pixels against the 2,180 of the conic walk. Not one is an improvement, and
+the trend away from the threshold is monotone. Windows is not drawing chords, and
+our forward-difference walk is closer to it than any flattening of it.
+
+So the count and the measurement point opposite ways, and the honest position is
+that both stand: there is no second `SCANABOVE` setup in the binary, and curves
+are nonetheless not being flattened. Resolving it means reading the table at
+`ds:0x4a4`, which needs the data segment.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
