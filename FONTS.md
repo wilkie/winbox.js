@@ -4839,6 +4839,31 @@ steady rate: 52 wrong pixels over 216 cells in Times, 44 in Courier.
 So it is not a property of one face's outlines. Wherever the forward difference
 runs, about one crossing in sixty comes out differently; wherever it does not,
 nothing ever does.
+
+### The shipped binary does not carry the table the source declares
+
+`spline.c` is a development build -- it has `Assert` calls and a commented-out
+`printf` -- so whether it is the revision that shipped is a fair question. Its
+one distinctive datum is `lZShiftTable`: thirty zeros followed by 1, 1, 1, 2, 2,
+2, 3, 3.
+
+That ramp does not appear anywhere in the installed system. Searched as bytes,
+as sixteen-bit words and as the `int32` the source declares, across every file
+on the drive, there are no matches at all. `GDI.EXE` is where it would be, being
+the module that carries the TrueType strings, `GetGlyphOutline` and
+`ConvertOutlineFontFile`, and it is a plain `NE` image with zero runs of up to
+four hundred and fifty bytes, so a literal table of mostly zeros would be
+findable. Every zero run of forty bytes or more was examined and none is
+followed by the ramp.
+
+What that does and does not say is worth keeping straight. It does not prove the
+scaler is absent from `GDI.EXE`, or that the table is wrong: a mostly-zero
+`static const` may be placed differently by the compiler, packed, or built at
+initialisation. It does mean that the one datum which could tie the source we
+have verified against to the binary that produced these fixtures is not there to
+tie it. So `spline.c` is evidence about the algorithm and not proof about the
+machine, and a source vintage differing from the shipped one would account for
+every measurement in this section without any of them being wrong.
 scan converter.
 
 ### There is no threshold, because the decision is not local
