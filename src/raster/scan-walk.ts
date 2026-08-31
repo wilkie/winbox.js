@@ -444,51 +444,22 @@ export function calcLine(
   }
 }
 
-/** A quadratic, walked as a conic forward difference. */
 /**
- * `a * b / c` the way the scan converter's own `FixedMulDiv` does it.
+ * A quadratic, cut into chords the way GDI.EXE cuts one.
  *
- * `FixedMul` is a plain sixty-four bit multiply and `FixedDiv` divides it back
- * down, carrying the remainder into the quotient when it reaches half the
- * divisor -- which is a half rounded away from zero, on magnitudes, with the
- * sign put back afterwards.
- */
-function fixedMulDiv(a: number, b: number, c: number) {
-  if (c === 0) {
-    return 0;
-  }
-
-  const sign = Math.sign(a) * Math.sign(b) * Math.sign(c);
-  const top = Math.abs(a) * Math.abs(b);
-  const bottom = Math.abs(c);
-
-  return sign * (Math.floor(top / bottom) + (top % bottom >= bottom >> 1 ? 1 : 0));
-}
-
-/** Splines longer than this are halved, in sixty-fourths: fifty pixels. */
-const LONGEST = 3200;
-
-/**
- * Cutting a spline down to pieces the walk can handle, then walking them.
+ * The document describes a spline split at its turning points and then walked as
+ * a conic forward difference, and `calcSpline` below is that walk. It is not
+ * what ships. The scan converter has one element walk and it is a line: the
+ * eight routines behind the table at the font scaler's `ds:0x4a4` are four
+ * quadrants of a determinant DDA in two scan kinds, and there is no second
+ * `SCANABOVE` setup anywhere in the binary for a curve to have used.
  *
- * `CalcSpline` reflects a spline into one quadrant using nothing but its two
- * ends, so it can only walk a spline that goes one way in each direction. A
- * quadratic whose control lies outside its ends does not, and handing it one
- * anyway is not a small error: with both ends on the same `x` the reflected
- * range is empty, the walk takes its "almost vertical" shortcut, and a curve
- * that bulges nineteen sixty-fourths is drawn as a single column.
- *
- * So the turns are cut out first. The cut is at the turning point, computed in
- * fixed point rather than worked out in floating point and rounded after, and
- * the two halves are built so that both of their controls and the point they
- * meet at share the coordinate being split on -- which is what having no slope
- * there means, and is imposed here rather than arrived at.
- *
- * The `y` turn goes first and the `x` turn second, and a delta of nothing is
- * not a turn: a control level with an end leaves the spline alone. After both,
- * anything longer than fifty pixels is halved for precision, and what is left
- * is walked -- as a line if the three points are collinear, since then the
- * spline is a line written the long way.
+ * What draws a curve is segment 44 at 0x42, reached from segment 42 through a
+ * thunk choosing between a 286 and a 386 build. It takes the curve's second
+ * difference, picks a depth from how large that is, steps the curve at that many
+ * equal parameter steps, and hands each chord to the line walker. A curve is a
+ * polyline through points rounded to a sixty-fourth, and that rounding is what
+ * our exactness had been showing up as wrong pixels against.
  */
 export function evaluateSpline(
   lists: Lists,
@@ -500,65 +471,94 @@ export function evaluateSpline(
   x3: number,
   y3: number,
   dropout = true,
-  depth = 0
+  given = -1
 ) {
-  const dx0 = x2 - x1;
-  const dx1 = x3 - x2;
-  const dy0 = y2 - y1;
-  const dy1 = y3 - y2;
+  const secondX = x1 - 2 * x2 + x3;
+  const secondY = y1 - 2 * y2 + y3;
 
-  /* The recursion halves a spline each time and every branch shortens it, so
-   * it ends; the guard is against a subdivision that rounds to a piece the
-   * same size as the one it came from, which fixed point can do.
+  let depth = given;
+
+  if (depth < 0) {
+    /* Two of the larger and one of the smaller: an octagonal norm, which the
+     * binary reaches by comparing the two and shifting whichever wins. Halving a
+     * quadratic quarters its second difference, so dividing by four until the
+     * norm falls under 0x80 counts the halvings wanted.
+     */
+    const spanX = Math.abs(secondX);
+    const spanY = Math.abs(secondY);
+    let size = spanY >= spanX ? spanX + 2 * spanY : 2 * spanX + spanY;
+
+    depth = 1;
+
+    while (size > 0x80) {
+      depth++;
+      size >>= 2;
+    }
+
+    if (depth > 8) {
+      depth = 8;
+    }
+  }
+
+  /* Past five it halves the curve and recurses instead, rather than let the
+   * accumulator below carry a shift wider than ten. The halves round: the new
+   * control is `(p1 + p2 + 1) >> 1` and the new end `(p1 + 2p2 + p3 + 2) >> 2`,
+   * neither of which is the truncating midpoint the document writes.
    */
-  if (depth < 16) {
-    if ((dy0 > 0 && dy1 < 0) || (dy0 < 0 && dy1 > 0)) {
-      const denominator = dy0 - dy1;
-      const midX1 = x1 + fixedMulDiv(dx0, dy0, denominator);
-      const midX3 = x2 + fixedMulDiv(dx1, dy0, denominator);
-      const midX2 = midX1 + fixedMulDiv(midX3 - midX1, dy0, denominator);
-      const midY = y1 + fixedMulDiv(dy0, dy0, denominator);
+  if (depth > 5) {
+    const nearX = (x1 + x2 + 1) >> 1;
+    const nearY = (y1 + y2 + 1) >> 1;
+    const midX = (x1 + 2 * x2 + x3 + 2) >> 2;
+    const midY = (y1 + 2 * y2 + y3 + 2) >> 2;
+    const farX = (x2 + x3 + 1) >> 1;
+    const farY = (y2 + y3 + 1) >> 1;
 
-      evaluateSpline(lists, ends, x1, y1, midX1, midY, midX2, midY, dropout, depth + 1);
+    evaluateSpline(lists, ends, x1, y1, nearX, nearY, midX, midY, dropout, depth - 1);
 
-      return evaluateSpline(lists, ends, midX2, midY, midX3, midY, x3, y3, dropout, depth + 1);
-    }
-
-    if ((dx0 > 0 && dx1 < 0) || (dx0 < 0 && dx1 > 0)) {
-      const denominator = dx0 - dx1;
-      const midY1 = y1 + fixedMulDiv(dy0, dx0, denominator);
-      const midY3 = y2 + fixedMulDiv(dy1, dx0, denominator);
-      const midY2 = midY1 + fixedMulDiv(midY3 - midY1, dx0, denominator);
-      const midX = x1 + fixedMulDiv(dx0, dx0, denominator);
-
-      evaluateSpline(lists, ends, x1, y1, midX, midY1, midX, midY2, dropout, depth + 1);
-
-      return evaluateSpline(lists, ends, midX, midY2, midX, midY3, x3, y3, dropout, depth + 1);
-    }
-
-    if (Math.abs(x3 - x1) > LONGEST || Math.abs(y3 - y1) > LONGEST) {
-      const midX1 = (x1 + x2) >> 1;
-      const midY1 = (y1 + y2) >> 1;
-      const midX3 = (x2 + x3) >> 1;
-      const midY3 = (y2 + y3) >> 1;
-      const midX2 = (midX1 + midX3) >> 1;
-      const midY2 = (midY1 + midY3) >> 1;
-
-      evaluateSpline(lists, ends, x1, y1, midX1, midY1, midX2, midY2, dropout, depth + 1);
-
-      return evaluateSpline(lists, ends, midX2, midY2, midX3, midY3, x3, y3, dropout, depth + 1);
-    }
+    return evaluateSpline(lists, ends, midX, midY, farX, farY, x3, y3, dropout, depth - 1);
   }
 
-  ends.check(x3, y3, dropout);
+  const steps = 1 << depth;
+  const shift = depth * 2;
+  const half = 1 << (shift - 1);
 
-  if (dx0 * dy1 === dy0 * dx1) {
-    return calcLine(lists, x1, y1, x3, y3, dropout);
+  /* The accumulator carries the point scaled by the square of the step count, so
+   * the first difference at nought is the second difference less twice the step
+   * count's worth of the first, and the running second difference doubles.
+   */
+  let stepX = secondX - ((x1 - x2) << (depth + 1));
+  let stepY = secondY - ((y1 - y2) << (depth + 1));
+  const growX = secondX * 2;
+  const growY = secondY * 2;
+
+  let atX = x1 << shift;
+  let atY = y1 << shift;
+  let fromX = x1;
+  let fromY = y1;
+
+  for (let step = 0; step < steps; step++) {
+    atX += stepX;
+    stepX += growX;
+    atY += stepY;
+    stepY += growY;
+
+    const toX = (atX + half) >> shift;
+    const toY = (atY + half) >> shift;
+
+    // Each chord is an element in its own right, endpoint and all.
+    ends.check(toX, toY, dropout);
+    calcLine(lists, fromX, fromY, toX, toY, dropout);
+
+    fromX = toX;
+    fromY = toY;
   }
-
-  return calcSpline(lists, x1, y1, x2, y2, x3, y3, dropout);
 }
 
+/**
+ * The conic walk the document describes, kept for the test that checks our
+ * reading of it against an independent transcription. Nothing draws with it:
+ * see `evaluateSpline` for what the binary does instead.
+ */
 export function calcSpline(
   lists: Lists,
   x1: number,

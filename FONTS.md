@@ -5136,6 +5136,73 @@ adds its crossings directly, without the four-way `SCANABOVE` setup the source
 shows, or does not exist and the flattening happens further upstream in the
 scaler -- and if it is the latter, it is not the chord flattening tried here.
 
+### There is no conic walk, and here is what draws a curve
+
+The four calls to `CalcLine` all come from one function low in segment 42, and
+what it does before each of them is call 0x19a4. That is a thunk: it sets `es`
+from `ds`, clears the direction flag, and far-jumps to offset 0x42 of segment 44
+or segment 45 depending on a global -- a 286 build and a 386 build of the same
+routine, chosen at load. Segment 44 is the 386 one, and it is full of `0x66`
+prefixes, which is the first real 32-bit arithmetic in any of this.
+
+It opens by sign-extending six coordinates and taking, for each axis, a first
+difference and then a second: `p1 - 2*p2 + p3`. It measures those two with an
+octagonal norm -- twice the larger plus the smaller -- and then counts how many
+times that has to be divided by four to fall under 0x80, which is how many times
+the curve has to be halved, since halving a quadratic quarters its second
+difference. The count starts at one and is clamped at eight. Past a depth of
+five it halves the curve outright and recurses; at five or less it steps.
+
+The step is a forward difference in an accumulator scaled by the square of the
+step count, and it writes its points into two arrays:
+
+    021b  add edx,[bp-0x24]     ; the point advances by the first difference
+    0222  add eax,ebx           ; ebx is half of the scale
+    0225  sar eax,cl            ; and back down, rounded
+    0228  mov [di],ax           ; a coordinate, in sixty-fourths
+    022d  add [bp-0x24],eax     ; the first difference grows by the second
+
+So a curve is a **polyline**. Windows picks a power of two from the curve's
+curvature, evaluates the quadratic at that many equal steps of its parameter,
+rounds every point to a sixty-fourth, and hands the chords to the line walker one
+at a time. That is why the scan converter has only line steppers, why there is no
+second `SCANABOVE` setup, and why every disputed pixel we ever traced was on a
+curve and never on a line: we were drawing the true conic, and Windows was
+drawing a rounded polygon through it.
+
+### What it was worth
+
+Implementing it moved the fabricated set from 6,165 of 7,050 cells exact and
+2,180 wrong pixels to **6,441 exact and 1,818 wrong** -- 276 more cells right and
+362 fewer pixels wrong. The outline glyphs in the recorded set went from
+ninety-two per cent agreeing to **ninety-six**, and the letters still in dispute
+from sixty-eight to thirty-three.
+
+Three details each carried part of that, and none of them is in the document. The
+halving rounds -- the new control is `(p1 + p2 + 1) >> 1` and the new end
+`(p1 + 2*p2 + p3 + 2) >> 2`, where the document writes a truncating midpoint and
+`CalcHorizSplineSubpix` writes `+ 1` rather than `+ 2`. Every stepped point is
+rounded half up rather than truncated. And each chord is a whole element, so its
+endpoint goes through the endpoint topology like any other vertex: feeding those
+through `ends.check` was worth 215 cells on its own, and until it was done the
+flattening looked like a wash.
+
+The turning-point splits went too. They exist in `EvaluateSpline` so that a conic
+walk can run over a monotone piece, and with no conic walk to feed they only cost
+accuracy: taking them out was worth a further 61 cells and 75 pixels. `calcSpline`
+stays in the file, exported and still checked against an independent
+transcription by `spline_walk_test.ts`, because it remains our reading of what
+the document says -- but nothing draws with it.
+
+An earlier attempt at this in the previous section failed and it is worth saying
+why, because the failure looked conclusive. It flattened adaptively on chord
+length and recursed on a distance threshold, which is a reasonable thing to do and
+is not what the binary does: the depth comes from curvature, the steps are equal
+in the parameter rather than adaptive, and the rounding is specified. Getting any
+of those wrong makes flattening worse than the conic walk, which is exactly what
+was measured. A negative result about a hand-chosen approximation said nothing
+about the real one.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
