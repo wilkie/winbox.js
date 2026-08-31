@@ -4953,6 +4953,60 @@ further flags at 0x80 and 0x100 for a start coordinate sitting on a scanline, an
 then takes a cross product of the two steps with `imul`. That is the direction
 test the pseudocode describes, and it is the next thing to read line by line.
 
+### The endpoint topology, read out of the binary
+
+The block from 0x1342 to 0x150e in segment 42 is the endpoint topology, and it
+is reached only when the point being evaluated sits exactly on a scanline in x or
+in y -- a flag word carries those two facts at 0x80 and 0x100, and when neither
+is set the code jumps straight past to the element walk at 0x150f. That is the
+same guard the pseudocode puts on `CheckHorizTopology` and `CheckVertTopology`,
+and the horizontal half is 0x1390 through 0x1445.
+
+Three things confirm the reading before any of it is interpreted. The three
+comparisons in the block are `y0` against `y1`, `y1` against `y2`, and `x0`
+against `x1` -- exactly the three the pseudocode makes. The block ends in three
+tails, one adding to a list, one adding to a second list that grows the other
+way, and one falling from the first into the second, which are `AddHorizOn`,
+`AddHorizOff`, and the two together. And the values they store settle the
+rounding: `on` stores `((x + 31) & -64) >> 6` and `off` stores the same plus one
+when x is on a scanline, which are `(x + 31) >> 6` and `(x + 32) >> 6` -- our
+`addHorizOn` and `addHorizOff` unchanged.
+
+What the block does not do is decide from those three comparisons. It decides
+from a quadrant, held one-hot in the low four bits and derived from the sign of
+the step; a cross product of the incoming edge against the outgoing one,
+`(x1 - x0) * (y2 - y1) - (y1 - y0) * (x2 - x1)`, whose sign is bit 0x10; and two
+degeneracy bits for a step that is flat in x or in y with the previous point flat
+alongside it. The pseudocode mentions none of these. Transcribed and compared
+over every arrangement of six coordinates, the two trees differ on 3,954 of
+15,625.
+
+### Why that difference cannot be the residue
+
+The disagreements all have one shape. Every one of the 3,954 is an `on` and an
+`off` together against neither -- there is no case where one tree says `on` and
+the other `off`, and none where either says `on` alone against nothing. The two
+tails write to `(x + 31) >> 6` and `(x + 32) >> 6`, which name the same column
+unless x is itself on a scanline, so a coincident pair spans no pixel at all.
+Adding it and adding nothing are the same bitmap.
+
+So the two readings can only diverge at a point that is a pixel centre in **both**
+axes at once. On the fixtures that is not a rarity so much as an absence:
+`horizTopology` runs 716 times across the whole set and `vertTopology` 572, the
+two trees part company on 9 of those 716, and in none of the 9 is x on a
+scanline as well. Swapping the binary's tree into `scan-walk.ts` and rerunning
+leaves the totals at 6,165 of 7,050 cells and 2,180 wrong pixels, unchanged to
+the pixel.
+
+The implementation therefore keeps the pseudocode's form, which is what the
+standing rule asks for: there is a difference here, but no measurement that can
+choose between the two, and a tree transcribed by hand from a partly understood
+disassembly is the worse thing to trust when nothing distinguishes them. Both
+trees and the reason they agree are recorded in
+`test/raster/endpoint_topology_test.ts` so that a later change to one can be told
+from a change to both. What this does settle is that the endpoint topology is not
+where the remaining pixels come from.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
