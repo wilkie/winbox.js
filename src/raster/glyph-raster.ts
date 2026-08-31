@@ -640,6 +640,19 @@ export function fillWalked(contours, options) {
         continue;
       }
 
+      /* A dropout outside the band is dropped, not brought inside it.
+       *
+       * `PerformVertDropout` returns before it does anything else when its row
+       * is beyond `loBitBand` or `hiBitBand`, which without banding are the box
+       * -- so a vertical run found outside it is not drawn at all. Clamping it
+       * in instead paints a pixel Windows never paints, and worse, that pixel
+       * then stops a later rescue in the same column, because a rescue declines
+       * where a neighbour is already lit.
+       */
+      if (row < boxTop || row > boxBottom) {
+        continue;
+      }
+
       let at = row;
 
       if (at < boxTop) {

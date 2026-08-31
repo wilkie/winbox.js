@@ -5032,8 +5032,27 @@ were already right and two were not.
   declines where a neighbour is already lit. Windows reads downward, as this now
   does, and lights it anyway.
 
-  So the placement or the neighbour test is wrong, and three cells of one face
-  at one size is the smallest statement of it this fixture can make. Reading the
+  Tracing it says more than that. Courier New's `a` at ten pixels per em
+  attempts five vertical rescues, in this order: column 4 row 3, lit; column 4
+  row 4, declined because the pixel above it is lit; column 4 row 6, lit at row
+  5 after the clamp; column 3 row 4, lit; column 3 row 6, declined. The pixel
+  Windows draws and this does not is column 4 of row 4, and by the time it is
+  considered _both_ of its neighbours are lit -- the one above by the rescue
+  made a moment earlier, the one below by the ordinary fill. No test of a
+  neighbour, in any form, can let it through.
+
+  Which narrows it usefully. The test is not simply wrong: taking it out
+  entirely costs twenty-seven letters and forty pixels. Guarding it on the box
+  rather than the bitmap, which is what `PerformVertDropout` does, changes
+  nothing here. Discarding a vertical dropout outside the band instead of
+  clamping it in, which `PerformVertDropout` also does and this now does too,
+  changes nothing either -- nothing falls outside.
+
+  So for Windows to draw that pixel, the pixel above it must not have been lit
+  when it was considered, which means the rescue at column 4 row 3 is one
+  Windows makes later or does not make at all. Three cells of one face at one
+  size, five rescues, and one of them in the wrong order or not there: that is
+  the smallest statement this fixture can make of what is left, and reading the
   column the other way was hiding it.
 
 What is left after all of it is a difference of under a sixty-fourth, on every
