@@ -4577,6 +4577,35 @@ fitted height.
 
 ---
 
+### What the last hundred wrong pixels are made of
+
+Sixty-eight of 846 recorded cells disagree, by 107 pixels between them, and they
+are not spread evenly. Measured:
+
+- **Curves cost two and a half times what straight lines do.** The characters
+  with a curve in them are wrong on 0.176 pixels a cell and the ones made of
+  straight lines on 0.069. The characters that are never wrong at any size in
+  any face are `4`, `A`, `E`, `M`, `N`, `W`, `f`, `k` and `w`, which is very
+  nearly a list of the ones with no curve worth the name.
+- **Digits are over-represented because digits are bowls.** They are 26.8 per
+  cent of the cells drawn and 53.3 per cent of the wrong pixels. `8` alone
+  accounts for seventeen.
+- **We draw too much, about two to one.** Seventy-two of the 107 are ink we drew
+  and Windows did not; thirty-five are the other way.
+- **It is not the dropout passes.** They light 63 pixels across those cells and
+  only fourteen of our seventy-two extra are among them.
+- **The extra ink is at the ends of runs**, fifty-six of seventy-two, and evenly
+  split between the left end and the right, so the runs are too long rather than
+  shifted. What we miss, by contrast, is mostly a pixel standing alone --
+  fifteen of thirty-five -- which is a rescue Windows made and we did not.
+- **Twenty-nine of the seventy-two are on a row with nothing above or below
+  it**, which is to say the topmost or bottommost row of a shape. That is where
+  a bowl is near horizontal, and it is the largest single group.
+
+So the residue is two things and not one: runs a pixel too long where a curve
+turns over, and a handful of rescues not made. The first is much the larger and
+points at the spline walk rather than at the fill or the dropout rules.
+
 ## 9. Where the numbers stand
 
 | Fixture                                                      | Agreement |
