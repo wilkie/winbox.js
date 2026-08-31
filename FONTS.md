@@ -4798,21 +4798,24 @@ same outline, solved exactly.
   made -- which is the shape of the ink the recorded letters are missing, most
   of it a pixel standing on its own.
 
-  **The imbalance is the walk's and not the topology's.** Tagging every vertical
-  entry with where it came from puts 77 of the 79 entirely in the walk, with the
-  endpoint topology contributing nothing to that column at all: 32 columns carry
-  a single `on` and nothing else, 25 a single `off`, 13 three entries split two
-  to one. Two of the 79 involve the topology. And they gather on the letters
-  made of diagonals -- Arial's `A`, `W` and `g` at twenty-four pixels per em
-  supply the first six -- which is `CalcLine` rather than `CalcSpline`.
+  **It was `CalcLine` emitting vertical entries with dropout control off.**
+  Tagging every vertical entry with where it came from put 77 of the 79
+  entirely in the walk, on letters made of diagonals, and tracing the smallest
+  -- Arial's `W` at twenty-four pixels per em, column 7, one entry and nothing
+  to pair it -- found the vertex at 480 sixty-fourths that should have supplied
+  the partner and did not, because dropout control was off for that glyph.
 
-  A closed contour crosses any vertical line an even number of times, so an odd
-  count is a crossing dropped or counted twice. The suspect is the vertex two
-  edges share: a line's walk begins at `ScanBelow(x1)` or `ScanAbove(x1)`, both
-  of which step over a sample sitting exactly on `x1`, and the endpoint topology
-  is what is meant to put it back. On these columns it does not, and why it does
-  not is the next thing to find out. `"Arial",h=24,'W'` column 7 is the smallest
-  case.
+  `CalcLine`'s own branch for that emits nothing but horizontal entries, and
+  this implementation had no such branch: it emitted both, while the endpoint
+  topology obeyed the flag. So the walk put entries in a list the topology had
+  declined to match. Giving `calcLine` the flag takes the 79 to none, and the
+  column count from 4,941 to 4,589 -- the difference being entries that should
+  never have been made.
+
+  Nothing read them. The vertical lists are consulted only when dropout control
+  is on, so no pixel moves and no score changes; what was wrong was that the
+  lists disagreed with themselves, which is why the audit found it and the
+  fixtures never could.
 
 - **The fill lights a sample lying exactly on the closing crossing.** Thirty-six
   rows differ from the winding solve, 35 of them that way and 12 the other. They

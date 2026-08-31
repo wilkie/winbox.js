@@ -313,7 +313,14 @@ export class Endpoints {
 }
 
 /** A straight edge. */
-export function calcLine(lists: Lists, x1: number, y1: number, x2: number, y2: number) {
+export function calcLine(
+  lists: Lists,
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  dropout = true
+) {
   let quadrant: number;
   let q: number;
   let y: number;
@@ -382,7 +389,24 @@ export function calcLine(lists: Lists, x1: number, y1: number, x2: number, y2: n
     xSteps = 0;
   }
 
-  const { addHoriz, addVert } = element(lists, quadrant);
+  const { addHoriz, addVert: rawVert } = element(lists, quadrant);
+
+  /* With dropout control off there is no sweep down the columns to feed, and
+   * `CalcLine`'s own branch for that emits nothing but horizontal entries. Ours
+   * emitted both, which left a column holding entries the endpoint topology --
+   * which does obey the flag -- had declined to match. Nothing read them, since
+   * the vertical lists are only consulted when dropout control is on, but they
+   * made the lists disagree with themselves. **Traced** on Arial's `W` at
+   * twenty-four pixels per em, where column 7 held one entry and nothing to
+   * pair it with.
+   */
+  const addVert = (atX: number, atY: number) => {
+    if (!dropout) {
+      return;
+    }
+
+    return rawVert(atX, atY);
+  };
 
   if (y1 === y2) {
     for (let step = 0; step < xSteps; step++) {
@@ -529,7 +553,7 @@ export function evaluateSpline(
   ends.check(x3, y3, dropout);
 
   if (dx0 * dy1 === dy0 * dx1) {
-    return calcLine(lists, x1, y1, x3, y3);
+    return calcLine(lists, x1, y1, x3, y3, dropout);
   }
 
   return calcSpline(lists, x1, y1, x2, y2, x3, y3, dropout);

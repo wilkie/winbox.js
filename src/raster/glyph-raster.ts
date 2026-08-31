@@ -431,9 +431,9 @@ export function fillWalked(contours, options) {
         continue;
       }
 
-      calcLine(lists, sub(from[0]), -sub(from[1]), sub(to[0]), -sub(to[1]));
+      calcLine(lists, sub(from[0]), -sub(from[1]), sub(to[0]), -sub(to[1]), dropout);
 
-      ends.check(sub(to[0]), -sub(to[1]));
+      ends.check(sub(to[0]), -sub(to[1]), dropout);
     }
 
     ends.end();
