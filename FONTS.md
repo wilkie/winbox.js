@@ -4579,273 +4579,36 @@ fitted height.
 
 ### What the last hundred wrong pixels are made of
 
-Sixty-eight of 846 recorded cells disagree, by 107 pixels between them, and they
-are not spread evenly. Measured:
+Sixty-six of 828 recorded cells disagree, by 105 pixels between them, and they
+are not spread evenly. Measured, and measured again after every fix since, with
+the shape barely moving:
 
-- **Curves cost two and a half times what straight lines do.** The characters
-  with a curve in them are wrong on 0.176 pixels a cell and the ones made of
-  straight lines on 0.069. The characters that are never wrong at any size in
-  any face are `4`, `A`, `E`, `M`, `N`, `W`, `f`, `k` and `w`, which is very
-  nearly a list of the ones with no curve worth the name.
-- **Digits are over-represented because digits are bowls.** They are 26.8 per
-  cent of the cells drawn and 53.3 per cent of the wrong pixels. `8` alone
-  accounts for seventeen.
-- **We draw too much, about two to one.** Seventy-two of the 107 are ink we drew
-  and Windows did not; thirty-five are the other way.
-- **It is not the dropout passes.** They light 63 pixels across those cells and
-  only fourteen of our seventy-two extra are among them.
-- **The extra ink is at the ends of runs**, fifty-six of seventy-two, and evenly
-  split between the left end and the right, so the runs are too long rather than
-  shifted. What we miss, by contrast, is mostly a pixel standing alone --
-  fifteen of thirty-five -- which is a rescue Windows made and we did not.
-- **Twenty-nine of the seventy-two are on a row with nothing above or below
-  it**, which is to say the topmost or bottommost row of a shape. That is where
-  a bowl is near horizontal, and it is the largest single group.
+- **Seventy-three of the 105 are ink drawn here and not by Windows**, and
+  thirty-two the other way. Fifty-six of the seventy-three sit at the end of a
+  run, split about evenly between its left end and its right, so the runs are
+  too long rather than displaced. What is missed is more often a pixel standing
+  alone -- twelve of the thirty-two.
+- **Curves cost two and a half times what straight lines do**, and digits are
+  half the total while being a quarter of the cells: `8` alone accounts for
+  seventeen. The characters never wrong at any size in any face are `4`, `A`,
+  `E`, `M`, `N`, `W`, `f`, `k` and `w`.
+- **It grows faster than the glyph does.** Per cell drawn: 0.028 wrong pixels at
+  ten pixels of cell height, 0.065 at twelve, 0.148 at fourteen, 0.175 at
+  twenty, 0.300 at twenty-four. A tenfold rise for a size that not quite
+  two-and-a-half times. The number of places an edge can cross a sample grows
+  with the perimeter, which is linear, so something else is compounding.
+- **On a steep diagonal the ink sits a pixel further out.** Times New Roman's
+  `8` at sixteen pixels per em is the worst cell in the fixture at seven pixels,
+  and all seven are at the waist where the two bowls cross: `....#.#` against
+  `...Xo.oX` on one row, `.....#` against `....X#X` on the next. Both strokes
+  are outward of where Windows puts them. Arial's `7` at eighteen and at twenty
+  is the same thing on a single diagonal, the stroke stepping across a row
+  earlier than it should.
 
-So the residue is two things and not one: runs a pixel too long where a curve
-turns over, and a handful of rescues not made.
-
-**It is not the subdivision at turning points.** The scan converter's own
-`CalcSpline` reflects a spline into a quadrant using nothing but its endpoints
--- `y3 > y1` and `x3 > x1` -- and never subdivides, where this implementation
-splits a quadratic at its turning points so that every walked piece is
-monotonic. That looked like the difference, since it is a structural one and it
-lives exactly where the errors are. It is not. Removing the subdivision is worse
-in every arrangement -- 775 letters and 111 wrong pixels against 778 and 107,
-with splitting on only one axis in between -- and, more to the point, the
-subdivision fires on 1.8 per cent of the curves in the failing cells against 2.6
-per cent in the agreeing ones. It happens _less_ where things go wrong. The
-extremes of these bowls are at on-curve points, which is where a designer puts
-them, so there is no turning point inside the quadratic to split.
-
-**Nor is it the topology.** `CheckHorizTopology` and `CheckVertTopology`, and
-the four `Add` functions they call, match the pseudocode branch for branch,
-including the asymmetry that makes an `on` endpoint round its coordinate with
-`+31` and an `off` one with `+32`.
-
-**And the outline is the right size.** Sixty-seven of the sixty-eight failing
-cells have exactly the same ink bounding box as Windows -- not a row taller, not
-a column wider. Whatever is wrong is inside a shape whose extent is right, which
-rules out the placement, the scaling and the box clamps together.
-
-**What the disputed pixels have in common is that the curve passes through the
-sample point.** Instrumenting the walk to dump its crossing lists and solving
-the same outline exactly, cell by cell, gives the distance from each disputed
-pixel's centre to the crossing nearest it. Eighty-seven of the 107 are within an
-eighth of a pixel of a crossing and thirty-one are within _half a sixty-fourth_
-of the centre itself. The sample points sit at the pixel centres, so these are
-the cases where the outline goes through one.
-
-Times New Roman's `o` at twenty-four pixels per em is the whole of it in two
-rows. On row 16 the outline crosses at 4.2179 and 6.4820; the pixel centre at
-6.5 is eighteen thousandths of a pixel beyond where the curve turns back, and
-Windows lights it and we do not. On row 17 it crosses at 5.4807 and 9.4763; the
-centre at 5.5 is nineteen thousandths inside, and Windows skips it and we do not.
-
-**There is no bias to it.** Signed so that positive means Windows behaved as
-though the curve reached further, the eighty-seven have a mean of 0.29
-sixty-fourths and a median of 0.07, spread either way. So it is not an offset,
-and not a rounding that leans one way; it is a coin landing on its edge, and
-Windows and this implementation call it differently.
-
-Four more things are ruled out, each measured rather than argued:
-
-- **Not the amplification of a shallow edge.** A sixty-fourth of error in `y`
-  moves the disputed crossings sideways by a median of 0.9 sixty-fourths, and 44
-  of the 87 sit on an edge steep enough to move less than one. Only one of the
-  87 is on an edge shallow enough to move three or more. Whatever puts the curve
-  on the sample point, it is not a small vertical error magnified.
-- **Not the arithmetic overflowing.** The walk's terms are 32-bit integers in
-  the original and exact numbers here, which would differ if they wrapped. The
-  widest any of them reaches across the whole fixture is `dQx` at 3.0e8, against
-  the 2.1e9 a signed 32-bit integer holds.
-- **Not the tie-breaking in the stepping loop.** Turning `q < 0` into `q <= 0`
-  and `dQy > tZ` into `dQy >= tZ`, in each of the four branches and in every
-  combination, moves not one pixel of the 107. The comparisons never sit on
-  their own boundary; the tie is in the geometry, not in them.
-- **Not `PowerOf2` or the precision reduction.** Both match the pseudocode
-  exactly, and the reduction does fire -- `aBits + xyBits` reaches into the
-  non-zero part of the table at these sizes.
-
-**And it is the rasteriser, not the interpreter.** Those two are the only things
-that could put the outline on the sample point, and every recorded letter has
-been through both, so nothing above separates them. A fabrication does. Its
-glyphs carry no program at all: nothing is hinted, so the outline Windows
-rasterises is the one written into the font and scaled once, and that scaling is
-already known to agree, since it is what the `hdmx` advances and Arial Italic's
-`M` measure. Whatever is left has only the walk to come from.
-
-Each of the thirty-six characters the glyph probe draws gets a rectangle whose
-right edge is three font units further out than the last -- about two thirds of
-a sixty-fourth a step at these sizes, so the sweep carries the edge across more
-than half a pixel. Eighteen have a straight right edge, walked by `CalcLine`,
-and eighteen a gently curved one, walked by `CalcSpline`, over the same ground.
-All thirty-six are given a side bearing of nothing, without which each keeps the
-bearing of the letter it was written over, the outline is carried onto a
-different one in every glyph, and the left side of the rectangle moves along with
-the right.
-
-The thresholds fall in the same place at every size for both kinds of edge, and
-ten of the 216 cells disagree in some other pixel. Every one of the ten is a
-curved variant: the straight edges, walked by `CalcLine`, agree everywhere, so
-the whole of the difference is in `CalcSpline`. Tracing the first of them
-settled where some of it comes from.
-
-Its right side is a quadratic whose ends scale to 216 sixty-fourths and whose
-control scales to 233, so its outermost point is at `(216 + 2*233 + 216) / 4`,
-which is 224.5. The sample column sits at 224. Windows walks the whole quadratic
-and does not reach the sample. This implementation splits the quadratic at that
-turning point so both halves are monotonic, and the new endpoint it creates has
-to be put on the grid -- which the original never had to be. Rounded to the
-nearest sixty-fourth, 224.5 becomes 225, the outline gains half a sixty-fourth
-of reach that Windows never sees, and the pixel whose centre falls in that half
-is lit.
-
-**So the turn is rounded toward the curve**: down when it is a maximum in that
-direction and up when it is a minimum, which is the one choice that cannot
-manufacture coverage. The split point becomes 224 and the walk stops at the
-sample rather than past it. It is worth three wrong pixels and two cells across
-the fabricated recordings and none of the 107, whose faces do not happen to put
-a turning point on a sample.
-
-It does not settle the recording. An earlier note here said it did -- that all
-216 cells agreed afterwards -- and that was wrong twice over: the measurement
-compared the rightmost lit column rather than the whole cell, and the test
-written to compare whole cells looked the recording up by a name it does not
-have and returned before asserting anything. Ten cells disagree, all of them
-curved.
-
-This is the first thing found in the rasteriser rather than the interpreter, and
-it was findable only because the fabrication has no program in it: with nothing
-hinted and the outline known exactly, there was nowhere else for the difference
-to come from.
-
-**The rule is close and not yet right.** `edge-sweep` moves an edge and crossed
-the turning-point case once, by accident, so a second fabrication asks for it:
-each glyph is a rectangle with one curved side whose control point is a font
-unit further out than the last, which steps the extreme across a sample column
-in halves of a sixty-fourth. Eighteen bulge right, where the turn is a maximum,
-and eighteen left, where it is a minimum.
-
-Twenty-five of 216 cells disagree, and they are two different things.
-
-At sixteen pixels of cell height the extreme reaches a sample column two steps
-before Windows lets it on the right, and one step early on the left. So rounding
-the turn toward the curve was enough for the single case `edge-sweep` found and
-is not enough for these: the reach is still a little long, in both directions,
-which is what one would expect if the split point is right and the walked halves
-still cover a shade more than the whole ever did.
-
-**The subdivision is `EvaluateSpline`, and it is now implemented as written.**
-The hand-rolled split that stood here -- turning points solved in floating
-point, rounded to the grid, both controls carried with them -- is gone. Four
-details of the real one are not guesses and could not have been arrived at:
-
-- **A delta of nothing is not a turn.** The test is `(dy0 > 0 && dy1 < 0) ||
-(dy0 < 0 && dy1 > 0)`, strictly, so a control level with an end leaves the
-  spline whole. Solving for a turning parameter inside `(0, 1)` splits some of
-  those.
-- **The `y` turn is cut first and the `x` turn second**, each by its own test,
-  and the recursion re-examines what it produces rather than cutting both at
-  once.
-- **The cut is computed in fixed point**, as `x1 + FixedMulDiv(dx0, dx0, dx0 -
-dx1)` on the axis being split, with `FixedMulDiv`'s own rounding -- a half
-  away from zero, on magnitudes. Not solved and rounded afterwards. For the
-  quadratic traced above that gives 232 sixty-fourths where the true extreme is
-  231.5, so it rounds _outward_, which is the opposite of what was guessed here.
-- **Both halves are built to share the split coordinate**: for an `x` cut both
-  controls and the joining point take `midX`. The property is imposed rather
-  than computed, which is why the halves are monotonic however the cut rounds.
-
-Two more come from `EvaluateEndPoint`, which is called once per monotonic piece
-and not once per segment: a step that goes nowhere returns _before_ the running
-vertex is shifted, and the vertical topology pass exists only when dropout
-control does.
-
-**It is better on the letters and worse on the two sweeps.** The recorded
-letters go from 778 of 846 and 107 wrong pixels to 780 and 105. The fabricated
-sweeps go the other way, the edge sweep from 10 disagreements to 12 and the
-turning-point sweep from 17 to 25.
-
-**The walk itself is exact, and that is now measured rather than assumed.**
-Every horizontal entry `CalcSpline` makes was compared against an exact solve of
-the very piece it was walking -- the quadratic's crossing of that row's sample
-line, solved in floating point -- across the recorded letters and both
-fabricated sweeps. In all 20,110 entries the column the walk names is the column
-the solve names: never one too soon, never one too late. The gap between the
-named column's sample and the true crossing is spread evenly over the sixty-four
-sixty-fourths it has to be spread over if the walk is right.
-
-So the forward differences, the precision reduction, the step decision and the
-tails are not where the remaining disagreement lives. Whatever is left is in
-what is handed to the walk, or in what is done with what it produces: the
-scaling of the outline, the construction in `EvaluateSpline`, the vertical pass,
-the endpoint topology, or the pairing.
-
-**The pairing is sound and the vertical pass is not.** The same method applies
-to what is done with the crossings: for every row of every recorded letter, the
-runs the pairing produces were compared against a non-zero winding fill of the
-same outline, solved exactly.
-
-- **The horizontal lists always balance.** In 6,719 rows there is not one where
-  the count of `on` crossings differs from the count of `off` crossings, which
-  is what the endpoint topology exists to guarantee and is some evidence it is
-  right.
-- **The vertical lists do not.** Of 4,941 columns carrying a vertical crossing,
-  79 have a different number of each. The vertical dropout sweep reads those
-  lists, so on one column in sixty it is reading something that does not pair,
-  and a rescue that should be made from a pair that is not there is a rescue not
-  made -- which is the shape of the ink the recorded letters are missing, most
-  of it a pixel standing on its own.
-
-  **It was `CalcLine` emitting vertical entries with dropout control off.**
-  Tagging every vertical entry with where it came from put 77 of the 79
-  entirely in the walk, on letters made of diagonals, and tracing the smallest
-  -- Arial's `W` at twenty-four pixels per em, column 7, one entry and nothing
-  to pair it -- found the vertex at 480 sixty-fourths that should have supplied
-  the partner and did not, because dropout control was off for that glyph.
-
-  `CalcLine`'s own branch for that emits nothing but horizontal entries, and
-  this implementation had no such branch: it emitted both, while the endpoint
-  topology obeyed the flag. So the walk put entries in a list the topology had
-  declined to match. Giving `calcLine` the flag takes the 79 to none, and the
-  column count from 4,941 to 4,589 -- the difference being entries that should
-  never have been made.
-
-  Nothing read them. The vertical lists are consulted only when dropout control
-  is on, so no pixel moves and no score changes; what was wrong was that the
-  lists disagreed with themselves, which is why the audit found it and the
-  fixtures never could.
-
-- **The fill lights a sample lying exactly on the closing crossing, and so does
-  Windows.** Thirty-six rows differ from the winding solve, 35 of them that way
-  and 12 the other, and they all look alike: a span from 6.578 to 7.500 with a
-  sample at 7.5, and the run covers it. That is not a defect. The asymmetry is
-  written down -- an `off` entry takes `(x + 32) >> 6` where an `on` entry takes
-  `(x + 31) >> 6`, so a vertex sitting exactly on a sample lights that column
-  from both ends -- and flipping it costs three letters and four pixels, 780 of
-  846 and 105 wrong pixels becoming 777 and 109. The reference the audit
-  compared against was half-open at the closing end and Windows is not, so the
-  35 are the measurement's convention and not the implementation's.
-
-That also corrects a guess made earlier here from reading `ScanAbove` and
-`ScanBelow`, that the walk excludes a sample sitting exactly on either end. It
-excludes one at the start and includes one at the end.
-
-That is worth stating plainly rather than tuning away, because a faithful
-subdivision should not make anything worse. Something else is wrong, and the
-sweeps are where it shows because they were built to put an extreme within a
-sixty-fourth of a sample column and nothing else in this fixture does that. The
-hand-rolled split was rounding the cut inward, which happened to cancel it; the
-real one rounds outward, and the cancellation is gone.
-
-At eighteen the outermost column agrees for every one of the eighteen variants
-and sixteen of them still differ -- by one pixel on the bottom row, which is the
-end of the curve rather than its extreme. That is the same signature the
-recorded letters have, ink at the end of a run on a row with nothing below it,
-and this is the first time it has been reproduced with nothing hinted at all. It
-is a second defect and not this one, and having it in a fabrication with a known
-outline is worth more than the twenty-nine occurrences of it in the letters.
+None of that is a different phenomenon from the one the fabricated sweeps
+isolate. It is an edge passing within a fraction of a sixty-fourth of a sample
+point, resolved one way here and the other there, and steep diagonals and the
+waists of digits are simply where a letter offers the most chances for it.
 
 ### There is no threshold, because the decision is not local
 
