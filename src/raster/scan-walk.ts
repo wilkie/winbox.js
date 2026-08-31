@@ -102,10 +102,7 @@ function element(lists: Lists, quadrant: number) {
   const vert = quadrant === 2 || quadrant === 3 ? lists.vertOn : lists.vertOff;
 
   return {
-    addHoriz: (x: number, y: number) => {
-      (globalThis as any).__wbEmit?.('walk', quadrant, x, y);
-      put(horiz, y, x);
-    },
+    addHoriz: (x: number, y: number) => put(horiz, y, x),
     addVert: (x: number, y: number) => put(vert, x, y),
   };
 }
@@ -163,24 +160,10 @@ export class Endpoints {
   }
 
   private addHorizOn() {
-    (globalThis as any).__wbTop?.(
-      'on',
-      this.x1,
-      this.y1,
-      (this.x1 + HALF - 1) >> SHIFT,
-      this.y1 >> SHIFT
-    );
     put(this.lists.horizOn, this.y1 >> SHIFT, (this.x1 + HALF - 1) >> SHIFT);
   }
 
   private addHorizOff() {
-    (globalThis as any).__wbTop?.(
-      'off',
-      this.x1,
-      this.y1,
-      (this.x1 + HALF) >> SHIFT,
-      this.y1 >> SHIFT
-    );
     put(this.lists.horizOff, this.y1 >> SHIFT, (this.x1 + HALF) >> SHIFT);
   }
 
@@ -262,16 +245,6 @@ export class Endpoints {
 
   /** The next point along the contour. */
   check(x: number, y: number) {
-    (globalThis as any).__wbCheck?.(
-      this.x0,
-      this.y0,
-      this.x1,
-      this.y1,
-      x,
-      y,
-      this.onScanline(this.y1)
-    );
-
     if (this.onScanline(this.y1)) {
       if (!(this.x1 === x && this.y1 === y)) {
         if (this.x0 === Infinity) {

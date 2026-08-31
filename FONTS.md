@@ -4116,6 +4116,46 @@ The analytic fill is kept behind `WB_ANALYTIC`, because it is what every rule in
 this section was measured against and because the two still disagree on 187
 pixels where one of them is always right.
 
+### The rasteriser is done; what is left is the outline
+
+Decomposing the 107 pixels the walk still misses says the dropout machinery is
+finished. Of the four rules that decide a rescue -- the two stub tests and the
+two guards -- **eighteen pixels in the whole fixture** now turn on them. What
+remains is 58 pixels the fill draws that Windows does not, 57 of them at a run's
+first or last column, and 31 that nothing produced.
+
+That looked like more of the same until the two fills were compared again:
+
+|                                            | pixels  |
+| ------------------------------------------ | ------- |
+| the walk is wrong, the analytic fill right | **1**   |
+| the analytic fill is wrong, the walk right | 38      |
+| they differ and both are wrong             | 0       |
+| **they agree, and both are wrong**         | **106** |
+
+Before the walk shipped, 149 pixels were reachable by one method and not the
+other. Now **106 of the 107 are wrong in both, identically** -- an exact solve of
+the outline and an integer walk over it arriving at the same wrong answer. Two
+methods that disagree about arithmetic and agree about the result are not
+disagreeing about arithmetic. **They are being given the same geometry, and it is
+the geometry that is wrong.**
+
+The clearest confirmation is the cell that used to be the worst. Courier New at
+eight pixels per em is the one place a recorded letter's outline is exact --
+`INSTCTRL` turns grid-fitting off, so nothing has passed through the interpreter
+-- and it is now **33 of 36 letters and three wrong pixels**, from 135 when this
+section began. Where the outline is known to be right, the rasteriser is right.
+
+Everything still failing is hinted, and the error is spread thinly across those
+cells rather than concentrated: fifteen pixels at Arial twenty-four, twelve at
+Courier New twenty-four, eleven at Arial twenty, then single figures down to
+nothing. Six of the twenty-two cells are perfect.
+
+So the scan converter is no longer the open question. **The remaining hundred
+pixels are the interpreter's**, and the next work is on `glyph-hinting.ts` rather
+than here -- a point moved by one sixty-fourth puts a run's end in the next
+column, and both fill methods will follow it there together.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

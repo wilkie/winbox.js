@@ -460,10 +460,6 @@ export function fillWalked(contours, options) {
       const from = place(piece.from);
       const to = place(piece.to);
 
-      (globalThis as any).__wbPiece?.(
-        `${piece.control ? 'curve' : 'line '} (${from[0].toFixed(3)},${from[1].toFixed(3)}) -> (${to[0].toFixed(3)},${to[1].toFixed(3)})`
-      );
-
       if (piece.control) {
         const control = place(piece.control);
 
@@ -533,8 +529,6 @@ export function fillWalked(contours, options) {
   for (const [walkRow, ons] of lists.horizOn) {
     const offs = lists.horizOff.get(walkRow) ?? [];
     const row = -walkRow - 1;
-
-    (globalThis as any).__wbRuns?.(row, ons.slice(), offs.slice());
 
     for (let index = 0; index < ons.length && index < offs.length; index++) {
       runs.push({ row, on: ons[index], off: offs[index] });
