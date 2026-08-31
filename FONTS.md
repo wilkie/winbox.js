@@ -5048,12 +5048,25 @@ were already right and two were not.
   clamping it in, which `PerformVertDropout` also does and this now does too,
   changes nothing either -- nothing falls outside.
 
-  So for Windows to draw that pixel, the pixel above it must not have been lit
-  when it was considered, which means the rescue at column 4 row 3 is one
-  Windows makes later or does not make at all. Three cells of one face at one
-  size, five rescues, and one of them in the wrong order or not there: that is
-  the smallest statement this fixture can make of what is left, and reading the
-  column the other way was hiding it.
+  Following it all the way through the cell closes off the obvious escapes. The
+  horizontal pass leaves rows three, four and five holding column five and
+  nothing else, and rescues column three on rows four and five. So the two
+  pixels at column four, rows three and four, cannot come from a run or from a
+  horizontal rescue in either implementation -- Windows draws them both, and the
+  only thing left that can draw them is the vertical pass.
+
+  Which means Windows makes both of those rescues, one directly above the other,
+  with the column read downward. A test that declines where the pixel above is
+  lit cannot do that. And the test is not simply absent: removing it costs
+  twenty-seven letters and forty pixels, reading it as the pixel about to be
+  written never fires at all, and reading it as the pixel below costs
+  twenty-nine letters.
+
+  So one of three things is not as it is read here -- the direction the column
+  is walked, the pixel the test looks at, or which entries are in the column's
+  list at all -- and every variant of the first two that can be tried has been.
+  One pixel, in three cells of one face at one size, with the whole of the rest
+  of the cell accounted for. That is where this stands.
 
 What is left after all of it is a difference of under a sixty-fourth, on every
 kind of edge, that no stage of the documented algorithm accounts for.
