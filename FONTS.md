@@ -3993,6 +3993,44 @@ pixels either way. At these sizes the width does not bite.
 
 Still behind the shipped path at 586 against 763, and still behind the flag.
 
+### The vertical pass was reading a row too low
+
+The sweep down columns in `fillWalked` fired but was worth nothing -- 569 letters
+against 572 without it -- which is not what a mechanism that finds real features
+looks like. Tracing every stage said the detection was sound and the outcome was
+not: of 407 zero-length runs found down columns, **344 had ink at or beside the
+row chosen**, so the walk was locating real strokes. But of the 281 refused by
+the stub test, **70 were pixels Windows wanted**, and of the 96 it did set, 41
+were in the wrong place.
+
+Validating the vertical emissions the way the horizontal ones were validated --
+each piece against a solve of where it crosses each column centre -- found it in
+one number:
+
+| the row a vertical entry converts to         | pieces agreeing with a solve |
+| -------------------------------------------- | ---------------------------- |
+| `-value - 1`, as the horizontal rows convert | 5,118 of 11,760 (43.5%)      |
+| **`-value`**                                 | **11,746 of 11,760 (99.9%)** |
+
+A horizontal entry's row is the walk's scan index and converts as `-key - 1`. A
+vertical entry's row is `y + yOffset` -- the walk adds the direction's offset when
+it records one -- so it has already taken the step the conversion was adding
+again. Every vertical crossing was landing one row below where it belonged, which
+put the stub counts on the wrong cells and the ink on the wrong row.
+
+Correcting that, and taking the box from the outline rather than from the runs as
+`fill` already does:
+
+|                                  | recorded letters | wrong pixels | fabricated cells |
+| -------------------------------- | ---------------- | ------------ | ---------------- |
+| before                           | 586/846          | 580          | 2,955/5,208      |
+| the conversion fixed             | 719/846          | 287          | 4,208/5,208      |
+| **and the box from the outline** | **722**/846      | **255**      | **4,465**/5,208  |
+
+The walk now draws **more fabricated cells exactly than the shipped path does** --
+4,465 against 4,442 -- which is the first count on which it leads. On the recorded
+letters it is still behind, 722 against 763, so it stays behind the flag.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

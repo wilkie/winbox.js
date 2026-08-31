@@ -458,9 +458,36 @@ export function fillWalked(contours, options) {
     }
   }
 
-  const columns = runs.flatMap((run) => [run.on, run.off]);
-  const boxLeft = columns.length ? Math.min(...columns) : 0;
-  const boxRight = Math.max(boxLeft + 1, columns.length ? Math.max(...columns) : width);
+  /* The box comes from the outline, not from the runs -- a glyph narrower than
+   * the gap between two sample columns has no runs at all, every span of it
+   * being a dropout, so there would be nothing to measure. See `fill`.
+   */
+  let leftmost = Infinity;
+  let rightmost = -Infinity;
+  let highest = Infinity;
+  let lowest = -Infinity;
+
+  for (const contour of contours) {
+    for (const piece of segmentsOf(contour)) {
+      for (const point of [piece.from, piece.to, piece.control]) {
+        if (!point) {
+          continue;
+        }
+
+        const at = place(point);
+
+        leftmost = Math.min(leftmost, at[0]);
+        rightmost = Math.max(rightmost, at[0]);
+        highest = Math.min(highest, at[1]);
+        lowest = Math.max(lowest, at[1]);
+      }
+    }
+  }
+
+  const boxLeft = Math.ceil(leftmost - 0.5);
+  const boxRight = Math.max(boxLeft + 1, Math.floor(rightmost + 0.5));
+  const boxTop = Math.ceil(highest - 0.5);
+  const boxBottom = Math.max(boxTop + 1, Math.floor(lowest + 0.5));
 
   const rescues: any[] = [];
 
@@ -483,9 +510,15 @@ export function fillWalked(contours, options) {
   const countHoriz = (x, row) =>
     (lists.horizOn.get(-row - 1) ?? []).filter((at) => at === x).length +
     (lists.horizOff.get(-row - 1) ?? []).filter((at) => at === x).length;
+  /* A vertical entry is recorded as `y + yOffset`, which already carries the
+   * step the horizontal entries take from their key, so it converts back as
+   * `-value` where a horizontal row converts as `-key - 1`. Checked against a
+   * solve of every piece in the fixture: 99.9% agree this way and 43.5% the
+   * other, the difference being a systematic row.
+   */
   const countVert = (x, row) =>
-    (lists.vertOn.get(x) ?? []).filter((at) => -at - 1 === row).length +
-    (lists.vertOff.get(x) ?? []).filter((at) => -at - 1 === row).length;
+    (lists.vertOn.get(x) ?? []).filter((at) => -at === row).length +
+    (lists.vertOff.get(x) ?? []).filter((at) => -at === row).length;
 
   for (const rescue of rescues) {
     const on = rescue.on;
@@ -528,10 +561,6 @@ export function fillWalked(contours, options) {
     return pixels;
   }
 
-  const rows = runs.map((run) => run.row);
-  const boxTop = rows.length ? Math.min(...rows) : 0;
-  const boxBottom = Math.max(boxTop + 1, rows.length ? Math.max(...rows) + 1 : height);
-
   for (const [column, ons] of lists.vertOn) {
     const offs = lists.vertOff.get(column) ?? [];
 
@@ -540,7 +569,7 @@ export function fillWalked(contours, options) {
         continue;
       }
 
-      const row = -ons[index] - 1;
+      const row = -ons[index];
 
       const continues = (step) => {
         const near = step < 0 ? column : column + 1;
@@ -580,7 +609,7 @@ export function fillWalked(contours, options) {
 export function fill(contours, options) {
   /* `fillWalked` is the scan converter's own method and is not yet the one used.
    * See its own comment for where it stands: exact on straight-edged glyphs and
-   * behind on curves, 586 of the 846 recorded letters against 763 here.
+   * behind on curves, 722 of the 846 recorded letters against 763 here.
    */
   if (process.env.WB_WALK === '1') {
     return fillWalked(contours, options);
