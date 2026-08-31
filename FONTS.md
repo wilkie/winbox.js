@@ -4618,10 +4618,34 @@ the shape barely moving:
   is the same thing on a single diagonal, the stroke stepping across a row
   earlier than it should.
 
-None of that is a different phenomenon from the one the fabricated sweeps
-isolate. It is an edge passing within a fraction of a sixty-fourth of a sample
-point, resolved one way here and the other there, and steep diagonals and the
-waists of digits are simply where a letter offers the most chances for it.
+**Compared against Windows directly, rather than against a solve.** A row of
+Windows' bitmap gives its runs, and its runs give the crossings it must have
+had, so the two can be set side by side without an exact solve in the middle. Of
+the ninety failing rows, eighty-one have the same number of runs in both, and
+they differ like this: 28 where this run starts a column early, 24 where it ends
+a column late, 17 where it is a column short at one end or the other, 11 where
+it is shifted bodily by one, and two others. Twenty-three of the ninety hold a
+rescue, so about a quarter involve dropout at all.
+
+So the dominant mode is a run one column too wide, split evenly between its
+ends, which is what the pixel counts already said. What is new is the size of
+the discrepancy behind it. The disputed crossings sit a median of one to four
+sixty-fourths from the sample they are argued over, not a hair, and this walk
+is exact for the outline it is given -- 20,110 entries checked. A crossing four
+sixty-fourths past a sample is not a knife edge that could fall either way: for
+Windows to have put it on the other side, **the outline it walked was different
+from this one by about that much**.
+
+Which is not what the fabricated sweeps say, and both are true. Those glyphs
+carry no program, so their disagreements -- twelve cells of the edge sweep and
+twenty-five of the turning-point sweep -- are the rasteriser's. The recorded
+letters are hinted, and theirs look like the interpreter's. Two residues that
+resemble each other because both end at a pixel boundary, and one of them was
+being read as evidence about the other.
+
+Steep diagonals and the waists of digits are where a letter offers the most
+chances for either of them, which is why they dominate the list whichever
+residue is doing the work.
 
 ### There is no threshold, because the decision is not local
 
