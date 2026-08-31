@@ -4767,6 +4767,21 @@ letters go from 778 of 846 and 107 wrong pixels to 780 and 105. The fabricated
 sweeps go the other way, the edge sweep from 10 disagreements to 12 and the
 turning-point sweep from 17 to 25.
 
+**The walk itself is exact, and that is now measured rather than assumed.**
+Every horizontal entry `CalcSpline` makes was compared against an exact solve of
+the very piece it was walking -- the quadratic's crossing of that row's sample
+line, solved in floating point -- across the recorded letters and both
+fabricated sweeps. In all 20,110 entries the column the walk names is the column
+the solve names: never one too soon, never one too late. The gap between the
+named column's sample and the true crossing is spread evenly over the sixty-four
+sixty-fourths it has to be spread over if the walk is right.
+
+So the forward differences, the precision reduction, the step decision and the
+tails are not where the remaining disagreement lives. Whatever is left is in
+what is handed to the walk, or in what is done with what it produces: the
+scaling of the outline, the construction in `EvaluateSpline`, the vertical pass,
+the endpoint topology, or the pairing.
+
 That is worth stating plainly rather than tuning away, because a faithful
 subdivision should not make anything worse. Something else is wrong, and the
 sweeps are where it shows because they were built to put an extreme within a
