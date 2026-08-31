@@ -4782,6 +4782,33 @@ what is handed to the walk, or in what is done with what it produces: the
 scaling of the outline, the construction in `EvaluateSpline`, the vertical pass,
 the endpoint topology, or the pairing.
 
+**The pairing is sound and the vertical pass is not.** The same method applies
+to what is done with the crossings: for every row of every recorded letter, the
+runs the pairing produces were compared against a non-zero winding fill of the
+same outline, solved exactly.
+
+- **The horizontal lists always balance.** In 6,719 rows there is not one where
+  the count of `on` crossings differs from the count of `off` crossings, which
+  is what the endpoint topology exists to guarantee and is some evidence it is
+  right.
+- **The vertical lists do not.** Of 4,941 columns carrying a vertical crossing,
+  79 have a different number of each. The vertical dropout sweep reads those
+  lists, so on one column in sixty it is reading something that does not pair,
+  and a rescue that should be made from a pair that is not there is a rescue not
+  made -- which is the shape of the ink the recorded letters are missing, most
+  of it a pixel standing on its own.
+- **The fill lights a sample lying exactly on the closing crossing.** Thirty-six
+  rows differ from the winding solve, 35 of them that way and 12 the other. They
+  all look alike: a span from 6.578 to 7.500 with a sample at 7.5, and the run
+  covers it. Whether Windows covers it is not settled here -- this compares the
+  implementation against its own geometry, not against Windows -- but it is a
+  convention that can only be one way, and it is worth 35 pixels of the
+  difference between this fill and an exact one.
+
+That also corrects a guess made earlier here from reading `ScanAbove` and
+`ScanBelow`, that the walk excludes a sample sitting exactly on either end. It
+excludes one at the start and includes one at the end.
+
 That is worth stating plainly rather than tuning away, because a faithful
 subdivision should not make anything worse. Something else is wrong, and the
 sweeps are where it shows because they were built to put an extreme within a
