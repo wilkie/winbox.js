@@ -4031,6 +4031,40 @@ The walk now draws **more fabricated cells exactly than the shipped path does** 
 4,465 against 4,442 -- which is the first count on which it leads. On the recorded
 letters it is still behind, 722 against 763, so it stays behind the flag.
 
+### The two fills, pixel by pixel
+
+Rendering every recorded glyph both ways and comparing the results against
+Windows rather than against each other:
+
+|                                             | pixels  |
+| ------------------------------------------- | ------- |
+| the two fills agree                         | 865,917 |
+| they differ, and the analytic fill is right | 149     |
+| they differ, and **the walk** is right      | 38      |
+| they differ and **both are wrong**          | **0**   |
+
+**Not one pixel in the fixture is wrong in both.** Where the two disagree, one of
+them has the answer -- so the 41-letter gap between them is not a gap in what
+either method can reach, and something that chose correctly between them would
+draw 187 pixels better than either does alone.
+
+The walk's losses are concentrated: 55 pixels at Courier New, eight pixels per
+em -- the unhinted cell, where nearly every span is a dropout -- and 28 at Times
+New Roman at twenty. Its wins are spread thinly across the larger sizes.
+
+Two shapes of failure show up when the disagreements are drawn out. In Times New
+Roman's `E` at twenty-four the walk fills a single run from the stem to the
+serif where there should be two, which is a **pairing** failure: a row whose four
+crossings became two. In Courier New's `e` at eight the two disagree about the
+bowl entirely, which is the dropout rules acting on different spans rather than
+either drawing the wrong run.
+
+That leaves the walk's remaining faults as _localised_ rather than systemic --
+the emissions are 99.5% right for horizontal crossings and 99.9% for vertical,
+measured against exact solves, and what is left is rows where the pairing goes
+wrong and a cell where the dropout rules are working from a different set of
+spans.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a
