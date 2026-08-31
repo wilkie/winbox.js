@@ -365,11 +365,37 @@ export class Hinter {
 
     const zone = new Zone(0);
 
+    /* The outline is moved so that its left edge lands on the side bearing.
+     *
+     * `hmtx` says where the glyph's ink begins relative to the pen, and `glyf`
+     * says where it begins relative to the outline's own zero. When those two
+     * disagree the outline has to be carried across the difference, and every
+     * point moves with it -- so the shift is applied in font units, before the
+     * scaling, and the origin phantom is left at nothing.
+     *
+     * **Recorded.** Three glyphs of a fabricated Times were given the same four
+     * points on the baseline at 0, 256, 512 and 768 units and a program that
+     * reads point one back out magnified eightfold. One ran no instruction at
+     * all, so what it reports is the bare scaling. Its glyph kept the `W`'s
+     * side bearing of 27 units against an `xMin` of nothing, and at every one
+     * of sixteen sizes Windows reported the point 27 units to the right of
+     * where the outline puts it -- 10 at nine pixels per em where 256 units
+     * scale to 9, 16 at fourteen where they scale to 14. The glyph that kept
+     * the `w`'s bearing of 13 units is out by half as much at every size, which
+     * is the ratio the bearings are in.
+     *
+     * The shift cannot be left until after the program has run. Doing that
+     * moves the origin phantom by the same amount as the outline, the two
+     * differences cancel in the advance, and the readings come back unshifted
+     * -- 9 at nine pixels per em rather than the recorded 10.
+     */
+    const shift = leftSideBearing - xMin;
+
     for (const contour of outline) {
       for (const point of contour) {
-        zone.x.push(mulDiv(point.x, this.pixels, this.font.unitsPerEm));
+        zone.x.push(mulDiv(point.x + shift, this.pixels, this.font.unitsPerEm));
         zone.y.push(mulDiv(point.y, this.pixels, this.font.unitsPerEm));
-        zone.unscaledX.push(point.x);
+        zone.unscaledX.push(point.x + shift);
         zone.unscaledY.push(point.y);
         zone.onCurve.push(point.on);
         zone.touchedX.push(false);
@@ -380,13 +406,11 @@ export class Hinter {
     }
 
     /* The phantom points: the glyph's origin, its advance, and two more for
-     * the vertical direction. The origin is not the left side bearing -- the
-     * outline's own coordinates already start there -- it is where the pen was
-     * before the bearing was applied, which is `xMin - lsb` and so nearly
-     * always zero. Putting the bearing here instead shifts everything the
-     * program measures from it, and the glyph comes out a pixel narrow.
+     * the vertical direction. The origin is where the pen stands, which is
+     * nothing -- the outline has already been carried onto it by `shift`
+     * above, so there is nowhere else for it to be.
      */
-    const origin = mulDiv(xMin - leftSideBearing, this.pixels, this.font.unitsPerEm);
+    const origin = 0;
 
     /* The advance phantom starts on the grid.
      *
@@ -406,18 +430,17 @@ export class Hinter {
      */
     const grid = (value) => Math.floor((value + ONE / 2) / ONE) * ONE;
 
-    /* The **advance** is what gets rounded, and the origin is added after.
+    /* The advance is rounded on its own, from the pen rather than from the
+     * outline, which is what the origin standing at nothing already says.
      *
-     * Rounding the sum instead is the same thing whenever the origin is a whole
-     * number of pixels, which it nearly always is -- it is `xMin - lsb` scaled,
-     * and that difference is zero for most glyphs. Times New Roman Italic's `j`
-     * is one where it is not: four design units, a sixteenth of a pixel at
-     * thirty-four pixels per em, and enough to carry an advance of 9.4531
-     * across the halfway mark and round it to ten. Windows rounds 9.4531 to
-     * nine and then adds the sixteenth. **Recorded**, by reading the phantom
-     * itself out of a running Windows with a glyph whose whole program is the
-     * readout -- so no instruction had run and the disagreement was already
-     * there.
+     * Times New Roman Italic's `j` is the glyph that showed this mattered: its
+     * bearing and its `xMin` are four design units apart, a sixteenth of a
+     * pixel at thirty-four pixels per em, and enough to carry an advance of
+     * 9.4531 across the halfway mark and round it to ten if the two are added
+     * before the rounding rather than after. Windows rounds 9.4531 to nine.
+     * **Recorded**, by reading the phantom itself out of a running Windows with
+     * a glyph whose whole program is the readout -- so no instruction had run
+     * and the disagreement was already there.
      */
     const width =
       origin +
@@ -440,7 +463,7 @@ export class Hinter {
      * units puts a ratio of two different things in the middle of the
      * calculation.
      */
-    const originUnits = xMin - leftSideBearing;
+    const originUnits = 0;
 
     const design = [
       { x: originUnits, y: 0 },

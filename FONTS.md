@@ -4220,6 +4220,54 @@ finished. A glyph program that inherits them addresses the glyph's points by
 number and writes every one of them into scratch space instead. Nothing is out
 of place, nothing errors, and the outline comes out exactly as it went in.
 
+### A glyph is carried onto its side bearing before anything runs
+
+`hmtx` says where a glyph's ink begins relative to the pen, and `glyf` says
+where it begins relative to the outline's own zero. For most glyphs of most
+faces those are the same number, so which of the two the outline is laid out
+against never comes up. Of the sixteen faces Windows 3.1 installs, only three
+have any glyph where they differ: `SYMBOL.TTF`, where every glyph is 153 units
+apart, and the two italic Times, where a handful of letters are three or four
+units apart -- `f`, `j`, `k`, `t` and `y` in the roman italic, `e`, `j`, `m`,
+`n`, `s`, `t` and `y` in the bold.
+
+**The outline is moved so its left edge lands on the side bearing, in font
+units, before the scaling, and the origin phantom is left at nothing.**
+
+**Recorded.** Three glyphs of a fabricated Times were given the same four points
+on the baseline -- at 0, 256, 512 and 768 design units -- and three different
+side bearings, inherited from the `W`, the `o` and the `w` they were written
+over: 27, 69 and 13 units against an `xMin` of nothing. Each ends with a program
+that reads point one back out magnified eightfold. One of them runs no
+instruction at all, so what comes back is the bare scaling and nothing else:
+
+| pixels per em             |   9 |  10 |  14 |  18 |  20 |  25 |  30 |  34 |  38 |
+| :------------------------ | --: | --: | --: | --: | --: | --: | --: | --: | --: |
+| where the outline puts it |   9 |  10 |  14 |  18 |  20 |  25 |  30 |  34 |  38 |
+| what Windows reports      |  10 |  11 |  16 |  20 |  22 |  28 |  33 |  38 |  42 |
+
+Windows is out by the whole of the `W`'s 27 units at every size, and the glyph
+carrying the `w`'s 13 units is out by half as much at every size, which is the
+ratio the two bearings are in. Reading the shift back out of the table gives 27
+units to within the sixty-fourth the readout can carry, at all sixteen sizes and
+for both glyphs.
+
+**The shift cannot be left until after the program has run.** That is the other
+way to arrange it -- keep the outline where the font drew it, stand the origin
+phantom at `xMin - lsb`, and translate everything by the origin at the end --
+and it is what this implementation did until the recording above. It gives the
+same picture and a different advance, because the outline and the origin move
+together and the two differences cancel: the sweep above comes back at 9 where
+Windows says 10. So the outline is carried first and the phantom starts at zero,
+not the other way round.
+
+What this does not do is move any recorded letter. The letters in the glyph
+fixture are drawn in faces where the two numbers agree everywhere, so the shift
+is zero for every one of them and the score is unchanged at 778 of 846. It moves
+the fabricated shape fonts, whose glyphs were written over letters whose bearings
+they did not inherit -- 4,551 cells exact to 4,560, and 1,900 wrong pixels to
+1,874 -- and it is right for a reason that does not depend on either.
+
 ### The twilight zone
 
 Zone 0: a small array of points, sized by `maxp`, that are not part of any
@@ -4382,6 +4430,29 @@ says only that no question is going unasked.
 ---
 
 ## 8. What is not known
+
+**`MDRP` that rounds moves a point further than Windows moves it.** The same
+fabricated Times that settled the side bearing carries a third glyph, whose
+program measures the distance from point zero to point one with `MDRP` and
+rounds it to the grid. The two glyphs beside it -- one that runs nothing, one
+that measures the same distance and does not round it -- now agree with Windows
+at every size. This one does not, and the gap is large: at twenty pixels per em
+the point lands seven eighths of a pixel further right than Windows puts it, and
+the disagreement grows with size rather than staying at a sixty-fourth.
+
+The distance under test is 256 design units, which is 2.5 pixels at twenty per
+em, and rounding to grid takes it to 3. Windows leaves the point where 2.08
+pixels would put it, which is neither the rounded distance nor the unrounded
+one. Whatever it is, it is not a rounding rule applied to that distance, so the
+next thing to establish is what `MDRP` is measuring rather than how it rounds.
+
+**The readout stops tracking above thirty-eight pixels per em.** Every
+fabricated sweep reads a point back by moving the advance phantom onto it, and
+above that size the numbers that come back follow neither the point nor the
+stock advance of the letter that was written over. They are not the wrap that a
+sixteen bit result would give, and they are not `hdmx` or `LTSH`, both of which
+are checked for and excluded before a reading is believed. Every fabricated
+finding here is asserted only below that size for this reason.
 
 **Times New Roman's `W` and `g` are one pixel of cap height out**, which is
 three recorded glyphs. `MIAP[round]` places the top point at 10 pixels above

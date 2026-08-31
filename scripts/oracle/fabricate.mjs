@@ -726,7 +726,10 @@ function experiment(name, { font, character, points, body, report, magnify = 8, 
  * Nothing else about the font changes, so the same recording still says what
  * every other letter does and can be checked against the unfabricated one.
  */
-function reporter(name, { font = 'TIMES.TTF', character, point, constant, cut, magnify, describe }) {
+function reporter(
+  name,
+  { font = 'TIMES.TTF', character, point, constant, cut, magnify, describe }
+) {
   return {
     name,
     from: font,
@@ -1466,8 +1469,7 @@ export const FABRICATIONS = [
           [300, -400],
         ];
 
-        const loops =
-          variant === 0 ? [plain] : variant === 1 ? [subdivided] : [plain, elsewhere];
+        const loops = variant === 0 ? [plain] : variant === 1 ? [subdivided] : [plain, elsewhere];
 
         const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
 
@@ -1548,14 +1550,9 @@ export const FABRICATIONS = [
         const under = box(low, low + width, -400, -200);
         const over = box(low, low + width, TALL + 100, TALL + 300);
 
-        const loops = [
-          [bar],
-          [bar, far],
-          [bar, near],
-          [bar, under],
-          [bar, over],
-          [bar, far, over],
-        ][variant];
+        const loops = [[bar], [bar, far], [bar, near], [bar, under], [bar, over], [bar, far, over]][
+          variant
+        ];
 
         const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
 
@@ -1747,7 +1744,8 @@ export const FABRICATIONS = [
     name: 'cour-widths',
     from: 'COUR.TTF',
     as: 'COUR.TTF',
-    describe: 'Courier New with one bar and a box sweeping the glyph width from a quarter pixel to three',
+    describe:
+      'Courier New with one bar and a box sweeping the glyph width from a quarter pixel to three',
 
     edit: (bytes) => {
       const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
@@ -2135,6 +2133,70 @@ export const FABRICATIONS = [
     },
   },
 
+  /* Three instructions, and one of them is a control.
+   *
+   * The last hundred wrong pixels are not the rasteriser's: an exact solve of
+   * the outline and an integer walk over it now agree with each other and
+   * disagree with Windows on the same 106 pixels, and the one cell whose
+   * outline never passes through the interpreter is very nearly perfect. So it
+   * is the outline that differs, and the way to find out where is to stop
+   * inferring it from letters and ask an instruction directly.
+   *
+   * The `hinting` probe sweeps three characters of this face -- `W`, `o` and
+   * `w` -- across ninety-nine sizes, so a fabrication gets three questions per
+   * recording and no more. The first is spent on a control: a glyph that runs
+   * no instruction at all and reports the same point. Whatever that reads is
+   * what the channel makes of an untouched point, and the other two mean
+   * nothing without it.
+   *
+   * Every glyph has the same outline, four points along the baseline at 0, 256,
+   * 512 and 768 font units, so the distance under test is exactly an eighth of
+   * an em and its scaled value is a number that can be worked out by hand.
+   */
+  {
+    name: 'times-rounding',
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: 'MDRP with and without rounding, against a control that runs nothing',
+
+    edit: (bytes) => {
+      const POINTS = [
+        [0, 0],
+        [256, 0],
+        [512, 0],
+        [768, 0],
+      ];
+
+      const setup = [
+        0x01, // SVTCA[x]
+        ...ops.byte(0),
+        0x10, // SRP0
+      ];
+
+      const bodies = {
+        // The control: nothing runs, so this is the point where it started.
+        W: [0x01],
+
+        // The same distance measured and rounded to the grid.
+        o: [...setup, 0x18 /* RTG */, ...ops.byte(1), 0xc4 /* MDRP round */],
+
+        // And measured without rounding, which should leave it where it was.
+        w: [...setup, 0x18 /* RTG */, ...ops.byte(1), 0xc0 /* MDRP plain */],
+      };
+
+      for (const [character, body] of Object.entries(bodies)) {
+        setGlyph(bytes, null, glyphFor(bytes, character.charCodeAt(0)), {
+          width: 768,
+          height: 0,
+          points: POINTS,
+          program: [...body, ...reportPoint(1, POINTS.length + 1, 8)],
+        });
+      }
+
+      return bytes;
+    },
+  },
+
   /* Courier New with its `INSTCTRL` turned around.
    *
    * Its `prep` executes the instruction twice, both times as `PUSHB[2] 1, 1`
@@ -2269,7 +2331,6 @@ export const FABRICATIONS = [
     cut: 202,
     describe: "Times New Roman Italic's j reporting a constant, as the control",
   }),
-
 
   /* Times New Roman's capital `W`, the one glyph of the five still differing
    * that the instrument can reach: its failing size is fourteen pixels per em,
