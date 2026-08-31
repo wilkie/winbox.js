@@ -4748,14 +4748,32 @@ running from 231 to 222 sixty-fourths and its control at 232, outside both.
 Setting both controls to the rounded split point restores the property and takes
 the turning-point sweep from 19 disagreements to 17.
 
-**And the splitting is load-bearing here in a way it is not for Windows.** Every
-glyph of that sweep has a control point outside its endpoints, so every one of
-its quadratics is non-monotonic; Windows walks them whole and gets 199 of 216
-cells right. Walking them whole here gets 86. So `CalcSpline` as implemented
-cannot walk a non-monotonic quadratic and Windows' can, and the subdivision is
-covering for that rather than being an improvement on it. That is the shape of
-what is still missing: not a rounding, but a case the walk was never made to
-handle.
+**Windows subdivides too, and the pseudocode for it says how.** Every glyph of
+that sweep has a control point outside its endpoints, so every one of its
+quadratics is non-monotonic. Walking them whole here gets 86 of 216 cells right
+against 199 with the subdivision, and tracing one says why: with the two ends at
+the same `x`, `CalcSpline` reflects the curve into a quadrant whose `x` range is
+empty, `x` equals `xStop` before the walk starts, and the "almost vertical"
+shortcut draws the whole thing as one column -- never seeing the nineteen
+sixty-fourths the curve actually bulges.
+
+That is what `EvaluateSpline` in `FONT_PSEUDOCODE.md` exists to prevent: it
+recursively splits a spline that is non-monotonic, or longer than
+`MAXSPLINELENGTH`, into ones `CalcSpline` can handle. So the subdivision here is
+right in principle and wrong in its details, and the details are written down.
+Two of them matter and this implementation does neither:
+
+- **The split point is computed in fixed point**, as `start + LongMulDiv(d21,
+d21, d21 - d32)` on the axis being split, rather than in floating point and
+  rounded afterwards.
+- **The halves are built so their controls share the split coordinate.** For a
+  split at the `y` turn both controls take `fxY456` and the joining point is
+  `(fxX5, fxY456)`; for an `x` turn both take `fxX456`. That is the same
+  property restored above by moving the controls with the split point, which is
+  some evidence the reading is right.
+
+An earlier note here said Windows walks these whole. It does not; that was
+inferred from `CalcSpline` alone, before `EvaluateSpline` was found.
 
 At eighteen the outermost column agrees for every one of the eighteen variants
 and fourteen of them still differ -- by one pixel on the bottom row, which is the
