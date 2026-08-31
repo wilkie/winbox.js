@@ -4797,6 +4797,23 @@ same outline, solved exactly.
   and a rescue that should be made from a pair that is not there is a rescue not
   made -- which is the shape of the ink the recorded letters are missing, most
   of it a pixel standing on its own.
+
+  **The imbalance is the walk's and not the topology's.** Tagging every vertical
+  entry with where it came from puts 77 of the 79 entirely in the walk, with the
+  endpoint topology contributing nothing to that column at all: 32 columns carry
+  a single `on` and nothing else, 25 a single `off`, 13 three entries split two
+  to one. Two of the 79 involve the topology. And they gather on the letters
+  made of diagonals -- Arial's `A`, `W` and `g` at twenty-four pixels per em
+  supply the first six -- which is `CalcLine` rather than `CalcSpline`.
+
+  A closed contour crosses any vertical line an even number of times, so an odd
+  count is a crossing dropped or counted twice. The suspect is the vertex two
+  edges share: a line's walk begins at `ScanBelow(x1)` or `ScanAbove(x1)`, both
+  of which step over a sample sitting exactly on `x1`, and the endpoint topology
+  is what is meant to put it back. On these columns it does not, and why it does
+  not is the next thing to find out. `"Arial",h=24,'W'` column 7 is the smallest
+  case.
+
 - **The fill lights a sample lying exactly on the closing crossing.** Thirty-six
   rows differ from the winding solve, 35 of them that way and 12 the other. They
   all look alike: a span from 6.578 to 7.500 with a sample at 7.5, and the run
