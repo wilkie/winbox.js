@@ -446,6 +446,26 @@ function split(from, control, to) {
         ? Math.floor(at[turn.axis] / grid) * grid
         : Math.ceil(at[turn.axis] / grid) * grid;
 
+    /* And the two controls move with it.
+     *
+     * A quadratic split at its turning point has no slope there, which is the
+     * same as saying that on that axis the control of the piece arriving and
+     * the control of the piece leaving both sit exactly on the split point.
+     * Rounding the split point onto the grid breaks that: the controls stay
+     * where they were and are left a sixty-fourth beyond the endpoint they
+     * belong to, so each half bulges back past its own end and is no longer
+     * monotonic -- which is the one thing splitting was for, and what the walk
+     * assumes.
+     *
+     * **Traced.** A rectangle with one curved side, drawn unhinted at eighteen
+     * pixels of cell height, came out with a half running from 231 to 222
+     * sixty-fourths and its control at 232, outside both. The walk read that as
+     * reaching a sample column it never reaches, and lit a pixel on the bottom
+     * row that Windows does not.
+     */
+    first[turn.axis] = at[turn.axis];
+    second[turn.axis] = at[turn.axis];
+
     pieces.push([start, first, at]);
 
     start = at;

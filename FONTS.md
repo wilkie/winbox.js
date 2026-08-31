@@ -4727,7 +4727,7 @@ unit further out than the last, which steps the extreme across a sample column
 in halves of a sixty-fourth. Eighteen bulge right, where the turn is a maximum,
 and eighteen left, where it is a minimum.
 
-Nineteen of 216 cells still disagree, and they are two different things.
+Seventeen of 216 cells still disagree, and they are two different things.
 
 At sixteen pixels of cell height the extreme reaches a sample column two steps
 before Windows lets it on the right, and one step early on the left. So rounding
@@ -4736,8 +4736,29 @@ is not enough for these: the reach is still a little long, in both directions,
 which is what one would expect if the split point is right and the walked halves
 still cover a shade more than the whole ever did.
 
+**The two controls move with the split point.** A quadratic split at its turning
+point has no slope there, which is the same as saying that on that axis the
+control of the piece arriving and the control of the piece leaving both sit
+exactly on the split point. Rounding the split point onto the grid breaks that:
+the controls stay where they were and end up a sixty-fourth beyond the endpoint
+they belong to, so each half bulges back past its own end and is no longer
+monotonic -- which is the one thing splitting was for. **Traced**: a rectangle
+with one curved side at eighteen pixels of cell height came out with a half
+running from 231 to 222 sixty-fourths and its control at 232, outside both.
+Setting both controls to the rounded split point restores the property and takes
+the turning-point sweep from 19 disagreements to 17.
+
+**And the splitting is load-bearing here in a way it is not for Windows.** Every
+glyph of that sweep has a control point outside its endpoints, so every one of
+its quadratics is non-monotonic; Windows walks them whole and gets 199 of 216
+cells right. Walking them whole here gets 86. So `CalcSpline` as implemented
+cannot walk a non-monotonic quadratic and Windows' can, and the subdivision is
+covering for that rather than being an improvement on it. That is the shape of
+what is still missing: not a rounding, but a case the walk was never made to
+handle.
+
 At eighteen the outermost column agrees for every one of the eighteen variants
-and sixteen of them still differ -- by one pixel on the bottom row, which is the
+and fourteen of them still differ -- by one pixel on the bottom row, which is the
 end of the curve rather than its extreme. That is the same signature the
 recorded letters have, ink at the end of a run on a row with nothing below it,
 and this is the first time it has been reproduced with nothing hinted at all. It

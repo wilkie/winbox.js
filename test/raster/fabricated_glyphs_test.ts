@@ -88,8 +88,8 @@ describe('the fabricated glyph recordings', () => {
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 5059;
-  const WRONG = 1913;
+  const EXACT = 5061;
+  const WRONG = 1911;
 
   /* The one place an unhinted outline is drawn differently.
    *
@@ -128,9 +128,8 @@ describe('the fabricated glyph recordings', () => {
    *
    * At sixteen pixels of cell height the extreme reaches a sample column two
    * steps before Windows lets it, on the right, and one step early on the
-   * left. Rounding the turn toward the curve was enough for the single case
-   * `edge-sweep` found and is not enough for these, so the rule is close but
-   * not yet right.
+   * left. Rounding the turn toward the curve and carrying the two controls with
+   * it takes the sweep from 22 disagreements to 17 and does not settle it.
    *
    * At eighteen the outermost column agrees for every variant and sixteen of
    * them still differ, by one pixel on the bottom row -- the end of the curve
@@ -138,7 +137,7 @@ describe('the fabricated glyph recordings', () => {
    * too, ink at the end of a run on a row with nothing below it, and this is
    * the first time it has been reproduced with nothing hinted.
    */
-  const TURNS = 19;
+  const TURNS = 17;
 
   present('sweep a turning point across a sample column', async function () {
     const recording = all.find((entry) => entry.name === 'turn-sweep');
