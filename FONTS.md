@@ -4685,17 +4685,32 @@ bearing of the letter it was written over, the outline is carried onto a
 different one in every glyph, and the left side of the rectangle moves along with
 the right.
 
-Both implementations then light the same columns in 215 of 216 cells, and the
-thresholds fall in the same place at every size for both kinds of edge. The
-exception is one cell. At sixteen pixels of cell height the first curved variant
-has its outermost point four thousandths of a pixel past a sample point; this
-implementation lights that column and Windows does not.
+Both implementations lit the same columns in 215 of 216 cells, with the
+thresholds falling in the same place at every size for both kinds of edge. The
+one exception was the first curved variant at sixteen pixels of cell height, and
+tracing it settled the question.
 
-That is the whole of the remaining disagreement, reproduced with nothing hinted
-and an outline known exactly: a curve grazing a sample point, called one way by
-one walk and the other way by the other. The straight edges never disagree, so
-it is `CalcSpline` and not `CalcLine`, and it is the rasteriser and not the
-interpreter.
+Its right side is a quadratic whose ends scale to 216 sixty-fourths and whose
+control scales to 233, so its outermost point is at `(216 + 2*233 + 216) / 4`,
+which is 224.5. The sample column sits at 224. Windows walks the whole quadratic
+and does not reach the sample. This implementation splits the quadratic at that
+turning point so both halves are monotonic, and the new endpoint it creates has
+to be put on the grid -- which the original never had to be. Rounded to the
+nearest sixty-fourth, 224.5 becomes 225, the outline gains half a sixty-fourth
+of reach that Windows never sees, and the pixel whose centre falls in that half
+is lit.
+
+**So the turn is rounded toward the curve**: down when it is a maximum in that
+direction and up when it is a minimum, which is the one choice that cannot
+manufacture coverage. The split point becomes 224, the walk stops at the sample
+rather than past it, and all 216 cells agree. It is worth three pixels and two
+cells across the fabricated glyph recordings and none of the 107, whose faces do
+not happen to put a turning point on a sample.
+
+This is the first thing found in the rasteriser rather than the interpreter, and
+it was findable only because the fabrication has no program in it: with nothing
+hinted and the outline known exactly, there was nowhere else for the difference
+to come from.
 
 ## 9. Where the numbers stand
 

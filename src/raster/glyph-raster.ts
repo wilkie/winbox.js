@@ -384,7 +384,7 @@ function crossesAt(piece, y, into) {
  * that turns. A curve with no turn comes back as itself.
  */
 function split(from, control, to) {
-  const turns: number[] = [];
+  const turns: { at: number; axis: number; opens: number }[] = [];
 
   for (const axis of [0, 1]) {
     const divisor = from[axis] - 2 * control[axis] + to[axis];
@@ -397,7 +397,7 @@ function split(from, control, to) {
 
     // Far enough inside to leave two pieces the walk can step through.
     if (at > 1 / 4096 && at < 1 - 1 / 4096) {
-      turns.push(at);
+      turns.push({ at, axis, opens: Math.sign(divisor) });
     }
   }
 
@@ -405,7 +405,7 @@ function split(from, control, to) {
     return [[from, control, to]];
   }
 
-  turns.sort((one, two) => one - two);
+  turns.sort((one, two) => one.at - two.at);
 
   const pieces: any[] = [];
 
@@ -414,16 +414,43 @@ function split(from, control, to) {
   let last = 0;
 
   for (const turn of turns) {
-    const t = (turn - last) / (1 - last);
+    const t = (turn.at - last) / (1 - last);
     const first = [start[0] + t * (hold[0] - start[0]), start[1] + t * (hold[1] - start[1])];
     const second = [hold[0] + t * (to[0] - hold[0]), hold[1] + t * (to[1] - hold[1])];
     const at = [first[0] + t * (second[0] - first[0]), first[1] + t * (second[1] - first[1])];
+
+    /* The turn lands on the far side of the sixty-fourth it rounds to, half
+     * the time, and rounding it there is this implementation inventing reach
+     * the scan converter never sees.
+     *
+     * Windows does not subdivide at all: `CalcSpline` reflects a spline into a
+     * quadrant using its endpoints and walks the whole of it. Splitting a
+     * quadratic at its turning point is this implementation's way of keeping
+     * every walked piece monotonic, and the new endpoint it creates has to be
+     * put on the grid, which the original never had to be. Rounding it to the
+     * nearest sixty-fourth carries the outline outward by as much as half of
+     * one, and a pixel whose centre falls in that half is lit here and not
+     * there. So the turn is rounded toward the curve instead: down when it is
+     * a maximum in that direction and up when it is a minimum, which is the
+     * one choice that cannot manufacture coverage.
+     *
+     * **Measured.** An unhinted quadratic whose outermost point lands half a
+     * sixty-fourth past a sample column is drawn one pixel wider here than by
+     * Windows, and it is the only cell of 216 in that fabrication that
+     * disagrees. See `FONTS.md`.
+     */
+    const grid = 1 / 64;
+
+    at[turn.axis] =
+      turn.opens < 0
+        ? Math.floor(at[turn.axis] / grid) * grid
+        : Math.ceil(at[turn.axis] / grid) * grid;
 
     pieces.push([start, first, at]);
 
     start = at;
     hold = second;
-    last = turn;
+    last = turn.at;
   }
 
   pieces.push([start, hold, to]);
