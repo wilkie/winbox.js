@@ -4883,32 +4883,75 @@ thirty and then 1, 1, 1, 2, 2, 2, 3, 3 is a formula rather than data. Its
 absence is consistent with a different vintage and equally consistent with an
 optimiser, and nothing here distinguishes the two.
 
-### Where the scan converter is in GDI.EXE
+### Reading GDI.EXE properly, and a wrong address withdrawn
 
-Enough of a disassembly to be worth writing down for whoever goes further. The
-file is a plain `NE` image with forty-eight segments, forty-six of them code,
-the largest being segment 36 at 28,843 bytes.
+The address in the previous section was wrong, and the way it was wrong is worth
+keeping. `ScanAbove` is `((p + 32) & -64) + 32`, and the search for it looked for
+a mask with -64 and took the first plausible hit: segment 36 at 0x4895, `add si,
++0x20` then `and si, -0x40`. But nothing adds 32 back afterwards, so it is a
+plain round to the nearest whole pixel and not `ScanAbove` at all. Across all
+forty-six code segments there are thirteen masks with -64 and not one of them is
+followed by an addition of 32. Segment 36 is the scaler: the function at 0x4765
+rounds point coordinates to the pixel grid, calls a signed `MulDiv`, and shifts
+the result right by ten.
 
-The scan converter is in segment 36, and what finds it is `ScanAbove`. Its
-`((p + 32) & -64) + 32` compiles to an `add` of 32 against an `and` with -64,
-and that mask is rare: across all forty-six code segments there are eight uses
-of a mask with -64 at all, four in segment 36 and four in segment 42. Segment
-42's are `(p + 31) & -64`, which is rounding up to a multiple of sixty-four and
-not this. Segment 36's at 0x4895 is `add si, +0x20` followed by `and si, -0x40`,
-which is `ScanAbove` itself.
+Two assumptions had to go before anything found the right place. The first is
+that `ScanAbove` survives compilation at all -- the source writes
+`SCANABOVE(fxY1) >> SUBSHFT`, and the mask does not survive that shift, since
+`(((p + 32) & -64) + 32) >> 6` is just `(p + 32) >> 6`. The second is that the
+arithmetic is 32-bit in the 386 sense. It is not. This code carries `F26Dot6` in
+`dx:ax` pairs with `adc` and `sbb`, and hands 32-bit shifts and divisions to far
+helper calls, so every search shaped like `sar r32, 6` was structurally incapable
+of matching. The marker that does work is `mov cl, 6` followed within a few bytes
+by a call.
 
-Two things that did not work, so they need not be tried again. Searching for
-loops carrying an indirect call and a 32-bit addition finds three similar ones
-at 0x31e6, 0x324d and 0x32d4 in the same segment, but they step 16-bit values
-through a global pointer and call through `[bp+0x18]` -- some other
-callback-driven routine, not the conic walk. And disassembling forward from a
-single offset through twenty-eight kilobytes desynchronises, since `ndisasm`
-resynchronises after each patch of data, so a loop search over that output finds
-nothing once the addresses have drifted.
+### A loader and a recursive descent
 
-Going further needs function boundaries and applied relocations, which a linear
-sweep does not give. The address to start from is segment 36 around 0x4890.
-scan converter.
+Finding the rest needed real tooling, in `scripts/oracle/ne.mjs` and
+`scripts/oracle/descend.mjs`. The loader reads the segment table, the entry
+table, and each segment's relocation records, walking the chained fixups so that
+the bytes a relocation writes over are known to be operands rather than the start
+of an instruction. The descent decodes only from places control actually
+reaches, which is what a linear sweep cannot do: a compiler leaves jump tables
+and constants between functions, `ndisasm` resynchronises after them at whatever
+offset happens to work, and every address after the first patch of data is a
+guess.
+
+Seeding it took one more turn. Segment 36 has no exported entries at all and the
+ten relocations naming it are segment fixups pointing at offset zero, so the
+entry table gives nothing. Near calls are the answer, precisely because the
+linker never relocates them: scan for `E8`, take the target, and keep it only if
+it opens with `push bp; mov bp, sp` or an `enter`. That yields 69 function
+entries in segment 36, 12 in segment 42 and 7 in segment 43, and the descent runs
+from those.
+
+### The scan converter is segments 42 and 43
+
+Segment 43 is `scanlist.c`. The function at 0xd24 computes four values as
+`(v + 31) & -64` shifted right by six -- `ceil` onto the pixel grid, four times
+over, which is the bounding box -- then scales one of them by four and adds it to
+a base pointer to get a list pointer it afterwards steps by four in both
+directions. That is `fsc_SetupScan` and its scan lists.
+
+Segment 42 is the walker, and it is where `ONSCANLINE` lives. The function at
+0x11e8 walks consecutive point pairs, returns early when a step has zero length,
+and computes a scanline index for each of four coordinates as `(v + 31) & -64`
+shifted right by six. That expression rounds halves _down_, which is not what
+either `ScanAbove` or `ScanBelow` does, and the code repairs the difference
+explicitly: it tests `(p & 63) == 32` and increments the index when it holds.
+Both identities check out over every coordinate from -4096 to 4096:
+
+    (SCANABOVE(p) >> 6)  ==  ((p + 31) & -64) >> 6  +  (p & 63) == 32
+    (SCANBELOW(p) >> 6)  ==  ((p + 31) & -64) >> 6  -  1
+
+So this is our `ScanAbove` and `ScanBelow`, compiled differently, and the
+on-scanline tie is ruled out as a candidate for the remaining pixels rather than
+left open. The same function carries the quadrant as a bitmask in `dx`, shifted
+left once per arm of the up/down and right/left decision, with the reflection
+offsets held as a `si` and `di` that start at 32 and are negated; it records two
+further flags at 0x80 and 0x100 for a start coordinate sitting on a scanline, and
+then takes a cross product of the two steps with `imul`. That is the direction
+test the pseudocode describes, and it is the next thing to read line by line.
 
 ### There is no threshold, because the decision is not local
 
