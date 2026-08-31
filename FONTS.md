@@ -4653,8 +4653,39 @@ centre to a crossing bounds nothing about how two implementations differ. Handed
 the same outline, they still disagree. It is the scan conversion.
 
 Steep diagonals and the waists of digits are where a letter offers the most
-chances for either of them, which is why they dominate the list whichever
-residue is doing the work.
+chances for it, which is why they dominate the list.
+
+### With the interpreter gone, the residue has one shape
+
+`times-bare` is the same 264 cells with every glyph program made inert, so both
+sides scan-convert an outline that is known exactly. Forty-six of them disagree,
+by 62 pixels, and measured against Windows row by row:
+
+- **The runs always line up.** Not one failing row has a different number of
+  runs on the two sides, so the crossings pair the same way and the topology
+  that produces them agrees. What differs is one end of one run, by one column.
+- **It is symmetric.** Twenty-nine pixels are drawn here and not by Windows and
+  thirty-three the other way. The run differences balance too: eighteen a column
+  short at the right end against fourteen a column long, eleven short at the left
+  against eleven long. There is no bias to hold on to.
+- **It is ordinary fill, not rescue.** Eleven of the fifty-six failing rows hold
+  a rescue of any kind.
+- **It is a knife edge.** The disputed pixel's centre sits a median of 0.96
+  sixty-fourths from the nearest crossing, with quartiles at 0.44 and 1.91.
+
+**And the geometry sides with this implementation.** Solving the same outline
+exactly and asking a non-zero winding fill which way each disputed centre falls:
+it agrees with what is drawn here 59 times and with Windows 3. So on the pixels
+that disagree, the true curve says Windows is the one drawing them wrongly, by
+under a sixty-fourth, in either direction with no pattern.
+
+That reframes what is left. This is not a rasteriser that is wrong; it is one
+that is _too exact_. The scan converter Windows ships resolves a crossing that
+falls within a sixty-fourth of a sample by arithmetic that does not quite track
+the curve, and `CalcSpline` and `CalcLine` as written down do track it -- this
+implementation is a faithful transcription of them, proved against a second
+reading over 10,234 splines. Closing the last hundred pixels means reproducing
+an inaccuracy the documentation does not describe.
 
 ### There is no threshold, because the decision is not local
 
