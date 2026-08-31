@@ -4715,10 +4715,22 @@ matches the disputes suspiciously well. But its threshold is a clear optimum:
 doubling the comparand gives 76 wrong pixels and quadrupling 83, halving gives
 74 and quartering 87, removing it altogether 85, against 62 as written.
 
+Two more shapes it does not have. The starting value of the conic form carries a
+parity from the quadrant reflection -- nought or one, added before the walk
+begins, which is a tie-break for a form that starts at zero. It never matters
+here: forcing the parity either way, inverting it, or adding and subtracting one
+outright leaves all 62 pixels exactly where they were, because `q` runs to a
+hundred million and its low bits are never near the decision. And the disputes
+do not gather where an error in the start would put them. Sorted by how far
+along its own spline each crossing falls, the rate over fifths is 0.97, 2.71,
+1.93, 2.34 and 0.37 per cent -- lowest at both ends and highest in the middle,
+which is neither an initialisation going wrong nor an accumulation building up.
+
 So lines are exact, splines are wrong on one crossing in sixty, neither the
-approximation nor the guard explains it, and an exact solve of the same outline
-sides with this implementation on 59 of the 62. Whatever is missing is in
-`CalcSpline`'s stepping and nowhere else in the scan converter.
+approximation nor the guard nor the starting value explains it, the error
+neither starts at the beginning nor grows toward the end, and an exact solve of
+the same outline sides with this implementation on 59 of the 62. Whatever is
+missing is in `CalcSpline`'s stepping and nowhere else in the scan converter.
 
 ### There is no threshold, because the decision is not local
 
