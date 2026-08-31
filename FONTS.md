@@ -5068,6 +5068,74 @@ that both stand: there is no second `SCANABOVE` setup in the binary, and curves
 are nonetheless not being flattened. Resolving it means reading the table at
 `ds:0x4a4`, which needs the data segment.
 
+### The table at ds:0x4a4, and the stepper behind it
+
+The table resolves once you stop assuming `ds` means DGROUP. GDI's automatic
+data segment is 48, and 0x4a4 there holds values far too large to be offsets
+into a segment of 6,587 bytes. The font scaler carries its **own** data segment,
+47, and at 0x4a4 in that one:
+
+    0x4a4  186c 18b8 1904 1954 1954
+    0x4ae  16d3 173a 179c 1802 1802
+    0x4b8  0000
+
+Two groups of five words, ten bytes apart, which is the stride the scan kind's
+value of ten implies. Within a group the index is the quadrant with its low bit
+masked off, so the entries used are at +0, +2, +4 and +8, and the +6 slot is
+filled with a copy of its neighbour to keep the arithmetic simple. Every value
+lands inside segment 42, past 0x16d0 -- which is exactly where the descent had
+stopped, because nothing near-calls these: they are reached only through the
+table.
+
+Seeded with those eight addresses the descent covers 0x16d3 to 0x19a3 with no
+gap larger than six bytes and exactly eight `ret`s, which accounts for the whole
+tail of the segment. Eight routines, four quadrants by two scan kinds. The first:
+
+    16d9  or dx,dx           ; the determinant
+    16db  jl 0x1710          ; negative: cross a horizontal scanline
+    16dd  jg 0x16e3          ; positive: cross a vertical one
+    16df  or ax,ax           ; zero in the high word, so test the low
+    16e1  jz 0x1710          ; a determinant of nought steps horizontally
+    ...
+    16e3  cmp cx,[0x1be]     ; xScan against xStop, and return when they meet
+    ...
+    1700  inc word [0x1ba]   ; xScan++
+    1704  sub ax,[0x1b6]     ; determinant -= dy * 64
+    1708  sbb dx,[0x1b8]
+    ...
+    1729  inc bp             ; yScan++
+    172a  add ax,[0x1b2]     ; determinant += dx * 64
+    172e  adc dx,[0x1b4]
+
+That is our `calcLine` line for line. A determinant is carried, a positive one
+steps a column and takes away `dy << 6`, a negative one steps a row and adds
+`dx << 6`, and the walk ends when the moving index meets its stop. The tie
+matters and agrees: at nought the shipped code takes the horizontal branch, and
+ours reads `if (q > 0)` step the column `else` step the row, so nought goes the
+same way. The two also set the determinant up alike, from the distance to the
+first crossing in each axis against the opposite step; where we carry a `q` of
+nought or one out of the quadrant decision, the binary instead moves the
+half-pixel offset by a whole sixty-four, which is the same tie-break spelled
+differently.
+
+### What is behind the table, and what is not
+
+Eight steppers, and all eight are this. There is no conic among them.
+
+That is worth stating carefully, because it is weaker evidence than it looks.
+`spline.c` includes `scanlist.h` with the comment _for direct horizscan add
+call_, so `CalcSpline` was written to add its crossings straight to the lists
+rather than to be dispatched through a table -- its absence from the table says
+nothing about whether it exists. The evidence for absence remains the mask count
+of the previous section, and against it remains the measurement: flattening
+curves to chords is worse at every threshold tried.
+
+So the question is sharper than before rather than answered. The scan converter
+walks lines with a determinant, exactly as we do. Whatever draws a curve either
+adds its crossings directly, without the four-way `SCANABOVE` setup the source
+shows, or does not exist and the flattening happens further upstream in the
+scaler -- and if it is the latter, it is not the chord flattening tried here.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
