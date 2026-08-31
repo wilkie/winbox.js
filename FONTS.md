@@ -4864,6 +4864,24 @@ have verified against to the binary that produced these fixtures is not there to
 tie it. So `spline.c` is evidence about the algorithm and not proof about the
 machine, and a source vintage differing from the shipped one would account for
 every measurement in this section without any of them being wrong.
+
+Scanning for the shape rather than the values says the same. `GDI.EXE` is the
+only module on the drive with font entry points -- eleven of them, against none
+anywhere else -- so the scaler is in it. Looking through it for anything
+table-shaped, meaning a run of small non-decreasing values with repeats at a
+stride of one, two or four bytes, finds nothing at all. Relaxing to any run of
+twenty-four or more small non-decreasing values that are at least half zeroes
+finds seven, and every one of them is a long stretch of zeroes ending in a
+single byte rather than a ramp.
+
+One caution against reading too much into that. The table's values do not matter
+to the disagreement in any case: `zShift` measures nought at every size in every
+fixture here, so the precision reduction never runs. The search was a question
+about which revision shipped, not about the mechanism. And a compiler has an
+easy time turning that particular table into arithmetic, since nought below
+thirty and then 1, 1, 1, 2, 2, 2, 3, 3 is a formula rather than data. Its
+absence is consistent with a different vintage and equally consistent with an
+optimiser, and nothing here distinguishes the two.
 scan converter.
 
 ### There is no threshold, because the decision is not local
