@@ -4779,6 +4779,26 @@ The search is worth keeping as a method even though this pass found nothing, and
 it needs one guard: a mutation to a stop value makes the walk run forever, and a
 harness that only scores will hang rather than report.
 
+**The one shape that still fits is the control point.** Of everything measured,
+the dispute rate along a spline's own parameter is the most suggestive: 0.97,
+2.71, 1.93, 2.34 and 0.37 per cent over fifths, which is the shape of `2t(1-t)`
+-- the weight a quadratic gives its control point, zero at both ends and largest
+in the middle. A control point is also the one input a spline has and a line
+does not, which would explain why lines never disagree.
+
+There is a place the two implementations could differ over one. `FillGlyph`
+takes the point implied between two off-curve points as `(a + b + 1) >> 1` on
+coordinates that are already scaled, where this averages in font units and
+scales afterwards; the two part company by half a sixty-fourth when the sum is
+odd, and a midpoint exists only where two control points meet, so it can never
+touch a straight edge.
+
+Measured, it is worth one pixel of the 62: `times-bare` goes to 61 and the
+recorded letters go the other way, 780 letters and 105 wrong pixels becoming 779
+and 107. Times New Roman simply has few places where two off-curve points meet.
+So the mechanism is real and too rare to be the one at work, and the `2t(1-t)`
+shape is still unexplained.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
