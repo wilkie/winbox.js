@@ -5075,24 +5075,34 @@ were already right and two were not.
   Swapping which list a quadrant feeds costs three letters and eight pixels and
   leaves the twin bars where they are, so that is right as well.
 
-  What the sweep says is that the `+ yOffset` an entry is recorded with is not a
-  row index that can be reasoned about on its own. It is part of a paired
-  encoding: the `on` and the `off` of a column carry it together, the test for a
-  dropout compares them, and the conversion `-v` is right for the pair however it
-  reads for either half -- which is why `-v - 1`, the conversion the frame
-  arithmetic gives for a single entry, loses a hundred letters. The order that
-  matches Windows follows from that encoding and not from which way the screen
-  is counted, and it is settled by a fixture built to ask nothing else.
+  **The encoding, read off a column.** Dumping one of the twin-bar glyphs gives
+  `on [-10,-8] off [-10,-9]`. Paired by index the first is a zero-length run and
+  the second a real one, and converting the real one with `-v - 1` gives device
+  rows `[7, 8)`, which is the single row it covers. So the vertical pair is
+  half-open exactly as the horizontal pair is, and `PerformVertDropout` placing
+  at `yDrop - 1` converts to `-on` -- which is what this already used. The
+  conversion was derived rather than fitted after all, and changing it in both of
+  its uses together costs a hundred and sixty letters, which settles it.
 
-  It also disposes of what looked for a while like a defect in the neighbour
-  test. Reading the column the other way, Courier New's `a`, `e` and `s` at ten
-  pixels per em each lost a rescue that Windows makes, and the whole of the rest
-  of those cells could be accounted for -- which made it look as though the test
-  that declines where the pixel above is lit had to be wrong. It was the
-  direction. The test stands, and the readings taken at the time still hold:
-  removing it costs twenty-seven letters, reading it as the pixel about to be
-  written never fires at all, and reading it as the pixel below costs
-  twenty-nine.
+  **And the reflection was a guard.** The rescue in that column lands on device
+  row 9 only because the clamp pulls it there from 10: its row is outside the
+  box. `PerformVertDropout` guards each of its two `GetBit` calls on the row
+  being clear of the corresponding edge -- `yDrop > boxBottom` for one and
+  `yDrop < boxTop` for the other -- so a rescue that had to be clamped is placed
+  without asking about anything. This asked anyway, and a stroke lying along the
+  bottom of the box blocked the row above it.
+
+  With the guard the twin-bar recording is drawn exactly, all 264 cells and no
+  wrong pixels against 199 of 216 before, and the fabricated recordings go from
+  5,496 cells and 2,086 wrong pixels to 5,513 and 2,013. The recorded letters
+  hold at 780 and 105.
+
+  It also dissolves the argument about which end of a column is read first: with
+  nothing left to block, the two directions agree on that fixture. The letters
+  keep their two-letter preference for the order these lists are already in, and
+  that is now the only thing resting on it. So the reflection was never in the
+  coordinates -- it was a guard this did not have, in the one place where a
+  rescue sits outside the box it is drawn into.
 
 What is left after all of it is a difference of under a sixty-fourth, on every
 kind of edge, that no stage of the documented algorithm accounts for.
