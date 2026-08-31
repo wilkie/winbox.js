@@ -4947,6 +4947,47 @@ every time. So on this geometry Windows is reliably the less generous of the
 two, by less than a sixty-fourth, and it is not a tie rule, a rounding or an
 overflow -- all three have been tried and measured.
 
+### Four things the subdivision hypothesis was, and was not
+
+The last hundred pixels being curves and never lines pointed at the one path a
+curve takes and a line does not, and the reasoning ran: `EvaluateSpline`
+recurses, every recursion rounds three new coordinates onto the grid, rounding
+accumulates with depth, and imposing the shared split coordinate afterwards
+flattens a convex arc inward -- which would give sub-sixty-fourth errors, path
+dependent, on curves only, with Windows the less generous. It fits every
+measurement. It is wrong, and four counts say so.
+
+- **There is no depth to accumulate through.** Across the recorded letters the
+  subdivision produces 1.026 pieces per curve, and 1.05 on the sweeps, with the
+  deepest cut in a cell averaging half a level. Nineteen curves in twenty are
+  never cut at all.
+- **And no correlation with it.** Cells that disagree are cut 1.018 pieces a
+  curve against 1.026 for cells that agree on the letters, and 1.046 against
+  1.055 on the turning-point sweep -- very slightly _less_, not more. Only the
+  fine sweep leans the other way, 1.078 against 1.050.
+- **The implied midpoint is not it either.** The point between two off-curve
+  ones is their average, which lands between two sixty-fourths whenever the
+  coordinates differ by an odd number, and this is the other thing that touches
+  only curves. Rounding it down instead of up is worth one letter and costs two
+  pixels: 781 and 107 against 780 and 105. A wash.
+- **The precision reduction never fires.** Forcing `zShift` to nothing gives a
+  score identical to consulting the table, so at these sizes the table is always
+  nothing. Forcing it to one, two or three makes matters monotonically worse --
+  778, 758, 729 letters -- so Windows is not quantising more than this does,
+  which was the whole shape of the hypothesis.
+
+**And the premise was weaker than it looked.** "Curves and never lines" came
+from the fabricated sweeps, whose straight variants are rectangles: their edges
+are vertical, and a vertical edge crosses every row at the same place, so it can
+only graze a sample column if the whole edge does. It was geometry and not code
+path. The recorded letters have plenty of straight diagonals and they disagree
+too -- Arial's `7` is wrong by four pixels at eighteen pixels per em and four
+more at twenty, on the diagonal, and `1`, `K`, `X` and `y` are all in the list.
+
+So the phenomenon is not curve-specific at all. It is any edge passing within a
+fraction of a sixty-fourth of a sample point, `CalcLine` included, which puts it
+back in the general scan conversion rather than in the spline path.
+
 ## 9. Where the numbers stand
 
 | Fixture                                                      | Agreement |
