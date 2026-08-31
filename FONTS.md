@@ -4065,6 +4065,57 @@ measured against exact solves, and what is left is rows where the pairing goes
 wrong and a cell where the dropout rules are working from a different set of
 spans.
 
+### The walk ships
+
+Instrumenting `fillWalked` directly found the pairing failure in one line of
+output. Times New Roman's `E` at twenty-four, device row 16:
+
+```
+on [4, 4, 12]   off [6, 14]      unbalanced
+```
+
+Three `on` crossings against two `off`. Paired by index that gives runs `(4,6)`
+and `(4,14)`, so the second one spans from the stem to the serif -- the single
+long run the pixel comparison had shown.
+
+Tracing every emission into that row named the duplicate. The walk contributed an
+`on` at column 4 from the curve `(3.875, 16.656) → (4.000, 16.000)`, and the
+endpoint topology contributed a second at the same column, from a vertex at
+`(4, 16.5)`. That vertex is the curve's **control point**, which the topology had
+been fed along with the on-curve points. A control point is not on the outline,
+so a scanline passing through its height crosses nothing there. Feeding only the
+on-curve points:
+
+|                          | recorded letters | wrong pixels |
+| ------------------------ | ---------------- | ------------ |
+| control points included  | 722/846          | 255          |
+| **on-curve points only** | **775**/846      | **111**      |
+
+That put the walk ahead of the analytic fill on the letters for the first time,
+and left one font behind: `cour-arches` at 5,133 wrong pixels against 432. Its
+arches are quadratics whose control sits twice as high as their ends, so they
+rise and come back -- and the walk takes its extent from the two endpoints, sees
+a curve spanning no scanline at all, and takes its "almost horizontal" shortcut,
+drawing the whole arch as one row. A well-built font puts an on-curve point at
+every extreme and never presents the case; a font fabricated to test shallow
+curves presents nothing else. `EvaluateSpline` subdividing splines before they
+are walked is what handles it, and cutting each quadratic at its turning points
+is that:
+
+|                                 | letters     | wrong px | fabricated cells | wrong px  |
+| ------------------------------- | ----------- | -------- | ---------------- | --------- |
+| the analytic fill (was shipped) | 763/846     | 144      | 4,442/5,208      | 2,755     |
+| the walk, controls excluded     | 775/846     | 111      | 4,472/5,208      | 6,616     |
+| **the walk, split at turns**    | **778**/846 | **107**  | **4,551**/5,208  | **1,900** |
+
+**Better on all four counts, so it is now what draws.** The recorded letters are
+**778 of 846, ninety-two per cent**, at 107 wrong pixels -- from 654 and 369 when
+this section began.
+
+The analytic fill is kept behind `WB_ANALYTIC`, because it is what every rule in
+this section was measured against and because the two still disagree on 187
+pixels where one of them is always right.
+
 ### What no rule in this family can reach
 
 Courier New at eight pixels per em is 36 glyphs in which every inked pixel is a

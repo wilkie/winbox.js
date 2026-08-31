@@ -88,8 +88,8 @@ describe('the fabricated glyph recordings', () => {
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 4442;
-  const WRONG = 2755;
+  const EXACT = 4551;
+  const WRONG = 1900;
 
   present(
     'agree with Windows on three thousand cells of chosen geometry',

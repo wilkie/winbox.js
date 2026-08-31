@@ -377,6 +377,60 @@ function crossesAt(piece, y, into) {
  * The walk works in sixty-fourths with y pointing up, so device coordinates are
  * negated going in and the emitted scan rows come back as `-row - 1`.
  */
+/**
+ * A quadratic cut at its turning points, so every piece walked is monotonic.
+ *
+ * De Casteljau at the parameter where the derivative vanishes, in each axis
+ * that turns. A curve with no turn comes back as itself.
+ */
+function split(from, control, to) {
+  const turns: number[] = [];
+
+  for (const axis of [0, 1]) {
+    const divisor = from[axis] - 2 * control[axis] + to[axis];
+
+    if (divisor === 0) {
+      continue;
+    }
+
+    const at = (from[axis] - control[axis]) / divisor;
+
+    // Far enough inside to leave two pieces the walk can step through.
+    if (at > 1 / 4096 && at < 1 - 1 / 4096) {
+      turns.push(at);
+    }
+  }
+
+  if (!turns.length) {
+    return [[from, control, to]];
+  }
+
+  turns.sort((one, two) => one - two);
+
+  const pieces: any[] = [];
+
+  let start = from;
+  let hold = control;
+  let last = 0;
+
+  for (const turn of turns) {
+    const t = (turn - last) / (1 - last);
+    const first = [start[0] + t * (hold[0] - start[0]), start[1] + t * (hold[1] - start[1])];
+    const second = [hold[0] + t * (to[0] - hold[0]), hold[1] + t * (to[1] - hold[1])];
+    const at = [first[0] + t * (second[0] - first[0]), first[1] + t * (second[1] - first[1])];
+
+    pieces.push([start, first, at]);
+
+    start = at;
+    hold = second;
+    last = turn;
+  }
+
+  pieces.push([start, hold, to]);
+
+  return pieces;
+}
+
 export function fillWalked(contours, options) {
   const { scale, originX = 0, originY = 0, width, height, dropout = false } = options;
 
@@ -406,24 +460,51 @@ export function fillWalked(contours, options) {
       const from = place(piece.from);
       const to = place(piece.to);
 
+      (globalThis as any).__wbPiece?.(
+        `${piece.control ? 'curve' : 'line '} (${from[0].toFixed(3)},${from[1].toFixed(3)}) -> (${to[0].toFixed(3)},${to[1].toFixed(3)})`
+      );
+
       if (piece.control) {
         const control = place(piece.control);
 
-        calcSpline(
-          lists,
-          sub(from[0]),
-          -sub(from[1]),
-          sub(control[0]),
-          -sub(control[1]),
-          sub(to[0]),
-          -sub(to[1]),
-          dropout
-        );
+        /* Split where the curve turns.
+         *
+         * The walk takes its extent from the two endpoints, so a quadratic that
+         * rises and comes back looks to it like one spanning no scanline at all
+         * -- and its "almost horizontal" shortcut then draws the whole thing as
+         * one row. A well-built font puts an on-curve point at every extreme
+         * and the case does not arise; a fabricated arch with its control twice
+         * the height of its ends is exactly the case, and `EvaluateSpline`
+         * subdividing splines before they are walked is what handles it.
+         */
+        const halves = split(from, control, to);
 
-        ends.check(sub(control[0]), -sub(control[1]));
-      } else {
-        calcLine(lists, sub(from[0]), -sub(from[1]), sub(to[0]), -sub(to[1]));
+        for (const [one, mid, two] of halves) {
+          /* A split can leave a piece so short that both ends round onto the
+           * same sixty-fourth, which the walk cannot step through.
+           */
+          if (sub(one[0]) === sub(two[0]) && sub(one[1]) === sub(two[1])) {
+            continue;
+          }
+
+          calcSpline(
+            lists,
+            sub(one[0]),
+            -sub(one[1]),
+            sub(mid[0]),
+            -sub(mid[1]),
+            sub(two[0]),
+            -sub(two[1]),
+            dropout
+          );
+        }
+
+        ends.check(sub(to[0]), -sub(to[1]));
+
+        continue;
       }
+
+      calcLine(lists, sub(from[0]), -sub(from[1]), sub(to[0]), -sub(to[1]));
 
       ends.check(sub(to[0]), -sub(to[1]));
     }
@@ -452,6 +533,8 @@ export function fillWalked(contours, options) {
   for (const [walkRow, ons] of lists.horizOn) {
     const offs = lists.horizOff.get(walkRow) ?? [];
     const row = -walkRow - 1;
+
+    (globalThis as any).__wbRuns?.(row, ons.slice(), offs.slice());
 
     for (let index = 0; index < ons.length && index < offs.length; index++) {
       runs.push({ row, on: ons[index], off: offs[index] });
@@ -607,11 +690,15 @@ export function fillWalked(contours, options) {
 }
 
 export function fill(contours, options) {
-  /* `fillWalked` is the scan converter's own method and is not yet the one used.
-   * See its own comment for where it stands: exact on straight-edged glyphs and
-   * behind on curves, 722 of the 846 recorded letters against 763 here.
+  /* The scan converter's own method, which is now the one used.
+   *
+   * What follows it in this file -- computing where the outline crosses each
+   * scanline and rounding that to a pixel -- is kept because it is the thing
+   * every rule in `FONTS.md` was measured against, and because the two disagree
+   * on 187 pixels of the fixture where one of them is always right. Set
+   * `WB_ANALYTIC` to draw with it instead.
    */
-  if (process.env.WB_WALK === '1') {
+  if (process.env.WB_ANALYTIC !== '1') {
     return fillWalked(contours, options);
   }
 
