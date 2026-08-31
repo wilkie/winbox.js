@@ -2673,6 +2673,39 @@ export const FABRICATIONS = [
     },
   },
 
+  {
+    name: 'cour-control-sweep',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'the same control sweep in Courier New, whose outlines are drawn differently',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const TALL = 1200;
+      const LEFT = 300;
+
+      WIDE.split('').forEach((character, index) => {
+        const bulge = index * 20;
+
+        const points = [
+          [0, 0],
+          [0, TALL],
+          [LEFT, TALL],
+          [LEFT + bulge, TALL / 2, false],
+          [LEFT, 0],
+        ];
+
+        const glyph = glyphFor(bytes, character.charCodeAt(0));
+
+        setGlyph(bytes, null, glyph, { width: 1400, height: TALL, points, program: [] });
+        setBearing(bytes, glyph, 0);
+      });
+
+      return bytes;
+    },
+  },
+
   /* Courier New with its `INSTCTRL` turned around.
    *
    * Its `prep` executes the instruction twice, both times as `PUSHB[2] 1, 1`

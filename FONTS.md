@@ -4827,6 +4827,18 @@ So everything before the loop is right, and demonstrably: the reflection into a
 quadrant, `ScanAbove` and `ScanBelow`, the stop values, the entry lists and the
 fill are all exercised by the short-cut pieces, which never disagree. What is
 left is the execution of the forward difference itself, and nothing else in the
+
+**The same sweep in Courier New says the same thing.** Its outlines are built
+differently and its cell heights map to different pixel sizes, so the threshold
+falls elsewhere -- the stepping loop first runs at a control of twenty font
+units rather than a hundred -- but the rule is identical either side of it.
+Every piece that leaves by an early exit is drawn exactly, in both faces, and
+the disagreements begin with the first piece that steps and then hold at a
+steady rate: 52 wrong pixels over 216 cells in Times, 44 in Courier.
+
+So it is not a property of one face's outlines. Wherever the forward difference
+runs, about one crossing in sixty comes out differently; wherever it does not,
+nothing ever does.
 scan converter.
 
 ### There is no threshold, because the decision is not local
