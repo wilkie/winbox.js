@@ -4797,7 +4797,37 @@ Measured, it is worth one pixel of the 62: `times-bare` goes to 61 and the
 recorded letters go the other way, 780 letters and 105 wrong pixels becoming 779
 and 107. Times New Roman simply has few places where two off-curve points meet.
 So the mechanism is real and too rare to be the one at work, and the `2t(1-t)`
-shape is still unexplained.
+
+### The error is in the stepping loop and nowhere before it
+
+The shape asked for a fabrication of its own, so: thirty-six rectangles with one
+curved side, the endpoints of the curve fixed and the control point walked
+outward twenty font units at a time -- from sitting exactly on the chord, where
+the three points are collinear and `EvaluateSpline` hands the piece to
+`CalcLine`, to some five pixels clear of it.
+
+The answer is not the one the shape suggested. The error does not grow with the
+control's distance; it switches on:
+
+| control, in font units | cells wrong                 | pieces short-cut | pieces stepped |
+| ---------------------: | :-------------------------- | ---------------: | -------------: |
+|                      0 | none                        |                0 |              0 |
+|               20 to 80 | none                        |               12 |              0 |
+|                    100 | 3 of 6                      |                6 |              6 |
+|             140 to 700 | one or two of six, steadily |       4 or fewer |      8 or more |
+
+`CalcSpline` has two exits before its forward difference begins: one when the
+piece spans no scan column, which draws it as a single column, and one when it
+spans no scanline. Below a hundred font units every piece leaves by one of those
+doors, and every one of them is drawn exactly. At a hundred the stepping loop
+starts running for half of them, and that is where the disagreements start. Past
+that the rate is flat -- more stepping, not worse stepping.
+
+So everything before the loop is right, and demonstrably: the reflection into a
+quadrant, `ScanAbove` and `ScanBelow`, the stop values, the entry lists and the
+fill are all exercised by the short-cut pieces, which never disagree. What is
+left is the execution of the forward difference itself, and nothing else in the
+scan converter.
 
 ### There is no threshold, because the decision is not local
 

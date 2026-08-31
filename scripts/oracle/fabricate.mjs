@@ -2620,6 +2620,59 @@ export const FABRICATIONS = [
     },
   },
 
+  /* One spline, its control point walked away from the chord.
+   *
+   * Everything still disagreeing is a spline crossing, and lines never
+   * disagree at all -- 3,673 of them in `times-bare` without a single one being
+   * drawn differently. The one input a spline has and a line does not is its
+   * control point, and the rate at which the disputes fall along a spline's own
+   * parameter has the shape of `2t(1-t)`: nothing at either end and most in the
+   * middle, which is precisely the weight a quadratic gives that point.
+   *
+   * If the difference is something about the control, it should grow with how
+   * far the control is from the chord, since that is what scales its influence.
+   * So: thirty-six rectangles with one curved side, the endpoints of the curve
+   * fixed and the control walked outward twenty font units at a time, from
+   * sitting exactly on the chord -- where the three points are collinear and
+   * `EvaluateSpline` hands the piece to `CalcLine` instead -- to some five
+   * pixels clear of it at the sizes the probe draws.
+   *
+   * The first glyph is therefore a control: a spline that is really a line, and
+   * which ought to agree perfectly if lines do.
+   */
+  {
+    name: 'control-sweep',
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: "a spline's control point walked out from its chord, twenty units a step",
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const TALL = 1200;
+      const LEFT = 300;
+
+      WIDE.split('').forEach((character, index) => {
+        const bulge = index * 20;
+
+        const points = [
+          [0, 0],
+          [0, TALL],
+          [LEFT, TALL],
+          [LEFT + bulge, TALL / 2, false],
+          [LEFT, 0],
+        ];
+
+        const glyph = glyphFor(bytes, character.charCodeAt(0));
+
+        setGlyph(bytes, null, glyph, { width: 1400, height: TALL, points, program: [] });
+        setBearing(bytes, glyph, 0);
+      });
+
+      return bytes;
+    },
+  },
+
   /* Courier New with its `INSTCTRL` turned around.
    *
    * Its `prep` executes the instruction twice, both times as `PUSHB[2] 1, 1`
