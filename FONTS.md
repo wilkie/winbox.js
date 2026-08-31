@@ -4887,9 +4887,32 @@ So the walk is not where the last hundred pixels are, and neither is anything
 else that has been written down. Every stage of the scan converter given in
 `FONT_PIXEL_CANDIDATES.md` is now implemented as given and verified against it:
 the subdivision, the walk, the topology, the endpoint handling, the pairing.
-What remains is either in a stage not written down -- `Setup`, `BeginElement`'s
-finer detail, whatever hands the outline over -- or in a difference between the
-document and the code it describes.
+What remains is either in a stage not written down -- `Setup`, whatever hands
+the outline over -- or in a difference between the document and the code it
+describes.
+
+**`BeginElement` is not it, and the list it keeps is dead code here.** It does
+maintain a list of an element's control points, and `PerformHorizDropout` and
+`PerformVertDropout` do use that list to work out where between two pixels a
+rescued stroke belongs. But every one of those is inside `if scanKind &
+ScanKind.Smart`: the tag is only composed under it, `AddHorizSmartScan` is the
+only adder that records one, and both dropout routines read it only in their
+smart branch, where the simple one just steps the pixel one to the left or one
+down. All four installed faces ask for `SCANTYPE` 1, simple dropout excluding
+stubs, so none of that runs, and ignoring the points `BeginElement` is handed is
+right rather than an omission.
+
+Reading those two routines properly settles the rest of the dropout pass as
+well. The stub tests match term for term, including the asymmetry that makes the
+upward test count vertical crossings a row further on than the downward one. Two
+things that looked like gaps are not: this places its vertical rescue without a
+decrement where `PerformVertDropout` has `yDrop--`, and tests one neighbour
+where it tests two. Both were tried. Adding the decrement costs ninety-seven
+letters, and testing both neighbours before the clamp costs thirty, because the
+decrement is already folded into the conversion from the walk's vertical entries
+-- they record `y + yOffset`, which has taken the step -- and the second
+neighbour is the pixel about to be written. The current form is that code with
+the arithmetic gathered elsewhere.
 
 The step decision is not the place. The guard the pseudocode gives -- the
 derivative against its comparand, alongside the sign of the conic form -- was

@@ -1212,13 +1212,13 @@ PerformHorizDropout(Fixed26Dot6[] ons, Fixed26Dot6[] offs, int yDrop, ScanKind s
     onPt = onTag >> 2
     onCode = onTag & 3
 
-    x1 = CalcHorizSubpix(onCode, yDrop, controlPoints[onPt][0], controlPoints[onPt][1], controlPoints[onPt + 1][0], controlPoints[onPt + 1][1], controlPoints[onPt + 2][0], controlPoints[onPt + 2][1])
+    x1 = CalcHorizSubpix(onCode, yDrop, CONTEXT.controlPoints[onPt][0], CONTEXT.controlPoints[onPt][1], CONTEXT.controlPoints[onPt + 1][0], CONTEXT.controlPoints[onPt + 1][1], CONTEXT.controlPoints[onPt + 2][0], CONTEXT.controlPoints[onPt + 2][1])
     
     offTag = offs[1]
     offPt = offTag >> 2
     offCode = offTag & 3
 
-    x2 = CalcHorizSubpix(offCode, yDrop, controlPoints[offPt][0], controlPoints[offPt][1], controlPoints[offPt + 1][0], controlPoints[offPt + 1][1], controlPoints[offPt + 2][0], controlPoints[offPt + 2][1])
+    x2 = CalcHorizSubpix(offCode, yDrop, CONTEXT.controlPoints[offPt][0], CONTEXT.controlPoints[offPt][1], CONTEXT.controlPoints[offPt + 1][0], CONTEXT.controlPoints[offPt + 1][1], CONTEXT.controlPoints[offPt + 2][0], CONTEXT.controlPoints[offPt + 2][1])
     
     # Average the two points for the subpixel
     xDrop = (x1 + x2 - 1) >> (SUB_PIXEL_SHIFT + 1)
@@ -1279,13 +1279,13 @@ PerformVertDropout(Fixed26Dot6[] ons, Fixed26Dot6[] offs, int xDrop, ScanKind sc
     onPt = onTag >> 2
     onCode = onTag & 3
 
-    y1 = CalcVertSubpix(onCode, xDrop, controlPoints[onPt][0], controlPoints[onPt][1], controlPoints[onPt + 1][0], controlPoints[onPt + 1][1], controlPoints[onPt + 2][0], controlPoints[onPt + 2][1])
+    y1 = CalcVertSubpix(onCode, xDrop, CONTEXT.controlPoints[onPt][0], CONTEXT.controlPoints[onPt][1], CONTEXT.controlPoints[onPt + 1][0], CONTEXT.controlPoints[onPt + 1][1], CONTEXT.controlPoints[onPt + 2][0], CONTEXT.controlPoints[onPt + 2][1])
     
     offTag = offs[1]
     offPt = offTag >> 2
     offCode = offTag & 3
 
-    y2 = CalcVertSubpix(offCode, xDrop, controlPoints[offPt][0], controlPoints[offPt][1], controlPoints[offPt + 1][0], controlPoints[offPt + 1][1], controlPoints[offPt + 2][0], controlPoints[offPt + 2][1])
+    y2 = CalcVertSubpix(offCode, xDrop, CONTEXT.controlPoints[offPt][0], CONTEXT.controlPoints[offPt][1], CONTEXT.controlPoints[offPt + 1][0], CONTEXT.controlPoints[offPt + 1][1], CONTEXT.controlPoints[offPt + 2][0], CONTEXT.controlPoints[offPt + 2][1])
     
     # Average the two points for the subpixel
     yDrop = (y1 + y2 - 1) >> (SUB_PIXEL_SHIFT + 1)
