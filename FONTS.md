@@ -4603,8 +4603,35 @@ are not spread evenly. Measured:
   a bowl is near horizontal, and it is the largest single group.
 
 So the residue is two things and not one: runs a pixel too long where a curve
-turns over, and a handful of rescues not made. The first is much the larger and
-points at the spline walk rather than at the fill or the dropout rules.
+turns over, and a handful of rescues not made.
+
+**It is not the subdivision at turning points.** The scan converter's own
+`CalcSpline` reflects a spline into a quadrant using nothing but its endpoints
+-- `y3 > y1` and `x3 > x1` -- and never subdivides, where this implementation
+splits a quadratic at its turning points so that every walked piece is
+monotonic. That looked like the difference, since it is a structural one and it
+lives exactly where the errors are. It is not. Removing the subdivision is worse
+in every arrangement -- 775 letters and 111 wrong pixels against 778 and 107,
+with splitting on only one axis in between -- and, more to the point, the
+subdivision fires on 1.8 per cent of the curves in the failing cells against 2.6
+per cent in the agreeing ones. It happens _less_ where things go wrong. The
+extremes of these bowls are at on-curve points, which is where a designer puts
+them, so there is no turning point inside the quadratic to split.
+
+**Nor is it the topology.** `CheckHorizTopology` and `CheckVertTopology`, and
+the four `Add` functions they call, match the pseudocode branch for branch,
+including the asymmetry that makes an `on` endpoint round its coordinate with
+`+31` and an `off` one with `+32`.
+
+**And the outline is the right size.** Sixty-seven of the sixty-eight failing
+cells have exactly the same ink bounding box as Windows -- not a row taller, not
+a column wider. Whatever is wrong is inside a shape whose extent is right, which
+rules out the placement, the scaling and the box clamps together.
+
+What is left is narrow: on the topmost and bottommost row of a bowl, where a
+scanline cuts a shallow arc and the span is at its widest and its ends at their
+most sensitive, our run is a pixel too long. That is the part of `CalcSpline`
+where `dQy` is small and the walk takes many steps in x for each one in y.
 
 ## 9. Where the numbers stand
 
