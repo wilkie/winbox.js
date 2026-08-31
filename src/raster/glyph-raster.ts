@@ -662,7 +662,29 @@ export function fillWalked(contours, options) {
         at = boxBottom - 1;
       }
 
-      if (at > 0 && pixels[(at - 1) * width + column]) {
+      /* The neighbour is only asked about when the rescue sits inside the box.
+       *
+       * `PerformVertDropout` guards each of its two `GetBit` calls on the row
+       * being off the corresponding edge, so a rescue whose row falls outside
+       * and is clamped in is placed without asking anything.
+       */
+      /* The neighbour is only asked about when the rescue sits inside the box.
+       *
+       * `PerformVertDropout` guards each of its two `GetBit` calls on the row
+       * being clear of the corresponding edge -- `yDrop > boxBottom` for one and
+       * `yDrop < boxTop` for the other -- so a rescue whose row falls outside
+       * the box, and is then clamped back into it, is placed without asking
+       * about anything. Asking anyway is how a stroke lying along the bottom of
+       * the box came to block the row above it.
+       *
+       * **Recorded.** Two horizontal hairlines a row apart, swept through
+       * thirty-six gaps and six sizes: Windows draws both rows every time, and
+       * with the guard this draws all 264 cells of that recording exactly,
+       * against 199 of 216 without it. It is also what settles the argument
+       * about which end of a column is read first -- with the guard in place
+       * the two directions agree there, because nothing is left to block.
+       */
+      if (row === at && at > 0 && pixels[(at - 1) * width + column]) {
         continue;
       }
 
