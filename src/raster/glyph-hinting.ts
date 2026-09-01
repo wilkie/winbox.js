@@ -35,7 +35,7 @@ export class Unsupported extends Error {}
 const STEP_LIMIT = 400000;
 
 /** A point's coordinates are sixty-fourths of a pixel. */
-const ONE = 64;
+export const ONE = 64;
 
 /** Unit vector components are sixteen-thousand-three-hundred-and-eighty-fourths. */
 const UNIT = 16384;
@@ -392,7 +392,11 @@ export class Hinter {
    * @param {number} length - How many bytes of them there are.
    * @returns {Array} The contours, moved onto the grid.
    */
-  hint(outline, advance, leftSideBearing, xMin, program, at, length) {
+  hint(outline, advance, leftSideBearing, xMin, program, at, length, assembly = null) {
+    /* An assembled composite arrives already in pixels and brings its advance
+     * with it, taken from the component that claimed the metrics.
+     */
+    const composite = Boolean(assembly);
     this.prepare();
 
     const zone = new Zone(0);
@@ -421,7 +425,11 @@ export class Hinter {
      * differences cancel in the advance, and the readings come back unshifted
      * -- 9 at nine pixels per em rather than the recorded 10.
      */
-    const shift = leftSideBearing - xMin;
+    /* A composite is already assembled where it belongs: each component was
+     * carried across its own bearing before it was placed, so there is nothing
+     * left to carry.
+     */
+    const shift = composite ? 0 : leftSideBearing - xMin;
 
     /* And only the part of the shift that a fixed point number can hold.
      *
@@ -462,8 +470,12 @@ export class Hinter {
 
     for (const contour of outline) {
       for (const point of contour) {
-        zone.x.push(this.toPixels(point.x) + bearing - whole);
-        zone.y.push(this.toPixels(point.y));
+        /* A composite arrives already in pixels, because it was assembled in
+         * pixels: its components were scaled and then put together, so there
+         * is no design-unit outline of the whole to scale here.
+         */
+        zone.x.push((composite ? point.x : this.toPixels(point.x)) + bearing - whole);
+        zone.y.push(composite ? point.y : this.toPixels(point.y));
         zone.unscaledX.push(point.x + shift);
         zone.unscaledY.push(point.y);
         zone.onCurve.push(point.on);
@@ -512,8 +524,19 @@ export class Hinter {
      * a glyph whose whole program is the readout -- so no instruction had run
      * and the disagreement was already there.
      */
-    const width =
-      origin + (this.roundPhantoms ? grid(this.toPixels(advance)) : this.toPixels(advance));
+    /* A composite's advance is not scaled here. It is the advance the component
+     * claiming the metrics came out with after its own program had run, which
+     * is already in sixty-fourths and already rounded however this hinter
+     * rounds -- and is what the font's own tables say a composite advances by.
+     */
+    const scaledAdvance =
+      composite && assembly.advance !== null
+        ? assembly.advance
+        : this.roundPhantoms
+          ? grid(this.toPixels(advance))
+          : this.toPixels(advance);
+
+    const width = origin + scaledAdvance;
 
     const phantom = [
       { x: origin, y: 0 },
@@ -552,6 +575,21 @@ export class Hinter {
     zone.originalX = zone.x.slice();
     zone.originalY = zone.y.slice();
 
+    /* A composite has no design coordinates, so its scaled ones stand in.
+     *
+     * `IP`, `IUP` and `MDRP` all take a proportion or a distance from where a
+     * point was designed rather than from where it was scaled to, and for a
+     * glyph assembled out of other glyphs there is no such place: the assembly
+     * only ever existed in pixels. The scaler says so in three separate
+     * instructions, each asking whether the glyph is composite in the same
+     * breath as whether a point is in the twilight zone -- which has no design
+     * coordinates either, and which we already answer this same way.
+     */
+    if (composite) {
+      zone.unscaledX = zone.originalX.slice();
+      zone.unscaledY = zone.originalY.slice();
+    }
+
     this.zones[1] = zone;
     this.zones[0] = new Zone(this.font.maxTwilight ?? 16);
 
@@ -581,6 +619,11 @@ export class Hinter {
     const last = zone.x.length;
 
     this.advance = Math.round((zone.x[last - 3] - zone.x[last - 4]) / ONE);
+
+    /* And the same in sixty-fourths, which is what a composite built on this
+     * glyph inherits rather than scaling the table's number for itself.
+     */
+    this.advanceExact = zone.x[last - 3] - zone.x[last - 4];
 
     /* Back into contours, in font units scaled to pixels, and with the whole
      * pixels of the side bearing put back.

@@ -89,7 +89,22 @@ static void probeGlyph(LPCSTR name, HFONT font, char character)
 
     *at = '\0';
 
-    wsprintf(probeArgs, "%s,'%c'", (LPSTR)name, character);
+    /* Above ASCII a character is not safe to write into the record as itself,
+     * so it goes in as its code instead. Everything the probe asked for before
+     * this was ASCII and still reads exactly as it did.
+     */
+    if ((unsigned char)character < 0x80) {
+        wsprintf(probeArgs, "%s,'%c'", (LPSTR)name, character);
+    } else {
+        char coded[3];
+
+        coded[0] = HEX[((unsigned char)character >> 4) & 0x0f];
+        coded[1] = HEX[(unsigned char)character & 0x0f];
+        coded[2] = '\0';
+
+        wsprintf(probeArgs, "%s,#%s", (LPSTR)name, (LPSTR)coded);
+    }
+
     probe("glyph", probeArgs, probeResult);
 
     SelectObject(memory, previous);
@@ -140,6 +155,52 @@ static void probeWide(LPCSTR face)
 
         for (index = 0; WIDE[index]; index++) {
             probeGlyph(name, font, WIDE[index]);
+        }
+
+        if (font) {
+            DeleteObject(font);
+        }
+    }
+}
+
+/*
+ * The accented letters, which are the composite glyphs.
+ *
+ * A composite is assembled out of other glyphs -- an `A` and a grave accent --
+ * and then carries a program of its own that fits the assembly. Nearly every
+ * one of them in every one of these faces has such a program, which is a
+ * quarter of the font, and nothing the probe asked for before this reaches any
+ * of them: the letters and digits are all simple glyphs.
+ *
+ * The whole upper half of the character set rather than a chosen few, because
+ * what is being asked is not whether one accent lands correctly but whether
+ * this whole class of glyph is drawn the way Windows draws it.
+ */
+static void probeAccented(LPCSTR face)
+{
+    /* Chosen for what they land on rather than for spread. A component's
+     * offset is rounded to the grid, so the sizes that say anything about how
+     * it is rounded are the ones where the scaled offset comes out within a
+     * sixty-fourth of the halfway mark -- which is nineteen, twenty-seven,
+     * thirteen and fourteen pixels per em across these three faces, and these
+     * are the cell heights that ask for them.
+     */
+    static const int SIZES[] = { 12, 16, 17, 18, 23, 31 };
+
+    int size;
+    int code;
+    char name[64];
+
+    for (size = 0; size < sizeof(SIZES) / sizeof(SIZES[0]); size++) {
+        HFONT font = CreateFont(SIZES[size], 0, 0, 0, FW_NORMAL, 0, 0, 0,
+                                ANSI_CHARSET, OUT_DEFAULT_PRECIS,
+                                CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+                                DEFAULT_PITCH, face);
+
+        wsprintf(name, "\"%s\",h=%d,weight=400,italic=0", (LPSTR)face, SIZES[size]);
+
+        for (code = 0xC0; code <= 0xFF; code++) {
+            probeGlyph(name, font, (char)code);
         }
 
         if (font) {
@@ -221,6 +282,11 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeWide("Arial");
     probeWide("Times New Roman");
     probeWide("Courier New");
+
+    probeNote("the accented letters, which are composite glyphs with programs of their own");
+    probeAccented("Arial");
+    probeAccented("Times New Roman");
+    probeAccented("Courier New");
 
     probeNote("and the styles, which are synthesised for some faces and not others");
     probeSized("MS Sans Serif", 16, FW_BOLD, 0);

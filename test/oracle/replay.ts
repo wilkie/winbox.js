@@ -1187,7 +1187,13 @@ const ADAPTERS: Record<
       throw new NeedsDrive('the fonts live on the drive image; run the oracle pipeline');
     }
 
-    const character = String(args[args.length - 1]).replace(/'/g, '');
+    /* Above ASCII the probe records a character as its code rather than as
+     * itself, because the record is text and the character is not.
+     */
+    const asked = String(args[args.length - 1]);
+    const character = asked.startsWith('#')
+      ? String.fromCharCode(parseInt(asked.slice(1), 16))
+      : asked.replace(/'/g, '');
 
     const stock = {
       SYSTEM_FONT: 13,
@@ -1241,16 +1247,24 @@ export class Unimplemented extends Error {}
  * starts agreeing and the entry becomes stale.
  */
 /**
- * Nothing is known to be missing.
+ * One cell, in a probe that grew to look for it.
  *
- * The last entry here was `glyph`, the one probe that records pixels and the one
- * that could not be satisfied by reading a table. It agreed on ninety-two per
- * cent of the outline glyphs for a long time, and the last of the gap closed in
- * two steps that turned out to be the same step twice: a half rounds upward and
- * not away from zero, once where an outline is scaled and once where it is put
- * into device coordinates. All 846 records now agree.
+ * `glyph` is the one probe that records pixels and the one that could not be
+ * satisfied by reading a table. It agreed on ninety-two per cent of the outline
+ * glyphs for a long time, and that gap closed in two steps that turned out to
+ * be the same step twice: a half rounds upward and not away from zero, once
+ * where an outline is scaled and once where it is put into device coordinates.
+ *
+ * Then the probe was widened to the accented letters, which are composite
+ * glyphs -- a quarter of every one of these fonts, and nothing it had asked for
+ * before reached any of them. 318 of the first 384 new cells disagreed. What is
+ * left of that is five, described in `disputed_glyphs_test.ts`: one dot of one
+ * diaeresis in one face, shifted a pixel too far by the composite's own
+ * program.
  */
-export const KNOWN_GAPS: Record<string, string> = {};
+export const KNOWN_GAPS: Record<string, string> = {
+  glyph: "five accented cells of 1,998: one dot of Courier New's diaeresis, a column out",
+};
 
 /**
  * Functions a module declares but wires to a stub.

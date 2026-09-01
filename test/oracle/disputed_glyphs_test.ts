@@ -15,9 +15,20 @@
 
 import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './replay.js';
 
-/** What is left. Both are ceilings: neither may rise. */
-const RECORDS = 0;
-const PIXELS = 0;
+/* What is left. Both are ceilings: neither may rise.
+ *
+ * Five cells, all of them Courier New's `O` diaeresis, at every size the probe
+ * asks for it: the left dot sits a column left of where Windows puts it and the
+ * right dot is exact. Both dots are contours of one component placed by one
+ * offset, so the offset is not what differs -- the two would move together.
+ *
+ * What moves them apart is the composite's own program, which shifts one dot's
+ * contour and leaves the other. Skipping that program entirely costs 642 of
+ * these records, so it is doing real work and doing most of it right; this is
+ * one shift within it landing a pixel out.
+ */
+const RECORDS = 5;
+const PIXELS = 14;
 
 /** The recorded bitmap is one bit per pixel, set where the probe left white. */
 function inkOf(hex: string) {

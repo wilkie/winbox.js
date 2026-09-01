@@ -213,8 +213,14 @@ describe('hinted advances against the tables the font ships', () => {
         checked++;
       }
 
-      // Every glyph that has a program, at all twenty-four tabulated sizes.
-      expect(checked).toEqual(3864);
+      /* Every glyph that has a program, at all twenty-four tabulated sizes --
+       * the composites among them, which is 1,344 of these and every one of
+       * them exact. A composite's advance is the fitted advance of whichever
+       * component claimed the metrics, and this is the check that says so:
+       * scaling the table's own number for the composite instead is wrong 305
+       * times here.
+       */
+      expect(checked).toEqual(5208);
     },
     120000
   );
@@ -241,17 +247,21 @@ describe('hinted advances against the tables the font ships', () => {
         }
       }
 
-      /* Pinned rather than asserted to be zero, because it is not: one advance
-       * out of 3,816 comes out a pixel from what the font says -- the `o` at
-       * seventy-five pixels per em. Lowering this number is progress; raising
-       * it is a regression.
+      /* Pinned rather than asserted to be zero, because it is not: the `o` at
+       * seventy-five pixels per em comes out a pixel from what the font says.
+       * Lowering this number is progress; raising it is a regression.
+       *
+       * The other five are that same `o`, counted again. Five composites take
+       * their metrics from it, and a composite's advance is the fitted advance
+       * of the component that claimed them -- so all five inherit the one
+       * disagreement exactly, and none of them adds one of its own.
        *
        * The total grew when `ISECT` was implemented: glyphs whose programs used
        * it were throwing, and a glyph that cannot be hinted is not counted here
        * at all. A missing instruction hides from this check by removing its own
-       * evidence.
+       * evidence. It grew again when composites began to be hinted at all.
        */
-      expect(`${agreed} agreed, ${differed} differed`).toEqual('3815 agreed, 1 differed');
+      expect(`${agreed} agreed, ${differed} differed`).toEqual('5202 agreed, 6 differed');
     },
     120000
   );

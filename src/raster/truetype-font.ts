@@ -1,6 +1,6 @@
 'use strict';
 
-import { Hinter } from './glyph-hinting.js';
+import { Hinter, ONE } from './glyph-hinting.js';
 
 /**
  * A TrueType font, read for what it says about itself.
@@ -704,7 +704,7 @@ export class TrueTypeFont {
    * @param {number} ppem - The size to fit to.
    * @returns {Object} The contours and whether they were fitted.
    */
-  hintedOutline(glyph, ppem) {
+  hintedOutline(glyph, ppem, roundPhantoms = true) {
     const contours = this.outlineOf(glyph);
 
     if (!contours.length || !ppem) {
@@ -717,31 +717,32 @@ export class TrueTypeFont {
       return { contours, hinted: false, scaled: false };
     }
 
-    const count = this._view.getInt16(range.start, false);
+    const program = this.programOf(glyph);
 
-    if (count < 0) {
-      // A composite carries its own program; hinting those comes later.
-      return { contours, hinted: false, scaled: false };
-    }
-
-    const instructions = range.start + 10 + count * 2;
-    const length = this._view.getUint16(instructions, false);
-
-    if (!length) {
+    if (!program) {
       return { contours, hinted: false, scaled: false };
     }
 
     try {
-      const hinter = this.hinterAt(ppem);
+      const hinter = this.hinterAt(ppem, roundPhantoms);
+
+      /* A composite is assembled in pixels rather than in design units, so it
+       * is put together with the hinter's own scaling and handed over already
+       * scaled. See `compositeInPixels`.
+       */
+      const assembly = program.composite
+        ? this.compositeInPixels(glyph, ppem, roundPhantoms, (units) => hinter.toPixels(units))
+        : null;
 
       const fitted = hinter.hint(
-        contours,
+        assembly ? assembly.contours : contours,
         this.advanceOf(glyph),
         this.bearingOf(glyph),
         this._view.getInt16(range.start + 2, false),
         this._view,
-        instructions + 2,
-        length
+        program.at,
+        program.length,
+        assembly
       );
 
       /* The points come back already in pixels, so the caller must not scale
@@ -749,7 +750,13 @@ export class TrueTypeFont {
        * own `SCANCTRL` asked for at this size, which the rasteriser needs and
        * only the interpreter has seen.
        */
-      return { contours: fitted, hinted: true, scaled: true, dropout: hinter.dropout };
+      return {
+        contours: fitted,
+        hinted: true,
+        scaled: true,
+        advance: hinter.advanceExact,
+        dropout: hinter.dropout,
+      };
     } catch {
       return { contours, hinted: false, scaled: false };
     }
@@ -773,30 +780,28 @@ export class TrueTypeFont {
       return null;
     }
 
-    const count = this._view.getInt16(range.start, false);
+    const program = this.programOf(glyph);
 
-    if (count < 0) {
-      return null;
-    }
-
-    const instructions = range.start + 10 + count * 2;
-    const length = this._view.getUint16(instructions, false);
-
-    if (!length) {
+    if (!program) {
       return null;
     }
 
     try {
       const hinter = this.hinterAt(ppem, roundPhantoms);
 
+      const assembly = program.composite
+        ? this.compositeInPixels(glyph, ppem, roundPhantoms, (units) => hinter.toPixels(units))
+        : null;
+
       hinter.hint(
-        this.outlineOf(glyph),
+        assembly ? assembly.contours : this.outlineOf(glyph),
         this.advanceOf(glyph),
         this.bearingOf(glyph),
         this._view.getInt16(range.start + 2, false),
         this._view,
-        instructions + 2,
-        length
+        program.at,
+        program.length,
+        assembly
       );
 
       return hinter.advance ?? null;
@@ -1104,6 +1109,167 @@ export class TrueTypeFont {
     }
 
     return shapes;
+  }
+
+  /**
+   * Where a glyph's program is and whether the glyph is put together.
+   *
+   * A simple glyph keeps its program straight after the contour ends. A
+   * composite keeps it after the last of its components, and only if that
+   * component says so -- which every composite that has one does in these
+   * fonts, and none of them says so on any component but the last.
+   *
+   * @returns {Object|null} The offset and length of the program, and whether
+   *                        the glyph is a composite, or null if there is none.
+   */
+  programOf(glyph) {
+    const range = this.glyphRange(glyph);
+
+    if (!range) {
+      return null;
+    }
+
+    const count = this._view.getInt16(range.start, false);
+
+    let cursor = range.start + 10;
+    let instructed = true;
+
+    if (count < 0) {
+      let more = true;
+
+      while (more) {
+        const flags = this._view.getUint16(cursor, false);
+
+        cursor += 4 + (flags & 0x0001 ? 4 : 2);
+
+        if (flags & 0x0008) {
+          cursor += 2;
+        } else if (flags & 0x0040) {
+          cursor += 4;
+        } else if (flags & 0x0080) {
+          cursor += 8;
+        }
+
+        more = Boolean(flags & 0x0020);
+        instructed = Boolean(flags & 0x0100);
+      }
+    } else {
+      cursor += count * 2;
+    }
+
+    const length = this._view.getUint16(cursor, false);
+
+    if (!instructed || !length) {
+      return null;
+    }
+
+    return { at: cursor + 2, length, composite: count < 0 };
+  }
+
+  /**
+   * A composite's outline in pixels, assembled the way the scaler assembles it.
+   *
+   * A simple glyph is scaled after its program has run over design
+   * coordinates. A composite is not: its components are scaled first and the
+   * assembly happens in pixels, which is why the program that then runs over
+   * it has no design coordinates to refer to at all.
+   *
+   * Each component is fitted by its **own** program before it is placed, which
+   * is what the recording says: Times New Roman's `A` grave at twelve is its
+   * own `A`, pixel for pixel, with one more pixel above it for the accent. An
+   * assembly of unfitted components put through the composite's own short
+   * program does not come to that and is not close.
+   *
+   * Nearly every component in these fonts asks for its offset to be rounded to
+   * a whole pixel, and the rounding is of the offset alone -- not of the
+   * component's points, and not of the sum -- so an accent sits a whole number
+   * of pixels above the letter it belongs to whatever the size.
+   *
+   * A component may also claim the composite's metrics, and one in nearly every
+   * composite in these fonts does. What it claims them with is its own fitted
+   * advance rather than the table's number for the composite: Arial's `A` acute
+   * at eleven pixels advances by eight, which is what its `A` came out with and
+   * not the seven the scaled table entry gives. The font's own `hdmx` says
+   * eight.
+   *
+   * @param {number} glyph - The composite's index.
+   * @param {number} ppem - The size to fit each component at.
+   * @param {boolean} roundPhantoms - Passed to each component, so that they are
+   *                                  fitted the same way the composite is.
+   * @param {Function} toPixels - The scaling the hinter is using, so that the
+   *                              components land where its own arithmetic
+   *                              would have put them.
+   */
+  compositeInPixels(glyph, ppem, roundPhantoms, toPixels) {
+    const range = this.glyphRange(glyph);
+    const shapes: any[] = [];
+
+    let cursor = range.start + 10;
+    let advance: number | null = null;
+
+    for (;;) {
+      const flags = this._view.getUint16(cursor, false);
+      const index = this._view.getUint16(cursor + 2, false);
+
+      cursor += 4;
+
+      let dx = 0;
+      let dy = 0;
+
+      if (flags & 0x0001) {
+        dx = this._view.getInt16(cursor, false);
+        dy = this._view.getInt16(cursor + 2, false);
+        cursor += 4;
+      } else {
+        dx = (this._view.getUint8(cursor) << 24) >> 24;
+        dy = (this._view.getUint8(cursor + 1) << 24) >> 24;
+        cursor += 2;
+      }
+
+      if (flags & 0x0008) {
+        cursor += 2;
+      } else if (flags & 0x0040) {
+        cursor += 4;
+      } else if (flags & 0x0080) {
+        cursor += 8;
+      }
+
+      if (flags & 0x0002) {
+        let offsetX = toPixels(dx);
+        let offsetY = toPixels(dy);
+
+        if (flags & 0x0004) {
+          offsetX = Math.floor(offsetX / ONE + 0.5) * ONE;
+          offsetY = Math.floor(offsetY / ONE + 0.5) * ONE;
+        }
+
+        const fitted = this.hintedOutline(index, ppem, roundPhantoms);
+
+        if (flags & 0x0200) {
+          advance = fitted.advance ?? null;
+        }
+
+        for (const contour of fitted.contours) {
+          shapes.push(
+            contour.map((point) => ({
+              ...point,
+              /* A fitted component comes back in whole pixels and everything
+               * here is in sixty-fourths, which is what the assembly and the
+               * offsets are both in.
+               */
+              x: (fitted.scaled ? point.x * ONE : toPixels(point.x)) + offsetX,
+              y: (fitted.scaled ? point.y * ONE : toPixels(point.y)) + offsetY,
+            }))
+          );
+        }
+      }
+
+      if (!(flags & 0x0020)) {
+        break;
+      }
+    }
+
+    return { contours: shapes, advance };
   }
 
   /** Assembles a glyph that is made of other glyphs. */
