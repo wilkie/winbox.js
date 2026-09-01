@@ -6625,6 +6625,43 @@ control value three sixty-fourths above ours -- is answered by the cells that
 agree, and answered no. What remains is three pixels of a synthetic glyph
 deliberately drawn where it declared it would not.
 
+### The last seventeen are a font asked to do what it refuses
+
+`cour-no-instctrl` rewrites Courier New's `prep` to clear `INSTCTRL` where the
+font sets it, so glyph programs run at eight pixels per em -- the one size the
+font switches them off for. Two cells of 258 disagree, and what they show is not
+a rasteriser difference.
+
+Run at that size, our interpreter takes Courier New's `w` to an outline 27.6
+pixels tall and its `W` to one 71.3 pixels tall, on an em of eight. Windows draws
+the `w` as nothing at all and the `W` as the same shape we draw less one pixel.
+Both implementations are producing nonsense from a program run outside the range
+it was written for; they differ in which nonsense, and neither is more right.
+
+That is the whole of it. At every other size the fabrication is stock Courier New
+and agrees, and the size it changes is the size the font disowns. Chasing the
+difference would be fitting an interpreter to a configuration no font asks for,
+and the fabrication has already served its purpose -- it is what established that
+`INSTCTRL` is read at all, and that Courier New is the only face in the set that
+reaches it.
+
+It is worth one note as a robustness observation rather than a conformance one: a
+glyph program can take our interpreter to an outline three times the em without
+anything refusing it. Windows, given the same program, produces an empty glyph.
+Neither behaviour is specified and ours is the less defensive.
+
+### Where the fabricated set stands
+
+    7,563 of 7,566 cells, 20 wrong pixels
+
+    cour-no-instctrl   17   hinting run at a size the font disables
+    times-cvt0-fine     3   a readout bar drawn below the box it declared
+
+Thirty-two fabrications, every one of the rest exact. Both remaining causes are
+characterised and neither is a defect the recorded corpus can see: one asks a
+font to do what it refuses, the other draws a glyph outside its own declared
+extent.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
