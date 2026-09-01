@@ -5901,6 +5901,41 @@ through it needs either the `cmap` pointed at glyph 27 or `8`'s three contours
 copied into one of those slots, and `setGlyph` writes a single contour. That is
 the next piece of work and it is a real one.
 
+### A fourth sweep, and why the readout will not fit on an eight
+
+The `hinting` probe now asks about Times New Roman regular's `8` as well as its
+`w`, `o` and `W` -- one more pass of the same loop over cell heights 8 to 110,
+103 records. Recorded, it brings the probe to 1,030 records, and **all 1,030
+agree**, the new ones included.
+
+That is worth having on its own. Our `8` reports the same advance as Windows at
+every one of the 103 sizes, which says the phantom points, the advance
+arithmetic and everything the width depends on are right for this glyph. The
+eighteen wrong pixels are entirely in the interior.
+
+The sweep exists so a fabrication can make the `8` report one of its own points,
+and that is where this stops. `reporter` makes room for the readout by cutting
+the tail off the glyph's program, and the cut has to be somewhere the program is
+statically balanced and to leave the point being read where the full program
+would have left it. For Times' `8` the first condition is easy -- every offset
+from 339 to 361 is at depth nought -- and the second cannot be met. Measured
+across thirty-four sizes, against the full program:
+
+    cut 345   141 disturbed readings    cut 355    72
+    cut 349    80                       cut 357    28
+    cut 351    72                       cut 359    19
+    cut 353    72                       cut 361     0
+
+Only cutting the last byte disturbs nothing, and a readout is eleven bytes at the
+resolution the question needs -- seven if the magnification is dropped, which
+would report the waist in whole pixels and answer nothing. Points 26 and 39, the
+two that bound the waist, are disturbed at every cut with room for it.
+
+So the glyph has to grow rather than be trimmed, which means moving its entry to
+the end of `glyf` and rewriting `loca` -- `setGlyph` writes multiple contours
+happily but only into the room the glyph already has. That is a bounded addition
+to `fabricate.mjs` and it is the next piece of work.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the

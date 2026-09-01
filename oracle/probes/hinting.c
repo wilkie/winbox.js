@@ -142,6 +142,23 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeSweep("Times New Roman", 1, 'j');
     probeSweep("Times New Roman", 1, '1');
 
+    /* The digit whose waist is the last shape still wrong in the recorded
+     * letters, and the reason for a fourth Times New Roman regular sweep.
+     *
+     * Everything the readout channel has answered so far went through `w`, `o`
+     * or `W`, because those are the characters this probe asked about. The
+     * eight is not reachable that way: it has three contours and the helper
+     * that writes a glyph writes one, so putting its outline into one of those
+     * slots is not a small edit, and pointing the `cmap` at it changes what
+     * every other measurement of those letters means.
+     *
+     * Sweeping it directly costs one more pass of the same loop and makes the
+     * channel reusable for whatever the next question is about it -- a
+     * fabrication can now leave the eight where it is, append a readout to its
+     * own program, and be read here.
+     */
+    probeSweep("Times New Roman", 0, '8');
+
     ReleaseDC(NULL, dc);
 
     probeFinish();
