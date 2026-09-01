@@ -33,11 +33,14 @@ import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './repl
  * Two thirds are Courier New and two thirds are bold italic, and every letter
  * involved has a diagonal in it -- K, X, Z, k, 7, M, N, t, y, m, 4, B.
  *
- * A bisection of Courier New's bold italic `X` said the program was not
- * involved, and that was wrong: the fabrication it rested on cut the program of
- * the *plain* face, so the bold italic cells were drawn with the untouched file
- * at every cut and disagreed identically because nothing had changed. The
- * helper now takes the face to cut, and the reading has to be done again.
+ * Courier New's bold italic `X` has been bisected properly. With no program at
+ * all it agrees at every size, so the scaling and the scan conversion are
+ * right and it is the hinting that goes wrong. Cutting after 4, 8, 12, 16, 20
+ * and 25 instructions still agrees; cutting after 26 does not, at twelve and
+ * twenty-four. The instruction between the two is a `SHP` -- and in our run
+ * that `SHP` shifts by nothing at all, its reference point not having moved.
+ * So what differs is the state it reads rather than what it does with it, and
+ * the `CALL` five instructions earlier is the next thing to look inside.
  */
 const RECORDS = 29;
 const PIXELS = 184;

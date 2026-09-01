@@ -2468,9 +2468,34 @@ export class Hinter {
     const zone = useRp1 ? this.zone(state.zp0) : this.zone(state.zp1);
     const index = useRp1 ? state.rp1 : state.rp2;
 
+    /* How far the reference point has moved *along the projection vector*, and
+     * then that distance laid back out along the freedom vector.
+     *
+     * Not the displacement itself. The two are the same thing while the point
+     * moved along an axis that both vectors lie on, which is every upright
+     * face's stem work, and they part company as soon as the vectors are at an
+     * angle to each other -- which is what a slanted face does all day.
+     *
+     * It is the same arithmetic `movePoint` does with a distance: the component
+     * along the projection is what is being carried, and the freedom vector
+     * says which way the carrying goes.
+     */
+    const carried = this.project(
+      zone.x[index] - zone.originalX[index],
+      zone.y[index] - zone.originalY[index]
+    );
+
+    const { freedom, projection } = this.state;
+
+    let along = mulDiv(projection.x, freedom.x, UNIT) + mulDiv(projection.y, freedom.y, UNIT);
+
+    if (Math.abs(along) < UNIT / 16) {
+      along = along < 0 ? -UNIT : UNIT;
+    }
+
     return {
-      dx: zone.x[index] - zone.originalX[index],
-      dy: zone.y[index] - zone.originalY[index],
+      dx: freedom.x === 0 ? 0 : mulDiv(carried, freedom.x, along),
+      dy: freedom.y === 0 ? 0 : mulDiv(carried, freedom.y, along),
       zone,
       index,
     };

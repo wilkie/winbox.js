@@ -4478,9 +4478,6 @@ export const FABRICATIONS = [
 
   ...[127, 130].map((keep) => cutProgram(`cour-w-cut-${keep}`, 'w', keep)),
 
-  ...[0, 30, 60, 90, 110, 125, 135, 142].map((keep) =>
-    cutProgram(`courbi-x-cut-${keep}`, 'X', keep, 'COURBI.TTF', false)
-  ),
 
   readout('times-cvt0-plain', {
     index: 0,
