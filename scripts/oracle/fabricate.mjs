@@ -4218,6 +4218,46 @@ export const FABRICATIONS = [
    * bar on each of the rows around the edge and asks. The last two go above the
    * cell instead, since a top edge has as much right to exist as a bottom one.
    */
+  /* How far out of its cell an outline may reach.
+   *
+   * `cour-no-instctrl` drives Courier New's `w` out of shape at eight pixels
+   * per em, and the letter Windows draws for it is nothing at all. Cutting the
+   * program short says where that starts: while the outline reaches ten pixels
+   * up in a cell eight rows tall Windows still draws it, and one instruction
+   * later it reaches twenty-six and Windows draws nothing. Not the part outside
+   * -- nothing, including the part that was inside.
+   *
+   * So this asks the question without any hinting in the way: five glyphs that
+   * are nothing but an upright bar, each taller than the last, all of them
+   * standing on the baseline where the bottom is plainly inside the cell.
+   */
+  ...[['times-tall', [8, 16, 24, 32, 40]]].map(([name, heights]) => ({
+    name,
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: 'bars of increasing height, to find how far one may reach out of its cell',
+
+    edit: (bytes) => {
+      // Pixels at sixteen, where the cell is sixteen rows and the em fourteen.
+      const units = (pixels) => Math.round((pixels * 2048) / 14);
+
+      ['W', 'g', 'j', '1', '.'].forEach((character, at) => {
+        setGlyph(bytes, null, glyphFor(bytes, character.charCodeAt(0)), {
+          width: 400,
+          height: units(heights[at]),
+          /* One instruction that changes nothing, so that the glyph is hinted
+           * rather than merely scaled -- a glyph with no program at all is not
+           * carried across its side bearing and the bar comes out a column
+           * over, which is a different question from the one being asked.
+           */
+          program: [...ops.yAxis()],
+        });
+      });
+
+      return bytes;
+    },
+  })),
+
   bar('times-cell-edge', {
     /* These five and no others. The probe draws six characters of a named face
      * and `A` is one of them, but `A` is also the component every accented `A`
@@ -4232,6 +4272,8 @@ export const FABRICATIONS = [
     offsets: [-1, -2, -3, -4, 13],
     describe: 'a bar on each row around the top and bottom of the character cell',
   }),
+
+  ...[127, 130].map((keep) => cutProgram(`cour-w-cut-${keep}`, 'w', keep)),
 
   readout('times-cvt0-plain', {
     index: 0,
@@ -4317,6 +4359,94 @@ function barProgram(value) {
     ...place(2, 64),
     ...ops.pop(),
   ];
+}
+
+/**
+ * Where each instruction of a program starts.
+ *
+ * Everything is one byte except the pushes, which carry their operands inline:
+ * the two counted forms say how many follow, and the sixteen short forms encode
+ * the count in the opcode. Walking them is the only way to cut a program at an
+ * instruction rather than in the middle of one.
+ */
+export function instructionStarts(code) {
+  const starts = [];
+
+  let at = 0;
+
+  while (at < code.length) {
+    starts.push(at);
+
+    const opcode = code[at];
+
+    if (opcode === 0x40) {
+      at += 2 + code[at + 1];
+    } else if (opcode === 0x41) {
+      at += 2 + code[at + 1] * 2;
+    } else if (opcode >= 0xb0 && opcode <= 0xb7) {
+      at += 2 + (opcode - 0xb0);
+    } else if (opcode >= 0xb8 && opcode <= 0xbf) {
+      at += 1 + (opcode - 0xb8 + 1) * 2;
+    } else {
+      at += 1;
+    }
+  }
+
+  return starts;
+}
+
+/**
+ * Courier New with its glyph programs turned on and one of them cut short.
+ *
+ * `cour-no-instctrl` turns the programs on, and its `w` at eight pixels per em
+ * is the one cell of the fabricated set we do not reproduce: a `MDRP` divides
+ * by a dot product of about a fourteenth and throws a point clean out of the
+ * letter. Whether the point it throws was already in the wrong place is what
+ * this asks -- the program is cut after `keep` instructions, so a reading that
+ * still agrees says everything up to there is right.
+ */
+function cutProgram(name, character, keep) {
+  return {
+    name,
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: `Courier New hinting its glyphs, with ${character}'s program cut after ${keep} instructions`,
+
+    edit: (bytes) => {
+      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      const table = tablesOf(view).prep;
+
+      let found = 0;
+
+      for (let at = table.offset; at < table.offset + table.length; at++) {
+        if (
+          bytes[at] === 0xb1 &&
+          bytes[at + 1] === 0x01 &&
+          bytes[at + 2] === 0x01 &&
+          bytes[at + 3] === 0x8e
+        ) {
+          bytes[at + 1] = 0x00;
+          found++;
+        }
+      }
+
+      if (found !== 2) {
+        throw new Error(`expected two INSTCTRL sites in prep, found ${found}`);
+      }
+
+      const glyph = glyphFor(bytes, character.charCodeAt(0));
+      const body = glyphBody(bytes, glyph);
+      const code = [];
+
+      for (let offset = 0; offset < body.length; offset++) {
+        code.push(body.view.getUint8(body.program + offset));
+      }
+
+      const starts = instructionStarts(code);
+
+      return setGlyphProgram(bytes, glyph, code.slice(0, starts[keep] ?? code.length));
+    },
+  };
 }
 
 /** Reads a control value back, so an edit can be relative to what is there. */

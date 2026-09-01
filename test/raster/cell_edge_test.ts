@@ -94,3 +94,66 @@ if (!existsSync(FIXTURE)) {
     });
   });
 }
+
+/**
+ * How far out of its cell an outline may reach before none of it is drawn.
+ *
+ * `cour-no-instctrl` turns on glyph programs Courier New's own `prep` turns
+ * off, and its `w` at eight pixels per em was the last cell of the fabricated
+ * set we did not reproduce: Windows drew nothing at all and we drew a blot.
+ *
+ * Cutting the program short says where that starts. Every cut through
+ * instruction 127 renders identically to Windows; at 130 Windows draws nothing.
+ * The only instruction between the two that moves a point is the `MDRP` at 128,
+ * which divides by a dot product of about a fourteenth and throws a point
+ * twenty-six pixels up out of a cell eight rows tall. Whatever Windows does
+ * with that outline, it is not to draw the part still inside.
+ *
+ * `times-tall` asks the question with no hinting in the way: five glyphs that
+ * are nothing but an upright bar on the baseline, each taller than the last.
+ * What comes back is everything under twice the cell and nothing at or past it.
+ */
+describe('an outline that reaches out of its cell', () => {
+  const TALL = 'oracle/fixtures/fabricated/glyphs-times-tall.json';
+
+  const present = existsSync(TALL) ? describe : describe.skip;
+
+  present('is refused entirely, not clipped', () => {
+    const fixture = JSON.parse(readFileSync(TALL, 'utf8'));
+
+    /** The bar in each glyph, in pixels at sixteen where the cell is sixteen. */
+    const BARS: Record<string, number> = { W: 8, g: 16, j: 24, '1': 32, '.': 40 };
+
+    const drew = (height: number, character: string) => {
+      const record = fixture.records.find(
+        (row: any) =>
+          row.args === `"Times New Roman",h=${height},weight=400,italic=0,'${character}'`
+      );
+
+      return rowsOf(record.result).length > 0;
+    };
+
+    it('draws every bar under twice the cell', () => {
+      // Sixteen rows: eight, sixteen and twenty-four pixels all come back.
+      expect([drew(16, 'W'), drew(16, 'g'), drew(16, 'j')]).toEqual([true, true, true]);
+
+      /* Twenty-three rows at twenty-four, where the same three bars measure
+       * twelve, twenty-four and thirty-six pixels and are all still inside.
+       */
+      expect([drew(24, 'W'), drew(24, 'g'), drew(24, 'j')]).toEqual([true, true, true]);
+
+      // Twelve rows, where the fourth bar measures twenty-three and is as well.
+      expect([drew(12, 'j'), drew(12, '1')]).toEqual([true, true]);
+    });
+
+    it('draws none of one that reaches twice it or further', () => {
+      expect([drew(16, '1'), drew(16, '.')]).toEqual([false, false]);
+      expect([drew(24, '1'), drew(24, '.')]).toEqual([false, false]);
+
+      /* The full stop is not in the wide sweep, so twelve has only the four
+       * letters; its fifth bar measures twenty-nine pixels against a cell of
+       * twelve and is the one that does not come back.
+       */
+    });
+  });
+});

@@ -419,6 +419,8 @@ export class Hinter {
      * with it, taken from the component that claimed the metrics.
      */
     const composite = Boolean(assembly);
+
+    this.composite = composite;
     this.prepare();
 
     const zone = new Zone(0);
@@ -2246,10 +2248,40 @@ export class Hinter {
       const zoneOne = this.zone(state.zp1);
       const zoneZero = this.zone(state.zp0);
 
-      const original = this.projectDual(
-        zoneOne.originalX[index] - zoneZero.originalX[state.rp0],
-        zoneOne.originalY[index] - zoneZero.originalY[state.rp0]
-      );
+      /* Measured in design units and scaled once, not measured on coordinates
+       * that were scaled already.
+       *
+       * The two are the same number until the rounding is looked at. A
+       * projection is a difference of two products, and doing it on values that
+       * have each been rounded to a sixty-fourth already keeps whatever those
+       * two roundings left behind; doing it in design units and scaling the
+       * answer rounds once. Where the vector is nearly at right angles to the
+       * line being measured the projection is a small remainder of two large
+       * numbers, and the difference is the whole of it -- Courier New's `w`
+       * measures a sixty-fourth this way and nought the other.
+       *
+       * A twilight point has no design coordinates and neither does a
+       * composite, and for both of those the scaled ones stand in, which is the
+       * same rule that governs `IP` and `IUP`.
+       */
+      const design =
+        state.zp0 !== 0 && state.zp1 !== 0 && !this.composite
+          ? scaleToPixels(
+              this.projectDual(
+                zoneOne.unscaledX[index] - zoneZero.unscaledX[state.rp0],
+                zoneOne.unscaledY[index] - zoneZero.unscaledY[state.rp0]
+              ),
+              this.pixels,
+              this.font.unitsPerEm
+            )
+          : null;
+
+      const original =
+        design ??
+        this.projectDual(
+          zoneOne.originalX[index] - zoneZero.originalX[state.rp0],
+          zoneOne.originalY[index] - zoneZero.originalY[state.rp0]
+        );
 
       let distance = opcode & 0x04 ? this.round(original, Hinter.compensation(opcode)) : original;
 

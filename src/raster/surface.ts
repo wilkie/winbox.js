@@ -357,7 +357,36 @@ export class Surface {
       const fitted = outline.hintedOutline(glyph, ppem);
       const contours = fitted.contours;
 
-      if (contours.length) {
+      /* An outline that reaches too far out of its cell is not drawn at all.
+       *
+       * Not the part outside -- none of it, including the part that was inside.
+       * A program is free to move a point anywhere and Courier New's `w` does,
+       * once its own `INSTCTRL` is overridden: the letter reaches twenty-six
+       * pixels up out of a cell eight rows tall and Windows draws nothing.
+       *
+       * **Recorded.** `times-tall` is five glyphs that are nothing but an
+       * upright bar standing on the baseline, each taller than the last. At
+       * three cell heights the bars that came back are the ones under twice the
+       * cell -- one and a half, one and three fifths, one and nine tenths of it
+       * -- and the ones that did not are two, two and a tenth, and two and two
+       * fifths. Cutting the `w`'s program short agrees from the other side: the
+       * cut where it still reaches only ten pixels is drawn, and the one
+       * instruction later that takes it to twenty-six is not.
+       */
+      const reach = contours.flat();
+
+      const up = fitted.scaled ? 1 : scale;
+
+      /* Counted in whole rows, which is what a bitmap is made of. One of the
+       * bars comes out a thousandth of a pixel short of exactly twice the cell
+       * and Windows still refuses it, so the comparison is not on the fraction.
+       */
+      const spread = reach.length
+        ? Math.ceil(Math.max(...reach.map((point: any) => point.y)) * up) -
+          Math.floor(Math.min(...reach.map((point: any) => point.y)) * up)
+        : 0;
+
+      if (contours.length && spread < 2 * (font.style.ascent + font.style.descent)) {
         /* An outline face has no bold or italic of its own here -- only the
          * plain file of each family is loaded -- so both are made as the
          * bitmap faces make them: emboldening draws the glyph again a pixel
