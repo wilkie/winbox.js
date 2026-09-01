@@ -22,56 +22,13 @@
 
 'use strict';
 
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { join } from 'node:path';
-import { FontManager } from '../../src/win16/font-manager.js';
-import { TrueTypeFont } from '../../src/raster/truetype-font.js';
-import { prepareFonts, replayRecord } from '../oracle/replay.js';
+import { existsSync } from 'node:fs';
+import { advanceOf, fixtureFor, readingsOf, type Reading } from './readout.js';
 
-const CASES = ['getinfo-version', 'getinfo-nothing'] as const;
-const FONTS = 'oracle/build/fonts';
-
-const fixtureFor = (name: string) => `oracle/fixtures/fabricated/hinting-${name}.json`;
-
+/** Only the fabricated letter reports anything; the rest of the sweep is noise. */
 const ASKED = /^"Arial",h=(\d+),italic=1,'m'$/;
 
-/** The reply is multiplied by this before it becomes a coordinate. */
-const MAGNIFY = 8;
-
-async function readingsOf(name: string) {
-  const fixture = JSON.parse(readFileSync(fixtureFor(name), 'utf8'));
-  const dir = join(FONTS, String(fixture.font));
-  const manager: any = await prepareFonts();
-  const font: any = new TrueTypeFont(new Uint8Array(readFileSync(join(dir, readdirSync(dir)[0]))));
-  const face = font.faceName;
-  const installed = manager._outlines[face];
-
-  manager._outlines[face] = {
-    ...(installed ?? {}),
-    [FontManager.styleKey(font.boldFace, font.italicFace)]: font,
-  };
-
-  const out = new Map<number, { windows: string; agreed: boolean }>();
-
-  try {
-    for (const record of fixture.records) {
-      const asked = ASKED.exec(record.args ?? '');
-
-      if (!asked) {
-        continue;
-      }
-
-      out.set(Number(asked[1]), {
-        windows: record.result,
-        agreed: (await replayRecord(record, fixture.display ?? 'vga')).outcome === 'agreed',
-      });
-    }
-  } finally {
-    manager._outlines[face] = installed;
-  }
-
-  return out;
-}
+const CASES = ['getinfo-version', 'getinfo-nothing'] as const;
 
 if (!CASES.every((name) => existsSync(fixtureFor(name)))) {
   describe('the version GETINFO answers', () => {
@@ -79,14 +36,14 @@ if (!CASES.every((name) => existsSync(fixtureFor(name)))) {
   });
 } else {
   describe('the version GETINFO answers', () => {
-    let all: Map<string, Map<number, { windows: string; agreed: boolean }>>;
+    let all: Map<string, Map<number, Reading>>;
     let live: number[];
 
     beforeAll(async () => {
       all = new Map();
 
       for (const name of CASES) {
-        all.set(name, await readingsOf(name));
+        all.set(name, await readingsOf(name, ASKED));
       }
 
       const asked = all.get('getinfo-version')!;
@@ -103,19 +60,18 @@ if (!CASES.every((name) => existsSync(fixtureFor(name)))) {
       const asked = all.get('getinfo-version')!;
       const none = all.get('getinfo-nothing')!;
 
-      const replies = new Set(
-        live.map((height) => Number(/advance=(-?\d+)/.exec(asked.get(height)!.windows)![1]))
-      );
+      const replies = new Set(live.map((height) => advanceOf(asked.get(height)!)));
 
       /* One answer, whatever the size: the version does not depend on how big
        * the letter is, which is what tells a reply from a leftover width.
        */
       expect(replies.size).toBe(1);
-      expect([...replies][0] / MAGNIFY).toBe(3);
+      // Eight times over, which is how the fabrication magnifies its reply.
+      expect([...replies][0] / 8).toBe(3);
 
       // And with no bit asked for, nothing is answered.
       for (const height of live) {
-        expect(/advance=(-?\d+)/.exec(none.get(height)!.windows)![1]).toBe('0');
+        expect(advanceOf(none.get(height)!)).toBe(0);
       }
     });
 

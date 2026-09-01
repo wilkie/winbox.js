@@ -3601,6 +3601,38 @@ export const FABRICATIONS = [
     })
   ),
 
+  /* What size the program thinks it is running at.
+   *
+   * `MPS` answers the point size, and both halves of what we answer are a
+   * guess: that the point size is the pixels-per-em, which is only so at
+   * seventy-two dots to the inch, and that it comes back in sixty-fourths.
+   *
+   * One fabrication puts the reply straight onto the phantom as a coordinate,
+   * where a plain count of points is too small to read and a count in
+   * sixty-fourths reads as itself. The other multiplies by sixty-four first,
+   * where the plain count reads as itself and the sixty-fourths overflow. So
+   * between the two the unit shows itself, and the number that comes back can
+   * be held against the size the record already names.
+   */
+  ...[
+    ['mps-raw', [], 'as it comes'],
+    ['mps-scaled', [...ops.word(64 * 64), ...ops.multiply()], 'multiplied into sixty-fourths'],
+  ].map(([name, scale, what]) =>
+    stackReporter(name, {
+      font: 'ARIALI.TTF',
+      character: 'm',
+      points: [
+        [67, 0],
+        [323, 400],
+        [579, 400],
+        [835, 0],
+      ],
+      // MPS.
+      body: [0x4c, ...scale],
+      describe: `the point size MPS answers, ${what}`,
+    })
+  ),
+
   experiment('ip-calibrate', {
     font: 'ARIALI.TTF',
     character: 'm',

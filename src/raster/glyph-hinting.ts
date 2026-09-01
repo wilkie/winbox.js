@@ -1230,7 +1230,20 @@ export class Hinter {
         return at;
 
       case 0x4c:
-        this.push(this.ppem * ONE);
+        /* MPS, the point size, which Windows never learns.
+         *
+         * The scaler keeps a point size beside the pixel size, and GDI drives
+         * it by pixels and leaves the other at nought. Both `mps-raw` and
+         * `mps-scaled` read nought back at every size where the program runs,
+         * one of which would have carried a plain count of points and the
+         * other a count in sixty-fourths, so it is the value that is nought and
+         * not the unit that is wrong.
+         *
+         * We answered the pixels-per-em in sixty-fourths, which is neither the
+         * point size nor nought, and a font asking how big it is would have
+         * been told something like twenty when Windows says nothing at all.
+         */
+        this.push(0);
         return at;
 
       /* -- state values -- */
