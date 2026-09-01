@@ -5760,6 +5760,44 @@ look if any of it stops holding.
 The recorded letters do not move: thirty-three records and fifty-eight pixels,
 96.1 per cent. Nothing in a real face is narrower than a sample column.
 
+### Looking for the mechanism, and a second walk found instead
+
+The rule of the previous section is measured and its mechanism is not located.
+This is what was looked at and did not contain it.
+
+The fill routine's bounds come straight off a structure -- `[bx+0xa]` and
+`[bx+0xe]` for the box in x, `[bx+0xc]` and `[bx+0x10]` for the box in y, kept as
+`boxLeft` and `boxRight - 1` -- with no test of one against the other anywhere in
+the setup at 0x989 to 0x9f7. The horizontal pass runs rows from `boxBottom` to
+`boxTop - 1` and the vertical pass columns from `boxLeft` to `boxRight - 1`, so a
+box that has collapsed runs its pass zero times, but that governs which rows and
+columns are visited and not whether the stub check is asked. Every use of the two
+x bounds in the whole routine is a push into the crossing counter, the two
+placement comparisons at 0x0ac5 and 0x0adb, or the loop bound at 0x0c7e. None of
+them is a width test.
+
+What the search did turn up is a correction. Segment 43's function at 0xd24 was
+recorded here as `fsc_SetupScan`, on the strength of four values computed as
+`ceil` onto the pixel grid and taken for a bounding box. They are not a box. At
+0x1121 the code compares `[0x892]` with `[0x88e]` and branches away when they
+differ, and at 0x112d it does the same for `[0x88c]` and `[0x890]` -- which is
+exactly segment 42's `cmp ax,[0x1c0]` at 0x1512, a scan index against its stop.
+So those four values are `xScan`, `yScan`, `xStop`, `yStop`, and **segment 43
+carries a second element walk of its own**, with its own copy of the four-way
+`SCANABOVE` and `SCANBELOW` setup.
+
+That also withdraws the count in an earlier section, which said there was no
+second scanline-index setup anywhere in the file. There is one, in segment 43; it
+was missed because the pattern searched for required `add r16, +0x1f` and segment
+43 writes `add ax, 0x1f`, and it was then written off as a box. The conclusion
+that survived it -- that a curve is drawn as a polyline -- does not depend on the
+count, having been settled by the flattener in segment 44 and by measurement.
+
+Segment 42 remains the walk on our path: the scaler in segment 36 calls 42 at
+0x42 and 0xf2a, and the only caller of segment 43 is segment 8, which is not on
+this route. So the routines read here are the ones that run. Whether segment 43
+answers the question the box asks is untested, and is the obvious next place.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
