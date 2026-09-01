@@ -2343,6 +2343,7 @@ export class Hinter {
 
     const current = horizontal ? zone.x : zone.y;
     const original = horizontal ? zone.originalX : zone.originalY;
+    const design = horizontal ? zone.unscaledX : zone.unscaledY;
     const touched = horizontal ? zone.touchedX : zone.touchedY;
 
     let from = 0;
@@ -2391,7 +2392,7 @@ export class Hinter {
            * the fitting the program just did.
            */
           if (!touched[index]) {
-            this.interpolateOne(index, left, right, current, original);
+            this.interpolateOne(index, left, right, current, original, design);
           }
 
           index = index === end ? from : index + 1;
@@ -2402,58 +2403,54 @@ export class Hinter {
     }
   }
 
-  /** Places one untouched point between two touched ones. */
-  interpolateOne(index, left, right, current, original) {
-    const lowOriginal = Math.min(original[left], original[right]);
-    const highOriginal = Math.max(original[left], original[right]);
+  /**
+   * Places one untouched point between two touched ones.
+   *
+   * Two frames at once, which is the part that is not guessable. The reference
+   * takes its ratio from the glyph's **design** coordinates -- `oox`, the
+   * original originals -- and everything else from the **scaled** ones: which
+   * anchor is the low one, whether this point lies between them, and what a
+   * point outside them is shifted by. A composite glyph is the exception and
+   * uses the scaled coordinates for the ratio as well, which does not arise
+   * here since composites are not hinted.
+   *
+   * A point outside the anchors keeps its scaled position and moves by however
+   * far the nearer anchor moved. It is not extrapolated -- that is `IP`'s rule,
+   * not this one, and the two instructions genuinely differ.
+   *
+   * The division rounds by adding half the divisor and truncating, which is the
+   * reference's `lTemp += lOrigCorr; lTemp /= lOrigDelta` on a signed integer.
+   */
+  interpolateOne(index, left, right, current, scaled, design) {
+    // Which anchor is the lower is decided in design units, and the scaled
+    // bounds follow that choice rather than being sorted again.
+    const ascending = design[left] < design[right];
+    const low = ascending ? left : right;
+    const high = ascending ? right : left;
 
-    const low = original[left] < original[right] ? current[left] : current[right];
-    const high = original[left] < original[right] ? current[right] : current[left];
+    const designLow = design[low];
+    const designSpan = design[high] - design[low];
 
-    if (original[index] <= lowOriginal) {
-      current[index] = original[index] + (low - lowOriginal);
+    const movedLow = current[low] - scaled[low];
+
+    if (designSpan === 0) {
+      current[index] += movedLow;
+
       return;
     }
 
-    if (original[index] >= highOriginal) {
-      current[index] = original[index] + (high - highOriginal);
+    const value = scaled[index];
+
+    if (value > scaled[low] && value < scaled[high]) {
+      const span = current[high] - current[low];
+      const half = designSpan >> 1;
+
+      current[index] =
+        current[low] + Math.trunc(((design[index] - designLow) * span + half) / designSpan);
+
       return;
     }
 
-    if (highOriginal === lowOriginal) {
-      current[index] = low;
-      return;
-    }
-
-    /* Proportionally, so the shape between the anchors survives -- and the
-     * division **truncates** rather than rounding.
-     *
-     * This truncated until `IP` was fixed, and the truncation was fitted to the
-     * error `IP` was making.
-     *
-     * The case for it was that rounding here cost six of the 846 recorded
-     * glyphs, visible as a shape rather than a count: diagonal edges drawn a
-     * column across from where Windows draws them. That was measured while `IP`
-     * was carrying points outside its references rigidly instead of
-     * extrapolating them, and a bias in one interpolation was being paid for by
-     * a bias in the other. With `IP` reading the way the readout says Windows
-     * reads it, the measurement reverses -- rounding is worth five recorded
-     * glyphs and three fabricated pixels over truncating, and truncating has
-     * nothing left to recommend it.
-     *
-     *     truncate   25 records, 35 px   7,254 cells, 79 wrong   97.0%
-     *     round      20 records, 28 px   7,255 cells, 76 wrong   97.6%
-     *     floor      the same as truncate, on every fixture
-     *
-     * Free against everything else, as before: `hdmx`, the metrics, the swept
-     * advances and the whole `font`, `hinting` and `text` probes are unmoved.
-     *
-     * The lesson is the one the `IP` fix carried too. A rule fitted to ink is
-     * fitted to every mistake upstream of the ink as well, and it holds only
-     * until one of them is found.
-     */
-    const across = (original[index] - lowOriginal) / (highOriginal - lowOriginal);
-
-    current[index] = Math.round(low + across * (high - low));
+    current[index] = value + (value >= scaled[high] ? current[high] - scaled[high] : movedLow);
   }
 }

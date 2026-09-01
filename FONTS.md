@@ -6199,6 +6199,51 @@ change moves the current positions as well as the originals, and the current
 positions are measured right. Splitting the two is the next thing to try, and it
 is the first hypothesis in a while that has not already been refuted.
 
+### `IUP` works in two frames at once
+
+The interpreter's own C settles it, and the answer is one neither measurement
+could have reached, because it is not a choice between the two frames -- it is
+both, in different places.
+
+The reference keeps three arrays per axis: `x`, the hinted position; `ox`, the
+scaled original; and `oox`, the original original, which is the glyph's design
+coordinate. `IUP` binds `alOrig` to `oox` for a simple glyph and to `ox` only
+for a composite, and then:
+
+- **which anchor is the low one** is decided in `alOrig`, and the scaled bounds
+  follow that choice rather than being sorted again;
+- **whether a point lies between the anchors** is decided in `ox`, the scaled
+  frame, not in `alOrig`;
+- **a point between them** is placed by a ratio taken entirely in `alOrig` --
+  `SHORTMUL(orig - origMin, hintedDelta) + origDelta/2, all over origDelta`, so
+  the division rounds by adding half the divisor and truncating;
+- **a point outside them** keeps its scaled position and moves by however far
+  the nearer anchor moved. It is not extrapolated. That is `IP`'s rule and not
+  this one, and the two instructions genuinely differ;
+- **two anchors at the same design position** shift the run by the low anchor's
+  movement, added to the hinted position rather than the scaled one.
+
+Ours used the scaled frame for all of it. That is why design units fitted Arial's
+seven and ruined Times New Roman's `W`: the seven wanted the ratio changed and
+the `W` wanted the between-test left alone, and no single frame does both.
+
+Checked by hand before it was written: at sixteen pixels the seven's point 11 has
+design 435 between anchors at 302 and 815, hinted 192 to 448, so
+`(133 * 256 + 256) / 513` is 66 and the answer is 258, which is Windows. At
+nineteen the same gives 83 and 275, which is Windows again.
+
+    recorded outline glyphs   826 of 846  ->  844 of 846      99.8%
+    recorded letters          20 records, 28 px  ->  2 records, 2 px
+    fabricated cells          7,255 / 76 wrong   ->  7,260 / 70 wrong
+    readouts differing        17 of 6 readouts   ->  none, all six exact
+
+`font`, `hinting` and `text` stay at 100 per cent. All six readouts -- both waist
+points of the `8`, both diagonal controls and the anchor of the `7`, and the
+interpolated point of the `W` -- now match Windows at every readable size.
+
+What is left of the letters is two pixels: Times New Roman's `y` at twelve and
+Courier New's `g` at ten, one each.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the

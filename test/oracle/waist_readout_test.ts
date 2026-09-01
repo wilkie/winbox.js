@@ -45,8 +45,8 @@ const WAIST = [
 const DIFFER: Record<string, number> = {
   'times-8-waist-upper': 0,
   'times-8-waist-lower': 0,
-  'arial-7-diagonal-right': 8,
-  'arial-7-diagonal-left': 9,
+  'arial-7-diagonal-right': 0,
+  'arial-7-diagonal-left': 0,
   // The anchor the left diagonal interpolates from, and a point of `W` that
   // `IUP` places: both exact, which is what makes the diagonal's error its own.
   'arial-7-anchor-high': 0,
