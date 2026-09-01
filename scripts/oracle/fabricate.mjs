@@ -3433,6 +3433,51 @@ export const FABRICATIONS = [
     })
   ),
 
+  /* `SROUND` and `S45ROUND` decode one byte into a period, a phase and a
+   * threshold, and two corners of that decoding are ours rather than read.
+   *
+   * The reference gives the fourth period selector a period of 999 and calls it
+   * illegal; we gave it a whole pixel, which is a guess that happens to be the
+   * second selector's answer. And `S45ROUND`'s period is the square root of a
+   * half, which the reference keeps in 2.30 and converts to a whole number of
+   * sixty-fourths, where ours divides 45 by two and keeps 22.5 -- so its
+   * threshold comes out on a different side of the halves.
+   *
+   * A fixed argument and the size sweep between them measure the whole state:
+   * `MDAP[r]` rounds one point with whatever `SROUND` has just set up, and the
+   * point's own position moves a sixty-fourth at a time as the size changes, so
+   * ninety-nine sizes walk the value across every period and phase the argument
+   * describes.
+   */
+  ...[
+    ['sround-illegal', 0x76, 0xc0, 'the period selector the reference calls illegal'],
+    ['sround-quarter', 0x76, 0x14, 'a half-pixel period on a quarter phase'],
+    ['s45round-half', 0x77, 0x04, 'the forty-five degree period, halved'],
+  ].map(([name, op, argument, what]) =>
+    experiment(name, {
+      font: 'ARIALI.TTF',
+      character: 'm',
+      points: [
+        [67, 0],
+        [323, 400],
+        [579, 400],
+        [835, 0],
+      ],
+      body: [
+        // Along x, so the point's own x is what gets rounded and reported.
+        0x01,
+        ...ops.byte(argument),
+        op,
+        ...ops.byte(1),
+        // MDAP[r]: round the point where it stands.
+        0x2f,
+      ],
+      report: 1,
+      magnify: 8,
+      describe: `MDAP[r] under ${what}`,
+    })
+  ),
+
   experiment('ip-calibrate', {
     font: 'ARIALI.TTF',
     character: 'm',

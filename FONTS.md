@@ -6791,6 +6791,42 @@ of pixels. Matching at ten sizes is the surprise. Matching at all fifty-nine is
 not available to anything short of bit-identical inputs, and the test says so
 rather than pretending otherwise.
 
+### `SROUND` rounds with a mask, and the illegal period is real
+
+Three more fabrications, and this time the reading found two mechanisms rather
+than a constant. Each sets one round state and rounds a single point with
+`MDAP[r]`, reporting where it landed; the point's own position moves a
+sixty-fourth at a time as the size changes, so the size sweep walks the value
+across every period and phase one argument describes.
+
+**The rounding is a mask, not a division.** `SuperRound` writes
+`x &= ~(period - 1)`, which is a floor to a multiple only when the period is a
+power of two. Every named round state has one, so nothing in the recorded corpus
+could tell the two apart. `SROUND`'s fourth period selector does not: the
+reference calls it illegal and gives it **999**, and `~998` is not a floor to
+anything in particular. Windows lands wherever that mask leaves it and the answer
+_moves with the input_ -- 129, 131, 130, 128 across the sizes -- which is how the
+mask shows itself, since a division by 999 would answer the same every time. We
+gave that selector a whole pixel, which is a guess that happens to be a different
+selector's answer.
+
+**The forty-five degree form divides in 2.30 and floors in pixels.**
+`Super45Round` divides by the period held as a square root in 2.30, masks _that_
+to whole pixels, and multiplies back, where we floored to a multiple of a period
+we had halved in sixty-fourths and left at 22.5. The period is also converted
+once, so it comes out 23, 45 or 91 rather than 22.5, 45 or 90, and the phase and
+threshold follow from the whole number with the reference's own rounded
+divisions.
+
+    sround-illegal    59 of 59 sizes wrong  ->  none
+    sround-quarter    none either way, which is the control
+    s45round-half     54 of 59 wrong        ->  2
+
+The two that remain are off by one and are the square root rounding twice over;
+`VECTORDIV` and `VECTORMUL` round rather than truncate, which is worth three of
+the five on its own. Every recorded probe is unmoved at 100 per cent and the
+fabricated set is unchanged, which is what a corner no font reaches should do.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the

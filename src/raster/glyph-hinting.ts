@@ -334,6 +334,7 @@ export class Hinter {
 
       loop: 1,
       roundPeriod: ONE,
+      roundPeriod45: 0,
       roundPhase: 0,
       roundThreshold: ONE / 2,
       rounding: true,
@@ -753,7 +754,30 @@ export class Hinter {
     }
 
     magnitude += roundThreshold - roundPhase;
-    magnitude = Math.floor(magnitude / roundPeriod) * roundPeriod;
+
+    /* A mask, not a division.
+     *
+     * `SuperRound` writes `x &= ~(period - 1)`, which is a floor to a multiple
+     * only when the period is a power of two. Every named round state has one,
+     * so the two agree there -- but `SROUND`'s illegal period selector gives
+     * 999, and `~998` is not a floor to anything in particular. Windows lands
+     * on whatever that mask leaves and the answer moves with the input, which a
+     * division cannot reproduce.
+     *
+     * `Super45Round` does something else again: it divides by the period held
+     * in 2.30, floors *that* to whole pixels, and multiplies back.
+     */
+    if (this.state.roundPeriod45) {
+      const wide = this.state.roundPeriod45;
+
+      // `VECTORDIV` and `VECTORMUL` round; flooring instead costs three sizes.
+      magnitude = Math.round((magnitude * (1 << 30)) / wide);
+      magnitude &= ~(ONE - 1);
+      magnitude = Math.round((magnitude * wide) / (1 << 30));
+    } else {
+      magnitude &= ~(roundPeriod - 1);
+    }
+
     magnitude += roundPhase;
 
     if (magnitude < 0) {
@@ -924,6 +948,7 @@ export class Hinter {
       case 0x18: // RTG
         state.rounding = true;
         state.roundPeriod = ONE;
+        state.roundPeriod45 = 0;
         state.roundPhase = 0;
         state.roundThreshold = ONE / 2;
         return at;
@@ -931,6 +956,7 @@ export class Hinter {
       case 0x19: // RTHG
         state.rounding = true;
         state.roundPeriod = ONE;
+        state.roundPeriod45 = 0;
         state.roundPhase = ONE / 2;
         state.roundThreshold = ONE / 2;
         return at;
@@ -938,6 +964,7 @@ export class Hinter {
       case 0x3d: // RTDG
         state.rounding = true;
         state.roundPeriod = ONE / 2;
+        state.roundPeriod45 = 0;
         state.roundPhase = 0;
         state.roundThreshold = ONE / 4;
         return at;
@@ -945,6 +972,7 @@ export class Hinter {
       case 0x7d: // RDTG
         state.rounding = true;
         state.roundPeriod = ONE;
+        state.roundPeriod45 = 0;
         state.roundPhase = 0;
         state.roundThreshold = 0;
         return at;
@@ -952,6 +980,7 @@ export class Hinter {
       case 0x7c: // RUTG
         state.rounding = true;
         state.roundPeriod = ONE;
+        state.roundPeriod45 = 0;
         state.roundPhase = 0;
         state.roundThreshold = ONE - 1;
         return at;
@@ -1293,16 +1322,44 @@ export class Hinter {
          */
         const packed = this.pop();
 
-        const base = opcode === 0x77 ? Math.round(ONE * Math.SQRT1_2) : ONE;
-
-        const period = { 0: base / 2, 1: base, 2: base * 2, 3: base }[(packed >> 6) & 0x03];
-        const phase = (((packed >> 4) & 0x03) * period) / 4;
-
+        /* The period, the phase and the threshold are all whole sixty-fourths,
+         * and each is rounded the way the reference rounds it.
+         *
+         * Two corners were ours rather than read. The fourth period selector is
+         * **illegal** and the reference gives it 999, not the whole pixel we
+         * guessed -- which is a real value a program can land on, and rounds a
+         * point to the nearest fifteen and a half pixels. And a forty-five
+         * degree period is kept in 2.30 and converted to sixty-fourths *once*,
+         * so it comes out 23, 45 or 91; halving 45 in sixty-fourths gives 22.5
+         * and puts every later threshold on the wrong side of a half.
+         */
         const selector = packed & 0x0f;
-        const threshold = selector === 0 ? period - 1 : ((selector - 4) / 8) * period;
+
+        let period;
+        let wide45 = 0;
+
+        if (opcode === 0x76) {
+          period = [ONE / 2, ONE, ONE * 2, 999][(packed >> 6) & 0x03];
+        } else {
+          // The square root of a half in 2.30, halved or doubled, then rounded.
+          const root = Math.round(Math.SQRT1_2 * (1 << 30));
+
+          wide45 = [Math.floor(root / 2), root, root * 2, 999][(packed >> 6) & 0x03];
+          period = Math.floor((wide45 + (1 << 23)) / (1 << 24));
+        }
+
+        const phase = [
+          0,
+          (period + 2) >> 2,
+          (period + 1) >> 1,
+          (period + period + period + 2) >> 2,
+        ][(packed >> 4) & 0x03];
+
+        const threshold = selector === 0 ? period - 1 : ((selector - 4) * period + 4) >> 3;
 
         state.rounding = true;
         state.roundPeriod = period;
+        state.roundPeriod45 = opcode === 0x77 ? wide45 : 0;
         state.roundPhase = phase;
         state.roundThreshold = threshold;
 
