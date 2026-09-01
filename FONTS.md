@@ -5549,6 +5549,46 @@ questions -- which means either those fixtures are wrong for reasons this check
 has been masking, or the flag is set for them and not for the bars. Nothing here
 distinguishes those, so nothing is changed.
 
+### Tracing the flag, which turns out to be set
+
+The gate found in the previous section is bit 0 of the high word of a thirty-two
+bit scan kind. Tracing where that word comes from closes the question against the
+hypothesis it was raised to support.
+
+The chain is short. Segment 42's public entry at 0x42 takes the value as its
+first two stack arguments and hands them down to the fill at 0x978. Segment 36
+pushes them at 0x22f9 from a pair of its own locals, which it filled at 0x227d
+from a call to segment 36's 0x2374. And 0x2374 opens with
+
+    2378  mov ax,[bx+0x104]
+    237c  mov dx,[bx+0x106]
+
+-- one thirty-two bit field where the **low word is `SCANCTRL` and the high word
+is `SCANTYPE`**. What follows is that field evaluated: bit 11 turning dropout off
+above the size in the low byte, bits 12 and 13 asking about rotation and stretch,
+bit 8 turning it on at or below the size, a special case for a size of 255, and
+bits 9 and 10 for the same two conditions the other way about. Every path either
+returns the field unchanged or, at 0x2403, `sub ax,ax; cwd` -- nought.
+
+So the scan kind is `SCANCTRL | (SCANTYPE << 16)` when dropout is on and nought
+when it is off, which is why the caller can test the whole thirty-two bits for
+zero to skip the pass. And the stub gate, being bit 0 of the high word, is
+**`SCANTYPE & 1`**. Courier New reports `SCANTYPE` 1 at every size measured. The
+bit is set. Windows runs the stub check on these bars exactly as we do.
+
+That kills the explanation. The upright bars are not a stub check we apply and
+Windows skips; both apply it. What is left is the other half of the pair, which
+has not been touched: Windows' lists are not empty where ours are, and its
+crossing counts at the first and last row of an isolated run reach two where ours
+reach nought. Where those extra crossings come from is the open question, and it
+is now the only one.
+
+Two smaller things the trace settles in passing. Our `dropout` getter has bits 8
+and 11 and the size comparison right, checked against 0x239d to 0x23d0 line for
+line. It is missing the `SCANCTRL` low byte of 255 meaning always-on, and bits 9
+and 10; neither fires for any font here, where the value is 300 throughout, but
+both are real and cheap to add when something needs them.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
