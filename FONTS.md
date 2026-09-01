@@ -5589,6 +5589,40 @@ line. It is missing the `SCANCTRL` low byte of 255 meaning always-on, and bits 9
 and 10; neither fires for any font here, where the value is 300 throughout, but
 both are real and cheap to add when something needs them.
 
+### The upright bars, with everything else ruled out
+
+Following the counter at 0xe28 through for the bar that fails puts numbers on the
+last hypothesis and does not confirm it either.
+
+Courier New's `A` at sixteen pixels sits in a box of `left 6, right 7`, and its
+crossings are `on [6] off [6]` on rows 3 to 11. The counter's three terms for the
+row above the top of the run are the horizontal list at that row, the vertical
+list at column 5, and the vertical list at column 6. The first is empty because
+the run has ended. The second is skipped by the counter's own bound test, since
+column 5 is left of `lBoxLeft` -- the guard at 0x0e60 is exactly `VertCrossings`
+returning nought outside the box. The third is read and is empty. Nought, and the
+check declines, in the shipped code as much as in ours.
+
+So Windows draws those two rows for a reason that is not in the counter. Either
+its horizontal list carries an entry a row beyond where ours ends, or its
+vertical list at column 6 carries one where ours is empty -- and the second would
+have to come from the bar's top and bottom edges, which span a third of a pixel
+and cross no vertical sample line at all.
+
+One more thing ruled out on the way. `cour-bars` glyphs have no instructions, so
+they leave `hintedOutline` before the interpreter is built and are scaled by the
+rasteriser's own path rather than the interpreter's -- which is not what Windows
+does, since `fpgm` and `prep` run once per size regardless, and it would have
+explained the difference neatly if the two paths disagreed. Running the
+interpreter for them changes nothing: 6,541 cells and 1,113 wrong pixels either
+way, to the pixel. The two scaling paths agree, and `times-bare` being exact
+while `cour-bars` is not has some other cause.
+
+That leaves the forty-nine upright bars as the only thing in the fabricated set
+with a mechanism identified and no explanation: a stub check that both
+implementations run, on lists that agree everywhere the two draw the same thing,
+declining at the two ends of an isolated run in ours and not in Windows.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
