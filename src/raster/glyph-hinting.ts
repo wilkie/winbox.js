@@ -1470,9 +1470,13 @@ export class Hinter {
 
         const perpendicular = (opcode & 0x01) !== 0;
 
+        /* The deeper of the two point numbers belongs to the first zone and the
+         * one on top of it to the second, which is only visible while a program
+         * has the two pointing somewhere different.
+         */
         const vector = this.unitVector(
-          zoneTwo.x[first] - zoneOne.x[second],
-          zoneTwo.y[first] - zoneOne.y[second],
+          zoneOne.x[first] - zoneTwo.x[second],
+          zoneOne.y[first] - zoneTwo.y[second],
           perpendicular
         );
 
@@ -1500,8 +1504,8 @@ export class Hinter {
           opcode === 0x06 || opcode === 0x07
             ? { ...vector }
             : this.unitVector(
-                zoneTwo.originalX[first] - zoneOne.originalX[second],
-                zoneTwo.originalY[first] - zoneOne.originalY[second],
+                zoneOne.originalX[first] - zoneTwo.originalX[second],
+                zoneOne.originalY[first] - zoneTwo.originalY[second],
                 perpendicular
               );
 
