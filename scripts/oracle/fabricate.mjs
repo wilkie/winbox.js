@@ -1008,6 +1008,13 @@ function pointReporter(
 }
 
 export const FABRICATIONS = [
+  pointReporter('cour-g-tail-left', {
+    font: 'COUR.TTF',
+    character: 'g',
+    point: 20,
+    axis: 'x',
+    describe: "Courier New's g reporting the leftmost point of its descender tail",
+  }),
   pointReporter('times-W-interpolated', {
     character: 'W',
     point: 23,

@@ -166,6 +166,12 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      */
     probeSweep("Arial", 0, '7');
 
+    /* Courier New's `g`, whose descender tail is the last pixel in the recorded
+     * letters. Courier carries no `hdmx`, so every size runs the program and
+     * every size can be read.
+     */
+    probeSweep("Courier New", 0, 'g');
+
     ReleaseDC(NULL, dc);
 
     probeFinish();

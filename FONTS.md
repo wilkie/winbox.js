@@ -6277,6 +6277,34 @@ say where the tail's points really are. That is three recordings for one pixel,
 which is the honest price at this point and is why it is written down rather
 than done.
 
+### The Courier pixel is out of the readout's reach, by construction
+
+The probe gained a sixth sweep, Courier New's `g`, and a fabrication was built to
+report the leftmost point of its descender tail. Windows answered every size with
+the ordinary advance -- five, six, seven pixels -- rather than the point.
+
+The reason is the size itself. Courier New's `prep` sets `INSTCTRL` below nine
+pixels per em, and the failing record is at eight: `instructionControl` reads 1
+there and 0 from nine upwards. **No glyph program runs at that size**, in Windows
+or in ours, and a readout is a glyph program. The channel cannot be pointed at
+this pixel; it is not that the fabrication is wrong.
+
+Which settles what the pixel is. With no program running, the outline is the
+scaled one and nothing else, so the difference is in the scaling and not in the
+hinting -- and it is a tie. The tail's leftmost point is 346 design units, which
+at eight pixels per em is `346 * 512 / 2048` exactly 86.5 sixty-fourths. We round
+a half away from zero and get 87; a crossing at 87 rather than 86 is what puts
+the run's start a column left of Windows'.
+
+Rounding that half toward zero instead is worse everywhere else: 838 recorded
+glyphs of 846 against 844. So the tie rule stands and the pixel stays, and what
+it needs is not a different rounding but an account of how Windows scales an
+outline that lands exactly between two sixty-fourths -- which the interpreter's
+own source will not answer, since at this size the interpreter never runs.
+
+The sweep is kept regardless. The `hinting` probe is now 1,236 records over six
+characters and **agrees on all of them**.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
