@@ -5448,6 +5448,57 @@ The recorded letters do not move: still thirty-three records and fifty-eight
 pixels. A real letter's bounding box does not collapse, so this was always going
 to be a fabrication's finding, which is what the fabrications are for.
 
+### The upright bars, and a stub check that is right everywhere else
+
+The forty-nine that remain are the upright half, and dumping one says exactly
+what they are. Courier New's `A` at sixteen pixels, a bar a third of a pixel
+wide:
+
+    box  left 6  right 7  top 3  bottom 12
+    r 3  windows #   ours .   on [6] off [6]  rescue queued
+    r 4  windows #   ours #   on [6] off [6]  rescue queued
+    ...
+    r10  windows #   ours #   on [6] off [6]  rescue queued
+    r11  windows #   ours .   on [6] off [6]  rescue queued
+
+Nine rows of zero-length run, nine rescues queued, seven placed. **We lose the
+first row and the last one.** Windows draws all nine.
+
+The reason is that the vertical lists are completely empty for this glyph. A bar
+a third of a pixel wide has horizontal edges that span less than a column, so
+they cross no vertical sample line and contribute nothing, and `countVert` is
+nought everywhere. That collapses the stub check to its remaining term, "does the
+neighbouring row have crossings" -- which is true in the middle of a run and
+false at both of its ends, for any isolated run whatever.
+
+Three things measured about it, none of which resolves it.
+
+Removing the horizontal stub check makes `cour-bars` perfect, 258 of 258 cells
+and no wrong pixels, every upright failure with it. It costs 1,111 pixels
+elsewhere: `cour-phases` goes from nothing wrong to 199, `cour-mirrorband` from 4
+to 184, `cour-sides` from 32 to 178, `cour-leftband` from 24 to 170, `cour-mirror`
+from nothing to 92. The check is doing real work on fixtures built for other
+questions, so it is not simply absent from Windows.
+
+Our rows run downward and the source's y runs up, and the two branches of the
+check are not symmetric -- the one reads `HorizCrossings` at `y - 1` but
+`VertCrossings` at `y`, the other reads all three at `y + 1` -- so a mismapping
+was worth ruling out. Sweeping which row the vertical terms are read at: the
+present `(0, +1)` gives 1,113 wrong pixels and the four alternatives give 2,648,
+3,190, 3,790 and 4,670. None of them changes `cour-bars` at all.
+
+The same sweep on the vertical rescue, from the previous section, has every
+non-zero offset behaving exactly like having no vertical rescue at all. Between
+them the two sweeps say the checks are where they belong.
+
+So the position is precise and unresolved. `DoHorizDropout` guards its stub check
+on `usScanKind & SK_STUBS`, and `SCANTYPE 1` is simple dropout excluding stubs,
+which sets it -- so the source says Windows should decline at the ends of these
+bars exactly as we do, and Windows draws them. Either the flag is not set the way
+the `SCANTYPE` reading assumes, or Windows' lists are not empty here and its
+horizontal edges contribute a crossing ours do not. Both are checkable and
+neither has been checked.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
