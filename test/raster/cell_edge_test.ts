@@ -300,3 +300,38 @@ describe('what the budget counts', () => {
     });
   });
 });
+
+/**
+ * The budget, at a row that divides nothing evenly.
+ *
+ * `times-broad` is sixty-eight pixels across, which pads to ninety-six bits and
+ * so twelve bytes a row. A cell of sixteen has a hundred and twenty-eight bytes
+ * to spend, which is ten and two thirds of those rows -- so ten come back and
+ * eleven do not, and neither number is a round count of anything but bytes.
+ */
+describe('the budget in bytes', () => {
+  const FIXTURE = 'oracle/fixtures/fabricated/glyphs-times-broad.json';
+
+  const present = existsSync(FIXTURE) ? describe : describe.skip;
+
+  present('spends to the byte', () => {
+    const fixture = JSON.parse(readFileSync(FIXTURE, 'utf8'));
+
+    const drew = (character: string) => {
+      const record = fixture.records.find(
+        (row: any) => row.args === `"Times New Roman",h=16,weight=400,italic=0,'${character}'`
+      );
+
+      return rowsOf(record.result).length > 0;
+    };
+
+    it('takes ten twelve-byte rows and refuses eleven', () => {
+      // Eight, nine and ten rows: ninety-six, a hundred and eight, a hundred
+      // and twenty bytes, all under the hundred and twenty-eight.
+      expect([drew('W'), drew('g'), drew('j')]).toEqual([true, true, true]);
+
+      // Eleven and twelve: a hundred and thirty-two and a hundred and forty-four.
+      expect([drew('1'), drew('.')]).toEqual([false, false]);
+    });
+  });
+});

@@ -4369,6 +4369,34 @@ export const FABRICATIONS = [
    * These are thirty-six pixels wide, which is eight bytes a row, and short
    * enough that a budget of rows would draw every one of them.
    */
+  /* And once more at a row that is not a power of two.
+   *
+   * Sixty-eight pixels across pads to ninety-six bits, which is twelve bytes a
+   * row -- a width that divides no budget evenly. If the rule is really bytes
+   * then a cell of sixteen, whose budget is a hundred and twenty-eight, takes
+   * ten of these rows and refuses eleven.
+   */
+  {
+    name: 'times-broad',
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: 'bars twelve bytes to the row, at heights either side of the byte budget',
+
+    edit: (bytes) => {
+      const at = (pixels) => Math.round((pixels * 2048) / 14);
+
+      ['W', 'g', 'j', '1', '.'].forEach((character, index) => {
+        setGlyph(bytes, null, glyphFor(bytes, character.charCodeAt(0)), {
+          width: at(68),
+          height: at([8, 9, 10, 11, 12][index]),
+          program: [...ops.yAxis()],
+        });
+      });
+
+      return bytes;
+    },
+  },
+
   {
     name: 'times-wide',
     from: 'TIMES.TTF',
