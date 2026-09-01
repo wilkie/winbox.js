@@ -870,6 +870,46 @@ function experiment(name, { font, character, points, body, report, magnify = 8, 
 }
 
 /**
+ * A glyph whose program reports a number it worked out, rather than a point.
+ *
+ * `experiment` reads a coordinate back after an instruction has moved it, which
+ * suits the instructions that move points. The ones that answer onto the stack
+ * -- what version of the scaler is running, what the state of something is --
+ * have no point to read, so the answer is put on the advance phantom directly.
+ *
+ * The body is handed a stack with the phantom's number already on it and must
+ * leave one number above that: the coordinate to move the phantom to, in
+ * sixty-fourths. Multiplying a plain count by sixty-four and again by eight is
+ * what turns an answer of two or three into a reading far enough from its
+ * neighbours to be unmistakable.
+ */
+function stackReporter(name, { font, character, points, body, describe }) {
+  return {
+    name,
+    from: font,
+    as: font,
+    describe,
+
+    edit: (bytes) => {
+      const glyph = glyphFor(bytes, character.charCodeAt(0));
+
+      return setGlyph(bytes, null, glyph, {
+        width: Math.max(...points.map((point) => point[0])),
+        height: Math.max(...points.map((point) => point[1])),
+        points,
+        program: [
+          // Along x, so the phantom's own x is what the answer becomes.
+          0x01,
+          ...ops.byte(points.length + 1),
+          ...body,
+          ...ops.setCoordinate(),
+        ],
+      });
+    },
+  };
+}
+
+/**
  * A fabrication that makes one letter report one of its own points.
  *
  * The glyph keeps its outline and its whole program, and gains an ending that
@@ -3516,6 +3556,48 @@ export const FABRICATIONS = [
       report: 1,
       magnify: 8,
       describe: `sixteen delta exceptions ${what}`,
+    })
+  ),
+
+  /* What the scaler says it is.
+   *
+   * `GETINFO` answers a font's questions about what is running it, and a font
+   * is entitled to branch on the answer. The version is not a bit but a number
+   * or-ed into the low end of the reply, so a font comparing it against two or
+   * three takes a different path depending on what Windows says here -- and
+   * what Windows says has been assumed rather than read.
+   *
+   * The selector nothing asks for is the control: with no bits set the reply is
+   * zero, which pins the phantom at the origin and shows the channel carries
+   * whatever the instruction returned rather than the letter's own width.
+   */
+  ...[
+    ['getinfo-version', 1, 'the version bit'],
+    ['getinfo-nothing', 0, 'no bit at all'],
+  ].map(([name, selector, what]) =>
+    stackReporter(name, {
+      font: 'ARIALI.TTF',
+      character: 'm',
+      points: [
+        [67, 0],
+        [323, 400],
+        [579, 400],
+        [835, 0],
+      ],
+      body: [
+        ...ops.byte(selector),
+        // GETINFO.
+        0x88,
+        /* Into sixty-fourths, and then eight times over, so that answers one
+         * apart land eight pixels apart and no size's own width can be mistaken
+         * for one of them.
+         */
+        ...ops.word(64 * 64),
+        ...ops.multiply(),
+        ...ops.word(8 * 64),
+        ...ops.multiply(),
+      ],
+      describe: `what GETINFO answers for ${what}`,
     })
   ),
 

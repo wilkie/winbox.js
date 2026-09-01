@@ -1376,10 +1376,21 @@ export class Hinter {
 
         let answer = 0;
 
-        // Bit 0 asks for the scaler's version, and nothing here rotates or
-        // stretches, so the other bits stay clear.
+        /* Bit 0 asks for the scaler's version, and nothing here rotates or
+         * stretches, so the other bits stay clear.
+         *
+         * Three is measured, not assumed: `getinfo-version` reports the reply
+         * back through the advance and Windows answers three at every size
+         * where the program runs at all, against nought for the selector with
+         * no bits set. A font is entitled to branch on this, so the number
+         * decides which half of such a font's program ever runs.
+         *
+         * The version is not a bit but a number or-ed into the low end of the
+         * reply, and three fills the two bits below the rotated and stretched
+         * ones without reaching them.
+         */
         if (selector & 0x01) {
-          answer |= 1;
+          answer |= 3;
         }
 
         this.push(answer);
