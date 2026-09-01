@@ -1257,13 +1257,16 @@ export class Unimplemented extends Error {}
  *
  * Then the probe was widened to the accented letters, which are composite
  * glyphs -- a quarter of every one of these fonts, and nothing it had asked for
- * before reached any of them. 318 of the first 384 new cells disagreed. What is
- * left of that is five, described in `disputed_glyphs_test.ts`: one dot of one
- * diaeresis in one face, shifted a pixel too far by the composite's own
- * program.
+ * before reached any of them. 318 of the first 384 new cells disagreed, and
+ * every one of those is now drawn.
+ *
+ * Widening it again to the punctuation below them found two more letters that
+ * had never been drawn either, and both are ordinary simple glyphs: the middle
+ * dot and the right guillemet. Those are what is left, and they are a hinting
+ * question rather than a composite one.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  glyph: "five accented cells of 1,998: one dot of Courier New's diaeresis, a column out",
+  glyph: 'twenty-three cells of 2,574: the middle dot in three faces and one guillemet',
 };
 
 /**

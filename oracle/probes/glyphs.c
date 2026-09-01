@@ -199,7 +199,12 @@ static void probeAccented(LPCSTR face)
 
         wsprintf(name, "\"%s\",h=%d,weight=400,italic=0", (LPSTR)face, SIZES[size]);
 
-        for (code = 0xC0; code <= 0xFF; code++) {
+        /* From the punctuation up, not just the letters. The accents that
+         * compose them are characters in their own right down here -- the
+         * diaeresis, the grave, the cedilla -- and a component that is drawn
+         * wrongly inside a composite is far easier to read on its own.
+         */
+        for (code = 0xA0; code <= 0xFF; code++) {
             probeGlyph(name, font, (char)code);
         }
 

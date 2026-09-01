@@ -351,6 +351,28 @@ export class Hinter {
     };
   }
 
+  /** Rounding toward zero on a half, to a multiple. See `hint`. */
+  static toward(value, by) {
+    return Math.sign(value) * Math.ceil(Math.abs(value) / by - 0.5) * by;
+  }
+
+  /**
+   * A side bearing in sixty-fourths, as much of it as the outline carries.
+   *
+   * The whole pixels of it are carried outside the outline instead -- see
+   * `hint` -- and `carry` is that part. Both are wanted separately: a composite
+   * is assembled out of components that were each fitted on their own, and only
+   * the one whose bearing the composite took has the carry in it already.
+   */
+  bearingIn(shift) {
+    return Hinter.toward(shift * this.pixels, this.font.unitsPerEm) / this.font.unitsPerEm;
+  }
+
+  /** The whole pixels of a side bearing, which sit outside the outline. */
+  carry(shift) {
+    return Hinter.toward(this.bearingIn(shift), ONE);
+  }
+
   /** Runs `fpgm` and `prep`, which between them set the size up. */
   prepare() {
     if (this._ready) {
@@ -461,12 +483,9 @@ export class Hinter {
      * breaks the recorded interior points of Arial Italic's `M` -- so this is
      * its own rounding and not that one.
      */
-    const toward = (value: number, by: number) =>
-      Math.sign(value) * Math.ceil(Math.abs(value) / by - 0.5) * by;
+    const bearing = this.bearingIn(shift);
 
-    const bearing = toward(shift * this.pixels, this.font.unitsPerEm) / this.font.unitsPerEm;
-
-    const whole = toward(bearing, ONE);
+    const whole = Hinter.toward(bearing, ONE);
 
     for (const contour of outline) {
       for (const point of contour) {

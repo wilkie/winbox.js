@@ -731,7 +731,13 @@ export class TrueTypeFont {
        * scaled. See `compositeInPixels`.
        */
       const assembly = program.composite
-        ? this.compositeInPixels(glyph, ppem, roundPhantoms, (units) => hinter.toPixels(units))
+        ? this.compositeInPixels(
+            glyph,
+            ppem,
+            roundPhantoms,
+            (units) => hinter.toPixels(units),
+            (shift) => hinter.carry(shift)
+          )
         : null;
 
       const fitted = hinter.hint(
@@ -790,7 +796,13 @@ export class TrueTypeFont {
       const hinter = this.hinterAt(ppem, roundPhantoms);
 
       const assembly = program.composite
-        ? this.compositeInPixels(glyph, ppem, roundPhantoms, (units) => hinter.toPixels(units))
+        ? this.compositeInPixels(
+            glyph,
+            ppem,
+            roundPhantoms,
+            (units) => hinter.toPixels(units),
+            (shift) => hinter.carry(shift)
+          )
         : null;
 
       hinter.hint(
@@ -1167,6 +1179,55 @@ export class TrueTypeFont {
   }
 
   /**
+   * The glyph a composite takes its side bearing from.
+   *
+   * A component may claim the composite's metrics for itself, and one in nearly
+   * every composite in these fonts does.
+   *
+   * @returns {number} The glyph whose metrics to use, which is the composite
+   *                   itself when no component claims them.
+   */
+  metricsGlyph(glyph) {
+    const range = this.glyphRange(glyph);
+
+    if (!range || this._view.getInt16(range.start, false) >= 0) {
+      return glyph;
+    }
+
+    let cursor = range.start + 10;
+
+    for (;;) {
+      const flags = this._view.getUint16(cursor, false);
+      const index = this._view.getUint16(cursor + 2, false);
+
+      cursor += 4 + (flags & 0x0001 ? 4 : 2);
+
+      if (flags & 0x0008) {
+        cursor += 2;
+      } else if (flags & 0x0040) {
+        cursor += 4;
+      } else if (flags & 0x0080) {
+        cursor += 8;
+      }
+
+      if (flags & 0x0200) {
+        return index;
+      }
+
+      if (!(flags & 0x0020)) {
+        return glyph;
+      }
+    }
+  }
+
+  /** How far a glyph's outline is carried across its own side bearing. */
+  bearingShift(glyph) {
+    const range = this.glyphRange(glyph);
+
+    return range ? this.bearingOf(glyph) - this._view.getInt16(range.start + 2, false) : 0;
+  }
+
+  /**
    * A composite's outline in pixels, assembled the way the scaler assembles it.
    *
    * A simple glyph is scaled after its program has run over design
@@ -1200,9 +1261,25 @@ export class TrueTypeFont {
    *                              components land where its own arithmetic
    *                              would have put them.
    */
-  compositeInPixels(glyph, ppem, roundPhantoms, toPixels) {
+  compositeInPixels(glyph, ppem, roundPhantoms, toPixels, carry) {
     const range = this.glyphRange(glyph);
     const shapes: any[] = [];
+
+    /* The whole pixels of a side bearing are carried outside the outline rather
+     * than inside it, and that carry belongs to the glyph being drawn -- not to
+     * whichever component it was read from. Each component was fitted on its
+     * own and so carries its own, which for all but one of them is not the
+     * composite's. The difference is made up here, so that every component is
+     * placed in the same space.
+     *
+     * Courier New's `O` diaeresis is what says so. Its `O` claims the metrics
+     * and is carried a whole pixel from about fifteen pixels per em upward; its
+     * dots are carried nothing, and came out a column left of where Windows
+     * draws them at exactly the sizes where that carry is a whole pixel and
+     * nowhere else. Its `A` diaeresis, whose `A` is carried nothing, was right
+     * all along.
+     */
+    const carried = carry(this.bearingShift(this.metricsGlyph(glyph)));
 
     let cursor = range.start + 10;
     let advance: number | null = null;
@@ -1242,6 +1319,8 @@ export class TrueTypeFont {
           offsetX = Math.floor(offsetX / ONE + 0.5) * ONE;
           offsetY = Math.floor(offsetY / ONE + 0.5) * ONE;
         }
+
+        offsetX += carried - carry(this.bearingShift(index));
 
         const fitted = this.hintedOutline(index, ppem, roundPhantoms);
 
