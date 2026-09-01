@@ -159,6 +159,13 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      */
     probeSweep("Times New Roman", 0, '8');
 
+    /* Arial's seven, whose diagonal steps from one column to the next a row
+     * early in ours at two sizes. The stroke's control points are untouched in
+     * both axes and placed by `IUP`, so what wants reading is where they land
+     * -- and that is an x, not a height.
+     */
+    probeSweep("Arial", 0, '7');
+
     ReleaseDC(NULL, dc);
 
     probeFinish();

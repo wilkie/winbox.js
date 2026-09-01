@@ -23,16 +23,28 @@ import { join } from 'node:path';
 import { TrueTypeFont } from '../../src/raster/truetype-font.js';
 import { prepareFonts } from './replay.js';
 
-/** Points 26 and 39: the foot of the upper counter and the head of the lower. */
+/**
+ * Four readouts: the two that bound the waist of Times New Roman's `8`, and the
+ * two control points of Arial's `7` where its diagonal is drawn a row early.
+ *
+ * Arial's fabrications drop `hdmx` and `LTSH` as well. Both are caches of what
+ * a program would have come to, and Windows answers from either without running
+ * anything -- Arial's cover every size in the sweep, so with them in place the
+ * readout said nothing at all.
+ */
 const WAIST = [
-  ['times-8-waist-upper', 26],
-  ['times-8-waist-lower', 39],
+  ['times-8-waist-upper', 26, 'Times New Roman', '8'],
+  ['times-8-waist-lower', 39, 'Times New Roman', '8'],
+  ['arial-7-diagonal-right', 5, 'Arial', '7'],
+  ['arial-7-diagonal-left', 11, 'Arial', '7'],
 ] as const;
 
 /** Readable sizes still disagreeing. Both are ceilings. */
 const DIFFER: Record<string, number> = {
   'times-8-waist-upper': 0,
   'times-8-waist-lower': 0,
+  'arial-7-diagonal-right': 8,
+  'arial-7-diagonal-left': 9,
 };
 
 /** Below this the answer is `hdmx`, not the program. */
@@ -53,7 +65,7 @@ if (missing) {
 
       const report: string[] = [];
 
-      for (const [name, point] of WAIST) {
+      for (const [name, point, face, character] of WAIST) {
         const fixture = JSON.parse(
           readFileSync(`oracle/fixtures/fabricated/hinting-${name}.json`, 'utf8')
         );
@@ -61,13 +73,16 @@ if (missing) {
         const font: any = new TrueTypeFont(
           new Uint8Array(readFileSync(join(dir, readdirSync(dir)[0])))
         );
-        const glyph = font.glyphFor('8'.charCodeAt(0));
+        const glyph = font.glyphFor(character.charCodeAt(0));
         const seen = new Set<number>();
 
         let differ = 0;
 
         for (const record of fixture.records) {
-          if (!/^"Times New Roman",h=\d+,italic=0,'8'$/.test(record.args ?? '')) {
+          if (
+            record.args !==
+            `"${face}",h=${/h=(\d+)/.exec(record.args)?.[1]},italic=0,'${character}'`
+          ) {
             continue;
           }
 
@@ -78,6 +93,13 @@ if (missing) {
           }
 
           const ppem = Number(answer[2]);
+
+          /* Past forty the magnified coordinate outgrows what an advance can
+           * carry and the reading wraps, which is not a disagreement.
+           */
+          if (ppem > 40) {
+            continue;
+          }
 
           if (seen.has(ppem)) {
             continue;

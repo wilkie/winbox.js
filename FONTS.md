@@ -6087,6 +6087,51 @@ Twenty records over twenty glyphs remain, none at more than two sizes and
 fourteen of them a single pixel, and nothing in the interpreter's arithmetic is
 now carrying a rule chosen for a reason that no longer holds.
 
+### Arial's seven, read directly, and a fix that is not the obvious one
+
+The seven is the largest single contributor left -- four pixels over two cell
+heights -- and the failure is one shape: at 18 and at 20 the diagonal steps from
+one column to the next **one row early**, ink at column 5 of row 11 where Windows
+has column 6. Every other row of both agrees.
+
+Its diagonal control points, 5 on the right and 11 on the left, are untouched in
+both axes and placed by `IUP`. So the probe gained a fifth sweep, Arial regular's
+`7`, and two more fabrications read those points' **x** -- the reporter now takes
+an axis, since a diagonal's error is a width and not a height.
+
+Two things had to be got out of the way first. `hdmx` answers a covered size
+without running the program, and where Times New Roman's table leaves gaps
+Arial's covers every size in the sweep, so the first recording read nothing at
+all. `LTSH` does the same from the other side: above the threshold it names, the
+advance is taken to be linear and the program is not run either. `dropTable`
+renames a tag so the loader does not find it, which keeps every offset in the
+directory valid, and with both gone the seven reads at 35 sizes.
+
+The reading is exact about where the fault is. **Point 11's x is one
+sixty-fourth high at ppem 16, 17 and 18** -- and cell heights 18 and 20 are ppem
+16 and 17, which are precisely the two that fail. Point 5 agrees at both. So four
+wrong pixels come down to one sixty-fourth on one control point.
+
+The arithmetic is visible too. At ppem 16, `IUP` places point 11 from a scaled
+original of 218 between anchors at 151 and 408, into a span from 192 to 448:
+`192 + 67 * 256 / 257` is 258.739, and we round it to 259 where Windows says 258.
+At ppem 19 the same calculation gives 274.885 and Windows says 275, which is the
+rounding we do. Neither truncating nor rounding fits both.
+
+In **design** units it fits both, and every other size: the anchors are 302 and
+815 and the point is 435, so the ratio is 133/513 and the answer is 258.37 at one
+size and 274.96 at the other -- 258 and 275, which is Windows twice. That is the
+same correction `IP` needed, for the same reason: a ratio taken between two
+numbers already quantised to sixty-fourths has lost the precision the ratio
+needed, and 815 design units scale to 407.5 and are kept as 408.
+
+**And it cannot simply be applied.** Switching `IUP` to design units takes the
+recorded glyphs from 826 of 846 down to 742. It is right about this glyph and
+wrong about eighty-four others, so the rule is not "interpolate in design units"
+-- something narrower is going on, and what has been measured here does not say
+what. The four readouts are kept as a test with their current disagreement counts
+as ceilings, so whatever explains it will show up as those numbers falling.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the

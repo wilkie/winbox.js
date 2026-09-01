@@ -929,7 +929,36 @@ function reporter(
 }
 
 /**
- * A letter reporting one of its own points' **y**, with its program intact.
+ * Hides a table from Windows by renaming it.
+ *
+ * A readout only says anything at a size where the program actually runs, and
+ * `hdmx` is a cache of what the program would have come to -- so a size the
+ * table covers is answered without running anything. Times New Roman's table
+ * leaves gaps and Arial's does not, which is why the eight could be read at
+ * seven sizes and the seven at none.
+ *
+ * Renaming the tag rather than removing the table keeps every offset in the
+ * directory valid and every other table where it was; the loader simply does
+ * not find it. `reseal` puts the checksums right afterwards.
+ */
+export function dropTable(bytes, tag) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const table = tablesOf(view)[tag];
+
+  if (!table) {
+    throw new Error(`font has no ${tag} table`);
+  }
+
+  // Reversed, so it is obvious in a hex dump what was done and to what.
+  for (let byte = 0; byte < 4; byte++) {
+    view.setUint8(table.record + byte, tag.charCodeAt(3 - byte));
+  }
+
+  return bytes;
+}
+
+/**
+ * A letter reporting one of its own points, with its program intact.
  *
  * `reporter` trades the tail of a program for the readout, which is fine when
  * the point being read is settled by then. Times New Roman's `8` is not: every
@@ -941,7 +970,10 @@ function reporter(
  * the projection vector, so the vectors go up y to read the point; the advance
  * is a distance in x, so they go back along x before `SCFS` moves the phantom.
  */
-function heightReporter(name, { font = 'TIMES.TTF', character, point, magnify = 64, describe }) {
+function pointReporter(
+  name,
+  { font = 'TIMES.TTF', character, point, axis = 'y', magnify = 64, drop, describe }
+) {
   return {
     name,
     from: font,
@@ -953,7 +985,8 @@ function heightReporter(name, { font = 'TIMES.TTF', character, point, magnify = 
       const phantom = pointCount(bytes, glyph) + 1;
 
       const ending = [
-        ...ops.yAxis(),
+        // Along the axis being read, so `GC` measures the coordinate wanted.
+        ...(axis === 'y' ? ops.yAxis() : [0x01]),
         ...ops.byte(phantom),
         ...ops.byte(point),
         0x46,
@@ -963,18 +996,40 @@ function heightReporter(name, { font = 'TIMES.TTF', character, point, magnify = 
         ...ops.setCoordinate(),
       ];
 
-      return growGlyphProgram(bytes, glyph, [...glyphProgram(bytes, glyph), ...ending]);
+      const grown = growGlyphProgram(bytes, glyph, [...glyphProgram(bytes, glyph), ...ending]);
+
+      for (const tag of drop ?? []) {
+        dropTable(grown, tag);
+      }
+
+      return grown;
     },
   };
 }
 
 export const FABRICATIONS = [
-  heightReporter('times-8-waist-upper', {
+  pointReporter('arial-7-diagonal-right', {
+    font: 'ARIAL.TTF',
+    character: '7',
+    point: 5,
+    axis: 'x',
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial's 7 reporting the control point of its right diagonal",
+  }),
+  pointReporter('arial-7-diagonal-left', {
+    font: 'ARIAL.TTF',
+    character: '7',
+    point: 11,
+    axis: 'x',
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial's 7 reporting the control point of its left diagonal",
+  }),
+  pointReporter('times-8-waist-upper', {
     character: '8',
     point: 26,
     describe: "Times New Roman's 8 reporting the foot of its upper counter",
   }),
-  heightReporter('times-8-waist-lower', {
+  pointReporter('times-8-waist-lower', {
     character: '8',
     point: 39,
     describe: "Times New Roman's 8 reporting the head of its lower counter",
