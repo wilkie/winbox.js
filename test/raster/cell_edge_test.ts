@@ -335,3 +335,53 @@ describe('the budget in bytes', () => {
     });
   });
 });
+
+/**
+ * Which pool runs out.
+ *
+ * The refusal is raised inside the scaler as an escape from a memory request
+ * that came back empty -- see the commit that read it. The scaler also sizes a
+ * workspace from the font's own `maxp` maxima, twice one count and eight times
+ * two others, which made that workspace the obvious candidate for what the
+ * glyph is competing for.
+ *
+ * It is not. `times-tall-maxp` is `times-tall-fine`'s bars in a font declaring
+ * four times the points, contours, twilight points, storage and stack, and
+ * every bar is drawn or refused exactly as before. Whatever runs out is sized
+ * from the cell and not from anything the font says about itself.
+ */
+describe('the pool that runs out', () => {
+  const PLAIN = 'oracle/fixtures/fabricated/glyphs-times-tall-fine.json';
+  const BIGGER = 'oracle/fixtures/fabricated/glyphs-times-tall-maxp.json';
+
+  const present = existsSync(PLAIN) && existsSync(BIGGER) ? describe : describe.skip;
+
+  present('is not the workspace the font sizes', () => {
+    const plain = JSON.parse(readFileSync(PLAIN, 'utf8'));
+    const bigger = JSON.parse(readFileSync(BIGGER, 'utf8'));
+
+    it('refuses the same bars however large the font claims to be', () => {
+      let compared = 0;
+
+      for (const height of [10, 12, 14, 16, 18, 20, 24]) {
+        for (const character of ['W', 'g', 'j', '1', '.']) {
+          const args = `"Times New Roman",h=${height},weight=400,italic=0,'${character}'`;
+          const one = plain.records.find((row: any) => row.args === args);
+          const other = bigger.records.find((row: any) => row.args === args);
+
+          if (!one || !other) {
+            continue;
+          }
+
+          compared++;
+
+          expect(`${args} ${rowsOf(one.result).length > 0}`).toEqual(
+            `${args} ${rowsOf(other.result).length > 0}`
+          );
+        }
+      }
+
+      expect(compared).toBe(30);
+    });
+  });
+});

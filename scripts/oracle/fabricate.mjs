@@ -4376,6 +4376,48 @@ export const FABRICATIONS = [
    * then a cell of sixteen, whose budget is a hundred and twenty-eight, takes
    * ten of these rows and refuses eleven.
    */
+  /* Whether the budget comes out of the workspace the font's own maxima size.
+   *
+   * The scaler works out how big a workspace a font needs from its `maxp` --
+   * twice one count, eight times two others -- and if the glyph that is refused
+   * were competing for that same pool, a font declaring larger maxima would
+   * have more room and refuse later. These are `times-tall-fine`'s bars again
+   * in a font whose counts are multiplied by four, so the two recordings can be
+   * held against each other.
+   */
+  {
+    name: 'times-tall-maxp',
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: 'the same bars in a font claiming four times the points and stack',
+
+    edit: (bytes) => {
+      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      const maxp = tablesOf(view).maxp.offset;
+
+      /* maxPoints, maxContours, maxCompositePoints, maxCompositeContours,
+       * maxTwilightPoints, maxStorage and maxStackElements.
+       */
+      for (const at of [6, 8, 10, 12, 16, 18, 24]) {
+        const was = view.getUint16(maxp + at, false);
+
+        view.setUint16(maxp + at, Math.min(0xfff0, was * 4), false);
+      }
+
+      const rows = (pixels) => Math.round((pixels * 2048) / 14);
+
+      ['W', 'g', 'j', '1', '.'].forEach((character, index) => {
+        setGlyph(bytes, null, glyphFor(bytes, character.charCodeAt(0)), {
+          width: 400,
+          height: rows([24, 26, 28, 30, 32][index]),
+          program: [...ops.yAxis()],
+        });
+      });
+
+      return bytes;
+    },
+  },
+
   {
     name: 'times-broad',
     from: 'TIMES.TTF',
