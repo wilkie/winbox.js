@@ -6055,6 +6055,38 @@ to ink is fitted to every mistake upstream of the ink as well**, and it holds
 only until one of them is found. Both of these were justified by a count, both
 counts were real, and both were measuring something else.
 
+### Re-asking the rest, which hold
+
+Two rules in the interpreter turned out to be fitted to an error upstream of
+them. The rest were asked again on the same footing, and none moved.
+
+**The scaling of a control value.** `scaleToPixels` rounds a half upward and
+floors, on a measurement of 12 wrong advances against `hdmx` out of 22,056.
+Swept four ways -- as it stands, half away from zero, truncating, and
+`Math.round` -- it gives 826 recorded glyphs of 846 as it stands, 822 rounding
+half away from zero, and 752 truncating; `Math.round` is identical to the
+present rule on every fixture, since the two differ only on negatives and no
+fixture has one that lands on a half. The rule stands, and now stands on a wider
+measurement than the one it was written for.
+
+**`DIV` truncating where `MUL` rounds.** This is not a fitted rule at all. The
+format specifies it: `MUL` rounds its result to the nearest sixty-fourth and
+`DIV` throws the remainder away. It was left alone.
+
+**Every rounding in the movement path.** Eleven sites -- the advance, the round
+period, both axes of `SHP`, both of `SHPIX`, both of `MSIRP`, the unit vector,
+`DELTA`, and `IUP` -- each flipped to truncate and to floor, twenty-two variants
+in all. Twenty are neutral to the pixel and two are worse: flooring the unit
+vector costs a record, and either flip of `IUP` costs five records and seven
+pixels, which is the change of the previous section being undone. That most of
+them are neutral is itself worth knowing: those sites never see a fraction,
+because what reaches them is already on the grid.
+
+So the sweep is clean and the two that were wrong are the two that were found.
+Twenty records over twenty glyphs remain, none at more than two sizes and
+fourteen of them a single pixel, and nothing in the interpreter's arithmetic is
+now carrying a rule chosen for a reason that no longer holds.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
