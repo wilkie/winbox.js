@@ -6509,6 +6509,34 @@ with a deliberately large gap, swept from one row to several. If Windows fills a
 gap of any size the rule is right; if it stops somewhere there is a threshold to
 find, and the rule as written is wrong about everything past it.
 
+### Sweeping the gap, which finds a great deal more of it
+
+`cour-gaps` is the fabrication the previous section asked for: one sub-pixel bar
+cut into two pieces with the gap between them swept from a quarter of a pixel to
+six, at three phases. It was built to decide between "fill the column" and a
+threshold. It answers something better and something worse.
+
+**Better:** the direction is unanimous. Of the 141 cells that disagree, **we draw
+less in 141 and more in none**. Windows never leaves a hole where we fill one.
+And it fills large gaps outright -- Courier New's `W` at sixteen has a gap of 5.7
+pixels and Windows draws the column solid from row 0 to row 11, where we draw 0
+to 3 and 9 to 11. A threshold on gap size is not what is happening.
+
+**Worse:** we are wrong far more often than the two fabrications that prompted
+this suggested. `cour-gaps` scores 117 of 258 cells and 587 wrong pixels, which
+takes the fabricated set from 7,260 of 7,308 cells and 70 wrong to 7,377 of 7,566
+and 657. The fifty pixels of `cour-boxes` and `cour-widths` were the visible
+corner of something with six hundred in it, and the recorded letters -- still 846
+of 846 -- could never have shown it, because no letter is a column wide with a
+hole in it.
+
+So "fill the column" is now much better supported than it was: unanimous in
+direction, and holding at gaps far too large for any threshold reading. It is
+still not adopted, because Windows does leave some holes in this fixture and a
+rule that always fills cannot be right about those, and because what separates
+them has not been measured. The fixture is in the ratchet at its present numbers,
+which is what makes the next attempt legible.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the

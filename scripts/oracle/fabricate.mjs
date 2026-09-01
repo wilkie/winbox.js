@@ -1827,6 +1827,63 @@ export const FABRICATIONS = [
    * behaves like `plain`, the direction the box grows matters. If `three`
    * behaves like `far`, the count does not.
    */
+  /* A glyph one column wide with a hole in it, and the hole swept.
+   *
+   * `cour-boxes` and `cour-widths` both leave a hole where they should not: a
+   * sub-pixel bar with a second contour below it comes out with a gap in the
+   * column of ink, and Windows draws it solid. Filling every such column from
+   * its topmost ink to its bottommost fixes them and is fitted rather than
+   * read -- "fill the column" is one of several rules that would close those
+   * particular gaps, and nothing in either fabrication tells them apart.
+   *
+   * This does. Two pieces of one sub-pixel bar with a gap between them, swept
+   * from a quarter of a pixel to six at the smallest size and proportionally
+   * less at the largest, at three phases. If Windows closes every gap the rule
+   * is right and can be written down as what it does. If it stops somewhere,
+   * the threshold is what the sweep reports, and the rule as written is wrong
+   * about everything past it.
+   */
+  {
+    name: 'cour-gaps',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with a sub-pixel bar split by a gap of swept height',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      // A quarter of a pixel to six, at eight per em where a pixel is 256.
+      const GAPS = [64, 128, 192, 256, 384, 512, 640, 768, 896, 1024, 1280, 1536];
+      const PHASES = [0, 85, 170];
+      const THIN = 40;
+      const FOOT = 400;
+      const HEAD = 600;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const gap = GAPS[index % GAPS.length];
+        const phase = PHASES[Math.floor(index / GAPS.length) % PHASES.length];
+        const left = 600 + phase;
+        const right = left + THIN;
+
+        const piece = (low, high) => [
+          [left, low],
+          [left, high],
+          [right, high],
+          [right, low],
+        ];
+
+        const loops = [piece(0, FOOT), piece(FOOT + gap, FOOT + gap + HEAD)];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, contours: loops, program: [] });
+        setBearing(bytes, glyph, left);
+      }
+
+      return bytes;
+    },
+  },
+
   {
     name: 'cour-boxes',
     from: 'COUR.TTF',
