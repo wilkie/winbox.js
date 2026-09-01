@@ -42,6 +42,19 @@ import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './repl
  * What is left is sixteen cells and forty-eight pixels, still every one of them
  * a letter with a diagonal, still two thirds Courier New, and now led by `K`,
  * which is six of them.
+ *
+ * The `K` has been bisected too, and stops where the `w` did. Courier New's
+ * bold `K` agrees with no program at all and through eighty-eight of its
+ * hundred and thirty-three instructions; by ninety-two it does not. The
+ * instruction between them is a `CALL`, and what that function does is set the
+ * projection vector along the arm with `SDPVTL`, read it back with `RPV`, and
+ * work a factor out of the angle -- so a fraction of a pixel in either of the
+ * two points that define the arm becomes a whole row in where the arm meets the
+ * stem. `RPV` and `RFV` were read against the scaler and match.
+ *
+ * That is the same wall the `w` reached: a sub-pixel difference upstream,
+ * amplified, with no oracle for the intermediate positions. Cutting the program
+ * says where the amplifier is, not what feeds it.
  */
 const RECORDS = 16;
 const PIXELS = 48;
