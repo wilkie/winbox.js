@@ -17,13 +17,13 @@ import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './repl
 
 /* What is left. Both are ceilings: neither may rise.
  *
- * Twenty-three cells, and none of them a composite: the middle dot in all three
- * faces at every size, and the right guillemet in Times New Roman at five. Both
- * are simple glyphs that no probe had drawn until the sweep was widened past
- * the accented letters to the punctuation that sits below them.
+ * Five cells, all the right guillemet in Times New Roman, which is a simple
+ * glyph nothing had drawn until the sweep was widened past the accented letters
+ * to the punctuation below them. Its mirror image, the left guillemet, is
+ * exact at every size.
  */
-const RECORDS = 23;
-const PIXELS = 304;
+const RECORDS = 5;
+const PIXELS = 188;
 
 /** The recorded bitmap is one bit per pixel, set where the probe left white. */
 function inkOf(hex: string) {

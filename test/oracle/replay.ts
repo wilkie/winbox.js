@@ -1261,12 +1261,13 @@ export class Unimplemented extends Error {}
  * every one of those is now drawn.
  *
  * Widening it again to the punctuation below them found two more letters that
- * had never been drawn either, and both are ordinary simple glyphs: the middle
- * dot and the right guillemet. Those are what is left, and they are a hinting
- * question rather than a composite one.
+ * had never been drawn either. The middle dot turned out not to be a drawing
+ * question at all -- Windows draws a different glyph for that byte than the
+ * one Latin-1 asks for, see `TrueTypeFont.ANSI`. The right guillemet is what
+ * is left, and it is an ordinary hinting disagreement.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  glyph: 'twenty-three cells of 2,574: the middle dot in three faces and one guillemet',
+  glyph: "five cells of 2,574: Times New Roman's right guillemet",
 };
 
 /**

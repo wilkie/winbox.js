@@ -852,10 +852,42 @@ export class TrueTypeFont {
   }
 
   /** The glyph a character maps to, following the symbol range if need be. */
+  /**
+   * What a byte means, where Windows and Latin-1 disagree.
+   *
+   * A character arrives as a byte and is looked up in a table of Unicode
+   * codepoints, and across the Latin-1 range the byte is the codepoint. At one
+   * place it is not: Windows draws the middle dot from the bullet operator
+   * rather than from the middle dot.
+   *
+   * **Measured.** All three outline faces carry both glyphs and map them from
+   * different codepoints -- U+00B7 to one, U+2219 to another. Drawing the
+   * second is what Windows does at all six recorded sizes in all three faces,
+   * eighteen cells, and the first gets none of them right. The two glyphs are
+   * not the same shape and not in the same place: Arial's differ by two
+   * hundred design units of side bearing.
+   *
+   * Only this one entry, because only this one has been asked. The bytes below
+   * a hundred and sixty are where a codepage would have more to say, and
+   * nothing has drawn them.
+   */
+  static ANSI: Record<number, number> = { 0xb7: 0x2219 };
+
   glyphFor(code) {
     const cmap = this.cmap;
 
-    return cmap.get(code) ?? cmap.get(0xf000 + code) ?? 0;
+    /* The byte's own codepoint is still tried, for a font that has the one and
+     * not the other. Which of them Windows would draw then is not known --
+     * every face here has both.
+     */
+    const wanted = TrueTypeFont.ANSI[code];
+
+    return (
+      (wanted === undefined ? undefined : cmap.get(wanted)) ??
+      cmap.get(code) ??
+      cmap.get(0xf000 + code) ??
+      0
+    );
   }
 
   /**
