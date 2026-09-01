@@ -6442,6 +6442,38 @@ remains, and it is a question about glyphs a sample column wide with a gap in
 them -- a shape no letter has, which is why it survives a recorded corpus that
 now agrees everywhere.
 
+### The cvt readout agrees, and its odd cell is a clip
+
+`times-cvt0-fine` is a readout, not a picture: six characters draw a bar whose
+edge sits `(cvt[0] - base)` pixels from the baseline, with the base stepped eight
+sixty-fourths at a time so that between them they bracket the value. Magnified
+sixty-four times, one row of bar is one sixty-fourth of control value.
+
+Five of the six cells at sixteen pixels agree, and two of those are readings
+rather than blanks: base 632 puts the bar on row 4 and base 640 on row 12, in
+Windows and in ours alike. **So the control value agrees**, which is what the
+fabrication was built to ask -- it was made to settle whether Windows held
+something three sixty-fourths higher than our 622, and it does not.
+
+The sixth cell is base 648, where we draw a bar on row 20 and Windows draws
+nothing. All six glyphs declare the same bounding box in `glyf`, `0,0` to
+`400,40` -- forty font units, a third of a pixel at this size -- and all six
+programs move their points far outside it. What separates them is only how far:
+row 4 and row 12 are drawn by both, row 20 by us alone. So Windows is clipping
+the glyph to something derived from the box it declares, and we bound the bitmap
+by where the points actually went.
+
+That is a real difference and it is not being acted on. Every glyph in the
+recorded corpus stays inside its declared box, `cour-lies` already covers the
+other direction -- a header claiming more than the outline uses, which changes
+nothing -- and taking the box from the header instead would put every hinted
+glyph whose program nudges a point past its own `yMax` at risk for three pixels
+in a synthetic one. It is written down as the account of those three pixels.
+
+That completes the seventy: fifty are the gap in a sub-pixel glyph, seventeen are
+a fabrication running hinting at a size its font disowns, and three are a bar
+drawn outside the box it declared.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
