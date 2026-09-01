@@ -5410,6 +5410,44 @@ pixels and rounding both edges the same way to 7,323, against 1,817. The
 minimum stays until something explains it, and it is now the oldest unexplained
 thing in this file.
 
+### The box is allowed to collapse, and a rescue outside it is not placed
+
+Dumping the lists for the lying bar that Windows leaves blank -- Courier New's
+`k` at twenty pixels, a bar 0.39 pixels tall -- shows what the argument was
+missing:
+
+    box   left 4  right 17  top 10  bottom 11
+    horizontal rows with crossings: none
+    columns 4 to 16, every one:  on [-10]  off [-10]
+
+Thirteen columns of zero-length run and not one horizontal crossing, which is
+what a bar lying between two sample rows looks like. The rescue lands on row 10,
+and row 10 exists only because our box forces itself a row tall.
+
+Two things in `scanlist.c` say it should not. `fsc_SetupScan` rounds each edge of
+the box onto the pixel grid independently and lets both land on the same index,
+which gives `lHeight = lHiBitBand - lLoBitBand` of nought -- a band with no rows
+in it. And `DoVertDropout` ends on `lYDrop >= lLoBitBand && lYDrop < lHiBitBand`,
+so with an empty band there is nowhere to put the rescue and nothing is drawn.
+That is the whole of what Windows does with these bars.
+
+Neither half works alone, which is why removing the minimum looked so bad the
+first time it was tried. Without the band test a collapsed box does not discard
+the rescue, it clamps it to `boxBottom - 1` and paints a row _outside_ the glyph:
+7,185 wrong pixels. Without the collapse the band test never fires, since the box
+is never empty. Together they are worth **99 cells and 704 pixels**: 6,442 to
+6,541 of 7,050, and 1,817 wrong to 1,113. `cour-bars` goes from 161 cells and 426
+wrong pixels to 209 and 98, which is every one of its forty-eight lying failures.
+
+The asymmetry is the source's rather than a convenience. `DoHorizDropout` has no
+closing band test at all -- it clamps into the box and writes -- so the box keeps
+its minimum width while losing its minimum height. Letting x collapse as well
+costs 5,368 pixels.
+
+The recorded letters do not move: still thirty-three records and fifty-eight
+pixels. A real letter's bounding box does not collapse, so this was always going
+to be a fabrication's finding, which is what the fabrications are for.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the

@@ -504,9 +504,23 @@ export function fillWalked(contours, options) {
   }
 
   const boxLeft = Math.ceil(leftmost - 0.5);
-  const boxRight = Math.max(boxLeft + 1, Math.floor(rightmost + 0.5));
   const boxTop = Math.ceil(highest - 0.5);
-  const boxBottom = Math.max(boxTop + 1, Math.floor(lowest + 0.5));
+
+  /* The box is allowed to collapse in y and is not allowed to in x.
+   *
+   * `fsc_SetupScan` rounds each edge onto the pixel grid independently and lets
+   * the two land on the same index, which gives a band of no rows at all; and
+   * `DoVertDropout` ends on `lYDrop >= lLoBitBand && lYDrop < lHiBitBand`, so a
+   * glyph flatter than the gap between two scanlines has nowhere to put a
+   * rescue and is drawn as nothing. That is the whole of what Windows does with
+   * a bar half a pixel tall lying between two sample rows.
+   *
+   * `DoHorizDropout` has no such test -- it clamps into the box and writes --
+   * so the x box keeps its minimum. Letting it collapse as well costs 5,368
+   * pixels, and the asymmetry is the source's, not a guess.
+   */
+  const boxRight = Math.max(boxLeft + 1, Math.floor(rightmost + 0.5));
+  const boxBottom = Math.floor(lowest + 0.5);
 
   const rescues: any[] = [];
 
@@ -697,6 +711,14 @@ export function fillWalked(contours, options) {
        * the two directions agree there, because nothing is left to block.
        */
       if (row === at && at > 0 && pixels[(at - 1) * width + column]) {
+        continue;
+      }
+
+      /* `DoVertDropout` places nothing when the clamped row falls outside the
+       * band, and for a glyph whose rounded extent collapses onto a single
+       * scanline the band is empty, so nothing is placed at all.
+       */
+      if (!(at >= boxTop && at < boxBottom)) {
         continue;
       }
 
