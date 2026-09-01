@@ -15,13 +15,26 @@
 
 import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './replay.js';
 
-/* Nothing is left. Both are ceilings: neither may rise.
+/* What is left. Both are ceilings: neither may rise.
  *
- * The last of them was Times New Roman's right guillemet, the one glyph in the
- * recorded set that moves its origin phantom; see `Hinter.hint`.
+ * Twenty-nine cells, all of them in the bold and italic files, which the probe
+ * had never drawn until now: it asked the three outline faces in their plain
+ * weight and upright, and those still agree everywhere. Nine hundred and
+ * seventy-two cells of the other three styles came in and nine hundred and
+ * forty-three of them were right.
+ *
+ * The twenty-nine fall in two shapes. Eleven are ink we add and nothing we
+ * miss -- one to five pixels on a diagonal, which is the scan converter
+ * keeping a stroke Windows drops. Fifteen add and miss in roughly equal
+ * numbers, which is a shape landing a column over; Courier New's bold italic
+ * `X` and `Z` are the worst of those and are the whole letter shifted. Three
+ * are ink we miss.
+ *
+ * Two thirds are Courier New and two thirds are bold italic, and every letter
+ * involved has a diagonal in it -- K, X, Z, k, 7, M, N, t, y, m, 4, B.
  */
-const RECORDS = 0;
-const PIXELS = 0;
+const RECORDS = 29;
+const PIXELS = 184;
 
 /** The recorded bitmap is one bit per pixel, set where the probe left white. */
 function inkOf(hex: string) {

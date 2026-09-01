@@ -214,6 +214,44 @@ static void probeAccented(LPCSTR face)
     }
 }
 
+/*
+ * A face in one of its styles, over the wide net.
+ *
+ * The bold and italic of an outline family are separate files with their own
+ * outlines and their own programs -- Windows does not slant or embolden the
+ * plain one to answer for them -- so nothing the plain file proved carries
+ * over. `probeWide` asks the plain one at seven sizes; this asks the other
+ * three at a few, which is enough to find a difference that is there without
+ * tripling what has to be recorded.
+ */
+static void probeStyled(LPCSTR face, int weight, BYTE italic)
+{
+    static const char WIDE[] = "ABEKMNRSWXZabdefgjkmnostwy0123456789";
+    static const int SIZES[] = { 12, 16, 24 };
+
+    int size;
+    int index;
+    char name[64];
+
+    for (size = 0; size < sizeof(SIZES) / sizeof(SIZES[0]); size++) {
+        HFONT font = CreateFont(SIZES[size], 0, 0, 0, weight, italic, 0, 0,
+                                ANSI_CHARSET, OUT_DEFAULT_PRECIS,
+                                CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+                                DEFAULT_PITCH, face);
+
+        wsprintf(name, "\"%s\",h=%d,weight=%d,italic=%d", (LPSTR)face, SIZES[size],
+                 weight, (int)italic);
+
+        for (index = 0; WIDE[index]; index++) {
+            probeGlyph(name, font, WIDE[index]);
+        }
+
+        if (font) {
+            DeleteObject(font);
+        }
+    }
+}
+
 static void probeSized(LPCSTR face, int height, int weight, BYTE italic)
 {
     char name[64];
@@ -287,6 +325,17 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeWide("Arial");
     probeWide("Times New Roman");
     probeWide("Courier New");
+
+    probeNote("the bold and italic files, which are their own outlines and not synthesised");
+    probeStyled("Arial", FW_BOLD, 0);
+    probeStyled("Arial", FW_NORMAL, 1);
+    probeStyled("Arial", FW_BOLD, 1);
+    probeStyled("Times New Roman", FW_BOLD, 0);
+    probeStyled("Times New Roman", FW_NORMAL, 1);
+    probeStyled("Times New Roman", FW_BOLD, 1);
+    probeStyled("Courier New", FW_BOLD, 0);
+    probeStyled("Courier New", FW_NORMAL, 1);
+    probeStyled("Courier New", FW_BOLD, 1);
 
     probeNote("the accented letters, which are composite glyphs with programs of their own");
     probeAccented("Arial");
