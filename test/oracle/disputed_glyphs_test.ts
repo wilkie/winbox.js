@@ -16,8 +16,8 @@
 import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './replay.js';
 
 /** What is left. Both are ceilings: neither may rise. */
-const RECORDS = 33;
-const PIXELS = 58;
+const RECORDS = 25;
+const PIXELS = 35;
 
 /** The recorded bitmap is one bit per pixel, set where the probe left white. */
 function inkOf(hex: string) {

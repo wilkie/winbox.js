@@ -1871,24 +1871,32 @@ export class Hinter {
 
         const current = this.project(zone.x[index], zone.y[index]);
 
-        /* A point between the two references is placed proportionally: the gap
-         * it sat in is stretched or squeezed and it moves with it. A point
-         * *outside* them is not -- it keeps its distance from the nearer one
-         * and simply travels with it.
+        /* Outside the two references the point is **extrapolated**, on the
+         * same line as one between them.
          *
-         * Extrapolating instead looks reasonable and is wrong, and wrong by
-         * very little: it is how `cvt[2]` in Times New Roman ended up a
-         * thirty-second of a pixel too high, which is enough to round the cap
-         * height of a `W` to the wrong whole number.
+         * This used to hold the point's distance from the nearer reference and
+         * carry it along rigidly, on the strength of `cvt[2]` in Times New
+         * Roman coming out a thirty-second of a pixel high when extrapolated,
+         * which was enough to round a `W`'s cap height the wrong way. That
+         * reading was of the ink, two roundings downstream of the decision, and
+         * it was wrong about the cause.
+         *
+         * **Recorded**, by making the `8` report where its own waist ended up.
+         * At fourteen pixels the two references are 13 design units apart and 6
+         * of a pixel apart, and point 26 sits 481 design units past the first:
+         * `135 + 481 * 6 / 13` is 357, which is what Windows reports to the
+         * sixty-fourth. Every readable size of both waist points agrees, where
+         * before none of them did, and the recorded letters go from
+         * thirty-three records and fifty-eight pixels to twenty-five and
+         * thirty-five.
+         *
+         * The degenerate case still shifts: two references at the same original
+         * position give no ratio to scale by.
          */
-        const ascending = originalOne <= originalTwo;
-
         let wanted;
 
-        if (ascending ? original <= originalOne : original >= originalOne) {
+        if (originalTwo === originalOne) {
           wanted = currentOne + scaled(original - originalOne);
-        } else if (ascending ? original >= originalTwo : original <= originalTwo) {
-          wanted = currentTwo + scaled(original - originalTwo);
         } else {
           wanted =
             currentOne +

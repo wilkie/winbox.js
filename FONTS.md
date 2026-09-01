@@ -5981,6 +5981,41 @@ are 346 and 282, exactly 64 apart: a waist of exactly one pixel. Windows' are
 pixel and we are**. Whatever the difference is, it is not that we round too
 little.
 
+### What moves the two points together is `IP`, and it extrapolates
+
+The readout said the two waist points move together; instrumenting the
+interpreter says why. Both are **touched** before `IUP` runs -- the program moves
+eight points in y directly, 0, 6, 12, 19, 26, 32, 39 and 45 -- so neither is
+interpolated by `IUP` at all, and both are moved by the same instruction:
+opcode 0x39, `IP`, with the same `rp1` of 23 and `rp2` of 16.
+
+And our `IP` moved them by nothing. At fourteen pixels the two references are 13
+design units apart and 6 sixty-fourths apart, and point 26 sits 481 design units
+past the first, which puts it far outside them. Our code held its distance from
+the nearer reference and carried it along rigidly, giving 346. On the line
+through the two references it would be
+
+    135 + 481 * 6 / 13  =  357
+
+which is what Windows reports, to the sixty-fourth. Point 39, 336 units past the
+first, gives `135 + 336 * 6 / 13` = 290, and Windows reports 290.
+
+So `IP` extrapolates. The refusal to was deliberate and is now withdrawn: it was
+put in because `cvt[2]` in Times New Roman came out a thirty-second of a pixel
+high when extrapolated, which was enough to round a `W`'s cap height the wrong
+way. That reading was of the ink, two roundings downstream of the decision, and
+it blamed the wrong step. The `font` probe still agrees on all 2,655 records with
+the extrapolation restored, so whatever the `W` was, it was not this.
+
+    waist readings differing      12 of 12   ->   0 of 12
+    recorded letters              33 records, 58 px  ->  25 records, 35 px
+    outline glyphs agreeing       96.1%      ->   97.0%
+    fabricated cells              7,250 / 85 wrong  ->  7,254 / 79 wrong
+
+Every readable reading of both waist points now matches Windows exactly, where
+before not one of them did. The degenerate case still shifts rather than scales:
+two references at the same original position give no ratio to scale by.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the

@@ -31,8 +31,8 @@ const WAIST = [
 
 /** Readable sizes still disagreeing. Both are ceilings. */
 const DIFFER: Record<string, number> = {
-  'times-8-waist-upper': 5,
-  'times-8-waist-lower': 7,
+  'times-8-waist-upper': 0,
+  'times-8-waist-lower': 0,
 };
 
 /** Below this the answer is `hdmx`, not the program. */
