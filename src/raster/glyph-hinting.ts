@@ -279,7 +279,23 @@ export class Hinter {
    * `scaleToPixels` above is a third rule again, for the control values.
    */
   toPixels(units: number) {
-    return mulDiv(units, this.pixels, this.font.unitsPerEm);
+    /* A half goes upward, not away from zero.
+     *
+     * `mulDiv` takes the sign out and puts it back, so a half rounds outward --
+     * and a coordinate is not a distance: an outline has points either side of
+     * the baseline and of the origin, and rounding them outward makes which way
+     * a half goes depend on which side it is, so the same shape mirrored is not
+     * the same shape scaled.
+     *
+     * The device mapping in `glyph-raster.ts` wanted the same correction for the
+     * same reason, and this is the other half of it. **Measured**: it is the
+     * last of the 846 recorded glyphs, Courier New's `g` at ten pixels per em,
+     * whose descender tail begins at 346 design units -- exactly 86.5
+     * sixty-fourths at that size -- and whose glyph program does not run there,
+     * so nothing downstream can put the half back. Rounding it toward zero or
+     * downward instead costs seven or eight glyphs.
+     */
+    return Math.floor((units * this.pixels) / this.font.unitsPerEm + 0.5);
   }
 
   /** The control value table, in pixels rather than in font units. */

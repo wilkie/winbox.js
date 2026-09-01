@@ -6372,6 +6372,43 @@ arithmetic creates, not one the interpreter hands us.
 where `INSTCTRL` means no glyph program runs, the outline is the scaled one, and
 the tail's leftmost point lands on exactly 86.5 sixty-fourths.
 
+### The same half, in the other place
+
+The last pixel is the same mistake as the one before it, one step earlier.
+
+`toPixels` scaled an outline with `mulDiv`, which takes the sign out and puts it
+back, so a half rounded **outward**. A coordinate is not a distance: an outline
+has points either side of the baseline and of the origin, and rounding them
+outward makes which way a half goes depend on which side it falls, so the same
+shape mirrored is not the same shape scaled. Rounding upward instead, one
+direction throughout:
+
+    outward        845 of 846 recorded glyphs
+    upward         846 of 846
+    toward zero    839
+    downward       838
+
+Courier New's `g` at ten pixels per em is the glyph that says so. Its descender
+tail begins at 346 design units, which at that size is exactly 86.5
+sixty-fourths, and its glyph program does not run -- `INSTCTRL` sees to that --
+so nothing downstream can put the half back. The device mapping wanted the same
+correction for the same reason a commit earlier, and between them they are the
+whole of the difference.
+
+    glyph   846 of 846 records agree      100.0%
+    font    2,655 of 2,655                100.0%
+    hinting 1,339 of 1,339                100.0%
+    text    55 of 55                      100.0%
+
+`KNOWN_GAPS` is now empty. It held one entry for a long time -- `glyph`, the only
+probe that records pixels and the only one that could not be satisfied by reading
+a table -- and the conformance suite fails if an entry there starts agreeing, so
+removing it is the suite's own account of the gap closing rather than ours.
+
+The fabricated set stands at 7,260 of 7,308 cells and 70 wrong pixels, all of
+them in four hinting fabrications built to ask questions the recorded letters no
+longer answer.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the

@@ -1241,24 +1241,16 @@ export class Unimplemented extends Error {}
  * starts agreeing and the entry becomes stale.
  */
 /**
- * The one probe that records pixels, and the one that cannot be satisfied by
- * reading a table.
+ * Nothing is known to be missing.
  *
- * The bitmap strikes agree exactly -- every stock font, every character, every
- * pixel -- which is what says the comparison itself is sound. The outlines do
- * not, because they are drawn without hinting: Windows runs the font's own
- * bytecode to move the outline onto the pixel grid before it fills anything,
- * and at the sizes text is read at that decides where about half the ink goes.
+ * The last entry here was `glyph`, the one probe that records pixels and the one
+ * that could not be satisfied by reading a table. It agreed on ninety-two per
+ * cent of the outline glyphs for a long time, and the last of the gap closed in
+ * two steps that turned out to be the same step twice: a half rounds upward and
+ * not away from zero, once where an outline is scaled and once where it is put
+ * into device coordinates. All 846 records now agree.
  */
-const NO_HINTING =
-  'every bitmap and stroke face agrees exactly, and ninety-two per cent of ' +
-  'the outline glyphs do; what is left is a hundred and five pixels across ' +
-  'sixty-eight letters, and section 6 of FONTS.md records what has been ' +
-  'ruled out';
-
-export const KNOWN_GAPS: Record<string, string> = {
-  glyph: NO_HINTING,
-};
+export const KNOWN_GAPS: Record<string, string> = {};
 
 /**
  * Functions a module declares but wires to a stub.
