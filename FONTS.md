@@ -5623,6 +5623,54 @@ with a mechanism identified and no explanation: a stub check that both
 implementations run, on lists that agree everywhere the two draw the same thing,
 declining at the two ends of an isolated run in ours and not in Windows.
 
+### The fixtures put the line at isolation, not at thinness
+
+Two fabrications already draw the boundary the upright bars fall the wrong side
+of, and both are exact. `cour-shelves` is a tall post with a thin horizontal
+shelf between scanlines; `cour-feet` is a post standing on a foot thinner than a
+scanline gap. Both are 258 of 258 cells with no wrong pixels. `cour-phases`, 258
+of 258 as well, sweeps a bar across a pixel centre -- but its bars lean, so their
+edges cross vertical sample lines and the vertical lists are not empty.
+
+So a thin axis-aligned run **attached to something** is rescued correctly, and a
+thin axis-aligned run leaning even slightly is rescued correctly. Only the fully
+isolated, exactly axis-aligned bar fails, which is precisely the case where the
+stub check has nothing to find. The fixtures and the mechanism agree, and neither
+explains why Windows rescues it.
+
+### What the fill loop does instead of pairing
+
+Reading the dropout scan again more carefully turns up a real difference from
+both the source and from us, which then does not help.
+
+    0a2f  mov bx,[bp-0xc]        ; the next 'on' entry
+    0a38  mov ax,[bp-0x10]       ; the off count, reloaded
+    0a3e  mov ax,[bp-0x12]       ; the off pointer, reloaded
+    0a47  ...scan forward while the off value is less than the on value...
+    0a61  cmp [bp-0x28],di       ; equal? then it is a dropout
+
+The count and the pointer are **reloaded for every `on` entry**, so this is not
+`*psHorizOn == *psHorizOff` with the two walking in step, as `LookForDropouts`
+has it and as we have it. It is a search: a dropout fires for an `on` value when
+_any_ `off` value in the row equals it. The two lists also share one buffer, one
+growing from the front and one from the back, which is what the two list pointers
+in the walker were doing.
+
+For a row with a single run the two readings agree. For the waist of an `8`, or
+anything else with several runs on one row, they need not, so it was worth
+trying. It measures worse: 6,355 cells and 1,565 wrong pixels against 6,541 and
+1,113. Our lists are each sorted, so `includes` is a fair test of the same
+question, which means either the order the back-growing list is read in makes the
+search behave like pairing after all, or something about the buffer layout is
+still misread. It is not adopted.
+
+This turn found no improvement. Four explanations for the upright bars have now
+been closed by evidence -- the stub gate, the scan kind, the frame mapping, the
+scaling path -- and a fifth measured worse. What has not been tried is asking
+Windows the question directly, with a fabrication built for it: an isolated bar
+with a deliberate protrusion at one end only, so that the two ends of the same
+run differ in exactly the thing the stub check looks at.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
