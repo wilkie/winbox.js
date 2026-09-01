@@ -3671,6 +3671,73 @@ export const FABRICATIONS = [
     })
   ),
 
+  /* Which vector a twilight point is placed along.
+   *
+   * A twilight point has no outline behind it, so `MIAP` does not move it, it
+   * puts it there -- at the control value's distance from the origin, along a
+   * vector. Which vector was a guess: we used the one points are free to move
+   * along, and the scaler uses the one distances are measured along. The two
+   * are the same until a program separates them, and a program that separates
+   * them is what diagonal hinting is.
+   *
+   * Both fabrications write a known control value, place twilight point nought
+   * at it, and read the placed point's coordinate back. The control leaves both
+   * vectors on the x axis, where the question does not arise. The experiment
+   * measures along x but frees along y: placing along the measuring vector puts
+   * the point where the control put it, and placing along the freeing vector
+   * puts it at nought instead, since it has no x at all.
+   */
+  ...[
+    ['twilight-crossed', [0x03, 0x04], 'measured along x and freed along y'],
+    ['twilight-square', [0x01], 'both on the x axis'],
+  ].map(([name, vectors, what]) =>
+    stackReporter(name, {
+      font: 'ARIALI.TTF',
+      character: 'm',
+      points: [
+        [67, 0],
+        [323, 400],
+        [579, 400],
+        [835, 0],
+      ],
+      body: [
+        ...vectors,
+
+        // A control value of our own, so the reading does not depend on what
+        // the font happens to keep in the table.
+        ...ops.byte(0),
+        ...ops.word(24 * 64),
+        // WCVTP.
+        0x44,
+
+        // Point nought of the twilight zone, placed at that control value.
+        ...ops.byte(0),
+        // SZP0.
+        0x13,
+        ...ops.byte(0),
+        ...ops.byte(0),
+        // MIAP, without rounding, so nothing but the placing shows.
+        0x3e,
+
+        // Read it back, which needs the twilight zone as the third one too.
+        ...ops.byte(0),
+        // SZP2.
+        0x16,
+        ...ops.byte(0),
+        // GC, in the position it is at.
+        0x46,
+
+        /* Back to a square pair of vectors and the glyph's own zone, so that
+         * putting the answer on the phantom is not itself a diagonal move.
+         */
+        0x01,
+        ...ops.byte(1),
+        0x16,
+      ],
+      describe: `a twilight point placed with the vectors ${what}`,
+    })
+  ),
+
   experiment('ip-calibrate', {
     font: 'ARIALI.TTF',
     character: 'm',

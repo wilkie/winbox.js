@@ -1758,8 +1758,8 @@ export class Hinter {
        * twilight point has always been.
        */
       if (state.zp0 === 0) {
-        zone.x[index] = Math.round((distance * state.freedom.x) / UNIT);
-        zone.y[index] = Math.round((distance * state.freedom.y) / UNIT);
+        zone.x[index] = Math.round((distance * state.projection.x) / UNIT);
+        zone.y[index] = Math.round((distance * state.projection.y) / UNIT);
 
         zone.originalX[index] = zone.x[index];
         zone.originalY[index] = zone.y[index];
@@ -1929,14 +1929,18 @@ export class Hinter {
         const index = this.pop();
         const zone = this.zone(state.zp2);
 
-        zone.x[index] += dx;
-        zone.y[index] += dy;
-
-        if (dx) {
+        /* Touched because the point was free to move, not because it ended up
+         * moving. A reference point that has not shifted leaves the amount at
+         * nought, and the points it shifts are still touched by having been
+         * shifted -- so `IUP` leaves them alone afterwards either way.
+         */
+        if (state.freedom.x !== 0) {
+          zone.x[index] += dx;
           zone.touchedX[index] = true;
         }
 
-        if (dy) {
+        if (state.freedom.y !== 0) {
+          zone.y[index] += dy;
           zone.touchedY[index] = true;
         }
       }
@@ -1949,7 +1953,7 @@ export class Hinter {
     // SHC: the same, to every point of a contour.
     if (opcode === 0x34 || opcode === 0x35) {
       const contour = this.pop();
-      const { dx, dy } = this.referenceShift(opcode === 0x35);
+      const shift = this.referenceShift(opcode === 0x35);
 
       const zone = this.zone(state.zp2);
 
@@ -1957,8 +1961,23 @@ export class Hinter {
       const to = zone.ends[contour] ?? zone.length - 1;
 
       for (let index = from; index <= to; index++) {
-        zone.x[index] += dx;
-        zone.y[index] += dy;
+        /* The point everything is being measured from does not move with the
+         * rest. It has already been put where it belongs, and shifting it by
+         * its own displacement would move it that far again.
+         */
+        if (index === shift.index && zone === shift.zone) {
+          continue;
+        }
+
+        if (state.freedom.x !== 0) {
+          zone.x[index] += shift.dx;
+          zone.touchedX[index] = true;
+        }
+
+        if (state.freedom.y !== 0) {
+          zone.y[index] += shift.dy;
+          zone.touchedY[index] = true;
+        }
       }
 
       return at;
@@ -1968,12 +1987,34 @@ export class Hinter {
     if (opcode === 0x36 || opcode === 0x37) {
       this.pop();
 
-      const { dx, dy } = this.referenceShift(opcode === 0x37);
+      const shift = this.referenceShift(opcode === 0x37);
       const zone = this.zone(state.zp2);
 
-      for (let index = 0; index < zone.length; index++) {
-        zone.x[index] += dx;
-        zone.y[index] += dy;
+      const held = { x: zone.x[shift.index], y: zone.y[shift.index] };
+
+      /* The outline and nothing after it. The phantom points sit past the last
+       * contour's end and are not part of the zone as far as this is concerned,
+       * so shifting a zone does not move the letter's width.
+       */
+      const to = zone.ends.length > 0 ? zone.ends[zone.ends.length - 1] : zone.length - 1;
+
+      for (let index = 0; index <= to; index++) {
+        if (state.freedom.x !== 0) {
+          zone.x[index] += shift.dx;
+        }
+
+        if (state.freedom.y !== 0) {
+          zone.y[index] += shift.dy;
+        }
+      }
+
+      /* The reference point is put back rather than skipped, which comes to the
+       * same thing, and unlike shifting a contour this marks nothing as
+       * touched -- so `IUP` still has the whole zone to interpolate.
+       */
+      if (zone === shift.zone) {
+        zone.x[shift.index] = held.x;
+        zone.y[shift.index] = held.y;
       }
 
       return at;
@@ -2194,9 +2235,9 @@ export class Hinter {
        */
       if (state.zp1 === 0) {
         zoneOne.originalX[index] =
-          zoneZero.originalX[state.rp0] + Math.round((distance * state.freedom.x) / UNIT);
+          zoneZero.originalX[state.rp0] + Math.round((distance * state.projection.x) / UNIT);
         zoneOne.originalY[index] =
-          zoneZero.originalY[state.rp0] + Math.round((distance * state.freedom.y) / UNIT);
+          zoneZero.originalY[state.rp0] + Math.round((distance * state.projection.y) / UNIT);
 
         zoneOne.x[index] = zoneOne.originalX[index];
         zoneOne.y[index] = zoneOne.originalY[index];
@@ -2315,6 +2356,8 @@ export class Hinter {
     return {
       dx: zone.x[index] - zone.originalX[index],
       dy: zone.y[index] - zone.originalY[index],
+      zone,
+      index,
     };
   }
 
