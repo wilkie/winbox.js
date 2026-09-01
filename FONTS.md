@@ -6695,6 +6695,43 @@ both implementations divide by it. Ours draws a 27-pixel glyph on an eight-pixel
 em and Windows draws nothing; what separates them is somewhere else in a program
 being run where its own font says not to.
 
+### The `w` is diagonal hinting, and the divergence is upstream of it
+
+Tracing the glyph program through the interpreter rather than framing it by hand
+gives the shape of what fails. Three times over, at bytes 601, 610 and 619, the
+program runs the same nine instructions:
+
+    SDPVTL[1]   set the dual projection vector at right angles to a line
+    SFVTCA[x]   freedom along x
+    MDAP  CALL
+    SFVTL       freedom along a line
+    RDTG        round down to grid
+    SRP0
+    MDRP        and move
+
+That is diagonal hinting: the vectors are taken from the glyph's own strokes
+rather than from an axis, and the `MDRP` at the end of each block is one of the
+moves that blows the outline up. `0x7d` is `RDTG` and not an undefined opcode, as
+a hand framing had it; the trace settles that.
+
+Two candidate causes were tested and neither is it. The dot-product guard from
+the previous section does not fire here -- the cosine comes to about a
+thirteenth, above the sixteenth the reference clamps at -- so both
+implementations divide by it. And the vector from a line is computed as
+`zp2[p2] - zp1[p1]` where the specification measures from p2 to p1; reversing it
+changes nothing at all, on any fixture, because a projection vector negated
+negates every distance measured against it and the sign cancels.
+
+So the vectors are built from points the program has already moved, and if those
+differ at all the angle differs, and near perpendicular a small difference in
+angle is a large difference in the move. The divergence is upstream of the
+instruction that shows it, accumulated somewhere in the 226 glyph instructions
+that run before it, in a program its own font disables at this size.
+
+Sixteen pixels, one cell, and the fabrication has already told us the two things
+it was built to tell us: that `INSTCTRL` is read, and that Courier New is the
+only face that reaches it. This is where it stops being worth more.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
