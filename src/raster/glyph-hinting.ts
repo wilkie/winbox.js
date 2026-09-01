@@ -1863,16 +1863,32 @@ export class Hinter {
       const second = this.pop();
       const first = this.pop();
 
+      /* The first point off the stack is the second one named, and it lives in
+       * the second zone; the one under it lives in the first. Having them the
+       * other way round makes no difference while the two zones are the same,
+       * which is every use of this in the recorded set, and is wrong the moment
+       * a program points them somewhere different.
+       */
       const zoneOne = this.zone(state.zp1);
       const zoneZero = this.zone(state.zp0);
 
       const distance = this.project(
-        zoneZero.x[second] - zoneOne.x[first],
-        zoneZero.y[second] - zoneOne.y[first]
+        zoneOne.x[second] - zoneZero.x[first],
+        zoneOne.y[second] - zoneZero.y[first]
       );
 
-      this.movePoint(zoneOne, first, distance / 2);
-      this.movePoint(zoneZero, second, -distance / 2);
+      /* Halved by a shift, so an odd gap closes unevenly rather than leaving
+       * both points half a sixty-fourth off the grid: the first point takes the
+       * smaller half and the second takes whatever is left of the gap.
+       *
+       * Which way an odd gap leans is half of a sixty-fourth, which is below
+       * what the advance can report even magnified, so this is read from the
+       * scaler rather than measured out of Windows.
+       */
+      const half = distance >> 1;
+
+      this.movePoint(zoneZero, first, half);
+      this.movePoint(zoneOne, second, half - distance);
 
       return at;
     }

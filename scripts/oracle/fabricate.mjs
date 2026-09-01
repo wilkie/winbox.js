@@ -882,8 +882,11 @@ function experiment(name, { font, character, points, body, report, magnify = 8, 
  * sixty-fourths. Multiplying a plain count by sixty-four and again by eight is
  * what turns an answer of two or three into a reading far enough from its
  * neighbours to be unmistakable.
+ *
+ * Anything in `after` runs once the answer is already on the phantom, which is
+ * how a question about what happens to work already done gets asked.
  */
-function stackReporter(name, { font, character, points, body, describe }) {
+function stackReporter(name, { font, character, points, body, after = [], describe }) {
   return {
     name,
     from: font,
@@ -903,6 +906,7 @@ function stackReporter(name, { font, character, points, body, describe }) {
           ...ops.byte(points.length + 1),
           ...body,
           ...ops.setCoordinate(),
+          ...after,
         ],
       });
     },
@@ -3630,6 +3634,40 @@ export const FABRICATIONS = [
       // MPS.
       body: [0x4c, ...scale],
       describe: `the point size MPS answers, ${what}`,
+    })
+  ),
+
+  /* What becomes of the work a program did before it went wrong.
+   *
+   * An instruction the scaler does not know stops the program where it stands
+   * and hands an error back to whatever asked for the glyph. What that caller
+   * then does is the question: keep the half-hinted outline, or throw the
+   * hinting away and draw the letter as it was designed.
+   *
+   * Both fabrications put an unmistakable number on the advance phantom first
+   * and only then go wrong, so the answer is already made when the error
+   * happens. The control does not go wrong at all.
+   */
+  ...[
+    ['abort-illegal', [0x7b], 'and then meets an instruction that does not exist'],
+    ['abort-none', [], 'and is left alone'],
+  ].map(([name, after, what]) =>
+    stackReporter(name, {
+      font: 'ARIALI.TTF',
+      character: 'm',
+      points: [
+        [67, 0],
+        [323, 400],
+        [579, 400],
+        [835, 0],
+      ],
+      /* Twenty-four pixels, which no size in the sweep has as its own width and
+       * which does not move with the size, so a reading of it is the report and
+       * nothing else.
+       */
+      body: [...ops.word(24 * 64)],
+      after,
+      describe: `a program that reports a width ${what}`,
     })
   ),
 
