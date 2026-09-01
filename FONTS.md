@@ -6164,6 +6164,41 @@ more reasoning -- the glyphs that break under design units are named above and
 are the ones to read next, since whatever they say about their own points will
 say what the other half of the pair is.
 
+### `IUP` interpolates in the scaled frame, and the seven's anchor is right
+
+Two more readouts, and between them they close a hypothesis and narrow what is
+left to one step.
+
+**Times New Roman's `W`, point 23.** The two rules disagree about it by a third
+of a pixel rather than a sixty-fourth -- 170 against 148 at sixteen pixels --
+which makes it a discriminator rather than a coin toss. Read at 29 sizes,
+**the scaled originals are right at 29 and design units at 1**. So `IUP`
+interpolates in the quantised frame, our implementation has it right, and the
+design-unit idea is finished: it fitted one point of one glyph and is simply the
+wrong calculation.
+
+**Arial's `7`, point 13.** If the seven's diagonal inherited its error from the
+anchor it interpolates towards, that would explain everything without any rule
+changing. It does not: point 13 reads 448 at sixteen, seventeen and eighteen
+pixels and **agrees at all ten readable sizes**. The anchor is exact, and so is
+point 5 on the other diagonal.
+
+So the seven's point 11 is wrong with correct inputs, in the frame now known to
+be correct. At sixteen pixels `IUP` places it from an original of 218 between
+151 and 408, into a span of 192 to 448: 258.739, and Windows says 258. At
+nineteen the same arithmetic gives 274.885 and Windows says 275, which is what
+we already give. One wants the fraction discarded and the other wants it carried,
+from the same rule, with every input verified against Windows.
+
+The remaining explanation is that Windows' _scaled originals_ are not ours: if
+point 13's were 407 rather than 408 and point 11's 217 rather than 218 -- both
+being exact halves that we round up and truncation would round down -- the ratio
+is 66/256, the answer is 258, and nineteen pixels still gives 275. Truncating the
+outline as it is scaled was tried and costs nineteen recorded glyphs, but that
+change moves the current positions as well as the originals, and the current
+positions are measured right. Splitting the two is the next thing to try, and it
+is the first hypothesis in a while that has not already been refuted.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the

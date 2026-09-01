@@ -37,6 +37,8 @@ const WAIST = [
   ['times-8-waist-lower', 39, 'Times New Roman', '8'],
   ['arial-7-diagonal-right', 5, 'Arial', '7'],
   ['arial-7-diagonal-left', 11, 'Arial', '7'],
+  ['arial-7-anchor-high', 13, 'Arial', '7'],
+  ['times-W-interpolated', 23, 'Times New Roman', 'W'],
 ] as const;
 
 /** Readable sizes still disagreeing. Both are ceilings. */
@@ -45,6 +47,10 @@ const DIFFER: Record<string, number> = {
   'times-8-waist-lower': 0,
   'arial-7-diagonal-right': 8,
   'arial-7-diagonal-left': 9,
+  // The anchor the left diagonal interpolates from, and a point of `W` that
+  // `IUP` places: both exact, which is what makes the diagonal's error its own.
+  'arial-7-anchor-high': 0,
+  'times-W-interpolated': 0,
 };
 
 /** Below this the answer is `hdmx`, not the program. */

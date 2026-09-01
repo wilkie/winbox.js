@@ -1008,6 +1008,21 @@ function pointReporter(
 }
 
 export const FABRICATIONS = [
+  pointReporter('times-W-interpolated', {
+    character: 'W',
+    point: 23,
+    axis: 'x',
+    drop: ['hdmx', 'LTSH'],
+    describe: "Times New Roman's W reporting a point the two IUP rules disagree about",
+  }),
+  pointReporter('arial-7-anchor-high', {
+    font: 'ARIAL.TTF',
+    character: '7',
+    point: 13,
+    axis: 'x',
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial's 7 reporting the upper anchor its left diagonal interpolates from",
+  }),
   pointReporter('arial-7-diagonal-right', {
     font: 'ARIAL.TTF',
     character: '7',
