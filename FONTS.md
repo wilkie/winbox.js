@@ -6336,6 +6336,42 @@ Ten readouts are now kept as a test, all at nought: both waist points of the `8`
 both diagonal controls and the anchor of the `7`, the interpolated point of the
 `W`, and the five of the `y`.
 
+### A half goes upward, not outward
+
+The place both fillers share turned out to be one line of it.
+
+A hinted glyph arrives on the grid already, so the only fractions reaching the
+device mapping are the points implied between two consecutive off-curve
+controls, which are exact halves of a sixty-fourth. Rounding those _away from
+zero_ -- `Math.sign(value) * Math.round(Math.abs(value) * 64)` -- makes which way
+a half goes depend on which side of the baseline it falls, because `place`
+negates y afterwards. The same shape above and below the baseline rounds
+opposite ways.
+
+Rounding them upward instead, one direction throughout, is what agrees. Times New
+Roman's `y` at twelve pixels has a tail built from three pairs of consecutive
+controls, and it is the glyph that says so:
+
+    away from zero    844 of 846 recorded glyphs
+    upward            845 of 846
+    toward zero       826, either way of writing it
+
+`font`, `hinting` and `text` stay at 100 per cent and the fabricated set is
+unchanged to the pixel, 7,260 of 7,308 cells and 70 wrong. So the `y` is fixed
+and nothing else moved.
+
+Two things were ruled out on the way, both by measurement. Rounding the implied
+midpoint in the glyph's own frame rather than in device space is much worse --
+flooring gives 440 recorded glyphs, rounding either way 680, against 844 for
+leaving the exact half to be resolved later. And the tie is genuinely in the
+mapping rather than in the outline: the five readouts of the `y`'s tail agree
+with Windows at every readable size, so the half being rounded is one our own
+arithmetic creates, not one the interpreter hands us.
+
+**One pixel is left in 846 recorded glyphs.** It is Courier New's `g` at ten,
+where `INSTCTRL` means no glyph program runs, the outline is the scaled one, and
+the tail's leftmost point lands on exactly 86.5 sixty-fourths.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the

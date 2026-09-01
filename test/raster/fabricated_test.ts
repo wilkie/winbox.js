@@ -288,12 +288,20 @@ describe('the fabricated recordings', () => {
     expect([...new Set(values.map((reading) => reading.windows))]).toEqual([16]);
   });
 
-  /* Four recordings in the set say nothing, and it is worth them saying so out
+  /* Five recordings in the set say nothing, and it is worth them saying so out
    * loud rather than being quietly skipped. `cour-one-p17`, `p18`, `p22` and
    * `p27` report Courier New's `1` at exactly the widths the unfabricated font
    * gives, at every size -- so the font never reached the rasteriser and there
-   * is no reading in them. They are kept because a recording that failed is
-   * worth knowing about, and because the failure is not obvious from the file.
+   * is no reading in them.
+   *
+   * `cour-g-tail-left` fails for a reason of its own and a more interesting one.
+   * Courier New's `prep` sets `INSTCTRL` below nine pixels per em, so no glyph
+   * program runs there at all -- and a readout is a glyph program. The size it
+   * was built to ask about is exactly one of those, which makes the tail of that
+   * `g` the one place in the recorded letters no readout can reach.
+   *
+   * They are kept because a recording that failed is worth knowing about, and
+   * because the failure is not obvious from the file.
    */
   present('know which recordings did not take', function () {
     const stock = JSON.parse(
@@ -315,6 +323,7 @@ describe('the fabricated recordings', () => {
       .map((recording) => recording.name);
 
     expect(dead.sort()).toEqual([
+      'hinting-cour-g-tail-left',
       'hinting-cour-one-p17',
       'hinting-cour-one-p18',
       'hinting-cour-one-p22',
