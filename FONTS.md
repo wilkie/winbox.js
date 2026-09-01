@@ -6662,6 +6662,39 @@ characterised and neither is a defect the recorded corpus can see: one asks a
 font to do what it refuses, the other draws a glyph outside its own declared
 extent.
 
+### A dot product that is not allowed to divide
+
+Bisecting the blown-up `w` finds three single bytes that each multiply its
+height, and instrumenting the mover names them: an `MDRP` moving one point 8.6
+pixels for a distance of five eighths of one, and again 15.8 pixels for a
+distance of one and a fifth. The move along the freedom vector that shows as
+`distance` along the projection vector is `distance / cos`, and as the two
+approach perpendicular that runs away.
+
+The reference refuses it. `itrp_ComputeAndCheck_PF_Proj` caches the dot product
+of the two vectors and then:
+
+    if (pfProj > -ONESIXTEENTHVECTOR && pfProj < ONESIXTEENTHVECTOR)
+    {
+      pfProj = (pfProj < 0 ? -ONEVECTOR : ONEVECTOR);  /* Prevent divide by small number */
+    }
+
+A dot product under a sixteenth is replaced by a whole one of the same sign,
+which turns an enormous move into a merely wrong one. We had only a guard against
+dividing by nought.
+
+With it, Courier New's `W` at eight pixels per em comes out 10.5 pixels tall
+rather than 71.3, and its cell agrees. `cour-no-instctrl` goes from 256 of 258
+cells and 17 wrong pixels to 257 and 16, and the set to 7,564 of 7,566 and 19.
+Every recorded probe is unmoved at 100 per cent, which is what a guard reachable
+only outside a font's own declared range should do.
+
+The `w` is not fixed by it and would not be by the reference either: its dot
+product comes to about a thirteenth, just the wrong side of the threshold, so
+both implementations divide by it. Ours draws a 27-pixel glyph on an eight-pixel
+em and Windows draws nothing; what separates them is somewhere else in a program
+being run where its own font says not to.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the

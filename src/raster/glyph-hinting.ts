@@ -695,10 +695,28 @@ export class Hinter {
      * point simply moves by the distance; where they are at an angle it is
      * less, and the point has to travel further to project as far.
      */
-    const along = mulDiv(projection.x, freedom.x, UNIT) + mulDiv(projection.y, freedom.y, UNIT);
+    let along = mulDiv(projection.x, freedom.x, UNIT) + mulDiv(projection.y, freedom.y, UNIT);
 
     if (along === 0) {
       return;
+    }
+
+    /* A projection and a freedom vector nearly at right angles are not allowed
+     * to divide.
+     *
+     * The move along freedom that shows as `distance` along projection is
+     * `distance / cos`, and as the two vectors approach perpendicular that runs
+     * away: a distance of five eighths of a pixel took Courier New's `w` eight
+     * and a half. The reference refuses it -- *"Prevent divide by small
+     * number"* -- by replacing a dot product under a sixteenth with a whole one
+     * of the same sign, which turns an enormous move into a merely wrong one.
+     *
+     * It is reachable only where a font drives the vectors somewhere its own
+     * `INSTCTRL` says not to go, which is why nothing in the recorded corpus
+     * moves either way.
+     */
+    if (Math.abs(along) < UNIT / 16) {
+      along = along < 0 ? -UNIT : UNIT;
     }
 
     if (freedom.x !== 0) {
