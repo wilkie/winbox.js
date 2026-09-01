@@ -6597,6 +6597,34 @@ drawing a readout bar past the box it declared -- which is the same question as
 this section from the other side, and the reason to expect it to fall to the same
 kind of answer.
 
+### The cvt bar is cut below the baseline and not above it
+
+The three pixels of `times-cvt0-fine` are one cell, and the other five bracket it
+usefully. At sixteen pixels the readout puts its bar at row `base - 628`:
+
+    base 608, 616, 624   nothing, in Windows and in ours
+    base 632             row 4     both
+    base 640             row 12    both
+    base 648             row 20    ours only
+
+Row 12 is the baseline -- every other face in the same recording inks its own
+full stop there. So Windows draws the bar eight rows **above** the baseline and
+at it, and refuses it eight rows **below**. The glyph declares a box of `0,0` to
+`400,40`, forty font units, a quarter of a pixel at this size and nothing at all
+below the baseline; the bar at row 20 is the only one of the three outside it in
+the direction the box has no room in.
+
+That is a partial account rather than a rule. It says which way the cut goes and
+where the boundary is for this glyph, and it does not say whether the limit is
+`yMin` itself, the bitmap Windows allocates from it, or the descent of the face
+-- and the bar at row 4 is as far outside the box upward as row 20 is downward,
+so a symmetric clip is already ruled out.
+
+It is left there. The fabrication's own question -- whether Windows holds a
+control value three sixty-fourths above ours -- is answered by the cells that
+agree, and answered no. What remains is three pixels of a synthetic glyph
+deliberately drawn where it declared it would not.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
