@@ -6132,6 +6132,38 @@ wrong about eighty-four others, so the rule is not "interpolate in design units"
 what. The four readouts are kept as a test with their current disagreement counts
 as ceilings, so whatever explains it will show up as those numbers falling.
 
+### Two rules that reproduce the reading and ruin the corpus
+
+The seven's point 11 is one sixty-fourth high at three sizes, and two different
+changes each put it exactly where Windows puts it at every readable size. Both
+make everything else worse.
+
+**Interpolating in design units.** Anchors 302 and 815, point 435, ratio 133/513:
+258.37 and 274.96, which round to Windows' 258 and 275. Recorded glyphs go from
+826 of 846 to **742**, and the glyphs that break do not break subtly -- Times New
+Roman's `W` at eight sizes of eight, Courier New's `g` at eight, and a dozen more
+at six of seven. That is not a rounding tipping over; it is the wrong
+calculation.
+
+**Truncating the outline as it is scaled.** If the scaled originals came out by
+truncation rather than rounding, point 13 would be 407 rather than 408 and point
+11 would be 217 rather than 218, and the ratio 66/256 gives exactly 258 at one
+size and 83/304 exactly 275 at the other -- both Windows, from the quantised
+frame the format actually interpolates in. Recorded glyphs go from 826 to **807**.
+
+Neither is a subtlety of `unscaledX` being wrong, which was checked: the array is
+filled with design units for every glyph point, and the two places that overwrite
+it with scaled values are both guarded to the twilight zone, where a point has no
+design coordinates to lose.
+
+So a rule that reproduces Windows exactly at a measured point makes the corpus
+worse, which is the same shape as `IP` and `IUP` had before either was fixed:
+**a compensating error somewhere else**. The difference is that with `IP` the pair
+was found and here it is not. What that argues for is more readings rather than
+more reasoning -- the glyphs that break under design units are named above and
+are the ones to read next, since whatever they say about their own points will
+say what the other half of the pair is.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
