@@ -6732,6 +6732,38 @@ Sixteen pixels, one cell, and the fabrication has already told us the two things
 it was built to tell us: that `INSTCTRL` is read, and that Courier New is the
 only face that reaches it. This is where it stops being worth more.
 
+### Reading the interpreter against its own source
+
+With every recorded probe at 100 per cent, a difference can only be found by
+reading. Four places were compared against `fontinstructions.c`, and the useful
+thing is that two of the four were already right -- knowing which is worth as
+much as changing the others.
+
+**The dot product that divides.** A real gap, in the previous section: the
+reference clamps a cosine under a sixteenth and we did not.
+
+**The rounding routines' sign-flip guard.** Each of `RoundToGrid`,
+`RoundToHalfGrid` and `RoundOff` ends with `if ((xin ^ x) < 0 && xin) x = 0`, and
+`RoundToHalfGrid` with `±FNT_PIXELSIZE / 2` instead. Ours cannot flip a sign at
+all -- it rounds a magnitude and puts the sign back -- and it clamps the
+magnitude at nought before rounding rather than the result after. Worked through,
+the two agree on every case the guard exists for: nought for the grid roundings
+and a signed half for the half-grid one. **Nothing to change**, which is the sort
+of thing that is easy to change wrongly if it is not checked.
+
+**A vector set from a line.** Ours computes `zp2[p2] - zp1[p1]` where the
+specification measures from p2 to p1. Reversing it moves nothing on any fixture,
+because a projection vector negated negates every distance measured against it
+and the two cancel. **Equivalent**, and now known to be rather than assumed.
+
+**`ISECT` on near-parallel lines.** Ours took the midpoint whenever the two lines
+were within about three degrees, on an unexplained factor of nineteen. The
+reference divides unless its denominator is exactly nought. That is now what we
+do: a pair of lines that nearly miss put the point a long way off, and Windows
+lets them. Nothing measurable moves, which is what a near-parallel `ISECT` not
+arising in any fixture looks like -- but faithfulness about a fragility is the
+point of the exercise, and an undocumented constant guarding against it was not.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the

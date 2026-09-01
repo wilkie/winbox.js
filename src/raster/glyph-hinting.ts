@@ -1464,10 +1464,23 @@ export class Hinter {
         zone.touchedX[index] = true;
         zone.touchedY[index] = true;
 
+        /* Parallel means parallel, not nearly.
+         *
+         * This used to take the midpoint whenever the two lines were within
+         * about three degrees of each other, on an unexplained factor of
+         * nineteen. The reference divides unless its denominator is exactly
+         * nought -- `if (D)` -- and takes the midpoint only then, so a pair of
+         * lines that nearly miss put the point a long way off and Windows lets
+         * them. Being faithful about that is the point of the exercise; being
+         * defensive about it is a different program.
+         *
+         * Nothing measurable moves either way: every fixture scores the same to
+         * the pixel, which is what a near-parallel `ISECT` not arising in any of
+         * them looks like.
+         */
         const cross = mulDiv(ax, -by, ONE) + mulDiv(ay, bx, ONE);
-        const along = mulDiv(ax, bx, ONE) + mulDiv(ay, by, ONE);
 
-        if (Math.abs(cross) * 19 > Math.abs(along)) {
+        if (cross !== 0) {
           const reach = mulDiv(dx, -by, ONE) + mulDiv(dy, bx, ONE);
 
           zone.x[index] = zoneA.x[firstA] + mulDiv(reach, ax, cross);
