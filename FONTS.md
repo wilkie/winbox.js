@@ -5279,6 +5279,44 @@ recorded reason is worth more than a cell.
 
 None of this touches the `8`'s waist, which is still open.
 
+### The waist is in the crossings, not in what reads them
+
+Dumping the scan lists for Times New Roman's `8` at sixteen pixels puts the
+question past argument. Ten rows carry crossings, and seven of them are right:
+
+    row   on        off       ink       Windows
+      3   [4]       [7]       4-6       agrees
+      4   [3,7]     [4,8]     3, 7      agrees
+      5   [3,7]     [4,8]     3, 7      agrees
+      6   [4,7]     [4,8]     3, 7      4, 6
+      7   [4,6]     [6,7]     4, 5, 6   5
+      8   [5]       [7]       5, 6      4, 6
+      9   [3,7]     [4,8]     3, 7      agrees
+     10   [3,7]     [4,8]     3, 7      agrees
+     11   [3,7]     [4,8]     3, 7      agrees
+     12   [4]       [7]       4-6       agrees
+
+Every row we get right and every row we get wrong is read by the same code, and
+the fill turns each list into exactly the ink the previous section says it
+should: row 6 pairs `4` with `4`, which is a zero-length run, so the dropout
+places a pixel a column to its left at 3, and pairs `7` with `8` to fill 7. Row 7
+pairs `4` with `6` and `6` with `7`, filling 4, 5 and 6. Row 8 has one pair and
+fills 5 and 6. All three are the right answer to the wrong question.
+
+Windows has different crossings on those rows, not a different reading of the
+same ones. Its rows 5 to 9 are `3,7` then `4,6` then `5` then `4,6` then `3,7` --
+a clean diamond closing to one pixel and reopening, symmetric about column 5.
+Ours reaches its crossing a row later and never recovers the symmetry: at row 8 a
+stroke that should mirror row 6 sits a column right.
+
+So the fill, the pairing and both dropout routines are confirmed against
+`scanlist.c` and confirmed innocent here. What is left is upstream of the lists:
+either the chords the flattening produces for this curve, or the hinted outline
+they are produced from. Those are worth telling apart before anything else is
+tried, and the way to do it is the way `times-bare` did it once before -- a
+fabrication of this shape with the hinting taken out, so that only one of the two
+can be moving.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
