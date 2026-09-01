@@ -3419,14 +3419,7 @@ export const FABRICATIONS = [
       character: 'm',
       // The point to move, then line A, then line B.
       points: [[0, 0], [0, 200], [800, 200], from, to],
-      body: [
-        ...ops.byte(0),
-        ...ops.byte(1),
-        ...ops.byte(2),
-        ...ops.byte(3),
-        ...ops.byte(4),
-        0x0f,
-      ],
+      body: [...ops.byte(0), ...ops.byte(1), ...ops.byte(2), ...ops.byte(3), ...ops.byte(4), 0x0f],
       report: 0,
       magnify: 1,
       describe: `ISECT with ${what}`,
@@ -3475,6 +3468,54 @@ export const FABRICATIONS = [
       report: 1,
       magnify: 8,
       describe: `MDAP[r] under ${what}`,
+    })
+  ),
+
+  /* Whether a delta list has to arrive sorted by size.
+   *
+   * The two fabrications hold the same sixteen exceptions -- one for every size
+   * the first delta band covers, each moving the point a whole pixel -- and
+   * differ only in the order they sit on the stack. A reading that walks the
+   * list looking for its own size cannot tell them apart. One that assumes the
+   * list is sorted, and stops as soon as it has passed the size it wants, sees
+   * all sixteen in the ascending list and none in the descending one.
+   *
+   * So the ascending fabrication is the control: it says the exceptions arrive
+   * and land where expected. The descending one is the question.
+   */
+  ...[
+    ['delta-ascending', (i) => i, 'in the order a font would write them'],
+    ['delta-descending', (i) => 15 - i, 'largest size first'],
+  ].map(([name, sizeAt, what]) =>
+    experiment(name, {
+      font: 'ARIALI.TTF',
+      character: 'm',
+      points: [
+        [67, 0],
+        [323, 400],
+        [579, 400],
+        [835, 0],
+      ],
+      body: [
+        // Along x, so the exceptions move the point the report reads.
+        0x01,
+        /* Sixteen pairs, deepest first. Each is the packed argument -- the size
+         * counted from the delta base in the high nibble, and the largest step
+         * up in the low one, which at the default shift is a whole pixel -- and
+         * then the point it applies to.
+         */
+        ...Array.from({ length: 16 }, (_, i) => i).flatMap((i) => [
+          ...ops.byte((sizeAt(i) << 4) | 0x0f),
+          ...ops.byte(1),
+        ]),
+        ...ops.byte(16),
+        // DELTAP1: the first band, which is the delta base and the fifteen
+        // sizes above it.
+        0x5d,
+      ],
+      report: 1,
+      magnify: 8,
+      describe: `sixteen delta exceptions ${what}`,
     })
   ),
 

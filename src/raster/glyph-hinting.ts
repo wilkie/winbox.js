@@ -2048,26 +2048,19 @@ export class Hinter {
     if (opcode === 0x5d || opcode === 0x71 || opcode === 0x72) {
       const band = { 0x5d: 0, 0x71: 16, 0x72: 32 }[opcode];
 
-      let pairs = this.pop();
+      this.eachDelta(this.popPairs(), band, (amount, index) => {
+        const zone = this.zone(state.zp0);
 
-      while (pairs-- > 0) {
-        const index = this.pop();
-        const argument = this.pop();
+        if (state.freedom.x !== 0) {
+          zone.x[index] += amount;
+          zone.touchedX[index] = true;
+        }
 
-        this.applyDelta(argument, band, (amount) => {
-          const zone = this.zone(state.zp0);
-
-          if (state.freedom.x !== 0) {
-            zone.x[index] += amount;
-            zone.touchedX[index] = true;
-          }
-
-          if (state.freedom.y !== 0) {
-            zone.y[index] += amount;
-            zone.touchedY[index] = true;
-          }
-        });
-      }
+        if (state.freedom.y !== 0) {
+          zone.y[index] += amount;
+          zone.touchedY[index] = true;
+        }
+      });
 
       return at;
     }
@@ -2075,16 +2068,9 @@ export class Hinter {
     if (opcode === 0x73 || opcode === 0x74 || opcode === 0x75) {
       const band = { 0x73: 0, 0x74: 16, 0x75: 32 }[opcode];
 
-      let pairs = this.pop();
-
-      while (pairs-- > 0) {
-        const index = this.pop();
-        const argument = this.pop();
-
-        this.applyDelta(argument, band, (amount) => {
-          this.cvt[index] = (this.cvt[index] ?? 0) + amount;
-        });
-      }
+      this.eachDelta(this.popPairs(), band, (amount, index) => {
+        this.cvt[index] = (this.cvt[index] ?? 0) + amount;
+      });
 
       return at;
     }
@@ -2293,29 +2279,104 @@ export class Hinter {
   }
 
   /**
-   * Applies one delta exception, if it is meant for the size being run at.
+   * Takes a delta instruction's exceptions off the stack, deepest first.
+   *
+   * Each exception is two words: the packed argument underneath and the point
+   * or control value it applies to on top. They come off in the order they
+   * were pushed rather than the order they are read, because the reading is a
+   * search over the whole list and the search cares where each one sits.
+   */
+  popPairs() {
+    const pairs = [];
+
+    for (let count = this.pop(); count > 0; count--) {
+      const index = this.pop();
+      const argument = this.pop();
+
+      pairs.unshift([argument, index]);
+    }
+
+    return pairs;
+  }
+
+  /**
+   * Applies the exceptions in a delta list that are meant for this size.
    *
    * The argument packs the size and the nudge into one byte: the high nibble
    * says which size, counted from the delta base, and the low nibble says how
    * far to move in steps of a fraction the delta shift sets.
+   *
+   * This is not a scan of the list. Windows looks the size up, halving its way
+   * down the list as if it were sorted, and then reads forward only until it
+   * meets a size past the one it wants. A list that is not sorted by size can
+   * therefore hide exceptions that are plainly in it -- and does: the same
+   * sixteen exceptions applied in `delta-ascending` and skipped entirely in
+   * `delta-descending`, which is a difference no scan could produce. So the
+   * search is not an optimisation to see through, it is the behaviour.
+   *
+   * The halving keeps its step even so that it always lands on an argument and
+   * never on the point beside it, and stops while the step is still two, which
+   * leaves the last pair or two to the reading forward.
    */
-  applyDelta(argument, band, move) {
+  eachDelta(pairs, band, move) {
     const state = this.state;
 
-    const size = ((argument >> 4) & 0x0f) + state.deltaBase + band;
+    const size = this.ppem - (state.deltaBase + band);
 
-    if (size !== this.ppem) {
+    // Outside the sixteen sizes this band covers, nothing in the list can be
+    // meant for us and the list is never looked at.
+    if (size < 0 || size >= 16) {
       return;
     }
 
-    let steps = (argument & 0x0f) - 8;
+    const wanted = size << 4;
 
-    // There is no zero step: the range skips it, so the upper half shifts down.
-    if (steps >= 0) {
-      steps += 1;
+    /* Counted in stack words, the way Windows counts, so that the evenness the
+     * halving depends on is the evenness of the code it came from.
+     */
+    const high = pairs.length << 1;
+
+    let aim = 0;
+    let step = (high >> 1) & ~1;
+
+    while (step > 2) {
+      const at = (aim + step) >> 1;
+
+      if (at < pairs.length && (pairs[at][0] & ~0x0f) < wanted) {
+        aim += step;
+      }
+
+      step = (step >> 1) & ~1;
     }
 
-    move(Math.round((steps * ONE) / (1 << state.deltaShift)));
+    for (let word = aim; word < high; word += 2) {
+      const [argument, index] = pairs[word >> 1];
+      const at = argument & ~0x0f;
+
+      if (at > wanted) {
+        // Past the size we want. In a sorted list nothing further can match.
+        break;
+      }
+
+      if (at < wanted) {
+        continue;
+      }
+
+      let steps = (argument & 0x0f) - 8;
+
+      // There is no zero step: the range skips it, so the upper half shifts
+      // down.
+      if (steps >= 0) {
+        steps += 1;
+      }
+
+      /* A shift, not a division. The two agree while the shift is small enough
+       * for the step to come out whole, which is every shift a font sets; past
+       * that a shift floors and so rounds a negative step away from a positive
+       * one of the same size.
+       */
+      move((steps * ONE) >> state.deltaShift, index);
+    }
   }
 
   /**
