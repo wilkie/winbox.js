@@ -6244,6 +6244,39 @@ interpolated point of the `W` -- now match Windows at every readable size.
 What is left of the letters is two pixels: Times New Roman's `y` at twelve and
 Courier New's `g` at ten, one each.
 
+### The last two pixels are the outline, not the walk
+
+Two records of 846 disagree, by a pixel each, and they are the same shape twice:
+
+    Times New Roman `y` at twelve, row 11    windows  .##     ours  .###
+    Courier New `g` at ten, row 7            windows  ....#   ours  ...##
+
+The bottom row of a descender's tail, one pixel wider in ours than in Windows.
+Neither is a dropout: the lists give `on [1] off [4]` for the `y` and
+`on [3] off [5]` for the `g`, both ordinary runs that the fill draws. Our run is
+a column too wide, at the right end of one and the left end of the other.
+
+The walk is not what does it. `WB_ANALYTIC` draws the same glyph by solving
+where the outline crosses each scanline rather than by walking it, and the two
+methods **disagree with Windows in exactly the same pixels**. Two independent
+fillers given the same outline both differ from Windows the same way, which says
+the outline is what differs.
+
+Both glyphs are hinted -- `hinted=true` on each -- though Courier New's `g` at
+eight pixels per em comes out of the interpreter with its tail exactly where
+plain scaling would have put it, since that is the size at which `INSTCTRL`
+turns grid-fitting off. So one of the two is a scaled outline and the other a
+fitted one, and both are a sixty-fourth from where Windows has them: a crossing
+at 224 rather than 225 in the `g` puts the run's start at column 3 rather than 4,
+which is the whole of the difference.
+
+Reaching further needs a readout, and neither character is one the `hinting`
+probe sweeps. Courier New is the better host -- it carries no `hdmx` at all, so
+every size runs the program -- and a sweep of its `g` plus one fabrication would
+say where the tail's points really are. That is three recordings for one pixel,
+which is the honest price at this point and is why it is written down rather
+than done.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
