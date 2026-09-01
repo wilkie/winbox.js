@@ -6537,6 +6537,39 @@ rule that always fills cannot be right about those, and because what separates
 them has not been measured. The fixture is in the ratchet at its present numbers,
 which is what makes the next attempt legible.
 
+### The phase, not the gap, and the rule goes in
+
+The sweep separates them, and it is not the size of the hole.
+
+At thirteen pixels per em Windows fills a gap of 5.69 pixels and leaves one of
+2.44 open. No threshold reads that. What separates them is the phase: the bar at
+phase 0 spans 3.81 to 4.06 pixels and lies between two sample columns, and the
+bar at phase 85 spans 4.35 to 4.60 and contains one. A bar containing a column
+has real crossings, is drawn by the fill in the ordinary way, and keeps its gap.
+A bar containing none has nothing but zero-length runs -- and Windows draws it as
+a solid column from end to end.
+
+That is the same condition the stub check is already exempted under, so the rule
+is written as the other half of it: **a glyph narrower than a sample column is
+drawn as one run per column.**
+
+    cour-gaps        117 of 258 cells, 587 wrong  ->  244 of 258, 102 wrong
+    fabricated set   7,377 of 7,566, 657 wrong    ->  7,542 of 7,566, 129 wrong
+    recorded glyphs  846 of 846                   ->  846 of 846
+
+Two things put this past the objection that stopped it being adopted before. The
+direction is unanimous across all 258 cells -- there is not one where Windows
+leaves a hole we fill, before the rule or after, so a rule that fills too eagerly
+would have shown as the opposite sign and did not. And the discriminator is
+measured rather than chosen: the phase decides, the sweep varies it, and the
+cells divide exactly along it.
+
+The fourteen left are one shape and one direction: the largest gaps at the
+smallest size, where the upper piece leaves the cell and Windows still draws more
+of it than we do. That is a question about what reaches the bitmap, and it is the
+same question `times-cvt0-fine` asks from the other side -- there we draw a bar
+Windows clips, here we lose one Windows keeps.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the

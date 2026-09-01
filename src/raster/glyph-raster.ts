@@ -774,6 +774,60 @@ export function fillWalked(contours, options) {
     }
   }
 
+  /* A glyph narrower than a sample column is drawn as one run per column.
+   *
+   * The same condition as the stub check above is exempted under, and for a
+   * related reason: a shape that crosses no vertical sample line puts nothing in
+   * the vertical lists, so a gap in it has no zero-length run to be rescued from
+   * and no way to be filled by the ordinary machinery. Windows fills it anyway.
+   *
+   * **Recorded**, by `cour-gaps`: one sub-pixel bar cut into two pieces with the
+   * gap between them swept from a quarter of a pixel to six, at three phases and
+   * seven sizes. Two things make this more than the first rule that fits.
+   *
+   * The direction is unanimous. Over 258 cells there is not one where Windows
+   * leaves a hole we fill -- every disagreement is ink Windows has and we lack,
+   * before the rule and after it. A rule that fills too eagerly would show up
+   * immediately as the opposite sign, and does not.
+   *
+   * And the discriminator is the phase, not the gap. At thirteen pixels per em
+   * Windows fills a gap of 5.69 pixels and leaves one of 2.44 open, which no
+   * threshold explains; what separates them is that the first bar lies between
+   * two sample columns and the second contains one. A bar that contains a column
+   * has real crossings, is drawn by the fill, and keeps its gap -- and is not
+   * narrow, so this never runs on it.
+   *
+   * Worth 127 of the 141 disagreeing cells: `cour-gaps` goes from 117 of 258
+   * cells and 587 wrong pixels to 244 and 102, and the whole fabricated set from
+   * 7,377 of 7,566 to 7,542. The recorded corpus is unmoved at 846 of 846, as it
+   * must be -- no letter is a column wide with a hole in it.
+   *
+   * The fourteen left are all the same shape and all in the same direction: the
+   * largest gaps at the smallest size, where the upper piece leaves the cell
+   * entirely and Windows still draws more of it than we do. That is a question
+   * about what reaches the bitmap, not about the gap.
+   */
+  if (narrow) {
+    for (let column = Math.max(0, boxLeft); column < Math.min(width, boxRight); column++) {
+      let top = -1;
+      let bottom = -1;
+
+      for (let row = 0; row < height; row++) {
+        if (pixels[row * width + column]) {
+          if (top < 0) {
+            top = row;
+          }
+
+          bottom = row;
+        }
+      }
+
+      for (let row = top; row >= 0 && row <= bottom; row++) {
+        pixels[row * width + column] = 1;
+      }
+    }
+  }
+
   return pixels;
 }
 
