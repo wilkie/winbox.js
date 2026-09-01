@@ -5317,6 +5317,44 @@ tried, and the way to do it is the way `times-bare` did it once before -- a
 fabrication of this shape with the hinting taken out, so that only one of the two
 can be moving.
 
+### The fabrication already existed, and it says hinting
+
+The thing to build was `times-bare`, and it was built two threads ago: every
+glyph program in Times New Roman overwritten with `SVTCA[x]`, so the outline is
+scaled and nothing moves it. It was 218 of 264 cells and 62 wrong pixels when it
+was recorded, which is what said at the time that the residue was the rasteriser
+rather than the interpreter.
+
+After the flattening it is **264 of 264 cells and no wrong pixels at all**. So
+are `control-sweep`, `cour-control-sweep`, `edge-sweep`, `fine-sweep`,
+`turn-sweep` and `twin-bars`. Every fabrication that takes the hinting out is now
+exact.
+
+That includes the glyph in question. `times-bare` holds exactly 264 Times
+records and one of them is `'8'` at sixteen pixels -- the same character, the
+same size, the same face as the nine-pixel waist. Unhinted it is right to the
+pixel; hinted it is wrong by nine. **The waist is a hinting difference.**
+
+And it generalises. Of the 1,817 wrong pixels left in the fabricated set, every
+one is in a `cour-*` hinting fabrication or in `times-cvt0-fine`, which is a
+control-value test:
+
+    cour-bars        426      cour-boxes       150      cour-sides        32
+    cour-arches      376      cour-lies        120      cour-backslants   28
+    cour-offsets     168      cour-crowd       120      cour-slants       26
+    cour-hairslants  154      cour-widths       74      cour-leftband     24
+    cour-shapes       80      cour-no-instctrl  32      cour-mirrorband    4
+                                                        times-cvt0-fine    3
+
+Not one wrong pixel remains in a fixture that does not run a glyph program. As
+far as anything recorded here can tell, the scan converter is finished: the walk,
+the flattening, the endpoint topology, the fill, the pairing and both dropout
+routines all agree with Windows exactly wherever the interpreter is held still.
+
+The thirty-three letters and the 1,817 pixels are one problem now, and it is the
+interpreter. `cour-bars` and `cour-arches` are eight hundred of those pixels
+between them and are the place to start.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
