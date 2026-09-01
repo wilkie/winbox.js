@@ -20,3 +20,6 @@ test/conformance/.running
 
 oracle/.cache/
 oracle/build/
+
+# Any reference material from other repositories
+/*.c
