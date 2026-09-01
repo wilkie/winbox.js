@@ -6474,6 +6474,41 @@ That completes the seventy: fifty are the gap in a sub-pixel glyph, seventeen ar
 a fabrication running hinting at a size its font disowns, and three are a bar
 drawn outside the box it declared.
 
+### The gap in a sub-pixel glyph: one hypothesis refuted, one fitted
+
+Two things were tried on the fifty, and the honest outcome is that the one with a
+mechanism is wrong and the one that works has none.
+
+**The mechanism.** If Windows inks the gap it must have a crossing there, and the
+only candidate is a vertical entry from the bar's bottom edge -- a horizontal
+edge too short to cross a column, which our `calcLine` drops because `xSteps` is
+nought. Emitting one entry at the column such an edge sits in would give the gap
+a run to be rescued from. It is wrong: the recorded glyphs fall from 846 of 846
+to 823, and the fabricated set from 70 wrong pixels to 109. Taking the entry at
+the other end of the step is no better, 831 and 107. So a sub-pixel horizontal
+edge really does contribute nothing, and the gap is not fed that way.
+
+**The fitted rule.** Filling every column of a glyph narrower than a sample
+column from its topmost ink to its bottommost fixes `cour-widths` outright, 240
+cells to 258 with nothing wrong, and takes `cour-boxes` from 231 cells and 30
+wrong pixels to 258 and 7. The fabricated set goes from 7,260 of 7,308 cells and
+70 wrong to 7,298 and 27, no fixture is worse, and the recorded corpus stays at
+846 of 846.
+
+It is not adopted. The narrow-box rule earlier in this file is also measured
+rather than read, but `cour-stubs` forced it: four variants, an exhaustive truth
+table, and no other rule fits all four. Nothing forces this one. "Fill the
+column" is one of many rules that would close these particular gaps, and the
+recordings do not distinguish it from "fill a gap of one row", or "fill a gap
+narrower than the ink either side of it", or several others. Adopting the first
+rule that fits is how `IUP`'s truncation and `IP`'s refusal to extrapolate both
+got in, and both were wrong for years of commits.
+
+What would settle it is a fabrication rather than an argument: a one-column glyph
+with a deliberately large gap, swept from one row to several. If Windows fills a
+gap of any size the rule is right; if it stops somewhere there is a threshold to
+find, and the rule as written is wrong about everything past it.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
