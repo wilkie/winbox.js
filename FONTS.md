@@ -5936,6 +5936,51 @@ the end of `glyf` and rewriting `loca` -- `setGlyph` writes multiple contours
 happily but only into the room the glyph already has. That is a bounded addition
 to `fabricate.mjs` and it is the next piece of work.
 
+### Growing a glyph, and the first sight of Windows' waist
+
+`growGlyphProgram` is the piece that was missing. `setGlyphProgram` writes into
+the room `loca` already gives a glyph, which is exactly what the glyph's own
+program fills, so it can shorten a program or trade its tail for a readout but
+not add one. This rebuilds the font instead: `glyf` grows, `loca` is rewritten
+from that glyph onwards, every table after `glyf` moves, and the directory is
+laid out again with each table on a four byte boundary. It returns a new buffer
+rather than editing in place, so the driver now writes whatever an edit hands
+back.
+
+On top of it, `heightReporter` keeps a letter's outline and its **whole**
+program and appends a readout of one point's height. Reading a height and
+reporting it needs the vectors twice: `GC` measures along the projection vector,
+so they go up y to read the point, and the advance is a distance in x, so they
+go back along x before `SCFS` moves the phantom. Checked in our own interpreter
+first, at five sizes, the outline is untouched and the advance comes back as
+exactly the point's y in sixty-fourths.
+
+Recorded, the answers divide in two. Times New Roman carries an `hdmx`, so a
+size the table covers is answered from cache without the program running, and
+those records come back as the ordinary advance -- five or six or eight pixels
+rather than four hundred. What is left is the sizes the table does not cover,
+and there Windows finally says where it put the point:
+
+    point 26, the foot of the upper counter     point 39, the head of the lower
+    ppem  9   windows 235  ours 223  +12/64     ppem  9   windows 190  ours 182   +8/64
+    ppem 10   windows 245  ours 247   -2/64     ppem 10   windows 200  ours 202   -2/64
+    ppem 14   windows 357  ours 346  +11/64     ppem 14   windows 290  ours 282   +8/64
+    ppem 18   windows 433  ours 444  -11/64     ppem 18   windows 355  ours 363   -8/64
+    ppem 20   windows 457  ours 462   -5/64     ppem 20   windows 432  ours 435   -3/64
+                                                ppem 22   windows 445  ours 443   +2/64
+                                                ppem 23   windows 455  ours 463   -8/64
+
+Every readable size differs, by between two and twelve sixty-fourths, and the
+sign changes with the size. The two points move together -- where one is high
+the other is high -- which is why the earlier nudge search found no single point
+to blame.
+
+One thing that is already ruled out by this. At fourteen pixels our two points
+are 346 and 282, exactly 64 apart: a waist of exactly one pixel. Windows' are
+357 and 290, which is 67 -- so **Windows is not snapping the waist to a whole
+pixel and we are**. Whatever the difference is, it is not that we round too
+little.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the

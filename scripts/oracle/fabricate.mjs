@@ -364,6 +364,161 @@ export function setGlyphProgram(bytes, glyph, code) {
   return bytes;
 }
 
+/**
+ * Rewrites one glyph's instructions when they will not fit where they are.
+ *
+ * `setGlyphProgram` writes into the room `loca` already gives a glyph, which is
+ * exactly what the glyph's own program fills. That is enough to shorten a
+ * program or to trade its tail for a readout, and it is not enough to add one:
+ * Times New Roman's `8` has twenty-three offsets its program is statically
+ * balanced at and every cut with room for a readout moves the points the readout
+ * exists to report, so the glyph has to get bigger instead.
+ *
+ * Making it bigger means rebuilding the font. `glyf` grows, every table after it
+ * moves, `loca` is rewritten from the glyph onwards, and the directory has to
+ * agree with all of that -- so this returns a new buffer rather than editing in
+ * place, and the caller reseals it as usual.
+ *
+ * @param {Uint8Array} bytes - The whole font.
+ * @param {number} glyph - Which glyph to rewrite.
+ * @param {Array} code - The instructions to put there.
+ * @returns {Uint8Array} A new font.
+ */
+export function growGlyphProgram(bytes, glyph, code) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const tables = tablesOf(view);
+  const body = glyphBody(bytes, glyph);
+
+  const long = view.getInt16(tables.head.offset + 50, false) !== 0;
+  const count = long ? tables.loca.length / 4 - 1 : tables.loca.length / 2 - 1;
+
+  const loca = [];
+
+  for (let index = 0; index <= count; index++) {
+    loca.push(
+      long
+        ? view.getUint32(tables.loca.offset + index * 4, false)
+        : view.getUint16(tables.loca.offset + index * 2, false) * 2
+    );
+  }
+
+  /* The glyph as three pieces: what comes before the instruction length, the
+   * instructions, and the outline after them. Only the middle one changes.
+   */
+  const head = [];
+
+  for (let at = body.at; at < body.lengthAt; at++) {
+    head.push(view.getUint8(at));
+  }
+
+  const tail = [];
+
+  for (let at = 0; at < body.restLength; at++) {
+    tail.push(view.getUint8(body.rest + at));
+  }
+
+  const replacement = [...head, (code.length >> 8) & 0xff, code.length & 0xff, ...code, ...tail];
+
+  // A short `loca` counts in words, so every glyph has to start on an even byte.
+  while (replacement.length % 2 !== 0) {
+    replacement.push(0);
+  }
+
+  const glyf = [];
+
+  for (let at = 0; at < loca[glyph]; at++) {
+    glyf.push(view.getUint8(tables.glyf.offset + at));
+  }
+
+  glyf.push(...replacement);
+
+  for (let at = loca[glyph + 1]; at < tables.glyf.length; at++) {
+    glyf.push(view.getUint8(tables.glyf.offset + at));
+  }
+
+  const moved = loca[glyph] + replacement.length - loca[glyph + 1];
+
+  for (let index = glyph + 1; index <= count; index++) {
+    loca[index] += moved;
+  }
+
+  /* A short `loca` cannot address past 128k. Rather than convert the format --
+   * which changes the table's length again and every offset in it -- this
+   * refuses, since no face here comes near it.
+   */
+  if (!long && loca[count] > 0x1fffe) {
+    throw new Error(`glyf of ${loca[count]} bytes is too large for a short loca`);
+  }
+
+  const written = [];
+
+  for (const offset of loca) {
+    if (long) {
+      written.push(
+        (offset >>> 24) & 0xff,
+        (offset >>> 16) & 0xff,
+        (offset >>> 8) & 0xff,
+        offset & 0xff
+      );
+    } else {
+      written.push((offset >> 9) & 0xff, (offset >> 1) & 0xff);
+    }
+  }
+
+  return rebuild(bytes, view, tables, { glyf: glyf, loca: written });
+}
+
+/**
+ * A font with some of its tables replaced by longer or shorter ones.
+ *
+ * Everything keeps the order it had in the file, each table starting on a four
+ * byte boundary as the format asks, and the directory is rewritten to match.
+ */
+function rebuild(bytes, view, tables, replacements) {
+  const order = Object.entries(tables).sort((one, two) => one[1].offset - two[1].offset);
+
+  let size = 12 + order.length * 16;
+
+  const laid = order.map(([tag, table]) => {
+    const content = replacements[tag] ?? null;
+    const length = content ? content.length : table.length;
+    const at = (size + 3) & ~3;
+
+    size = at + length;
+
+    return { tag, table, content, at, length };
+  });
+
+  const out = new Uint8Array((size + 3) & ~3);
+
+  out.set(bytes.subarray(0, 12), 0);
+
+  const fresh = new DataView(out.buffer, out.byteOffset, out.byteLength);
+
+  laid.forEach((entry, index) => {
+    const record = 12 + index * 16;
+
+    for (let byte = 0; byte < 4; byte++) {
+      fresh.setUint8(record + byte, entry.tag.charCodeAt(byte));
+    }
+
+    fresh.setUint32(record + 4, view.getUint32(entry.table.record + 4, false), false);
+    fresh.setUint32(record + 8, entry.at, false);
+    fresh.setUint32(record + 12, entry.length, false);
+
+    if (entry.content) {
+      out.set(Uint8Array.from(entry.content), entry.at);
+    } else {
+      out.set(
+        bytes.subarray(entry.table.offset, entry.table.offset + entry.table.length),
+        entry.at
+      );
+    }
+  });
+
+  return out;
+}
+
 /** A glyph's instructions, as they stand. */
 export function glyphProgram(bytes, glyph) {
   const body = glyphBody(bytes, glyph);
@@ -773,7 +928,57 @@ function reporter(
   };
 }
 
+/**
+ * A letter reporting one of its own points' **y**, with its program intact.
+ *
+ * `reporter` trades the tail of a program for the readout, which is fine when
+ * the point being read is settled by then. Times New Roman's `8` is not: every
+ * cut with room for a readout moves the waist. So this keeps the whole program
+ * and grows the glyph instead, and reads y rather than x, because the waist is
+ * a height.
+ *
+ * Reading y and reporting it needs both vectors twice over. `GC` measures along
+ * the projection vector, so the vectors go up y to read the point; the advance
+ * is a distance in x, so they go back along x before `SCFS` moves the phantom.
+ */
+function heightReporter(name, { font = 'TIMES.TTF', character, point, magnify = 64, describe }) {
+  return {
+    name,
+    from: font,
+    as: font,
+    describe,
+
+    edit: (bytes) => {
+      const glyph = glyphFor(bytes, character.charCodeAt(0));
+      const phantom = pointCount(bytes, glyph) + 1;
+
+      const ending = [
+        ...ops.yAxis(),
+        ...ops.byte(phantom),
+        ...ops.byte(point),
+        0x46,
+        ...(magnify === 1 ? [] : [...ops.word(magnify * 64), ...ops.multiply()]),
+        // Back along x, so the coordinate set is the one the advance is made of.
+        0x01,
+        ...ops.setCoordinate(),
+      ];
+
+      return growGlyphProgram(bytes, glyph, [...glyphProgram(bytes, glyph), ...ending]);
+    },
+  };
+}
+
 export const FABRICATIONS = [
+  heightReporter('times-8-waist-upper', {
+    character: '8',
+    point: 26,
+    describe: "Times New Roman's 8 reporting the foot of its upper counter",
+  }),
+  heightReporter('times-8-waist-lower', {
+    character: '8',
+    point: 39,
+    describe: "Times New Roman's 8 reporting the head of its lower counter",
+  }),
   /* One lean, both directions, eighteen phases each: the distance to a centre
    * swept on its own.
    *
@@ -2148,7 +2353,10 @@ export const FABRICATIONS = [
          * and across whatever is at the bottom -- the same winding as the other
          * bar fabrications, so nothing here changes which list a crossing joins.
          */
-        const points = [[left, 0], [left, TALL]];
+        const points = [
+          [left, 0],
+          [left, TALL],
+        ];
 
         if (top) {
           points.push([left + ARM, TALL], [left + ARM, TALL - DEEP], [right, TALL - DEEP]);
@@ -3531,15 +3739,18 @@ async function main() {
   for (const fabrication of FABRICATIONS) {
     const original = new Uint8Array(await readFile(join(source, fabrication.from)));
 
-    // A copy per fabrication, since the edits are in place.
-    const bytes = original.slice();
+    /* A copy per fabrication, since most edits are in place. One that has to
+     * grow a table cannot be, and returns a new buffer instead -- so what gets
+     * written is whatever came back, falling back on the copy.
+     */
+    const copy = original.slice();
+    const bytes = fabrication.edit(copy) ?? copy;
 
-    fabrication.edit(bytes);
     reseal(bytes);
 
-    let changed = 0;
+    let changed = bytes.length === original.length ? 0 : bytes.length - original.length;
 
-    for (let at = 0; at < bytes.length; at++) {
+    for (let at = 0; at < Math.min(bytes.length, original.length); at++) {
       if (bytes[at] !== original[at]) {
         changed++;
       }
