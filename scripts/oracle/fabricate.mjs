@@ -3386,6 +3386,53 @@ export const FABRICATIONS = [
    * program's answer never reaches the outside. This says which sizes can be
    * read at all.
    */
+  /* `ISECT` where the two lines barely cross, which is a fragility rather than
+   * a feature.
+   *
+   * The reference divides unless its denominator is exactly nought, so two lines
+   * a fraction of a degree apart put the point an enormous distance away and
+   * Windows lets them. Ours used to take the midpoint whenever they were within
+   * about three degrees, on an unexplained constant, and that has been changed
+   * to match; nothing in any recording moved, because no fixture had a
+   * near-parallel `ISECT` in it. These three put one in.
+   *
+   * The same five points every time, and only the second line's far end moves:
+   *
+   *   crossing   line B at right angles, meeting A at 400,200 -- the control,
+   *              which says the instruction and the readout both work;
+   *   grazing    line B rising eight units over eight hundred, about half a
+   *              degree, so the meeting point is twenty thousand units out --
+   *              a hundred and fifty pixels at sixteen per em, far outside the
+   *              glyph and impossible to reach by accident;
+   *   parallel   line B exactly along A, where the denominator really is nought
+   *              and both implementations take the midpoint.
+   *
+   * Read unmagnified, since the grazing answer is already enormous.
+   */
+  ...[
+    ['isect-crossing', [400, 0], [400, 400], 'the two lines meeting at right angles'],
+    ['isect-grazing', [0, 0], [800, 8], 'the two lines half a degree apart'],
+    ['isect-parallel', [0, 200], [800, 200], 'the two lines exactly parallel'],
+  ].map(([name, from, to, what]) =>
+    experiment(name, {
+      font: 'ARIALI.TTF',
+      character: 'm',
+      // The point to move, then line A, then line B.
+      points: [[0, 0], [0, 200], [800, 200], from, to],
+      body: [
+        ...ops.byte(0),
+        ...ops.byte(1),
+        ...ops.byte(2),
+        ...ops.byte(3),
+        ...ops.byte(4),
+        0x0f,
+      ],
+      report: 0,
+      magnify: 1,
+      describe: `ISECT with ${what}`,
+    })
+  ),
+
   experiment('ip-calibrate', {
     font: 'ARIALI.TTF',
     character: 'm',

@@ -6764,6 +6764,33 @@ lets them. Nothing measurable moves, which is what a near-parallel `ISECT` not
 arising in any fixture looks like -- but faithfulness about a fragility is the
 point of the exercise, and an undocumented constant guarding against it was not.
 
+### Putting a near-parallel `ISECT` in front of Windows
+
+The change in the last section moved nothing measurable, which is a poor place to
+leave a change. Three fabrications now measure it: the same five points every
+time, one `ISECT`, and only the second line's far end moving -- at right angles,
+half a degree apart, and exactly parallel. Each reports where the point landed.
+
+Fifty-nine sizes read, and the controls settle first: **crossing and parallel are
+exact at all fifty-nine**, both putting the point a few pixels across the glyph,
+which says the instruction, the readout and our operand order are all right.
+
+Then the grazing pair. **Windows puts the point hundreds of pixels away.** Not a
+midpoint, not a clamp -- at twenty pixels per em it reports 196 where the
+crossing case reports 5, and at other sizes it reports **-494**. The direction is
+not stable: which side of the near-parallel pair the rounding lands on decides
+it. So the fragility is real, Windows has it, and the factor of nineteen we used
+to guard with would have answered about five every time -- wrong by two orders of
+magnitude, and wrong in a way no recording we had could see.
+
+We match it exactly at ten of the fifty-nine and not at the rest, and that is the
+honest end of it rather than a defect to chase. Dividing by a denominator near
+nought multiplies whatever the inputs disagree by, and the inputs are
+sixty-fourths; a sixty-fourth of angle on a point two hundred pixels out is tens
+of pixels. Matching at ten sizes is the surprise. Matching at all fifty-nine is
+not available to anything short of bit-identical inputs, and the test says so
+rather than pretending otherwise.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
