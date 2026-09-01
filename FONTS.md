@@ -5355,6 +5355,61 @@ The thirty-three letters and the 1,817 pixels are one problem now, and it is the
 interpreter. `cour-bars` and `cour-arches` are eight hundred of those pixels
 between them and are the place to start.
 
+### A correction: `cour-bars` runs no program at all
+
+The previous section said every wrong pixel left was in a hinting fabrication.
+That was inferred from the names and it is wrong. `cour-bars` builds its glyphs
+with `program: []` -- four points, no instructions -- so the interpreter moves
+nothing, exactly as in `times-bare`. It is the largest single block of wrong
+pixels in the set, 426 of the 1,817, and it is not a hinting test. The claim
+should have been checked before it was made; what follows is the checking.
+
+### What `cour-bars` actually measures
+
+The bars are rectangles a sixth to half a pixel across at eight pixels per em,
+in six widths and three phases, eighteen standing upright and eighteen lying
+down. Ninety-seven of 258 cells disagree, and they fall into two populations
+that do not overlap at all:
+
+- **Forty-eight lying bars.** Windows draws **nothing whatsoever** and we draw
+  the whole bar. Every one of the forty-eight is Windows-blank; there is not a
+  single lying failure of any other kind.
+- **Forty-nine upright bars.** We draw _less_ than Windows, never more.
+
+The error scales inversely with the bar's thickness -- 125 pixels wrong at forty
+design units against 22 at a hundred and forty -- which is to say this is a
+question about dropout control and nothing else. For the lying bars the shape of
+it is sharp: every bar 0.94 pixels tall or more is drawn by Windows without
+exception, and below that whether it is drawn depends on the phase as well as
+the height.
+
+Disabling our vertical rescue entirely takes `cour-bars` from 161 cells and 426
+wrong pixels to 209 and 98, fixing all forty-eight lying failures and no others.
+It costs 1,648 pixels elsewhere. So Windows is not declining to rescue in
+general; it is applying a condition here that we do not.
+
+### Three things that condition is not
+
+**`SCANCTRL`.** Courier New's `prep` leaves it at 300, which is bit 8 set with a
+size of 44: dropout control on for every size measured here. Read at each ppem
+from the fabricated font, it is 300 throughout and `scanType` is 1 throughout.
+
+**The interpreter never running.** A glyph with no instructions returns from
+`hintedOutline` before the hinter is built, so `SCANCTRL` was never being read
+for these at all and the rasteriser was falling back on its own default of
+always rescuing. That is a real gap and it was worth closing -- `fpgm` and `prep`
+run once per size, not once per glyph -- but closing it changes nothing here,
+because what `prep` says is what the default already assumed.
+
+**The box's minimum height.** Our box forces itself at least one row tall and one
+column wide, `Math.max(boxTop + 1, ...)`, where `fsc_SetupScan` rounds each edge
+independently and lets the two land on the same index. A bar whose rounded extent
+collapses would then have nowhere to put a rescue, which fits the symptom
+exactly. It is still wrong: dropping the floor takes the set to 7,185 wrong
+pixels and rounding both edges the same way to 7,323, against 1,817. The
+minimum stays until something explains it, and it is now the oldest unexplained
+thing in this file.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
