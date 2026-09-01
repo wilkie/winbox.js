@@ -6570,6 +6570,33 @@ of it than we do. That is a question about what reaches the bitmap, and it is th
 same question `times-cvt0-fine` asks from the other side -- there we draw a bar
 Windows clips, here we lose one Windows keeps.
 
+### The run spans the box, not the ink
+
+The fourteen that were left had one cause and it is worth having: the run in a
+sub-pixel column covers the **box**, not the lit pixels between which it was
+being drawn.
+
+Courier New's `o` at ten pixels per em is the case. Its crossings are on rows -2,
+-1, 4 and 5 -- the upper piece sits above the cell entirely -- so looking for the
+topmost lit pixel finds row 4 and the run never reaches the top of the bitmap.
+Windows draws rows 0 to 5. Its run starts at the top of the box, which is row -2,
+and the bitmap clips it at 0.
+
+Spanning `boxTop` to `boxBottom - 1`, clipped to the bitmap, finishes both
+fabrications that were asking:
+
+    cour-gaps    244 of 258 cells, 102 wrong  ->  258 of 258, nothing wrong
+    cour-boxes   251 of 258, 7 wrong          ->  258 of 258, nothing wrong
+    the set      7,542 of 7,566, 129 wrong    ->  7,563 of 7,566, 20 wrong
+
+`glyph`, `font`, `hinting` and `text` all stay at 100 per cent.
+
+**Twenty pixels remain in the whole apparatus.** Seventeen are `cour-no-instctrl`
+running hinting at a size its own font disowns, and three are `times-cvt0-fine`
+drawing a readout bar past the box it declared -- which is the same question as
+this section from the other side, and the reason to expect it to fall to the same
+kind of answer.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the

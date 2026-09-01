@@ -809,20 +809,33 @@ export function fillWalked(contours, options) {
    */
   if (narrow) {
     for (let column = Math.max(0, boxLeft); column < Math.min(width, boxRight); column++) {
-      let top = -1;
-      let bottom = -1;
+      /* The run spans the **box**, not the ink that happens to be visible.
+       *
+       * A glyph taller than the cell has ink above it, and where that ink falls
+       * outside the bitmap there is nothing to find by looking for it. Windows
+       * draws the column from the top of the box down, clipped to the bitmap, so
+       * a piece off the top still starts the run at the first row.
+       *
+       * **Recorded**: filling between the topmost and bottommost lit pixel
+       * instead leaves `cour-gaps` at 244 of 258 cells and 102 wrong pixels,
+       * every one of them a cell whose upper piece has left the cell. Spanning
+       * the box takes it to 258 of 258 with nothing wrong, and `cour-boxes` with
+       * it.
+       */
+      let lit = false;
 
-      for (let row = 0; row < height; row++) {
-        if (pixels[row * width + column]) {
-          if (top < 0) {
-            top = row;
-          }
-
-          bottom = row;
-        }
+      for (let row = 0; row < height && !lit; row++) {
+        lit = Boolean(pixels[row * width + column]);
       }
 
-      for (let row = top; row >= 0 && row <= bottom; row++) {
+      if (!lit) {
+        continue;
+      }
+
+      const top = Math.max(0, boxTop);
+      const bottom = Math.min(height - 1, boxBottom - 1);
+
+      for (let row = top; row <= bottom; row++) {
         pixels[row * width + column] = 1;
       }
     }
