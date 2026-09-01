@@ -5864,6 +5864,43 @@ side bearing split and the separate scaling of coordinate and bearing, and it is
 what the waist of an `8` wants now -- a fabrication that reports the waist points
 of Times' `8` after hinting, at the five sizes where it fails.
 
+### Two ways of asking which instruction, and neither answers
+
+Times New Roman's `8` is wrong by eighteen pixels across the five sizes it fails
+at, and both cheap ways of localising that were tried before building anything.
+
+**Truncating the program.** Our interpreter runs the glyph's own bytecode, so it
+can be stopped early and the result compared against the recording. Cut anywhere
+before byte 250 the score is 84 wrong pixels, which is what the unhinted outline
+gives. From 260 it improves -- 77, 68, 58, then 23 by byte 290 -- and the last
+seventy bytes take it to 18. Swept two bytes at a time across the tail, **no cut
+beats the full program**. So we execute the right instructions and stop in the
+right place; the difference is inside one of them rather than in which of them
+run. That is worth knowing: it rules out a missing terminator, an unbalanced
+conditional, and an instruction we should be skipping.
+
+**Nudging the points.** If one point were in the wrong place, moving it should
+find the right one. Displacing each of the four points that bound the waist --
+0 and 12 on the outer contour, 26 at the foot of the upper counter, 39 at the
+head of the lower one -- by up to half a pixel in y, in eighths of a
+sixty-fourth, gives a best of 16 against the baseline of 18, from point 0 moved
+between a sixteenth and an eighth of a pixel up. Every other displacement is 17
+or worse. **No single point fixes it.**
+
+Together those two say the shape of the thing: several points of the waist are
+each slightly wrong, by less than the eighth of a pixel that would show up as a
+single culprit, and they are wrong because an instruction that is right
+everywhere else rounds differently here. That is a graphics-state or an
+interpolation difference rather than a missing feature, which fits the earlier
+finding that no opcode is exclusive to the failures.
+
+It also means the readout channel is still the instrument, and using it on `8`
+costs more than it did on the letters it has been used on before: the `hinting`
+probe sweeps `w`, `o` and `W` for Times New Roman regular, so reaching `8`
+through it needs either the `cmap` pointed at glyph 27 or `8`'s three contours
+copied into one of those slots, and `setGlyph` writes a single contour. That is
+the next piece of work and it is a real one.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
