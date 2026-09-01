@@ -6409,6 +6409,39 @@ The fabricated set stands at 7,260 of 7,308 cells and 70 wrong pixels, all of
 them in four hinting fabrications built to ask questions the recorded letters no
 longer answer.
 
+### The seventy fabricated pixels are three things, not seventy
+
+With the recorded letters at 846 of 846, what is left is 70 pixels over four
+fabrications, and they divide cleanly.
+
+**Fifty of them are one mechanism.** `cour-boxes` and `cour-widths` both put a
+sub-pixel bar in a glyph with a second contour below it, and both fail the same
+way: a hole in the middle of a column of ink. Courier New's `k` at ten pixels per
+em is the case -- Windows draws rows 1 to 7 unbroken and we draw 1 to 5 and 7,
+missing 6. The lists say why. Rows 1 to 5 carry the bar and row 7 the box, each
+as a zero-length run that the narrow-box rule rescues; **row 6 has no crossings
+at all**, because it falls in the gap between the two contours where neither is
+present. Filling it wants a vertical rescue, and the vertical lists are empty:
+the glyph is narrower than a sample column, so its horizontal edges cross no
+vertical scanline and contribute nothing to rescue from. Where Windows finds the
+ink is not established.
+
+**Seventeen are a fabrication disowning its own font.** `cour-no-instctrl`
+rewrites `prep` to clear `INSTCTRL` where Courier New sets it, so hinting runs at
+eight pixels per em, the size the font switches it off for. Windows draws
+nothing at all for the `w` and we draw a sixteen-pixel blob, and our box comes
+out with a top of -22 -- twenty-two rows above the cell. Both are what a program
+does when run at a size it was written to refuse; that they differ is not
+surprising and says little about anything else.
+
+**Three are `times-cvt0-fine`**, one cell at sixteen pixels, which has not been
+looked at.
+
+So the honest count is that one mechanism accounts for five sevenths of what
+remains, and it is a question about glyphs a sample column wide with a gap in
+them -- a shape no letter has, which is why it survives a recorded corpus that
+now agrees everywhere.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
