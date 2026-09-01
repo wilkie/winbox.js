@@ -5833,6 +5833,37 @@ So the lead is closed rather than followed. The mechanism behind the narrow-box
 rule is not in segment 43, because segment 43 is not executed for any glyph
 measured here.
 
+### The thirty-three letters are one glyph program at a time
+
+Everything the rasteriser gained this session -- the flattening, the collapsed box
+in y, the narrow-box rule -- moved none of them. Thirty-three records and
+fifty-eight pixels before and after, which is what `times-bare` said to expect:
+these are the interpreter.
+
+They come from twenty-three distinct glyph programs, and the distribution is
+lopsided. Times New Roman's `8` fails at five of the seven sizes recorded, 18 of
+the 58 pixels in one glyph; Courier New's `t` at three; Arial's `7`, Times' `2`
+and `3` and Courier's `g` at two each. The remaining seventeen fail at exactly
+one size, which is the signature of a rounding that lands the wrong side of a
+boundary rather than of a rule being wrong.
+
+Two things checked and cleared. **No opcode is exclusive to the failures.** Every
+instruction used by a failing glyph's program is also used by a passing one, over
+all three faces, so this is not an unimplemented instruction or one that is
+wholly wrong -- it is an instruction that is right most of the time. And the
+hinting is plainly working: Times' `8` at sixteen pixels comes out of the
+interpreter with its stems at exactly 1, 2, 6 and 7 and its baseline at exactly 0. What is not on the grid is the waist, which is where the wrong pixels are.
+
+That is as far as inference goes. The letters cannot be pushed further from this
+side, because nothing here says where Windows put its points -- only where the
+ink ended up, which is two roundings downstream. The project already has the
+instrument for that: the readout channel, where a glyph program moves the advance
+phantom onto a point of interest and `GetTextExtent` reports it, at magnify 64
+reading the stored coordinate in sixty-fourths directly. That is what settled the
+side bearing split and the separate scaling of coordinate and bearing, and it is
+what the waist of an `8` wants now -- a fabrication that reports the waist points
+of Times' `8` after hinting, at the five sizes where it fails.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
