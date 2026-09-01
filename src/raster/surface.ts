@@ -377,14 +377,18 @@ export class Surface {
 
       const up = fitted.scaled ? 1 : scale;
 
-      /* Counted in whole rows, which is what a bitmap is made of. One of the
-       * bars comes out a thousandth of a pixel short of exactly twice the cell
-       * and Windows still refuses it, so the comparison is not on the fraction.
+      /* How far it reaches above the baseline, counted in whole rows.
+       *
+       * Above only: `times-reach` hangs a bar forty rows below the baseline
+       * beside a mark that is plainly inside the cell, and the mark comes back.
+       * The same bar thirty rows above does not. So it is not the height of the
+       * box, which is the same either way.
+       *
+       * The comparison is on the coordinate itself. A bar landing exactly twice
+       * the cell up is refused and one a fraction under is drawn, so it is not
+       * rounded to a row first.
        */
-      const spread = reach.length
-        ? Math.ceil(Math.max(...reach.map((point: any) => point.y)) * up) -
-          Math.floor(Math.min(...reach.map((point: any) => point.y)) * up)
-        : 0;
+      const spread = reach.length ? Math.max(...reach.map((point: any) => point.y)) * up : 0;
 
       if (contours.length && spread < 2 * (font.style.ascent + font.style.descent)) {
         /* An outline face has no bold or italic of its own here -- only the

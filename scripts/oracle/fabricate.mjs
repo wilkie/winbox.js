@@ -4231,11 +4231,19 @@ export const FABRICATIONS = [
    * are nothing but an upright bar, each taller than the last, all of them
    * standing on the baseline where the bottom is plainly inside the cell.
    */
-  ...[['times-tall', [8, 16, 24, 32, 40]]].map(([name, heights]) => ({
+  ...[
+    ['times-tall', [8, 16, 24, 32, 40]],
+    /* And again between the two the first pair leaves open. The same design
+     * heights are read at three cell sizes, so five bars give five answers at
+     * sixteen, five half again as tall at twenty-four, and five smaller ones at
+     * twelve.
+     */
+    ['times-tall-fine', [24, 26, 28, 30, 32]],
+  ].map(([name, heights]) => ({
     name,
     from: 'TIMES.TTF',
     as: 'TIMES.TTF',
-    describe: 'bars of increasing height, to find how far one may reach out of its cell',
+    describe: `bars of ${heights.join(', ')} pixels at sixteen, to see how far one may reach`,
 
     edit: (bytes) => {
       // Pixels at sixteen, where the cell is sixteen rows and the em fourteen.
@@ -4257,6 +4265,97 @@ export const FABRICATIONS = [
       return bytes;
     },
   })),
+
+  /* What the two-times-the-cell limit is measured on.
+   *
+   * `times-tall` says an outline reaching twice the cell is not drawn, with
+   * bars that all stand on the baseline -- so the bar's own height, the height
+   * of the whole box, and how far the outline reaches above the baseline are
+   * the same number and cannot be told apart.
+   *
+   * Each glyph here carries a marker close to the baseline, well inside the
+   * cell and drawable on its own, and a second shape somewhere else. If the
+   * marker comes back the glyph was drawn; if it does not, the glyph was
+   * refused, and the shape that did it says which measurement was too big.
+   */
+  {
+    name: 'times-reach',
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: 'a mark by the baseline and a shape elsewhere, to see what the limit measures',
+
+    edit: (bytes) => {
+      // Pixels at sixteen, where the cell is sixteen rows and the em fourteen.
+      const at = (pixels) => Math.round((pixels * 2048) / 14);
+
+      const box = (low, high) => [
+        [0, at(low)],
+        [0, at(high)],
+        [at(3), at(high)],
+        [at(3), at(low)],
+      ];
+
+      /* Two rows by the baseline, which every one of these carries and which is
+       * the whole of what is being looked for.
+       */
+      const marker = box(0, 2);
+
+      const CASES = {
+        // Thirty-two rows of bar, all of it below the baseline.
+        W: [-40, -8],
+        // Eighteen rows above it, which is inside the limit however measured.
+        g: [2, 20],
+        // Four rows of bar, thirty rows up.
+        j: [30, 34],
+        // Four rows of bar, thirty rows down.
+        1: [-34, -30],
+        // Thirty rows straddling the baseline, which is under the limit.
+        '.': [-15, 15],
+      };
+
+      for (const [character, [low, high]] of Object.entries(CASES)) {
+        setGlyph(bytes, null, glyphFor(bytes, character.charCodeAt(0)), {
+          program: [...ops.yAxis()],
+          contours: [marker, box(low, high)],
+        });
+      }
+
+      return bytes;
+    },
+  },
+
+  /* Which of the font's own numbers the limit is twice of.
+   *
+   * The bars above put it between fifteen sevenths and sixteen sevenths of the
+   * em, and Times New Roman has two constants in that gap: twice the bounding
+   * box its `head` declares is 2.187 em, and twice the ascender-to-descender
+   * its `hhea` declares is 2.215. Nothing in that font tells them apart.
+   *
+   * Courier New does. Its box is shallower and its line taller, so twice the
+   * one is 2.113 em and twice the other 2.266 -- and these five bars sit either
+   * side of both.
+   */
+  {
+    name: 'cour-tall',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'bars around twice the two extents Courier New declares for itself',
+
+    edit: (bytes) => {
+      // 2.051, 2.100, 2.148, 2.222 and 2.295 ems.
+      const HEIGHTS = [4200, 4300, 4400, 4550, 4700];
+
+      ['W', 'g', 'j', '1', '.'].forEach((character, at) => {
+        setGlyph(bytes, null, glyphFor(bytes, character.charCodeAt(0)), {
+          width: 400,
+          height: HEIGHTS[at],
+          program: [...ops.yAxis()],
+        });
+      });
+
+      return bytes;
+    },
+  },
 
   bar('times-cell-edge', {
     /* These five and no others. The probe draws six characters of a named face

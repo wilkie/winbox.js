@@ -146,6 +146,34 @@ describe('an outline that reaches out of its cell', () => {
       expect([drew(12, 'j'), drew(12, '1')]).toEqual([true, true]);
     });
 
+    it('measures the reach above the baseline, not the height of the box', () => {
+      const reach = JSON.parse(
+        readFileSync('oracle/fixtures/fabricated/glyphs-times-reach.json', 'utf8')
+      );
+
+      const marked = (character: string) => {
+        const record = reach.records.find(
+          (row: any) => row.args === `"Times New Roman",h=16,weight=400,italic=0,'${character}'`
+        );
+
+        return rowsOf(record.result).length > 0;
+      };
+
+      /* Each of these carries a mark by the baseline, well inside the cell, and
+       * a bar somewhere else. `W` hangs thirty-two rows below the baseline and
+       * `1` four rows of bar thirty rows below it -- boxes of forty-two and
+       * thirty-six rows against a limit of thirty-two -- and both marks come
+       * back. So the box is not what is measured.
+       */
+      expect([marked('W'), marked('1')]).toEqual([true, true]);
+
+      // `j` puts the same four rows of bar thirty rows *above*, and it does not.
+      expect(marked('j')).toBe(false);
+
+      // And two shapes that stay inside it either way.
+      expect([marked('g'), marked('.')]).toEqual([true, true]);
+    });
+
     it('draws none of one that reaches twice it or further', () => {
       expect([drew(16, '1'), drew(16, '.')]).toEqual([false, false]);
       expect([drew(24, '1'), drew(24, '.')]).toEqual([false, false]);

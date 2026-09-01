@@ -162,7 +162,13 @@ static void probeScalable(LPCSTR face, BYTE charset)
      * starts to cost a pixel, and the ones past 64 say whether it keeps
      * costing more.
      */
-    static const int HEIGHTS[] = { 8, 12, 16, 20, 24, 28, 30, 32, 34, 40, 48,
+    /* Eighteen closes a gap. The sweep ran to fourteen and then jumped to
+     * sixteen and twenty, and eighteen is the one size at which an outline
+     * refused for reaching twice its cell disagreed with what we computed the
+     * cell to be -- which is a question about the metrics there, not about the
+     * refusing, and could not be asked without the metrics being recorded.
+     */
+    static const int HEIGHTS[] = { 8, 12, 16, 18, 20, 24, 28, 30, 32, 34, 40, 48,
                                    64, 96, 100, 128, 160 };
 
     int index;
