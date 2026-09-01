@@ -2094,6 +2094,84 @@ export const FABRICATIONS = [
    * half a pixel at the sizes recorded, by six heights moving the foot through a
    * whole pixel.
    */
+  /* One bar, with a continuation at one end, the other, both, or neither.
+   *
+   * `cour-bars` leaves forty-nine cells where Windows draws the first and last
+   * row of an isolated upright bar and we do not. The mechanism is known and the
+   * reason is not: a bar that thin and that straight puts nothing in the
+   * vertical lists, so the stub check in `DoHorizDropout` collapses to "does the
+   * next row have crossings", which is false at both ends of any isolated run.
+   * `cour-shelves` and `cour-feet` are exact, and their thin runs are attached
+   * to a post; `cour-phases` is exact, and its bars lean. Every fabrication that
+   * agrees gives the check something to find.
+   *
+   * So the question is whether the end of a run is drawn because something
+   * continues from it, and it has never been put directly. Here it is: the same
+   * sub-pixel post four times over, with an arm at the top, at the bottom, at
+   * both, and at neither. The arm is wide and thick enough to be drawn outright,
+   * so it is continuation and nothing else.
+   *
+   * If Windows draws every row of all four, the check is not doing what its
+   * shape says and ours should not either. If it draws the arm end and not the
+   * bare one, we are right about the rule and `cour-bars` is wrong for some
+   * other reason. If it draws the bare end only when the *other* end has an arm,
+   * the check is being asked once for the run rather than once for each row.
+   */
+  {
+    name: 'cour-stubs',
+    from: 'COUR.TTF',
+    as: 'COUR.TTF',
+    describe: 'Courier New with a thin post carrying an arm at one end, both, or neither',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      // A third to two thirds of a pixel at sixteen per em, where one is 128.
+      const THIN = [40, 60, 80];
+      const PHASE = [0, 42, 85];
+      const TALL = 1400;
+      // Wide and thick enough that no size in the sweep can lose it.
+      const ARM = 600;
+      const DEEP = 200;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const thin = THIN[index % THIN.length];
+        const phase = PHASE[Math.floor(index / THIN.length) % PHASE.length];
+        const which = Math.floor(index / (THIN.length * PHASE.length)) % 4;
+
+        const left = 600 + phase;
+        const right = left + thin;
+        const top = which === 1 || which === 3;
+        const foot = which === 2 || which === 3;
+
+        /* Up the left side, across whatever is at the top, down the right side,
+         * and across whatever is at the bottom -- the same winding as the other
+         * bar fabrications, so nothing here changes which list a crossing joins.
+         */
+        const points = [[left, 0], [left, TALL]];
+
+        if (top) {
+          points.push([left + ARM, TALL], [left + ARM, TALL - DEEP], [right, TALL - DEEP]);
+        } else {
+          points.push([right, TALL]);
+        }
+
+        if (foot) {
+          points.push([right, DEEP], [left + ARM, DEEP], [left + ARM, 0]);
+        } else {
+          points.push([right, 0]);
+        }
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, points, program: [] });
+        setBearing(bytes, glyph, left);
+      }
+
+      return bytes;
+    },
+  },
+
   {
     name: 'cour-feet',
     from: 'COUR.TTF',
