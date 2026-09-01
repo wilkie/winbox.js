@@ -570,6 +570,22 @@ export function fillWalked(contours, options) {
       continue;
     }
 
+    /* The neighbour is asked about before the run is moved left, and only when
+     * the run is clear of the corresponding edge.
+     *
+     * `DoHorizDropout` guards each of its two `GetBit` calls -- `lXDrop >
+     * lBoxLeft` for the one to the left and `lXDrop < lBoxRight` for the one to
+     * the right -- and both read the *undecremented* coordinate. Asking after
+     * the decrement and the clamp, and asking unguarded, are two different
+     * mistakes: the first reads a different pixel when the rescue was clamped,
+     * and the second lets a stroke lying along the right edge of the box block
+     * the column beside it. The left-hand call reads the pixel this is about to
+     * write, so it only ever saves the write.
+     */
+    if (on < boxRight && on >= 0 && on < width && pixels[rescue.row * width + on]) {
+      continue;
+    }
+
     let column = on - 1;
 
     if (column < boxLeft) {
@@ -578,10 +594,6 @@ export function fillWalked(contours, options) {
 
     if (column >= boxRight) {
       column = boxRight - 1;
-    }
-
-    if (column + 1 < width && pixels[rescue.row * width + column + 1]) {
-      continue;
     }
 
     if (column >= 0 && column < width && rescue.row >= 0 && rescue.row < height) {

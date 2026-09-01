@@ -5238,6 +5238,47 @@ rather than before leaves the fabricated set at 6,441 cells and 1,818 pixels,
 unchanged. Whatever the waist is, it is not the endpoint bookkeeping around the
 flattening.
 
+### The fill and the dropout, read against the source
+
+Four things checked against `scanlist.c` rather than guessed at, of which one
+was wrong.
+
+`fsc_FillBitMap` pairs the two lists **by index**, walking them in lockstep, and
+draws `sXStart..sXStop - 1` when the run is positive and `sXStop..sXStart - 1`
+when it is negative. That is our bidirectional fill from the minimum to the
+maximum less one, unchanged, and it confirms the pairing is positional rather
+than sorted-and-matched.
+
+`LookForDropouts` fires on a **zero-length run** -- `*psHorizOn == *psHorizOff`
+-- not on a gap between runs, and it walks the vertical lists from the end
+backwards, top of the glyph downward. Ours reads them forward. The source is
+explicit, so this was worth remeasuring after the flattening changed the
+geometry: reversing costs two cells and two pixels, 6,439 and 1,820 against
+6,441 and 1,818. Our lists are keyed by the negated row, so forward in our frame
+is the source's backward, and the two orders agree to within a rounding either
+way. It stays as it is.
+
+`DoVertDropout` matches ours, including the part that had looked missing. It
+makes two `GetBit` calls where ours makes one, but the one we do not make reads
+the pixel the rescue is about to write, so skipping it only saves a write. The
+early return on the band, the `lYDrop--` placement below, and the clamp into the
+box all line up.
+
+`DoHorizDropout` did not match, and this is the one worth having. Its two
+`GetBit` calls read the **undecremented** coordinate and are each guarded on the
+run being clear of the corresponding edge, `lXDrop > lBoxLeft` and `lXDrop <
+lBoxRight`. Ours asked after moving the run a column left and after clamping it
+into the box, and asked unguarded. Two separate mistakes: asking after the clamp
+reads a different pixel whenever the rescue was clamped, and asking unguarded
+lets a stroke along the right edge of the box block the column beside it -- the
+same shape as the guard that took `twin-bars` to 264 of 264 on the vertical
+side. Fixing it is worth a cell and a pixel, 6,442 and 1,817, and the guard
+itself measures as a no-op on the fixtures while the ordering carries the whole
+gain. It is written the source's way regardless, because being right for the
+recorded reason is worth more than a cell.
+
+None of this touches the `8`'s waist, which is still open.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
