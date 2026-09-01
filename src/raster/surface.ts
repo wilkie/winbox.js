@@ -319,6 +319,23 @@ export class Surface {
     // The baseline, which is where the outline's own origin sits.
     const baseline = y + font.style.ascent;
 
+    /* And the cell, which is what a glyph is drawn into.
+     *
+     * A glyph gets a cell as tall as the font asks for and no taller, and ink
+     * outside it is not drawn -- not clipped to the surface, clipped to the
+     * cell. A hinted outline can leave the cell, since a program is free to
+     * move a point anywhere, and where it does the part outside simply does not
+     * appear.
+     *
+     * **Recorded.** `times-cell-edge` puts a bar on each row around the edge of
+     * a sixteen-row cell whose baseline is row thirteen: rows thirteen, fourteen
+     * and fifteen are drawn and row sixteen is not, and a bar placed above row
+     * nought is not drawn either. The same font at twenty-four, where every one
+     * of those rows is inside the cell, draws all six.
+     */
+    const cellTop = y;
+    const cellBottom = y + font.style.ascent + font.style.descent;
+
     /* Black, as the bitmap path draws in black. `forecolor` starts out white
      * on a fresh surface, which paints nothing onto the white a text draw has
      * just laid down.
@@ -364,7 +381,10 @@ export class Surface {
           dropout: fitted.dropout ?? true,
         });
 
-        for (let row = 0; row < this.height; row++) {
+        const from = Math.max(0, cellTop);
+        const to = Math.min(this.height, cellBottom);
+
+        for (let row = from; row < to; row++) {
           for (let column = 0; column < this.width; column++) {
             if (inked[row * this.width + column]) {
               this.context.setPixel(column, row, colour);

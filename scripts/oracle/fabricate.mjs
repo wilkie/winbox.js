@@ -4206,6 +4206,33 @@ export const FABRICATIONS = [
    * little under ten pixels above the baseline -- and if it does, a glyph
    * that reports arithmetic instead of drawing a letter works.
    */
+  /* Where the ink stops.
+   *
+   * A glyph is drawn into a cell as tall as the font asks for -- sixteen rows
+   * for Times New Roman at sixteen, with the baseline on row thirteen -- and a
+   * readout bar that lands past the bottom of that cell is not drawn at all,
+   * where one four rows higher is. `times-cvt0-fine` found that by accident,
+   * with a single bar on row twenty against a cell that ends on row fifteen.
+   *
+   * One example cannot say where between the two the ink stops, so this puts a
+   * bar on each of the rows around the edge and asks. The last two go above the
+   * cell instead, since a top edge has as much right to exist as a bottom one.
+   */
+  bar('times-cell-edge', {
+    /* These five and no others. The probe draws six characters of a named face
+     * and `A` is one of them, but `A` is also the component every accented `A`
+     * is built from -- rewriting it rewrites those too, and they are not what
+     * is being asked about here.
+     *
+     * A bar written at `y` inks row `12 - y` of a cell whose baseline is row
+     * thirteen, so these four walk the bottom edge from inside it to past it,
+     * and the fifth is aimed above the top of the cell.
+     */
+    characters: ['W', 'g', 'j', '1', '.'],
+    offsets: [-1, -2, -3, -4, 13],
+    describe: 'a bar on each row around the top and bottom of the character cell',
+  }),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -4241,6 +4268,56 @@ export const FABRICATIONS = [
     describe: 'control value 2 magnified sixty-four times, which decides a cap height',
   }),
 ];
+
+/**
+ * A font whose glyphs each draw one bar at a fixed height above the baseline.
+ *
+ * The readout fabrications place their bar where a control value says; this one
+ * places it where it is told, so that what is being asked about is the drawing
+ * rather than the value. Whether the bar comes back says whether ink at that
+ * height is drawn at all.
+ */
+function bar(name, { characters, offsets, describe }) {
+  return {
+    name,
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe,
+
+    edit: (bytes) => {
+      characters.forEach((character, at) => {
+        setGlyph(bytes, null, glyphFor(bytes, character.charCodeAt(0)), {
+          width: 400,
+          height: 40,
+          program: barProgram(offsets[at] * 64),
+        });
+      });
+
+      return bytes;
+    },
+  };
+}
+
+/** Places all four corners of the bar at one height, and the top a pixel up. */
+function barProgram(value) {
+  const place = (point, extra) => [
+    ...ops.duplicate(),
+    ...(extra ? [...ops.word(extra), ...ops.add()] : []),
+    ...ops.byte(point),
+    ...ops.swap(),
+    ...ops.setCoordinate(),
+  ];
+
+  return [
+    ...ops.yAxis(),
+    ...ops.word(value),
+    ...place(0, 0),
+    ...place(3, 0),
+    ...place(1, 64),
+    ...place(2, 64),
+    ...ops.pop(),
+  ];
+}
 
 /** Reads a control value back, so an edit can be relative to what is there. */
 export function controlValueOf(bytes, index) {
