@@ -33,14 +33,11 @@ import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './repl
  * Two thirds are Courier New and two thirds are bold italic, and every letter
  * involved has a diagonal in it -- K, X, Z, k, 7, M, N, t, y, m, 4, B.
  *
- * The worst of them, Courier New's bold italic `X`, is not a hinting
- * disagreement. Its program was cut at 0, 2, 4, 8, 12, 16, 20, 40, 60, 80, 95,
- * 110, 125 and 140 of its 143 instructions and recorded at each, and the letter
- * disagrees at every size in every one of them -- including with no program at
- * all. Windows draws the same `X` with the program and without it, and so do
- * we; the two differ from each other either way. So for that letter what is
- * left is the scaling and the scan conversion of a thick stroke lying at an
- * angle, and the interpreter is not involved.
+ * A bisection of Courier New's bold italic `X` said the program was not
+ * involved, and that was wrong: the fabrication it rested on cut the program of
+ * the *plain* face, so the bold italic cells were drawn with the untouched file
+ * at every cut and disagreed identically because nothing had changed. The
+ * helper now takes the face to cut, and the reading has to be done again.
  */
 const RECORDS = 29;
 const PIXELS = 184;

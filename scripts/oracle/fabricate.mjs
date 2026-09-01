@@ -4478,6 +4478,10 @@ export const FABRICATIONS = [
 
   ...[127, 130].map((keep) => cutProgram(`cour-w-cut-${keep}`, 'w', keep)),
 
+  ...[0, 30, 60, 90, 110, 125, 135, 142].map((keep) =>
+    cutProgram(`courbi-x-cut-${keep}`, 'X', keep, 'COURBI.TTF', false)
+  ),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -4608,33 +4612,35 @@ export function instructionStarts(code) {
  * this asks -- the program is cut after `keep` instructions, so a reading that
  * still agrees says everything up to there is right.
  */
-function cutProgram(name, character, keep) {
+function cutProgram(name, character, keep, source = 'COUR.TTF', instctrl = true) {
   return {
     name,
-    from: 'COUR.TTF',
-    as: 'COUR.TTF',
-    describe: `Courier New hinting its glyphs, with ${character}'s program cut after ${keep} instructions`,
+    from: source,
+    as: source,
+    describe: `${source} with ${character}'s program cut after ${keep} instructions`,
 
     edit: (bytes) => {
-      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
-      const table = tablesOf(view).prep;
+      if (instctrl) {
+        const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+        const table = tablesOf(view).prep;
 
-      let found = 0;
+        let found = 0;
 
-      for (let at = table.offset; at < table.offset + table.length; at++) {
-        if (
-          bytes[at] === 0xb1 &&
-          bytes[at + 1] === 0x01 &&
-          bytes[at + 2] === 0x01 &&
-          bytes[at + 3] === 0x8e
-        ) {
-          bytes[at + 1] = 0x00;
-          found++;
+        for (let at = table.offset; at < table.offset + table.length; at++) {
+          if (
+            bytes[at] === 0xb1 &&
+            bytes[at + 1] === 0x01 &&
+            bytes[at + 2] === 0x01 &&
+            bytes[at + 3] === 0x8e
+          ) {
+            bytes[at + 1] = 0x00;
+            found++;
+          }
         }
-      }
 
-      if (found !== 2) {
-        throw new Error(`expected two INSTCTRL sites in prep, found ${found}`);
+        if (found !== 2) {
+          throw new Error(`expected two INSTCTRL sites in prep, found ${found}`);
+        }
       }
 
       const glyph = glyphFor(bytes, character.charCodeAt(0));
