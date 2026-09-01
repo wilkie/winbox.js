@@ -6305,6 +6305,37 @@ own source will not answer, since at this size the interpreter never runs.
 The sweep is kept regardless. The `hinting` probe is now 1,236 records over six
 characters and **agrees on all of them**.
 
+### The `y`'s outline is right, which withdraws the section before last
+
+Times New Roman's `y` is hinted at the size that fails, so the readout reaches
+it. Five fabrications were built and recorded, over the four points of the tail's
+curve -- 26 on-curve, 27 and 28 the controls, 29 the foot -- reading x, and one
+more reading the foot's **height**.
+
+**All five agree with Windows at every readable size**, the failing one included.
+Point 26 reads at 21 sizes and point 27 at 29, both covering ten pixels per em
+where the pixel goes wrong; the other three cover it or start just above it. Not
+one reading differs by a sixty-fourth.
+
+So the outline at the tail is right, in both axes, and the pixel is still wrong.
+That withdraws what was concluded two sections ago. `WB_ANALYTIC` drawing the
+same wrong pixel was read as saying the outline differed, on the argument that
+two independent fillers agreeing against Windows had to be agreeing about their
+input. They do agree about their input -- and now the input is measured correct,
+so what they share is not the outline but everything between it and the ink:
+the contours are turned into segments and placed into device space by one path
+before either filler sees them.
+
+That is a much smaller place to look, and a different one. The remaining
+candidates are the mapping into device coordinates and the segment construction,
+both of which run once and feed both fillers, and neither of which any readout
+can reach -- a readout reports a point in the glyph's own frame, which is
+precisely the frame now known to be right.
+
+Ten readouts are now kept as a test, all at nought: both waist points of the `8`,
+both diagonal controls and the anchor of the `7`, the interpolated point of the
+`W`, and the five of the `y`.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the

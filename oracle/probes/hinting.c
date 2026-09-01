@@ -172,6 +172,12 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      */
     probeSweep("Courier New", 0, 'g');
 
+    /* Times New Roman's `y`, whose descender tail is the other last pixel.
+     * Unlike Courier's `g` this one is hinted at the size that fails, so a
+     * readout can reach it.
+     */
+    probeSweep("Times New Roman", 0, 'y');
+
     ReleaseDC(NULL, dc);
 
     probeFinish();

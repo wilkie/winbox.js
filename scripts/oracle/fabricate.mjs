@@ -1008,6 +1008,41 @@ function pointReporter(
 }
 
 export const FABRICATIONS = [
+  pointReporter('times-y-tail-right', {
+    character: 'y',
+    point: 26,
+    axis: 'x',
+    drop: ['hdmx', 'LTSH'],
+    describe: "Times New Roman's y reporting the right of its descender tail",
+  }),
+  pointReporter('times-y-tail-depth', {
+    character: 'y',
+    point: 29,
+    axis: 'y',
+    drop: ['hdmx', 'LTSH'],
+    describe: "Times New Roman's y reporting how deep its descender tail reaches",
+  }),
+  pointReporter('times-y-tail-c27', {
+    character: 'y',
+    point: 27,
+    axis: 'x',
+    drop: ['hdmx', 'LTSH'],
+    describe: "Times New Roman's y reporting the upper control of its tail curve",
+  }),
+  pointReporter('times-y-tail-c28', {
+    character: 'y',
+    point: 28,
+    axis: 'x',
+    drop: ['hdmx', 'LTSH'],
+    describe: "Times New Roman's y reporting the lower control of its tail curve",
+  }),
+  pointReporter('times-y-tail-foot', {
+    character: 'y',
+    point: 29,
+    axis: 'x',
+    drop: ['hdmx', 'LTSH'],
+    describe: "Times New Roman's y reporting the foot of its descender tail",
+  }),
   pointReporter('cour-g-tail-left', {
     font: 'COUR.TTF',
     character: 'g',

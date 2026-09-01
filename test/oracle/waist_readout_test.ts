@@ -39,6 +39,11 @@ const WAIST = [
   ['arial-7-diagonal-left', 11, 'Arial', '7'],
   ['arial-7-anchor-high', 13, 'Arial', '7'],
   ['times-W-interpolated', 23, 'Times New Roman', 'W'],
+  ['times-y-tail-right', 26, 'Times New Roman', 'y'],
+  ['times-y-tail-c27', 27, 'Times New Roman', 'y'],
+  ['times-y-tail-c28', 28, 'Times New Roman', 'y'],
+  ['times-y-tail-foot', 29, 'Times New Roman', 'y'],
+  ['times-y-tail-depth', 29, 'Times New Roman', 'y'],
 ] as const;
 
 /** Readable sizes still disagreeing. Both are ceilings. */
@@ -51,6 +56,11 @@ const DIFFER: Record<string, number> = {
   // `IUP` places: both exact, which is what makes the diagonal's error its own.
   'arial-7-anchor-high': 0,
   'times-W-interpolated': 0,
+  'times-y-tail-right': 0,
+  'times-y-tail-c27': 0,
+  'times-y-tail-c28': 0,
+  'times-y-tail-foot': 0,
+  'times-y-tail-depth': 0,
 };
 
 /** Below this the answer is `hdmx`, not the program. */
@@ -94,7 +104,13 @@ if (missing) {
 
           const answer = /advance=(-?\d+),ppem=(\d+)/.exec(record.result);
 
-          if (!answer || Number(answer[1]) < CACHED) {
+          /* The tail's depth is below the baseline, so a genuine reading of it
+           * is negative; a positive one is the ordinary advance answering
+           * instead, the same as a small one is elsewhere.
+           */
+          const reading = Number(answer[1]);
+
+          if (!answer || (name.endsWith('depth') ? reading >= 0 : reading < CACHED)) {
             continue;
           }
 
