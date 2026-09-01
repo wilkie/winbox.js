@@ -119,6 +119,13 @@ if (!existsSync(FIXTURE)) {
  * refused when that is twice the cell or more. A bar reaching 35.00 rows in a
  * cell of eighteen is drawn and one reaching 35.55 is not, which is what says
  * the rounding is to the nearest and not upward or downward.
+ *
+ * And what is counted is bytes rather than rows. A row is padded out to a
+ * multiple of thirty-two bits, so every bar up to here -- three pixels wide,
+ * and the `w` at eight -- cost four bytes a row and could not tell the two
+ * apart. `times-wide` is thirty-six pixels across, eight bytes a row, and is
+ * refused at exactly half as many rows. So the budget is eight bytes for every
+ * row of the cell, which is two cells of the narrowest row there is.
  */
 describe('an outline that reaches out of its cell', () => {
   const TALL = 'oracle/fixtures/fabricated/glyphs-times-tall.json';
@@ -256,6 +263,40 @@ describe('twice the cell, to the row', () => {
 
       // Not every size draws every character; this is what the sweep reaches.
       expect(asked).toBe(29);
+    });
+  });
+});
+
+/**
+ * Rows or bytes.
+ *
+ * `times-wide` is bars thirty-six pixels across, which is eight bytes a row
+ * where every earlier bar was four, and short enough that a budget counted in
+ * rows would draw all of them. They are refused at half the rows instead.
+ */
+describe('what the budget counts', () => {
+  const FIXTURE = 'oracle/fixtures/fabricated/glyphs-times-wide.json';
+
+  const present = existsSync(FIXTURE) ? describe : describe.skip;
+
+  present('is bytes, not rows', () => {
+    const fixture = JSON.parse(readFileSync(FIXTURE, 'utf8'));
+
+    const drew = (character: string) => {
+      const record = fixture.records.find(
+        (row: any) => row.args === `"Times New Roman",h=16,weight=400,italic=0,'${character}'`
+      );
+
+      return rowsOf(record.result).length > 0;
+    };
+
+    it('refuses a wide bar at half the rows a narrow one reaches', () => {
+      /* A cell of sixteen gives thirty-two four-byte rows, and every one of
+       * these is well under that. At eight bytes a row it is sixteen, and that
+       * is where they stop.
+       */
+      expect([drew('W'), drew('g')]).toEqual([true, true]);
+      expect([drew('j'), drew('1'), drew('.')]).toEqual([false, false, false]);
     });
   });
 });

@@ -384,16 +384,33 @@ export class Surface {
        * The same bar thirty rows above does not. So it is not the height of the
        * box, which is the same either way.
        *
-       * Rounded to the nearest row before it is compared, which is the row the
-       * top of the outline lands on. Bars a row apart around the limit put it
-       * between thirty-five and thirty-six rows in a cell of eighteen, and one
-       * reaching 35.55 is refused where one reaching 35.00 is not.
+       * Rounded to the nearest row, which is the row the top of the outline
+       * lands on. Bars a row apart around the limit put it between thirty-five
+       * and thirty-six rows in a cell of eighteen, and one reaching 35.55 is
+       * refused where one reaching 35.00 is not.
        */
-      const spread = reach.length
+      const rows = reach.length
         ? Math.round(Math.max(...reach.map((point: any) => point.y)) * up)
         : 0;
 
-      if (contours.length && spread < 2 * (font.style.ascent + font.style.descent)) {
+      /* And what is really being counted is bytes, not rows.
+       *
+       * A row of a glyph is padded out to a multiple of thirty-two bits, so
+       * every bar asked about at first -- three pixels wide, and the `w` at
+       * eight -- cost four bytes a row and could not tell one from the other.
+       * `times-wide` is thirty-six pixels across, which is eight bytes a row,
+       * and it is refused at exactly half as many rows.
+       */
+      const columns = reach.length
+        ? Math.round(Math.max(...reach.map((point: any) => point.x)) * up) -
+          Math.round(Math.min(...reach.map((point: any) => point.x)) * up)
+        : 0;
+
+      const rowBytes = ((columns + 31) >> 5 || 1) * 4;
+
+      const budget = 8 * (font.style.ascent + font.style.descent);
+
+      if (contours.length && rows * rowBytes < budget) {
         /* An outline face has no bold or italic of its own here -- only the
          * plain file of each family is loaded -- so both are made as the
          * bitmap faces make them: emboldening draws the glyph again a pixel

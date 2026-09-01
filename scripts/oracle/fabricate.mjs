@@ -4361,6 +4361,36 @@ export const FABRICATIONS = [
     },
   },
 
+  /* Whether the limit counts rows or bytes.
+   *
+   * A glyph's rows are padded out to a multiple of thirty-two bits, so every
+   * bar asked about so far -- three pixels wide, and the `w` at eight -- costs
+   * four bytes a row and cannot tell a budget of rows from a budget of bytes.
+   * These are thirty-six pixels wide, which is eight bytes a row, and short
+   * enough that a budget of rows would draw every one of them.
+   */
+  {
+    name: 'times-wide',
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: 'wide bars well inside the row limit, to see whether it is really bytes',
+
+    edit: (bytes) => {
+      // Rows and columns at sixteen, where the cell is sixteen and the em fourteen.
+      const at = (pixels) => Math.round((pixels * 2048) / 14);
+
+      ['W', 'g', 'j', '1', '.'].forEach((character, index) => {
+        setGlyph(bytes, null, glyphFor(bytes, character.charCodeAt(0)), {
+          width: at(36),
+          height: at([12, 14, 16, 18, 20][index]),
+          program: [...ops.yAxis()],
+        });
+      });
+
+      return bytes;
+    },
+  },
+
   bar('times-cell-edge', {
     /* These five and no others. The probe draws six characters of a named face
      * and `A` is one of them, but `A` is also the component every accented `A`
