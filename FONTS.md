@@ -5671,39 +5671,48 @@ Windows the question directly, with a fabrication built for it: an isolated bar
 with a deliberate protrusion at one end only, so that the two ends of the same
 run differ in exactly the thing the stub check looks at.
 
-### Asking Windows directly: continuation is enough, wherever it is
+### Asking Windows directly, and a comparison that was confounded
 
-`cour-stubs` puts the question that inference kept failing at. The same
-sub-pixel post four times over, with an arm at the top, at the bottom, at both,
-and at neither; the arm wide and thick enough that no size in the sweep can lose
-it, so it is continuation and nothing else. Recorded against Windows the same way
-as everything else here:
+`cour-stubs` puts the question that inference kept failing at. The same sub-pixel
+post four times over, with an arm at the top, at the bottom, at both, and at
+neither; the arm wide and thick enough that no size in the sweep can lose it.
+Recorded against Windows:
 
     neither    65 cells, 36 disagree, 72 wrong pixels
     top arm    65 cells,  0 disagree
     foot arm   63 cells,  0 disagree
     both       64 cells,  0 disagree
 
-An arm anywhere is enough, and the "anywhere" is the interesting part. A post
-carrying an arm only at the **top** draws its bare **bottom** row correctly as
-well -- at sixteen pixels the arm is row 3 and the post runs 4 to 11, and row 11
-is drawn by both. The bare post at the same size draws rows 3 to 11 in Windows
-and 4 to 10 in ours, losing both ends.
+An arm anywhere makes the cell exact. The first reading of that was that an arm
+at the top must therefore rescue the bare bottom row nine rows away, and that the
+rule could not be local. **That reading was wrong**, and it was wrong because the
+two glyphs compared -- `A` and `g` -- differ in phase as well as in the arm. The
+variants are laid out as `thin = THIN[i % 3]`, `phase = PHASE[(i / 3) % 3]`,
+`which = (i / 9) % 4`, so a matched pair differs by exactly nine: `A` bare
+against `X` armed, both a third of a pixel wide on the same phase.
 
-The two bottoms are geometrically identical: the same edge at the same y, the
-same width, the same phase. So whatever the arm changes, it is not local to the
-row being decided, and a rule applied once per row on that row's neighbours
-cannot be the whole of it. That rules out the last reading of the stub check that
-survived the previous sections, and it is a positive result rather than another
-door closed: the thing to look for now is what an arm puts in the lists that a
-bare post does not, and why it reaches nine rows away.
+The matched pair says the opposite. At sixteen pixels:
 
-Two smaller things the recording settles. The bare post disagrees on 36 of its 65
-cells, not all of them, so the failure is phase- and size-dependent rather than
-structural -- there are sizes at which an isolated post comes out right. And the
-whole of `cour-stubs` is 222 of 258 cells and 72 wrong pixels, every one of them
-in the bare quarter, which is `cour-bars`' upright population reproduced in a
-fabrication built to isolate it.
+    A  (bare)      windows rows 3 to 11      ours rows 4 to 10
+    X  (top arm)   windows rows 3 to 10      ours rows 3 to 10
+
+`X`'s arm is row 3 and its post runs 4 to 11, and **row 11 is drawn by neither**.
+Windows declines the bare bottom end exactly as we do. The arm does not reach it;
+the rule is local after all, and every local reading of it still holds.
+
+What is left is stranger and much more specific. With continuation at one end,
+Windows declines the other end just as we do. With **no** continuation anywhere,
+Windows draws both ends and we draw neither. The lists say the same thing from
+the other side: `X`'s post rows are `on [6] off [6]`, a zero-length run rescued
+under the stub check, and ours match Windows row for row. `A`'s post rows are
+`on [6] off [6]` in ours as well -- but Windows fills nine rows, which a
+zero-length run cannot do.
+
+So for the wholly isolated post, our crossings and Windows' must differ, and for
+the armed post they agree. The one structural difference between the two is the
+box: `A` is `left 6, right 7`, a single column, and `X` is `left 6, right 10`.
+That is the same shape of question as the collapsed box in y, which turned out to
+matter, and it is where to look next.
 
 ### There is no threshold, because the decision is not local
 

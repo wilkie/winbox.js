@@ -91,10 +91,10 @@ if (!existsSync(FIXTURE)) {
           .join('\n')
       );
 
-      /* An arm anywhere is sufficient, and it is sufficient at the far end as
-       * well as the near one -- a post with an arm only at the top draws its
-       * bare bottom row correctly too, which is not what a rule applied once per
-       * row would give.
+      /* An arm at either end makes the cell exact, but not by rescuing the far
+       * end: with an arm at the top, Windows declines the bare bottom row just
+       * as we do, and the two agree because both leave it out. What an arm
+       * changes is the glyph it is attached to, not the row nine away.
        */
       for (const kind of ['top arm', 'foot arm', 'both']) {
         expect(tally.get(kind)!.bad).toBe(0);
