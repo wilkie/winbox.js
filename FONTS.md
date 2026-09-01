@@ -5499,6 +5499,56 @@ the `SCANTYPE` reading assumes, or Windows' lists are not empty here and its
 horizontal edges contribute a crossing ours do not. Both are checkable and
 neither has been checked.
 
+### The stub check is gated, and we apply it unconditionally
+
+The previous section left two checkable things. The first is answered: the
+shipped dropout pass does carry a stub check, and it does not always run it.
+
+It is one fused routine rather than the source's `LookForDropouts` calling
+`DoHorizDropout`. Segment 42 at 0x978 walks the two lists in step -- 0xa47 to
+0xa5f scans the off list forward until it reaches the on value, 0xa61 tests them
+for equality, and a zero-length run falls through to the work. The horizontal
+pass is 0xa2f to 0xafd and the vertical one mirrors it at 0xb7a to 0xc83.
+
+The stub check sits between them, and it is guarded:
+
+    0a69  mov ax,[bp-0x36]
+    0a6c  or  ax,[bp-0x38]
+    0a6f  jz  0xac5          ; straight to the placement, no stub check
+    0a71  ...two crossing counts, each compared with 2...
+
+Those two words are the routine's register parameters spilled by the `push dx` /
+`push ax` at its head, and the head then does `mov word [bp-0x38],0` and `and
+word [bp-0x36],byte +0x1`. So the gate is bit 0 of the **high** word of a
+thirty-two bit scan kind, and the caller at 0x580 refuses to call the routine at
+all when that same thirty-two bit value is nought:
+
+    0580  mov ax,[bp+0x8]
+    0583  or  ax,[bp+0x6]
+    0586  jz  0x593          ; no dropout pass whatever
+    0590  call 0x978
+
+So there are two independent switches, one turning dropout control off entirely
+and one turning the stub check off while leaving the rescues on. **We model the
+first and not the second: our stub check always runs.** That is exactly the shape
+the upright bars need -- with the check skipped, `cour-bars` is 258 of 258 cells
+and no wrong pixels.
+
+The counter at 0xe28 is faithful otherwise. It sums the same three terms, guards
+each with a bound comparison the way `HorizCrossings` and `VertCrossings` return
+nought outside the band and the box, and gives up early once the total reaches
+two.
+
+What is still missing is the flag's value. The scan kind reaching this routine is
+thirty-two bits and is not the byte offset in `[0x1ce]` that `CalcLine` dispatches
+through; it is built further up, where GDI turns a `SCANTYPE` into whatever the
+scaler wants. Until that is traced the honest position is that we apply a check
+the shipped code applies conditionally, that turning it off fixes every upright
+bar, and that turning it off also costs 1,111 pixels on fixtures built for other
+questions -- which means either those fixtures are wrong for reasons this check
+has been masking, or the flag is set for them and not for the bars. Nothing here
+distinguishes those, so nothing is changed.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
