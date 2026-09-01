@@ -519,7 +519,10 @@ export function fillWalked(contours, options) {
    * so the x box keeps its minimum. Letting it collapse as well costs 5,368
    * pixels, and the asymmetry is the source's, not a guess.
    */
-  const boxRight = Math.max(boxLeft + 1, Math.floor(rightmost + 0.5));
+  const wanted = Math.floor(rightmost + 0.5);
+  const boxRight = Math.max(boxLeft + 1, wanted);
+  // The box would have collapsed in x, and only the minimum keeps it a column.
+  const narrow = wanted <= boxLeft;
   const boxBottom = Math.floor(lowest + 0.5);
 
   const rescues: any[] = [];
@@ -580,7 +583,37 @@ export function fillWalked(contours, options) {
       return countHoriz(on, rescue.row + step) + countVert(on - 1, at) + countVert(on, at) >= 2;
     };
 
-    if (!continues(-1) || !continues(1)) {
+    /* A glyph narrower than the gap between two sample columns is not asked
+     * whether anything continues from it.
+     *
+     * The stub check suppresses a short protrusion off a main stroke, and it
+     * does that by requiring a crossing on both sides of the row being rescued.
+     * At the first and last row of an isolated run there is nothing on one
+     * side, so it declines -- which is right for a stub and wrong for a glyph
+     * that is nothing but the run.
+     *
+     * **Recorded**, by `cour-stubs`, which is the same sub-pixel post four times
+     * over with an arm at the top, at the bottom, at both, and at neither. The
+     * four answers are exhaustive and they disagree:
+     *
+     *     stub check   neither   top arm   foot arm   both
+     *     applied       36 bad     0 bad     0 bad    0 bad
+     *     skipped        0 bad    35 bad    35 bad    0 bad
+     *
+     * So the check is needed wherever an arm gives it something to find and
+     * must not run where nothing can. The two cases differ in the box and in
+     * nothing else: the bare post is one column wide and the armed ones are
+     * four, and the bare post's box is a column only because the minimum below
+     * makes it one -- rounded honestly it collapses, exactly as the box in y
+     * collapses for a bar lying between two scanlines.
+     *
+     * This one is measured rather than read. The gate in the shipped code at
+     * segment 42 0x0a69 is the scan kind and not the box, and the counter's own
+     * guards at 0x0e60 and 0x0e8a make the vertical terms nought outside the box
+     * rather than skipping the decision. So the rule is right about every cell
+     * recorded and its mechanism is not yet located; `FONTS.md` says so.
+     */
+    if (!narrow && (!continues(-1) || !continues(1))) {
       continue;
     }
 
@@ -826,7 +859,10 @@ export function fill(contours, options) {
   }
 
   const boxLeft = Math.ceil(leftmost - 0.5);
-  const boxRight = Math.max(boxLeft + 1, Math.floor(rightmost + 0.5));
+  const wanted = Math.floor(rightmost + 0.5);
+  const boxRight = Math.max(boxLeft + 1, wanted);
+  // The box would have collapsed in x, and only the minimum keeps it a column.
+  const narrow = wanted <= boxLeft;
 
   /* The same box down the other axis. `PerformVertDropout` caps its chosen row
    * into `[boxBottom, boxTop)` exactly as the horizontal pass caps its column,

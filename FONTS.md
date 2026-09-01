@@ -5714,6 +5714,52 @@ box: `A` is `left 6, right 7`, a single column, and `X` is `left 6, right 10`.
 That is the same shape of question as the collapsed box in y, which turned out to
 matter, and it is where to look next.
 
+### A glyph narrower than a sample gap is not asked about continuation
+
+`cour-stubs` turns out to be exhaustive, and the four answers settle it. With the
+stub check applied and with it skipped:
+
+    stub check   neither   top arm   foot arm   both
+    applied       36 bad     0 bad     0 bad    0 bad
+    skipped        0 bad    35 bad    35 bad    0 bad
+
+Neither setting is right for all four, and no reading of the check's terms can be,
+because the two middle columns want it and the first wants it gone. `both` is
+insensitive, as it should be: continuation at each end means the check passes
+either way.
+
+The bare post and the armed ones differ in the box and in nothing else. The bare
+post is `left 6, right 7` and the armed ones `left 6, right 10` -- and the bare
+post's box is a column only because the minimum makes it one. Rounded honestly it
+collapses, exactly as the box in y collapses for a bar lying between two
+scanlines, which was worth 704 pixels a few sections ago.
+
+Skipping the stub check when the box would have collapsed in x is worth a great
+deal more. `cour-bars` goes from 209 cells and 426 wrong pixels to **258 of 258
+and none**; `cour-stubs` from 222 and 72 to **258 and none**; the fabricated set
+from 6,763 of 7,308 cells and 1,185 wrong pixels to **7,250 and 85**. Four
+fabrications still carry an error at all: `cour-no-instctrl` 32 pixels,
+`cour-boxes` 30, `cour-widths` 20, `times-cvt0-fine` 3.
+
+The reasoning behind it is that the stub check exists to suppress a short
+protrusion off a main stroke, and it does that by demanding a crossing either
+side of the row being rescued. A glyph that is nothing but the run has no main
+stroke for anything to be a stub of, and the question is not meaningful; at the
+first and last row of such a run there is nothing on one side and the check
+declines, which is right for a stub and wrong for a whole glyph.
+
+**This one is measured rather than read, and that should be said plainly.** The
+gate in the shipped code at segment 42 0x0a69 is the scan kind, not the box, and
+the counter's own guards at 0x0e60 and 0x0e8a make the vertical terms nought
+outside the box rather than skipping the decision. So there is a rule here that
+is right about every recorded cell in two fabrications built to isolate it and
+wrong about nothing, and its mechanism has not been found in the binary. It is
+the only rule in the rasteriser in that position, and it is the first place to
+look if any of it stops holding.
+
+The recorded letters do not move: thirty-three records and fifty-eight pixels,
+96.1 per cent. Nothing in a real face is narrower than a sample column.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
