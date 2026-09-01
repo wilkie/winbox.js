@@ -3647,6 +3647,16 @@ export const FABRICATIONS = [
    * Both fabrications put an unmistakable number on the advance phantom first
    * and only then go wrong, so the answer is already made when the error
    * happens. The control does not go wrong at all.
+   *
+   * There is no answer here yet. `abort-none` records in the ordinary time and
+   * reports its number; `abort-illegal` has twice run the recorder out of its
+   * five minutes with nothing written, once on its own and once in a batch
+   * where all three of its neighbours finished. So an instruction the scaler
+   * does not know is not shrugged off -- something downstream of the error
+   * stops making progress -- but what becomes of the work already done cannot
+   * be read out of a recording that never ends. Asking for `abort-illegal` will
+   * cost five minutes and produce nothing until there is a way to ask that
+   * survives the answer.
    */
   ...[
     ['abort-illegal', [0x7b], 'and then meets an instruction that does not exist'],
