@@ -4339,11 +4339,15 @@ export const FABRICATIONS = [
     name: 'cour-tall',
     from: 'COUR.TTF',
     as: 'COUR.TTF',
-    describe: 'bars around twice the two extents Courier New declares for itself',
+    describe: 'bars a row apart around the limit, at the size that brackets it',
 
     edit: (bytes) => {
-      // 2.051, 2.100, 2.148, 2.222 and 2.295 ems.
-      const HEIGHTS = [4200, 4300, 4400, 4550, 4700];
+      /* Whole pixels at sixteen pixels per em, which is what Courier New is
+       * given for a cell of eighteen -- the one size where twice the cell does
+       * not predict what Windows does. Thirty-three through thirty-seven
+       * brackets it to a row.
+       */
+      const HEIGHTS = [33, 34, 35, 36, 37].map((pixels) => pixels * 128);
 
       ['W', 'g', 'j', '1', '.'].forEach((character, at) => {
         setGlyph(bytes, null, glyphFor(bytes, character.charCodeAt(0)), {

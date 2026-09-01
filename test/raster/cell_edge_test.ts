@@ -112,6 +112,13 @@ if (!existsSync(FIXTURE)) {
  * `times-tall` asks the question with no hinting in the way: five glyphs that
  * are nothing but an upright bar on the baseline, each taller than the last.
  * What comes back is everything under twice the cell and nothing at or past it.
+ *
+ * `cour-tall` then puts bars a single row apart around the limit, at the seven
+ * sizes Courier New is given, which pins it: the reach is rounded to the
+ * nearest row -- the row the top of the outline lands on -- and the glyph is
+ * refused when that is twice the cell or more. A bar reaching 35.00 rows in a
+ * cell of eighteen is drawn and one reaching 35.55 is not, which is what says
+ * the rounding is to the nearest and not upward or downward.
  */
 describe('an outline that reaches out of its cell', () => {
   const TALL = 'oracle/fixtures/fabricated/glyphs-times-tall.json';
@@ -182,6 +189,73 @@ describe('an outline that reaches out of its cell', () => {
        * letters; its fifth bar measures twenty-nine pixels against a cell of
        * twelve and is the one that does not come back.
        */
+    });
+  });
+});
+
+/**
+ * The limit, bracketed to a row at every size one face is given.
+ *
+ * `cour-tall` is five bars a single row apart. Where the bracket falls says
+ * both what the limit is twice of and how the reach is rounded before it is
+ * compared -- which is to the nearest row, since a bar reaching 35.00 rows in a
+ * cell of eighteen comes back and one reaching 35.55 does not.
+ */
+describe('twice the cell, to the row', () => {
+  const FIXTURE = 'oracle/fixtures/fabricated/glyphs-cour-tall.json';
+
+  const present = existsSync(FIXTURE) ? describe : describe.skip;
+
+  present('brackets the limit', () => {
+    const fixture = JSON.parse(readFileSync(FIXTURE, 'utf8'));
+
+    /** Cell height and pixels per em, as Windows reports and chooses them. */
+    const SIZES: [number, number, number][] = [
+      [10, 8, 8],
+      [12, 12, 9],
+      [14, 14, 11],
+      [16, 16, 13],
+      [18, 18, 16],
+      [20, 20, 17],
+      [24, 24, 22],
+    ];
+
+    /** The bar in each glyph, in whole rows at sixteen pixels per em. */
+    const BARS: [string, number][] = [
+      ['W', 33],
+      ['g', 34],
+      ['j', 35],
+      ['1', 36],
+      ['.', 37],
+    ];
+
+    it('agrees with twice the cell at every one of them', () => {
+      let asked = 0;
+
+      for (const [height, cell, ppem] of SIZES) {
+        for (const [character, rows] of BARS) {
+          const record = fixture.records.find(
+            (row: any) =>
+              row.args === `"Courier New",h=${height},weight=400,italic=0,'${character}'`
+          );
+
+          if (!record) {
+            continue;
+          }
+
+          asked++;
+
+          // The bar is written in units of a row at sixteen pixels per em.
+          const reach = Math.round((rows * 128 * ppem) / 2048);
+
+          expect(
+            `${cell}/${rows}: ${rowsOf(record.result).length > 0 ? 'drawn' : 'refused'}`
+          ).toEqual(`${cell}/${rows}: ${reach >= 2 * cell ? 'refused' : 'drawn'}`);
+        }
+      }
+
+      // Not every size draws every character; this is what the sweep reaches.
+      expect(asked).toBe(29);
     });
   });
 });
