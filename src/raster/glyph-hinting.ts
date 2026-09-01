@@ -596,6 +596,25 @@ export class Hinter {
     zone.originalX = zone.x.slice();
     zone.originalY = zone.y.slice();
 
+    /* Except the advance phantom, which remembers where the scaling left it
+     * rather than where the rounding put it.
+     *
+     * Every other point starts where it starts and is remembered there. This
+     * one is moved onto the grid before the program runs -- see `grid` above --
+     * and the position it is remembered as having started from is the one
+     * before that move. So a program asking how far it has travelled is told
+     * the fraction of a pixel the rounding took, and a `SHP` against it carries
+     * that fraction into the letter.
+     *
+     * **Recorded.** Courier New's bold italic `X` is the glyph that showed it:
+     * its program shifts a point against the advance phantom five instructions
+     * in, which does nothing at all if the phantom has not moved, and cutting
+     * the program either side of that shift is where the letter starts
+     * disagreeing. Thirteen of the bold and italic cells come right with this
+     * and none goes wrong.
+     */
+    zone.originalX[zone.x.length - 3] = origin + this.toPixels(advance);
+
     /* A composite has no design coordinates, so its scaled ones stand in.
      *
      * `IP`, `IUP` and `MDRP` all take a proportion or a distance from where a

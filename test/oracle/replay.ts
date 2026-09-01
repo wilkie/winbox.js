@@ -1271,8 +1271,7 @@ export class Unimplemented extends Error {}
  * All 2,574 records agree.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  glyph:
-    'twenty-nine cells of 3,546, all in the bold and italic files the probe has only now begun to draw',
+  glyph: 'sixteen cells of 3,546, all in the bold and italic files, every one a diagonal letter',
 };
 
 /**

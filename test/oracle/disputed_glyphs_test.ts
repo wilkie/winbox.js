@@ -33,17 +33,18 @@ import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './repl
  * Two thirds are Courier New and two thirds are bold italic, and every letter
  * involved has a diagonal in it -- K, X, Z, k, 7, M, N, t, y, m, 4, B.
  *
- * Courier New's bold italic `X` has been bisected properly. With no program at
- * all it agrees at every size, so the scaling and the scan conversion are
- * right and it is the hinting that goes wrong. Cutting after 4, 8, 12, 16, 20
- * and 25 instructions still agrees; cutting after 26 does not, at twelve and
- * twenty-four. The instruction between the two is a `SHP` -- and in our run
- * that `SHP` shifts by nothing at all, its reference point not having moved.
- * So what differs is the state it reads rather than what it does with it, and
- * the `CALL` five instructions earlier is the next thing to look inside.
+ * Thirteen of the twenty-nine came right when the advance phantom was made to
+ * remember where the scaling left it rather than where the rounding put it; see
+ * `Hinter.hint`. Bisecting Courier New's bold italic `X` is what found it -- the
+ * letter agrees with no program at all, and starts disagreeing across a single
+ * `SHP` that shifts against that phantom.
+ *
+ * What is left is sixteen cells and forty-eight pixels, still every one of them
+ * a letter with a diagonal, still two thirds Courier New, and now led by `K`,
+ * which is six of them.
  */
-const RECORDS = 29;
-const PIXELS = 184;
+const RECORDS = 16;
+const PIXELS = 48;
 
 /** The recorded bitmap is one bit per pixel, set where the probe left white. */
 function inkOf(hex: string) {
