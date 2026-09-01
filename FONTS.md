@@ -6016,6 +6016,45 @@ Every readable reading of both waist points now matches Windows exactly, where
 before not one of them did. The degenerate case still shifts rather than scales:
 two references at the same original position give no ratio to scale by.
 
+### `IUP` was truncating to pay for `IP`, and stops
+
+With `IP` fixed, the first thing worth re-asking is what else was fitted while it
+was wrong. `IUP` interpolates an untouched point between the two touched ones
+that bracket it, and ours truncated the result. The case recorded for that was
+that rounding cost six of the 846 recorded glyphs, visible as diagonal edges
+drawn a column across from where Windows draws them.
+
+That measurement was taken while `IP` was carrying points outside its references
+rigidly instead of extrapolating them, so a bias in one interpolation was being
+paid for by a bias in the other. Asked again:
+
+    truncate   25 records, 35 px   7,254 cells, 79 wrong   97.0%
+    round      20 records, 28 px   7,255 cells, 76 wrong   97.6%
+    floor      identical to truncate on every fixture
+
+Rounding now wins on both, and `font`, `hinting` and `text` stay at 100 per cent
+either way. So the truncation is gone, and with it the last rule in the
+interpreter that existed only because a count came out lower with it.
+
+    recorded letters      33 records, 58 px  ->  20 records, 28 px
+    outline glyphs        96.1%  ->  97.6%
+    fabricated cells      7,250 / 85 wrong   ->  7,255 / 76 wrong
+
+Two things fell out of the `8` between them: `IP` extrapolating, and `IUP`
+rounding. Times New Roman's `8` is gone from the list at all five sizes, and so
+is Courier New's `t` at all three.
+
+What is left is twenty records over twenty distinct glyphs, none failing at more
+than two sizes and fourteen of them by a single pixel. There is no glyph left to
+attack the way the `8` was attacked -- the concentration that made it worth
+building a readout for is gone, and what remains is the thin spread that a
+sixty-fourth either way produces at one size and not the next.
+
+The general lesson is worth keeping, since it has now cost twice: **a rule fitted
+to ink is fitted to every mistake upstream of the ink as well**, and it holds
+only until one of them is found. Both of these were justified by a count, both
+counts were real, and both were measuring something else.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the

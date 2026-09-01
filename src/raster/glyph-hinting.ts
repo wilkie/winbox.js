@@ -2428,42 +2428,32 @@ export class Hinter {
     /* Proportionally, so the shape between the anchors survives -- and the
      * division **truncates** rather than rounding.
      *
-     * Rounding here and truncating there is worth six of the 846 recorded
-     * glyphs, and it is visible in them as a shape rather than as a count:
-     * almost every one of the six is a diagonal edge drawn one column across
-     * from where Windows draws it, an `M` and an `i` side by side in the same
-     * row. A diagonal is exactly what this places -- the program hints the
-     * stems and the ends and lets `IUP` carry the slope between them -- so half
-     * a sixty-fourth of bias in the interpolation is enough to move which
-     * column a pixel centre falls in.
+     * This truncated until `IP` was fixed, and the truncation was fitted to the
+     * error `IP` was making.
      *
-     * **Measured** against the recorded glyphs, and free against everything
-     * else: `hdmx`, the metrics and the swept advances are unmoved, which is
-     * unsurprising since an advance is a phantom point and phantom points are
-     * touched. Truncating toward zero and truncating downward score the same on
-     * every fixture, so the recording does not say which; toward zero is what
-     * the interpreter's own `divide` does, and following it keeps one rule
-     * rather than two.
+     * The case for it was that rounding here cost six of the 846 recorded
+     * glyphs, visible as a shape rather than a count: diagonal edges drawn a
+     * column across from where Windows draws them. That was measured while `IP`
+     * was carrying points outside its references rigidly instead of
+     * extrapolating them, and a bias in one interpolation was being paid for by
+     * a bias in the other. With `IP` reading the way the readout says Windows
+     * reads it, the measurement reverses -- rounding is worth five recorded
+     * glyphs and three fabricated pixels over truncating, and truncating has
+     * nothing left to recommend it.
      *
-     * Nor is it the same fault as `IP`'s. That instruction had to be given the
-     * *design* coordinates because a ratio of two numbers already quantised to
-     * sixty-fourths has lost the precision the ratio needed -- and the same
-     * change made here moves nothing at all: 701 glyphs either way, and every
-     * record of the other two fixtures unchanged. The anchors of an `IUP` run
-     * are two points of the same contour with the interpolated point between
-     * them, so the quantisation is small against the span it divides.
-     * **Measured.**
+     *     truncate   25 records, 35 px   7,254 cells, 79 wrong   97.0%
+     *     round      20 records, 28 px   7,255 cells, 76 wrong   97.6%
+     *     floor      the same as truncate, on every fixture
      *
-     * **It is this instruction and not the arithmetic generally.** The same
-     * sweep over `IP`, which interpolates a point between two references and is
-     * the same shape of calculation, says rounding: 687 glyphs against 679 for
-     * truncation. Over `movePoint`, which distributes a distance along the
-     * freedom vector, it says rounding again: 687 against 676. Both were fitted
-     * on the narrow fixture and both survive the wide one unchanged. So the
-     * interpreter rounds everywhere it divides except here.
+     * Free against everything else, as before: `hdmx`, the metrics, the swept
+     * advances and the whole `font`, `hinting` and `text` probes are unmoved.
+     *
+     * The lesson is the one the `IP` fix carried too. A rule fitted to ink is
+     * fitted to every mistake upstream of the ink as well, and it holds only
+     * until one of them is found.
      */
     const across = (original[index] - lowOriginal) / (highOriginal - lowOriginal);
 
-    current[index] = Math.trunc(low + across * (high - low));
+    current[index] = Math.round(low + across * (high - low));
   }
 }
