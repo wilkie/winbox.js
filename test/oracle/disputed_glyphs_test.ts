@@ -15,15 +15,13 @@
 
 import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './replay.js';
 
-/* What is left. Both are ceilings: neither may rise.
+/* Nothing is left. Both are ceilings: neither may rise.
  *
- * Five cells, all the right guillemet in Times New Roman, which is a simple
- * glyph nothing had drawn until the sweep was widened past the accented letters
- * to the punctuation below them. Its mirror image, the left guillemet, is
- * exact at every size.
+ * The last of them was Times New Roman's right guillemet, the one glyph in the
+ * recorded set that moves its origin phantom; see `Hinter.hint`.
  */
-const RECORDS = 5;
-const PIXELS = 188;
+const RECORDS = 0;
+const PIXELS = 0;
 
 /** The recorded bitmap is one bit per pixel, set where the probe left white. */
 function inkOf(hex: string) {

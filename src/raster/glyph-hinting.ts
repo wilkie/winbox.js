@@ -655,6 +655,23 @@ export class Hinter {
      */
     const hinted: any[] = [];
 
+    /* Where the pen ended up, which is not always where it started.
+     *
+     * The origin phantom stands for the pen, and a program may move it -- so
+     * the outline is carried back onto wherever it finished rather than onto
+     * where it began. While it stays put the two are the same thing, and the
+     * difference is the whole pixels of the side bearing that were taken out of
+     * the outline earlier, put back.
+     *
+     * **Recorded.** Times New Roman's right guillemet is the glyph that moves
+     * it: its last instruction before the interpolation shifts the origin a
+     * whole pixel, one way at some sizes and the other way at others, and the
+     * letter came out that far from where Windows draws it at every size where
+     * it moved and nowhere else. Its mirror image, the left guillemet, moves
+     * the advance phantom instead and was right all along.
+     */
+    const pen = zone.x[zone.x.length - 4];
+
     let index = 0;
 
     for (const contour of outline) {
@@ -662,7 +679,7 @@ export class Hinter {
 
       for (let point = 0; point < contour.length; point++) {
         shape.push({
-          x: (zone.x[index] + whole) / ONE,
+          x: (zone.x[index] - pen) / ONE,
           y: zone.y[index] / ONE,
           on: zone.onCurve[index],
         });

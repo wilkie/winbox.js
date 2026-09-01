@@ -1263,12 +1263,14 @@ export class Unimplemented extends Error {}
  * Widening it again to the punctuation below them found two more letters that
  * had never been drawn either. The middle dot turned out not to be a drawing
  * question at all -- Windows draws a different glyph for that byte than the
- * one Latin-1 asks for, see `TrueTypeFont.ANSI`. The right guillemet is what
- * is left, and it is an ordinary hinting disagreement.
+ * one Latin-1 asks for, see `TrueTypeFont.ANSI`. The right guillemet was the
+ * one glyph in the recorded set that moves its origin phantom, and the outline
+ * has to be carried back onto where the pen finished rather than where it
+ * started.
+ *
+ * All 2,574 records agree.
  */
-export const KNOWN_GAPS: Record<string, string> = {
-  glyph: "five cells of 2,574: Times New Roman's right guillemet",
-};
+export const KNOWN_GAPS: Record<string, string> = {};
 
 /**
  * Functions a module declares but wires to a stub.
