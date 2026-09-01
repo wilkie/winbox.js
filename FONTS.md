@@ -5798,6 +5798,41 @@ Segment 42 remains the walk on our path: the scaler in segment 36 calls 42 at
 this route. So the routines read here are the ones that run. Whether segment 43
 answers the question the box asks is untested, and is the obvious next place.
 
+### Segment 43 is the smart path, and it is dead here
+
+The second walk does not answer the box question, and what it is worth is the
+identification.
+
+It carries no stub check. The whole segment has one comparison against two, at
+0x0246, and it guards a far call through a table with a halved count -- a
+banding or sorting decision, not a dropout. Nothing in it counts crossings on
+either side of a row.
+
+Nor is it on our path. Every far reference into either segment, taken from the
+relocation chains, is this:
+
+    seg  8 -> seg 43   call 43:0x292
+    seg 36 -> seg 42   call 42:0x42
+    seg 36 -> seg 42   call 42:0xf2a
+    seg 48 -> seg 43   five data references at 0x8a8 to 0x8b8
+
+The scaler in segment 36 calls only segment 42. Segment 43 is reached from
+segment 8 and from five words in DGROUP four bytes apart, which are far pointers
+whose offsets survive in the fixup chain as 0x14ca, 0x1548, 0x15c6, 0x1672 and
+0x1672 -- five entries with the last two identical, the same shape of table as
+the dispatch in segment 47 where the unused slot repeats its neighbour.
+
+Five callbacks into a segment with its own element walk is `fsc_SetupCallBacks`
+and the `pfnHCallBack` and `pfnVCallBack` arrays, which exist so that **smart**
+dropout control can ask a spline where it really crosses a scanline. That is why
+the segment needs an element walk of its own: the smart path records an element
+tag beside each crossing, which the simple path does not. All four installed
+faces report `SCANTYPE` 1, simple dropout, so none of it runs.
+
+So the lead is closed rather than followed. The mechanism behind the narrow-box
+rule is not in segment 43, because segment 43 is not executed for any glyph
+measured here.
+
 ### There is no threshold, because the decision is not local
 
 If everything left is a curve passing within a sixty-fourth of a sample, the
