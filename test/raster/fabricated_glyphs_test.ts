@@ -45,6 +45,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
+import { FontManager } from '../../src/win16/font-manager.js';
 import { TrueTypeFont } from '../../src/raster/truetype-font.js';
 import { prepareFonts, replayRecord } from '../oracle/replay.js';
 
@@ -149,7 +150,10 @@ describe('the fabricated glyph recordings', () => {
     const face = font.faceName;
     const installed = manager._outlines[face];
 
-    manager._outlines[face] = { regular: font };
+    manager._outlines[face] = {
+      ...(installed ?? {}),
+      [FontManager.styleKey(font.boldFace, font.italicFace)]: font,
+    };
 
     const wide = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
     const seen = new Set<string>();
@@ -199,7 +203,10 @@ describe('the fabricated glyph recordings', () => {
     const face = font.faceName;
     const installed = manager._outlines[face];
 
-    manager._outlines[face] = { regular: font };
+    manager._outlines[face] = {
+      ...(installed ?? {}),
+      [FontManager.styleKey(font.boldFace, font.italicFace)]: font,
+    };
 
     const wide = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
     const seen = new Set<string>();
@@ -259,7 +266,10 @@ describe('the fabricated glyph recordings', () => {
          */
         const installed = manager._outlines[face];
 
-        manager._outlines[face] = { regular: font };
+        manager._outlines[face] = {
+          ...(installed ?? {}),
+          [FontManager.styleKey(font.boldFace, font.italicFace)]: font,
+        };
 
         let fileExact = 0;
         let fileWrong = 0;

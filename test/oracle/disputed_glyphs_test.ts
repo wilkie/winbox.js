@@ -61,9 +61,20 @@ import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './repl
  * one of its own points by sixteen times the distance between the two that
  * define the arm reports that distance as ink, and both the horizontal and the
  * vertical reading agree with Windows at every size. So the arm's two endpoints
- * are where Windows has them to within a sixteenth of a pixel, and what differs
- * is downstream of them: the normalising of the vector between them, or what
- * the function at ninety-one does with it.
+ * are where Windows has them to within a sixteenth of a pixel.
+ *
+ * A sixteenth is not fine enough -- the function divides the vector by a
+ * hundred and twenty-eight, so a fortieth of a pixel in the arm would change
+ * its answer -- so the reading was taken again at sixty-four times, one base to
+ * a size. It agrees there too. The arm is where Windows has it to a
+ * sixty-fourth of a pixel at both sizes that disagree.
+ *
+ * So the function at ninety-one is handed the same arm and answers differently.
+ * What it reads besides the arm is a control value, a storage location and the
+ * projection vector, and what it does with them is a rounding, a smaller-of and
+ * a divide. One of those is the difference. Normalising was the first suspect
+ * and is not it: reordering it to match the scaler changes nothing measurable,
+ * and so does writing it out in the scaler's own fixed point.
  */
 const RECORDS = 16;
 const PIXELS = 48;
