@@ -627,11 +627,47 @@ top-right corner: `(5.428, 2.848)` rounds to column 5, row 3. The same holds for
 the fifteen pixel bar's stray bottom pixel -- the bottom-left corner
 `(2.469, 14.344)` rounds to column 2, and clamped into the glyph's rows that is
 row 13, which is exactly where the extra `2` appears. It is not a general rule --
-the twenty pixel bar's top-right corner at column 8 is not inked -- so it is a
-lead rather than an answer, and the place to point the next instrument is the
-endpoint topology at a corner where a horizontal edge meets an oblique one. Ours
-fires only for a vertex lying exactly on a scanline, and a sheared bar has no
-such vertex.
+the twenty pixel bar's top-right corner at column 8 is not inked -- so it wanted
+an instrument, and got one.
+
+### `corner-phase`, and what the corner turns out to be
+
+`corner-phase` is `symbol-slant`'s bar with its top corner walked through a
+pixel: twelve steps of the side bearing across, three of the bar's height down,
+every pair, one to a letter. Upright, every cell of it is exact, which is what
+says the sweep is a sweep of phase and nothing else. (The probe also asks for
+`.`, which the fabrication does not replace; that cell is Symbol's own period,
+and its one wrong pixel at eight pixels was there before this font existed.)
+
+Of the 66 slanted cells it writes, with the stub check off, 23 disagree on their
+top row -- and the disagreements are not scattered. **Windows' top row is ours
+with one column added on the right, or ours moved one column right.** Every one
+of the 23 is one of those two.
+
+What sits in that column is the horizontal top edge of the bar. Reading the rule
+as "the top edge inks the pixel centres it covers" -- centres at whole numbers,
+between the corner's `x` and the top-right corner's `x` -- accounts for 18 of the
+23:
+
+|                                                      | cells  |
+| ---------------------------------------------------- | ------ |
+| differ, the edge's centres alone are Windows' row    | 9      |
+| differ, ours plus the edge's centres is Windows' row | 9      |
+| differ, the edge covers no centre at all             | 5      |
+| agree, the edge covers no centre                     | 13     |
+| agree, ours already is ours plus the edge            | 10     |
+| **agree, but adding the edge would break it**        | **20** |
+
+**So it is not the rule.** Eighteen explained is worth less than twenty broken,
+and the five it cannot touch are all at eight pixels, where the bar is 0.469 px
+wide and covers no pixel centre at any phase -- yet Windows still puts ink in the
+corner's column there.
+
+What the instrument does settle is the shape of the answer. The stray is always
+one column to the right, it is always on the row the top edge lies in, and it
+appears whether or not that edge covers a sample point. That is not the fill and
+not either dropout pass; it is something the horizontal edge itself contributes,
+and a rule that counts covered centres is the wrong way to count it.
 
 **In sum, what is left is dropout control on a narrow sheared feature, and
 nothing else.** Windows fires it where we do not: a bar whose upright cell inks rows 3

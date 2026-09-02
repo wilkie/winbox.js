@@ -4641,6 +4641,10 @@ export const FABRICATIONS = [
     describe: 'one upright bar in place of every Symbol letter, to read the synthesised slant',
   }),
 
+  cornerPhase('corner-phase', {
+    describe: 'the same narrow bar with its top corner swept through a pixel both ways',
+  }),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -4746,6 +4750,70 @@ function slantShapes(name, { box, describe, source = 'SYMBOL.TTF' }) {
           setGlyph(bytes, null, glyph, { width: x1 + 200, height: y1, points, program });
           setBearing(bytes, glyph, x0);
         }
+      }
+
+      return bytes;
+    },
+  };
+}
+
+/**
+ * The narrow slanted bar again, with its top corner walked through a pixel.
+ *
+ * `symbol-slant` says the synthesised slant is exact wherever a shape is wide
+ * enough to be drawn by its edges, and wrong by about a pixel wherever dropout
+ * control decides instead. Sorting what is left says the strays sit on the
+ * glyph's first and last inked row, and at twelve pixels the stray is the pixel
+ * holding the sheared bar's top-left corner -- which no shear value and neither
+ * dropout pass in the source puts ink in. At eight pixels the corner is not
+ * inked. So the question is what distinguishes the two, and the only thing that
+ * has changed is where the corner falls inside its pixel.
+ *
+ * This asks that and nothing else. Every glyph is the same bar `symbol-slant`
+ * uses, one column wide at the sizes recorded and slanted by Windows rather
+ * than by the outline, so the cell differs from `symbol-slant`'s only in phase.
+ * Twelve steps of the side bearing walk the corner across the pixel in x; three
+ * steps of the bar's height walk it down in y; the thirty-six glyphs are every
+ * pair. The upright cells come with the recording and are the control -- the
+ * same phase with no corner to speak of.
+ */
+function cornerPhase(
+  name,
+  { describe, source = 'SYMBOL.TTF', characters = 'ABEKMNRSWXZabdefgjkmnostwy0123456789' }
+) {
+  const WIDE = 160;
+  const FOOT = -400;
+
+  return {
+    name,
+    from: source,
+    as: source,
+    describe,
+
+    edit: (bytes) => {
+      for (let index = 0; index < characters.length; index++) {
+        /* A twelfth of a pixel at nine per em, which is what a twelve pixel
+         * Symbol asks for, and a finer step at every larger size in the sweep.
+         */
+        const x0 = 200 + (index % 12) * 19;
+        const top = 1400 + Math.floor(index / 12) * 57;
+
+        const glyph = glyphFor(bytes, 0xf000 + characters.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: x0 + WIDE + 200,
+          height: top,
+          points: [
+            [x0, FOOT],
+            [x0, top],
+            [x0 + WIDE, top],
+            [x0 + WIDE, FOOT],
+          ],
+          program: [],
+        });
+
+        // The trap `setBearing` exists for; see `slantBar`.
+        setBearing(bytes, glyph, x0);
       }
 
       return bytes;

@@ -132,8 +132,8 @@ describe('the fabricated glyph recordings', () => {
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 20896;
-  const WRONG = 4536;
+  const EXACT = 21129;
+  const WRONG = 4681;
 
   /* The one place an unhinted outline is drawn differently.
    *
@@ -318,6 +318,62 @@ describe('the fabricated glyph recordings', () => {
    * the left of the run rather than at the edge, so the column being fitted was
    * not the edge. The instruments were measuring the dropout rule.
    */
+  /* The instrument that walks the corner, whose upright half is the control.
+   *
+   * `corner-phase` is `symbol-slant`'s bar again with its top corner walked
+   * through a pixel: twelve steps of the side bearing across, three of the
+   * bar's height down, every pair. Upright, every cell it writes is exact --
+   * which is what says the sweep is a sweep of phase and nothing else, and
+   * that whatever the slanted half disagrees about is the slant.
+   *
+   * Only the letters it writes are counted. The probe also asks for `.`, which
+   * this fabrication does not replace, so that cell is Symbol's own period and
+   * carries Symbol's own residual: at eight pixels Windows draws one pixel of
+   * it and we draw none, which was true before this font existed.
+   */
+  // The letters `corner-phase` writes its bar into; see `cornerPhase`.
+  const WALKED = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+  present('walk a slanted corner through a pixel, and stand its upright still', async function () {
+    const recording = all.find((entry) => entry.name === 'corner-phase');
+
+    expect(recording).toBeTruthy();
+
+    const manager: any = await prepareFonts();
+    const font: any = new TrueTypeFont(new Uint8Array(readFileSync(recording.file)));
+    const face = font.faceName;
+    const installed = manager._outlines[face];
+
+    manager._outlines[face] = {
+      ...(installed ?? {}),
+      [FontManager.styleKey(font.boldFace, font.italicFace)]: font,
+    };
+
+    let upright = 0;
+    let differing = 0;
+
+    try {
+      for (const record of recording.fixture.records) {
+        const asked = /^"Symbol",h=\d+,weight=400,italic=0,'(.)'$/.exec(record.args);
+
+        if (!asked || !WALKED.includes(asked[1])) {
+          continue;
+        }
+
+        upright++;
+
+        if ((await replayRecord(record, recording.fixture.display ?? 'vga')).outcome !== 'agreed') {
+          differing++;
+        }
+      }
+    } finally {
+      manager._outlines[face] = installed;
+    }
+
+    expect(upright).toBeGreaterThanOrEqual(88);
+    expect(differing).toBe(0);
+  });
+
   const NARROW = 4;
 
   present('slant a feature wide enough that dropout control decides nothing', async function () {
