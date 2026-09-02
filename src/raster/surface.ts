@@ -83,10 +83,26 @@ export class Surface {
    * that do not intersect. All three follow from there being no slope at all,
    * only a table of whole-column shifts.
    *
-   * This is written down rather than implemented because implementing it means
-   * rendering the glyph upright and shearing the result, which is a different
-   * shape of drawing from what `outlineText` does now. See `FONTS.md`
-   * section 3.
+   * **It was implemented, and it is not right either.** Drawing the glyph
+   * upright and shifting the rows of the result by `floor((baseline + c - row)
+   * / 3)`, swept over every origin `c` from -4 to 3, is worse than shearing the
+   * outline at every one of them: 1,665 wrong pixels on the four instruments'
+   * 384 slanted cells at its best, against about 460 for what is here.
+   *
+   * The reason is in `corner-phase`, whose bars differ only in side bearing and
+   * height. Fitting the shift table per glyph, `symbol-slant` -- where every
+   * glyph is the same bar -- gives one table per size and nothing else
+   * (`K` = 2, 3, 6, 11, 13 at 8, 10, 12, 15 and 20 pixels, with the strike sizes
+   * 13 and 16 fitting none of it, as they should). But no single table fits all
+   * twelve of `corner-phase`'s bars at any size, and those differ in *where they
+   * sit across the pixel*. A shear that shifts whole rows cannot care about
+   * that. So the ink is consistent with a row shift for any one glyph without
+   * being a row shift.
+   *
+   * What survives is everything the shift table explained -- the row set being
+   * identical to the upright's, ink in pixels whose sample points are never
+   * covered, slopes that do not intersect -- and none of it is explained by a
+   * shear of this outline either. See `FONTS.md` section 3.
    */
 
   declare _backcolor: any;

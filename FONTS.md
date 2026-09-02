@@ -787,9 +787,44 @@ is no slope. There is a table of whole-column shifts.
 
 What is left over is the 46, and the extreme rows within the 338 -- the top row
 at twelve pixels is the upright row shifted by _both_ one and two columns, and
-the bottom row at fifteen by both zero and minus one. So the ends of a sheared
-bitmap smear across two columns where the middle does not, and that is the next
-thing to pin down.
+the bottom row at fifteen by both zero and minus one. So the ends smear across
+two columns where the middle does not.
+
+### Built, measured, and not shipped
+
+Drawing the glyph upright and shifting the rows of the result by
+`floor((baseline + c - row) / 3)`, swept over every origin `c` from -4 to 3, is
+worse than shearing the outline at every one of them:
+
+| origin | cells exact | wrong pixels |
+| ------ | ----------- | ------------ |
+| -3     | 96 / 384    | 4,981        |
+| -2     | 133 / 384   | 3,323        |
+| -1     | 110 / 384   | 2,001        |
+| 0      | 109 / 384   | **1,665**    |
+| 1      | 104 / 384   | 2,457        |
+| 2      | 103 / 384   | 3,995        |
+
+Against about 460 wrong pixels for the outline shear on the same cells. So it is
+reverted, and the reason it fails is worth more than the model was.
+
+Fit the shift table per glyph rather than per size. On `symbol-slant`, where
+every glyph is the same bar, one table fits every glyph of a size and only one:
+`K` = 2, 3, 6, 11 and 13 at 8, 10, 12, 15 and 20 pixels, using
+`lean = ceil((K - row) / 3)`. The strike sizes, 13 and 16, fit no table of thirds
+at all -- which is the one-half rule showing through, exactly as it should.
+
+**But no single table fits all twelve of `corner-phase`'s bars at any size.**
+Those twelve differ in side bearing and in height: the same shape, moved across
+the pixel. A shear that shifts whole rows cannot care where a glyph sits
+horizontally, and this one does.
+
+So the ink is consistent with a row shift for any one glyph without being a row
+shift. That leaves the four facts the shift table explained -- the identical row
+set, ink where no sample point is covered, non-intersecting slopes, and the
+strike sizes leaning by halves -- still standing, and still unexplained by any
+shear of the outline. Whatever Windows does here is neither of the two things it
+looks like.
 
 **In sum, what is left is dropout control on a narrow sheared feature, and
 nothing else.** Windows fires it where we do not: a bar whose upright cell inks rows 3
