@@ -1215,6 +1215,35 @@ same thing from the same three points, by comparing them rather than multiplying
 them, and it is that sign which says whether a vertex contributes an `on`, an
 `off`, both, or nothing.
 
+#### The driver, and why the reading stops here
+
+`0x0042` is the contour driver. It calls `0x0d6a` twice to set up, walks the
+elements calling `CalcLine` at four sites and `0x19a4` -- the spline subdivision
+-- at two, and finishes with `0x059b` and then `0x0978`, the dropouts. The last
+two `CalcLine` sites are adjacent and are the close: one for the final segment,
+then one from the last point back to the contour's first, which the driver keeps
+in a buffer at `+0x202` and `+0x204`. That is `Endpoints.begin` saving the first
+vertex and `end` using it.
+
+**And this is where reading segment 42 stops being able to help, for a reason the
+instruments already settled.** `slant-baked` hands Windows the sheared
+parallelogram as an outline, and Windows draws it exactly as this does -- 88
+cells, no wrong pixels. That drawing goes through this driver, this `CalcLine`,
+this endpoint topology and this dropout. So for the very geometry the slant
+residual is about, segment 42 is _demonstrably_ in agreement with this
+implementation, and no closer reading of it can turn up the disagreement.
+
+The residual is also not in the spline code: every glyph in every slant
+instrument is a straight-edged parallelogram, and `0x19a4` never runs on them.
+
+Which leaves one place for it. Windows, asked to lean a rectangle, draws
+something no parallelogram reproduces at any lean or any width; handed that same
+parallelogram as an outline it agrees with us to the pixel. So it does not hand
+the rasteriser the sheared outline. Whatever it hands it is made on the GDI side
+of the call -- the realization path around `EngineRealizeFont` at segment 3
+`0x2b2d`, and the thunk its neighbour at `0x2b23` calls -- and that, not the
+scaler, is where the last pixel is.
+
 Where none of this goes is into the scaler. Segment 36's public entries are four
 thunks that load a dispatch index into `bx` and a word count into `cx` and jump
 to a stack switcher at `0xe1`, which copies the arguments onto the scaler's own
