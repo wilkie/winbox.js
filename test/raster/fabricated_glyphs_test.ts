@@ -132,8 +132,8 @@ describe('the fabricated glyph recordings', () => {
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 21129;
-  const WRONG = 4681;
+  const EXACT = 21363;
+  const WRONG = 4802;
 
   /* The one place an unhinted outline is drawn differently.
    *
@@ -336,6 +336,65 @@ describe('the fabricated glyph recordings', () => {
 
   present('walk a slanted corner through a pixel, and stand its upright still', async function () {
     const recording = all.find((entry) => entry.name === 'corner-phase');
+
+    expect(recording).toBeTruthy();
+
+    const manager: any = await prepareFonts();
+    const font: any = new TrueTypeFont(new Uint8Array(readFileSync(recording.file)));
+    const face = font.faceName;
+    const installed = manager._outlines[face];
+
+    manager._outlines[face] = {
+      ...(installed ?? {}),
+      [FontManager.styleKey(font.boldFace, font.italicFace)]: font,
+    };
+
+    let upright = 0;
+    let differing = 0;
+
+    try {
+      for (const record of recording.fixture.records) {
+        const asked = /^"Symbol",h=\d+,weight=400,italic=0,'(.)'$/.exec(record.args);
+
+        if (!asked || !WALKED.includes(asked[1])) {
+          continue;
+        }
+
+        upright++;
+
+        if ((await replayRecord(record, recording.fixture.display ?? 'vga')).outcome !== 'agreed') {
+          differing++;
+        }
+      }
+    } finally {
+      manager._outlines[face] = installed;
+    }
+
+    expect(upright).toBeGreaterThanOrEqual(88);
+    expect(differing).toBe(0);
+  });
+
+  /* And the same bar with its top edge tilted off the horizontal.
+   *
+   * `corner-phase` left the stray looking like something the horizontal top
+   * edge contributes, since the scan converter has a branch for a horizontal
+   * line that emits no horizontal crossings at all. `corner-cap` tilts that
+   * edge -- level, up four font units, down four, up forty -- which is a
+   * fiftieth of a pixel at these sizes, far too little to move a crossing but
+   * enough to leave the horizontal branch. The stray survives every tilt at the
+   * same rate, so the branch is not it.
+   *
+   * What the tilt did settle is the shape of the thing. Across the recording
+   * every stray on the glyph's first inked row is to the *right* of our ink and
+   * every stray on its last is to the *left* -- twenty and eight of them,
+   * without exception -- and the bar leans right going up. So it lies toward
+   * whichever end the shape reaches past that scanline, at both ends, whatever
+   * the edge that closes it is doing.
+   *
+   * Its upright half is exact, which is the control.
+   */
+  present('tilt the top edge off the horizontal', async function () {
+    const recording = all.find((entry) => entry.name === 'corner-cap');
 
     expect(recording).toBeTruthy();
 

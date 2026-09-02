@@ -4645,6 +4645,10 @@ export const FABRICATIONS = [
     describe: 'the same narrow bar with its top corner swept through a pixel both ways',
   }),
 
+  cornerCap('corner-cap', {
+    describe: 'the same narrow bar with its top edge tilted off the horizontal by a hair',
+  }),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -4777,6 +4781,69 @@ function slantShapes(name, { box, describe, source = 'SYMBOL.TTF' }) {
  * pair. The upright cells come with the recording and are the control -- the
  * same phase with no corner to speak of.
  */
+/**
+ * The narrow slanted bar with its top edge taken off the horizontal.
+ *
+ * `corner-phase` says the stray pixel on a slanted bar's top row is always one
+ * column to the right, always on the row the top edge lies in, and there whether
+ * or not that edge covers a sample point. That points at the horizontal edge
+ * itself: the scan converter has a separate branch for one, which emits no
+ * horizontal crossings at all, and a horizontal edge is the only thing about the
+ * top row that a vertical or an oblique one does not have.
+ *
+ * So this tilts it. Nine steps of the side bearing as before, and four caps: the
+ * top edge dead level, tilted up four font units to the right, down four, and up
+ * forty. Four units is a fiftieth of a pixel at the sizes recorded -- far too
+ * little to move any crossing -- but enough to take the edge out of the
+ * horizontal branch. If the stray survives a tilt of four units it is not that
+ * branch; if it goes, it is.
+ *
+ * The forty unit cap is the control on the control: a fifth of a pixel, still
+ * small, but no longer deniable as arithmetic noise.
+ */
+function cornerCap(
+  name,
+  { describe, source = 'SYMBOL.TTF', characters = 'ABEKMNRSWXZabdefgjkmnostwy0123456789' }
+) {
+  const WIDE = 160;
+  const FOOT = -400;
+  const TILTS = [0, 4, -4, 40];
+
+  return {
+    name,
+    from: source,
+    as: source,
+    describe,
+
+    edit: (bytes) => {
+      for (let index = 0; index < characters.length; index++) {
+        const x0 = 200 + (index % 9) * 25;
+        const tilt = TILTS[Math.floor(index / 9) % TILTS.length];
+        const top = 1400;
+
+        const glyph = glyphFor(bytes, 0xf000 + characters.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: x0 + WIDE + 200,
+          height: top + Math.max(0, tilt),
+          points: [
+            [x0, FOOT],
+            [x0, top],
+            [x0 + WIDE, top + tilt],
+            [x0 + WIDE, FOOT],
+          ],
+          program: [],
+        });
+
+        // The trap `setBearing` exists for; see `slantBar`.
+        setBearing(bytes, glyph, x0);
+      }
+
+      return bytes;
+    },
+  };
+}
+
 function cornerPhase(
   name,
   { describe, source = 'SYMBOL.TTF', characters = 'ABEKMNRSWXZabdefgjkmnostwy0123456789' }

@@ -663,11 +663,43 @@ and the five it cannot touch are all at eight pixels, where the bar is 0.469 px
 wide and covers no pixel centre at any phase -- yet Windows still puts ink in the
 corner's column there.
 
-What the instrument does settle is the shape of the answer. The stray is always
-one column to the right, it is always on the row the top edge lies in, and it
-appears whether or not that edge covers a sample point. That is not the fill and
-not either dropout pass; it is something the horizontal edge itself contributes,
-and a rule that counts covered centres is the wrong way to count it.
+What the instrument does settle is that the stray is always one column to the
+right, always on the row the top edge lies in, and there whether or not that edge
+covers a sample point. That looked like something the horizontal edge itself
+contributes -- the scan converter has a branch for a horizontal line, and it
+emits no horizontal crossings at all.
+
+### `corner-cap`: it is not the horizontal branch
+
+So tilt the edge. `corner-cap` is the same bar with four caps -- top edge level,
+tilted up four font units to the right, down four, and up forty. Four units is a
+fiftieth of a pixel at these sizes, far too little to move any crossing, and
+quite enough to take the edge out of the horizontal branch.
+
+**The stray survives every tilt, at the same rate.**
+
+| cap    | cells | top row wrong |
+| ------ | ----- | ------------- |
+| level  | 40    | 8             |
+| up 4   | 24    | 6             |
+| down 4 | 16    | 4             |
+| up 40  | 8     | 2             |
+
+A fifth of those is a fifth whichever way the edge leans, so the horizontal
+branch is not it and that reading is withdrawn.
+
+**What the tilt did settle is the shape of the thing, and it is symmetric.**
+Across the recording every stray on the glyph's first inked row is to the
+**right** of our ink and every stray on its last is to the **left** -- twenty and
+eight of them, without exception. The bar leans right going up, so at both ends
+the stray lies toward whichever side the shape reaches past that scanline.
+
+That is a much better description than "a corner". It says the first and last
+scanline of a slanted shape are inked wider than the scanline itself would
+warrant, in the direction the shape carries on past it -- which is a statement
+about the extreme rows of a walk, not about any one edge. Counting the pixels the
+shape _touches_ over the whole row band gets the twelve pixel bar exactly right
+and over-predicts at fifteen, so that is not yet the rule either.
 
 **In sum, what is left is dropout control on a narrow sheared feature, and
 nothing else.** Windows fires it where we do not: a bar whose upright cell inks rows 3
