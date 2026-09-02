@@ -564,6 +564,28 @@ exception is odd and is left as measured.
 That is `lines`, a new fixture, at 248 of 248 -- and it takes the plotter fonts
 from 153 of 420 to 263 without touching anything about fonts at all.
 
+**A stroke design's slant moves its coordinates, not its rows.** A strike is a
+picture and can only shift whole rows; a stroke design is coordinates, and the
+line is drawn through the moved ones, so a stroke that crosses a row stays
+joined where shifting rows would break it. It also leans one more than a strike
+does -- `floor(cell / 2)` at the top row against a strike's `floor((cell - 1) /
+2)` -- which is exactly the overhang the metrics report for these faces and had
+been sitting there unused.
+
+**Measured**: fitting a slope to how far each row of a slanted cell sits from
+the upright one gives a half at every size from eight pixels to forty, and the
+lean at the top row runs 4, 6, 8, 10, 12, 16, 20 for cells of 8, 12, 16, 20, 24,
+32 and 40. The tell that it is now right is that the slanted cells agree exactly
+as often as the upright ones, letter for letter and size for size -- 314 of 420.
+
+What is left is **the descenders**, and only those: `g`, `j` and `y` account for
+almost all of it, with a stray pixel on `a` and the full stop. Modern's `g` at
+twenty-four pixels is the shape of it -- Windows draws the tail flat along one
+row where we take it a row lower and two columns left, which is one endpoint
+scaling to 15.75 and being answered 15 rather than 16. Rounding the scaled
+coordinates the other way is not the answer: flooring both of them takes the
+whole corpus from 314 to 1.
+
 **Every vertical measure is the design's, scaled and rounded on its own.** The
 height is exactly what was asked for; the ascent, descent and both leadings are
 `round(design * height / designHeight)`, each rounded separately -- so the

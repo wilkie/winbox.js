@@ -20,7 +20,6 @@
  */
 export class BitmapContext {
   declare excludeLast: any;
-  declare shear: any;
   declare _width: number;
   declare _height: number;
   declare _pixels: Uint8Array;
@@ -158,14 +157,6 @@ export class BitmapContext {
      * than assumed. See `Surface.strokeText`.
      */
     this.excludeLast = false;
-
-    /* A slant is applied to each row as it is plotted rather than to the ends
-     * of each stroke. The two are the same line and not the same pixels: a
-     * lean worked out at the two ends and interpolated between them wanders
-     * from one worked out per row, by a pixel, wherever the interpolation
-     * rounds the other way. See `Surface.strokeText`.
-     */
-    this.shear = null;
   }
 
   moveTo(x, y) {
@@ -217,7 +208,7 @@ export class BitmapContext {
 
       if (steps === 0) {
         if (stop > 0) {
-          this.setPixel(this.shear ? fromX + this.shear(fromY) : fromX, fromY, colour);
+          this.setPixel(fromX, fromY, colour);
         }
 
         continue;
@@ -237,7 +228,7 @@ export class BitmapContext {
         const x = acrossX ? fromX + major * step : fromX + offset;
         const y = acrossX ? fromY + offset : fromY + major * step;
 
-        this.setPixel(this.shear ? x + this.shear(y) : x, y, colour);
+        this.setPixel(x, y, colour);
       }
     }
   }

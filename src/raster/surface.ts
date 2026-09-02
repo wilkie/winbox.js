@@ -535,11 +535,27 @@ export class Surface {
     // Black, as every other text path draws; the pen is not the text colour.
     this.context.strokeStyle = 'black';
 
-    /* Both synthesised styles, made the way the strikes make them: a slant
-     * leans each row by half of how far it sits above the bottom of the cell,
-     * and a smear draws the whole thing again a pixel across. The metrics
-     * already say as much -- a slanted plotter font overhangs by half its cell
-     * and an emboldened one by the width scale -- so drawing has to agree.
+    /* Both synthesised styles, and neither is made the way the strikes make
+     * theirs.
+     *
+     * A strike is a picture, so its slant can only shift whole rows, and it
+     * leans by its overhang -- `floor((cell - 1) / 2)` -- pairing rows from the
+     * top. A stroke design is coordinates, so its slant moves the coordinates
+     * and the line is drawn through them: strokes stay joined, where shifting
+     * rows breaks a stroke that crosses one. It leans by `floor(cell / 2)` at
+     * the top, which is the overhang the metrics report for these faces and one
+     * more than a strike's.
+     *
+     * **Measured**: fitting a slope to how far each row of a slanted cell sits
+     * from the upright one gives a half at every size from eight pixels to
+     * forty, and the lean at the top row runs 4, 6, 8, 10, 12, 16, 20 for cells
+     * of 8, 12, 16, 20, 24, 32 and 40. Shearing the rows instead leaves the
+     * slanted cells agreeing far less often than the upright ones; shearing the
+     * coordinates leaves them agreeing exactly as often, which is what says the
+     * slant is now right and what is left is something else.
+     *
+     * The smear is the same as a strike's: the whole thing again a pixel
+     * across.
      */
     const style = font.style ?? {};
     const leaning = !!style.italic;
@@ -558,13 +574,10 @@ export class Surface {
         for (let copy = 0; copy <= (smeared ? 1 : 0); copy++) {
           this.context.beginPath();
           (this.context as any).excludeLast = true;
-          (this.context as any).shear = leaning
-            ? (row) => Math.max(0, (cell - (row - top)) >> 1)
-            : null;
-
           run.forEach(([px, py], index) => {
             const down = top + Math.round(py * vertical);
-            const at = pen + Math.round(px * horizontal) + copy;
+            const lean = leaning ? Math.max(0, (cell - (down - top)) >> 1) : 0;
+            const at = pen + Math.round(px * horizontal) + lean + copy;
 
             if (index === 0) {
               this.context.moveTo(at, down);
