@@ -52,6 +52,11 @@ export function CreateFontIndirect(lplf) {
     strikeout: !!lplf.lfStrikeOut,
     charset: lplf.lfCharSet ?? 0,
     pitchAndFamily: lplf.lfPitchAndFamily ?? 0,
+
+    /* Proof quality refuses a stretched strike outright; see
+     * `FontManager.choose`.
+     */
+    quality: lplf.lfQuality ?? 0,
   };
 
   const found = this.fonts.map(request);

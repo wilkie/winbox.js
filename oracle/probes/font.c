@@ -139,6 +139,57 @@ static void probeFont(int height, int width, int weight, BYTE italic,
  * right, so it is the control: a change that fixes the first three and breaks
  * this one has found the wrong rule.
  */
+/*
+ * The same face asked for at proof quality, which the mapper treats specially.
+ *
+ * Read out of `GDI.EXE`: the penalty routine checks `lfQuality` against
+ * `PROOF_QUALITY` before it adds any term at all, and where it matches -- and a
+ * flag about the candidate is set -- it answers the largest penalty there is,
+ * refusing the candidate outright rather than scoring it. Which class of font
+ * that flag picks out is not clear from the code, so this asks.
+ *
+ * The heights are the ones where the plain request is answered by stretching a
+ * strike rather than by a strike of its own. If proof quality refuses a
+ * stretched font, these are the sizes where it will show.
+ */
+static void probeQuality(LPCSTR face)
+{
+    static const int HEIGHTS[] = { 8, 12, 15, 16, 20, 24, 28, 29, 32, 40, 50, 100 };
+
+    int index;
+
+    for (index = 0; index < sizeof(HEIGHTS) / sizeof(HEIGHTS[0]); index++) {
+        int height = HEIGHTS[index];
+
+        HFONT font;
+        HFONT previous;
+        TEXTMETRIC tm;
+
+        wsprintf(probeArgs, "\"%s\",h=%d,quality=proof", (LPSTR)face, height);
+
+        font = CreateFont(height, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET,
+                          OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, PROOF_QUALITY,
+                          DEFAULT_PITCH, face);
+
+        if (font == NULL) {
+            probe("CreateFont quality", probeArgs, "no font");
+            continue;
+        }
+
+        previous = (HFONT)SelectObject(dc, font);
+        GetTextMetrics(dc, &tm);
+
+        wsprintf(probeResult, "height=%d,ascent=%d,descent=%d,ave=%d,max=%d",
+                 tm.tmHeight, tm.tmAscent, tm.tmDescent, tm.tmAveCharWidth,
+                 tm.tmMaxCharWidth);
+
+        probe("CreateFont quality", probeArgs, probeResult);
+
+        SelectObject(dc, previous);
+        DeleteObject(font);
+    }
+}
+
 static void probeDense(LPCSTR face)
 {
     int height;
@@ -403,6 +454,13 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeStyles("Symbol");
     probeStyles("Fixedsys");
     probeStyles("System");
+
+    probeQuality("Fixedsys");
+    probeQuality("System");
+    probeQuality("Small Fonts");
+    probeQuality("Courier");
+    probeQuality("MS Serif");
+    probeQuality("MS Sans Serif");
 
     probeDense("Fixedsys");
     probeDense("System");

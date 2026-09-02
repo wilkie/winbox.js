@@ -109,6 +109,28 @@ export class FontManager {
   static MAX_WIDTH_STRETCH = 5;
 
   /**
+   * The quality at which a stretched strike is refused rather than scored.
+   *
+   * Read out of `GDI.EXE` and then asked for: the mapper's penalty routine
+   * tests `lfQuality` against this before it adds a single term, and answers
+   * the largest penalty there is where it matches, which takes the candidate
+   * out of the running altogether.
+   *
+   * **Recorded**, and it is exactly the stretched candidates that go: at proof
+   * quality every one of six faces answers with a height it has a strike
+   * installed at and never with a multiple of one. Fixedsys, whose only strike
+   * is fifteen rows, answers fifteen for every request from eight to fifty
+   * where the default quality answers 30 and 45. Courier answers 13, 16 or 20
+   * and never 26, 32, 40 or 48.
+   *
+   * It is also the cleanest confirmation there is that the stretched sizes are
+   * *candidates* rather than something worked out after a strike has been
+   * chosen -- they can be refused one at a time, so they must be scored one at
+   * a time.
+   */
+  static PROOF_QUALITY = 2;
+
+  /**
    * The cell height at and above which an outline always wins.
    *
    * Below it a strike installed at exactly the height asked for beats scaling
@@ -628,11 +650,23 @@ export class FontManager {
     /* Each strike answers for itself how many times over it may be drawn, and
      * then the largest of those that fits is taken.
      *
-     * The second half of that is not the whole rule and is known not to be:
-     * Courier asked for 38 pixels answers 39, its thirteen row strike three
-     * times over, when 32 was available and fits. See `FONTS.md` section 3 for
-     * what else is ruled out and for the eleven faces-worth of heights that say
-     * so. What is settled is the first half, which the loop below does.
+     * The second half of that is not the rule Windows uses and is known not to
+     * be: Courier asked for 38 pixels answers 39, its thirteen row strike three
+     * times over, when 32 was available and fits.
+     *
+     * The rule it does use has been read out of `GDI.EXE` and is a weighted
+     * penalty over every candidate, in which **the height term is a step rather
+     * than a distance**: nought if the strike's height equals a target worked
+     * out before the loop, 500 if it equals a second target, and 10,000
+     * otherwise. That is why no function of the difference could be fitted to
+     * these answers, and it is why several strikes can tie and be settled by
+     * the order the directory is walked in. `FONTS.md` section 3 has the whole
+     * weights table and where in the image it sits.
+     *
+     * Reproducing it needs the routine that computes those two targets, which
+     * is where the stretching is actually decided. Until that is read, this
+     * stands: exact for a face with one strike and wrong at 38 heights out of
+     * 302 for the faces with several.
      */
     /* A scalable face has one design and is drawn at whatever size is wanted,
      * so none of the business below -- nearest strike, whole-number stretch,
@@ -720,10 +754,13 @@ export class FontManager {
        * 44, 60, 76, 92 and 108, which is `16m - 4`. Both are exact at every
        * height from one to a hundred and twenty.
        */
-      const top = Math.max(
-        1,
-        Math.min(FontManager.MAX_STRETCH, Math.floor((target + (measured >> 2)) / measured))
-      );
+      const top =
+        request.quality === FontManager.PROOF_QUALITY
+          ? 1
+          : Math.max(
+              1,
+              Math.min(FontManager.MAX_STRETCH, Math.floor((target + (measured >> 2)) / measured))
+            );
 
       const size = measured * top;
 

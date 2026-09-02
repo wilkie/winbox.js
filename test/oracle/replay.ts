@@ -380,6 +380,12 @@ class Context {
       lfStrikeOut: fields.strike ?? 0,
       lfCharSet: fields.charset ?? 0,
       lfPitchAndFamily: fields.pitch ?? 0,
+
+      /* The probe writes the quality by name rather than by number, because
+       * `proof` is the only one asked for and a 2 in the record would say
+       * nothing about which field it was.
+       */
+      lfQuality: /quality=proof/.test(args.join(',')) ? 2 : 0,
       lfFaceName: String(args[0] ?? ''),
     });
 
@@ -1111,6 +1117,16 @@ const ADAPTERS: Record<
     );
   },
 
+  /* Proof quality, which takes the stretched candidates out of the running. */
+  'CreateFont quality'(context, args) {
+    const tm = context.mappedFont(args).metrics;
+
+    return (
+      `height=${tm.tmHeight},ascent=${tm.tmAscent},descent=${tm.tmDescent},` +
+      `ave=${tm.tmAveCharWidth},max=${tm.tmMaxCharWidth}`
+    );
+  },
+
   'CreateFont style'(context, args) {
     const tm = context.mappedFont(args).metrics;
 
@@ -1278,6 +1294,8 @@ export const KNOWN_GAPS: Record<string, string> = {
   'CreateFont widths': 'the same, at 30 and 38',
   'CreateFont extent': 'the same, at 30 and 38',
   'CreateFont style': 'Symbol: `tmPitchAndFamily` says TrueType and we say a strike (30 records)',
+  'CreateFont quality':
+    'four of 72: a hundred pixels of a bitmap face at proof quality, where refusing every stretch leaves the nearest strike so far off that a scalable face wins instead, and we answer with the strike',
 };
 
 /**

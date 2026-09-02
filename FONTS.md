@@ -187,8 +187,77 @@ error is that the _small_ strikes get stretched further than Windows will
 stretch them: we answer 15 for a request of 15, its three row strike five times,
 where Windows answers 12.
 
-This is the font mapper's own penalty function, and it should be read out of
-GDI rather than fitted from outside.
+### The mapper, read out of GDI
+
+It is a penalty function, and the reason no fit worked is that **the height term
+is not a distance**. It is a step.
+
+`GDI.EXE` segment 3 holds the font code -- `CreateFont`, `GetTextMetrics`,
+`EngineRealizeFont` are all in it. At `17b4` is a routine that takes a logical
+font, one candidate font, a table of weights and a running limit, and returns a
+32-bit penalty; at `2841` is the loop that walks the font directory 46 bytes at
+a time, calls it for each entry, and keeps the lowest. The loop passes its best
+score so far as the limit, and the penalty routine returns early the moment the
+running total passes it, which is why the terms are summed in the order they
+are. It stops outright on a penalty of nought.
+
+**The weights are twenty-eight words in GDI's data segment at `0x39c`, each
+multiplied by 1024 as the table is built.** A device may supply its own -- the
+builder at `511` reads `[dc+0x9a]` and falls back to the static table when that
+is null -- so these are the defaults rather than the only possible values:
+
+| term                                       | weight |
+| ------------------------------------------ | ------ |
+| height matches neither target              | 10,000 |
+| height matches the second target           | 500    |
+| fixed pitch asked for, variable pitch font | 15,000 |
+| variable pitch asked for, fixed pitch font | 350    |
+| no pitch asked for, fixed pitch font       | 1      |
+| italic mismatch                            | 4      |
+| underline mismatch                         | 3      |
+| strikeout mismatch                         | 3      |
+
+The rest run 1, 2, 4, 20, 30, 50, 150, 600, 8000, 9000, 19000, 65000.
+
+The height term is the whole of the answer to the question above. The routine
+does not measure how far a strike is from the size asked for. It reads two
+heights that were worked out _before_ the loop and stored in the request, and
+asks only whether this strike's own height equals the first (nought), the second
+(500), or neither (10,000). A term that takes three values cannot be fitted by
+any function of the difference, which is exactly what the sweeps found.
+
+Two consequences worth stating. Because 10,000 swamps everything below it,
+several strikes that match neither target tie on height and the decision falls
+to the small terms and then to the order the directory is walked in. And because
+the answer is always some strike drawn a whole number of times over, **the
+stretch is decided when those two target heights are computed, not while the
+strikes are being scored**.
+
+So the remaining work is not a search. It is one routine: whatever fills the two
+words at `+0x52` and `+0x58` of the request structure -- the same structure whose
+first fifty bytes are the `LOGFONT`, since the penalty routine reads `lfCharSet`
+at `+0x0d`, `lfQuality` at `+0x10` and `lfPitchAndFamily` at `+0x11` from it.
+`PROOF_QUALITY` is checked there too, before any term is added, and answers
+`0x7fffffff` -- refusing the candidate outright. Asking Windows what class of
+font that refuses settles it, and confirms the read:
+
+**At proof quality no strike is ever stretched.** Every answer, across six
+faces and twelve heights each, is a height the face has a strike installed at.
+Fixedsys, whose only strike is fifteen rows, answers fifteen for every request
+from eight to fifty, where the default quality answers 30 and 45; Courier
+answers 13, 16 or 20 and never 26, 32, 40 or 48; MS Serif answers 19 for a
+request of 20 where the default answers 20, its ten row strike doubled.
+**Recorded.**
+
+That is also the cleanest evidence there is that the stretched sizes are
+_candidates_ -- they can be refused one at a time, so they are being scored one
+at a time, rather than worked out after a strike has been chosen.
+
+The four exceptions are all a hundred pixels, where refusing every stretch
+leaves the nearest strike so far off that a scalable face wins the comparison
+instead. Windows answers a hundred; we still answer with the strike, because we
+resolve the face name before scoring anything and so never put an outline up
+against it. **Open**, and the same penalty comparison decides it.
 
 **A height is three different questions depending on its sign.** Positive is the
 cell including its leading; negative is the characters within it; zero is the
