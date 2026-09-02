@@ -989,6 +989,45 @@ So the slant is closed down to about a pixel a cell on features narrower than a
 pixel, everything wider is exact, and what remains is a pixel this file cannot
 yet account for from the pseudocode.
 
+### The scaler's dispatch table, and why it is not the way in
+
+The obvious next move is to read the shipped rasteriser rather than the
+pseudocode, and the obvious obstacle is that segment 36's four public entries all
+funnel through a stack switcher at `0xe1`:
+
+    00e5  mov ax,0xbc          ; the scaler's own data segment
+    00e8  mov es,ax
+    ...
+    0111  mov ss,ax            ; switch to its private stack
+    0116  rep movsw            ; copy cx words of arguments over
+    011c  shl bx,1
+    011e  call far [bx+0x1e]   ; and dispatch
+
+**That `0xbc` is not a relocation.** Segment 36 has seventeen relocations and
+none of them is at `0xe6`, so the selector is not patched by the loader; the
+module fills it in itself at initialisation, and the table at `0xbc:0x1e` exists
+only in a running system.
+
+It is also not worth reaching for. What the table holds is the addresses of the
+scaler's own functions -- `fsc_SetupScan`, `fsc_CalcSpline` and the rest -- and
+those are the functions this project already has the source of. Reading it would
+name them, not explain them.
+
+The code that would explain them is in segments 42 and 43, which are in the image
+and need no running system. The horizontal dropout is where earlier work left its
+markers, and it matches the pseudocode where it can be checked: `0x0a61` is
+`*psHorizOn == *psHorizOff`, the zero-length run test; `0x0a69` is the gate the
+stub check hangs off; `0x0a71` and `0x0aa0` are its two crossing counts, both
+calling `0x0e28`, whose guards at `0x0e60` and `0x0e8a` are the box tests inside
+`VertCrossings`. Past that the routine clamps and writes a bit through one of two
+helpers at `0x0c8a` and `0x0d42`.
+
+Nothing in that stretch does anything `DoHorizDropout` does not, at the
+resolution this reading reaches. Finding a one pixel divergence in six and a half
+kilobytes of compiled code needs the comparison done properly, function by
+function, against the source -- which is the next piece of work, and a different
+kind of work from anything above.
+
 Where none of this goes is into the scaler. Segment 36's public entries are four
 thunks that load a dispatch index into `bx` and a word count into `cx` and jump
 to a stack switcher at `0xe1`, which copies the arguments onto the scaler's own
