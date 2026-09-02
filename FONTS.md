@@ -1064,6 +1064,44 @@ What could not be read this way: the bit masks are fetched from `DS`, which is
 the scaler's private data segment, so only the arithmetic around them is visible
 in the image. The inference above rests on the arithmetic and not on the tables.
 
+### `CalcLine` at `0x11e8`, and what it confirms
+
+Two thousand bytes, four callers, and **one call in the whole of it** -- an
+indirect `call [bx+0x4a4]` at `0x1692`, reached by falling through and skipped by
+five jumps to `0x1696`. The index is `(quadrant & 0xe) + [0x1ce]`, which is
+`BeginElement` choosing the add function from the quadrant and the scan kind,
+folded into a jump table. So every intersection the walk emits leaves through one
+door.
+
+Three things it confirms, all of them assumptions this implementation has been
+resting on:
+
+- **The sample grid.** At `0x1216` and `0x1227` the test is `p & 0x3f == 0x20`:
+  a coordinate lies on a sample line when it is 32 modulo 64. That is
+  `onScanline` in `scan-walk.ts`, to the constant -- sample lines through pixel
+  centres at sixty-fourths, not through pixel edges. It had been derived from the
+  recordings; it is now read off the shipped code.
+- **A step that goes nowhere emits nothing.** The early-out at `0x120b` compares
+  the incoming point against the running one and, when they are equal and the
+  point is on a sample line, returns without emitting. `Endpoints.check` returns
+  in the same case, for the reason written beside it.
+- **The cross product.** The emission at `0x166a` computes
+  `(a - b + p) * dy - (c - d + q) * dx` in thirty-two bits and hands it over,
+  which is the sign test the walk turns on.
+
+One thing it raises. At `0x1522` and `0x1553` there are two loops that write a
+single value into a _range_ of scanline lists at once -- walking an array of list
+pointers, incrementing each list's count and storing -- rather than one entry per
+step. They are entered when `[0x1bc] == [0x1c0]`, an edge that spans one row or
+one column. The backward loop runs `while (si >= di)` and the forward one
+`while (si < di)`: one inclusive, one exclusive. This implementation writes those
+entries one at a time and its two directions are `above` and `below`, which carry
+the same asymmetry. Whether the two asymmetries agree at the ends is exactly the
+question the last pixel asks, and it is the next thing to check.
+
+No divergence found yet. What the reading has done is turn three assumptions into
+readings and leave one candidate.
+
 Where none of this goes is into the scaler. Segment 36's public entries are four
 thunks that load a dispatch index into `bx` and a word count into `cx` and jump
 to a stack switcher at `0xe1`, which copies the arguments onto the scaler's own
