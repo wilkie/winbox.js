@@ -701,6 +701,38 @@ about the extreme rows of a walk, not about any one edge. Counting the pixels th
 shape _touches_ over the whole row band gets the twelve pixel bar exactly right
 and over-predicts at fifteen, so that is not yet the rule either.
 
+### And it is not the dropout placement
+
+Two things about the extreme rows are now settled, both by counting rather than
+by argument, over the 43 rows where the two instruments disagree.
+
+**It is not a dropout at all, on half of them.** Twenty-one of the 43 have a
+_non-empty_ run on that row -- a real span of ink, with no zero-length run and so
+no rescue anywhere near it -- and they disagree just the same. Whatever moves the
+ink moves crossings, not rescues.
+
+**And it is not smart placement.** `DoHorizDropout` has two ways of choosing its
+pixel: simple, which steps one to the left, and smart, which averages the two
+crossings. Every case this implementation gets right is one where a clamp into
+the box hides the difference between them, so smart was worth ruling out
+directly. Computed against Windows on the same 43 rows, the smart pixel is the
+whole answer on 8, somewhere in the answer on 23, and outside it on 12. It is not
+the rule, and `SCANTYPE` 1 is not secretly smart.
+
+What the 43 _are_ is almost entirely one shape:
+
+|                                          | rows |
+| ---------------------------------------- | ---- |
+| Windows is ours moved one column outward | 17   |
+| Windows is ours plus one column outward  | 23   |
+| neither                                  | 3    |
+
+Forty of forty-three. So on the first and last inked row of a slanted shape,
+Windows' ink is ours shifted or widened by exactly one column, always away from
+the middle of the glyph. The open question is no longer what the extra pixel is
+-- it is why the crossings on those two rows sit a column further out than the
+scanline says.
+
 **In sum, what is left is dropout control on a narrow sheared feature, and
 nothing else.** Windows fires it where we do not: a bar whose upright cell inks rows 3
 to 10 inks exactly those rows slanted too, and its top row comes back two pixels
