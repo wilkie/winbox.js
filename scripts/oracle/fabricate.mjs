@@ -4724,6 +4724,69 @@ function cutAndRead(name, character, keep, point, { source, magnify = 4, vertica
   };
 }
 
+/**
+ * A glyph cut short and made to show a measurement of itself in its own cell.
+ *
+ * The advance is the usual way to read a number out of a running Windows, and
+ * for Courier New it does not answer -- see the commit that found that. The
+ * cell does answer: a glyph is drawn, and where its ink lands can be compared
+ * bitmap against bitmap.
+ *
+ * So this reads the distance between two of the glyph's own points along one
+ * axis, takes a base off it, multiplies what is left, and moves a single point
+ * of the outline to that height. Everything else about the letter is unchanged,
+ * so the two bitmaps differ only where the reading differs -- and multiplying by
+ * sixteen makes a sixteenth of a pixel of difference into a whole one.
+ */
+function cutAndMark(
+  name,
+  character,
+  keep,
+  { from: readFrom, to: readTo, base, magnify = 16, vertical = true, mark = 0, source }
+) {
+  return {
+    name,
+    from: source,
+    as: source,
+    describe: `${source}'s ${character} cut after ${keep}, showing ${readTo} minus ${readFrom}`,
+
+    edit: (bytes) => {
+      const glyph = glyphFor(bytes, character.charCodeAt(0));
+      const body = glyphBody(bytes, glyph);
+      const code = [];
+
+      for (let offset = 0; offset < body.length; offset++) {
+        code.push(body.view.getUint8(body.program + offset));
+      }
+
+      const starts = instructionStarts(code);
+
+      return setGlyphProgram(bytes, glyph, [
+        ...code.slice(0, starts[keep] ?? code.length),
+
+        // Along the axis being measured, so `GC` answers that coordinate.
+        vertical ? 0x00 : 0x01,
+
+        ...ops.byte(readTo),
+        0x46,
+        ...ops.byte(readFrom),
+        0x46,
+        ...ops.subtract(),
+
+        ...ops.word(base * 64),
+        ...ops.subtract(),
+        ...ops.word(magnify * 64),
+        ...ops.multiply(),
+
+        // Onto one point of the outline, which carries the answer into the ink.
+        ...ops.byte(mark),
+        ...ops.swap(),
+        ...ops.setCoordinate(),
+      ]);
+    },
+  };
+}
+
 /** Reads a control value back, so an edit can be relative to what is there. */
 export function controlValueOf(bytes, index) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);

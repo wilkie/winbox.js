@@ -2464,20 +2464,23 @@ export class Hinter {
 
   /** A unit vector along -- or across -- a line, in F2Dot14. */
   unitVector(dx, dy, perpendicular) {
-    if (perpendicular) {
-      const swap = dx;
-
-      dx = -dy;
-      dy = swap;
-    }
-
     const length = Math.sqrt(dx * dx + dy * dy);
 
     if (!length) {
       return { x: UNIT, y: 0 };
     }
 
-    return { x: Math.round((dx / length) * UNIT), y: Math.round((dy / length) * UNIT) };
+    /* Made a unit vector first and turned afterwards, which is the order the
+     * scaler does it in -- it normalises the line and the instruction that
+     * wanted a right angle rotates the result. Turning first and normalising
+     * after is the same vector and not always the same rounding, since a
+     * component landing on an exact half goes one way as a positive and the
+     * other as a negative.
+     */
+    const x = Math.round((dx / length) * UNIT);
+    const y = Math.round((dy / length) * UNIT);
+
+    return perpendicular ? { x: -y, y: x } : { x, y };
   }
 
   /** How far the reference point of a shift has already moved. */

@@ -56,15 +56,14 @@ import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './repl
  * amplified, with no oracle for the intermediate positions. Cutting the program
  * says where the amplifier is, not what feeds it.
  *
- * The obvious way past it does not work here. The `hinting` probe now sweeps
- * Courier New bold, so a fabrication of that file can be recorded; but a glyph
- * rewritten to report one of its points through the advance is not read back.
- * With the `K`'s program cut at eighty-eight and a reading appended, Windows
- * answers the letter's plain width while we answer the point; with the program
- * kept almost whole, both answer the plain width. It is not `hdmx` or `LTSH` --
- * Courier New has neither -- nor the fixed-pitch flag, which is clear. Why the
- * advance stops carrying a reading for this face is not known, and until it is
- * the intermediate positions cannot be compared.
+ * The advance will not carry a reading for this face -- see the commit that
+ * found that -- but the cell will. A glyph cut at eighty-eight and made to move
+ * one of its own points by sixteen times the distance between the two that
+ * define the arm reports that distance as ink, and both the horizontal and the
+ * vertical reading agree with Windows at every size. So the arm's two endpoints
+ * are where Windows has them to within a sixteenth of a pixel, and what differs
+ * is downstream of them: the normalising of the vector between them, or what
+ * the function at ninety-one does with it.
  */
 const RECORDS = 16;
 const PIXELS = 48;
