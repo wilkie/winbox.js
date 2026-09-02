@@ -1240,9 +1240,41 @@ Which leaves one place for it. Windows, asked to lean a rectangle, draws
 something no parallelogram reproduces at any lean or any width; handed that same
 parallelogram as an outline it agrees with us to the pixel. So it does not hand
 the rasteriser the sheared outline. Whatever it hands it is made on the GDI side
-of the call -- the realization path around `EngineRealizeFont` at segment 3
-`0x2b2d`, and the thunk its neighbour at `0x2b23` calls -- and that, not the
-scaler, is where the last pixel is.
+of the call.
+
+#### The realization path, which is not it either
+
+`EngineRealizeFont` at segment 3 `0x2b2d` does three things with the request.
+
+It copies the `LOGFONT`'s first eighteen bytes -- everything before
+`lfFaceName` -- into a local at `[bp-0x60]`, which puts `lfItalic` in the low
+byte of `[bp-0x56]`. **It never reads it.** The only two references to that
+buffer are the copy itself and the `lea bx,[bp-0x60]` at `0x2be7` that hands it
+on.
+
+It calls `0x511` to build the weights into `[bp-0xd8]` -- the 28 words at DGROUP
+`0x39c`, each multiplied by 1024 -- and then calls the candidate loop at `0x2841`
+with the request, a result slot, `0x7fff` for the best cost so far and `-1`.
+
+And when the mapper answers `0x53a` it writes a 3 into the output structure at
+`0x2c15`. Three is the outline realization: the routine at `0x2b0a` that calls
+the scaler thunk `36:0x00ae` guards on exactly `cmp byte [es:bx],0x3`.
+
+One detail out of the mapper is worth keeping. Its first act on the style bytes,
+at `0x28cf`, is to canonicalise three of them:
+
+    mov cx,3
+    al = [ss:di+0xa] ; neg al ; sbb al,al ; [ss:di+0xa] = al ; inc di ; loop
+
+`neg` then `sbb al,al` leaves 0 for zero and `0xFF` for anything else, applied to
+`lfItalic`, `lfUnderline` and `lfStrikeOut` in turn. So a request for italic 2 and
+a request for italic 1 are the same request by the time anything compares them.
+`FontManager` reads `!!request.italic`, which agrees.
+
+**So the realization path records the choice and does not apply it.** Nothing
+between the `LOGFONT` arriving and the font being realized touches the lean. The
+synthesis happens at draw time, on the way to the scaler, which is a third place
+again -- and the reading has not reached it.
 
 Where none of this goes is into the scaler. Segment 36's public entries are four
 thunks that load a dispatch index into `bx` and a word count into `cx` and jump
