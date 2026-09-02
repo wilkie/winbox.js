@@ -357,10 +357,27 @@ way it does on a strike, and the string by its own length. Only Symbol reaches
 that too, the other three families shipping a bold file.
 
 Together these take the metrics to **5,047 of 5,057** and Symbol's glyph cells
-from none to 116 of 216. What is left is a **slant synthesised onto an outline**,
-drawn at an angle that is not Windows': Symbol upright agrees at every size but
-eight, and Symbol slanted agrees only at the two sizes a strike answers. Nothing
-else installed ever asks for one.
+from none to 120 of 216.
+
+**A slant synthesised onto an outline leans by about 0.28**, a quarter of the
+height rather than the half a strike leans by. Only Symbol ever asks for one --
+the other three outline families ship an italic file -- so until Symbol was
+probed at the sizes where it answers with its outline, the corpus contained not
+a single instance of this and the tenth that had been in the code was swept
+against nothing.
+
+Swept against 72 cells at six sizes, the wrong-pixel count makes a clear trough:
+1,552 at a tenth, 1,042 at 0.24, **1,024 at 0.28**, 1,030 at 0.30, 1,128 at 0.34.
+Windows' own ink agrees from the other side: fitting a slope to how far each row
+of a slanted cell sits from the upright one gives about a third at twenty and
+twenty-four pixels.
+
+**Open**, and the shape of what is left says the angle was not the only thing
+wrong: at the best angle four of the 72 come out exactly right, against none at
+a tenth. A shear applied to the scaled outline cannot reproduce a shear applied
+before scaling, and that is the likeliest difference. Also open: Symbol upright
+at eight pixels, and four requests for a hundred pixels at proof quality where
+refusing every stretch leaves a scalable face the winner.
 
 **A height is three different questions depending on its sign.** Positive is the
 cell including its leading; negative is the characters within it; zero is the

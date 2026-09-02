@@ -1288,7 +1288,7 @@ export class Unimplemented extends Error {}
  */
 export const KNOWN_GAPS: Record<string, string> = {
   glyph:
-    'Symbol, and all of it a synthesised style on an outline: the slant at every size the outline answers (72 cells) and the smear at the smallest (28)',
+    'Symbol, and all of it a synthesised style on an outline: the slant at every size the outline answers (68 cells) and the smear at the smallest (28)',
   'CreateFont heights':
     'one: Symbol slanted at twelve pixels, which Windows answers a cell shorter',
   'CreateFont extent':

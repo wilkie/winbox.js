@@ -28,14 +28,30 @@ export class Surface {
   /**
    * How far a synthesised italic leans, as a fraction of its height.
    *
-   * Swept against what Windows draws rather than reasoned about, and the
-   * answer is shallower than it looks like it should be: a tenth, about six
-   * degrees, where the bitmap faces' own overhang implies something nearer a
-   * half. It halves the error and does not remove it -- no slanted outline
-   * comes out exactly right at any angle -- so this is a measured
-   * approximation rather than the rule. See oracle/README.md.
+   * Only one installed face ever asks for this. Arial, Times New Roman and
+   * Courier New all ship an italic file, so a request for a slanted outline is
+   * answered by opening it; Symbol does not, and until Symbol was probed at the
+   * sizes where it answers with its outline there was nothing to measure
+   * against at all. The tenth that used to be here was swept against a corpus
+   * that did not contain a single synthesised outline slant.
+   *
+   * Swept against one now, over 72 cells at six sizes, the wrong-pixel count
+   * makes a clear trough: 1,552 at a tenth, 1,042 at 0.24, **1,024 at 0.28**,
+   * 1,030 at 0.30 and 1,128 at 0.34. Windows' own ink says much the same from
+   * the other side -- fitting a slope to how far each row of a slanted cell
+   * sits from the upright one gives a third at twenty and twenty-four pixels.
+   *
+   * It is **not** the half the bitmap faces lean by, which the old comment
+   * here claimed it was measured against; a strike leans by its whole overhang
+   * and an outline by about a quarter of its height.
+   *
+   * This is a swept minimum and not a rule, and the difference matters: at the
+   * best angle four of 72 cells come out exactly right, against nought at a
+   * tenth. So the angle was wrong and something else is wrong as well -- most
+   * likely that Windows shears before scaling where this shears after. See
+   * `FONTS.md` section 3.
    */
-  static SLANT = 0.1;
+  static SLANT = 0.28;
 
   declare _backcolor: any;
   declare _bitmap: any;
