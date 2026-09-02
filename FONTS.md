@@ -729,9 +729,67 @@ What the 43 _are_ is almost entirely one shape:
 
 Forty of forty-three. So on the first and last inked row of a slanted shape,
 Windows' ink is ours shifted or widened by exactly one column, always away from
-the middle of the glyph. The open question is no longer what the extra pixel is
--- it is why the crossings on those two rows sit a column further out than the
-scanline says.
+the middle of the glyph.
+
+### Windows does not shear the outline at all
+
+That question has an answer, and it is that the premise was wrong.
+
+Take the twelve pixel bar's top row, where Windows inks columns 4 and 5. **No
+run can ink column 5.** A run inks a column when the shape covers that column's
+sample point, at `x = k + 0.5`; column 5's is at 5.5, and the sheared bar's
+rightmost point anywhere in the glyph is 5.428. **No dropout can place it
+either**: the horizontal rescue steps one column _left_ of a zero-length run, and
+the vertical pass has no crossings in a column its scan line never enters.
+Sweeping the shear from 0.300 to 0.340 changes that cell not at all -- the ink is
+identical at every value, because reaching 5.5 would take a slope of 0.349.
+
+So the ink is in a pixel that no shear of the outline can reach. Which says the
+outline is not what is being sheared.
+
+**It is the bitmap.** Comparing each slanted cell against its own upright cell,
+row by row, across all four instruments -- 384 cells:
+
+|                                                       | cells |
+| ----------------------------------------------------- | ----- |
+| every row is the upright row shifted by whole columns | 199   |
+| every row is that, or two adjacent shifts together    | 139   |
+| neither                                               | 46    |
+
+338 of 384. And the shift is not arbitrary. Reading it off the bar:
+
+    h= 8   0  0  0  1  1
+    h=10   1  0  0  0  1  1
+    h=12   1  1  1  0  0  0 -1 -1
+    h=15   3  2  2  2  1  1  1  0  0  0
+    h=20   3  3  2  2  2  1  1  1  0  0  0 -1 -1 -1
+
+**It steps every three rows.** A shear of one third, applied to the rendered
+bitmap a row at a time -- which is exactly what the `.FON` faces do at one half,
+and `bitmap-font.ts` has done all along. At twelve pixels the whole sequence is
+`floor((baseline - 1 - row) / 3)`.
+
+The proof of it is in the two sizes that break the pattern. At thirteen and
+sixteen pixels the sequence steps every _two_ rows instead:
+
+    h=13  -5 -5 -4 -4 -3 -3 -2 -2 -1
+    h=16  -6 -5 -5 -4 -4 -3 -3 -2 -2 -1
+
+Those are precisely the sizes at which Symbol resolves to its own strike rather
+than to its outline -- and a strike leans by one half. The same recording shows
+both rules side by side, each on the face it belongs to.
+
+That also explains, at a stroke, three things that had no explanation: why the
+slanted glyph inks exactly the rows the upright one does (96 of 96, measured long
+before this); why ink appears in pixels whose sample points the shape never
+covers; and why fitting a slope to it gives ranges that do not intersect. There
+is no slope. There is a table of whole-column shifts.
+
+What is left over is the 46, and the extreme rows within the 338 -- the top row
+at twelve pixels is the upright row shifted by _both_ one and two columns, and
+the bottom row at fifteen by both zero and minus one. So the ends of a sheared
+bitmap smear across two columns where the middle does not, and that is the next
+thing to pin down.
 
 **In sum, what is left is dropout control on a narrow sheared feature, and
 nothing else.** Windows fires it where we do not: a bar whose upright cell inks rows 3

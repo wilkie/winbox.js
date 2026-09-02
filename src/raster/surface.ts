@@ -66,6 +66,29 @@ export class Surface {
    */
   static SLANT = 0.3;
 
+  /* **And the shear is very probably not this at all.**
+   *
+   * Comparing every slanted cell of the four slant instruments against its own
+   * upright cell says 338 of 384 are the upright cell with each row shifted by
+   * whole columns -- and the shift steps every three rows, which is a lean of
+   * one third applied to the *bitmap*, a row at a time, exactly as the `.FON`
+   * faces are leaned at one half in `bitmap-font.ts`. At the two sizes where
+   * Symbol resolves to its own strike instead of its outline the same recording
+   * steps every two rows, which is that other rule showing up beside it.
+   *
+   * It accounts for what shearing the outline cannot. At twelve pixels Windows
+   * inks a column whose sample point the sheared bar never covers at any slope,
+   * and which no dropout can place; the slanted cell inks exactly the rows the
+   * upright one does, every time; and a slope fitted to the ink gives ranges
+   * that do not intersect. All three follow from there being no slope at all,
+   * only a table of whole-column shifts.
+   *
+   * This is written down rather than implemented because implementing it means
+   * rendering the glyph upright and shearing the result, which is a different
+   * shape of drawing from what `outlineText` does now. See `FONTS.md`
+   * section 3.
+   */
+
   declare _backcolor: any;
   declare _bitmap: any;
   declare _brush: any;
