@@ -536,10 +536,52 @@ horizontal term, and no tip of such a glyph could ever be drawn. It is still
 worse than the box.
 
 **And the stub check is not most of the slant.** Forced off, it is worth 28 of
-the instrument's 220 wrong pixels. Windows puts _two_ pixels on the sheared
-bar's top row, and a rescue never places more than one -- so the other 192 are a
-missing pair of crossings, not a refused rescue. That is where the next
-instrument should point.
+the instrument's 220 wrong pixels.
+
+### The rest of it is not a missing pair of crossings
+
+That was the guess the paragraph above used to end on, and chasing it down says
+otherwise.
+
+First the model, which the chase confirmed exactly. A row is sampled at device
+`y = row + 0.5`, a crossing is `round(x)` there, and a run `[on, off)` inks
+columns `on` to `off - 1`. Worked against the sheared bar at twelve pixels --
+whose geometry is known to the third decimal, a parallelogram 0.703 px wide whose
+left edge is `4.725 - 0.3(y - 2.848)` -- that predicts all eight of our rows and
+every crossing on them. The endpoint topology is faithful too: it fires only for
+a vertex lying exactly on a scanline, and the bar's horizontal top edge sits at
+`y = 2.848`, between two, so it contributes no horizontal pair. That is what
+`EvaluateEndPoint` does.
+
+So on that row there are exactly two crossings and both are accounted for.
+**There is no missing pair.**
+
+With the stub check forced off, the 156 differing rows across both instruments
+sort like this:
+
+| where  | shape                      | rows |
+| ------ | -------------------------- | ---- |
+| middle | Windows has one pixel more | 40   |
+| middle | we have one pixel more     | 36   |
+| bottom | Windows has one pixel more | 28   |
+| top    | one each, different column | 24   |
+| top    | Windows has one pixel more | 12   |
+| middle | one each, different column | 12   |
+| top    | we have one pixel more     | 4    |
+
+108 of the 156 are a rescue landing on a different row or a different column --
+placement, not crossings. Only the 12 are the two-pixels-for-one case, and they
+are one configuration seen twelve times, since every character of `symbol-slant`
+is the same bar at a given size.
+
+**That one is genuinely unaccountable, and worth stating as such.** Windows inks
+columns 4 and 5 on the top row. Column 5 cannot come from the run: reaching the
+sample line at 5.5 needs the bar's right edge 0.268 px further out on that row,
+a slope of 0.349, and 0.31 already costs sixteen pixels on the cells that measure
+the slope. It cannot come from the vertical pass either -- the line at 5.5 is
+never covered, the bar's rightmost point being 5.428, so that column holds no
+crossings to rescue. And the horizontal rescue places one pixel, at 4. No shear
+value and neither pass in the source puts ink there.
 
 **In sum, what is left is dropout control on a narrow sheared feature, and
 nothing else.** Windows fires it where we do not: a bar whose upright cell inks rows 3

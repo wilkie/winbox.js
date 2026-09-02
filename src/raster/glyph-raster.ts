@@ -675,9 +675,11 @@ export function fillWalked(contours, options) {
      * it is still worse. So the box stays until the mechanism is found.
      *
      * It is also not most of the synthesised slant. Forced off, the stub check
-     * is worth 28 of that instrument's 220 wrong pixels; Windows puts *two*
-     * pixels on the sheared bar's top row and a rescue never places more than
-     * one. See `FONTS.md` section 3.
+     * is worth 28 of that instrument's 220 wrong pixels, and the rest is not a
+     * missing crossing either: with it off, 108 of the 156 differing rows are a
+     * rescue landing on a different row or column, and the sheared bar's top row
+     * has exactly the two crossings the model predicts. See `FONTS.md`
+     * section 3.
      */
     if (!narrow && (!continues(-1) || !continues(1))) {
       continue;
