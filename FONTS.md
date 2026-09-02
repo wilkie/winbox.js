@@ -860,12 +860,49 @@ another. Since we match it on the first, whatever it does for the second is not
 "shear the outline and scan-convert" -- at three tenths or at any other slope,
 since none in 0.285 to 0.345 reproduces the cell.
 
-That is a proof rather than a fit, and it closes off the whole family of models
-this section has been working through. The slant is not a shear of this outline,
-not a table of row shifts, not a slope, not a placement, not an order of hinting.
-The next place to look is not the rasteriser at all: it is what GDI does to a
-`lfItalic` request for a face that has no italic file, which is a question for the
-binary rather than for the pixels.
+That is a proof rather than a fit -- of the three tenths shear, at least. To
+close it for _every_ shear takes one more recording.
+
+### `slant-angle`: not a shear at any angle
+
+`slant-angle` bakes the same bar at twelve leans -- 0.20, 0.25, 0.28, 0.30,
+0.3125, 1/3, 0.35, 0.364 (which is tan 20 degrees, the usual italic angle),
+0.375, 0.40, 0.42, 0.45 -- and asks for each upright, three characters to a lean.
+
+**All 88 cells are exact.** So the recording is a direct readout of what Windows
+draws for a hairline at any of those leans, with none of our pipeline in the way.
+Set those readouts beside `symbol-slant`'s slanted cells at the same sizes:
+
+    size   0.200 0.250 0.280 0.300 0.312 0.333 0.350 0.364 0.375 0.400 0.420 0.450
+    h= 8       .     .     .     .     .     .     . MATCH MATCH     .     .     .
+    h=10       .     .     . MATCH MATCH MATCH     .     .     .     .     .     .
+    h=12       .     .     .     .     .     .     .     .     .     .     .     .
+    h=15       .     .     .     .     .     .     .     .     .     .     .     .
+    h=20       .     .     .     . MATCH     .     .     .     .     .     .     .
+    h=24       .     .     . MATCH     .     .     .     .     .     .     .     .
+
+No lean matches at every size, and **at twelve and fifteen pixels no lean matches
+at all**. The synthesised cell is not in the image of "bake a shear and
+rasterise" for any angle from a fifth to nine twentieths.
+
+The twelve pixel cell says why in one line. Its top row is two pixels wide,
+`{4, 5}`, and the bar is 0.703 px across: no parallelogram that narrow covers two
+sample points on any row, at any lean. Windows' synthesised glyph is _wider_ than
+the bar it came from, and a shear does not widen anything.
+
+**So the synthesis is not a shear of the outline. Not at three tenths, not at any
+angle.** That closes off the whole family of models this section has worked
+through -- shear, row shift, slope, placement, order of hinting -- and it does it
+by construction rather than by fitting.
+
+Where it does not go is into the scaler. Segment 36's public entries are four
+thunks that load a dispatch index into `bx` and a word count into `cx` and jump
+to a stack switcher at `0xe1`, which copies the arguments onto the scaler's own
+stack at segment `0xbc` and does `call far [bx*2+0x1e]` -- a table of far
+pointers built at initialisation, not present in the image. `EngineRealizeFont`'s
+neighbour at segment 3 `0x2b23` calls one of those thunks, `36:0x00ae`. Static
+descent stops at the table, so the next step is either to read that table as the
+running system fills it, or to keep asking the oracle.
 
 **In sum, what is left is dropout control on a narrow sheared feature, and
 nothing else.** Windows fires it where we do not: a bar whose upright cell inks rows 3

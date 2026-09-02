@@ -132,8 +132,8 @@ describe('the fabricated glyph recordings', () => {
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 21596;
-  const WRONG = 4930;
+  const EXACT = 21821;
+  const WRONG = 5074;
 
   /* The one place an unhinted outline is drawn differently.
    *
@@ -448,7 +448,26 @@ describe('the fabricated glyph recordings', () => {
    * outline, and the second is what we do. See `FONTS.md` section 3.
    */
   present('rasterise a hairline that leans in the outline', async function () {
-    const recording = all.find((entry) => entry.name === 'slant-baked');
+    await bakedLeans('slant-baked');
+  });
+
+  /* And the same at a dozen leans, which is what turns the control into a
+   * measuring instrument.
+   *
+   * `slant-angle` bakes the bar at twelve leans from a fifth to nine twentieths
+   * and asks for each upright. All 88 cells are exact, so a recording of a baked
+   * shape is a direct readout of what Windows draws for that shape, with none of
+   * our pipeline in the way. Comparing those readouts against `symbol-slant`'s
+   * *slanted* cells then says which lean Windows' own synthesis is drawing --
+   * and at twelve and fifteen pixels the answer is none of them. See `FONTS.md`
+   * section 3.
+   */
+  present('rasterise that hairline at a dozen leans', async function () {
+    await bakedLeans('slant-angle');
+  });
+
+  async function bakedLeans(name: string) {
+    const recording = all.find((entry) => entry.name === name);
 
     expect(recording).toBeTruthy();
 
@@ -485,7 +504,7 @@ describe('the fabricated glyph recordings', () => {
 
     expect(upright).toBeGreaterThanOrEqual(88);
     expect(differing).toBe(0);
-  });
+  }
 
   const NARROW = 4;
 

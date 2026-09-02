@@ -108,11 +108,20 @@ export class Surface {
    * shear into the outline -- the same parallelogram `slant` builds, to the font
    * unit, at the same device coordinates -- and asks for it upright. Windows
    * draws it exactly as we do, 88 cells and no wrong pixels. Then the same shape
-   * arrived at by asking Windows to lean the rectangle comes back different. So
-   * Windows does not agree with itself, we match the half of it that is a
-   * rasterisation, and the synthesis is something else. What that something is
-   * belongs to GDI's handling of `lfItalic` for a face with no italic file,
-   * which is a question for the binary. See `FONTS.md` section 3.
+   * arrived at by asking Windows to lean the rectangle comes back different.
+   *
+   * `slant-angle` then bakes that bar at twelve leans from a fifth to nine
+   * twentieths, tan 20 degrees among them, and all 88 of those cells are exact
+   * too -- so the recording is a readout of what Windows draws for a hairline at
+   * any lean. **None of the twelve matches the synthesised cell at twelve or at
+   * fifteen pixels**, and no one lean matches at every size. The twelve pixel
+   * cell says why in a line: its top row is two pixels wide and the bar is 0.703
+   * px across, and no parallelogram that narrow covers two sample points on any
+   * row at any angle. Windows' synthesised glyph is wider than the bar it came
+   * from, and a shear does not widen anything.
+   *
+   * So this constant is the best straight line through something that is not a
+   * straight line. See `FONTS.md` section 3.
    */
 
   declare _backcolor: any;

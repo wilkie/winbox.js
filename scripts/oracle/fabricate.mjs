@@ -4653,6 +4653,10 @@ export const FABRICATIONS = [
     describe: "symbol-slant's bar with the synthesised lean baked into the outline instead",
   }),
 
+  slantAngle('slant-angle', {
+    describe: "symbol-slant's bar baked at a dozen different leans, to read the angle off Windows",
+  }),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -4829,6 +4833,72 @@ function slantShapes(name, { box, describe, source = 'SYMBOL.TTF' }) {
  * Twelve steps of the side bearing, three of the height, as `corner-phase` has,
  * so that the answer is a sweep rather than a single reading.
  */
+/**
+ * `symbol-slant`'s bar baked at a dozen leans, to read the angle off Windows.
+ *
+ * `slant-baked` establishes the lever: a sheared hairline written into the
+ * outline is scan-converted identically by Windows and by us, 88 cells and no
+ * wrong pixels. So the recording of a *baked* shape is a direct readout of what
+ * Windows would draw for that shape, with none of our own pipeline in the way.
+ *
+ * This bakes the same bar at twelve leans and asks for each upright. Comparing
+ * the cells against `symbol-slant`'s *slanted* cells at the same size then says
+ * which lean, if any, Windows' own synthesis is drawing -- without fitting
+ * anything, and without assuming the synthesis is a shear at all. If one lean
+ * matches at every size, that is the angle. If none does, the synthesis is not a
+ * shear of the outline and the question moves off the rasteriser for good.
+ *
+ * Three characters to a lean, all identical, so that a misread of one glyph
+ * cannot pass for a result.
+ */
+function slantAngle(
+  name,
+  { describe, source = 'SYMBOL.TTF', characters = 'ABEKMNRSWXZabdefgjkmnostwy0123456789' }
+) {
+  const WIDE = 160;
+  const FOOT = -400;
+  const TOP = 1400;
+
+  // A twelfth of the way from a fifth to a half, which brackets every candidate.
+  const LEANS = [200, 250, 280, 300, 3125, 3333, 350, 364, 375, 400, 420, 450].map((n) =>
+    n > 1000 ? n / 10000 : n / 1000
+  );
+
+  return {
+    name,
+    from: source,
+    as: source,
+    describe,
+
+    edit: (bytes) => {
+      for (let index = 0; index < characters.length; index++) {
+        const slope = LEANS[index % LEANS.length];
+        const lean = (y) => Math.round(y * slope);
+        const x0 = 200;
+
+        const glyph = glyphFor(bytes, 0xf000 + characters.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: x0 + WIDE + lean(TOP) + 200,
+          height: TOP,
+          points: [
+            [x0 + lean(FOOT), FOOT],
+            [x0 + lean(TOP), TOP],
+            [x0 + WIDE + lean(TOP), TOP],
+            [x0 + WIDE + lean(FOOT), FOOT],
+          ],
+          program: [],
+        });
+
+        // The bearing is the sheared shape's own leftmost point; see `slantBar`.
+        setBearing(bytes, glyph, x0 + lean(FOOT));
+      }
+
+      return bytes;
+    },
+  };
+}
+
 function slantBaked(
   name,
   { describe, source = 'SYMBOL.TTF', characters = 'ABEKMNRSWXZabdefgjkmnostwy0123456789' }
