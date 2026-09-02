@@ -1182,6 +1182,39 @@ No divergence found. Three branches of `CalcLine` now correspond to three
 branches here, and the one place the reading suggested they might part is closed
 by measurement.
 
+#### The endpoint topology, and why `above` is strict
+
+The block from `0x1342` is entered on one test, and the test names two bits:
+
+    131b  cx = y1 & 0x3f ; if (cx == 0x20) dx |= 0x100
+    132a  cx = x1 & 0x3f ; if (cx == 0x20) dx |= 0x80
+    1339  test dx,0x180 ; jnz 0x1342          ; either on a sample line
+    133f  jmp 0x150f                          ; neither: the ordinary branches
+
+**`0x100` means `y1` lies exactly on a sample line and `0x80` means `x1` does**,
+and the endpoint topology runs only when one of them is set. The same pair of
+tests is applied to the far point at `0x12ec` and `0x12fd`, incrementing that
+point's indices instead.
+
+That explains the increments the batch branches carry, and closes the question
+the last section left open. The shipped rounding takes the sample line a
+coordinate sits on; then, when the coordinate sits exactly on one, these bits
+make the walk step past it -- `inc [0x1bc]` with `si += 2` and the distance
+bumped by 64 in the oblique branch at `0x1645`, `inc ax` in the batch branches.
+**Inclusive rounding plus a step past an exact hit is a strict `above`**, which is
+what `scan-walk.ts` computes in one go, and the line the walk skips is the one
+the endpoint topology emits for instead. The two are the same rule factored
+differently, and the 106,192 wrong pixels that the half-pixel experiment cost are
+the measurement of a mis-factoring rather than of a different rule.
+
+What the topology block then does is take the turn. It forms the cross product of
+the direction into the vertex with the direction out of it --
+`(x1 - x0) * dy - (y1 - y0) * dx`, in thirty-two bits at `0x1349` to `0x135f` --
+and records its sign in bit `0x10`. `horizTopology` and `vertTopology` decide the
+same thing from the same three points, by comparing them rather than multiplying
+them, and it is that sign which says whether a vertex contributes an `on`, an
+`off`, both, or nothing.
+
 Where none of this goes is into the scaler. Segment 36's public entries are four
 thunks that load a dispatch index into `bx` and a word count into `cx` and jump
 to a stack switcher at `0xe1`, which copies the arguments onto the scaler's own
