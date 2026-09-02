@@ -662,16 +662,20 @@ export class FontManager {
      * small beats one that is too big by the same amount. `FONTS.md` section 3
      * has the whole weights table and where in the image it sits.
      *
-     * Knowing the scoring is not enough to reproduce it, and scoring the
-     * candidates *we* enumerate that way is worse than what is here -- 37
-     * heights wrong against 30, over the same 302. The stretch is not in that
-     * loop at all: the loop picks a font, and the height it will be drawn at is
-     * settled afterwards. It is not the display driver's either -- VGA's
-     * `EnumDFonts` is a stub, so it has no fonts to offer. `FONTS.md` section 3
-     * has both, and names where to look next.
+     * The stretch is part of that score rather than a separate choice. There is
+     * no list of stretched candidates anywhere: each strike is scored once, and
+     * the routine divides the height it would be realised at by the strike's
+     * own `dfPixHeight`, and the width by its `dfAvgWidth`, both as integer
+     * divisions. Those two quotients are the multiples, and they cost 20 for
+     * each unit of the two added together plus 50 more, flat, if either is
+     * greater than one -- which is why the two can differ, and why a stretch is
+     * worth more than a pixel and a half of height error.
      *
-     * Until that is read this stands, which is exact for a face with one strike
-     * and wrong at 38 heights for the faces with several.
+     * That is not yet enough to reproduce it: what the height *would be*
+     * realised at, which is what those divisions divide, has not been read.
+     * `FONTS.md` section 3 has the whole of it. Until then this stands, which
+     * is exact for a face with one strike and wrong at 38 heights for the faces
+     * with several.
      */
     /* A scalable face has one design and is drawn at whatever size is wanted,
      * so none of the business below -- nearest strike, whole-number stretch,

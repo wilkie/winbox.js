@@ -226,9 +226,29 @@ pitch font costs 15,000; the other way round costs 350; a request that named no
 pitch at all and got a fixed one costs 1. And italic, underline and strikeout
 mismatches cost 4, 3 and 3, which is to say almost nothing next to the name.
 
-**The stretch is not in the scoring loop, and it is not the driver's.**
+**There are no stretched candidates.** The question was wrongly put. Nothing
+enumerates `13 x 3` and puts it in front of the loop; each strike is scored once,
+and how many times over it would be drawn is _part of its score_.
 
-Both were worth ruling out. GDI does ask the display driver about heights: at
+The routine works out what height and width this candidate would be realised at,
+then divides: `realised height / dfPixHeight` and `realised width / dfAvgWidth`,
+both integer divisions, at `1e19` and `1e27`. Those two quotients are the
+multiples. It charges **20 for each unit of the two added together**, and **50
+more, flat, if either of them is greater than one**. So drawing a strike twice
+over costs 40 against 20, and the flat 50 on top means that being stretched at
+all is worth more than a pixel and a half of height error either way.
+
+The two strikes of a file sit in an array of 52-byte records that the entry
+indexes into, and the two fields divided by are three bytes apart -- which is
+exactly `dfPixHeight` and `dfAvgWidth` in an `FNT` header, at 88 and 91.
+
+That is where the whole-number stretch lives, and it is why the width multiple
+can differ from the height one: they are separate divisions of separate
+quantities, not one scale applied twice.
+
+**It is also not the driver's.**
+
+That was worth ruling out too. GDI does ask the display driver about heights: at
 `2b0a` it calls through a thunk at segment 36 offset `00ae`, which switches to a
 private stack, copies five words of argument -- a font, a device and a height --
 and dispatches through the driver's entry table. If that call answers, its answer
@@ -236,16 +256,23 @@ _is_ the height and GDI does no arithmetic of its own. But VGA's `EnumDFonts` is
 `mov ax,1; retf 0x10`: a stub. The driver has no fonts, so on this device every
 candidate is one of GDI's own raster fonts and that path is never the one taken.
 
-And the loop is not enumerating strikes. What follows it -- reached only once the
-candidate loop has finished and a winner is in hand -- is a search: start from
+What follows the loop -- reached only once it has finished and a winner is in
+hand -- is a search: start from
 `MulDiv(cell, e2, e16)` and step a character height up or down by one until
 `MulDiv(h, e2, e8) + MulDiv(h, e16 - e8, e2)` equals the cell that was asked for,
 stopping the moment it would oscillate between two values. That is the cell to
 character height conversion, and it is applied **to the font already chosen**.
 
-So the scoring picks a font and something downstream decides how many times over
-to draw it. `EngineRealizeFont` at `22b3` is where that has to be, and it is the
-next thing to read.
+So the height a strike is realised at is settled while it is being scored, by
+the penalty routine itself, and the conversion after the loop turns the winner's
+answer back into the character height that `EngineRealizeFont` scales every
+metric by.
+
+What is still not read is where the _realised_ height comes from -- the value
+those two divisions divide. The routine writes it into a two-word structure the
+loop hands it, and reads the request's own height from `+0x54`, which
+`EngineRealizeFont` sets to nought on the path taken here. Something else fills
+it, and that is the last link.
 
 An earlier reading of this said the height term was a step rather than a
 distance -- nought, 500 or 10,000 -- and that no function of the difference
