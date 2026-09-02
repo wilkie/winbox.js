@@ -226,63 +226,51 @@ pitch font costs 15,000; the other way round costs 350; a request that named no
 pitch at all and got a fixed one costs 1. And italic, underline and strikeout
 mismatches cost 4, 3 and 3, which is to say almost nothing next to the name.
 
-**There are no stretched candidates.** The question was wrongly put. Nothing
-enumerates `13 x 3` and puts it in front of the loop; each strike is scored once,
-and how many times over it would be drawn is _part of its score_.
+**There are no stretched candidates.** The question was wrongly put, and that is
+why looking for the routine that enumerates them kept finding nothing. Each
+strike is scored once, and how many times over it would be drawn is part of its
+score. The whole of it, from `seg3:1bcb`:
 
-The routine works out what height and width this candidate would be realised at,
-then divides: `realised height / dfPixHeight` and `realised width / dfAvgWidth`,
-both integer divisions, at `1e19` and `1e27`. Those two quotients are the
-multiples. It charges **20 for each unit of the two added together**, and **50
-more, flat, if either of them is greater than one**. So drawing a strike twice
-over costs 40 against 20, and the flat 50 on top means that being stretched at
-all is worth more than a pixel and a half of height error either way.
+```
+wanted = lfHeight; candidate = dfPixHeight
+if lfHeight < 0:  wanted = -lfHeight; candidate -= dfInternalLeading
 
-The two strikes of a file sit in an array of 52-byte records that the entry
-indexes into, and the two fields divided by are three bytes apart -- which is
-exactly `dfPixHeight` and `dfAvgWidth` in an `FNT` header, at 88 and 91.
+if stretching and candidate < wanted:
+    times = (wanted + candidate/4) / candidate      # sar cx,2 then idiv
+    if times > 8:            times = 8
+    if times + 2 >= candidate: refuse this strike outright
+    penalty += 20 * times
+    penalty |= (times - 1) << 3                     # a tie-break in the low bits
+else:
+    times = 1
 
-That is where the whole-number stretch lives, and it is why the width multiple
-can differ from the height one: they are separate divisions of separate
-quantities, not one scale applied twice.
+realised = times * candidate
+penalty += realised > wanted ? 150 * (realised - wanted) + 600
+                             : 150 * (wanted - realised)
+```
 
-**It is also not the driver's.**
+Everything in it was read rather than fitted, and three things fall out that had
+been open for three sittings.
 
-That was worth ruling out too. GDI does ask the display driver about heights: at
-`2b0a` it calls through a thunk at segment 36 offset `00ae`, which switches to a
-private stack, copies five words of argument -- a font, a device and a height --
-and dispatches through the driver's entry table. If that call answers, its answer
-_is_ the height and GDI does no arithmetic of its own. But VGA's `EnumDFonts` is
-`mov ax,1; retf 0x10`: a stub. The driver has no fonts, so on this device every
-candidate is one of GDI's own raster fonts and that path is never the one taken.
+The quarter of a cell added before the division is `sar cx,2`, and it is what
+the dense sweep had measured from outside: Fixedsys stepping at `15m - 3` and
+System at `16m - 4`. The cap of eight is `cmp ax,8`. And **a strike is refused
+outright when the multiple plus two is not less than its own height**, which is
+why Small Fonts' three row strike is never stretched at all and its five row
+strike only ever doubled -- the thing that had made that face fit no rule.
 
-What follows the loop -- reached only once it has finished and a winner is in
-hand -- is a search: start from
-`MulDiv(cell, e2, e16)` and step a character height up or down by one until
-`MulDiv(h, e2, e8) + MulDiv(h, e16 - e8, e2)` equals the cell that was asked for,
-stopping the moment it would oscillate between two values. That is the cell to
-character height conversion, and it is applied **to the font already chosen**.
+The weights are 20 a multiple, 150 a pixel of height error either way, and 600
+more flat for erring on the tall side. So overshooting by a pixel costs what
+undershooting by five does, and the stretch itself is cheap next to both.
 
-So the height a strike is realised at is settled while it is being scored, by
-the penalty routine itself, and the conversion after the loop turns the winner's
-answer back into the character height that `EngineRealizeFont` scales every
-metric by.
-
-What is still not read is where the _realised_ height comes from -- the value
-those two divisions divide. The routine writes it into a two-word structure the
-loop hands it, and reads the request's own height from `+0x54`, which
-`EngineRealizeFont` sets to nought on the path taken here. Something else fills
-it, and that is the last link.
-
-An earlier reading of this said the height term was a step rather than a
-distance -- nought, 500 or 10,000 -- and that no function of the difference
-could reproduce it. That was wrong, and worth recording as a way of being wrong.
-The step-shaped term is real and sits where I looked, but it compares the field
-at `+0x52` of the request, which I had assumed was a height because the routine
-that fills it sits beside the height arithmetic. It is an atom. Resolving the
-call that produces it -- through the relocation chain, which runs through the
-segment word of each far pointer, to `KERNEL`'s atom table -- is what settled
-it. A field's meaning is not established by what is computed near it.
+Implemented, this takes the metrics from 4,819 of 5,057 to 4,894 and closes the
+last 36 bitmap glyph cells outside Symbol. Thirteen heights of 302 are still
+wrong and every one is at seventy-five pixels or more, where we take a smaller
+strike stretched further than Windows will and it takes a larger one: Courier
+asked for 75 answers 80, its twenty row strike four times, where this answers 78,
+its thirteen row strike six times, which is both closer and cheaper by these
+weights. Some term that grows with the multiple is still missing, and the
+likeliest place is the block at `1d34` that has not been read.
 
 **At proof quality no strike is ever stretched.** The routine tests `lfQuality`
 against `PROOF_QUALITY` before adding a single term and answers `0x7fffffff`,

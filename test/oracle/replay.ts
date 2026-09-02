@@ -1288,11 +1288,11 @@ export class Unimplemented extends Error {}
  */
 export const KNOWN_GAPS: Record<string, string> = {
   glyph:
-    'Symbol, which the mapper answers with the TrueType face and we answer with the strike (216 cells), and Small Fonts above its largest strike (36)',
+    'Symbol, which the mapper answers with the TrueType face and we answer with the strike (216 cells)',
   'CreateFont heights':
-    'Symbol (30 records), and the choice between strikes for Small Fonts (27), Courier (8) and MS Serif (3)',
-  'CreateFont widths': 'the same, at 30 and 38',
-  'CreateFont extent': 'the same, at 30 and 38',
+    'Symbol (30 records), and thirteen heights of Courier, MS Serif and Small Fonts, all at 75 pixels or more, where a term of the stretch penalty is still missing',
+  'CreateFont widths': 'the same, at 30 and 13',
+  'CreateFont extent': 'the same, at 30 and 13',
   'CreateFont style': 'Symbol: `tmPitchAndFamily` says TrueType and we say a strike (30 records)',
   'CreateFont quality':
     'four of 72: a hundred pixels of a bitmap face at proof quality, where refusing every stretch leaves the nearest strike so far off that a scalable face wins instead, and we answer with the strike',

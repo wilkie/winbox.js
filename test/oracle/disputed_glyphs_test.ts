@@ -14,10 +14,10 @@
  * but a list that must stay empty. Section 6 of FONTS.md records what was ruled
  * out getting there.
  *
- * The bitmap faces are counted separately and are not at zero. Two things are
- * open, both named in `KNOWN_GAPS`: Symbol, which the mapper answers with the
- * TrueType face where we answer with the strike, and Small Fonts above its
- * largest strike, where the whole-number stretch picks a different one.
+ * The bitmap faces are counted separately and are not at zero. One thing is
+ * open, named in `KNOWN_GAPS`: Symbol, which the mapper answers with the
+ * TrueType face where we answer with the strike. Every other bitmap cell of the
+ * seven faces the probe sweeps agrees.
  *
  * ## How the last sixteen went
  *
@@ -75,8 +75,8 @@ import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './repl
 const OUTLINE = ['Arial', 'Times New Roman', 'Courier New'];
 const RECORDS = 0;
 const PIXELS = 0;
-const BITMAP_RECORDS = 252;
-const BITMAP_PIXELS = 9640;
+const BITMAP_RECORDS = 216;
+const BITMAP_PIXELS = 8378;
 
 /** Whether a recorded call named one of the three outline families. */
 function isOutline(args: string) {

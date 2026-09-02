@@ -130,6 +130,13 @@ export class FontManager {
    */
   static PROOF_QUALITY = 2;
 
+  /* The mapper's penalty weights, from GDI's own table at `0x39c`, each
+   * multiplied by 1024 as the table is built.
+   */
+  static STRETCH_PENALTY = 20 * 1024;
+  static HEIGHT_PENALTY = 150 * 1024;
+  static TALLER_PENALTY = 600 * 1024;
+
   /**
    * The cell height at and above which an outline always wins.
    *
@@ -662,20 +669,15 @@ export class FontManager {
      * small beats one that is too big by the same amount. `FONTS.md` section 3
      * has the whole weights table and where in the image it sits.
      *
-     * The stretch is part of that score rather than a separate choice. There is
-     * no list of stretched candidates anywhere: each strike is scored once, and
-     * the routine divides the height it would be realised at by the strike's
-     * own `dfPixHeight`, and the width by its `dfAvgWidth`, both as integer
-     * divisions. Those two quotients are the multiples, and they cost 20 for
-     * each unit of the two added together plus 50 more, flat, if either is
-     * greater than one -- which is why the two can differ, and why a stretch is
-     * worth more than a pixel and a half of height error.
+     * That rule is now what this does. Each strike is scored once, the stretch
+     * is part of its score rather than a separate choice, and the weights are
+     * GDI's own. See `FONTS.md` section 3 for the whole of it and for where in
+     * the image each piece sits.
      *
-     * That is not yet enough to reproduce it: what the height *would be*
-     * realised at, which is what those divisions divide, has not been read.
-     * `FONTS.md` section 3 has the whole of it. Until then this stands, which
-     * is exact for a face with one strike and wrong at 38 heights for the faces
-     * with several.
+     * Thirteen heights of 302 are still wrong and every one is at seventy-five
+     * pixels or more, where we take a smaller strike stretched further than
+     * Windows will and it takes a larger one. Some term that grows with the
+     * multiple is still missing.
      */
     /* A scalable face has one design and is drawn at whatever size is wanted,
      * so none of the business below -- nearest strike, whole-number stretch,
@@ -750,38 +752,51 @@ export class FontManager {
        * pixel strike would give at ten times, which is the answer every other
        * rule here would have chosen.
        */
-      /* How many times over *this* strike may be drawn, which each one answers
-       * for itself rather than the family answering once.
+      /* How many times over this strike would be drawn.
        *
-       * A quarter of the strike's own height is added before the division, so
-       * the step up to the next multiple happens a little before the multiple
-       * is reached rather than exactly at it -- which is why a request can come
-       * back taller than it asked for. **Recorded** on the two faces that have
-       * one strike each and so cannot be confounded by the choice between
-       * strikes: Fixedsys, fifteen rows, steps at 27, 42, 57, 72, 87, 102 and
-       * 117, which is `15m - 3` every time; System, sixteen rows, steps at 28,
-       * 44, 60, 76, 92 and 108, which is `16m - 4`. Both are exact at every
-       * height from one to a hundred and twenty.
+       * A quarter of the strike's own height is added before the division --
+       * `sar cx,2` at `seg3:1bf7` -- so the step up to the next multiple comes
+       * a little before the multiple is reached, which is why a request can
+       * come back taller than it asked for. A strike at least as tall as the
+       * request is never stretched, and proof quality never stretches at all.
        */
-      const top =
-        request.quality === FontManager.PROOF_QUALITY
-          ? 1
-          : Math.max(
-              1,
-              Math.min(FontManager.MAX_STRETCH, Math.floor((target + (measured >> 2)) / measured))
-            );
+      const stretching = request.quality !== FontManager.PROOF_QUALITY && measured < target;
 
-      const size = measured * top;
+      const times = stretching
+        ? Math.min(FontManager.MAX_STRETCH, Math.floor((target + (measured >> 2)) / measured))
+        : 1;
 
-      if (!smallest || size < smallest.size || (size === smallest.size && top < smallest.scale)) {
-        smallest = { entry, scale: top, size };
+      /* Refused outright when the multiple plus two is not less than the
+       * strike's own height, which is why the three row and five row strikes of
+       * Small Fonts are barely stretched: three never can be, five only
+       * doubled.
+       */
+      if (stretching && times + 2 >= measured) {
+        continue;
       }
 
-      if (
-        size <= target &&
-        (!best || size > best.size || (size === best.size && top < best.scale))
-      ) {
-        best = { entry, scale: top, size };
+      const size = measured * times;
+
+      /* The score, with the mapper's own weights: twenty a multiple for the
+       * stretch, a hundred and fifty a pixel of height error either way, and
+       * six hundred more, flat, for erring on the tall side. All of them are
+       * multiplied by 1024 as GDI builds its table, which leaves the low bits
+       * free -- and GDI uses them, folding the multiple in with an `or` rather
+       * than an add, as a tie-break between candidates that cost the same.
+       */
+      let cost = stretching ? (FontManager.STRETCH_PENALTY * times) | ((times - 1) << 3) : 0;
+
+      cost +=
+        size > target
+          ? FontManager.HEIGHT_PENALTY * (size - target) + FontManager.TALLER_PENALTY
+          : FontManager.HEIGHT_PENALTY * (target - size);
+
+      if (!smallest || size < smallest.size) {
+        smallest = { entry, scale: times, size };
+      }
+
+      if (!best || cost < best.cost) {
+        best = { entry, scale: times, size, cost };
       }
     }
 
