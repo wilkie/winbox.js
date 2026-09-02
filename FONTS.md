@@ -172,20 +172,17 @@ with an average width of 45, which is its own nine _five_ times. Small Fonts
 asked for eighty-seven answers a cell of 88, eleven rows eight times, with an
 average of 25: five fives. **Recorded.**
 
-**Which strike is stretched, when a face has several, is open.** The rule above
-makes Fixedsys and System exact at all 69 heights each and MS Sans Serif exact,
-and leaves Courier wrong at 8 heights, MS Serif at 3 and Small Fonts at 27.
+**Which strike is stretched, when a face has several,** was open for three
+sittings and is now read out of GDI rather than fitted. The section below has
+it; what follows here is what fitting from outside could not reach, kept because
+it is the reason the reading was worth doing.
 
-What is ruled out. It is not "the largest that does not overshoot": Courier
-asked for 38 answers 39, its thirteen row strike three times over, when 32 was
-available and fits. It is not "the nearest": the same face asked for 25 answers
-20 and not the 26 that is a pixel away. It is not a two-sided linear penalty on
-the difference, with or without a term for the stretch itself -- swept over
-every ratio up to 6:15 and every stretch weight up to 24, the best fit still
-misses 23 of 302 heights. Small Fonts is where it is worst, and the shape of the
-error is that the _small_ strikes get stretched further than Windows will
-stretch them: we answer 15 for a request of 15, its three row strike five times,
-where Windows answers 12.
+It is not "the largest that does not overshoot": Courier asked for 38 answers
+39, its thirteen row strike three times over, when 32 was available and fits. It
+is not "the nearest": the same face asked for 25 answers 20 and not the 26 that
+is a pixel away. It is not a two-sided linear penalty on the difference, with or
+without a term for the stretch itself -- swept over every ratio up to 6:15 and
+every stretch weight up to 24, the best fit still missed 23 of 302 heights.
 
 ### The mapper, read out of GDI
 
@@ -263,14 +260,49 @@ The weights are 20 a multiple, 150 a pixel of height error either way, and 600
 more flat for erring on the tall side. So overshooting by a pixel costs what
 undershooting by five does, and the stretch itself is cheap next to both.
 
-Implemented, this takes the metrics from 4,819 of 5,057 to 4,894 and closes the
-last 36 bitmap glyph cells outside Symbol. Thirteen heights of 302 are still
-wrong and every one is at seventy-five pixels or more, where we take a smaller
-strike stretched further than Windows will and it takes a larger one: Courier
-asked for 75 answers 80, its twenty row strike four times, where this answers 78,
-its thirteen row strike six times, which is both closer and cheaper by these
-weights. Some term that grows with the multiple is still missing, and the
-likeliest place is the block at `1d34` that has not been read.
+**Then the aspect**, at `1d34`, for a request that names no width. The shape the
+strike would come out at is compared with the shape of a device pixel, both in
+hundredths:
+
+```
+shape   = MulDiv(100, dfHorizRes, dfVertRes)        # 100 for every VGA strike
+device  = MulDiv(100, aspectX, aspectY)             # 100, a VGA pixel is square
+perTime = MulDiv(shape, 1, times)
+
+if stretching and perTime * 1.5 < device:
+    across = MulDiv(device, 1, perTime)
+    if across > 5: across = 5                       # the width cap, at 1d8c
+    penalty += 20 * across
+    penalty |= across - 1
+
+penalty += 30 * abs(device - MulDiv(shape, across, times))
+```
+
+That is where the width cap of five lives -- measured from outside as a bare
+fact, and here it is as `cmp ax,5`. It is also why the cap costs anything:
+stretching six times up and five across leaves the letter seventeen hundredths
+off square, and off square is what the term charges for.
+
+**And last, the two multiples against each other**, at `1e66`: not how far off
+square the letter comes out but how far the one stretch is from the other, the
+larger over the smaller, at 4 a hundredth.
+
+```
+if times != across:
+    penalty += 4 * (times > across ? MulDiv(100, times, across)
+                                   : MulDiv(100, across, times))
+```
+
+Six up against five across is 120, so 480 -- more than a two pixel height error
+costs outright, and enough to send Small Fonts asked for 60 to its eleven row
+strike five times rather than its ten row strike six, which would have been an
+exact 60.
+
+With all of it the height rule is **exact**: all 302 heights of six faces, at
+every size from one pixel to a hundred and twenty. A request that _does_ name a
+width takes the other branch at `1c9e`, where the multiple is a plain division
+with no quarter added, capped at five the same way, and the error costs 50 a
+pixel rather than 30 a hundredth.
 
 **At proof quality no strike is ever stretched.** The routine tests `lfQuality`
 against `PROOF_QUALITY` before adding a single term and answers `0x7fffffff`,
@@ -290,6 +322,45 @@ leaves the nearest strike so far off that a scalable face wins the comparison
 instead. Windows answers a hundred; we still answer with the strike, because we
 resolve the face name before scoring anything and so never put an outline up
 against it. **Open**, and the same penalty comparison decides it.
+
+### Symbol, the face installed twice
+
+Symbol is the only name carried by both a `.FON` and a `.TTF`, and it had been
+read as the strike winning outright -- "a strike of the same name wins". It does
+not. It wins at **thirteen and sixteen pixels**, the two sizes `SYMBOLE.FON`
+holds below the size where outlines take over, and nowhere else. Asked for eight
+it answers seven, for twelve twelve, for twenty twenty -- none of them a size
+that file holds -- and `tmPitchAndFamily` says TrueType at every one. What had
+made the old reading look right is that the only size ever asked for was
+sixteen, where the strike and the outline agree in every field.
+
+So it is the ordinary rule about strikes and outlines, with two corrections.
+
+**The size at which outlines take over is about falling back to some _other_
+face's strike.** A strike of the face's own name is not a fallback and is not
+subject to it, which is how Symbol reaches its sixteen row strike where Arial at
+sixteen reaches its outline.
+
+**A symbol face is answered by its own strikes or by none.** Symbol at eight
+pixels does not become Small Fonts the way Arial does; it stays Symbol and comes
+back seven pixels tall, drawn from the outline. An ANSI strike is no answer to a
+request for symbols.
+
+Two things Symbol reports were wrong for want of ever being asked. `OS/2` class
+12, the symbol classes, answered `FF_DONTCARE` on no evidence -- the only two
+fonts carrying it are Symbol and WingDings, and neither had been asked for at a
+size that reaches an outline. Symbol answers `FF_ROMAN`. And an outline reported
+character set 0 always; Symbol answers 2.
+
+**A bold synthesised onto an outline widens every character by one**, the same
+way it does on a strike, and the string by its own length. Only Symbol reaches
+that too, the other three families shipping a bold file.
+
+Together these take the metrics to **5,047 of 5,057** and Symbol's glyph cells
+from none to 116 of 216. What is left is a **slant synthesised onto an outline**,
+drawn at an angle that is not Windows': Symbol upright agrees at every size but
+eight, and Symbol slanted agrees only at the two sizes a strike answers. Nothing
+else installed ever asks for one.
 
 **A height is three different questions depending on its sign.** Positive is the
 cell including its leading; negative is the characters within it; zero is the
