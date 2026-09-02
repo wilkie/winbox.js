@@ -132,8 +132,8 @@ describe('the fabricated glyph recordings', () => {
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 21821;
-  const WRONG = 5074;
+  const EXACT = 22052;
+  const WRONG = 5191;
 
   /* The one place an unhinted outline is drawn differently.
    *
@@ -464,6 +464,20 @@ describe('the fabricated glyph recordings', () => {
    */
   present('rasterise that hairline at a dozen leans', async function () {
     await bakedLeans('slant-angle');
+  });
+
+  /* And at a dozen widths, which is what rules the last shape out.
+   *
+   * Windows' synthesised glyph is wider than the bar it came from, and a shear
+   * does not widen anything, so `slant-width` bakes the leaning bar at twelve
+   * widths from 160 font units to 380 and asks for each upright. All 88 are
+   * exact. Set beside `symbol-slant`'s slanted cells, twelve and fifteen and
+   * twenty pixels match no width at all -- as they matched no lean -- which
+   * between them say the synthesised glyph is not a parallelogram. See
+   * `FONTS.md` section 3.
+   */
+  present('rasterise that hairline at a dozen widths', async function () {
+    await bakedLeans('slant-width');
   });
 
   async function bakedLeans(name: string) {

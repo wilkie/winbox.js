@@ -4657,6 +4657,11 @@ export const FABRICATIONS = [
     describe: "symbol-slant's bar baked at a dozen different leans, to read the angle off Windows",
   }),
 
+  slantWidth('slant-width', {
+    describe:
+      'the leaning bar baked at a dozen widths, to read off how much wider the synthesis is',
+  }),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -4851,6 +4856,69 @@ function slantShapes(name, { box, describe, source = 'SYMBOL.TTF' }) {
  * Three characters to a lean, all identical, so that a misread of one glyph
  * cannot pass for a result.
  */
+/**
+ * The leaning bar baked at a dozen widths.
+ *
+ * `slant-angle` rules out a shear at every angle, and the reason it can is that
+ * Windows' synthesised glyph is *wider* than the bar it came from: at twelve
+ * pixels the bar is 0.703 px across and the synthesised top row is two pixels,
+ * which no parallelogram that narrow can cover at any lean. A shear does not
+ * widen anything, so something else does.
+ *
+ * This measures how much. Each glyph is the bar sheared by three tenths and then
+ * widened, twelve widths from 160 font units -- the bar itself -- to 380, and
+ * asked for upright, so that the recording is a readout of what Windows draws
+ * for a parallelogram of that width. Setting them beside `symbol-slant`'s
+ * slanted cells says which width, if any, the synthesis is drawing.
+ *
+ * If one width matches at every size, the synthesis widens by that much and the
+ * question becomes why. If the widths that match vary with size in proportion to
+ * the size, it is a widening in font units; if they are constant in pixels, it
+ * is a widening in device space, which is what emboldening would be.
+ */
+function slantWidth(
+  name,
+  { describe, source = 'SYMBOL.TTF', characters = 'ABEKMNRSWXZabdefgjkmnostwy0123456789' }
+) {
+  const FOOT = -400;
+  const TOP = 1400;
+  const WIDTHS = [160, 180, 200, 220, 240, 260, 280, 300, 320, 340, 360, 380];
+  const lean = (y) => Math.round(y * 0.3);
+
+  return {
+    name,
+    from: source,
+    as: source,
+    describe,
+
+    edit: (bytes) => {
+      for (let index = 0; index < characters.length; index++) {
+        const wide = WIDTHS[index % WIDTHS.length];
+        const x0 = 200;
+
+        const glyph = glyphFor(bytes, 0xf000 + characters.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: x0 + wide + lean(TOP) + 200,
+          height: TOP,
+          points: [
+            [x0 + lean(FOOT), FOOT],
+            [x0 + lean(TOP), TOP],
+            [x0 + wide + lean(TOP), TOP],
+            [x0 + wide + lean(FOOT), FOOT],
+          ],
+          program: [],
+        });
+
+        // The bearing is the sheared shape's own leftmost point; see `slantBar`.
+        setBearing(bytes, glyph, x0 + lean(FOOT));
+      }
+
+      return bytes;
+    },
+  };
+}
+
 function slantAngle(
   name,
   { describe, source = 'SYMBOL.TTF', characters = 'ABEKMNRSWXZabdefgjkmnostwy0123456789' }

@@ -895,7 +895,48 @@ angle.** That closes off the whole family of models this section has worked
 through -- shear, row shift, slope, placement, order of hinting -- and it does it
 by construction rather than by fitting.
 
-Where it does not go is into the scaler. Segment 36's public entries are four
+### `slant-width`: not a parallelogram at all
+
+The widening is the one positive clue, so measure it. First, is it a property of
+the row or of the phase? At twenty pixels, `corner-phase`'s twelve bars differ
+only in where they sit across the pixel, and the rows that come back two pixels
+wide differ with them:
+
+    bearing 200   rows 10, 13, 16
+    bearing 219   rows  7, 10, 17
+    bearing 257   rows  5,  8, 11, 14
+    bearing 276   rows  5, 12, 15, 18
+
+**Phase, not row.** Which is the last nail in any model that shifts whole rows of
+a bitmap: a row shift cannot know where the glyph sits horizontally.
+
+Then how much wider? `slant-width` bakes the leaning bar at twelve widths from
+160 font units to 380 and asks for each upright; all 88 cells are exact, so the
+recording reads off what Windows draws for a parallelogram of that width. Against
+`symbol-slant`'s slanted cells:
+
+    size    160  180  200  220  240  260  280  300  320  340  360  380
+    h= 8      .    .    .    .  YES  YES    .    .    .    .    .    .
+    h=10    YES  YES    .    .    .    .    .    .    .    .    .    .
+    h=12      .    .    .    .    .    .    .    .    .    .    .    .
+    h=15      .    .    .    .    .    .    .    .    .    .    .    .
+    h=20      .    .    .    .    .    .    .    .    .    .    .    .
+    h=24    YES    .    .    .    .    .    .    .    .    .    .    .
+
+No width works either, and the widths that do match somewhere disagree with each
+other.
+
+**So the synthesised glyph is not a parallelogram.** Twelve pixels settles it
+inside a single cell. Its rows are `{4,5}`, `{4}`, `{4}`, `{3}`, `{3}`, `{3}`,
+`{2}`, `{2}`: the middle rows are one pixel, so the shape is under a pixel wide;
+the top row is two, so it is over a pixel wide. No parallelogram is both. The
+lean is right -- a step every three rows -- and the shape is not.
+
+That is as far as the shape can be pushed. What is left is that the extra pixel
+is one column outward on an extreme row, which is what dropout control does, on a
+glyph whose lean is otherwise a plain three tenths.
+
+Where none of this goes is into the scaler. Segment 36's public entries are four
 thunks that load a dispatch index into `bx` and a word count into `cx` and jump
 to a stack switcher at `0xe1`, which copies the arguments onto the scaler's own
 stack at segment `0xbc` and does `call far [bx*2+0x1e]` -- a table of far
