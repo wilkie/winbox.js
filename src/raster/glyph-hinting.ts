@@ -2233,18 +2233,16 @@ export class Hinter {
     if (opcode === 0x5d || opcode === 0x71 || opcode === 0x72) {
       const band = { 0x5d: 0, 0x71: 16, 0x72: 32 }[opcode];
 
+      /* Along the freedom vector, by the same rule every other move obeys.
+       *
+       * A delta's nudge is a distance along the *projection* vector, and the
+       * point travels along freedom to achieve it -- which where the two are at
+       * an angle is further, and can be the other way. Adding the nudge to the
+       * coordinate is only right where the two vectors are the same axis, which
+       * is where every delta in the recorded corpus happens to be.
+       */
       this.eachDelta(this.popPairs(), band, (amount, index) => {
-        const zone = this.zone(state.zp0);
-
-        if (state.freedom.x !== 0) {
-          zone.x[index] += amount;
-          zone.touchedX[index] = true;
-        }
-
-        if (state.freedom.y !== 0) {
-          zone.y[index] += amount;
-          zone.touchedY[index] = true;
-        }
+        this.movePoint(this.zone(state.zp0), index, amount);
       });
 
       return at;

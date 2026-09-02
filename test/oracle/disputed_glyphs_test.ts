@@ -8,87 +8,65 @@
  * row is a recorded call whose bitmap we do not reproduce, with how many pixels
  * of the thirty-two by thirty-two cell are wrong.
  *
- * Section 6 of FONTS.md records what has been ruled out for these.
+ * There are none. All 3,546 recorded cells agree.
+ *
+ * The list is kept, and its ceilings kept at zero, because that is the property
+ * worth defending: not a rate that may drift but a list that must stay empty.
+ * Section 6 of FONTS.md records what was ruled out getting here.
+ *
+ * ## How the last sixteen went
+ *
+ * They were all letters with a diagonal, two thirds of them Courier New, and
+ * six of them were the bold `K`. Bisecting that `K` -- cutting its program
+ * after N instructions and recording the letter Windows draws -- put the
+ * divergence between cut 88 and cut 89, and the one instruction between those
+ * two is a `DELTAP1`.
+ *
+ * A delta's nudge is a distance along the *projection* vector and the point
+ * travels along *freedom* to achieve it, which where the two are at an angle
+ * means travelling further, and can mean travelling the other way. We were
+ * adding the nudge to the coordinate. That is right wherever the two vectors
+ * are the same axis, which is every delta in the corpus except this one: four
+ * instructions earlier the `K` sets its projection along its own arm with
+ * `SDPVTL` and leaves freedom on the y axis, so the nudge arrives divided by
+ * the cosine between them. Routing `DELTAP` through the same `movePoint` every
+ * other move already used closed all sixteen at once.
+ *
+ * The reference names the same shape: `itrp_DeltaEngine` is handed
+ * `LocalGS.MovePoint` and calls it, and `LocalGS.MovePoint` is the general
+ * mover that divides by `pfProj` unless the vector instructions have swapped in
+ * an axis-aligned one.
+ *
+ * ## What the chase cost, and why
+ *
+ * Three readings taken before this one said the arm and everything computed
+ * from it agreed with Windows, and pointed at the function called three
+ * instructions later. They were worthless, and worth recording as a trap.
+ *
+ * Each moved one point of the letter *upward* by the value being read. A cell
+ * is as tall as the letter and the letter fills it, so a mark that lands inside
+ * the silhouette draws nothing and a mark that clears the silhouette leaves the
+ * cell. All three landed in one or the other, on both sides, and three
+ * recordings agreed because neither side drew a mark at all. An agreement
+ * between two blanks looks exactly like an agreement.
+ *
+ * The fix is to read *sideways*. The cell is thirty-two columns and Courier at
+ * these sizes is seven, so a mark placed to the right of the letter is the only
+ * ink in twenty-odd columns and cannot hide. `cutAndCall` does that, and
+ * `courbd-k-answer` is kept as the one reading of the three that works.
+ *
+ * The general lesson is narrower than "check your instrument": a readout whose
+ * two outcomes are *ink here* and *ink there* fails safely, and one whose
+ * outcomes are *ink here* and *nothing* does not, because *nothing* is also
+ * what a readout that never ran produces.
  */
-
 'use strict';
 
 import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './replay.js';
 
-/* What is left. Both are ceilings: neither may rise.
- *
- * Twenty-nine cells, all of them in the bold and italic files, which the probe
- * had never drawn until now: it asked the three outline faces in their plain
- * weight and upright, and those still agree everywhere. Nine hundred and
- * seventy-two cells of the other three styles came in and nine hundred and
- * forty-three of them were right.
- *
- * The twenty-nine fall in two shapes. Eleven are ink we add and nothing we
- * miss -- one to five pixels on a diagonal, which is the scan converter
- * keeping a stroke Windows drops. Fifteen add and miss in roughly equal
- * numbers, which is a shape landing a column over; Courier New's bold italic
- * `X` and `Z` are the worst of those and are the whole letter shifted. Three
- * are ink we miss.
- *
- * Two thirds are Courier New and two thirds are bold italic, and every letter
- * involved has a diagonal in it -- K, X, Z, k, 7, M, N, t, y, m, 4, B.
- *
- * Thirteen of the twenty-nine came right when the advance phantom was made to
- * remember where the scaling left it rather than where the rounding put it; see
- * `Hinter.hint`. Bisecting Courier New's bold italic `X` is what found it -- the
- * letter agrees with no program at all, and starts disagreeing across a single
- * `SHP` that shifts against that phantom.
- *
- * What is left is sixteen cells and forty-eight pixels, still every one of them
- * a letter with a diagonal, still two thirds Courier New, and now led by `K`,
- * which is six of them.
- *
- * The `K` has been bisected too, and stops where the `w` did. Courier New's
- * bold `K` agrees with no program at all and through eighty-eight of its
- * hundred and thirty-three instructions; by ninety-two it does not. The
- * instruction between them is a `CALL`, and what that function does is set the
- * projection vector along the arm with `SDPVTL`, read it back with `RPV`, and
- * work a factor out of the angle -- so a fraction of a pixel in either of the
- * two points that define the arm becomes a whole row in where the arm meets the
- * stem. `RPV` and `RFV` were read against the scaler and match.
- *
- * That is the same wall the `w` reached: a sub-pixel difference upstream,
- * amplified, with no oracle for the intermediate positions. Cutting the program
- * says where the amplifier is, not what feeds it.
- *
- * The advance will not carry a reading for this face -- see the commit that
- * found that -- but the cell will. A glyph cut at eighty-eight and made to move
- * one of its own points by sixteen times the distance between the two that
- * define the arm reports that distance as ink, and both the horizontal and the
- * vertical reading agree with Windows at every size. So the arm's two endpoints
- * are where Windows has them to within a sixteenth of a pixel.
- *
- * A sixteenth is not fine enough -- the function divides the vector by a
- * hundred and twenty-eight, so a fortieth of a pixel in the arm would change
- * its answer -- so the reading was taken again at sixty-four times, one base to
- * a size. It agrees there too. The arm is where Windows has it to a
- * sixty-fourth of a pixel at both sizes that disagree.
- *
- * So the function at ninety-one is handed the same arm and answers differently,
- * and the reading tools are now sharp enough to say that plainly. Measured
- * through the cell to a sixty-fourth of a pixel, at both sizes that disagree:
- * the two points that define the arm, the control value the function reads,
- * and the number it works out of the arm's angle -- the larger of the
- * projection vector's two parts over a hundred and twenty-eight -- all agree
- * with Windows. `courbd-k-angle-fine` is that last one.
- *
- * The value the function writes does not. `courbd-cvt23` reads control value 23
- * straight after the function has run, and it differs at sixteen and at
- * twenty-four and agrees at twelve, which is exactly where the letter does.
- *
- * Two things it might have been are ruled out. The branch that reads the angle
- * turns on the control value being at most two pixels exactly, and the value is
- * two pixels exactly -- but it is the same two pixels in both, read to a
- * sixty-fourth. And the `ELSE` after that branch skips where it should: the two
- * added afterwards sit past the `EIF` and are added either way.
- */
-const RECORDS = 16;
-const PIXELS = 48;
+/* Both are ceilings, and both are zero: neither may rise. */
+const RECORDS = 0;
+const PIXELS = 0;
 
 /** The recorded bitmap is one bit per pixel, set where the probe left white. */
 function inkOf(hex: string) {

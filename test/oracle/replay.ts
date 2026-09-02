@@ -1270,9 +1270,7 @@ export class Unimplemented extends Error {}
  *
  * All 2,574 records agree.
  */
-export const KNOWN_GAPS: Record<string, string> = {
-  glyph: 'sixteen cells of 3,546, all in the bold and italic files, every one a diagonal letter',
-};
+export const KNOWN_GAPS: Record<string, string> = {};
 
 /**
  * Functions a module declares but wires to a stub.

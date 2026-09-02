@@ -28,6 +28,9 @@ export const fixtureFor = (name: string) => `oracle/fixtures/fabricated/hinting-
 /** What Windows reported as the width, which is the fabrication's answer. */
 export const advanceOf = (reading: Reading) => Number(/advance=(-?\d+)/.exec(reading.windows)![1]);
 
+/** The pixel size Windows fitted the cell to, reported alongside the width. */
+export const ppemOf = (reading: Reading) => Number(/ppem=(\d+)/.exec(reading.windows)![1]);
+
 export async function readingsOf(name: string, asked: RegExp) {
   const fixture = JSON.parse(readFileSync(fixtureFor(name), 'utf8'));
   const dir = join(FONTS, String(fixture.font));

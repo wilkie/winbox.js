@@ -10,16 +10,17 @@
  * -- bars of known width and phase, wedges, slants in both directions, a
  * mirrored pair, a phase sweep -- and four alter Times New Roman's `cvt`.
  *
- * They had been read once each by hand and then left, which is the wrong place
- * for three thousand records of pixel truth to sit. What makes them worth more
+ * Every cell of every one of them now agrees. They had been read once each by
+ * hand and then left, which is the wrong place for three thousand records of
+ * pixel truth to sit. What makes them worth more
  * than the 846 recorded letters is that **nothing in them is hinted**: a shape
  * font carries no glyph program, so the outline the rasteriser is handed is
  * exactly the outline that was drawn, to the design unit. A disagreement here
  * cannot be blamed on the interpreter, which is the one thing a disagreement
  * about a letter can always be blamed on.
  *
- * That is what decided the column sweep, which is now gone: scored here,
- * deleting it was better on both counts -- 1,816 cells exact against 1,776 and
+ * That is what decided the column sweep, which is now gone: scored here at the
+ * time, deleting it was better on both counts -- 1,816 cells exact against 1,776 and
  * 6,892 wrong pixels against 7,171 -- while on the recorded letters deleting it
  * is worse, 369 wrong pixels against 307. The two only look contradictory until
  * the difference between them is named: the letters are hinted and these are
@@ -89,8 +90,8 @@ describe('the fabricated glyph recordings', () => {
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 18246;
-  const WRONG = 37;
+  const EXACT = 19422;
+  const WRONG = 0;
 
   /* The one place an unhinted outline is drawn differently.
    *
@@ -103,9 +104,10 @@ describe('the fabricated glyph recordings', () => {
    * straight and eighteen with a gently curved right side, so the sweep carries
    * an edge across a column of sample points twice over the same ground.
    *
-   * Ten of 216 cells disagree and every one of them is a curved variant: the
-   * straight edges, walked by `CalcLine`, agree at every size and every step of
-   * the sweep. So the whole of the difference is in `CalcSpline`.
+   * All 216 agree. Ten used to differ and every one of them was a curved
+   * variant -- the straight edges, walked by `CalcLine`, agreed at every size
+   * and every step of the sweep throughout -- so what was left had been
+   * narrowed to `CalcSpline` before it closed.
    *
    * An earlier reading of this recording said the sweep agreed everywhere. It
    * did not. That reading compared the rightmost lit column rather than the
@@ -124,21 +126,18 @@ describe('the fabricated glyph recordings', () => {
    * given a bearing equal to its own `xMin` so the outline is carried onto
    * nothing.
    *
-   * Nineteen of 216 cells still disagree and they are named rather than
-   * excluded, because they are two different things and both are open.
+   * All 216 agree, and the ceiling is nought so that one which stops agreeing
+   * says so.
    *
-   * At sixteen pixels of cell height the extreme reaches a sample column two
-   * steps before Windows lets it, on the right, and one step early on the
-   * left. Rounding the turn toward the curve and carrying the two controls with
-   * it takes the sweep from 22 disagreements to 17 and does not settle it.
-   *
-   * At eighteen the outermost column agrees for every variant and sixteen of
-   * them still differ, by one pixel on the bottom row -- the end of the curve
-   * rather than its extreme. That is the signature the recorded letters have
-   * too, ink at the end of a run on a row with nothing below it, and this is
-   * the first time it has been reproduced with nothing hinted.
+   * It did not always. Nineteen used to differ in two distinct ways -- the
+   * extreme reaching a sample column two steps early on the right and one on
+   * the left at a sixteen pixel cell, and sixteen variants a pixel out on the
+   * bottom row at eighteen, which is the end of the curve rather than its
+   * extreme. Both are gone. Which change closed them has not been bisected:
+   * the delta fix that closed the last recorded letters is not it, because the
+   * sweep already agreed without that.
    */
-  const TURNS = 25;
+  const TURNS = 0;
 
   present('sweep a turning point across a sample column', async function () {
     const recording = all.find((entry) => entry.name === 'turn-sweep');
@@ -190,7 +189,7 @@ describe('the fabricated glyph recordings', () => {
     expect(differing).toBeLessThanOrEqual(TURNS);
   });
 
-  const EDGES = 12;
+  const EDGES = 0;
 
   present('draw an unhinted edge the same except where it grazes a sample', async function () {
     const recording = all.find((entry) => entry.name === 'edge-sweep');

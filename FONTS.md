@@ -841,13 +841,14 @@ without exception.
 Five times now a fault has presented as "this instruction is wrong" and turned
 out to be "this instruction is fed the wrong number":
 
-| Looked like                                   | Actually was                            |
-| --------------------------------------------- | --------------------------------------- |
-| `MIAP` rounding the cap height wrongly        | never settled; still open               |
-| `MIRP` moving a phantom point it should not   | `MDRP`/`MIRP` minimum-distance sign     |
-| One pixel of internal leading, a rounding bug | reading the wrong `VDMX` ratio group    |
-| `ROUND` producing 128 where Windows has 64    | `DIV` rounding where it should truncate |
-| `IP` interpolating to the wrong place         | `IP` fed coordinates already quantised  |
+| Looked like                                      | Actually was                                                |
+| ------------------------------------------------ | ----------------------------------------------------------- |
+| `MIAP` rounding the cap height wrongly           | never settled; still open                                   |
+| `MIRP` moving a phantom point it should not      | `MDRP`/`MIRP` minimum-distance sign                         |
+| One pixel of internal leading, a rounding bug    | reading the wrong `VDMX` ratio group                        |
+| `ROUND` producing 128 where Windows has 64       | `DIV` rounding where it should truncate                     |
+| `IP` interpolating to the wrong place            | `IP` fed coordinates already quantised                      |
+| A `CALL` answering differently from the same arm | `DELTAP` four instructions earlier moving by the wrong rule |
 
 The last of those is the sharpest case of the pattern there is. `IP`'s own
 arithmetic was swept over five rounding conventions and not one of them moved
@@ -866,19 +867,11 @@ the outline in the right place and a stroke a fraction of a pixel wide failing
 to ink a cell. That was dropout control, and section 6 now measures and
 implements it.
 
-Five differ now, by eight pixels between them and none invented:
-
-| Font            | Glyph | Size | Missing                       |
-| --------------- | ----- | ---- | ----------------------------- |
-| Arial           | `1`   | 24   | 2, on the flag's leading edge |
-| Arial Italic    | `A`   | 16   | 1, at the end of the crossbar |
-| Times New Roman | `W`   | 16   | 1, in a thin diagonal         |
-| Times New Roman | `g`   | 24   | 2, the ear and the bowl's end |
-| Courier New     | `1`   | 16   | 2, the whole flag             |
-
-Every one is the end of a thin stroke, which is what a dropout rule is for, and
-section 6 records why it is not one. **Open**, and now known to be in the
-hinting rather than the rasteriser.
+**None differ now.** All 3,546 recorded cells agree, across three faces in four
+styles each. Five used to -- Arial's `1` at 24, Arial Italic's `A` at 16, Times
+New Roman's `W` at 16 and `g` at 24, and Courier New's `1` at 16, eight pixels
+between them and every one the end of a thin stroke. The account below of that
+last stage is kept because the reasoning is what found the rest.
 
 Courier New's `1` is the clearest of them, and its outline says what shape the
 problem is. The flag is points 17 to 27, and fitted at thirteen pixels per em it
@@ -1000,6 +993,64 @@ size.** Arial's table covers 11, 12, 13, 15, 16, 17, 19, 21, 24, 27, 29, 32, 33,
 Times New Roman asked for a sixteen pixel cell settles at fourteen, which is not
 among them. Windows still answers, so it is running the programs. **Derived**,
 and worth 30 records when implemented.
+
+### A delta moves along the freedom vector
+
+`DELTAP` names a point and a nudge, and the nudge is a distance **along the
+projection vector**. The point travels along the _freedom_ vector far enough
+that its projection moves by what was asked, which where the two are at an angle
+means travelling further, and can mean travelling the other way. Adding the
+nudge to the coordinate is right only where the two vectors are the same axis.
+
+In the reference this is not a special case at all: `itrp_DeltaEngine` is handed
+`LocalGS.MovePoint` and calls it, and `LocalGS.MovePoint` is the general mover
+that divides by `pfProj` unless a vector instruction has swapped in an
+axis-aligned one. Every other move already went through ours; the delta did not.
+
+It is invisible almost everywhere, because almost every delta runs with both
+vectors on an axis. The exception found it: Courier New Bold's `K` sets its
+projection along its own arm with `SDPVTL`, leaves freedom on the y axis, and
+then applies a delta, so the nudge arrives divided by the cosine between them.
+That one instruction is the whole of the last sixteen recorded cells -- six of
+them the `K` itself, the rest other diagonal letters in the bold and italic
+files -- and routing the delta through `movePoint` closed all sixteen at once.
+
+**The delta base is 9.** A font may set it with `SDB` and none of the installed
+ones does, so it is the scaler's own constant, and nothing measured had pinned
+it: `delta-ascending` covers every nibble with sixteen exceptions that all move
+the same distance, so whatever the base is one of them fires and the reading is
+identical. `delta-base-sweep` gives each nibble a different distance and reads
+which one fired. At every size that reports, the exception that fires is exactly
+the one `ppem - 9` names.
+
+### A readout with a blank answer is not a readout
+
+Three readings taken while chasing that `K` said the arm and everything computed
+from it agreed with Windows, and pointed at a function called three instructions
+later. All three were worthless.
+
+Each moved one point of the letter **upward** by the value being read. A
+character cell is as tall as the letter and the letter fills it, so a mark that
+lands inside the silhouette draws nothing and a mark that clears the silhouette
+leaves the cell. All three landed in one or the other on both sides, and three
+recordings agreed because neither side drew a mark at all.
+
+Reading **sideways** works: the cell is thirty-two columns and Courier at these
+sizes is seven, so a mark placed to the right of the letter is the only ink in
+twenty-odd columns and cannot hide. That is what `cutAndCall` does.
+
+The lesson is narrower than "check the instrument". A readout whose two outcomes
+are _ink here_ and _ink there_ fails safely. One whose outcomes are _ink here_
+and _nothing_ does not, because _nothing_ is also what a readout that never ran
+produces -- and two of those look identical from the fixture.
+
+The bisection that did settle it needed no readout at all. Cutting the `K`'s
+program after N instructions and recording what Windows draws, for N around
+where it was suspected, put the divergence between 88 and 89 -- and the one
+instruction between those two is the `DELTAP1`. Windows drew cuts 86 through 91
+identically; we drew 89 differently from 88. **A cut that changes our picture
+and not Windows' names the instruction directly**, and it costs one recording
+per cut and no arithmetic.
 
 ---
 

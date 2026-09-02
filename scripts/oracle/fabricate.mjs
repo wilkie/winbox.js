@@ -3748,6 +3748,58 @@ export const FABRICATIONS = [
     })
   ),
 
+  /* Which size a delta exception names.
+   *
+   * The packed argument's high nibble counts from the delta base, and the base
+   * is nine unless a font says otherwise -- which none of the installed ones
+   * do, so it is the scaler's own number and nothing measured so far pins it.
+   * The sixteen exceptions in `delta-ascending` could not: they cover every
+   * nibble and move by the same amount, so any base at all lands one of them.
+   *
+   * These sixteen each move by a different amount -- nibble n by n steps,
+   * which at the default shift is n eighths of a pixel -- so the reading says
+   * *which* of them fired, and the base falls out of that.
+   */
+  experiment('delta-base-sweep', {
+    font: 'ARIALI.TTF',
+    character: 'm',
+    points: [
+      [67, 0],
+      [323, 400],
+      [579, 400],
+      [835, 0],
+    ],
+    body: [
+      0x01,
+      ...Array.from({ length: 16 }, (unused, n) => [
+        ...ops.byte((n << 4) | n),
+        ...ops.byte(1),
+      ]).flat(),
+      ...ops.byte(16),
+      0x5d,
+    ],
+    report: 1,
+    magnify: 8,
+    describe: 'sixteen delta exceptions, one per size, each moving a different distance',
+  }),
+
+  /* The same point with no delta at all, so the sweep is read as a difference.
+   */
+  experiment('delta-base-control', {
+    font: 'ARIALI.TTF',
+    character: 'm',
+    points: [
+      [67, 0],
+      [323, 400],
+      [579, 400],
+      [835, 0],
+    ],
+    body: [0x01],
+    report: 1,
+    magnify: 8,
+    describe: "the same point unmoved, as the sweep's zero",
+  }),
+
   experiment('ip-calibrate', {
     font: 'ARIALI.TTF',
     character: 'm',
@@ -4478,22 +4530,26 @@ export const FABRICATIONS = [
 
   ...[127, 130].map((keep) => cutProgram(`cour-w-cut-${keep}`, 'w', keep)),
 
-  /* And the value that function writes, read straight after it has run. The
-   * angle it works out of the arm agrees, and so does everything that goes into
-   * it, so if this agrees too the difference is in the instruction that uses it
-   * and not in the working out.
+  /* The pair that settled Courier New Bold's `K`.
+   *
+   * One instruction apart -- `cut89` is `cut88` plus a `DELTAP1` -- and that
+   * one instruction changed our letter at two sizes out of three and changed
+   * Windows' at none. See `FONTS.md` section 5.
    */
-  markControlValue('courbd-cvt23', 'K', 23, { base: 1, keep: 92, source: 'COURBD.TTF' }),
+  cutProgram('courbd-k-cut88', 'K', 88, 'COURBD.TTF'),
+  cutProgram('courbd-k-cut89', 'K', 89, 'COURBD.TTF'),
 
-  /* The same angle sixty-four times over. At sixteen it agreed, and the value
-   * the function goes on to write differs by about a sixteenth of a pixel --
-   * which is the resolution that reading had, so it settles nothing.
+  /* And the readout that was built to blame the call instead, kept because it
+   * is the one that reads sideways and therefore the one that works.
    */
-  cutAndAngle('courbd-k-angle-fine', 'K', 88, {
+  cutAndCall('courbd-k-answer', 'K', 91, {
     from: 33,
     to: 34,
-    base: 1.375,
-    magnify: 64,
+    control: 619,
+    call: 17,
+    base: 0,
+    magnify: 8,
+    offset: 8,
     source: 'COURBD.TTF',
   }),
 
@@ -4814,6 +4870,10 @@ function cutAndMark(
  * two bitmaps differ only if the control value differs, and by a sixteenth of a
  * pixel of it.
  */
+/* Reads upward, which can hide. See `cutAndCall`: a mark inside the letter's
+ * silhouette draws nothing and a mark above the cell leaves it, and either way
+ * the recording agrees with anything. Prefer reading sideways.
+ */
 function markControlValue(name, character, index, { base, magnify = 16, mark = 0, source, keep }) {
   return {
     name,
@@ -4873,6 +4933,10 @@ function markControlValue(name, character, index, { base, magnify = 16, mark = 0
  * The same instructions in the same order, and then the answer is put on a
  * point of the outline instead of being used.
  */
+/* Reads upward, which can hide. See `cutAndCall`: a mark inside the letter's
+ * silhouette draws nothing and a mark above the cell leaves it, and either way
+ * the recording agrees with anything. Prefer reading sideways.
+ */
 function cutAndAngle(
   name,
   character,
@@ -4920,6 +4984,92 @@ function cutAndAngle(
 
         // Back onto an axis, so that placing the mark is not itself diagonal.
         0x00,
+        ...ops.byte(mark),
+        ...ops.swap(),
+        ...ops.setCoordinate(),
+      ]);
+    },
+  };
+}
+
+/**
+ * A glyph cut short, made to run the font's own function and show its answer.
+ *
+ * Reading a control value *after* the function has written it does not isolate
+ * the function: the same call also moves a point, so the cell that comes back
+ * carries both the answer and whatever the move did with it. Cutting before the
+ * call and running the arithmetic by hand does isolate it -- the outline is the
+ * one that already agrees, and the only thing added is a mark.
+ *
+ * The instructions are the font's own, in the font's own order: set the dual
+ * projection at right angles to the line, read the control value the call would
+ * have read, and call the same function. What is left on the stack is what the
+ * font would have written, and it is put on a point instead.
+ */
+function cutAndCall(
+  name,
+  character,
+  keep,
+  { from: readFrom, to: readTo, control, call, base = 0, magnify = 4, offset = 0, mark = 0, source }
+) {
+  return {
+    name,
+    from: source,
+    as: source,
+    describe: `${source}'s ${character} cut after ${keep}, showing what function ${call} answers`,
+
+    edit: (bytes) => {
+      const glyph = glyphFor(bytes, character.charCodeAt(0));
+      const body = glyphBody(bytes, glyph);
+      const code = [];
+
+      for (let offset = 0; offset < body.length; offset++) {
+        code.push(body.view.getUint8(body.program + offset));
+      }
+
+      const starts = instructionStarts(code);
+
+      return setGlyphProgram(bytes, glyph, [
+        ...code.slice(0, starts[keep] ?? code.length),
+
+        /* The function reaches under its own argument for the point it is going
+         * to move, and one of the paths through it drops what it finds there.
+         * So something has to be there to drop.
+         */
+        ...ops.byte(0),
+
+        // The projection at right angles to the line, as the font sets it.
+        ...ops.byte(readFrom),
+        ...ops.byte(readTo),
+        0x87,
+
+        // The control value the call would have read, and then the call.
+        ...ops.word(control),
+        ...ops.readControlValue(),
+        ...ops.byte(call),
+        0x2b,
+
+        ...ops.word(base * 64),
+        ...ops.subtract(),
+        ...ops.word(magnify * 64),
+        ...ops.multiply(),
+        ...ops.word(offset * 64),
+        ...ops.add(),
+
+        /* Sideways, and pushed clear of the letter.
+         *
+         * A mark placed upward has nowhere to go: the cell is as tall as the
+         * letter and the letter fills it, so a mark that lands inside the
+         * silhouette draws nothing and a mark that clears it leaves the cell.
+         * Three readings were taken that way and all three are worthless --
+         * they agreed because neither side drew a mark at all.
+         *
+         * Sideways there is room. The cell is thirty-two columns and Courier at
+         * these sizes is seven, so the twenty-odd columns to the right of the
+         * letter are empty on both sides and a mark put there is the only ink
+         * in them.
+         */
+        0x01,
         ...ops.byte(mark),
         ...ops.swap(),
         ...ops.setCoordinate(),

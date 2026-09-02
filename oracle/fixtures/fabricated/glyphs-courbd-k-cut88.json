@@ -8,7 +8,7 @@
     "display": "vga",
     "displayDescription": "VGA, 640x480, 16 colours"
   },
-  "font": "courbd-k-angle-fine",
+  "font": "courbd-k-cut88",
   "records": [
     {
       "function": "glyph",
@@ -8851,7 +8851,7 @@
     {
       "function": "glyph",
       "args": "\"Courier New\",h=12,weight=700,italic=0,'K'",
-      "result": "ffffffffffffffffdfffffffc9ffffffc1ffffffd7ffffffc7ffffffdbffffffc1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "result": "ffffffffffffffffffffffffc9ffffffc1ffffffd7ffffffc7ffffffdbffffffc1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
       "section": "the bold and italic files, which are their own outlines and not synthesised"
     },
     {
@@ -9067,7 +9067,7 @@
     {
       "function": "glyph",
       "args": "\"Courier New\",h=16,weight=700,italic=0,'K'",
-      "result": "ffffffffffffffffffffffffffffffffe6ffffffc07fffffe5ffffffe1ffffffe5ffffffe5ffffffe6ffffffc27fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "result": "ffffffffffffffffffffffffffffffffe6ffffffc07fffffe5ffffffe1ffffffe1ffffffe5ffffffe6ffffffc27fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
       "section": "the bold and italic files, which are their own outlines and not synthesised"
     },
     {
@@ -9283,7 +9283,7 @@
     {
       "function": "glyph",
       "args": "\"Courier New\",h=24,weight=700,italic=0,'K'",
-      "result": "ffffffffffffffffffffffffffffffffffffffffc083ffffe0c3fffff38ffffff31ffffff23ffffff03ffffff21ffffff38ffffff3cffffff3c7ffffc0e1ffffc0e1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "result": "ffffffffffffffffffffffffffffffffffffffffc083ffffe0c3fffff38ffffff31ffffff23ffffff03ffffff01ffffff38ffffff3cffffff3c7ffffc0e1ffffc0e1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
       "section": "the bold and italic files, which are their own outlines and not synthesised"
     },
     {
