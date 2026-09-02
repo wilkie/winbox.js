@@ -380,7 +380,29 @@ export class Surface {
 
     for (const character of String(text)) {
       const glyph = outline.glyphFor(character.charCodeAt(0));
-      const fitted = outline.hintedOutline(glyph, ppem);
+      /* A face with no italic of its own is not hinted when it is slanted.
+       *
+       * **Measured**, and the instrument says it plainly: `symbol-shapes` puts
+       * a plain bar, an ellipse and a bar with a program that rounds its edges
+       * in place of Symbol's letters. Upright all three are exact. Slanted, the
+       * two without a program are wrong by about a pixel a cell and the hinted
+       * one by three -- and turning hinting off for the slant brings it to
+       * exactly the same pixel as the other two, which is what says the program
+       * is the difference rather than the shape.
+       *
+       * A real letter says the same thing more legibly. Symbol's alpha at
+       * twenty-four pixels has its crossbar on row 14 upright, which is where
+       * Windows puts it and where a hint puts it; slanted, Windows moves it to
+       * row 15, which is where the *unhinted* outline falls. Every row of that
+       * letter but two then agrees.
+       *
+       * Shearing the outline before hinting it, which would be the other way to
+       * move a hinted feature, is much worse than either: 1,795 wrong pixels
+       * against 681 for not hinting and 1,030 for hinting and then shearing.
+       */
+      const fitted = italic
+        ? { contours: outline.outlineOf(glyph), hinted: false, scaled: false }
+        : outline.hintedOutline(glyph, ppem);
       const contours = fitted.contours;
 
       /* An outline that reaches too far out of its cell is not drawn at all.

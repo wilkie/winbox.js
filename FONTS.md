@@ -395,6 +395,24 @@ wrong by fourteen. The 0.28 that had been here was fitted to the letters and was
 compensating for that other error -- which is what a fitted constant does, and
 why the fit and the instrument disagree.
 
+**A face with no italic of its own is not hinted when it is slanted.** That is
+the other error, and a second instrument found it. `symbol-shapes` puts three
+things in place of Symbol's letters: a plain bar, an ellipse in the same box,
+and the bar again with a program that rounds its edges to the grid. Upright all
+three are exact. Slanted, the two without a program are wrong by about a pixel a
+cell and the hinted one by three -- and turning hinting off for the slant brings
+the hinted group to exactly the same count as the other two. The program is the
+difference, not the shape, and the curve is not the difference at all.
+
+A real letter says it more legibly. Symbol's alpha at twenty-four pixels has its
+crossbar on row 14 upright, which is where Windows puts it and where the hint
+puts it. Slanted, Windows moves it to row 15 -- which is where the _unhinted_
+outline falls. With hinting off every row of that letter but two agrees.
+
+Shearing before hinting, which is the other way a hinted feature could move, is
+much worse than either: 1,795 wrong pixels against 681 for not hinting and 1,030
+for hinting and then shearing.
+
 The first cut of the instrument had a fault worth recording, because it is the
 one `setBearing` was written for and its own documentation warns of: the bar's
 outline was rewritten and the side bearing left alone, so Windows drew the

@@ -4569,6 +4569,14 @@ export const FABRICATIONS = [
    * cell then differs from the upright one by *is* the slant, row by row, and
    * the bar reaches below the baseline so the answer covers the descender too.
    */
+  /* And the same box three ways, to say which difference between a rectangle
+   * and a letter the slant actually trips over.
+   */
+  slantShapes('symbol-shapes', {
+    box: [200, -400, 520, 1400],
+    describe: 'a bar, an ellipse and a hinted bar in place of Symbol, all slanted',
+  }),
+
   slantBar('symbol-slant', {
     box: [200, -400, 360, 1400],
     describe: 'one upright bar in place of every Symbol letter, to read the synthesised slant',
@@ -4618,6 +4626,74 @@ export const FABRICATIONS = [
  * outline instead and leaves the instructions empty, so what Windows draws is
  * the rectangle scaled once and nothing else.
  */
+/**
+ * Three shapes at once, to say which of them the slant goes wrong on.
+ *
+ * `symbol-slant` established that a plain rectangle is sheared almost exactly
+ * right and a real letter is not, by an order of magnitude. Between the two lie
+ * two differences and this separates them: four characters keep the plain
+ * rectangle as the control, four get the same box drawn as an ellipse, and four
+ * get the rectangle with a program that rounds its edges to the grid. Whichever
+ * group behaves like a real letter is the one carrying the fault.
+ */
+function slantShapes(name, { box, describe, source = 'SYMBOL.TTF' }) {
+  const [x0, y0, x1, y1] = box;
+
+  const straight = [
+    [x0, y0],
+    [x0, y1],
+    [x1, y1],
+    [x1, y0],
+  ];
+
+  const middle = [Math.round((x0 + x1) / 2), Math.round((y0 + y1) / 2)];
+
+  /* An ellipse in the same box: the compass points on the curve and the box's
+   * own corners off it, which is how a quadratic outline draws a round thing.
+   */
+  const round = [
+    [middle[0], y0],
+    [x1, y0, false],
+    [x1, middle[1]],
+    [x1, y1, false],
+    [middle[0], y1],
+    [x0, y1, false],
+    [x0, middle[1]],
+    [x0, y0, false],
+  ];
+
+  /* Round all four corners of the box to the grid along x, which is a hint
+   * that plainly moves the edges and nothing subtler.
+   */
+  const rounded = [0x01, 0xb0, 0x00, 0x2f, 0xb0, 0x01, 0x2f, 0xb0, 0x02, 0x2f, 0xb0, 0x03, 0x2f];
+
+  const groups = [
+    ['ABKM', straight, []],
+    ['Wagj', round, []],
+    ['my1.', straight, rounded],
+  ];
+
+  return {
+    name,
+    from: source,
+    as: source,
+    describe,
+
+    edit: (bytes) => {
+      for (const [characters, points, program] of groups) {
+        for (const character of characters) {
+          const glyph = glyphFor(bytes, 0xf000 + character.charCodeAt(0));
+
+          setGlyph(bytes, null, glyph, { width: x1 + 200, height: y1, points, program });
+          setBearing(bytes, glyph, x0);
+        }
+      }
+
+      return bytes;
+    },
+  };
+}
+
 function slantBar(name, { box, describe, source = 'SYMBOL.TTF', characters = 'ABKMWagjmy1.' }) {
   const [x0, y0, x1, y1] = box;
 
