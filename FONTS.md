@@ -413,6 +413,24 @@ Shearing before hinting, which is the other way a hinted feature could move, is
 much worse than either: 1,795 wrong pixels against 681 for not hinting and 1,030
 for hinting and then shearing.
 
+**What is left is not the extremes**, which is what one letter suggested and
+counting says it is not. Splitting the 681 by where in the cell it falls gives
+118 on the topmost inked row, 149 on the bottom two, and **414 in between** --
+and hinting is worse than not hinting in all three, 167, 185 and 678. There is no
+hybrid to find: the alpha's feet looked like a case for hinting and are one
+letter's worth of coincidence.
+
+The residual is a _sampling tie on a sheared edge_, and the instrument shows it
+in isolation. `symbol-shapes`' slanted bar disagrees on exactly one row of a
+fourteen row cell, where our sheared edge covers three columns and Windows' two
+-- the edge passes through a sample point and the two sides answer differently.
+A real letter has many more edges crossing many more rows, which is why it is
+wrong by six pixels a cell where the bar is wrong by one.
+
+That is the same _kind_ of question `lines` settled for `LineTo`, and it wants
+the same kind of answer: a probe that walks an edge across a sample point rather
+than a font that happens to contain one.
+
 The first cut of the instrument had a fault worth recording, because it is the
 one `setBearing` was written for and its own documentation warns of: the bar's
 outline was rewritten and the side bearing left alone, so Windows drew the
