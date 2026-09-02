@@ -84,8 +84,8 @@ import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './repl
 const OUTLINE = ['Arial', 'Times New Roman', 'Courier New'];
 const RECORDS = 0;
 const PIXELS = 0;
-const BITMAP_RECORDS = 202;
-const BITMAP_PIXELS = 1382;
+const BITMAP_RECORDS = 137;
+const BITMAP_PIXELS = 1137;
 
 /** Whether a recorded call named one of the three outline families. */
 function isOutline(args: string) {

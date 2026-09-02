@@ -578,13 +578,21 @@ lean at the top row runs 4, 6, 8, 10, 12, 16, 20 for cells of 8, 12, 16, 20, 24,
 32 and 40. The tell that it is now right is that the slanted cells agree exactly
 as often as the upright ones, letter for letter and size for size -- 314 of 420.
 
-What is left is **the descenders**, and only those: `g`, `j` and `y` account for
-almost all of it, with a stray pixel on `a` and the full stop. Modern's `g` at
-twenty-four pixels is the shape of it -- Windows draws the tail flat along one
-row where we take it a row lower and two columns left, which is one endpoint
-scaling to 15.75 and being answered 15 rather than 16. Rounding the scaled
-coordinates the other way is not the answer: flooring both of them takes the
-whole corpus from 314 to 1.
+**A design coordinate below the cell is pulled back to its last row rather than
+falling off it.** That was the descenders, and it is the last rule these faces
+had to give up. Every descender reaches the design's full height -- Modern's
+`g`, `j` and `y` all end at 32 in a design 32 tall -- so the bottom of the design
+scales to the row _after_ the last one the cell has. Windows draws the tail flat
+along that last row. Letting it descend one further, and clipping it away, both
+leave a letter Windows does not draw.
+
+**Measured**, by trying each: clamping takes the three faces from 314 of 420 to
+379 and the wrong pixels from 291 to 46. Scaling by `(cell - 1) / (design - 1)`
+instead gives 140, and by `(cell - 1) / design` gives 2, so it is not a different
+ratio -- the ratio is right and the bottom row is a special case.
+
+What is left is 41 cells differing by one to three pixels each, scattered over
+the small sizes: no rule, just the last of the rounding.
 
 **Every vertical measure is the design's, scaled and rounded on its own.** The
 height is exactly what was asked for; the ascent, descent and both leadings are

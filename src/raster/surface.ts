@@ -575,7 +575,18 @@ export class Surface {
           this.context.beginPath();
           (this.context as any).excludeLast = true;
           run.forEach(([px, py], index) => {
-            const down = top + Math.round(py * vertical);
+            /* A design coordinate below the cell is pulled back to its last
+             * row rather than falling off it.
+             *
+             * A descender reaches the design's full height -- Modern's `g` and
+             * `j` and `y` all end at 32 in a design 32 tall -- so the bottom of
+             * the design is the row *after* the last one the cell has. Windows
+             * draws the tail flat along that last row; letting it descend one
+             * further, or clipping it away, both leave a letter Windows does
+             * not draw. **Measured**: clamping takes the three faces from 314
+             * of 420 to 379, and the wrong pixels from 291 to 46.
+             */
+            const down = top + Math.min(cell - 1, Math.round(py * vertical));
             const lean = leaning ? Math.max(0, (cell - (down - top)) >> 1) : 0;
             const at = pen + Math.round(px * horizontal) + lean + copy;
 
