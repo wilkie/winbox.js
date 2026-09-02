@@ -591,8 +591,22 @@ leave a letter Windows does not draw.
 instead gives 140, and by `(cell - 1) / design` gives 2, so it is not a different
 ratio -- the ratio is right and the bottom row is a special case.
 
-What is left is 41 cells differing by one to three pixels each, scattered over
-the small sizes: no rule, just the last of the rounding.
+What is left is 41 cells of 420, and every one of them is **ink we draw that
+Windows does not** -- not one is ink we miss. Almost all sit on the cell's last
+row, which is the row the clamp puts things on, so the clamp is a little too
+generous: Windows draws a shorter tail than a clamped endpoint gives.
+
+Roman's `y` at sixteen pixels is the case. Its tail runs through five design
+points that all clamp to the last row, at columns 3, 3, 3, 3 and 4, so the run
+inks columns 3 to 5; Windows inks 4 and 5. Three narrower rules were tried
+against the whole corpus and all three are worse than clamping everything:
+dropping a run that leaves the cell gives 296 of 420, truncating the run at the
+first point that leaves it gives 318, and truncating it one point earlier gives
+307, against 379 for the clamp.
+
+So the clamp stands, and what is left is a pixel at the end of a tail with no
+rule behind it that has been found. It is not the rounding of the scaled
+coordinate -- that was swept -- and it is not the geometry of the clip.
 
 **Every vertical measure is the design's, scaled and rounded on its own.** The
 height is exactly what was asked for; the ascent, descent and both leadings are
