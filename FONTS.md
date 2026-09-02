@@ -500,8 +500,46 @@ Two things it is not:
   and costs more elsewhere than it saves: 78,567 fabricated cells against 78,734
   and 5,831 wrong pixels against 5,422.
 
-So the box stays, and what is left of the synthesised slant is one known wrong
-gate on a check whose real one is still not found.
+So the box stays. And the chase for the real gate ended somewhere more
+interesting than a third guess: **the pseudocode and the recording contradict
+each other, and the contradiction is sharp enough to state.**
+
+The counts are the source's and they are right. `HorizCrossings` walks the on
+list and the off list together and counts a hit in either, so a zero-length run
+on the next row is worth two by itself and the edge of a wide run is worth one.
+Instrumented on `cour-stubs` that is exactly what comes out -- an interior row of
+the post reads 2 above and 2 below, the row where the arm joins reads 1 from the
+arm's own edge plus 1 from a vertical crossing, a tip row reads 0. The vertical
+terms sit a row off the horizontal one in both branches and the offset cancels,
+so the encoding shift is consistent rather than an error.
+
+The check is real, too. Forced off, the armed post grows a foot at row 14 that
+Windows does not draw. So `SK_STUBS` is set for Courier New -- and the source's
+own arithmetic then refuses the **bare** post's two tips as well, 36 pixels that
+Windows does draw. `DoVertDropout` carries the same check word for word, so no
+second pass is rescuing them either.
+
+One font, one scan kind, one stroke a column wide: Windows draws the tips of a
+bare post and refuses the free tip of an armed one, and nothing in
+`DoHorizDropout` tells the two apart. That is not a gap in our file to be closed
+by a cleverer predicate -- three have now been tried and all three are worse:
+
+| gate                         | cells  | wrong pixels |
+| ---------------------------- | ------ | ------------ |
+| the box (kept)               | 78,734 | 5,422        |
+| every run zero-length        | 78,567 | 5,831        |
+| no vertical crossings at all | 78,622 | 5,758        |
+
+The last is the source's own quantity: with no vertical crossings the two
+`VertCrossings` terms can only ever be nought, the check reduces to the
+horizontal term, and no tip of such a glyph could ever be drawn. It is still
+worse than the box.
+
+**And the stub check is not most of the slant.** Forced off, it is worth 28 of
+the instrument's 220 wrong pixels. Windows puts _two_ pixels on the sheared
+bar's top row, and a rescue never places more than one -- so the other 192 are a
+missing pair of crossings, not a refused rescue. That is where the next
+instrument should point.
 
 **In sum, what is left is dropout control on a narrow sheared feature, and
 nothing else.** Windows fires it where we do not: a bar whose upright cell inks rows 3

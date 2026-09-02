@@ -632,15 +632,52 @@ export function fillWalked(contours, options) {
      * italic alike -- so a gate on the scan kind would either apply the check
      * everywhere or nowhere, and the recorded cells need both.
      *
+     * **The counts are the source's, and they are right.** `HorizCrossings`
+     * walks the on list and the off list together and counts a hit in either,
+     * so a zero-length run on the next row is worth two on its own and the edge
+     * of a wide one is worth one. Instrumented on `cour-stubs` that is exactly
+     * what comes out: an interior row of the post reads 2 above and 2 below, the
+     * row where the arm joins reads 1 from the arm's own edge and 1 from a
+     * vertical crossing, and a tip row reads 0. The vertical terms sit a row off
+     * the horizontal one in both branches, and that offset cancels -- C's
+     * "above" wants `VertCrossings(y + 1)` and gets it, C's "below" wants
+     * `VertCrossings(y)` and gets it -- so the encoding shift the note above
+     * describes is consistent rather than an error.
+     *
+     * **And the check itself is real.** Forced off, the armed post grows a foot
+     * at row 14 that Windows does not draw. So `SK_STUBS` is set for Courier
+     * New, and the source's own arithmetic then refuses the *bare* post's two
+     * tips as well -- 36 pixels Windows does draw. `DoVertDropout` carries the
+     * same check, so no second pass can be rescuing them either.
+     *
+     * That is a contradiction between the pseudocode and the recording rather
+     * than a gap in this file: with one scan kind, one font and one stroke a
+     * column wide, Windows draws the tips of a bare post and refuses the free
+     * tip of an armed one, and nothing in `DoHorizDropout` tells the two apart.
+     * Until the reason is found the box stands in for it.
+     *
      * **The box is wrong about one thing, and it is the synthesised slant.**
      * Shearing a bar one column wide widens its *box* to four columns while
      * leaving every row of it one column, so the slant turns this check on and
      * the glyph loses its tip row: Symbol's twelve pixel bar inks rows 3 to 10
      * upright and rows 4 to 10 slanted, where Windows inks 3 to 10 both times.
-     * Asking instead whether every run of the glyph is zero-length -- which is
-     * what "nothing but the run" means to say -- fixes those and costs more
-     * than it saves: 78,567 fabricated cells against 78,734 and 5,831 wrong
-     * pixels against 5,422. So the box stays until the mechanism is found.
+     * Two ways of saying "nothing but the run" without the box were tried and
+     * both cost more than they save, against 78,734 cells and 5,422 wrong
+     * pixels for the box:
+     *
+     *     gate                              cells          wrong pixels
+     *     every run zero-length             78,567           5,831
+     *     no vertical crossings at all      78,622           5,758
+     *
+     * The second is the source's own quantity -- with no vertical crossings the
+     * two `VertCrossings` terms can only ever be nought, so the check reduces to
+     * the horizontal term and no tip of such a glyph could ever be drawn -- and
+     * it is still worse. So the box stays until the mechanism is found.
+     *
+     * It is also not most of the synthesised slant. Forced off, the stub check
+     * is worth 28 of that instrument's 220 wrong pixels; Windows puts *two*
+     * pixels on the sheared bar's top row and a rescue never places more than
+     * one. See `FONTS.md` section 3.
      */
     if (!narrow && (!continues(-1) || !continues(1))) {
       continue;
