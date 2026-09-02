@@ -280,6 +280,14 @@ export class Surface {
         weight:
           this._font instanceof LogicalFont && !this._font.emboldens ? 400 : (style.weight ?? 400),
         italic: !!style.italic,
+
+        /* How many times over the strike is drawn, which the strike itself does
+         * not know: it is the mapper's answer to a size the face has no strike
+         * for. Measuring already used it; drawing did not, so a doubled face
+         * came out a half-size letter in a full-size cell.
+         */
+        scale: this._font instanceof LogicalFont ? this._font.scale : 1,
+        horizontal: this._font instanceof LogicalFont ? this._font.horizontal : 1,
       };
 
       // Fill the rectangle behind it

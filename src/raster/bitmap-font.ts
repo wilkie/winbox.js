@@ -95,16 +95,33 @@ export class BitmapFontEntry {
       return;
     }
 
+    /* How many times over the strike is drawn.
+     *
+     * A face has a handful of strikes and is asked for every size, so a size
+     * with no strike near enough may be answered by drawing a smaller one a
+     * whole number of times over instead -- MS Serif asked for twenty has no
+     * twenty row strike and doubles its ten row one. The mapper decides this
+     * and the metrics already report it; drawing has to do it as well, or a
+     * doubled face measures twice as wide as it draws.
+     */
+    const up = options.scale || 1;
+    const across = options.horizontal || up;
+
     // Measure the text
     const metrics = this.measure(text, options);
-    const height = metrics.height;
+    const height = metrics.height * up;
+
+    /* How far the topmost row leans, which is also what Windows reports as the
+     * overhang. Everything below it leans less; nothing leans more.
+     */
+    const overhang = (height - 1) >> 1;
 
     /* Room for the lean. A slanted row is drawn to the right of where an
      * upright one would be, and the region the pixels are written into is
      * measured without it -- so the top of every letter fell off the end,
      * which looked exactly like a glyph whose right-hand side was missing.
      */
-    const width = metrics.width + (italic ? Math.floor((height - 1) * BitmapFont.SLANT) : 0);
+    const width = metrics.width * across + (italic ? overhang : 0);
 
     // Pull out the image data for that region
     const imageData = ctx.getImageData(x, y, width, height);
@@ -128,7 +145,12 @@ export class BitmapFontEntry {
       }
 
       const info = this.characterEntryFor(code);
-      let charWidth = info.width;
+
+      /* The scaling multiplies the stored width; the emboldening adds one
+       * device pixel to it, once, however many times over the strike is drawn.
+       * That is the same arithmetic the metrics do.
+       */
+      let charWidth = info.width * across;
 
       if (this.weight <= 400 && weight > 400) {
         // Bold style is emulated and increase character width by 1
@@ -136,17 +158,28 @@ export class BitmapFontEntry {
       }
 
       for (let j = 0; j < height; j++) {
-        /* Slanting is done as the rows are written: each one shifts sideways
-         * in proportion to how far above the baseline it sits, so the baseline
-         * itself stays put and the top of the letter travels furthest. A row
-         * below the baseline shifts the other way, which is what makes a
-         * descender lean back under the letter.
+        /* Slanting is done as the rows are written, in pairs counted from the
+         * *top* of the cell: the first two rows lean by the whole overhang and
+         * every two rows after that lean one pixel less, down to nothing.
+         * Nothing ever leans left, so the baseline is not the anchor and
+         * neither is the bottom of the cell -- the top is.
+         *
+         * Counting the pairs from the bottom instead is the natural way to
+         * write it and agrees exactly half the time: the two readings differ
+         * only where the cell has an odd number of rows, since that is where
+         * the leftover row falls at a different end. **Measured** over eight
+         * sizes of seven faces -- Fixedsys, whose only strike is fifteen rows,
+         * disagreed at every size and every letter, and MS Sans Serif and
+         * Courier disagreed at exactly the sizes their thirteen row strike
+         * answers and nowhere else.
          */
-        const lean = italic ? Math.floor((height - 1 - j) * BitmapFont.SLANT) : 0;
+        const lean = italic ? overhang - (j >> 1) : 0;
+
+        const row = info.glyph[Math.floor(j / up)] ?? [];
 
         let lastPixel = 0;
         for (let i = relativeX; i < relativeX + charWidth; i++) {
-          const nextPixel = info.glyph[j][i - relativeX] || 0;
+          const nextPixel = row[Math.floor((i - relativeX) / across)] || 0;
           let pixel = nextPixel;
 
           if (!pixel && this.weight <= 400 && weight > 400) {

@@ -8,11 +8,16 @@
  * row is a recorded call whose bitmap we do not reproduce, with how many pixels
  * of the thirty-two by thirty-two cell are wrong.
  *
- * There are none. All 3,546 recorded cells agree.
+ * **No outline glyph disagrees.** All 3,546 recorded cells of Arial, Times New
+ * Roman and Courier New agree, in four styles each, and that list is kept at
+ * zero because that is the property worth defending: not a rate that may drift
+ * but a list that must stay empty. Section 6 of FONTS.md records what was ruled
+ * out getting there.
  *
- * The list is kept, and its ceilings kept at zero, because that is the property
- * worth defending: not a rate that may drift but a list that must stay empty.
- * Section 6 of FONTS.md records what was ruled out getting here.
+ * The bitmap faces are counted separately and are not at zero. Two things are
+ * open, both named in `KNOWN_GAPS`: Symbol, which the mapper answers with the
+ * TrueType face where we answer with the strike, and Small Fonts above its
+ * largest strike, where the whole-number stretch picks a different one.
  *
  * ## How the last sixteen went
  *
@@ -64,9 +69,19 @@
 
 import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './replay.js';
 
-/* Both are ceilings, and both are zero: neither may rise. */
+/* Ceilings, and none may rise. The outline faces are at nought and stay there;
+ * the bitmap ones are what is left to do.
+ */
+const OUTLINE = ['Arial', 'Times New Roman', 'Courier New'];
 const RECORDS = 0;
 const PIXELS = 0;
+const BITMAP_RECORDS = 252;
+const BITMAP_PIXELS = 9640;
+
+/** Whether a recorded call named one of the three outline families. */
+function isOutline(args: string) {
+  return OUTLINE.some((face) => args.startsWith(`"${face}",`));
+}
 
 /** The recorded bitmap is one bit per pixel, set where the probe left white. */
 function inkOf(hex: string) {
@@ -120,17 +135,22 @@ if (fixtures.length === 0) {
     }, 120000);
 
     it('names them', () => {
-      const pixels = rows.reduce((sum, row) => sum + row.wrong, 0);
+      const outline = rows.filter((row) => isOutline(row.args));
+      const bitmap = rows.filter((row) => !isOutline(row.args));
+      const count = (list: typeof rows) => list.reduce((sum, row) => sum + row.wrong, 0);
 
       console.log(
         [
-          `${rows.length} records, ${pixels} pixels`,
-          ...rows.map((row) => `  ${row.args.padEnd(48)} ${String(row.wrong).padStart(2)} px`),
+          `outline: ${outline.length} records, ${count(outline)} pixels`,
+          `bitmap:  ${bitmap.length} records, ${count(bitmap)} pixels`,
+          ...rows.map((row) => `  ${row.args.padEnd(48)} ${String(row.wrong).padStart(3)} px`),
         ].join('\n')
       );
 
-      expect(rows.length).toBeLessThanOrEqual(RECORDS);
-      expect(pixels).toBeLessThanOrEqual(PIXELS);
+      expect(outline.length).toBeLessThanOrEqual(RECORDS);
+      expect(count(outline)).toBeLessThanOrEqual(PIXELS);
+      expect(bitmap.length).toBeLessThanOrEqual(BITMAP_RECORDS);
+      expect(count(bitmap)).toBeLessThanOrEqual(BITMAP_PIXELS);
     });
   });
 }

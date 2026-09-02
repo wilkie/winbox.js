@@ -126,7 +126,13 @@ static void probeFont(int height, int width, int weight, BYTE italic,
  */
 static void probeStyles(LPCSTR face)
 {
-    static const int HEIGHTS[] = { 13, 16, 20, 24, 29, 37, 50, 100 };
+    /* The small end is here because the glyph probe draws at it. Whether a
+     * strike is emboldened turns on how tall it is, and the boundary was
+     * measured from the metrics alone -- so the sizes the ink is recorded at
+     * have to be sizes the metrics are recorded at too, or the two cannot be
+     * put beside each other.
+     */
+    static const int HEIGHTS[] = { 8, 10, 12, 13, 15, 16, 20, 24, 29, 37, 50, 100 };
 
     int index;
 
@@ -365,6 +371,10 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeStyles("MS Sans Serif");
     probeStyles("Courier");
     probeStyles("MS Serif");
+    probeStyles("Small Fonts");
+    probeStyles("Symbol");
+    probeStyles("Fixedsys");
+    probeStyles("System");
 
     /* A face that is already bold in the file, so a request for bold has
      * nothing to synthesise, and one that is fixed pitch.

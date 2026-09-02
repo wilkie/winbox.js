@@ -18,7 +18,7 @@ import { Font } from './font.js';
  * that gets lost.
  */
 export class LogicalFont extends Font {
-  /** The shortest strike a request for bold is allowed to thicken. */
+  /** The shortest strike a *fallback* from an outline face may thicken. */
   static EMBOLDEN_FLOOR = 11;
 
   declare _face: any;
@@ -111,32 +111,47 @@ export class LogicalFont extends Font {
   /**
    * Whether a request for bold actually thickens this face.
    *
-   * Three things can stop it. The request may not have asked. The file may be
+   * Two things can stop it: the request may not have asked, or the file may be
    * bold already, as the System font is, and drawing it again a pixel across
-   * would make it heavier than Windows ever draws it. And **the strike may be
-   * too small**: below eleven pixels a bold request is not merely drawn without
-   * the smear, it is discarded -- `tmWeight` comes back 400, as though nothing
-   * had been asked for.
+   * would make it heavier than Windows ever draws it. Size is not one of them.
    *
-   * **Recorded**, and the boundary is pinned by a single pair. Ask MS Serif for
-   * bold at ten pixels and every metric matches the plain face exactly; ask at
-   * eleven and the average width goes 5 to 6, the overhang to 1 and the weight
-   * to 700. Small Fonts is left alone at three, five, six and eight the same
-   * way -- by name, so this is not about having fallen back from an outline.
-   * Nothing in the recording sits at nine or twelve, so ten and eleven are the
-   * whole of the evidence for where the line is.
+   * The third thing that stops it is **where the request came from**, which is
+   * not a property of the strike at all. A request for an outline face at a
+   * size too small for one is answered by a strike; ask for bold there and it
+   * is discarded -- `tmWeight` comes back 400, as though nothing had been asked
+   * for. Ask the same strike for bold by its own name and it is emboldened.
    *
-   * A stroke font is exempt. `Modern`, `Roman` and `Script` all report 700 for
-   * a bold request at eight pixels, where their smear rounds to nothing and no
-   * character widens -- the request is honoured and simply has no effect at
-   * that size, which is a different thing from being discarded.
+   * **Recorded**, on the same eight row cell both ways round: Arial bold at
+   * eight pixels is Small Fonts and answers weight 400 with no overhang and the
+   * plain widths; Small Fonts bold at eight pixels is the same strike and
+   * answers weight 700, overhang 1 and every width one greater. Times New Roman
+   * at eight is the same as Arial. It is the same distinction `tmItalic`
+   * already made, where the byte answers for the family the request settled on
+   * rather than for the strike that satisfied it; see `outlineFamily`.
+   *
+   * A fallback is not always discarded, though: the eleven pixel floor is real
+   * and lives here. Arial bold at eleven pixels is Small Fonts' eleven row
+   * strike and *is* emboldened -- weight 700, overhang 1, every width one
+   * greater -- while the same request at eight and at six is not. So a request
+   * that fell back is emboldened only if the strike it fell back to is at least
+   * eleven rows tall, and a strike asked for by name is emboldened whatever its
+   * height. **Recorded**, at six, eight and eleven pixels of Arial and at eight
+   * and ten of Small Fonts and MS Serif.
+   *
+   * This corrects the scope of an earlier rule rather than the number in it.
+   * That rule said the strike's own height decided it for everything, with the
+   * same floor of eleven, and was marked **Recorded** naming a pair that pinned
+   * it -- MS Serif bold at ten pixels against eleven -- which no fixture
+   * contained at either size. What made it look right is that every case it was
+   * written from was a fallback, where the two rules agree. They part company
+   * the moment a short strike is asked for by its own name.
    */
   get emboldens() {
     if ((this._style.weight ?? 0) < 700 || this._entry.header.dfWeight >= 700) {
       return false;
     }
 
-    if (this.isVector) {
+    if (!this._style.outlineFamily) {
       return true;
     }
 

@@ -176,33 +176,61 @@ every size and on every face. The string grows by its own length plus one.
 drawn bold, so a request for bold has nothing to synthesise: no character
 widens, nothing overhangs, and the metrics are the plain ones with a weight of 700. **Recorded.**
 
-**A strike shorter than eleven pixels is not emboldened at all, and the request
-is discarded rather than merely having no effect.** `tmWeight` comes back 400,
-the overhang 0, and every width the plain face's -- as though nothing had been
-asked for.
+**Whether a short strike is emboldened depends on how the request reached it.**
+A strike asked for by its own name is always emboldened, however short. A strike
+reached by falling back from an outline face too small to draw is emboldened
+only if it is at least eleven rows tall; below that the request is discarded --
+`tmWeight` comes back 400, the overhang 0, and every width the plain face's, as
+though nothing had been asked for.
 
-**Recorded**, and the boundary rests on a single pair. Ask MS Serif for bold at
-ten pixels and every metric matches the plain face exactly; ask at eleven and
-the average width goes 5 to 6, the overhang to 1 and the weight to 700. Small
-Fonts is left alone the same way at three, five, six and eight -- asked for by
-name, so this is not a rule about having fallen back from an outline face.
-Nothing in the recording sits at nine or twelve, so ten and eleven are the whole
-of the evidence for where the line is.
+**Recorded**, on the same eight row cell both ways round: Arial bold at eight
+pixels is Small Fonts and answers weight 400; Small Fonts bold at eight pixels
+is the same strike and answers weight 700 with every width one greater. Arial at
+eleven, still Small Fonts, is emboldened; at six it is not. MS Serif bold at
+eight and at ten is emboldened when asked for by name. It is the same
+distinction `tmItalic` already makes, where the byte answers for the family the
+request settled on rather than for the strike that satisfied it.
+
+This corrects the _scope_ of an earlier claim rather than the number in it, and
+the correction is worth keeping visible. That claim made the floor a property of
+the strike alone, and was marked **Recorded** naming the pair that pinned it --
+MS Serif at ten pixels against eleven. No such record existed, at either size,
+in that fixture or any other: the height sweep for those faces started at
+thirteen. Every case it had been written from was a fallback, where the two
+rules give the same answer, so nothing that existed could contradict it. What
+found it was widening the sweep to the sizes the glyph probe draws at.
 
 A stroke font is exempt: `Modern`, `Roman` and `Script` all report 700 for a
 bold request at eight pixels, where the smear rounds to nothing and no character
 widens. The request is honoured and happens to do nothing, which is a different
 answer from the request being thrown away.
 
-**Italic leans from the bottom of the cell, not the baseline.** Every row shifts
-right by `floor((rows below it) / 2)`, nothing ever moves left, and the top row
-moves by `floor((cell - 1) / 2)` -- which is exactly the overhang Windows
-reports, at every size on every face. **Recorded** for the overhang, **measured**
-for the anchor.
+**Italic leans from the top of the cell.** The top row shifts right by
+`floor((cell - 1) / 2)` -- exactly the overhang Windows reports -- and the rows
+are then taken in pairs downward, each pair leaning one pixel less than the one
+above, to nothing at the bottom. So the lean of row `j`, counted down from the
+top, is `overhang - (j >> 1)`. Nothing ever moves left. **Recorded**: 2,016
+cells over eight sizes of seven faces.
 
 Anchoring at the baseline is the natural guess and is wrong: descenders swing
 out to the left and no angle recovers. A sweep over angles cannot tell you it is
 sweeping the wrong parameter -- it just keeps asking for a steeper lean.
+
+Pairing the rows from the _bottom_ instead -- `floor((rows below it) / 2)`,
+which is what this said before -- is right exactly half the time. The two
+readings agree whenever the cell has an even number of rows and differ on every
+other row when it has an odd number, because that is where the leftover row
+falls at a different end. Fixedsys, whose only strike is fifteen rows, was wrong
+at every size and every letter; MS Sans Serif and Courier were wrong at exactly
+the sizes their thirteen row strike answers and right everywhere else. A rule
+that is right for half the faces looks like a rule with an exception, and it was
+not: it was the wrong rule.
+
+**A strike is drawn its whole number of times over when it is drawn, not only
+when it is measured.** Both the row count and the column count multiply. MS
+Serif asked for twenty has no twenty row strike and doubles its ten row one;
+drawing that strike once into a cell measured for twice is a half-size letter in
+a full-size cell, which is what it was.
 
 **Weights collapse to two.** Any request of 700 or more reports exactly 700;
 anything less reports what the file says, which is not always 400. **Recorded.**

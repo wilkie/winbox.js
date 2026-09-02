@@ -252,6 +252,53 @@ static void probeStyled(LPCSTR face, int weight, BYTE italic)
     }
 }
 
+/*
+ * The bitmap faces, at a spread of sizes and in each style.
+ *
+ * These have no outline and no interpreter: every glyph is stored ink, picked
+ * out of whichever strike the mapper settled on and blitted. So the questions
+ * are different ones. Which strike answers a height, and whether it was drawn
+ * more than once over; where in the character cell the stored ink lands; and
+ * what the two synthesised styles do to it -- the one pixel smear that bold
+ * is, and the shear that italic is, which leans from the bottom of the cell
+ * and not from the baseline.
+ *
+ * Section 3 of `FONTS.md` has all of those measured from the *metrics*, which
+ * say how wide the answer is and never what it looks like. This is the ink.
+ *
+ * Eight heights rather than three because the strikes are few and far apart --
+ * MS Sans Serif has six and Courier three -- so a size sweep is mostly a sweep
+ * over which strike answers, including the ones that answer by doubling a
+ * smaller strike or by clamping to the smallest there is.
+ */
+static void probeBitmap(LPCSTR face, int weight, BYTE italic)
+{
+    static const char CHARS[] = "ABKMWagjmy1.";
+    static const int SIZES[] = { 8, 10, 12, 13, 15, 16, 20, 24 };
+
+    int size;
+    int index;
+    char name[64];
+
+    for (size = 0; size < sizeof(SIZES) / sizeof(SIZES[0]); size++) {
+        HFONT font = CreateFont(SIZES[size], 0, 0, 0, weight, italic, 0, 0,
+                                ANSI_CHARSET, OUT_DEFAULT_PRECIS,
+                                CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+                                DEFAULT_PITCH, face);
+
+        wsprintf(name, "\"%s\",h=%d,weight=%d,italic=%d", (LPSTR)face, SIZES[size],
+                 weight, (int)italic);
+
+        for (index = 0; CHARS[index]; index++) {
+            probeGlyph(name, font, CHARS[index]);
+        }
+
+        if (font) {
+            DeleteObject(font);
+        }
+    }
+}
+
 static void probeSized(LPCSTR face, int height, int weight, BYTE italic)
 {
     char name[64];
@@ -341,6 +388,29 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeAccented("Arial");
     probeAccented("Times New Roman");
     probeAccented("Courier New");
+
+    probeNote("the bitmap faces, which are strikes rather than outlines");
+    probeBitmap("System", FW_NORMAL, 0);
+    probeBitmap("System", FW_BOLD, 0);
+    probeBitmap("System", FW_NORMAL, 1);
+    probeBitmap("Fixedsys", FW_NORMAL, 0);
+    probeBitmap("Fixedsys", FW_BOLD, 0);
+    probeBitmap("Fixedsys", FW_NORMAL, 1);
+    probeBitmap("MS Sans Serif", FW_NORMAL, 0);
+    probeBitmap("MS Sans Serif", FW_BOLD, 0);
+    probeBitmap("MS Sans Serif", FW_NORMAL, 1);
+    probeBitmap("MS Serif", FW_NORMAL, 0);
+    probeBitmap("MS Serif", FW_BOLD, 0);
+    probeBitmap("MS Serif", FW_NORMAL, 1);
+    probeBitmap("Courier", FW_NORMAL, 0);
+    probeBitmap("Courier", FW_BOLD, 0);
+    probeBitmap("Courier", FW_NORMAL, 1);
+    probeBitmap("Small Fonts", FW_NORMAL, 0);
+    probeBitmap("Small Fonts", FW_BOLD, 0);
+    probeBitmap("Small Fonts", FW_NORMAL, 1);
+    probeBitmap("Symbol", FW_NORMAL, 0);
+    probeBitmap("Symbol", FW_BOLD, 0);
+    probeBitmap("Symbol", FW_NORMAL, 1);
 
     probeNote("and the styles, which are synthesised for some faces and not others");
     probeSized("MS Sans Serif", 16, FW_BOLD, 0);
