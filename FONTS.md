@@ -1142,9 +1142,45 @@ and `test dx,0x1` at `0x1553` -- this picks between `above(y1 - 1)` and
 holds in the branches not yet read is the open question, and it is now a narrow
 one: it can only bite a coordinate lying exactly on a sample line.
 
-No divergence found yet. What the reading has done is turn three assumptions into
-readings, name the globals the walk keeps its state in, and narrow the candidate
-to a case that needs a coordinate exactly on a sample line to matter.
+#### The three branches, and the frame confirmed
+
+`CalcLine` splits three ways on the two index comparisons, and all three are in
+`scan-walk.ts`:
+
+- `0x150f`, on `index(y1) == index(y2)`: the edge crosses no scanline, so it
+  batches the row index into every **column** list from `index(x1)` to
+  `index(x2)`. That is the `y1 === y2` branch.
+- `0x1591`, on `index(x1) == index(x2)`: the mirror, batching the column index
+  into every **row** list. That is the `x1 === x2` branch.
+- `0x1609`: the oblique walk.
+
+The two batch branches are mirrors down to their asymmetries. Each has a forward
+path that steps `si` on before a `while (si < di)` loop and a backward path that
+steps it back before a `while (si >= di)` loop, and each adds one to the stored
+index under a pair of direction bits -- but the addition sits on the _forward_
+path in one and the _backward_ path in the other, on different bits
+(`0x100`/`0x1` against `0x80`/`0x8`). That is the two axes' conventions mirrored,
+and it is the same asymmetry `above` and `below` carry here.
+
+The oblique walk is ours line for line. It saves the edge's `dx` and `dy` scaled
+by 64, advances one axis by one sample step under the quadrant bits, and forms
+`ydist * dx - xdist * dy` in thirty-two bits -- which is
+`terminalX * initialYStep - terminalY * initialXStep`, the same product with the
+same sign.
+
+**And the one apparent difference is not one.** The shipped distances are
+measured from the coordinate to `(v + 31) & -64`, a multiple of 64, where `above`
+measures to `64k + 32`; the two differ by exactly half a pixel, which would shift
+the initial error term by `32 * (dx - dy)` and change every tie. Taking that 32
+off both distances and re-recording says otherwise, and not by a little: 9,140 of
+18,792 cells against 18,532, and **106,192 wrong pixels against 492**. So the
+frames agree, the rounded value is an index scaled rather than a position in this
+frame, and the sample grid is confirmed a second time -- by experiment, after
+being confirmed by the `& 0x3f == 0x20` test.
+
+No divergence found. Three branches of `CalcLine` now correspond to three
+branches here, and the one place the reading suggested they might part is closed
+by measurement.
 
 Where none of this goes is into the scaler. Segment 36's public entries are four
 thunks that load a dispatch index into `bx` and a word count into `cx` and jump
