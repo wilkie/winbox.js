@@ -473,8 +473,38 @@ Swept over the wide cells alone the minimum is sharp and single -- 0.29 costs
 sixteen pixels, **0.30 costs none**, 0.31 costs sixteen again -- so three tenths
 is not an average of something that varies. It is the number.
 
-**What is left is dropout control on a narrow sheared feature, and nothing
-else.** Windows fires it where we do not: a bar whose upright cell inks rows 3
+**And the mechanism has a name now.** It is the stub check, and the gate on it
+is ours rather than Windows'.
+
+`DoHorizDropout` refuses to rescue a zero-length run that has no continuation on
+one side of it, which is what keeps the scan converter from drawing the tip of a
+stroke as a stub. `cour-stubs` says that check is needed wherever an arm gives it
+something to find and must not run on a bare post, and the gate standing in for
+that here is the bounding box: a glyph too narrow to span a sample column is not
+asked. **Shearing widens the box without widening the feature.** A bar one column
+wide becomes a parallelogram four columns wide whose every row is still one
+column, so the slant switches the check on and the glyph loses its tip row.
+Symbol's twelve pixel bar inks rows 3 to 10 upright and rows 4 to 10 slanted;
+Windows inks 3 to 10 both times, and its top row comes back two pixels wide.
+
+Two things it is not:
+
+- **Not the scan kind.** Run through the interpreter, every installed family
+  answers `SCANTYPE` 1 at every size recorded -- Arial, Courier New, Times New
+  Roman, Symbol and Wingdings, upright, bold and italic alike. A gate on the scan
+  kind, which is what the shipped code gates on at segment 42 0x0a69, would apply
+  the check everywhere or nowhere, and the recorded cells need both. That retires
+  the conjecture the code comment was carrying.
+- **Not "every run is zero-length" either**, which is what "nothing but the run"
+  would mean if the box were only standing in for it. It rescues the sheared bar
+  and costs more elsewhere than it saves: 78,567 fabricated cells against 78,734
+  and 5,831 wrong pixels against 5,422.
+
+So the box stays, and what is left of the synthesised slant is one known wrong
+gate on a check whose real one is still not found.
+
+**In sum, what is left is dropout control on a narrow sheared feature, and
+nothing else.** Windows fires it where we do not: a bar whose upright cell inks rows 3
 to 10 inks exactly those rows slanted too, and its top row comes back two pixels
 wide where every other row is one, while ours loses that row entirely. Across
 both instruments 120 of the 220 wrong pixels are on the first or last inked row

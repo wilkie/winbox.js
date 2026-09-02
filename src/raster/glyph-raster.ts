@@ -625,6 +625,22 @@ export function fillWalked(contours, options) {
      * guards at 0x0e60 and 0x0e8a make the vertical terms nought outside the box
      * rather than skipping the decision. So the rule is right about every cell
      * recorded and its mechanism is not yet located; `FONTS.md` says so.
+     *
+     * **And the scan kind cannot be it.** Run through the interpreter, every
+     * installed family answers `SCANTYPE` 1 at every size recorded -- Arial,
+     * Courier New, Times New Roman, Symbol and Wingdings, upright, bold and
+     * italic alike -- so a gate on the scan kind would either apply the check
+     * everywhere or nowhere, and the recorded cells need both.
+     *
+     * **The box is wrong about one thing, and it is the synthesised slant.**
+     * Shearing a bar one column wide widens its *box* to four columns while
+     * leaving every row of it one column, so the slant turns this check on and
+     * the glyph loses its tip row: Symbol's twelve pixel bar inks rows 3 to 10
+     * upright and rows 4 to 10 slanted, where Windows inks 3 to 10 both times.
+     * Asking instead whether every run of the glyph is zero-length -- which is
+     * what "nothing but the run" means to say -- fixes those and costs more
+     * than it saves: 78,567 fabricated cells against 78,734 and 5,831 wrong
+     * pixels against 5,422. So the box stays until the mechanism is found.
      */
     if (!narrow && (!continues(-1) || !continues(1))) {
       continue;
