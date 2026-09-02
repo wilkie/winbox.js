@@ -79,6 +79,31 @@ function recordings() {
     .filter(Boolean) as any[];
 }
 
+/**
+ * The longest run of inked pixels on any row of a recorded cell.
+ *
+ * A cell is recorded as a thirty-two square of bits with a set bit for the
+ * background, which is what the probe's monochrome bitmap handed back.
+ */
+function widestRun(cell: string) {
+  const bytes = Buffer.from(cell, 'hex');
+
+  let widest = 0;
+
+  for (let row = 0; row < 32; row++) {
+    const inked = ~bytes.readUInt32BE(row * 4) >>> 0;
+
+    let run = 0;
+
+    for (let bit = 31; bit >= 0; bit--) {
+      run = (inked >>> bit) & 1 ? run + 1 : 0;
+      widest = Math.max(widest, run);
+    }
+  }
+
+  return widest;
+}
+
 describe('the fabricated glyph recordings', () => {
   const all = recordings();
   const present = all.length ? it : it.skip;
@@ -274,6 +299,71 @@ describe('the fabricated glyph recordings', () => {
 
     expect(seen.size).toBeGreaterThan(200);
     expect(differing).toBeLessThanOrEqual(SLOPES);
+  });
+
+  /* Where the synthesised slant is measured rather than guessed at.
+   *
+   * A cell whose widest inked run is four pixels or more has an edge the scan
+   * converter can find on its own, with no dropout control deciding anything.
+   * Of the slanted Symbol cells in the two instruments, twenty-four are that
+   * wide, and at three tenths every one of them is exact. Every wrong pixel in
+   * either instrument is in a cell three pixels across or narrower.
+   *
+   * That is what pins the constant. Swept over the wide cells alone the minimum
+   * is sharp and it is single: 0.29 costs sixteen pixels, 0.30 costs none, and
+   * 0.31 costs sixteen again. Fitting a slope to the leftmost inked column of
+   * the narrow bars instead gives ranges that do not intersect, which was read
+   * for a while as the lean not being a constant slope at all -- but a bar one
+   * pixel wide is drawn by dropout control, which places its pixel a column to
+   * the left of the run rather than at the edge, so the column being fitted was
+   * not the edge. The instruments were measuring the dropout rule.
+   */
+  const NARROW = 4;
+
+  present('slant a feature wide enough that dropout control decides nothing', async function () {
+    let wide = 0;
+    let differing = 0;
+
+    for (const name of ['symbol-slant', 'symbol-shapes']) {
+      const recording = all.find((entry) => entry.name === name);
+
+      expect(recording).toBeTruthy();
+
+      const manager: any = await prepareFonts();
+      const font: any = new TrueTypeFont(new Uint8Array(readFileSync(recording.file)));
+      const face = font.faceName;
+      const installed = manager._outlines[face];
+
+      manager._outlines[face] = {
+        ...(installed ?? {}),
+        [FontManager.styleKey(font.boldFace, font.italicFace)]: font,
+      };
+
+      try {
+        for (const record of recording.fixture.records) {
+          if (!/^"Symbol",h=\d+,weight=\d+,italic=1,/.test(record.args)) {
+            continue;
+          }
+
+          if (widestRun(record.result) < NARROW) {
+            continue;
+          }
+
+          wide++;
+
+          if (
+            (await replayRecord(record, recording.fixture.display ?? 'vga')).outcome !== 'agreed'
+          ) {
+            differing++;
+          }
+        }
+      } finally {
+        manager._outlines[face] = installed;
+      }
+    }
+
+    expect(wide).toBeGreaterThanOrEqual(24);
+    expect(differing).toBe(0);
   });
 
   const EDGES = 0;

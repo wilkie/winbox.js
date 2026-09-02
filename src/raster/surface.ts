@@ -39,19 +39,22 @@ export class Surface {
    * here claimed it was measured against; a strike leans by its whole overhang
    * and an outline by about a third of its height.
    *
-   * Read off `symbol-slant`, which is the instrument for exactly this: every
-   * Symbol letter replaced by the same upright bar with no program, so what
-   * Windows draws is a rectangle scaled once and the italic cell differs from
-   * the upright one by the slant and nothing else. At three tenths the bar's
-   * lean matches Windows' row for row at twenty-four pixels and half the
-   * fabricated cells come out exactly right; a third matches at twelve instead
-   * and fewer overall.
+   * Read off `symbol-slant` and `symbol-shapes`, which put known shapes in
+   * place of Symbol's letters and record them upright and slanted, so that the
+   * difference between the two cells is the slant and nothing else.
    *
-   * The instrument also says the residual on the *real* Symbol letters is not
-   * this: a plain bar is wrong by about one and a half pixels a cell where a
-   * real letter is wrong by fourteen. The 0.28 that used to be here was fitted
-   * to the letters and was compensating for that other error, which is what a
-   * fitted constant does. See `FONTS.md` section 3.
+   * **Measured on the cells that can measure it.** A shape whose widest inked
+   * run is four pixels or more has an edge the scan converter finds on its own,
+   * with nothing left to dropout control. Twenty-four of the slanted cells are
+   * that wide, and swept over those alone the minimum is sharp and single: 0.29
+   * costs sixteen pixels, three tenths costs none, 0.31 costs sixteen again.
+   *
+   * The narrower cells cannot be read this way, and reading them anyway is what
+   * put 0.28 here once. A bar one pixel wide is drawn by dropout control, which
+   * places its pixel a column to the left of the run rather than at the edge,
+   * so a slope fitted to its leftmost inked column is fitted to the dropout
+   * rule. Every wrong pixel either instrument still has is in a cell three
+   * pixels across or narrower. See `FONTS.md` section 3.
    */
   static SLANT = 0.3;
 

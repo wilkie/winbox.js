@@ -420,12 +420,12 @@ and hinting is worse than not hinting in all three, 167, 185 and 678. There is n
 hybrid to find: the alpha's feet looked like a case for hinting and are one
 letter's worth of coincidence.
 
-The residual is a _sampling tie on a sheared edge_, and the instrument shows it
-in isolation. `symbol-shapes`' slanted bar disagrees on exactly one row of a
-fourteen row cell, where our sheared edge covers three columns and Windows' two
--- the edge passes through a sample point and the two sides answer differently.
-A real letter has many more edges crossing many more rows, which is why it is
-wrong by six pixels a cell where the bar is wrong by one.
+The residual looked like a _sampling tie on a sheared edge_, and the instrument
+shows it in isolation. `symbol-shapes`' slanted bar disagrees on exactly one row
+of a fourteen row cell, where our sheared edge covers three columns and Windows'
+two. Read at the time as the edge passing through a sample point with the two
+sides answering differently; it is a bar one pixel wide, and the paragraphs
+below are what that turned out to mean.
 
 That is the same _kind_ of question `lines` settled for `LineTo`, and it wants
 the same kind of answer: a probe that walks an edge across a sample point rather
@@ -443,18 +443,43 @@ by a third, which is what a synthesised italic leans by, and half by two thirds.
 right, the sampling tie above is not a tie the scan converter breaks differently,
 and whatever is left of the slant is in the shear rather than in the walk.
 
-**And the shear is not `x += y * k` for any constant `k`.** The bar in
-`symbol-slant` is a straight edge whose leftmost inked column is known for every
-row, so the slope can be fitted from Windows' own ink: the widest `k` that ties
-every row of a cell. Fitted per size the ranges do not intersect. Twenty-four
-pixels admits 0.289 to 0.304 and fifteen pixels admits 0.339 to 0.389, and no
-single slope is in both. Rounding the sheared coordinate to whole font units
-changes nothing, which is unsurprising at two thousand units to the em.
+**And the constant is exactly three tenths, on every cell that measures it.**
 
-So the model is wrong in form and not only in its constant, and the 0.30 that
-fits best across all sizes is an average of something that varies with the size.
-That is where this stands: three instruments, two of them exact, and the third
-saying the rule we are looking for is not the shape we assumed.
+It took a wrong turn to see that. Fitting a slope to the leftmost inked column
+of `symbol-slant`'s bar gives, per size, ranges that do not intersect --
+twenty-four pixels admits 0.289 to 0.304 and fifteen admits 0.339 to 0.389 --
+which reads as the lean not being a constant slope at all. It is not. **A bar
+one pixel wide is not drawn by its edges.** It is drawn by dropout control,
+which places its pixel a column to the left of the run rather than at the edge,
+so the column being fitted was never the edge. The instrument was measuring the
+dropout rule and the fit was measuring nothing.
+
+Sorting the slanted cells by how wide their widest inked run is says so
+outright. Of the 264 slanted Symbol cells in the two instruments, the 24 whose
+widest run is four pixels or more are **exact, every one**; every wrong pixel in
+either instrument is in a cell three pixels across or narrower:
+
+| widest run   | cells | cells wrong | pixels wrong |
+| ------------ | ----- | ----------- | ------------ |
+| 1 px         | 44    | 20          | 24           |
+| 2 px         | 76    | 52          | 140          |
+| 3 px         | 48    | 20          | 56           |
+| 4 px or more | 24    | **0**       | **0**        |
+
+`slope-sweep` says the same thing a second way: its parallelograms are wide
+enough that no row of them needs dropout control, and all 264 agree.
+
+Swept over the wide cells alone the minimum is sharp and single -- 0.29 costs
+sixteen pixels, **0.30 costs none**, 0.31 costs sixteen again -- so three tenths
+is not an average of something that varies. It is the number.
+
+**What is left is dropout control on a narrow sheared feature, and nothing
+else.** Windows fires it where we do not: a bar whose upright cell inks rows 3
+to 10 inks exactly those rows slanted too, and its top row comes back two pixels
+wide where every other row is one, while ours loses that row entirely. Across
+both instruments 120 of the 220 wrong pixels are on the first or last inked row
+of the glyph, which two rows out of ten or eighteen have no business holding.
+Slanting never costs Windows a row and sometimes gains it one.
 
 The first cut of the instrument had a fault worth recording, because it is the
 one `setBearing` was written for and its own documentation warns of: the bar's
