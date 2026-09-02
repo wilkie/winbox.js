@@ -226,10 +226,26 @@ pitch font costs 15,000; the other way round costs 350; a request that named no
 pitch at all and got a fixed one costs 1. And italic, underline and strikeout
 mismatches cost 4, 3 and 3, which is to say almost nothing next to the name.
 
-**What this does not yet say is where the stretched candidates come from.** The
-loop scores what is in the font directory, one 46-byte entry at a time, and the
-directory holds the installed strikes. Something puts `13 x 3` in front of it as
-well, and that is the routine still to find.
+**The stretch is not in the scoring loop, and it is not the driver's.**
+
+Both were worth ruling out. GDI does ask the display driver about heights: at
+`2b0a` it calls through a thunk at segment 36 offset `00ae`, which switches to a
+private stack, copies five words of argument -- a font, a device and a height --
+and dispatches through the driver's entry table. If that call answers, its answer
+_is_ the height and GDI does no arithmetic of its own. But VGA's `EnumDFonts` is
+`mov ax,1; retf 0x10`: a stub. The driver has no fonts, so on this device every
+candidate is one of GDI's own raster fonts and that path is never the one taken.
+
+And the loop is not enumerating strikes. What follows it -- reached only once the
+candidate loop has finished and a winner is in hand -- is a search: start from
+`MulDiv(cell, e2, e16)` and step a character height up or down by one until
+`MulDiv(h, e2, e8) + MulDiv(h, e16 - e8, e2)` equals the cell that was asked for,
+stopping the moment it would oscillate between two values. That is the cell to
+character height conversion, and it is applied **to the font already chosen**.
+
+So the scoring picks a font and something downstream decides how many times over
+to draw it. `EngineRealizeFont` at `22b3` is where that has to be, and it is the
+next thing to read.
 
 An earlier reading of this said the height term was a step rather than a
 distance -- nought, 500 or 10,000 -- and that no function of the difference

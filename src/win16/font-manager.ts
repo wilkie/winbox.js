@@ -664,12 +664,14 @@ export class FontManager {
      *
      * Knowing the scoring is not enough to reproduce it, and scoring the
      * candidates *we* enumerate that way is worse than what is here -- 37
-     * heights wrong against 30, over the same 302. The missing half is which
-     * candidates the mapper is scoring: it walks a directory of the installed
-     * strikes, 46 bytes an entry, and something puts the stretched sizes in
-     * front of it as well. Until that routine is read this stands, which is
-     * exact for a face with one strike and wrong at 38 heights for the faces
-     * with several.
+     * heights wrong against 30, over the same 302. The stretch is not in that
+     * loop at all: the loop picks a font, and the height it will be drawn at is
+     * settled afterwards. It is not the display driver's either -- VGA's
+     * `EnumDFonts` is a stub, so it has no fonts to offer. `FONTS.md` section 3
+     * has both, and names where to look next.
+     *
+     * Until that is read this stands, which is exact for a face with one strike
+     * and wrong at 38 heights for the faces with several.
      */
     /* A scalable face has one design and is drawn at whatever size is wanted,
      * so none of the business below -- nearest strike, whole-number stretch,
