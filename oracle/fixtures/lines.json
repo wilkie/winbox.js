@@ -1,0 +1,1502 @@
+{
+  "probe": "lines",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "line",
+      "args": "3,-3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-3,-3",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-3,3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-3,-3",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "3,-2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-3,-2",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffcffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-2,3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-2,-3",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "3,-1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffff3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-3,-1",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-1,3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7ffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-1,-3",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "3,0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-3,0",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "0,3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "0,-3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "3,1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-3,1",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "1,3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffffbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "1,-3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "3,2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff9fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-3,2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffcffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "2,3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "2,-3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "3,3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-3,3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "3,3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "3,-3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "5,-5",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffdfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-5,-5",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-5,5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffdfffffffbfffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-5,-5",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "5,-4",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffcfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-5,-4",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff9fffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-4,5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffdfffffffdfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-4,-5",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffffdfffffffdfffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "5,-3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffff9fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-5,-3",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffffcffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-3,5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffefffffffdfffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-3,-5",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffdfffffffefffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "5,-2",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffcfffffff3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-5,-2",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff9fffffffe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-2,5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7ffffffefffffffefffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-2,-5",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffefffffffeffffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "5,-1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffff1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-5,-1",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffffc7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-1,5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7ffffffefffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-1,-5",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffeffffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "5,0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff07ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-5,0",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "0,5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "0,-5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "5,1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1fffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-5,1",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc7ffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "1,5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7fffffffbfffffffbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "1,-5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffffbfffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "5,2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffffcffffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-5,2",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffff9fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "2,5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffffbfffffffbfffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "2,-5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffbfffffffbfffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "5,3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff9fffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-5,3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffcfffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "3,5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffbfffffffdfffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "3,-5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffdfffffffbfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "5,4",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffcffffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-5,4",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffff9fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "4,5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffdfffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "4,-5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffdfffffffdfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "5,5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffeffffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-5,5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffdfffffffbfffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "5,5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffeffffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "5,-5",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffdfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,-8",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffdfffffffbfffffff7ffffffefffffffdfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,-8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffffdfffffffeffffffff7fffffffbfffffffdfffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffdfffffffbfffffff7ffffffefffffffdfffffffbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,-8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffffdfffffffeffffffff7fffffffbfffffffdfffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,-7",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffdfffffff3ffffffefffffffdfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,-7",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffffdfffffffe7fffffffbfffffffdfffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-7,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffdfffffffbfffffffbfffffff7ffffffefffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-7,-8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffeffffffff7fffffff7fffffffbfffffffdfffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,-6",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffcfffffffbfffffff7ffffffcfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,-6",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9fffffffeffffffff7fffffff9fffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-6,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffefffffffdfffffffbfffffff7fffffff7ffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-6,-8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffeffffffff7fffffffbfffffffdfffffffdfffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,-5",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffcfffffff3ffffffefffffff9fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,-5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9fffffffe7fffffffbfffffffcffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-5,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffefffffffdfffffffdfffffffbfffffff7fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-5,-8",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffffbfffffffbfffffffdfffffffefffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,-4",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffff9ffffffe7ffffff9fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,-4",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffffcffffffff3fffffffcffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-4,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7ffffffefffffffefffffffdfffffffdfffffffbfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-4,-8",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffbfffffffdfffffffdfffffffefffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,-3",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffff1ffffffcfffffff3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,-3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffffc7fffffff9fffffffe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-3,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7ffffffefffffffefffffffefffffffdfffffffdfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-3,-8",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffffdfffffffdfffffffdfffffffefffffffeffffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,-2",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffcffffffc3ffffff3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,-2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9fffffffe1fffffffe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-2,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7ffffffefffffffefffffffefffffffefffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-2,-8",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffdfffffffefffffffefffffffefffffffeffffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,-1",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0ffffff0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,-1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff87fffffff87fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-1,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7fffffff7fffffff7ffffffefffffffefffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-1,-8",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffefffffffefffffffeffffffff7fffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff807fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "0,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "0,-8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff07fffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,1",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff07fffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "1,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7fffffff7fffffff7fffffffbfffffffbfffffffbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "1,-8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffffbfffffffbfffffffbfffffff7fffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1fffffffe1fffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,2",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc7fffffc3ffffffbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "2,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7fffffffbfffffffbfffffffbfffffffbfffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "2,-8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffdfffffffbfffffffbfffffffbfffffffbfffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffffc7fffffff9fffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,3",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffff1ffffffcfffffffbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "3,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffffbfffffffbfffffffbfffffffdfffffffdfffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "3,-8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffdfffffffdfffffffdfffffffbfffffffbfffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,4",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffffcffffffff3fffffffcffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,4",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffff9ffffffe7ffffff9fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "4,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffffbfffffffbfffffffdfffffffdfffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "4,-8",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffefffffffdfffffffdfffffffbfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff9fffffffe7fffffffbfffffffcffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffcfffffff3ffffffefffffff9fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "5,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffbfffffffdfffffffdfffffffeffffffff7fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "5,-8",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7ffffffefffffffefffffffdfffffffbfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,6",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff9fffffffeffffffff7fffffff9fffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,6",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffcfffffffbfffffff7ffffffcfffffffbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "6,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffbfffffffdfffffffeffffffff7fffffff7fffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "6,-8",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffffbfffffff7ffffffefffffffdfffffffdfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,7",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffe7fffffffbfffffffdfffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,7",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffdfffffff3ffffffefffffffdfffffffbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "7,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffefffffffeffffffff7fffffffbfffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "7,-8",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffbfffffff7fffffff7ffffffefffffffdfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffeffffffff7fffffffbfffffffdfffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffdfffffffbfffffff7ffffffefffffffdfffffffbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffeffffffff7fffffffbfffffffdfffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,-8",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffdfffffffbfffffff7ffffffefffffffdfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,-13",
+      "result": "fffffffffffffffffffffffffffffffffffffff7ffffffefffffffdfffffffbfffffff7ffffffefffffffdfffffffbfffffff7ffffffefffffffdfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,-13",
+      "result": "fffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffeffffffff7fffffffbfffffffdfffffffeffffffff7fffffffbfffffffdfffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffdfffffffbfffffff7ffffffefffffffdfffffffbfffffff7ffffffefffffffdfffffffbfffffff7ffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,-13",
+      "result": "fffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffeffffffff7fffffffbfffffffdfffffffeffffffff7fffffffbfffffffdfffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,-12",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffdfffffffbfffffff7ffffffcfffffffbfffffff7ffffffefffffffdfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,-12",
+      "result": "fffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffeffffffff7fffffff9fffffffeffffffff7fffffffbfffffffdfffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-12,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffdfffffffbfffffff7ffffffefffffffdfffffffdfffffffbfffffff7ffffffefffffffdfffffffbffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-12,-13",
+      "result": "fffffffffffffffffffffffffffffffffbfffffffdfffffffeffffffff7fffffffbfffffffdfffffffdfffffffeffffffff7fffffffbfffffffdfffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,-11",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffff9fffffff7ffffffefffffffdfffffffbffffffe7ffffffdfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,-11",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffcffffffff7fffffffbfffffffdfffffffeffffffff3fffffffdfffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-11,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffdfffffffbfffffffbfffffff7ffffffefffffffdfffffffbfffffff7fffffff7ffffffefffffffdffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-11,-13",
+      "result": "fffffffffffffffffffffffffffffffffdfffffffeffffffff7fffffff7fffffffbfffffffdfffffffeffffffff7fffffffbfffffffbfffffffdfffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,-10",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffcfffffffbfffffff7ffffffcfffffffbfffffff7ffffffcfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,-10",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff9fffffffeffffffff7fffffff9fffffffeffffffff7fffffff9fffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-10,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffdfffffffdfffffffbfffffff7ffffffefffffffefffffffdfffffffbfffffff7fffffff7ffffffeffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-10,-13",
+      "result": "fffffffffffffffffffffffffffffffffeffffffff7fffffff7fffffffbfffffffdfffffffefffffffeffffffff7fffffffbfffffffdfffffffdfffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,-9",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffffdfffffff3ffffffefffffffdfffffff3ffffffefffffff9fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,-9",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffffdfffffffe7fffffffbfffffffdfffffffe7fffffffbfffffffcffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-9,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffefffffffdfffffffbfffffffbfffffff7ffffffefffffffdfffffffdfffffffbfffffff7fffffff7fffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-9,-13",
+      "result": "ffffffffffffffffffffffffffffffffff7fffffff7fffffffbfffffffdfffffffdfffffffeffffffff7fffffffbfffffffbfffffffdfffffffefffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,-8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffff9fffffff7ffffffcfffffffbffffffe7ffffff9fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,-8",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffffcffffffff7fffffff9fffffffeffffffff3fffffffcffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffefffffffdfffffffdfffffffbfffffff7fffffff7ffffffefffffffdfffffffdfffffffbfffffffbfffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-8,-13",
+      "result": "ffffffffffffffffffffffffffffffffffbfffffffbfffffffdfffffffdfffffffeffffffff7fffffff7fffffffbfffffffdfffffffdfffffffefffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,-7",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffff9ffffffe7ffffff9ffffffe7ffffff9fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,-7",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffffcffffffff3fffffffcffffffff3fffffffcffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-7,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffefffffffdfffffffdfffffffbfffffffbfffffff7fffffff7ffffffefffffffefffffffdfffffffdfffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-7,-13",
+      "result": "ffffffffffffffffffffffffffffffffffdfffffffdfffffffefffffffeffffffff7fffffff7fffffffbfffffffbfffffffdfffffffdfffffffefffffffeffffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,-6",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffcfffffff3ffffffcfffffff3ffffffcfffffff3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,-6",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff9fffffffe7fffffff9fffffffe7fffffff9fffffffe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-6,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7ffffffefffffffefffffffdfffffffdfffffffbfffffffbfffffff7fffffff7ffffffefffffffefffffffdfffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-6,-13",
+      "result": "ffffffffffffffffffffffffffffffffffdfffffffefffffffeffffffff7fffffff7fffffffbfffffffbfffffffdfffffffdfffffffefffffffeffffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,-5",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffcffffffe3ffffff1ffffffcfffffff3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,-5",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff9fffffffe3fffffffc7fffffff9fffffffe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-5,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7ffffffefffffffefffffffdfffffffdfffffffdfffffffbfffffffbfffffffbfffffff7fffffff7ffffffefffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-5,-13",
+      "result": "ffffffffffffffffffffffffffffffffffeffffffff7fffffff7fffffffbfffffffbfffffffbfffffffdfffffffdfffffffdfffffffefffffffeffffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,-4",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffff8ffffff87fffffc7ffffff3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,-4",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff8ffffffff0ffffffff1fffffffe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-4,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7ffffffefffffffefffffffefffffffdfffffffdfffffffdfffffffdfffffffbfffffffbfffffffbfffffff7ffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-4,-13",
+      "result": "fffffffffffffffffffffffffffffffffff7fffffffbfffffffbfffffffbfffffffdfffffffdfffffffdfffffffdfffffffefffffffefffffffeffffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,-3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7fffffe1fffffe1ffffff1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,-3",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffffc3fffffffc3fffffffc7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-3,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7ffffffefffffffefffffffefffffffefffffffdfffffffdfffffffdfffffffdfffffffbfffffffbffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-3,-13",
+      "result": "fffffffffffffffffffffffffffffffffffbfffffffbfffffffdfffffffdfffffffdfffffffdfffffffefffffffefffffffefffffffeffffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,-2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc7fffff03fffff0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,-2",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1fffffffe07fffffff87fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-2,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7fffffff7ffffffefffffffefffffffefffffffefffffffefffffffefffffffdfffffffdfffffffdffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-2,-13",
+      "result": "fffffffffffffffffffffffffffffffffffdfffffffdfffffffdfffffffefffffffefffffffefffffffefffffffefffffffeffffffff7fffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,-1",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe07ffff01ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,-1",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff03fffffffc07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-1,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7ffffffefffffffefffffffefffffffefffffffefffffffeffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-1,-13",
+      "result": "fffffffffffffffffffffffffffffffffffefffffffefffffffefffffffefffffffefffffffeffffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,0",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "0,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "0,-13",
+      "result": "ffffffffffffffffffffffffffffffffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01fffffffe07ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc07ffff03fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "1,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "1,-13",
+      "result": "ffffffffffffffffffffffffffffffffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0ffffffff03fffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,2",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff87ffffe07fffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "2,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7fffffff7fffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffdfffffffdfffffffdfffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "2,-13",
+      "result": "ffffffffffffffffffffffffffffffffffffdfffffffdfffffffdfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffff7fffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1fffffffe1fffffffe1fffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,3",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc7fffffc3fffffc3ffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "3,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7fffffffbfffffffbfffffffbfffffffbfffffffdfffffffdfffffffdfffffffdfffffffefffffffefffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "3,-13",
+      "result": "ffffffffffffffffffffffffffffffffffffefffffffefffffffdfffffffdfffffffdfffffffdfffffffbfffffffbfffffffbfffffffbfffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,4",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffffc7fffffff87fffffff8ffffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,4",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffff1ffffff0ffffff8fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "4,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffffbfffffffbfffffffbfffffffdfffffffdfffffffdfffffffdfffffffefffffffefffffffeffffffff7ffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "4,-13",
+      "result": "fffffffffffffffffffffffffffffffffffff7ffffffefffffffefffffffefffffffdfffffffdfffffffdfffffffdfffffffbfffffffbfffffffbfffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffffcffffffff1fffffffe3fffffffcffffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,5",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffff9ffffffc7fffffe3ffffff9fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "5,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffffbfffffffbfffffffdfffffffdfffffffdfffffffefffffffefffffffeffffffff7fffffff7fffffffbffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "5,-13",
+      "result": "fffffffffffffffffffffffffffffffffffffbfffffff7fffffff7ffffffefffffffefffffffefffffffdfffffffdfffffffdfffffffbfffffffbfffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,6",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffffcffffffff3fffffffcffffffff3fffffffcffffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,6",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffff9ffffffe7ffffff9ffffffe7ffffff9fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "6,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffffbfffffffbfffffffdfffffffdfffffffefffffffeffffffff7fffffff7fffffffbfffffffbfffffffdffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "6,-13",
+      "result": "fffffffffffffffffffffffffffffffffffffdfffffffbfffffffbfffffff7fffffff7ffffffefffffffefffffffdfffffffdfffffffbfffffffbfffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,7",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff9fffffffe7fffffff9fffffffe7fffffff9fffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,7",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffcfffffff3ffffffcfffffff3ffffffcfffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "7,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffbfffffffdfffffffdfffffffefffffffeffffffff7fffffff7fffffffbfffffffbfffffffdfffffffdffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "7,-13",
+      "result": "fffffffffffffffffffffffffffffffffffffdfffffffdfffffffbfffffffbfffffff7fffffff7ffffffefffffffefffffffdfffffffdfffffffbfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff9fffffffe7fffffffbfffffffcffffffff7fffffff9fffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,8",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffcfffffff3ffffffefffffff9fffffff7ffffffcfffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffbfffffffdfffffffdfffffffeffffffff7fffffff7fffffffbfffffffdfffffffdfffffffefffffffeffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "8,-13",
+      "result": "fffffffffffffffffffffffffffffffffffffefffffffefffffffdfffffffdfffffffbfffffff7fffffff7ffffffefffffffdfffffffdfffffffbfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,9",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff9fffffffeffffffff3fffffffdfffffffeffffffff3fffffffdfffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,9",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffcfffffffbffffffe7ffffffdfffffffbffffffe7ffffffdfffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "9,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffbfffffffdfffffffefffffffeffffffff7fffffffbfffffffdfffffffdfffffffeffffffff7fffffff7fffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "9,-13",
+      "result": "ffffffffffffffffffffffffffffffffffffff7fffffff7ffffffefffffffdfffffffdfffffffbfffffff7ffffffefffffffefffffffdfffffffbfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,10",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffcffffffff7fffffffbfffffffcffffffff7fffffffbfffffffcffffffff7ffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,10",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffff9fffffff7ffffffefffffff9fffffff7ffffffefffffff9fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "10,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffdfffffffeffffffff7fffffffbfffffffbfffffffdfffffffeffffffff7fffffff7fffffffbfffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "10,-13",
+      "result": "ffffffffffffffffffffffffffffffffffffffbfffffff7fffffff7ffffffefffffffdfffffffbfffffffbfffffff7ffffffefffffffdfffffffdfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,11",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffe7fffffffbfffffffdfffffffeffffffff7fffffff9fffffffeffffffff7ffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,11",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffdfffffff3ffffffefffffffdfffffffbfffffff7ffffffcfffffffbfffffff7ffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "11,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffefffffffeffffffff7fffffffbfffffffdfffffffeffffffff7fffffff7fffffffbfffffffdfffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "11,-13",
+      "result": "ffffffffffffffffffffffffffffffffffffffdfffffffbfffffff7fffffff7ffffffefffffffdfffffffbfffffff7ffffffefffffffefffffffdfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,12",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffeffffffff7fffffffbfffffffcffffffff7fffffffbfffffffdfffffffeffffffff7ffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,12",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffdfffffffbfffffff7ffffffefffffff9fffffff7ffffffefffffffdfffffffbfffffff7ffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "12,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffeffffffff7fffffffbfffffffdfffffffdfffffffeffffffff7fffffffbfffffffdfffffffefffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "12,-13",
+      "result": "ffffffffffffffffffffffffffffffffffffffefffffffdfffffffbfffffff7ffffffefffffffdfffffffdfffffffbfffffff7ffffffefffffffdfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffeffffffff7fffffffbfffffffdfffffffeffffffff7fffffffbfffffffdfffffffeffffffff7ffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "-13,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffefffffffdfffffffbfffffff7ffffffefffffffdfffffffbfffffff7ffffffefffffffdfffffffbfffffff7ffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffffbfffffffdfffffffeffffffff7fffffffbfffffffdfffffffeffffffff7fffffffbfffffffdfffffffeffffffff7ffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    },
+    {
+      "function": "line",
+      "args": "13,-13",
+      "result": "fffffffffffffffffffffffffffffffffffffff7ffffffefffffffdfffffffbfffffff7ffffffefffffffdfffffffbfffffff7ffffffefffffffdfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "a pen one pixel wide, from the middle of the cell outward"
+    }
+  ]
+}

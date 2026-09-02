@@ -546,11 +546,23 @@ carried across: a slanted plotter font is recorded as overhanging by half its
 cell where a slanted strike overhangs by half its cell less one. Roman slanted
 goes from none of 84 to 10, and from 1,925 wrong pixels to 679.
 
-What is left is line rasterisation. Roman's `g` at forty pixels differs on two
-rows out of eighteen, by one pixel each: we ink a column GDI does not on a
-near-vertical stem, and choose the other side of a tie on a diagonal. That is
-Bresenham's tie-breaking rather than anything about fonts, and the plotter fonts
-are the only thing in the corpus that measures it.
+What was left after that was line rasterisation rather than anything about
+fonts, and asking through a font was asking badly: the endpoints come out of a
+design scaled by a ratio, so a disagreement could be the scaling as easily as
+the line. So a probe was written for lines themselves -- a pen a pixel wide, two
+endpoints in whole pixels, and the ink -- and 248 of them recorded, a fan of
+four rings around the middle of a cell.
+
+**Every tie rounds the minor coordinate down, except on a steep line whose x and
+y run in opposite directions, where it rounds up.** A tie is a line whose span
+is even, where the exact position falls halfway between two pixels. Six of the
+eight quadrant-and-orientation cases say down and two say up, each settled by
+about thirty lines. It is the difference between `(16,16)-(17,24)`, which holds
+x at 16 through the halfway row, and `(16,16)-(17,8)`, which does not; the
+exception is odd and is left as measured.
+
+That is `lines`, a new fixture, at 248 of 248 -- and it takes the plotter fonts
+from 153 of 420 to 263 without touching anything about fonts at all.
 
 **Every vertical measure is the design's, scaled and rounded on its own.** The
 height is exactly what was asked for; the ascent, descent and both leadings are

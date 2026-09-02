@@ -418,6 +418,28 @@ class Context {
    * darker than halfway counts as ink, which is the only judgement being made
    * -- the probe's bitmap had no greys to lose.
    */
+  /**
+   * A line into the same thirty-two square cell the glyph probe uses.
+   *
+   * From the middle of the cell to a point given as an offset, which is how
+   * the probe asks: nothing about fonts, one pen a pixel wide, and the ink.
+   */
+  drawLine(dx: number, dy: number) {
+    const surface: any = Surface.offscreen(32, 32);
+
+    surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
+    surface.fillRect(0, 0, 32, 32);
+
+    surface.context.strokeStyle = 'black';
+    surface.context.beginPath();
+    surface.context.excludeLast = true;
+    surface.context.moveTo(16, 16);
+    surface.context.lineTo(16 + dx, 16 + dy);
+    surface.context.stroke();
+
+    return this.readCell(surface);
+  }
+
   drawGlyph(font: any, character: string) {
     const surface: any = Surface.offscreen(32, 32);
 
@@ -429,6 +451,11 @@ class Context {
 
     surface.fillText(2, 0, character);
 
+    return this.readCell(surface);
+  }
+
+  /** The cell as the probes write it: one bit a pixel, white set. */
+  readCell(surface: any) {
     const pixels = surface.context.pixels;
 
     let hex = '';
@@ -1254,6 +1281,11 @@ const ADAPTERS: Record<
 
     return context.drawGlyph(font, character);
   },
+
+  /* One line, from the middle of the cell to an offset given as two numbers. */
+  line(context, args) {
+    return context.drawLine(Number(args[0]), Number(args[1]));
+  },
 };
 
 /** Thrown by an adapter for a function we have not implemented at all. */
@@ -1293,7 +1325,7 @@ export class Unimplemented extends Error {}
  */
 export const KNOWN_GAPS: Record<string, string> = {
   glyph:
-    'the three plotter fonts, 267 cells of 420 where a line chooses the other side of a tie from GDI, and Symbol in the styles it has no file for (96)',
+    'the three plotter fonts, 157 cells of 420, and Symbol in the styles it has no file for (96)',
   'CreateFont heights':
     'one: Symbol slanted at twelve pixels, which Windows answers a cell shorter',
   'CreateFont extent':

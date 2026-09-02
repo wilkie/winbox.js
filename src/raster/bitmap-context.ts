@@ -179,52 +179,65 @@ export class BitmapContext {
   /**
    * Draws the path as one-pixel lines.
    *
-   * Bresenham, because a display driver of this era drew lines by choosing
-   * pixels rather than by sampling a mathematical line, and the difference
-   * shows at the ends.
+   * Not Bresenham's error term but the value it approximates, worked out per
+   * step in integers: the minor coordinate at step `k` of `n` is `minor * k /
+   * n`, rounded. Which is the same line until it lands exactly between two
+   * pixels, and GDI has a rule for that which an error term does not express.
+   *
+   * **Recorded**, by drawing 248 lines from the middle of a cell to every
+   * point on four rings around it and reading the ink back. Every tie -- every
+   * line whose span is even -- rounds the minor coordinate *down*, except on a
+   * steep line whose x and y run in opposite directions, where it rounds up.
+   * Six of the eight quadrant-and-orientation cases say down and two say up,
+   * and each is settled by about thirty lines, so this is a reading rather
+   * than a fit.
+   *
+   * The exception is odd and is left as it is measured. It is the difference
+   * between `(16,16)-(17,24)`, which holds x at 16 through the halfway row,
+   * and `(16,16)-(17,8)`, which does not.
+   *
+   * A line also does not draw the pixel it stops on -- GDI's rule for `LineTo`
+   * and `Polyline` -- which callers ask for with `excludeLast`.
    */
   stroke() {
     const colour = BitmapContext.toRGBA(this.strokeStyle);
 
-    /* Callers offset by half a pixel, which on a canvas means the centre of a
-     * pixel rather than the seam between two. Flooring lands on the pixel that
-     * was meant; rounding lands on the next one along and shifts the whole
-     * line by one.
-     */
     for (let index = 1; index < this._path.length; index++) {
-      let [x, y] = this._path[index - 1].map(Math.floor);
+      const [fromX, fromY] = this._path[index - 1].map(Math.floor);
       const [toX, toY] = this._path[index].map(Math.floor);
 
-      const spanX = Math.abs(toX - x);
-      const spanY = -Math.abs(toY - y);
+      const dx = toX - fromX;
+      const dy = toY - fromY;
 
-      const stepX = x < toX ? 1 : -1;
-      const stepY = y < toY ? 1 : -1;
-
-      let error = spanX + spanY;
+      const acrossX = Math.abs(dx) >= Math.abs(dy);
+      const steps = acrossX ? Math.abs(dx) : Math.abs(dy);
 
       const last = index === this._path.length - 1;
+      const stop = last && this.excludeLast ? steps : steps + 1;
 
-      for (;;) {
-        if (!(last && this.excludeLast && x === toX && y === toY)) {
-          this.setPixel(this.shear ? x + this.shear(y) : x, y, colour);
+      if (steps === 0) {
+        if (stop > 0) {
+          this.setPixel(this.shear ? fromX + this.shear(fromY) : fromX, fromY, colour);
         }
 
-        if (x === toX && y === toY) {
-          break;
-        }
+        continue;
+      }
 
-        const doubled = 2 * error;
+      const major = (acrossX ? dx : dy) > 0 ? 1 : -1;
+      const minor = acrossX ? dy : dx;
 
-        if (doubled >= spanY) {
-          error += spanY;
-          x += stepX;
-        }
+      /* Up on a tie only where the line is steep and its two axes disagree in
+       * direction; down everywhere else.
+       */
+      const up = !acrossX && dx * dy < 0 ? 0 : 1;
 
-        if (doubled <= spanX) {
-          error += spanX;
-          y += stepY;
-        }
+      for (let step = 0; step < stop; step++) {
+        const offset = Math.floor((2 * minor * step + steps - up) / (2 * steps));
+
+        const x = acrossX ? fromX + major * step : fromX + offset;
+        const y = acrossX ? fromY + offset : fromY + major * step;
+
+        this.setPixel(this.shear ? x + this.shear(y) : x, y, colour);
       }
     }
   }
