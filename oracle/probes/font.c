@@ -124,6 +124,34 @@ static void probeFont(int height, int width, int weight, BYTE italic,
  * interpolated one are both worth having, and which is which comes out of the
  * heights that come back.
  */
+/*
+ * One face at every height, to pin the whole-number stretch.
+ *
+ * A bitmap face has a handful of strikes and is asked for every size, so most
+ * sizes are answered by drawing a smaller strike a whole number of times over.
+ * Which strike and how many times is the question, and the sparse sweep cannot
+ * answer it: it jumps from twenty-four to twenty-nine to thirty-seven, and
+ * every threshold that matters falls inside one of those gaps.
+ *
+ * Fixedsys and System have exactly one strike each, which makes them the clean
+ * case -- the strike is not in question, only the multiple. Small Fonts has six
+ * and is where the rule is currently wrong. Courier has three and is currently
+ * right, so it is the control: a change that fixes the first three and breaks
+ * this one has found the wrong rule.
+ */
+static void probeDense(LPCSTR face)
+{
+    int height;
+
+    for (height = 1; height <= 40; height++) {
+        probeFont(height, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, face);
+    }
+
+    for (height = 42; height <= 120; height += 3) {
+        probeFont(height, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, face);
+    }
+}
+
 static void probeStyles(LPCSTR face)
 {
     /* The small end is here because the glyph probe draws at it. Whether a
@@ -375,6 +403,11 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeStyles("Symbol");
     probeStyles("Fixedsys");
     probeStyles("System");
+
+    probeDense("Fixedsys");
+    probeDense("System");
+    probeDense("Small Fonts");
+    probeDense("Courier");
 
     /* A face that is already bold in the file, so a request for bold has
      * nothing to synthesise, and one that is fixed pitch.

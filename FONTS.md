@@ -150,16 +150,45 @@ by `OS/2.fsSelection`. **Derived.**
 
 ### Choosing a size
 
-**The largest obtainable size that does not exceed the request**, not the
-nearest. Courier is installed at cells of 13, 16 and 20; asked for 24 it answers
-20, not the 26 it could make by doubling the 13, though 26 is closer. Asked for
-29 it does double the 13, because 26 fits underneath and beats 20. **Recorded.**
+**Each strike answers for itself how many times over it may be drawn**, and the
+answer is `floor((height + cell / 4) / cell)`, never more than eight. A quarter
+of the strike's own cell is added before the division, so the step to the next
+multiple happens a little before the multiple is reached -- which is why a
+request can come back _taller_ than it asked for. Twenty-eight pixels of System
+is answered with thirty-two.
 
-**A strike may be drawn a whole number of times over, up to five.** MS Serif
-asked for a hundred pixels answers ninety-five -- its nineteen pixel strike five
-times -- and not the exact hundred its ten pixel strike would give at ten times.
-**Recorded**, and the cap of five is the smallest consistent with every
-observation; nothing proves it is not six with another constraint doing the work.
+**Recorded** on the two faces that hold exactly one strike each, so that nothing
+about choosing between strikes can be confounded with it, at every height from
+one to a hundred and twenty. Fixedsys is fifteen rows and steps at 27, 42, 57,
+72, 87, 102 and 117 -- `15m - 3` every time. System is sixteen and steps at 28,
+44, 60, 76, 92 and 108 -- `16m - 4`. Three and four are a quarter of fifteen and
+of sixteen. Fixedsys reaching exactly `15 x 8` at a hundred and twenty and going
+no further is what pins the cap at eight.
+
+**Sideways the strike is drawn at most five times over**, however many times it
+is drawn upward. The two multiples are the same until the fifth and then part.
+Courier asked for ninety-six answers a cell of 96 -- sixteen rows six times --
+with an average width of 45, which is its own nine _five_ times. Small Fonts
+asked for eighty-seven answers a cell of 88, eleven rows eight times, with an
+average of 25: five fives. **Recorded.**
+
+**Which strike is stretched, when a face has several, is open.** The rule above
+makes Fixedsys and System exact at all 69 heights each and MS Sans Serif exact,
+and leaves Courier wrong at 8 heights, MS Serif at 3 and Small Fonts at 27.
+
+What is ruled out. It is not "the largest that does not overshoot": Courier
+asked for 38 answers 39, its thirteen row strike three times over, when 32 was
+available and fits. It is not "the nearest": the same face asked for 25 answers
+20 and not the 26 that is a pixel away. It is not a two-sided linear penalty on
+the difference, with or without a term for the stretch itself -- swept over
+every ratio up to 6:15 and every stretch weight up to 24, the best fit still
+misses 23 of 302 heights. Small Fonts is where it is worst, and the shape of the
+error is that the _small_ strikes get stretched further than Windows will
+stretch them: we answer 15 for a request of 15, its three row strike five times,
+where Windows answers 12.
+
+This is the font mapper's own penalty function, and it should be read out of
+GDI rather than fitted from outside.
 
 **A height is three different questions depending on its sign.** Positive is the
 cell including its leading; negative is the characters within it; zero is the

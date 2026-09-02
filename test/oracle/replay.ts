@@ -1274,9 +1274,9 @@ export const KNOWN_GAPS: Record<string, string> = {
   glyph:
     'Symbol, which the mapper answers with the TrueType face and we answer with the strike (216 cells), and Small Fonts above its largest strike (36)',
   'CreateFont heights':
-    'Symbol (30 records), and the whole-number stretch above the largest strike for Small Fonts, Fixedsys and System (21)',
-  'CreateFont widths': 'the same, at 30 and 15',
-  'CreateFont extent': 'the same, at 30 and 21',
+    'Symbol (30 records), and the choice between strikes for Small Fonts (27), Courier (8) and MS Serif (3)',
+  'CreateFont widths': 'the same, at 30 and 38',
+  'CreateFont extent': 'the same, at 30 and 38',
   'CreateFont style': 'Symbol: `tmPitchAndFamily` says TrueType and we say a strike (30 records)',
 };
 

@@ -103,7 +103,10 @@ export class FontManager {
   static OEM_CHARSET = 0xff;
 
   /** How many times over a strike may be drawn to reach a size. */
-  static MAX_STRETCH = 5;
+  static MAX_STRETCH = 8;
+
+  /** And the most it is drawn sideways, which is not the same number. */
+  static MAX_WIDTH_STRETCH = 5;
 
   /**
    * The cell height at and above which an outline always wins.
@@ -622,13 +625,14 @@ export class FontManager {
      */
     const target = height ? Math.abs(height) : Math.round((FontManager.DEFAULT_POINTS * 96) / 72);
 
-    /* The largest size that does not overshoot, rather than the nearest one.
+    /* Each strike answers for itself how many times over it may be drawn, and
+     * then the largest of those that fits is taken.
      *
-     * These are not the same rule and the difference is visible: Courier is
-     * installed at cells of 13, 16 and 20, and asked for 24 Windows answers 20
-     * -- not the 26 it could have made by doubling the 13, which is closer.
-     * Overshooting is what it will not do. Asked for 29 it does double the 13,
-     * because 26 fits under 29 and is larger than 20.
+     * The second half of that is not the whole rule and is known not to be:
+     * Courier asked for 38 pixels answers 39, its thirteen row strike three
+     * times over, when 32 was available and fits. See `FONTS.md` section 3 for
+     * what else is ruled out and for the eleven faces-worth of heights that say
+     * so. What is settled is the first half, which the loop below does.
      */
     /* A scalable face has one design and is drawn at whatever size is wanted,
      * so none of the business below -- nearest strike, whole-number stretch,
@@ -703,27 +707,35 @@ export class FontManager {
        * pixel strike would give at ten times, which is the answer every other
        * rule here would have chosen.
        */
-      for (let scale = 1; scale <= FontManager.MAX_STRETCH; scale++) {
-        const size = measured * scale;
+      /* How many times over *this* strike may be drawn, which each one answers
+       * for itself rather than the family answering once.
+       *
+       * A quarter of the strike's own height is added before the division, so
+       * the step up to the next multiple happens a little before the multiple
+       * is reached rather than exactly at it -- which is why a request can come
+       * back taller than it asked for. **Recorded** on the two faces that have
+       * one strike each and so cannot be confounded by the choice between
+       * strikes: Fixedsys, fifteen rows, steps at 27, 42, 57, 72, 87, 102 and
+       * 117, which is `15m - 3` every time; System, sixteen rows, steps at 28,
+       * 44, 60, 76, 92 and 108, which is `16m - 4`. Both are exact at every
+       * height from one to a hundred and twenty.
+       */
+      const top = Math.max(
+        1,
+        Math.min(FontManager.MAX_STRETCH, Math.floor((target + (measured >> 2)) / measured))
+      );
 
-        if (
-          !smallest ||
-          size < smallest.size ||
-          (size === smallest.size && scale < smallest.scale)
-        ) {
-          smallest = { entry, scale, size };
-        }
+      const size = measured * top;
 
-        if (
-          size <= target &&
-          (!best || size > best.size || (size === best.size && scale < best.scale))
-        ) {
-          best = { entry, scale, size };
-        }
+      if (!smallest || size < smallest.size || (size === smallest.size && top < smallest.scale)) {
+        smallest = { entry, scale: top, size };
+      }
 
-        if (size > target) {
-          break;
-        }
+      if (
+        size <= target &&
+        (!best || size > best.size || (size === best.size && top < best.scale))
+      ) {
+        best = { entry, scale: top, size };
       }
     }
 
@@ -733,10 +745,18 @@ export class FontManager {
      */
     best = best ?? smallest;
 
-    /* An average width asked for as well as a height stretches the chosen
-     * strike sideways, to the nearest whole multiple of its own average.
+    /* Sideways the strike is drawn at most five times over, however many times
+     * it is drawn upward.
+     *
+     * The two multiples are the same until the fifth, and then they part.
+     * Courier asked for ninety-six pixels answers a cell of 96 -- its sixteen
+     * row strike six times -- with an average width of 45, which is its own
+     * nine *five* times and not six. Small Fonts asked for eighty-seven answers
+     * a cell of 88, its eleven row strike eight times over, with an average of
+     * 25: five fives. **Recorded**, across a sweep of every height from one to
+     * a hundred and twenty.
      */
-    let horizontal = best.scale;
+    let horizontal = Math.min(best.scale, FontManager.MAX_WIDTH_STRETCH);
 
     if (width > 0) {
       const average = best.entry.header.dfAvgWidth;
