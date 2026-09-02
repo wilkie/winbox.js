@@ -574,14 +574,64 @@ placement, not crossings. Only the 12 are the two-pixels-for-one case, and they
 are one configuration seen twelve times, since every character of `symbol-slant`
 is the same bar at a given size.
 
-**That one is genuinely unaccountable, and worth stating as such.** Windows inks
-columns 4 and 5 on the top row. Column 5 cannot come from the run: reaching the
+### The placement is not a slope error either
+
+The 108 are worth one more pass, because there is an obvious suspect and it can
+be cleared.
+
+A one-pixel bar's ink ladder is a staircase: the run steps left one column every
+`1/s` rows, so where the steps fall is a sensitive read on the slope. At twenty
+pixels Windows' left edge steps every three rows exactly, at rows 7, 10, 13 and
+16, and ours steps at 6, 10, 13, 16 -- one row early, once. Its right edge steps
+at 7, 11, 14, 17 against our 7, 10, 14, 17 -- again one row early, once. Two
+rows out of fourteen, both a single row of phase.
+
+**Sweeping the slope on that one cell reproduces Windows exactly at 0.310 and at
+0.315**, all fourteen rows, and at no other value tried between 0.285 and 0.345.
+Which looks like an answer until the rest of the sweep comes in. With the stub
+check off, over the slanted cells of each instrument:
+
+| slant | `symbol-slant` | `symbol-shapes` | wide cells wrong |
+| ----- | -------------- | --------------- | ---------------- |
+| 0.290 | 168 px         | 156 px          | 8                |
+| 0.295 | 156 px         | 136 px          | 8                |
+| 0.300 | 96 px          | 96 px           | **0**            |
+| 0.305 | 120 px         | 104 px          | 8                |
+| 0.310 | **84 px**      | **84 px**       | 8                |
+| 0.315 | 96 px          | 96 px           | 8                |
+| 0.320 | 96 px          | 116 px          | 8                |
+| 0.330 | 96 px          | 160 px          | 8                |
+
+0.310 is the best value on wrong pixels and it breaks eight of the cells that
+measure the slope with nothing left to dropout control, where 0.300 breaks none.
+A slope that fits the hairlines better by fitting the unambiguous shapes worse is
+not a slope correction; it is a slope compensating for something else. **So the
+placement residual is not the shear.**
+
+Nor is it one thing. At fifteen pixels no slope reproduces the bar at all: its
+top row wants 0.320 or more, its rescue row wants 0.310 or more, and its bottom
+row is `{2,3}` where ours is `{3}` at every slope in the sweep. Three sizes, three
+different stories.
+
+**And the leftovers sit on a corner.** Windows inks columns 4 and 5 on the top row
+at twelve pixels. Column 5 cannot come from the run: reaching the
 sample line at 5.5 needs the bar's right edge 0.268 px further out on that row,
 a slope of 0.349, and 0.31 already costs sixteen pixels on the cells that measure
 the slope. It cannot come from the vertical pass either -- the line at 5.5 is
 never covered, the bar's rightmost point being 5.428, so that column holds no
 crossings to rescue. And the horizontal rescue places one pixel, at 4. No shear
 value and neither pass in the source puts ink there.
+
+What column 5 _is_, at that row, is the pixel holding the parallelogram's
+top-right corner: `(5.428, 2.848)` rounds to column 5, row 3. The same holds for
+the fifteen pixel bar's stray bottom pixel -- the bottom-left corner
+`(2.469, 14.344)` rounds to column 2, and clamped into the glyph's rows that is
+row 13, which is exactly where the extra `2` appears. It is not a general rule --
+the twenty pixel bar's top-right corner at column 8 is not inked -- so it is a
+lead rather than an answer, and the place to point the next instrument is the
+endpoint topology at a corner where a horizontal edge meets an oblique one. Ours
+fires only for a vertex lying exactly on a scanline, and a sheared bar has no
+such vertex.
 
 **In sum, what is left is dropout control on a narrow sheared feature, and
 nothing else.** Windows fires it where we do not: a bar whose upright cell inks rows 3

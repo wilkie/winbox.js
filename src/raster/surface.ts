@@ -49,6 +49,14 @@ export class Surface {
    * that wide, and swept over those alone the minimum is sharp and single: 0.29
    * costs sixteen pixels, three tenths costs none, 0.31 costs sixteen again.
    *
+   * **Three tenths and not 0.31, which the narrow cells prefer.** With the stub
+   * check off, 0.310 is the best value on wrong pixels over both instruments --
+   * 84 against 96 -- and it reproduces the twenty pixel bar's ladder exactly,
+   * all fourteen rows, where three tenths gets two of them a row early. It also
+   * breaks eight of the wide cells, which three tenths does not. A slope that
+   * fits the hairlines by fitting the unambiguous shapes worse is compensating
+   * for something rather than correcting anything, so it is not taken.
+   *
    * The narrower cells cannot be read this way, and reading them anyway is what
    * put 0.28 here once. A bar one pixel wide is drawn by dropout control, which
    * places its pixel a column to the left of the run rather than at the edge,
