@@ -136,6 +136,15 @@ export class FontManager {
   static STRETCH_PENALTY = 20 * 1024;
   static HEIGHT_PENALTY = 150 * 1024;
   static TALLER_PENALTY = 600 * 1024;
+  static ASPECT_PENALTY = 30 * 1024;
+
+  /** A square device pixel, as the mapper counts aspect: hundredths. */
+  static SQUARE = 100;
+
+  /** `MulDiv`, which rounds to nearest, as GDI's does at `seg1:41b0`. */
+  static muldiv(a, b, c) {
+    return Math.floor((a * b + (c >> 1)) / c);
+  }
 
   /**
    * The cell height at and above which an outline always wins.
@@ -790,6 +799,43 @@ export class FontManager {
         size > target
           ? FontManager.HEIGHT_PENALTY * (size - target) + FontManager.TALLER_PENALTY
           : FontManager.HEIGHT_PENALTY * (target - size);
+
+      /* And the aspect, which is what stops a small strike being stretched a
+       * long way.
+       *
+       * A request naming no width is answered by comparing the shape the strike
+       * would come out at against the shape of a device pixel. Stretching a
+       * strike six times upward and only five across -- five being the cap, at
+       * `seg3:1d8c` -- leaves it seventeen hundredths off square, and that is
+       * charged 30 a hundredth. The taller the stretch the worse it gets, which
+       * is the term that decides between a small strike drawn many times and a
+       * larger one drawn few.
+       *
+       * The device's own aspect is a hundred here, because a VGA pixel is
+       * square; the general form is `MulDiv(100, aspectX, aspectY)`.
+       */
+      const shape = FontManager.muldiv(
+        100,
+        entry.header.dfHorizRes || 1,
+        entry.header.dfVertRes || 1
+      );
+
+      const perTime = FontManager.muldiv(shape, 1, times);
+
+      let across = 1;
+
+      if (stretching && perTime + (perTime >> 1) < FontManager.SQUARE) {
+        across = Math.min(
+          FontManager.MAX_WIDTH_STRETCH,
+          FontManager.muldiv(FontManager.SQUARE, 1, perTime)
+        );
+
+        cost = (cost + FontManager.STRETCH_PENALTY * across) | (across - 1);
+      }
+
+      cost +=
+        FontManager.ASPECT_PENALTY *
+        Math.abs(FontManager.SQUARE - FontManager.muldiv(shape, across, times));
 
       if (!smallest || size < smallest.size) {
         smallest = { entry, scale: times, size };
