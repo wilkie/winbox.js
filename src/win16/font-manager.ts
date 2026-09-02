@@ -137,6 +137,7 @@ export class FontManager {
   static HEIGHT_PENALTY = 150 * 1024;
   static TALLER_PENALTY = 600 * 1024;
   static ASPECT_PENALTY = 30 * 1024;
+  static RATIO_PENALTY = 4 * 1024;
 
   /** A square device pixel, as the mapper counts aspect: hundredths. */
   static SQUARE = 100;
@@ -836,6 +837,22 @@ export class FontManager {
       cost +=
         FontManager.ASPECT_PENALTY *
         Math.abs(FontManager.SQUARE - FontManager.muldiv(shape, across, times));
+
+      /* And last, the two multiples against each other.
+       *
+       * Not how far off square the letter comes out, which is the term above,
+       * but how far the one stretch is from the other: the larger over the
+       * smaller, in hundredths, at 4 a hundredth. Six times up against five
+       * across is 120, so 480 -- which is what settles a strike drawn six times
+       * against one drawn five, and it was the last thing missing.
+       */
+      if (times !== across) {
+        cost +=
+          FontManager.RATIO_PENALTY *
+          (times > across
+            ? FontManager.muldiv(FontManager.SQUARE, times, across)
+            : FontManager.muldiv(FontManager.SQUARE, across, times));
+      }
 
       if (!smallest || size < smallest.size) {
         smallest = { entry, scale: times, size };

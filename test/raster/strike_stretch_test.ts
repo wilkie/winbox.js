@@ -18,9 +18,11 @@
  * can come back *taller* than it asked for: twenty-eight pixels of System is
  * answered with thirty-two.
  *
- * That is the whole of what is settled. The choice *between* strikes is not:
- * see `FONTS.md` section 3 for what Courier and Small Fonts still do that no
- * rule tried here reproduces.
+ * That much was measured from outside first. It has since been read out of
+ * `GDI.EXE` as well -- the quarter is `sar cx,2` at `seg3:1bf7` and the cap of
+ * eight is `cmp ax,8` -- along with the rest of the mapper's penalty, which is
+ * what decides *which* strike gets stretched. `FONTS.md` section 3 has that;
+ * this keeps the part that can be checked without it.
  */
 
 'use strict';
