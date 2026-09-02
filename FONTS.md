@@ -505,11 +505,35 @@ so either the character table is being indexed a place out or the pen-up pairs
 are absolute where they should be relative. Windows draws a thin single pixel
 `A` with a serif at each foot.
 
-The format is a stream of signed byte pairs with `0x80` lifting the pen, and the
-question is whether the pair after a lift is a position or a displacement. The
-data reads as a displacement -- Roman's first three pairs put the pen at (5,4),
-draw to (5,25), lift by (1,-21) to (6,4) -- and reading it as a position gives a
-letter that is not one.
+Four things were wrong with the drawing and all four are now read off the data.
+
+**The offset in a character's table entry is where its strokes end, not where
+they begin.** That is the one thing about these files that is not like the
+bitmap ones, and reading it the other way drew every character with the next
+one's strokes -- Roman's `A` came out a `B`. The table says so plainly once it
+is looked at: the first entry, the space, has offset nought, and a space has no
+strokes; the second, the exclamation mark, has 27, and 27 bytes is a stroke and
+a dot.
+
+**The pair after a pen-up is a displacement, not a position.** Read that way
+Roman's `A` is a lift to (10,4), a draw to (3,25), a lift back and a draw to
+(17,25), then an inner stroke, a crossbar and a serif at each foot. Read as
+positions the same thirty bytes give a scatter that is not a letter.
+
+**A stroke design measures downward from the top of its cell.** Roman's `A` has
+its apex at 4 and its feet at 25, in a design 32 tall whose ascent is 25. Drawing
+it upward from the baseline turns every letter over.
+
+**A line does not draw the pixel it stops on.** This is GDI's rule for `LineTo`
+and `Polyline` generally, and the plotter fonts are the only thing in the corpus
+that has ever recorded it: Roman's serifs come back three pixels where a
+Bresenham that inks both ends draws four. Worth 81 cells on its own.
+
+With those, and with the two synthesised styles drawn the way the strikes draw
+them -- a smear a pixel across, a lean of half the height above the bottom of
+the cell -- 143 of the 420 agree. What is left is quantisation: the lean is
+applied to each stroke's endpoints and interpolated between them, where Windows
+shears each row, so a diagonal wanders a pixel from Windows' as it descends.
 
 **Every vertical measure is the design's, scaled and rounded on its own.** The
 height is exactly what was asked for; the ascent, descent and both leadings are

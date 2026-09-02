@@ -406,9 +406,17 @@ export class BitmapFontEntry {
       const marker = this._view.getUint8(at);
 
       if (marker === 0x80) {
-        // Pen up: the pair that follows is where to put it down again.
-        x = signed(this._view.getUint8(at + 1));
-        y = signed(this._view.getUint8(at + 2));
+        /* Pen up: the pair that follows moves the pen without drawing, and it
+         * is a displacement like every other pair rather than a position.
+         *
+         * Roman's `A` is thirty bytes and decodes, this way, to a lift to
+         * (10,4) and a draw to (3,25); a lift back to (10,4) and a draw to
+         * (17,25); then an inner stroke, a crossbar, and a serif at each foot.
+         * Read as positions the same bytes give a scatter of strokes that is
+         * not a letter.
+         */
+        x += signed(this._view.getUint8(at + 1));
+        y += signed(this._view.getUint8(at + 2));
 
         run = [[x, y]];
         runs.push(run);
@@ -456,13 +464,30 @@ export class BitmapFontEntry {
       const info = Util.readStructure(this._view, entryDefinition, offset);
 
       if (this.isVector) {
-        /* A stroke character has no raster to read. How much of the stroke
-         * data belongs to it is the distance to whatever the next character
-         * points at, which is how the runs know where to stop.
+        /* A stroke character has no raster to read, and the offset in its own
+         * entry is where its strokes *end* rather than where they begin.
+         *
+         * That is the one thing about these files that is not like the bitmap
+         * ones, and reading it the other way is why Roman's `A` came out as a
+         * `B`: every character was drawn with the next one's strokes. The
+         * table says so plainly once it is looked at. The first entry, the
+         * space, has offset nought, and a space has no strokes; the second,
+         * the exclamation mark, has 27, and 27 bytes is a stroke and a dot. On
+         * the other reading the space would own those 27 bytes and the
+         * exclamation mark the twenty after them.
+         *
+         * The `A` settles it: 30 bytes ending at 1465, which decode to a lift
+         * to (10,4), a draw to (3,25), a lift back and a draw to (17,25) --
+         * two strokes meeting at an apex, which is an `A` and not anything
+         * else.
          */
-        const next = Util.readStructure(this._view, entryDefinition, offset + entrySize);
+        const previous =
+          code === this.header.dfFirstChar
+            ? { offset: 0 }
+            : Util.readStructure(this._view, entryDefinition, offset - entrySize);
 
-        info.length = Math.max(0, (next.offset || info.offset) - info.offset);
+        info.offset = previous.offset ?? 0;
+        info.length = Math.max(0, (this._view.getUint16(offset + 2, true) || 0) - info.offset);
         info.glyph = null;
 
         this._chars[code] = info;

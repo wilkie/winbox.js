@@ -525,10 +525,25 @@ export class Surface {
     const vertical = cell / design;
     const horizontal = font.widthScale;
 
-    // The baseline, which is where the design's own origin sits.
-    const baseline = y + Math.round(header.dfAscent * vertical);
+    /* A stroke design measures downward from the top of its cell, not upward
+     * from the baseline: Roman's `A` has its apex at 4 and its feet at 25, in a
+     * design 32 tall with an ascent of 25. So the top of the cell is the
+     * origin, and the y in the data is added to it.
+     */
+    const top = y;
 
-    this.context.strokeStyle = this.pen.color.css;
+    // Black, as every other text path draws; the pen is not the text colour.
+    this.context.strokeStyle = 'black';
+
+    /* Both synthesised styles, made the way the strikes make them: a slant
+     * leans each row by half of how far it sits above the bottom of the cell,
+     * and a smear draws the whole thing again a pixel across. The metrics
+     * already say as much -- a slanted plotter font overhangs by half its cell
+     * and an emboldened one by the width scale -- so drawing has to agree.
+     */
+    const style = font.style ?? {};
+    const leaning = !!style.italic;
+    const smeared = font.emboldens;
 
     let pen = x;
 
@@ -540,20 +555,24 @@ export class Surface {
           continue;
         }
 
-        this.context.beginPath();
+        for (let copy = 0; copy <= (smeared ? 1 : 0); copy++) {
+          this.context.beginPath();
+          (this.context as any).excludeLast = true;
 
-        run.forEach(([px, py], index) => {
-          const at = pen + Math.round(px * horizontal);
-          const down = baseline - Math.round(py * vertical);
+          run.forEach(([px, py], index) => {
+            const down = top + Math.round(py * vertical);
+            const lean = leaning ? (cell - 1 - (down - top)) >> 1 : 0;
+            const at = pen + Math.round(px * horizontal) + lean + copy;
 
-          if (index === 0) {
-            this.context.moveTo(at, down);
-          } else {
-            this.context.lineTo(at, down);
-          }
-        });
+            if (index === 0) {
+              this.context.moveTo(at, down);
+            } else {
+              this.context.lineTo(at, down);
+            }
+          });
 
-        this.context.stroke();
+          this.context.stroke();
+        }
       }
 
       pen += Math.round(entry.characterEntryFor(code).width * horizontal);

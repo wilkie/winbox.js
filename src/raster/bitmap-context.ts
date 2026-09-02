@@ -19,6 +19,7 @@
  * everything a program draws inside its window comes through here.
  */
 export class BitmapContext {
+  declare excludeLast: any;
   declare _width: number;
   declare _height: number;
   declare _pixels: Uint8Array;
@@ -149,6 +150,13 @@ export class BitmapContext {
 
   beginPath() {
     this._path = [];
+
+    /* GDI's `LineTo` does not draw the pixel it stops on, and neither does
+     * `Polyline`. Everything here that draws a path wants that, but only the
+     * stroke fonts have anything recorded to say so, so it is asked for rather
+     * than assumed. See `Surface.strokeText`.
+     */
+    this.excludeLast = false;
   }
 
   moveTo(x, y) {
@@ -186,8 +194,12 @@ export class BitmapContext {
 
       let error = spanX + spanY;
 
+      const last = index === this._path.length - 1;
+
       for (;;) {
-        this.setPixel(x, y, colour);
+        if (!(last && this.excludeLast && x === toX && y === toY)) {
+          this.setPixel(x, y, colour);
+        }
 
         if (x === toX && y === toY) {
           break;
