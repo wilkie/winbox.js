@@ -4553,6 +4553,27 @@ export const FABRICATIONS = [
     source: 'COURBD.TTF',
   }),
 
+  /* The instrument for the one thing three kinds of font disagree about.
+   *
+   * A slant that has to be synthesised is drawn three different ways -- a
+   * strike shifts whole rows, a stroke design moves its coordinates, and an
+   * outline does something that is neither -- and only one installed face ever
+   * asks an outline for one, because Arial, Times New Roman and Courier New all
+   * ship an italic file. That face is Symbol, and asking it is asking through
+   * a real letter: a hinted outline whose shape is not known in advance, at a
+   * size chosen by the mapper, with a slant somewhere in it.
+   *
+   * This replaces every character the probe draws with the same upright bar and
+   * no program at all. No hinting, no curve, no doubt about where the shape is:
+   * a rectangle whose corners are stated in font units. Whatever the italic
+   * cell then differs from the upright one by *is* the slant, row by row, and
+   * the bar reaches below the baseline so the answer covers the descender too.
+   */
+  slantBar('symbol-slant', {
+    box: [200, -400, 360, 1400],
+    describe: 'one upright bar in place of every Symbol letter, to read the synthesised slant',
+  }),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -4588,6 +4609,56 @@ export const FABRICATIONS = [
     describe: 'control value 2 magnified sixty-four times, which decides a cap height',
   }),
 ];
+
+/**
+ * The same bar in place of every letter of a face, with no program.
+ *
+ * `bar` places its rectangle with a program, which means a hinter runs and the
+ * answer carries whatever the hinter did. This writes the corners into the
+ * outline instead and leaves the instructions empty, so what Windows draws is
+ * the rectangle scaled once and nothing else.
+ */
+function slantBar(name, { box, describe, source = 'SYMBOL.TTF', characters = 'ABKMWagjmy1.' }) {
+  const [x0, y0, x1, y1] = box;
+
+  return {
+    name,
+    from: source,
+    as: source,
+    describe,
+
+    edit: (bytes) => {
+      for (const character of characters) {
+        /* Symbol puts its letters in the private use area rather than at their
+         * ASCII codes, which is what makes it a symbol font in the first place.
+         */
+        const glyph = glyphFor(bytes, 0xf000 + character.charCodeAt(0));
+
+        setGlyph(bytes, null, glyph, {
+          width: x1 + 200,
+          height: y1,
+          points: [
+            [x0, y0],
+            [x0, y1],
+            [x1, y1],
+            [x1, y0],
+          ],
+          program: [],
+        });
+
+        /* And the bearing to match, or the bar is drawn shifted by however far
+         * the letter it replaced disagreed with it. The first cut of this left
+         * it alone and the upright bar came back two columns from where Windows
+         * put it, which would have been read as a slant that leans from the
+         * wrong place.
+         */
+        setBearing(bytes, glyph, x0);
+      }
+
+      return bytes;
+    },
+  };
+}
 
 /**
  * A font whose glyphs each draw one bar at a fixed height above the baseline.

@@ -376,8 +376,34 @@ twenty-four pixels.
 wrong: at the best angle four of the 72 come out exactly right, against none at
 a tenth.
 
-Two readings of what else is wrong have been tried and both are worse than what
-is there.
+**An instrument settles it, and says the slant was never the problem.**
+`symbol-slant` replaces every Symbol letter with the same upright bar and no
+program at all: no hinting, no curve, corners stated in font units. Whatever the
+italic cell then differs from the upright one by _is_ the slant, row by row, and
+the bar reaches below the baseline so the answer covers the descender too.
+
+It lands at **three tenths**, pivoting about the baseline -- the lean is
+negative below it, which is where an outline differs from a strike and from a
+stroke design, both of which lean from the bottom of the cell and never leftward.
+At three tenths the bar's lean matches Windows' row for row at twenty-four
+pixels and half the fabricated cells come out exactly right; a third matches at
+twelve instead and fewer overall.
+
+And it says the residual on the real letters is something else entirely. A plain
+bar is wrong by about one and a half pixels a cell; a real Symbol letter is
+wrong by fourteen. The 0.28 that had been here was fitted to the letters and was
+compensating for that other error -- which is what a fitted constant does, and
+why the fit and the instrument disagree.
+
+The first cut of the instrument had a fault worth recording, because it is the
+one `setBearing` was written for and its own documentation warns of: the bar's
+outline was rewritten and the side bearing left alone, so Windows drew the
+upright bar two columns from where we did and the _upright_ cells disagreed
+before any slant was applied. A instrument that is wrong about the thing it is
+controlling for reads as a discovery about the thing it is measuring.
+
+Two other readings of what else is wrong have been tried and both are worse than
+what is there.
 
 _Leaning from the bottom of the cell rather than the baseline_, which is where
 the strikes and the stroke designs both lean from, and which would stop a
@@ -390,8 +416,9 @@ the reading the stroke designs suggested, since they are coordinates too and
 shearing their coordinates was right. It costs about as much: 1,779 wrong pixels
 against 1,024, at every angle from a fifth to a half.
 
-So the outline slant is neither of the two things the other two kinds of font
-do, and what it is has not been found.
+So an outline's synthesised slant is its own third thing: three tenths about the
+baseline, where a strike leans by its overhang about the bottom of the cell and
+a stroke design by half its cell about the same place.
 
 **Symbol upright at eight pixels** is a different thing again and probably not a
 rule at all: the cell is seven rows, the letters are three or four, and four of

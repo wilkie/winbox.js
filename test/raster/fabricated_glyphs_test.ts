@@ -85,13 +85,20 @@ describe('the fabricated glyph recordings', () => {
 
   /* Where this stands, so that a change which moves it says so.
    *
+   * The 120 wrong pixels are all `symbol-slant`, which is an instrument rather
+   * than a font: the same upright bar in place of every Symbol letter, recorded
+   * upright and slanted, so that the difference between the two cells is the
+   * synthesised slant and nothing else. Forty-eight of its 288 cells disagree,
+   * by a pixel or two each, and that is the measurement -- see
+   * `Surface.SLANT`.
+   *
    * These are not a target -- more than a third of the cells disagree, and the
    * shape fonts were built to disagree informatively rather than to pass. They
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 19422;
-  const WRONG = 0;
+  const EXACT = 19662;
+  const WRONG = 120;
 
   /* The one place an unhinted outline is drawn differently.
    *

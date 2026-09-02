@@ -35,23 +35,25 @@ export class Surface {
    * against at all. The tenth that used to be here was swept against a corpus
    * that did not contain a single synthesised outline slant.
    *
-   * Swept against one now, over 72 cells at six sizes, the wrong-pixel count
-   * makes a clear trough: 1,552 at a tenth, 1,042 at 0.24, **1,024 at 0.28**,
-   * 1,030 at 0.30 and 1,128 at 0.34. Windows' own ink says much the same from
-   * the other side -- fitting a slope to how far each row of a slanted cell
-   * sits from the upright one gives a third at twenty and twenty-four pixels.
-   *
-   * It is **not** the half the bitmap faces lean by, which the old comment
+   * It is **not** the half the bitmap faces lean by, which an older comment
    * here claimed it was measured against; a strike leans by its whole overhang
-   * and an outline by about a quarter of its height.
+   * and an outline by about a third of its height.
    *
-   * This is a swept minimum and not a rule, and the difference matters: at the
-   * best angle four of 72 cells come out exactly right, against nought at a
-   * tenth. So the angle was wrong and something else is wrong as well -- most
-   * likely that Windows shears before scaling where this shears after. See
-   * `FONTS.md` section 3.
+   * Read off `symbol-slant`, which is the instrument for exactly this: every
+   * Symbol letter replaced by the same upright bar with no program, so what
+   * Windows draws is a rectangle scaled once and the italic cell differs from
+   * the upright one by the slant and nothing else. At three tenths the bar's
+   * lean matches Windows' row for row at twenty-four pixels and half the
+   * fabricated cells come out exactly right; a third matches at twelve instead
+   * and fewer overall.
+   *
+   * The instrument also says the residual on the *real* Symbol letters is not
+   * this: a plain bar is wrong by about one and a half pixels a cell where a
+   * real letter is wrong by fourteen. The 0.28 that used to be here was fitted
+   * to the letters and was compensating for that other error, which is what a
+   * fitted constant does. See `FONTS.md` section 3.
    */
-  static SLANT = 0.28;
+  static SLANT = 0.3;
 
   declare _backcolor: any;
   declare _bitmap: any;
