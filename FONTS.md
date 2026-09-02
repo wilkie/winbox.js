@@ -375,9 +375,26 @@ twenty-four pixels.
 **Open**, and the shape of what is left says the angle was not the only thing
 wrong: at the best angle four of the 72 come out exactly right, against none at
 a tenth. A shear applied to the scaled outline cannot reproduce a shear applied
-before scaling, and that is the likeliest difference. Also open: Symbol upright
-at eight pixels, and four requests for a hundred pixels at proof quality where
-refusing every stretch leaves a scalable face the winner.
+before scaling, and that is the likeliest difference.
+
+**A bold synthesised onto an outline is not a shifted copy of the drawn
+pixels.** Symbol's beta at ten pixels is where it shows. Plain, one row inks
+columns 2 and 5 and the row above inks 1 to 4. Emboldened, Windows answers 2, 3
+and 5 for the first -- the left stroke smeared and the right one not -- and 1 to
+5 for the second, which _is_ one wider than the plain row. So the smear stops
+somewhere, and not at the same place in both rows.
+
+Two clippings were tried against the whole corpus and both are worse than none:
+clipping the smear to the character's own advance costs 19 cells, and clipping
+it to the rightmost column the glyph itself inks costs 38. The second reproduces
+the beta exactly and breaks other letters, which is the tell -- the rule is not
+about a column at all. The likeliest reading left is that Windows emboldens the
+_outline_ and rasterises it, where this smears the pixels afterwards, and a
+stroke that lands between two sample points does not survive the difference.
+
+Also open: Symbol upright at eight pixels, and four requests for a hundred
+pixels at proof quality where refusing every stretch leaves a scalable face the
+winner.
 
 **A height is three different questions depending on its sign.** Positive is the
 cell including its leading; negative is the characters within it; zero is the
