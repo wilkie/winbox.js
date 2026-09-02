@@ -558,11 +558,13 @@ export class Surface {
         for (let copy = 0; copy <= (smeared ? 1 : 0); copy++) {
           this.context.beginPath();
           (this.context as any).excludeLast = true;
+          (this.context as any).shear = leaning
+            ? (row) => Math.max(0, (cell - (row - top)) >> 1)
+            : null;
 
           run.forEach(([px, py], index) => {
             const down = top + Math.round(py * vertical);
-            const lean = leaning ? (cell - 1 - (down - top)) >> 1 : 0;
-            const at = pen + Math.round(px * horizontal) + lean + copy;
+            const at = pen + Math.round(px * horizontal) + copy;
 
             if (index === 0) {
               this.context.moveTo(at, down);

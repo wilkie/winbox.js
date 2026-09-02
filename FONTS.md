@@ -530,10 +530,27 @@ that has ever recorded it: Roman's serifs come back three pixels where a
 Bresenham that inks both ends draws four. Worth 81 cells on its own.
 
 With those, and with the two synthesised styles drawn the way the strikes draw
-them -- a smear a pixel across, a lean of half the height above the bottom of
-the cell -- 143 of the 420 agree. What is left is quantisation: the lean is
-applied to each stroke's endpoints and interpolated between them, where Windows
-shears each row, so a diagonal wanders a pixel from Windows' as it descends.
+them, 153 of the 420 agree.
+
+**A slant is applied to each row as it is plotted, not to the ends of each
+stroke.** The two describe the same line and not the same pixels: a lean worked
+out at the two ends and interpolated between them wanders from one worked out
+per row wherever the interpolation rounds the other way.
+
+**And the lean is `floor((cell - row) / 2)`,** which is not the strikes' rule.
+A strike leans by its overhang, `floor((cell - 1) / 2)`, and pairs its rows from
+the top -- rows 0 and 1 together, then 2 and 3. A stroke design leans by
+`floor(cell / 2)` at the top row and pairs from row 1, so the two part company
+on every other row. The metrics had said as much all along and it had not been
+carried across: a slanted plotter font is recorded as overhanging by half its
+cell where a slanted strike overhangs by half its cell less one. Roman slanted
+goes from none of 84 to 10, and from 1,925 wrong pixels to 679.
+
+What is left is line rasterisation. Roman's `g` at forty pixels differs on two
+rows out of eighteen, by one pixel each: we ink a column GDI does not on a
+near-vertical stem, and choose the other side of a tie on a diagonal. That is
+Bresenham's tie-breaking rather than anything about fonts, and the plotter fonts
+are the only thing in the corpus that measures it.
 
 **Every vertical measure is the design's, scaled and rounded on its own.** The
 height is exactly what was asked for; the ascent, descent and both leadings are

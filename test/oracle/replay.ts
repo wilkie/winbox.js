@@ -1293,7 +1293,7 @@ export class Unimplemented extends Error {}
  */
 export const KNOWN_GAPS: Record<string, string> = {
   glyph:
-    'the three plotter fonts, 277 cells of 420 where a sheared stroke wanders a pixel from Windows, and Symbol in the styles it has no file for (96)',
+    'the three plotter fonts, 267 cells of 420 where a line chooses the other side of a tie from GDI, and Symbol in the styles it has no file for (96)',
   'CreateFont heights':
     'one: Symbol slanted at twelve pixels, which Windows answers a cell shorter',
   'CreateFont extent':
