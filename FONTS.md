@@ -1099,8 +1099,52 @@ entries one at a time and its two directions are `above` and `below`, which carr
 the same asymmetry. Whether the two asymmetries agree at the ends is exactly the
 question the last pixel asks, and it is the next thing to check.
 
+#### The setup, and what the globals are
+
+`CalcLine` opens by reading two points out of two parallel coordinate arrays --
+`si` walks one, `di` the other -- and putting them in four slots: `[bp-0x2]` and
+`[bp-0x6]` from one array, `[bp-0x4]` and `[bp-0x8]` from the other. Then it
+rounds all four the same way and stores the results in consecutive globals:
+
+    cx = coord ; cx += 0x1f ; cx &= -0x40 ; cx >>= 6
+
+| global  | what it holds                                       |
+| ------- | --------------------------------------------------- |
+| `0x1ba` | the sample-line index of `x1`                       |
+| `0x1bc` | the same for `y1`                                   |
+| `0x1be` | the same for `x2`                                   |
+| `0x1c0` | the same for `y2`                                   |
+| `0x1c2` | `&column[index(x1)]`, the running pointer           |
+| `0x1c4` | `&row[index(y1)]`                                   |
+| `0x1c6` | the base of the column list array                   |
+| `0x1c8` | the base of the row list array                      |
+| `0x1ca` | the base the forward store indexes back from        |
+| `0x1ce` | the scan kind, as an offset into the dispatch table |
+
+The identification is anchored by `0x150f`, where the batch path is entered on
+`[0x1bc] == [0x1c0]` -- the two endpoints on the same _row_ index, an edge that
+crosses no scanline -- and then walks the **column** array from `index(x1)` to
+`index(x2)` storing the row index into each. That is the `y1 === y2` branch of
+`calcLine` in `scan-walk.ts`, which emits one vertical entry per column crossed,
+and the two agree on which array and which value.
+
+**And the rounding is `(v + 31) & -64`, which is the first sample line at or
+above `v`, taking `v` itself when `v` is exactly on one.** `above` in
+`scan-walk.ts` is `((p + 32) & -64) + 32`, which steps past `v` in that case: for
+`v = 32` the shipped index is 0 and ours is 1. They agree for every coordinate
+that is not exactly on a sample line, which is every coordinate an unhinted
+outline produces and a great many that a hinted one does not.
+
+The difference is covered, in the one branch where it has been checked. Where the
+shipped code adds one to the stored index under a direction bit -- `test dx,0x100`
+and `test dx,0x1` at `0x1553` -- this picks between `above(y1 - 1)` and
+`above(y1)` on the same direction, and the two come out the same. Whether that
+holds in the branches not yet read is the open question, and it is now a narrow
+one: it can only bite a coordinate lying exactly on a sample line.
+
 No divergence found yet. What the reading has done is turn three assumptions into
-readings and leave one candidate.
+readings, name the globals the walk keeps its state in, and narrow the candidate
+to a case that needs a coordinate exactly on a sample line to matter.
 
 Where none of this goes is into the scaler. Segment 36's public entries are four
 thunks that load a dispatch index into `bx` and a word count into `cx` and jump
