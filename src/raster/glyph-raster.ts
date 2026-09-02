@@ -378,7 +378,7 @@ function crossesAt(piece, y, into) {
  * negated going in and the emitted scan rows come back as `-row - 1`.
  */
 export function fillWalked(contours, options) {
-  const { scale, originX = 0, originY = 0, width, height, dropout = false } = options;
+  const { scale, originX = 0, originY = 0, width, height, dropout = false, stubs = true } = options;
 
   const pixels = new Uint8Array(width * height);
   /* Halves go away from zero, not upward.
@@ -681,7 +681,7 @@ export function fillWalked(contours, options) {
      * has exactly the two crossings the model predicts. See `FONTS.md`
      * section 3.
      */
-    if (!narrow && (!continues(-1) || !continues(1))) {
+    if (!narrow && stubs && (!continues(-1) || !continues(1))) {
       continue;
     }
 

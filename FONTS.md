@@ -936,6 +936,30 @@ That is as far as the shape can be pushed. What is left is that the extra pixel
 is one column outward on an extreme row, which is what dropout control does, on a
 glyph whose lean is otherwise a plain three tenths.
 
+### And the extreme rows are stub control, which a slanted glyph does not get
+
+The baked recordings answer this one outright, because they hold the same shape
+twice. Compare the rows a cell inks, three ways:
+
+| size | baked into the outline | slanted by Windows | plain upright |
+| ---- | ---------------------- | ------------------ | ------------- |
+| 8    | 3 to 6                 | **2 to 6**         | 2 to 6        |
+| 12   | 4 to 10                | **3 to 10**        | 3 to 10       |
+| 15   | 4 to 13                | 4 to 13            | 4 to 13       |
+| 20   | 5 to 18                | 5 to 18            | 5 to 18       |
+
+**A slanted cell inks exactly the rows its own upright cell inks, 88 times out of 88.** The same shape written into the outline does not: it loses its tip row in
+18 of the 88, and we lose it in exactly the same 18, because that is stub control
+refusing to rescue a run with nothing above or below it.
+
+So the check that costs a bare stroke its ends is not applied to a glyph Windows
+is slanting. That is one line, and it is worth 40 fabricated cells and 63 wrong
+pixels -- and three records of the real corpus, which goes from 5,846 to 5,849 of
+5,982. `Surface.outlineText` now passes `stubs: !italic` to the fill.
+
+Which leaves, of the whole synthesised slant, one pixel a cell at the ends: the
+twelve pixel bar's top row is `{4, 5}` where a rescue can only place `{4}`.
+
 Where none of this goes is into the scaler. Segment 36's public entries are four
 thunks that load a dispatch index into `bx` and a word count into `cx` and jump
 to a stack switcher at `0xe1`, which copies the arguments onto the scaler's own

@@ -549,6 +549,22 @@ export class Surface {
            * An unhinted outline has no answer, so it keeps the default.
            */
           dropout: fitted.dropout ?? true,
+          /* A glyph Windows is slanting for us keeps every row it had upright.
+           *
+           * **Measured**, and it is an invariant rather than a tendency: across
+           * the four slant instruments the synthesised cell inks exactly the
+           * rows its own upright cell inks, 88 times out of 88. The same shape
+           * written into the outline and asked for upright does not -- it loses
+           * its tip row in 18 of the 88, which is stub control refusing to
+           * rescue a run with nothing above or below it, and Windows and this
+           * agree on every one of those.
+           *
+           * So the check that costs a bare stroke its ends is not applied to a
+           * glyph being slanted. At twelve pixels the bar inks rows 3 to 10
+           * upright and, baked into the outline, rows 4 to 10; slanted, Windows
+           * inks 3 to 10 again. See `FONTS.md` section 3.
+           */
+          stubs: !italic,
         });
 
         const from = Math.max(0, cellTop);
