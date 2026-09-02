@@ -1022,11 +1022,47 @@ calling `0x0e28`, whose guards at `0x0e60` and `0x0e8a` are the box tests inside
 `VertCrossings`. Past that the routine clamps and writes a bit through one of two
 helpers at `0x0c8a` and `0x0d42`.
 
-Nothing in that stretch does anything `DoHorizDropout` does not, at the
-resolution this reading reaches. Finding a one pixel divergence in six and a half
-kilobytes of compiled code needs the comparison done properly, function by
-function, against the source -- which is the next piece of work, and a different
-kind of work from anything above.
+### The comparison, done by function
+
+Segment 42 has 37 prologues; twelve of them are reached by a direct call, and the
+call graph is enough to name the ones that matter. Against `scanlist.c`:
+
+| shipped  | calls                                                     | what it is                                            |
+| -------- | --------------------------------------------------------- | ----------------------------------------------------- |
+| `0x0042` | `0x11e8` ×4, `0x0978`, nine more                          | the scan driver                                       |
+| `0x11e8` | none                                                      | `CalcLine`, and the four calls are the four it gets   |
+| `0x0978` | `0x0e28` ×2, `0x0eaa` ×2, `0x0d42` ×2, `0x0c8a`, `0x0cf3` | `LookForDropouts`, with both dropout routines inlined |
+| `0x0e28` | `0x0db4` ×3                                               | one continuation test                                 |
+| `0x0eaa` | `0x0db4` ×3                                               | the other                                             |
+| `0x0db4` | none                                                      | the crossings counter                                 |
+| `0x0d42` | none                                                      | `SetBitAbs`                                           |
+| `0x0c8a` | none                                                      | the horizontal dropout's guard and write, fused       |
+| `0x0cf3` | none                                                      | the vertical dropout's                                |
+
+**The three-and-three is the pseudocode, line for line.** `DoHorizDropout` sums
+exactly three counts per side --
+`HorizCrossings + VertCrossings + VertCrossings` -- and each of `0x0e28` and
+`0x0eaa` makes exactly three calls to the counter. Each is called twice from
+`0x0978`, once from the horizontal dropout and once from the vertical, which is
+the two routines' two tests each. The counter being one function rather than two
+is the only structural liberty, and `HorizCrossings` and `VertCrossings` differ
+only in which pair of arrays they walk.
+
+`0x0c8a` is worth spelling out, because it is where an extra write would hide. It
+takes `x`, forms `x + 1`, tests that bit, and **returns without writing if it is
+set**; otherwise it ORs one mask into the bitmap, stepping back a long word when
+`x + 1` is word aligned. That is `DoHorizDropout`'s `if (lXDrop < lBoxRight) { if
+(GetBitAbs(lXDrop, lYDrop)) return; }` and its `lXDrop--; SetBitAbs(...)` folded
+into one routine. One test, one write. `0x0cf3` is the same shape down a column.
+
+**So the shipped dropout makes exactly the calls the pseudocode makes, and writes
+exactly one pixel where the pseudocode writes one.** The missing pixel is not an
+extra write in dropout control. It has to come from the lists the dropout reads
+-- the crossings themselves -- or from somewhere outside this routine.
+
+What could not be read this way: the bit masks are fetched from `DS`, which is
+the scaler's private data segment, so only the arithmetic around them is visible
+in the image. The inference above rests on the arithmetic and not on the tables.
 
 Where none of this goes is into the scaler. Segment 36's public entries are four
 thunks that load a dispatch index into `bx` and a word count into `cx` and jump
