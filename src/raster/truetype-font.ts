@@ -280,6 +280,14 @@ export class TrueTypeFont {
    * families a program can ask for: Arial calls itself class 8, which is the
    * sans serifs, and comes back as `FF_SWISS`; Times New Roman is class 1 and
    * comes back as `FF_ROMAN`.
+   *
+   * Class 12 -- the symbol fonts -- used to answer `FF_DONTCARE` here, on no
+   * evidence: the only two fonts that carry it are Symbol and WingDings, and
+   * neither had ever been asked for at a size that reaches an outline. Asked
+   * for now, Symbol comes back `0x17`, which is `FF_ROMAN` with the pitch and
+   * vector bits, so it takes the same route as anything else without a class of
+   * its own. **Recorded**, at eight, ten, twelve, fifteen, twenty, twenty-four,
+   * twenty-nine, thirty-seven, fifty and a hundred pixels.
    */
   get family() {
     if (!this.has('OS/2')) {
@@ -294,10 +302,6 @@ export class TrueTypeFont {
 
     if (klass === 10) {
       return 0x40; // FF_SCRIPT
-    }
-
-    if (klass === 12) {
-      return 0x00; // FF_DONTCARE, which is what a symbol font gets
     }
 
     if (this.fixedPitch) {

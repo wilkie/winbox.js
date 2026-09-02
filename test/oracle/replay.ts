@@ -1288,11 +1288,11 @@ export class Unimplemented extends Error {}
  */
 export const KNOWN_GAPS: Record<string, string> = {
   glyph:
-    'Symbol, which the mapper answers with the TrueType face and we answer with the strike (216 cells)',
-  'CreateFont heights': 'Symbol, which answers with the TrueType face (30 records)',
-  'CreateFont widths': 'the same',
-  'CreateFont extent': 'the same',
-  'CreateFont style': 'Symbol: `tmPitchAndFamily` says TrueType and we say a strike (30 records)',
+    'Symbol, and all of it a synthesised style on an outline: the slant at every size the outline answers (72 cells) and the smear at the smallest (28)',
+  'CreateFont heights':
+    'one: Symbol slanted at twelve pixels, which Windows answers a cell shorter',
+  'CreateFont extent':
+    'five: Symbol slanted, where the string measures a pixel or three from what Windows makes it',
   'CreateFont quality':
     'four of 72: a hundred pixels of a bitmap face at proof quality, where refusing every stretch leaves the nearest strike so far off that a scalable face wins instead, and we answer with the strike',
 };

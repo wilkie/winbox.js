@@ -14,10 +14,13 @@
  * but a list that must stay empty. Section 6 of FONTS.md records what was ruled
  * out getting there.
  *
- * The bitmap faces are counted separately and are not at zero. One thing is
- * open, named in `KNOWN_GAPS`: Symbol, which the mapper answers with the
- * TrueType face where we answer with the strike. Every other bitmap cell of the
- * seven faces the probe sweeps agrees.
+ * The bitmap faces are counted separately and are not at zero. What is left is
+ * all Symbol, and all of it a style the face has no file for: a slant
+ * synthesised onto an outline, which is drawn at an angle that is not Windows'
+ * -- Symbol is the only installed face that ever asks for one, since the other
+ * three outline families ship an italic of their own -- and a smear
+ * synthesised onto one at the smallest sizes. Symbol upright agrees at every
+ * size but eight.
  *
  * ## How the last sixteen went
  *
@@ -75,8 +78,8 @@ import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './repl
 const OUTLINE = ['Arial', 'Times New Roman', 'Courier New'];
 const RECORDS = 0;
 const PIXELS = 0;
-const BITMAP_RECORDS = 216;
-const BITMAP_PIXELS = 8378;
+const BITMAP_RECORDS = 100;
+const BITMAP_PIXELS = 1619;
 
 /** Whether a recorded call named one of the three outline families. */
 function isOutline(args: string) {

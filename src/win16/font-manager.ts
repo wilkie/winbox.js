@@ -329,12 +329,19 @@ export class FontManager {
    * @param {number} charset - The character set the request asked for.
    * @returns {Object|null} `{name, entries}`, or null if the outline should win.
    */
-  _strikeAt(height, charset, fixedPitch) {
-    if (height <= 0 || height >= FontManager.OUTLINE_FLOOR) {
+  _strikeAt(height, charset, fixedPitch, only = null, ownName = false) {
+    if (height <= 0 || (!ownName && height >= FontManager.OUTLINE_FLOOR)) {
       return null;
     }
 
-    for (const name of FontManager.INSTALLED_ORDER) {
+    /* A symbol face is answered by its own strikes or by none.
+     *
+     * Symbol asked for at eight pixels does not become Small Fonts the way
+     * Arial does: it stays Symbol and comes back seven pixels tall, drawn from
+     * the outline. An ANSI strike is no answer to a request for symbols, which
+     * is the same reason an OEM strike is no answer to a request for ANSI.
+     */
+    for (const name of only ? [only] : FontManager.INSTALLED_ORDER) {
       const entries = this.lookup(name);
 
       if (!entries) {
@@ -406,17 +413,35 @@ export class FontManager {
      * default -- which is the one place a name that is not installed produces
      * a *different* answer from a name that was never given.
      */
-    /* A strike of the same name wins: both a bitmap Symbol and a TrueType one
-     * are installed, and asking for Symbol gets the bitmap. So an outline
-     * answers only where no strike carries the name at all.
+    /* An outline of the name asked for answers, even when strikes carry the
+     * same name.
+     *
+     * Symbol is the only face installed both ways, and it used to be read as
+     * the strike winning outright. It does not: it wins at thirteen and at
+     * sixteen pixels, which are the two sizes `SYMBOLE.FON` has strikes at
+     * below the size where outlines take over, and nowhere else. Asked for
+     * eight it answers seven, for twelve twelve, for twenty twenty -- none of
+     * them a size that file holds -- and `tmPitchAndFamily` says TrueType at
+     * every one of them. So this is the ordinary rule about strikes and
+     * outlines and not an exception to it, and what had made it look like one
+     * was that the only size ever asked for was sixteen, where the two answer
+     * alike in every field.
+     *
+     * A name with strikes and no outline still finds no outline here, and must
+     * not fall back to Times New Roman: Courier is not Courier New.
      */
     const wantsBold = (request.weight ?? 0) >= 700;
     const wantsItalic = !!request.italic;
 
-    const outline = this.lookup(face)
-      ? null
-      : (this.outline(face, wantsBold, wantsItalic) ??
-        (face ? this.outline(FontManager.FALLBACK_OUTLINE, wantsBold, wantsItalic) : null));
+    const named = this.outline(face, wantsBold, wantsItalic);
+
+    const outline =
+      named ??
+      (this.lookup(face)
+        ? null
+        : face
+          ? this.outline(FontManager.FALLBACK_OUTLINE, wantsBold, wantsItalic)
+          : null);
 
     /* A symbol outline is rejected by a request that did not ask for symbols,
      * the same way an OEM strike is: WingDings asked for in ANSI comes back
@@ -425,14 +450,33 @@ export class FontManager {
     const usable =
       outline &&
       charset !== FontManager.OEM_CHARSET &&
-      !(outline.font.symbolic && charset !== FontManager.SYMBOL_CHARSET);
+      !(
+        outline.font.symbolic &&
+        charset !== FontManager.SYMBOL_CHARSET &&
+        !this.lookup(outline.name)
+      );
 
     if (usable) {
       /* A strike installed at exactly this height beats the outline, below the
        * size at which outlines start winning outright. This is the whole of why
        * a request for eight pixel Arial comes back as Small Fonts.
        */
-      const strike = this._strikeAt(request.height ?? 0, charset, outline.font.fixedPitch);
+      /* The size at which outlines take over is about falling back to some
+       * *other* face's strike. A strike of the face's own name is not a
+       * fallback and is not subject to it: Symbol at sixteen pixels answers
+       * with the sixteen row strike out of `SYMBOLE.FON`, where Arial at
+       * sixteen answers with its outline because the only sixteen row strikes
+       * belong to other faces.
+       */
+      const own = this.lookup(outline.name) ? outline.name : null;
+
+      const strike = this._strikeAt(
+        request.height ?? 0,
+        charset,
+        outline.font.fixedPitch,
+        outline.font.symbolic ? (own ?? outline.name) : own,
+        Boolean(own)
+      );
 
       if (strike) {
         /* Which family the mapper had settled on before the size sent it to a
@@ -448,7 +492,13 @@ export class FontManager {
         return {
           ...FontManager.choose(strike.entries, request),
           face: strike.name,
-          outlineFamily: true,
+
+          /* Only when the strike belongs to some *other* family. Symbol's own
+           * strike is not a fallback from anywhere, so a slant synthesised onto
+           * it reports `tmItalic` as 1 the way any strike's does, not the 255
+           * an outline family answers with.
+           */
+          outlineFamily: !own,
         };
       }
 

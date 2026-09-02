@@ -63,7 +63,18 @@ export function GetTextMetrics(hdc, lptm) {
     // Widths follow the horizontal size, which a requested `lfWidth` changes.
     const across = (units) => Math.round((units * font.xPpem) / outline.unitsPerEm);
 
-    lptm.tmAveCharWidth = across(outline.averageAdvance);
+    /* A bold that had to be synthesised widens every character by one, the
+     * same way it does on a strike.
+     *
+     * Only Symbol reaches this: the other three outline families ship a bold
+     * file, so a request for bold opens that instead of smearing this one.
+     * **Recorded** at eight, ten, twelve, fifteen and twenty pixels, where the
+     * average and the maximum both come back one greater than the plain face's
+     * and a five character string measures five wider.
+     */
+    const smeared = (style.weight ?? 0) >= 700 && !style.exactStyle ? 1 : 0;
+
+    lptm.tmAveCharWidth = across(outline.averageAdvance) + smeared;
 
     /* The font's bounding box, not its widest advance and not the grid-fitted
      * widths in `hdmx`.
@@ -74,10 +85,10 @@ export function GetTextMetrics(hdc, lptm) {
      * and for an italic face it is wider again -- which is why the gap against
      * the advance grows with the size rather than sitting at a pixel or two.
      */
-    lptm.tmMaxCharWidth = across(outline.boundingWidth);
+    lptm.tmMaxCharWidth = across(outline.boundingWidth) + smeared;
 
     // Only a style that had to be made shows up as an overhang.
-    const bold = (style.weight ?? 0) >= 700 && !style.exactStyle;
+    const bold = smeared === 1;
 
     lptm.tmWeight = (style.weight ?? 0) >= 700 ? 700 : outline.weight;
     /* 255 rather than 1, which is not the same answer a raster face gives.
@@ -112,7 +123,15 @@ export function GetTextMetrics(hdc, lptm) {
      * family the font puts itself in.
      */
     lptm.tmPitchAndFamily = (outline.fixedPitch ? 0x00 : 0x01) | 0x06 | outline.family;
-    lptm.tmCharSet = 0;
+
+    /* The font's own character set, which for these is only ever ANSI or
+     * symbol: Symbol answers 2 where Arial, Times New Roman and Courier New
+     * answer 0. A font whose `cmap` puts its letters up in the private use
+     * area rather than at their ASCII codes is a symbol font, which is the
+     * same test the mapper uses to decide whether it may answer an ANSI
+     * request at all.
+     */
+    lptm.tmCharSet = outline.symbolic ? 2 : 0;
     lptm.tmDigitizedAspectX = 96;
     lptm.tmDigitizedAspectY = 96;
 

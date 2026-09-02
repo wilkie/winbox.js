@@ -211,6 +211,14 @@ export class LogicalFont extends Font {
           Math.round((font.advanceOf(glyph) * ppem) / font.unitsPerEm);
       }
 
+      /* A bold that had to be synthesised costs a pixel a character, which is
+       * what makes the string longer as well as each letter wider. Only Symbol
+       * reaches this; the other outline families have a bold file of their own.
+       */
+      if ((this._style.weight ?? 0) >= 700 && !this._style.exactStyle) {
+        width += String(text).length;
+      }
+
       return { width, height: this._style.ascent + this._style.descent };
     }
 
