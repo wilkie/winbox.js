@@ -4478,6 +4478,19 @@ export const FABRICATIONS = [
 
   ...[127, 130].map((keep) => cutProgram(`cour-w-cut-${keep}`, 'w', keep)),
 
+  /* Where the two points that define the bold `K`'s arm have got to at the last
+   * instruction before the letter starts disagreeing. The angle between them is
+   * what the function at ninety-one reads back and turns into a factor, so a
+   * quarter of a pixel in either is what has to be looked at.
+   */
+  ...[
+    ['courbd-k-arm-33y', 33, true],
+    ['courbd-k-arm-34y', 34, true],
+    ['courbd-k-arm-34x', 34, false],
+  ].map(([name, point, vertical]) =>
+    cutAndRead(name, 'K', 88, point, { source: 'COURBD.TTF', vertical })
+  ),
+
 
 
   readout('times-cvt0-plain', {
@@ -4652,6 +4665,60 @@ function cutProgram(name, character, keep, source = 'COUR.TTF', instctrl = true)
       const starts = instructionStarts(code);
 
       return setGlyphProgram(bytes, glyph, code.slice(0, starts[keep] ?? code.length));
+    },
+  };
+}
+
+/**
+ * A glyph cut short and made to report where one of its points has got to.
+ *
+ * `cutProgram` says at which instruction a letter starts disagreeing, and no
+ * more: two cuts either side of the answer render the same until the difference
+ * grows past a pixel. This keeps the cut and adds a reading, so the position a
+ * point holds at that moment can be compared directly rather than inferred from
+ * what it does later.
+ *
+ * The point's coordinate along one axis is read with `GC`, multiplied, and put
+ * on the advance phantom, which the `hinting` probe reports as the letter's
+ * width. Multiplying by four leaves a quarter of a pixel visible and keeps the
+ * reading inside the range an advance can carry at these sizes.
+ */
+function cutAndRead(name, character, keep, point, { source, magnify = 4, vertical = true }) {
+  return {
+    name,
+    from: source,
+    as: source,
+    describe: `${source}'s ${character} cut after ${keep} instructions, reporting point ${point}`,
+
+    edit: (bytes) => {
+      const glyph = glyphFor(bytes, character.charCodeAt(0));
+      const body = glyphBody(bytes, glyph);
+      const code = [];
+
+      for (let offset = 0; offset < body.length; offset++) {
+        code.push(body.view.getUint8(body.program + offset));
+      }
+
+      const starts = instructionStarts(code);
+      const phantom = pointCount(bytes, glyph) + 1;
+
+      return setGlyphProgram(bytes, glyph, [
+        ...code.slice(0, starts[keep] ?? code.length),
+
+        // Along the axis being read, so that `GC` answers that coordinate.
+        vertical ? 0x00 : 0x01,
+        ...ops.byte(point),
+        // GC[0], the position the point is at now.
+        0x46,
+        ...ops.word(magnify * 64),
+        ...ops.multiply(),
+
+        // And back along x, which is the axis an advance is measured on.
+        0x01,
+        ...ops.byte(phantom),
+        ...ops.swap(),
+        ...ops.setCoordinate(),
+      ]);
     },
   };
 }

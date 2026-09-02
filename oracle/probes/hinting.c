@@ -75,6 +75,60 @@ static void probeAdvance(LPCSTR face, int height, BYTE italic, char character)
 }
 
 /*
+ * The same, for a face asked for in a weight other than the plain one.
+ *
+ * The bold and italic of a family are separate files, and a fabrication that
+ * rewrites one of them can only be read if the probe asks for that file. The
+ * weight goes in the record so the two sweeps cannot be mistaken for each
+ * other; everything the plain sweep recorded still reads exactly as it did.
+ */
+static void probeWeighted(LPCSTR face, int height, int weight, BYTE italic,
+                          char character)
+{
+    HFONT font;
+    HFONT previous;
+    TEXTMETRIC tm;
+    DWORD extent;
+    char text[2];
+
+    text[0] = character;
+    text[1] = '\0';
+
+    wsprintf(probeArgs, "\"%s\",h=%d,weight=%d,italic=%d,'%c'", (LPSTR)face,
+             height, weight, (int)italic, character);
+
+    font = CreateFont(height, 0, 0, 0, weight, italic, 0, 0, ANSI_CHARSET,
+                      OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+                      DEFAULT_PITCH, face);
+
+    if (font == NULL) {
+        probe("advance", probeArgs, "no font");
+        return;
+    }
+
+    previous = (HFONT)SelectObject(dc, font);
+
+    GetTextMetrics(dc, &tm);
+    extent = GetTextExtent(dc, text, 1);
+
+    wsprintf(probeResult, "advance=%d,ppem=%d", LOWORD(extent),
+             tm.tmHeight - tm.tmInternalLeading);
+    probe("advance", probeArgs, probeResult);
+
+    SelectObject(dc, previous);
+    DeleteObject(font);
+}
+
+static void probeWeightedSweep(LPCSTR face, int weight, BYTE italic, char character)
+{
+    int height;
+
+    for (height = 8; height <= 110; height++) {
+        probeWeighted(face, height, weight, italic, character);
+    }
+}
+
+/*
  * Every size the interesting sizes are reachable through.
  *
  * A request is for a cell height and what comes out is a pixel size, and the
@@ -177,6 +231,12 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      * readout can reach it.
      */
     probeSweep("Times New Roman", 0, 'y');
+
+    /* And the bold face, whose `K` is the one letter left disagreeing in more
+     * than one file. Reading a point of it needs the probe to ask for that
+     * file, which until now it never has.
+     */
+    probeWeightedSweep("Courier New", FW_BOLD, 0, 'K');
 
     ReleaseDC(NULL, dc);
 
