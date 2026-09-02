@@ -4478,21 +4478,6 @@ export const FABRICATIONS = [
 
   ...[127, 130].map((keep) => cutProgram(`cour-w-cut-${keep}`, 'w', keep)),
 
-  /* Where the two points that define the bold `K`'s arm have got to at the last
-   * instruction before the letter starts disagreeing. The angle between them is
-   * what the function at ninety-one reads back and turns into a factor, so a
-   * quarter of a pixel in either is what has to be looked at.
-   */
-  ...[
-    ['courbd-k-arm-33y', 33, true],
-    ['courbd-k-arm-34y', 34, true],
-    ['courbd-k-arm-34x', 34, false],
-  ].map(([name, point, vertical]) =>
-    cutAndRead(name, 'K', 88, point, { source: 'COURBD.TTF', vertical })
-  ),
-
-
-
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -4691,6 +4676,22 @@ function cutAndRead(name, character, keep, point, { source, magnify = 4, vertica
     describe: `${source}'s ${character} cut after ${keep} instructions, reporting point ${point}`,
 
     edit: (bytes) => {
+      /* The tables that answer a width without running anything.
+       *
+       * `hdmx` holds the advance of every glyph at two dozen sizes and Windows
+       * takes it whenever it covers the size asked for, so a glyph rewritten to
+       * report through the advance is never read at all -- the first attempt at
+       * this came back with Courier New's own widths at every size. `LTSH` says
+       * above which size the advance is linear and is the same kind of shortcut.
+       */
+      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+
+      for (const tag of ['hdmx', 'LTSH']) {
+        if (tablesOf(view)[tag]) {
+          dropTable(bytes, tag);
+        }
+      }
+
       const glyph = glyphFor(bytes, character.charCodeAt(0));
       const body = glyphBody(bytes, glyph);
       const code = [];
