@@ -132,8 +132,8 @@ describe('the fabricated glyph recordings', () => {
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 21363;
-  const WRONG = 4802;
+  const EXACT = 21596;
+  const WRONG = 4930;
 
   /* The one place an unhinted outline is drawn differently.
    *
@@ -395,6 +395,60 @@ describe('the fabricated glyph recordings', () => {
    */
   present('tilt the top edge off the horizontal', async function () {
     const recording = all.find((entry) => entry.name === 'corner-cap');
+
+    expect(recording).toBeTruthy();
+
+    const manager: any = await prepareFonts();
+    const font: any = new TrueTypeFont(new Uint8Array(readFileSync(recording.file)));
+    const face = font.faceName;
+    const installed = manager._outlines[face];
+
+    manager._outlines[face] = {
+      ...(installed ?? {}),
+      [FontManager.styleKey(font.boldFace, font.italicFace)]: font,
+    };
+
+    let upright = 0;
+    let differing = 0;
+
+    try {
+      for (const record of recording.fixture.records) {
+        const asked = /^"Symbol",h=\d+,weight=400,italic=0,'(.)'$/.exec(record.args);
+
+        if (!asked || !WALKED.includes(asked[1])) {
+          continue;
+        }
+
+        upright++;
+
+        if ((await replayRecord(record, recording.fixture.display ?? 'vga')).outcome !== 'agreed') {
+          differing++;
+        }
+      }
+    } finally {
+      manager._outlines[face] = installed;
+    }
+
+    expect(upright).toBeGreaterThanOrEqual(88);
+    expect(differing).toBe(0);
+  });
+
+  /* The shear written into the outline, which is the control that closes the
+   * question of whose fault the synthesised slant is.
+   *
+   * `slant-baked` is `symbol-slant`'s bar with the lean baked in: each glyph is
+   * the same parallelogram `Surface.slant` builds, to the font unit, and the
+   * probe asks for it upright so Windows synthesises nothing. Every one of the
+   * 88 cells is exact, to the pixel.
+   *
+   * So a narrow oblique hairline is scan-converted the same way by both sides,
+   * and the fill is not what the slant instruments are complaining about. What
+   * they are complaining about is the synthesis: Windows drawing this very
+   * shape by shearing the letter differs from Windows drawing it out of the
+   * outline, and the second is what we do. See `FONTS.md` section 3.
+   */
+  present('rasterise a hairline that leans in the outline', async function () {
+    const recording = all.find((entry) => entry.name === 'slant-baked');
 
     expect(recording).toBeTruthy();
 

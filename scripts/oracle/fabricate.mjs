@@ -4649,6 +4649,10 @@ export const FABRICATIONS = [
     describe: 'the same narrow bar with its top edge tilted off the horizontal by a hair',
   }),
 
+  slantBaked('slant-baked', {
+    describe: "symbol-slant's bar with the synthesised lean baked into the outline instead",
+  }),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -4801,6 +4805,76 @@ function slantShapes(name, { box, describe, source = 'SYMBOL.TTF' }) {
  * The forty unit cap is the control on the control: a fifth of a pixel, still
  * small, but no longer deniable as arithmetic noise.
  */
+/**
+ * `symbol-slant`'s bar with the lean written into the outline instead.
+ *
+ * Everything about the synthesised slant now rests on one question: is Windows
+ * shearing this outline, or doing something else? The instruments say the ink
+ * lands where a sheared outline cannot put it -- a column whose sample point the
+ * sheared bar never covers, at any slope -- and that a slanted cell inks exactly
+ * the rows its upright cell does. Neither is what shearing an outline gives.
+ *
+ * So bake the shear in and ask for the result upright. Each glyph is
+ * `symbol-slant`'s bar, 160 units wide from -400 to 1400, sheared about the
+ * baseline by three tenths and written down as a parallelogram: the same shape,
+ * to the font unit, that `Surface.slant` builds before handing it to the fill.
+ * The probe then asks for it with no italic at all, so Windows scan-converts it
+ * and synthesises nothing.
+ *
+ * If the cells come back the same as the synthesised ones, the synthesis is an
+ * outline shear and what differs is our scan conversion of an oblique hairline.
+ * If they come back different -- and right -- the synthesis is not an outline
+ * shear, and the rasteriser is exonerated.
+ *
+ * Twelve steps of the side bearing, three of the height, as `corner-phase` has,
+ * so that the answer is a sweep rather than a single reading.
+ */
+function slantBaked(
+  name,
+  { describe, source = 'SYMBOL.TTF', characters = 'ABEKMNRSWXZabdefgjkmnostwy0123456789' }
+) {
+  const WIDE = 160;
+  const FOOT = -400;
+  // Three tenths, in the same units the outline is in.
+  const lean = (y) => Math.round((y * 3) / 10);
+
+  return {
+    name,
+    from: source,
+    as: source,
+    describe,
+
+    edit: (bytes) => {
+      for (let index = 0; index < characters.length; index++) {
+        const x0 = 200 + (index % 12) * 19;
+        const top = 1400 + Math.floor(index / 12) * 57;
+
+        const glyph = glyphFor(bytes, 0xf000 + characters.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: x0 + WIDE + lean(top) + 200,
+          height: top,
+          points: [
+            [x0 + lean(FOOT), FOOT],
+            [x0 + lean(top), top],
+            [x0 + WIDE + lean(top), top],
+            [x0 + WIDE + lean(FOOT), FOOT],
+          ],
+          program: [],
+        });
+
+        /* The bearing is the leftmost point of the sheared shape, which is its
+         * foot -- not `x0`, which no longer touches the outline. The trap
+         * `setBearing` exists for; see `slantBar`.
+         */
+        setBearing(bytes, glyph, x0 + lean(FOOT));
+      }
+
+      return bytes;
+    },
+  };
+}
+
 function cornerCap(
   name,
   { describe, source = 'SYMBOL.TTF', characters = 'ABEKMNRSWXZabdefgjkmnostwy0123456789' }

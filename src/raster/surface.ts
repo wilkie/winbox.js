@@ -102,7 +102,17 @@ export class Surface {
    * What survives is everything the shift table explained -- the row set being
    * identical to the upright's, ink in pixels whose sample points are never
    * covered, slopes that do not intersect -- and none of it is explained by a
-   * shear of this outline either. See `FONTS.md` section 3.
+   * shear of this outline either.
+   *
+   * **And that is now proved rather than inferred.** `slant-baked` writes this
+   * shear into the outline -- the same parallelogram `slant` builds, to the font
+   * unit, at the same device coordinates -- and asks for it upright. Windows
+   * draws it exactly as we do, 88 cells and no wrong pixels. Then the same shape
+   * arrived at by asking Windows to lean the rectangle comes back different. So
+   * Windows does not agree with itself, we match the half of it that is a
+   * rasterisation, and the synthesis is something else. What that something is
+   * belongs to GDI's handling of `lfItalic` for a face with no italic file,
+   * which is a question for the binary. See `FONTS.md` section 3.
    */
 
   declare _backcolor: any;

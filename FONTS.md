@@ -820,11 +820,52 @@ the pixel. A shear that shifts whole rows cannot care where a glyph sits
 horizontally, and this one does.
 
 So the ink is consistent with a row shift for any one glyph without being a row
-shift. That leaves the four facts the shift table explained -- the identical row
-set, ink where no sample point is covered, non-intersecting slopes, and the
-strike sizes leaning by halves -- still standing, and still unexplained by any
-shear of the outline. Whatever Windows does here is neither of the two things it
-looks like.
+shift. (The phase depending on the bearing is exactly what a shear of the outline
+_does_ predict -- two roundings differ by the phase between them -- so it tells
+against the bitmap and not against the shear.)
+
+### `slant-baked`: the synthesis is not a shear of the outline, and that is now proved
+
+Everything so far has been inference from pixels. This is a construction.
+
+`slant-baked` is `symbol-slant`'s bar with the lean written into the outline:
+each glyph is the same parallelogram `Surface.slant` builds, to the font unit,
+sheared about the baseline by three tenths, and the probe asks for it **upright**
+so that Windows synthesises nothing. Its device coordinates are ours exactly --
+the bar at twelve pixels is `(2.352, 10.758) (4.725, 2.848) (5.428, 2.848)
+(3.055, 10.758)` either way, because the side bearing is set to the sheared
+shape's own leftmost point and the pen does not move.
+
+**Windows draws it exactly as we do: 88 cells, no wrong pixels.**
+
+So the fill is not the problem, and neither is the placement, and neither is the
+scan conversion of an oblique hairline. Two more sweeps say the same from the
+other side: sliding the sheared outline sideways in eighths of a pixel has a
+sharp single minimum at nought (462 wrong pixels, against 658 an eighth right and
+1,073 an eighth left), and hinting the glyph before shearing it is worse than not
+(502 against 462).
+
+And then the same shape, the same place, drawn the other way:
+
+|                                   | ink                                             |
+| --------------------------------- | ----------------------------------------------- |
+| baked into the outline, upright   | `4:5 5:5 6:5 7:4 8:4 9:4 10:4 11:3 12:3 13:3`   |
+| the plain bar, slanted by Windows | `4:6 5:5 6:5 7:5 8:4 9:4 10:4 11:3 12:3 13:2,3` |
+
+The first is Windows and is also, to the pixel, what we draw for the second.
+
+**Windows does not agree with itself.** Handed a parallelogram it draws one
+thing; asked to lean the rectangle that parallelogram came from, it draws
+another. Since we match it on the first, whatever it does for the second is not
+"shear the outline and scan-convert" -- at three tenths or at any other slope,
+since none in 0.285 to 0.345 reproduces the cell.
+
+That is a proof rather than a fit, and it closes off the whole family of models
+this section has been working through. The slant is not a shear of this outline,
+not a table of row shifts, not a slope, not a placement, not an order of hinting.
+The next place to look is not the rasteriser at all: it is what GDI does to a
+`lfItalic` request for a face that has no italic file, which is a question for the
+binary rather than for the pixels.
 
 **In sum, what is left is dropout control on a narrow sheared feature, and
 nothing else.** Windows fires it where we do not: a bar whose upright cell inks rows 3
