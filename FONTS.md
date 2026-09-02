@@ -374,8 +374,29 @@ twenty-four pixels.
 
 **Open**, and the shape of what is left says the angle was not the only thing
 wrong: at the best angle four of the 72 come out exactly right, against none at
-a tenth. A shear applied to the scaled outline cannot reproduce a shear applied
-before scaling, and that is the likeliest difference.
+a tenth.
+
+Two readings of what else is wrong have been tried and both are worse than what
+is there.
+
+_Leaning from the bottom of the cell rather than the baseline_, which is where
+the strikes and the stroke designs both lean from, and which would stop a
+descender leaning the wrong way. It costs: the wrong pixels go from 1,024 to
+1,290 at the best angle, and the trough moves below every angle swept, which
+says the constant it adds does not belong.
+
+_Shearing the outline before it is fitted rather than the pixels afterwards_ --
+the reading the stroke designs suggested, since they are coordinates too and
+shearing their coordinates was right. It costs about as much: 1,779 wrong pixels
+against 1,024, at every angle from a fifth to a half.
+
+So the outline slant is neither of the two things the other two kinds of font
+do, and what it is has not been found.
+
+**Symbol upright at eight pixels** is a different thing again and probably not a
+rule at all: the cell is seven rows, the letters are three or four, and four of
+the twelve differ by a pixel on one row. That is grid fitting at a size where a
+stem is a third of a pixel wide.
 
 **A bold synthesised onto an outline is not a shifted copy of the drawn
 pixels.** Symbol's beta at ten pixels is where it shows. Plain, one row inks
