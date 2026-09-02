@@ -85,21 +85,30 @@ describe('the fabricated glyph recordings', () => {
 
   /* Where this stands, so that a change which moves it says so.
    *
-   * The wrong pixels are all `symbol-slant` and `symbol-shapes`, which are
-   * instruments rather than fonts: known shapes in place of Symbol's letters,
-   * recorded upright and slanted, so that the difference between the two cells
+   * The wrong pixels are the instruments rather than the fonts, and most of
+   * them are collateral rather than measurement.
+   *
+   * `symbol-slant` and `symbol-shapes` put known shapes in place of Symbol's
+   * letters, upright and slanted, so that the difference between the two cells
    * is the synthesised slant and nothing else. Upright every one of their cells
-   * is exact; slanted they are wrong by about a pixel each, and that is the
-   * measurement -- see `Surface.SLANT` and the note beside `hintedOutline` in
-   * `outlineText`.
+   * is exact; slanted they are wrong by about a pixel each, and that is a
+   * measurement -- see `Surface.SLANT`.
+   *
+   * `slope-sweep` puts a leaning edge in place of Times New Roman's letters,
+   * and the 264 cells it exists to measure all agree; the test above says so
+   * with a ceiling of nought. Most of its wrong pixels are the accented
+   * letters, which are composites referencing the very glyphs it overwrote, so
+   * they draw a parallelogram with an accent on it. That is not a
+   * disagreement about anything, and it is the reason this total is a ratchet
+   * rather than a target.
    *
    * These are not a target -- more than a third of the cells disagree, and the
    * shape fonts were built to disagree informatively rather than to pass. They
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 19906;
-  const WRONG = 220;
+  const EXACT = 20896;
+  const WRONG = 4536;
 
   /* The one place an unhinted outline is drawn differently.
    *
@@ -195,6 +204,76 @@ describe('the fabricated glyph recordings', () => {
 
     expect(seen.size).toBeGreaterThan(200);
     expect(differing).toBeLessThanOrEqual(TURNS);
+  });
+
+  /* And the same edge leaning.
+   *
+   * `edge-sweep` walks a vertical edge and agrees everywhere. What was left of
+   * Symbol's synthesised slant looked like a scan converter that answers an
+   * *oblique* edge differently -- our sheared edge covering three columns of a
+   * row where Windows' covers two -- so this asks with no slant in the
+   * question at all. Every character is a parallelogram rather than a
+   * rectangle, both sides leaning by the same amount, and the right side three
+   * font units further out than the last. A leaning edge crosses a different
+   * phase of the sample grid on every row, so one glyph is already a sweep.
+   *
+   * All 264 agree, at both a third and two thirds of a lean. So the scan
+   * converter is not the difference, and whatever is left of the slant is in
+   * the shear rather than in the walk.
+   *
+   * Only the simple glyphs are counted. The accented letters in the same
+   * recording are composites that reference the ones this overwrote, so they
+   * are drawing a parallelogram with an acute accent on it -- collateral of the
+   * fabrication rather than anything measured.
+   */
+  const SLOPES = 0;
+
+  present('walk a leaning edge across a column of sample points', async function () {
+    const recording = all.find((entry) => entry.name === 'slope-sweep');
+
+    expect(recording).toBeTruthy();
+
+    const manager: any = await prepareFonts();
+    const font: any = new TrueTypeFont(new Uint8Array(readFileSync(recording.file)));
+    const face = font.faceName;
+    const installed = manager._outlines[face];
+
+    manager._outlines[face] = {
+      ...(installed ?? {}),
+      [FontManager.styleKey(font.boldFace, font.italicFace)]: font,
+    };
+
+    const wide = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+    const seen = new Set<string>();
+
+    let differing = 0;
+
+    try {
+      for (const record of recording.fixture.records) {
+        const asked = /^"([^"]+)",h=(\d+),weight=(\d+),italic=(\d+),'(.)'$/.exec(record.args);
+
+        if (!asked || asked[1] !== face || asked[3] !== '400' || asked[4] !== '0') {
+          continue;
+        }
+
+        const index = wide.indexOf(asked[5]);
+
+        if (index < 0 || Number(asked[2]) < 12 || seen.has(`${asked[2]}|${asked[5]}`)) {
+          continue;
+        }
+
+        seen.add(`${asked[2]}|${asked[5]}`);
+
+        if ((await replayRecord(record, recording.fixture.display ?? 'vga')).outcome !== 'agreed') {
+          differing++;
+        }
+      }
+    } finally {
+      manager._outlines[face] = installed;
+    }
+
+    expect(seen.size).toBeGreaterThan(200);
+    expect(differing).toBeLessThanOrEqual(SLOPES);
   });
 
   const EDGES = 0;

@@ -2876,6 +2876,65 @@ export const FABRICATIONS = [
     },
   },
 
+  /* The same edge again, leaning.
+   *
+   * `edge-sweep` walks a *vertical* edge across a column of sample points and
+   * agrees everywhere. What is left of Symbol's synthesised slant is an edge
+   * that leans: our sheared edge covers three columns of a row where Windows'
+   * covers two, on the rows where the edge passes through a sample point.
+   *
+   * A leaning edge and a sheared upright one are the same thing to a scan
+   * converter, so this asks without a slant anywhere in the question. Each
+   * character is a parallelogram rather than a rectangle -- both its sides lean
+   * by the same amount -- and the right side is three font units further out
+   * than the last, exactly as `edge-sweep` sweeps its vertical one.
+   *
+   * A leaning edge crosses a different phase of the sample grid on every row,
+   * so one glyph is already a sweep and eighteen of them are eighteen
+   * independent runs at it. Half lean by a third, which is what a synthesised
+   * italic leans by, and half by two thirds, so that a rule fitted to one has
+   * the other to be wrong about.
+   */
+  {
+    name: 'slope-sweep',
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: 'an unhinted leaning edge carried across a column of sample points',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const TALL = 900;
+
+      WIDE.split('').forEach((character, index) => {
+        const lean = index >= 18 ? 600 : 300;
+        const at = 200 + (index % 18) * 3;
+
+        /* Anticlockwise in font coordinates: up the left side, across the top,
+         * down the right. Both sides lean by the same amount, so the shape is a
+         * parallelogram and its width is constant.
+         */
+        const points = [
+          [0, 0],
+          [lean, TALL],
+          [at + lean, TALL],
+          [at, 0],
+        ];
+
+        setGlyph(bytes, null, glyphFor(bytes, character.charCodeAt(0)), {
+          width: 1024,
+          height: TALL,
+          points,
+          program: [],
+        });
+
+        setBearing(bytes, glyphFor(bytes, character.charCodeAt(0)), 0);
+      });
+
+      return bytes;
+    },
+  },
+
   /* A curve's turning point carried across a column of sample points.
    *
    * `edge-sweep` moved an edge across the sample columns and found one cell

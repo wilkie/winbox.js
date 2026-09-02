@@ -431,6 +431,31 @@ That is the same _kind_ of question `lines` settled for `LineTo`, and it wants
 the same kind of answer: a probe that walks an edge across a sample point rather
 than a font that happens to contain one.
 
+**A probe was built for exactly that, and it says the scan converter is not the
+difference.** `slope-sweep` is `edge-sweep` leaning: every character a
+parallelogram rather than a rectangle, both sides at the same lean, the right
+side three font units further out than the last, and no program anywhere. A
+leaning edge crosses a different phase of the sample grid on every row, so one
+glyph is already a sweep and eighteen of them are eighteen runs at it. Half lean
+by a third, which is what a synthesised italic leans by, and half by two thirds.
+
+**All 264 agree.** So an oblique edge written into an outline is walked exactly
+right, the sampling tie above is not a tie the scan converter breaks differently,
+and whatever is left of the slant is in the shear rather than in the walk.
+
+**And the shear is not `x += y * k` for any constant `k`.** The bar in
+`symbol-slant` is a straight edge whose leftmost inked column is known for every
+row, so the slope can be fitted from Windows' own ink: the widest `k` that ties
+every row of a cell. Fitted per size the ranges do not intersect. Twenty-four
+pixels admits 0.289 to 0.304 and fifteen pixels admits 0.339 to 0.389, and no
+single slope is in both. Rounding the sheared coordinate to whole font units
+changes nothing, which is unsurprising at two thousand units to the em.
+
+So the model is wrong in form and not only in its constant, and the 0.30 that
+fits best across all sizes is an average of something that varies with the size.
+That is where this stands: three instruments, two of them exact, and the third
+saying the rule we are looking for is not the shape we assumed.
+
 The first cut of the instrument had a fault worth recording, because it is the
 one `setBearing` was written for and its own documentation warns of: the bar's
 outline was rewritten and the side bearing left alone, so Windows drew the
@@ -5844,8 +5869,8 @@ rather than the interpreter.
 
 After the flattening it is **264 of 264 cells and no wrong pixels at all**. So
 are `control-sweep`, `cour-control-sweep`, `edge-sweep`, `fine-sweep`,
-`turn-sweep` and `twin-bars`. Every fabrication that takes the hinting out is now
-exact.
+`slope-sweep`, `turn-sweep` and `twin-bars`. Every fabrication that takes the
+hinting out is now exact.
 
 That includes the glyph in question. `times-bare` holds exactly 264 Times
 records and one of them is `'8'` at sixteen pixels -- the same character, the
