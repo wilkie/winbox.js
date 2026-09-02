@@ -4478,6 +4478,25 @@ export const FABRICATIONS = [
 
   ...[127, 130].map((keep) => cutProgram(`cour-w-cut-${keep}`, 'w', keep)),
 
+  /* And the value that function writes, read straight after it has run. The
+   * angle it works out of the arm agrees, and so does everything that goes into
+   * it, so if this agrees too the difference is in the instruction that uses it
+   * and not in the working out.
+   */
+  markControlValue('courbd-cvt23', 'K', 23, { base: 1, keep: 92, source: 'COURBD.TTF' }),
+
+  /* The same angle sixty-four times over. At sixteen it agreed, and the value
+   * the function goes on to write differs by about a sixteenth of a pixel --
+   * which is the resolution that reading had, so it settles nothing.
+   */
+  cutAndAngle('courbd-k-angle-fine', 'K', 88, {
+    from: 33,
+    to: 34,
+    base: 1.375,
+    magnify: 64,
+    source: 'COURBD.TTF',
+  }),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -4779,6 +4798,128 @@ function cutAndMark(
         ...ops.multiply(),
 
         // Onto one point of the outline, which carries the answer into the ink.
+        ...ops.byte(mark),
+        ...ops.swap(),
+        ...ops.setCoordinate(),
+      ]);
+    },
+  };
+}
+
+/**
+ * A glyph whose whole program is a reading of one control value.
+ *
+ * The letter comes out unhinted, which both sides agree on, and one point of it
+ * is moved to sixteen times the distance between the value and a base. So the
+ * two bitmaps differ only if the control value differs, and by a sixteenth of a
+ * pixel of it.
+ */
+function markControlValue(name, character, index, { base, magnify = 16, mark = 0, source, keep }) {
+  return {
+    name,
+    from: source,
+    as: source,
+    describe: `${source}'s ${character} showing control value ${index}`,
+
+    edit: (bytes) => {
+      const glyph = glyphFor(bytes, character.charCodeAt(0));
+
+      /* Some of these values are written by the glyph's own program, so the
+       * reading has to come after however much of it is wanted.
+       */
+      let kept = [];
+
+      if (keep !== undefined) {
+        const body = glyphBody(bytes, glyph);
+        const code = [];
+
+        for (let offset = 0; offset < body.length; offset++) {
+          code.push(body.view.getUint8(body.program + offset));
+        }
+
+        kept = code.slice(0, instructionStarts(code)[keep] ?? code.length);
+      }
+
+      return setGlyphProgram(bytes, glyph, [
+        ...kept,
+
+        // Along y, which is the axis the mark is moved on.
+        0x00,
+
+        ...ops.word(index),
+        ...ops.readControlValue(),
+
+        ...ops.word(base * 64),
+        ...ops.subtract(),
+        ...ops.word(magnify * 64),
+        ...ops.multiply(),
+
+        ...ops.byte(mark),
+        ...ops.swap(),
+        ...ops.setCoordinate(),
+      ]);
+    },
+  };
+}
+
+/**
+ * A glyph cut short and made to show the angle of its own arm.
+ *
+ * The function that goes wrong in Courier New's bold `K` sets the projection
+ * vector along two of the glyph's points, reads it back, takes the larger of
+ * its two components and divides by a hundred and twenty-eight. Everything that
+ * goes into that has been read and agrees; this reads what comes out of it.
+ *
+ * The same instructions in the same order, and then the answer is put on a
+ * point of the outline instead of being used.
+ */
+function cutAndAngle(
+  name,
+  character,
+  keep,
+  { from: readFrom, to: readTo, base, magnify = 16, mark = 0, source }
+) {
+  return {
+    name,
+    from: source,
+    as: source,
+    describe: `${source}'s ${character} cut after ${keep}, showing the angle of ${readFrom} to ${readTo}`,
+
+    edit: (bytes) => {
+      const glyph = glyphFor(bytes, character.charCodeAt(0));
+      const body = glyphBody(bytes, glyph);
+      const code = [];
+
+      for (let offset = 0; offset < body.length; offset++) {
+        code.push(body.view.getUint8(body.program + offset));
+      }
+
+      const starts = instructionStarts(code);
+
+      return setGlyphProgram(bytes, glyph, [
+        ...code.slice(0, starts[keep] ?? code.length),
+
+        // The projection at right angles to the line, as the font sets it.
+        ...ops.byte(readFrom),
+        ...ops.byte(readTo),
+        0x87,
+
+        // Read it back and reduce it the way the font does.
+        0x0c,
+        0x64,
+        ...ops.swap(),
+        0x64,
+        0x8b,
+        ...ops.word(8192),
+        0x62,
+
+        ...ops.word(base * 64),
+        ...ops.subtract(),
+        ...ops.word(magnify * 64),
+        ...ops.multiply(),
+
+        // Back onto an axis, so that placing the mark is not itself diagonal.
+        0x00,
         ...ops.byte(mark),
         ...ops.swap(),
         ...ops.setCoordinate(),

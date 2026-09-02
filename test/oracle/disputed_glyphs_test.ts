@@ -69,12 +69,23 @@ import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './repl
  * a size. It agrees there too. The arm is where Windows has it to a
  * sixty-fourth of a pixel at both sizes that disagree.
  *
- * So the function at ninety-one is handed the same arm and answers differently.
- * What it reads besides the arm is a control value, a storage location and the
- * projection vector, and what it does with them is a rounding, a smaller-of and
- * a divide. One of those is the difference. Normalising was the first suspect
- * and is not it: reordering it to match the scaler changes nothing measurable,
- * and so does writing it out in the scaler's own fixed point.
+ * So the function at ninety-one is handed the same arm and answers differently,
+ * and the reading tools are now sharp enough to say that plainly. Measured
+ * through the cell to a sixty-fourth of a pixel, at both sizes that disagree:
+ * the two points that define the arm, the control value the function reads,
+ * and the number it works out of the arm's angle -- the larger of the
+ * projection vector's two parts over a hundred and twenty-eight -- all agree
+ * with Windows. `courbd-k-angle-fine` is that last one.
+ *
+ * The value the function writes does not. `courbd-cvt23` reads control value 23
+ * straight after the function has run, and it differs at sixteen and at
+ * twenty-four and agrees at twelve, which is exactly where the letter does.
+ *
+ * Two things it might have been are ruled out. The branch that reads the angle
+ * turns on the control value being at most two pixels exactly, and the value is
+ * two pixels exactly -- but it is the same two pixels in both, read to a
+ * sixty-fourth. And the `ELSE` after that branch skips where it should: the two
+ * added afterwards sit past the `EIF` and are added either way.
  */
 const RECORDS = 16;
 const PIXELS = 48;
