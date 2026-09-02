@@ -957,8 +957,37 @@ is slanting. That is one line, and it is worth 40 fabricated cells and 63 wrong
 pixels -- and three records of the real corpus, which goes from 5,846 to 5,849 of
 5,982. `Surface.outlineText` now passes `stubs: !italic` to the fill.
 
-Which leaves, of the whole synthesised slant, one pixel a cell at the ends: the
-twelve pixel bar's top row is `{4, 5}` where a rescue can only place `{4}`.
+Which leaves, of the whole synthesised slant, 404 wrong pixels over the four
+instruments' 384 slanted cells, of which 224 are now exact. Sorted by where they
+fall, they are no longer only at the ends:
+
+|                              | rows |
+| ---------------------------- | ---- |
+| middle, we lack a pixel      | 56   |
+| middle, we have one too many | 52   |
+| first row, neither of those  | 51   |
+| middle, neither              | 48   |
+| last row, we lack one        | 40   |
+| first row, we lack one       | 35   |
+| the rest                     | 15   |
+
+And the one that started this is still there and still unexplained: the twelve
+pixel bar's top row is `{4, 5}` where a rescue can only place `{4}`. Column 5's
+sample point is at 5.5 and the sheared bar's rightmost point anywhere is 5.428,
+so no run reaches it; a horizontal rescue would need a zero-length run at 6,
+which needs a crossing at 5.5; a vertical rescue would need the scan line at 5.5
+crossed, and it is not. Every mechanism in the source that can put ink in a pixel
+has been checked against it and none can.
+
+Two more possibilities closed on the way past. `Blit` fills a _negative_ run --
+one whose `on` lies right of its `off` -- from the off to the on, and this does
+too, so that is not the missing ink. And hinting the glyph before shearing it,
+re-measured now that stub control has changed the ground, is still worse than
+not: 440 wrong pixels against 404.
+
+So the slant is closed down to about a pixel a cell on features narrower than a
+pixel, everything wider is exact, and what remains is a pixel this file cannot
+yet account for from the pseudocode.
 
 Where none of this goes is into the scaler. Segment 36's public entries are four
 thunks that load a dispatch index into `bx` and a word count into `cx` and jump
