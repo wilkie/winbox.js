@@ -299,6 +299,52 @@ static void probeBitmap(LPCSTR face, int weight, BYTE italic)
     }
 }
 
+/*
+ * The plotter fonts, which are strokes rather than pixels or outlines.
+ *
+ * Roman, Modern and Script are the three that ship, and nothing has ever
+ * recorded what they look like: the font probe measures them, so their widths
+ * and heights are known to the pixel, but a width is not a picture. They are a
+ * third kind of thing -- one design apiece, drawn at whatever size is asked for
+ * by joining up runs of points, with no strikes to pick between and no hinting
+ * to argue about -- so what a rasteriser does with them is its own question.
+ *
+ * Reachable only through `OEM_CHARSET`, which is also how the font probe gets
+ * at them. A request in ANSI for any of these three names lands somewhere else
+ * entirely.
+ *
+ * Sizes chosen to cross the design's own height rather than a strike's: Roman
+ * and Modern are drawn at thirty-two units and Script at thirty-seven, so this
+ * runs from well under to well over.
+ */
+static void probeStroke(LPCSTR face, int weight, BYTE italic)
+{
+    static const char CHARS[] = "ABKMWagjmy1.";
+    static const int SIZES[] = { 8, 12, 16, 20, 24, 32, 40 };
+
+    int size;
+    int index;
+    char name[64];
+
+    for (size = 0; size < sizeof(SIZES) / sizeof(SIZES[0]); size++) {
+        HFONT font = CreateFont(SIZES[size], 0, 0, 0, weight, italic, 0, 0,
+                                OEM_CHARSET, OUT_DEFAULT_PRECIS,
+                                CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+                                DEFAULT_PITCH, face);
+
+        wsprintf(name, "\"%s\",h=%d,weight=%d,italic=%d,oem", (LPSTR)face, SIZES[size],
+                 weight, (int)italic);
+
+        for (index = 0; CHARS[index]; index++) {
+            probeGlyph(name, font, CHARS[index]);
+        }
+
+        if (font) {
+            DeleteObject(font);
+        }
+    }
+}
+
 static void probeSized(LPCSTR face, int height, int weight, BYTE italic)
 {
     char name[64];
@@ -388,6 +434,13 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeAccented("Arial");
     probeAccented("Times New Roman");
     probeAccented("Courier New");
+
+    probeNote("the plotter fonts, which are strokes and have never been drawn here");
+    probeStroke("Roman", FW_NORMAL, 0);
+    probeStroke("Roman", FW_BOLD, 0);
+    probeStroke("Roman", FW_NORMAL, 1);
+    probeStroke("Modern", FW_NORMAL, 0);
+    probeStroke("Script", FW_NORMAL, 0);
 
     probeNote("the bitmap faces, which are strikes rather than outlines");
     probeBitmap("System", FW_NORMAL, 0);

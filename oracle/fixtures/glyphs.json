@@ -21144,6 +21144,2526 @@
     },
     {
       "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=0,oem,'A'",
+      "result": "fffffffff7fffffff7ffffffe7ffffffe3ffffffcbffffffd7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=0,oem,'B'",
+      "result": "ffffffffc3ffffffebffffffebffffffe3ffffffebffffffe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=0,oem,'K'",
+      "result": "ffffffffc3ffffffe7ffffffe7ffffffe7ffffffebffffffd7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=0,oem,'M'",
+      "result": "ffffffffcbffffffebffffffebffffffe3ffffffe3ffffffdbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=0,oem,'W'",
+      "result": "ffffffffc3ffffffe3ffffffe3ffffffebffffffebffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=0,oem,'a'",
+      "result": "ffffffffffffffffffffffffe7ffffffe7ffffffc7ffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=0,oem,'g'",
+      "result": "ffffffffffffffffffffffffe3ffffffe7ffffffe7ffffffc7ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=0,oem,'j'",
+      "result": "ffffffffefffffffefffffffcfffffffefffffffefffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=0,oem,'m'",
+      "result": "ffffffffffffffffffffffffc1ffffffe9ffffffe9ffffffd5ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffc3ffffffebfffffff7fffffff7ffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=0,oem,'1'",
+      "result": "fffffffff7ffffffe7fffffff7fffffff7fffffff7ffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=0,oem,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=0,oem,'A'",
+      "result": "fffffffffffffffff7fffffff7fffffff3fffffff3ffffffe3ffffffe3ffffffe9ffffffdbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=0,oem,'B'",
+      "result": "ffffffffffffffffc1ffffffedffffffedffffffe1ffffffe9ffffffedffffffedffffffe1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=0,oem,'K'",
+      "result": "ffffffffffffffffc9ffffffebffffffebffffffe7ffffffe7ffffffebffffffebffffffcbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=0,oem,'M'",
+      "result": "ffffffffffffffffcdffffffedffffffe5ffffffe5ffffffe1ffffffe1ffffffe9ffffffc9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=0,oem,'W'",
+      "result": "ffffffffffffffffc9ffffffe9ffffffe9ffffffe9fffffff3fffffff3fffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=0,oem,'a'",
+      "result": "ffffffffffffffffffffffffffffffffe7ffffffebffffffe3ffffffebffffffebffffffe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=0,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffff3ffffffebffffffebffffffebffffffe3ffffffe3ffffffe3ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=0,oem,'j'",
+      "result": "ffffffffffffffffffffffffffffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=0,oem,'m'",
+      "result": "ffffffffffffffffffffffffffffffffc2ffffffe07fffffe97fffffe97fffffe97fffffca7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffcbffffffebffffffebfffffff7fffffff7fffffff7fffffff7ffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=0,oem,'1'",
+      "result": "fffffffffffffffff7ffffffe7fffffff7fffffff7fffffff7fffffff7fffffff7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=0,oem,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=0,oem,'A'",
+      "result": "fffffffffffffffffbfffffffbfffffffbfffffff1fffffff1fffffff5fffffff5fffffff5fffffff1ffffffeeffffffeeffffffccffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=0,oem,'B'",
+      "result": "ffffffffffffffffe1fffffff67ffffff77ffffff77ffffff67ffffff0fffffff67ffffff77ffffff77ffffff77ffffff67ffffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=0,oem,'K'",
+      "result": "ffffffffffffffffe67ffffff6fffffff6fffffff5fffffff5fffffff3fffffff3fffffff5fffffff5fffffff6fffffff6ffffffe67fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=0,oem,'M'",
+      "result": "ffffffffffffffffe77ffffff77ffffff77ffffff27ffffff27ffffff27ffffff27ffffff07ffffff07ffffff57ffffff57fffffe67fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=0,oem,'W'",
+      "result": "ffffffffffffffffc47fffffe57fffffe57ffffff57ffffff57ffffff07ffffff2fffffff2fffffff2fffffffafffffffaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=0,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff1ffffffe5fffffff8ffffffe4ffffffecffffffecffffffe4fffffff2ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=0,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff0fffffff5ffffffe5ffffffe5ffffffe5ffffffebffffffefffffffe0ffffffeeffffffe0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=0,oem,'j'",
+      "result": "fffffffffffffffff7fffffff7ffffffffffffffffffffffe7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7ffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=0,oem,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffe00ffffff6effffff6effffff6effffff6effffff6effffff6efffffe4cfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffe4ffffffe6fffffff5fffffff5fffffff1fffffff1fffffffbfffffffbfffffffbfffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=0,oem,'1'",
+      "result": "fffffffffffffffffbfffffffbfffffff3fffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=0,oem,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=0,oem,'A'",
+      "result": "fffffffffffffffffffffffffdfffffffdfffffffdfffffff9fffffff8fffffffafffffffafffffff6fffffff6fffffff0fffffff67fffffef7fffffef7fffffc67fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=0,oem,'B'",
+      "result": "ffffffffffffffffffffffffe07ffffff73ffffff7bffffff7bffffff7bffffff73ffffff07ffffff73ffffff7bffffff7bffffff7bffffff73ffffff77ffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=0,oem,'K'",
+      "result": "ffffffffffffffffffffffffe73ffffff77ffffff77ffffff6fffffff6fffffff5fffffff1fffffff2fffffff6fffffff6fffffff77ffffff77ffffff7bfffffe73fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=0,oem,'M'",
+      "result": "ffffffffffffffffffffffffe7bffffff7bffffff7bffffff33ffffff33ffffff33ffffff33ffffff2bffffff2bffffff0bffffff4bffffff5bffffff5bfffffe73fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=0,oem,'W'",
+      "result": "ffffffffffffffffffffffffc43fffffe4bfffffe4bfffffe4bffffff4bffffff4bffffff03ffffff27ffffff27ffffff27ffffffb7ffffffb7ffffffb7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=0,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffff9ffffffe6ffffffe67ffffffc7fffffe27fffffe67fffffee7fffffee7fffffe57ffffff97fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=0,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffff97ffffff47fffffe6ffffffe6ffffffe6fffffff6ffffffe1ffffffefffffffe7ffffffe07fffffef7fffffef7fffffe07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=0,oem,'j'",
+      "result": "fffffffffffffffffffffffff3fffffff7ffffffffffffffffffffffe3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3ffffffe3ffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=0,oem,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffe4cffffff337fffff777fffff777fffff777fffff777fffff777fffff777fffff777ffffe667ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffe47fffffe77ffffff37ffffff2fffffff2fffffffafffffff8fffffff9fffffffdfffffffdfffffffdfffffffbfffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=0,oem,'1'",
+      "result": "fffffffffffffffffffffffffdfffffff9fffffff5fffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=0,oem,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffe7fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=0,oem,'A'",
+      "result": "fffffffffffffffffffffffffefffffffefffffffefffffffc7ffffffc7ffffffd7ffffffd7ffffffb7ffffffb7ffffffb3ffffffbbffffff03ffffff7bffffff7bffffff7dfffffefdfffffc71fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=0,oem,'B'",
+      "result": "ffffffffffffffffffffffffe03ffffff3dffffff3cffffff3effffff3effffff3effffff3cffffff3dffffff01ffffff3cffffff3cffffff3effffff3effffff3effffff3cffffff3dffffff03fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=0,oem,'K'",
+      "result": "ffffffffffffffffffffffffe38ffffff3dffffff3dffffff3bffffff3bffffff37ffffff2fffffff2fffffff0fffffff17ffffff37ffffff3bffffff3bffffff3dffffff3dffffff3efffffe38fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=0,oem,'M'",
+      "result": "ffffffffffffffffffffffffe3e7fffff3effffff3effffff1cffffff1cffffff1cffffff1cffffff5cffffff4cffffff4affffff4affffff6affffff62ffffff62ffffff66ffffff76fffffe3c7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=0,oem,'W'",
+      "result": "ffffffffffffffffffffffffc347fffff76ffffff76ffffff76ffffff32ffffffaaffffffaaffffffaaffffffaaffffffa9ffffff89ffffff89ffffffa9ffffffddffffffddffffffddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=0,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8fffffff77ffffff7bffffff7bffffffe3ffffff9bffffff7bfffffe7bfffffe7bfffffe7bffffff71ffffff8dfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=0,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffcdffffffb1ffffff37ffffff73ffffff73ffffff73ffffff77ffffff37ffffff4ffffffefffffffe7fffffff07fffffe83fffffefdfffffefdfffffe03fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=0,oem,'j'",
+      "result": "fffffffffffffffffffffffffbfffffff3fffffffbffffffffffffffffffffffe3fffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbffffffebffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=0,oem,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe231fffff18cfffff18cfffff3defffff3defffff3defffff3defffff3defffff3defffff3defffff3deffffe3187fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe31ffffff7dffffffbbffffffbbffffffbbffffff9bffffffd7ffffffd7ffffffc7ffffffd7ffffffefffffffefffffffefffffffdfffffffdffffffe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=0,oem,'1'",
+      "result": "fffffffffffffffffffffffffefffffffefffffffcfffffffafffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffff87fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=0,oem,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff3fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=0,oem,'A'",
+      "result": "ffffffffffffffffffffffffffffffffff7fffffff7fffffff7ffffffe3ffffffe3ffffffe3ffffffebffffffe9ffffffd9ffffffd9ffffffddffffffdcffffffdcffffffdcffffffbcffffff807fffffbe7fffffbe7fffffbe7fffff7f3fffff7f3ffffe3c3ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=0,oem,'B'",
+      "result": "ffffffffffffffffffffffffffffffffe007fffff9f3fffff9fbfffff9fbfffff9f9fffff9f9fffff9f9fffff9f9fffff9fbfffff9f3fffff807fffff9f3fffff9fbfffff9fbfffff9f9fffff9f9fffff9f9fffff9f9fffff9f9fffff9fbfffff9f3fffff00fffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=0,oem,'K'",
+      "result": "ffffffffffffffffffffffffffffffffe0e1fffff9fbfffff9fbfffff9f7fffff9f7fffff9effffff9dffffff9dffffff9bffffff93ffffff93ffffff89ffffff89ffffff9cffffff9cffffff9cffffff9e7fffff9e7fffff9f3fffff9f3fffff9f9ffffe0e1ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=0,oem,'M'",
+      "result": "ffffffffffffffffffffffffffffffffe1fc7ffff9fcfffff9fcfffff8f8fffff8f8fffff8f8fffff8f8fffffa78fffffa74fffffa74fffffa74fffffb74fffffb34fffffb34fffffb2cfffffbacfffffb8cfffffb8cfffffbacfffffbdcfffffbdcffffe1f07fffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=0,oem,'W'",
+      "result": "ffffffffffffffffffffffffffffffffe1d87ffffbdefffffbdefffffbdefffffb9dfffff98dfffffdadfffffdadfffffdadfffffdadfffffdadfffffd6bfffffd6bfffffc63fffffc63fffffc63fffffe73fffffe73fffffef7fffffef7fffffef7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=0,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc3ffffffbdffffffbeffffffbefffffffefffffff0ffffffceffffffbeffffffbeffffff3effffff3effffff3effffff3effffffb87fffffc7fffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=0,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe37fffffdc7fffff9dffffffbdffffffbcffffffbcffffffbcffffffbcffffffbdffffff99ffffffa7ffffff7fffffff7fffffff3fffffff81ffffff40ffffff7efffffeff7ffffeff7ffffeff7fffff00fffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=0,oem,'j'",
+      "result": "fffffffffffffffffffffffffffffffffdfffffff9fffffffdfffffffffffffffffffffffffffffffffffffff1fffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdffffffedffffffe5ffffffe1ffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=0,oem,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe10e1ffff8e5cffff8e5cffff9f3e7fff9f3e7fff9f3e7fff9f3e7fff9f3e7fff9f3e7fff9f3e7fff9f3e7fff9f3e7fff9f3e7fff9f3e7ffe0c183ffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe1c7fffffbf7fffffbeffffffdeffffffdeffffffdeffffffddffffffcdffffffedffffffebffffffebffffffe3fffffff3fffffff7fffffff7fffffff7fffffff7ffffffefffffffefffffff6ffffffe1ffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=0,oem,'1'",
+      "result": "ffffffffffffffffffffffffffffffffffbfffffff3fffffff3ffffffe3ffffffd3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3ffffffc1fffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=0,oem,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffff9fffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=0,oem,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffdfffffffdfffffffdfffffffafffffff8fffffff8fffffff8fffffff6fffffff67ffffff67ffffff67fffffef7fffffef7fffffef7fffffef3fffffef3fffffdfbfffffdfbfffffdfbfffffc01fffffbfdfffffbfdfffffbfdfffffbfdfffff7fefffff7feffffe0f07fff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=0,oem,'B'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff001fffffcfefffffcfefffffcfe7ffffcfe7ffffcff3ffffcff3ffffcff3ffffcff3ffffcff3ffffcfe7ffffcfefffffcfdfffffc01fffffcfefffffcfe7ffffcfe7ffffcff3ffffcff3ffffcff3ffffcff3ffffcff3ffffcff3ffffcfe7ffffcfe7ffffcfcfffff803ffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=0,oem,'K'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff07c1ffffcff7ffffcff7ffffcfefffffcfefffffcfdfffffcfbfffffcfbfffffcf7fffffceffffffceffffffccffffffccffffffca7fffffc67fffffc73fffffcf3fffffcf3fffffcf9fffffcf9fffffcfcfffffcfcfffffcfcfffffcfe7ffffcfe7ffffcff3ffff07c1fff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=0,oem,'M'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff0ff8ffffcff9ffffcff9ffffc7f1ffffc7f1ffffc7f1ffffc7f1ffffc7e9ffffd7e9ffffd3e9ffffd3e9ffffd3d9ffffd3d9ffffd3d9ffffdbd9ffffd9d9ffffd9b9ffffd9b9ffffd9b9ffffddb9ffffdd79ffffdc79ffffdc79ffffdd79ffffdef9ffffdef9ffff0fe0fff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=0,oem,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffe0e60ffff9e7dffff9e7dffff9e7dffff9e3dffffdd3bffffcd3bffffcd3bffffcd3bffffcd3bffffcdbbffffcd9bffffcd9bffffcd9bffffeb97ffffeb97ffffe397ffffe3c7ffffe3c7ffffe3c7ffffebd7ffffebd7fffff7cffffff7effffff7effffff7effffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=0,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0ffffffdf7fffff9fbfffff9fbfffff9f9fffffff9ffffffc1ffffff39fffffcf9fffff9f9fffff9f9fffff3f9fffff3f9fffff3f9fffff3f9fffff3f1fffff8ecfffffe1effff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=0,oem,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1cfffffee8fffffce7fffffdf7fffff9f3fffff9f3fffff9f3fffff9f3fffff9f3fffffdf7fffffdf7fffffaeffffffb1ffffff7fffffff7fffffff7fffffff1fffffffa0fffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=0,oem,'j'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffefffffffd7ffffffd7ffffffefffffffffffffffffffffffffffffffffffffffffffffff07ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7fffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=0,oem,'m'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0c3c1fffc3cbefffc7c7efffcfe7e7ffcfefe7ffcfefe7ffcfefe7ffcfefe7ffcfefe7ffcfefe7ffcfefe7ffcfefe7ffcfefe7ffcfefe7ffcfefe7ffcfefe7ffcfefe7ff070383f",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=0,oem,'y'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0e0fffff9fefffffcfdfffffcfdfffffcfdfffffcfdfffffe7bfffffe7bfffffe7bffffff77ffffff37ffffff37ffffffafffffffafffffff8fffffffafffffffdfffffffdfffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=0,oem,'1'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffefffffffcfffffffcfffffff8fffffff4ffffffecfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcffffffe03ffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=0,oem,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffafffffffdffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=700,italic=0,oem,'A'",
+      "result": "fffffffff3fffffff3ffffffe3ffffffe1ffffffc1ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=700,italic=0,oem,'B'",
+      "result": "ffffffffc1ffffffe1ffffffe1ffffffe1ffffffe1ffffffe1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=700,italic=0,oem,'K'",
+      "result": "ffffffffc1ffffffe3ffffffe3ffffffe3ffffffe1ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=700,italic=0,oem,'M'",
+      "result": "ffffffffc1ffffffe1ffffffe1ffffffe1ffffffe1ffffffc9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=700,italic=0,oem,'W'",
+      "result": "ffffffffc1ffffffe1ffffffe1ffffffe1ffffffe1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=700,italic=0,oem,'a'",
+      "result": "ffffffffffffffffffffffffe3ffffffe3ffffffc3ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=700,italic=0,oem,'g'",
+      "result": "ffffffffffffffffffffffffe1ffffffe3ffffffe3ffffffc3ffffffc1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=700,italic=0,oem,'j'",
+      "result": "ffffffffe7ffffffe7ffffffc7ffffffe7ffffffe7ffffffe7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=700,italic=0,oem,'m'",
+      "result": "ffffffffffffffffffffffffc0ffffffe0ffffffe0ffffffc0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=700,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffc1ffffffe1fffffff3fffffff3ffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=700,italic=0,oem,'1'",
+      "result": "fffffffff3ffffffe3fffffff3fffffff3fffffff3ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=700,italic=0,oem,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=700,italic=0,oem,'A'",
+      "result": "fffffffffffffffff3fffffff3fffffff1fffffff1ffffffe1ffffffe1ffffffe0ffffffc9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=700,italic=0,oem,'B'",
+      "result": "ffffffffffffffffc0ffffffe4ffffffe4ffffffe0ffffffe0ffffffe4ffffffe4ffffffe0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=700,italic=0,oem,'K'",
+      "result": "ffffffffffffffffc0ffffffe1ffffffe1ffffffe3ffffffe3ffffffe1ffffffe1ffffffc1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=700,italic=0,oem,'M'",
+      "result": "ffffffffffffffffc4ffffffe4ffffffe0ffffffe0ffffffe0ffffffe0ffffffe0ffffffc0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=700,italic=0,oem,'W'",
+      "result": "ffffffffffffffffc0ffffffe0ffffffe0ffffffe0fffffff1fffffff1fffffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=700,italic=0,oem,'a'",
+      "result": "ffffffffffffffffffffffffffffffffe3ffffffe1ffffffe1ffffffe1ffffffe1ffffffe1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=700,italic=0,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffff1ffffffe1ffffffe1ffffffe1ffffffe1ffffffe1ffffffe1ffffffc1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=700,italic=0,oem,'j'",
+      "result": "ffffffffffffffffffffffffffffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=700,italic=0,oem,'m'",
+      "result": "ffffffffffffffffffffffffffffffffc07fffffe03fffffe03fffffe03fffffe03fffffc03fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=700,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffc1ffffffe1ffffffe1fffffff3fffffff3fffffff3fffffff3ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=700,italic=0,oem,'1'",
+      "result": "fffffffffffffffff3ffffffe3fffffff3fffffff3fffffff3fffffff3fffffff3ffffffe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=700,italic=0,oem,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=700,italic=0,oem,'A'",
+      "result": "fffffffffffffffff9fffffff9fffffff9fffffff0fffffff0fffffff0fffffff0fffffff0fffffff0ffffffe67fffffe67fffffc47fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=700,italic=0,oem,'B'",
+      "result": "ffffffffffffffffe0fffffff23ffffff33ffffff33ffffff23ffffff07ffffff23ffffff33ffffff33ffffff33ffffff23ffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=700,italic=0,oem,'K'",
+      "result": "ffffffffffffffffe23ffffff27ffffff27ffffff0fffffff0fffffff1fffffff1fffffff0fffffff0fffffff27ffffff27fffffe23fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=700,italic=0,oem,'M'",
+      "result": "ffffffffffffffffe33ffffff33ffffff33ffffff03ffffff03ffffff03ffffff03ffffff03ffffff03ffffff03ffffff03fffffe23fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=700,italic=0,oem,'W'",
+      "result": "ffffffffffffffffc03fffffe03fffffe03ffffff03ffffff03ffffff03ffffff07ffffff07ffffff07ffffff87ffffff87fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=700,italic=0,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff0ffffffe0fffffff87fffffe07fffffe47fffffe47fffffe07ffffff07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=700,italic=0,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff07ffffff0ffffffe0ffffffe0ffffffe0ffffffe1ffffffe7ffffffe07fffffe67fffffe07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=700,italic=0,oem,'j'",
+      "result": "fffffffffffffffff3fffffff3ffffffffffffffffffffffe3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3fffffff3ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=700,italic=0,oem,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffe007fffff267fffff267fffff267fffff267fffff267fffff267ffffe047ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=700,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffe07fffffe27ffffff0fffffff0fffffff0fffffff0fffffff9fffffff9fffffff9fffffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=700,italic=0,oem,'1'",
+      "result": "fffffffffffffffff9fffffff9fffffff1fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=700,italic=0,oem,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe3fffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=700,italic=0,oem,'A'",
+      "result": "fffffffffffffffffffffffffcfffffffcfffffffcfffffff8fffffff87ffffff87ffffff87ffffff27ffffff27ffffff07ffffff23fffffe73fffffe73fffffc23fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=700,italic=0,oem,'B'",
+      "result": "ffffffffffffffffffffffffe03ffffff31ffffff39ffffff39ffffff39ffffff31ffffff03ffffff31ffffff39ffffff39ffffff39ffffff31ffffff33ffffff07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=700,italic=0,oem,'K'",
+      "result": "ffffffffffffffffffffffffe31ffffff33ffffff33ffffff27ffffff27ffffff0fffffff0fffffff07ffffff27ffffff27ffffff33ffffff33ffffff39fffffe31fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=700,italic=0,oem,'M'",
+      "result": "ffffffffffffffffffffffffe39ffffff39ffffff39ffffff11ffffff11ffffff11ffffff11ffffff01ffffff01ffffff01ffffff01ffffff09ffffff09fffffe31fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=700,italic=0,oem,'W'",
+      "result": "ffffffffffffffffffffffffc01fffffe01fffffe01fffffe01ffffff01ffffff01ffffff01ffffff03ffffff03ffffff03ffffff93ffffff93ffffff93fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=700,italic=0,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffff8ffffffe27fffffe23ffffffc3fffffe03fffffe23fffffe63fffffe63fffffe03ffffff83fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=700,italic=0,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffff83ffffff03fffffe27fffffe27fffffe27ffffff27fffffe0ffffffe7ffffffe3ffffffe03fffffe73fffffe73fffffe03fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=700,italic=0,oem,'j'",
+      "result": "fffffffffffffffffffffffff1fffffff3ffffffffffffffffffffffe1fffffff1fffffff1fffffff1fffffff1fffffff1fffffff1fffffff1fffffff1fffffff1fffffff1ffffffe1ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=700,italic=0,oem,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffe047fffff113fffff333fffff333fffff333fffff333fffff333fffff333fffff333ffffe223ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=700,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03fffffe33ffffff13ffffff07ffffff07ffffff87ffffff87ffffff8fffffffcfffffffcfffffffcfffffff9fffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=700,italic=0,oem,'1'",
+      "result": "fffffffffffffffffffffffffcfffffff8fffffff0fffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffff07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=700,italic=0,oem,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3ffffffe3fffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=700,italic=0,oem,'A'",
+      "result": "fffffffffffffffffffffffffe7ffffffe7ffffffe7ffffffc3ffffffc3ffffffc3ffffffc3ffffff93ffffff93ffffff91ffffff99ffffff01ffffff39ffffff39ffffff3cfffffe7cfffffc30fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=700,italic=0,oem,'B'",
+      "result": "ffffffffffffffffffffffffe01ffffff1cffffff1c7fffff1e7fffff1e7fffff1e7fffff1c7fffff1cffffff00ffffff1c7fffff1c7fffff1e7fffff1e7fffff1e7fffff1c7fffff1cffffff01fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=700,italic=0,oem,'K'",
+      "result": "ffffffffffffffffffffffffe187fffff1cffffff1cffffff19ffffff19ffffff13ffffff07ffffff07ffffff07ffffff03ffffff13ffffff19ffffff19ffffff1cffffff1cffffff1e7ffffe187ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=700,italic=0,oem,'M'",
+      "result": "ffffffffffffffffffffffffe1e3fffff1e7fffff1e7fffff0c7fffff0c7fffff0c7fffff0c7fffff0c7fffff047fffff007fffff007fffff207fffff207fffff207fffff227fffff327ffffe1c3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=700,italic=0,oem,'W'",
+      "result": "ffffffffffffffffffffffffc103fffff327fffff327fffff327fffff107fffff807fffff807fffff807fffff807fffff80ffffff80ffffff80ffffff80ffffffccffffffccffffffccfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=700,italic=0,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff87ffffff33ffffff39ffffff39ffffffe1ffffff89ffffff39fffffe39fffffe39fffffe39ffffff30ffffff84fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=700,italic=0,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc4ffffff90ffffff13ffffff31ffffff31ffffff31ffffff33ffffff13ffffff07fffffe7ffffffe3fffffff03fffffe01fffffe7cfffffe7cfffffe01fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=700,italic=0,oem,'j'",
+      "result": "fffffffffffffffffffffffff9fffffff1fffffff9ffffffffffffffffffffffe1fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9ffffffe1ffffffc1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=700,italic=0,oem,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe010fffff0847ffff0847ffff1ce7ffff1ce7ffff1ce7ffff1ce7ffff1ce7ffff1ce7ffff1ce7ffff1ce7fffe1083fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=700,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe10ffffff3cffffff99ffffff99ffffff99ffffff89ffffffc3ffffffc3ffffffc3ffffffc3ffffffe7ffffffe7ffffffe7ffffffcfffffffcffffffe1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=700,italic=0,oem,'1'",
+      "result": "fffffffffffffffffffffffffe7ffffffe7ffffffc7ffffff87ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe7ffffff83fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=700,italic=0,oem,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffff1fffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=700,italic=0,oem,'A'",
+      "result": "ffffffffffffffffffffffffffffffffff3fffffff3fffffff3ffffffe1ffffffe1ffffffe1ffffffe1ffffffe0ffffffc8ffffffc8ffffffccffffffcc7fffffcc7fffffcc7fffff9c7fffff803fffff9e3fffff9e3fffff9e3fffff3f1fffff3f1ffffe1c1ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=700,italic=0,oem,'B'",
+      "result": "ffffffffffffffffffffffffffffffffe003fffff8f1fffff8f9fffff8f9fffff8f8fffff8f8fffff8f8fffff8f8fffff8f9fffff8f1fffff803fffff8f1fffff8f9fffff8f9fffff8f8fffff8f8fffff8f8fffff8f8fffff8f8fffff8f9fffff8f1fffff007ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=700,italic=0,oem,'K'",
+      "result": "ffffffffffffffffffffffffffffffffe060fffff8f9fffff8f9fffff8f3fffff8f3fffff8e7fffff8cffffff8cffffff89ffffff81ffffff81ffffff80ffffff80ffffff8c7fffff8c7fffff8c7fffff8e3fffff8e3fffff8f1fffff8f1fffff8f8ffffe060ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=700,italic=0,oem,'M'",
+      "result": "ffffffffffffffffffffffffffffffffe0fc3ffff8fc7ffff8fc7ffff8787ffff8787ffff8787ffff8787ffff8387ffff8307ffff8307ffff8307ffff9307ffff9107ffff9107ffff9047ffff9847ffff9847ffff9847ffff9847ffff9cc7ffff9cc7fffe0f03fffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=700,italic=0,oem,'W'",
+      "result": "ffffffffffffffffffffffffffffffffe0c83ffff9ce7ffff9ce7ffff9ce7ffff98cfffff884fffffc84fffffc84fffffc84fffffc84fffffc84fffffc21fffffc21fffffc21fffffc21fffffc21fffffe31fffffe31fffffe73fffffe73fffffe73ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=700,italic=0,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc1ffffff9cffffff9e7fffff9e7ffffffe7ffffff07fffffc67fffff9e7fffff9e7fffff1e7fffff1e7fffff1e7fffff1e7fffff983fffffc3fffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=700,italic=0,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe13fffffcc3fffff8cffffff9cffffff9c7fffff9c7fffff9c7fffff9c7fffff9cffffff88ffffff83ffffff3fffffff3fffffff1fffffff80ffffff007fffff3e7ffffe7f3ffffe7f3ffffe7f3fffff007ffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=700,italic=0,oem,'j'",
+      "result": "fffffffffffffffffffffffffffffffffcfffffff8fffffffcfffffffffffffffffffffffffffffffffffffff0fffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcffffffe4ffffffe0ffffffe0ffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=700,italic=0,oem,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0060ffff860c7fff860c7fff8f1e3fff8f1e3fff8f1e3fff8f1e3fff8f1e3fff8f1e3fff8f1e3fff8f1e3fff8f1e3fff8f1e3fff8f1e3ffe04081ffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=700,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0c3fffff9f3fffff9e7fffffce7fffffce7fffffce7fffffccffffffc4ffffffe4ffffffe1ffffffe1ffffffe1fffffff1fffffff3fffffff3fffffff3fffffff3ffffffe7ffffffe7ffffff27fffffe0ffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=700,italic=0,oem,'1'",
+      "result": "ffffffffffffffffffffffffffffffffff9fffffff1fffffff1ffffffe1ffffffc1fffffff1fffffff1fffffff1fffffff1fffffff1fffffff1fffffff1fffffff1fffffff1fffffff1fffffff1fffffff1fffffff1fffffff1fffffff1fffffff1ffffffc0fffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=700,italic=0,oem,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9fffffff8fffffff9ffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=700,italic=0,oem,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffcfffffffcfffffffcfffffff87ffffff87ffffff87ffffff87ffffff27ffffff23ffffff23ffffff23fffffe73fffffe73fffffe73fffffe71fffffe71fffffcf9fffffcf9fffffcf9fffffc00fffff9fcfffff9fcfffff9fcfffff9fcfffff3fe7ffff3fe7fffe0703fff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=700,italic=0,oem,'B'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff000fffffc7e7ffffc7e7ffffc7e3ffffc7e3ffffc7f1ffffc7f1ffffc7f1ffffc7f1ffffc7f1ffffc7e3ffffc7e7ffffc7cfffffc00fffffc7e7ffffc7e3ffffc7e3ffffc7f1ffffc7f1ffffc7f1ffffc7f1ffffc7f1ffffc7f1ffffc7e3ffffc7e3ffffc7c7ffff801ffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=700,italic=0,oem,'K'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff03c0ffffc7f3ffffc7f3ffffc7e7ffffc7e7ffffc7cfffffc79fffffc79fffffc73fffffc67fffffc67fffffc47fffffc47fffffc03fffffc23fffffc31fffffc71fffffc71fffffc78fffffc78fffffc7c7ffffc7c7ffffc7c7ffffc7e3ffffc7e3ffffc7f1ffff03c0fff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=700,italic=0,oem,'M'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff07f87fffc7f8ffffc7f8ffffc3f0ffffc3f0ffffc3f0ffffc3f0ffffc3e0ffffc3e0ffffc1e0ffffc1e0ffffc1c8ffffc1c8ffffc1c8ffffc9c8ffffc8c8ffffc898ffffc898ffffc898ffffcc98ffffcc38ffffcc38ffffcc38ffffcc38ffffce78ffffce78ffff07e07ff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=700,italic=0,oem,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffe06207fff8e3cffff8e3cffff8e3cffff8e1cffffcc19ffffc419ffffc419ffffc419ffffc419ffffc499ffffc489ffffc489ffffc489ffffe183ffffe183ffffe183ffffe1c3ffffe1c3ffffe1c3ffffe1c3ffffe1c3fffff3c7fffff3e7fffff3e7fffff3e7fffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=700,italic=0,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe07fffffcf3fffff8f9fffff8f9fffff8f8fffffff8ffffffc0ffffff18fffffc78fffff8f8fffff8f8fffff1f8fffff1f8fffff1f8fffff1f8fffff1f0fffff8647ffffe0e7fff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=700,italic=0,oem,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0c7ffffe607ffffc63fffffcf3fffff8f1fffff8f1fffff8f1fffff8f1fffff8f1fffffcf3fffffcf3fffff867fffff90ffffff3fffffff3fffffff3fffffff0fffffff807ffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=700,italic=0,oem,'j'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffe7ffffffc3ffffffc3ffffffe7ffffffffffffffffffffffffffffffffffffffffffffff03ffffffe3ffffffe3ffffffe3ffffffe3ffffffe3ffffffe3ffffffe3ffffffe3ffffffe3ffffffe3ffffffe3ffffffe3ffffffe3ffffffe3ffffffe3ffffffe3ffffffe3fffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=700,italic=0,oem,'m'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff041c0fffc1c1e7ffc3c3e7ffc7e3e3ffc7e7e3ffc7e7e3ffc7e7e3ffc7e7e3ffc7e7e3ffc7e7e3ffc7e7e3ffc7e7e3ffc7e7e3ffc7e7e3ffc7e7e3ffc7e7e3ffc7e7e3ff030181f",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=700,italic=0,oem,'y'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0607ffff8fe7ffffc7cfffffc7cfffffc7cfffffc7cfffffe39fffffe39fffffe39ffffff33ffffff13ffffff13ffffff87ffffff87ffffff87ffffff87ffffffcfffffffcfffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=700,italic=0,oem,'1'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffe7ffffffc7ffffffc7ffffff87ffffff07fffffe47ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7fffffe01ffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=700,italic=0,oem,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffcfffffff87ffffffcffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=1,oem,'A'",
+      "result": "fffffffffefffffffcfffffffafffffff8fffffff5ffffffebffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=1,oem,'B'",
+      "result": "fffffffff87ffffffd7ffffffafffffff8fffffff5fffffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=1,oem,'K'",
+      "result": "fffffffff87ffffffcfffffff9fffffff9fffffff5ffffffebffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=1,oem,'M'",
+      "result": "fffffffff97ffffffc7ffffff8fffffff8fffffff1ffffffedffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=1,oem,'W'",
+      "result": "fffffffff87ffffffc7ffffff8fffffff8fffffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=1,oem,'a'",
+      "result": "fffffffffffffffffffffffff9fffffff9ffffffe1ffffffe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=1,oem,'g'",
+      "result": "fffffffffffffffffffffffff8fffffff9fffffff3ffffffe3ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=1,oem,'j'",
+      "result": "fffffffffdfffffffdfffffff3fffffffbfffffff7fffffff7ffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=1,oem,'m'",
+      "result": "fffffffffffffffffffffffff07ffffffa7ffffff67fffffeaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=1,oem,'y'",
+      "result": "fffffffffffffffffffffffff0fffffff9fffffff9fffffff3ffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=1,oem,'1'",
+      "result": "fffffffffefffffffcfffffffdfffffffdfffffffbfffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=8,weight=400,italic=1,oem,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=1,oem,'A'",
+      "result": "ffffffffffffffffffbfffffff3fffffff7ffffffe7ffffffc7ffffff87ffffff8ffffffedffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=1,oem,'B'",
+      "result": "fffffffffffffffffe0ffffffedffffffedffffffc3ffffffd3ffffffb7ffffffb7ffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=1,oem,'K'",
+      "result": "fffffffffffffffffe4ffffffedffffffe3ffffffcfffffffcfffffffafffffffaffffffe5ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=1,oem,'M'",
+      "result": "fffffffffffffffffe6ffffffe5ffffffe5ffffffc3ffffffc3ffffffa7ffffff87fffffe4ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=1,oem,'W'",
+      "result": "fffffffffffffffffe4fffffff1ffffffe9ffffffe3ffffffc7ffffffc7ffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=1,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffe7ffffffd7ffffffc7ffffffa7ffffffafffffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=1,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffffe3ffffffd7ffffffd7ffffffafffffff8fffffff1ffffffe1ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=1,oem,'j'",
+      "result": "fffffffffffffffffffffffffffffffffefffffffdfffffffdfffffffbfffffffbfffffff7fffffff7ffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=1,oem,'m'",
+      "result": "fffffffffffffffffffffffffffffffffc0ffffffc0ffffffd2ffffffa5ffffffa5fffffe53fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=1,oem,'y'",
+      "result": "fffffffffffffffffffffffffffffffffcbffffffe7ffffffcfffffffcfffffff9fffffffbfffffffbffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=1,oem,'1'",
+      "result": "ffffffffffffffffffbffffffe7fffffff7ffffffefffffffefffffffdfffffffdfffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=12,weight=400,italic=1,oem,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=1,oem,'A'",
+      "result": "fffffffffffffffffff7ffffffe7ffffffefffffffcfffffff8fffffff5fffffff5ffffffebffffffc3ffffffbbffffffb7fffffe67fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=1,oem,'B'",
+      "result": "ffffffffffffffffffc3ffffffd9ffffffddffffffbbffffffb3ffffff0fffffff67fffffeeffffffeeffffffddffffffd1ffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=1,oem,'K'",
+      "result": "ffffffffffffffffffccffffffddffffffdbffffffa7ffffff9fffffff3fffffff3ffffffebffffffebffffffdbffffffdbffffff33fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=1,oem,'M'",
+      "result": "ffffffffffffffffffceffffffcdffffffddffffff9bffffff93ffffff27ffffff27fffffe0ffffffe2ffffffd5ffffffc5ffffff33fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=1,oem,'W'",
+      "result": "ffffffffffffffffff88ffffffc1ffffff95ffffff83ffffff87ffffff07ffffff0ffffffe0ffffffe1ffffffebffffffc3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=1,oem,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffff0ffffffe5fffffff8ffffffc1ffffffd9ffffffb3ffffff83ffffff97fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=1,oem,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffff87ffffff5ffffffe5ffffffcbffffffc3ffffffafffffffbfffffff07ffffff77fffffe0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=1,oem,'j'",
+      "result": "ffffffffffffffffffefffffffdfffffffffffffffffffffff3fffffff7fffffff7ffffffefffffffefffffffdfffffffdfffffffbfffffffbffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=1,oem,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffff007fffff6effffff6efffffeddfffffeddfffffdbbfffffdbbfffff267ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=1,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffff27ffffff2ffffffe5ffffffe3ffffffe3ffffffe7ffffffcfffffffdfffffffdfffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=1,oem,'1'",
+      "result": "fffffffffffffffffff7ffffffe7ffffffcfffffffdfffffffdfffffffbfffffffbfffffff7fffffff7ffffffefffffffefffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=16,weight=400,italic=1,oem,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9fffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=1,oem,'A'",
+      "result": "fffffffffffffffffffffffffffdfffffff9fffffff9fffffff3ffffffebffffffe3ffffffd7ffffffb7ffffff77ffffff0ffffffeeffffffdeffffffddffffff19fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=1,oem,'B'",
+      "result": "ffffffffffffffffffffffffffe07ffffff73fffffef7fffffef7fffffde7fffffd8ffffff83ffffffb9ffffff7bffffff7bfffffef7fffffee7fffffddffffffc3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=1,oem,'K'",
+      "result": "ffffffffffffffffffffffffffe73ffffff77fffffeeffffffedffffffd3ffffffc7ffffff97ffffffb7ffffff77ffffff77fffffeeffffffeeffffffdeffffff9cfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=1,oem,'M'",
+      "result": "ffffffffffffffffffffffffffe7bffffff73fffffef7fffffee7fffffccffffffccffffff99ffffff95ffffff4bffffff0bfffffe97fffffeb7fffffd2ffffff9cfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=1,oem,'W'",
+      "result": "ffffffffffffffffffffffffffc43fffffe07fffffc97fffffc0ffffffd2ffffff81ffffff81ffffff93ffffff93ffffff27ffffff27ffffff6ffffffe4fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=1,oem,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffff9bffffff33ffffffe3fffffe17fffffee7fffffdeffffffd8ffffff95ffffffe5fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=1,oem,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe5ffffff91ffffff37ffffff37fffffe6ffffffe4ffffffc3ffffffdfffffff9fffffff81ffffffb9ffffff7bfffffe07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=1,oem,'j'",
+      "result": "fffffffffffffffffffffffffff3fffffff7ffffffffffffffffffffff8fffffffcfffffff9fffffff9fffffff3fffffff3ffffffe7ffffffe7ffffffcfffffffcfffffff9ffffffe1ffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=1,oem,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff933fffffccdfffffbbbfffffbbbfffff777fffff777ffffeeefffffeeefffffdddfffff999ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=1,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff91ffffff9bffffff9bffffff97ffffffafffffff2fffffff1fffffff3fffffff3fffffff7ffffffefffffff9fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=1,oem,'1'",
+      "result": "fffffffffffffffffffffffffffdfffffff1ffffffebfffffffbfffffff7fffffff7ffffffefffffffefffffffdfffffffdfffffffbfffffffbfffffff7ffffffc3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=20,weight=400,italic=1,oem,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffcfffffff9fffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=1,oem,'A'",
+      "result": "ffffffffffffffffffffffffffffbfffffff3fffffff7ffffffe7ffffffc7ffffffafffffffafffffff6ffffffecffffffddffffffddffffff81ffffff7bfffffefbfffffefbfffffdf7fffff1c7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=1,oem,'B'",
+      "result": "fffffffffffffffffffffffffff80ffffffcf7fffff9e7fffff9f7fffff3f7fffff3cfffffe79fffffe73fffffc07fffffcf3fffff9f3fffff9f7fffff3f7fffff3cfffffe79fffffe73fffffc0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=1,oem,'K'",
+      "result": "fffffffffffffffffffffffffff8e3fffffcf7fffff9effffff9dffffff3bffffff27fffffe5ffffffe1ffffffc5ffffffcdffffff9dffffff9dffffff3bffffff3bfffffe7bfffffe7bfffff8e3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=1,oem,'M'",
+      "result": "fffffffffffffffffffffffffff8f9fffffcf3fffff9f7fffff9e7fffff1cffffff1cfffffeb9fffffe35fffffd33fffffd6bfffffb57fffffa37fffff62ffffff66fffffeedfffffecdfffff8f1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=1,oem,'W'",
+      "result": "fffffffffffffffffffffffffff0d1fffffd97fffffbb7fffffb2ffffffb2ffffff65ffffff55fffffe43fffffeabfffffe67fffffc4ffffffccffffffcdffffff99ffffffbbffffff33ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=1,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0ffffffeeffffffef7fffffdefffffff0ffffffcdffffff3dfffffe7bfffffe7bfffffcf7fffffec3fffffe37ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=1,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff89ffffff63fffffeeffffffdcffffffdcffffffb9ffffffbbffffff37fffffecffffffdfffffffcfffffffc1ffffffa0ffffff7effffff7cfffffe03fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=1,oem,'j'",
+      "result": "fffffffffffffffffffffffffffefffffffcfffffffdffffffffffffffffffffffe3fffffffbfffffff7fffffff7ffffffefffffffefffffffdfffffffdfffffffbfffffffbfffffff7fffffff7ffffffefffffffeffffffe1ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=1,oem,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe063ffffe319ffffe739ffffcf7bffffcf7bffff9ef7ffff9ef7ffff3defffff3deffffe7bdffffe7bdffff8c61fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=1,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe31ffffff7bfffffe77fffffef7fffffeeffffffedffffffcbffffffd7ffffffcfffffffcfffffff9fffffffbfffffff7fffffff7ffffffcffffffe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=1,oem,'1'",
+      "result": "ffffffffffffffffffffffffffffbfffffff3ffffffe7ffffffd7ffffffefffffffefffffffdfffffffdfffffffbfffffffbfffffff7fffffff7ffffffefffffffefffffffdfffffffdffffffe1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=24,weight=400,italic=1,oem,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffe7ffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=1,oem,'A'",
+      "result": "fffffffffffffffffffffffffffffffffffffdfffffff9fffffffbfffffff3ffffffe3ffffffcbffffffc7ffffffa7ffffff67ffffff4ffffffecffffffdcffffffbcffffffb9ffffff79fffffe01fffffef3fffffdf3fffffbf3fffff7f3fffff7e7ffffc787fffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=1,oem,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffff803fffffcf9fffffcfdfffff9fdfffff9f9fffff3f9fffff3f3ffffe7f7ffffe7cfffffcf9fffffc07fffff9f3fffff9fbfffff3fbfffff3f3ffffe7e7ffffe7e7ffffcfcfffffcfdfffff9fbfffff9e3ffffe00ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=1,oem,'K'",
+      "result": "ffffffffffffffffffffffffffffffffffff8387ffffcfefffffcfdfffff9f3fffff9effffff3dffffff3bfffffe77fffffe6ffffffc9ffffffc1ffffff89ffffff99ffffff39ffffff39fffffe79fffffe73fffffcf3fffffcf3fffff9f3fffff9f3ffffc1c3fffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=1,oem,'M'",
+      "result": "ffffffffffffffffffffffffffffffffffff87f1ffffc7e7ffffcfe7ffff8fcfffff8f8fffff4f1fffff1f1ffffe9e3ffffe9d3ffffd5c7ffffd3a7ffffb34fffffb2cfffff669fffff659ffffee33ffffed33ffffdc67ffffdce7ffffbdcfffffb9cffffc3e0fffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=1,oem,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffff8761ffffee77ffffdef7ffffdcefffff98dfffffb9dfffff31bfffff6b7fffff6b7ffffe52fffffeb5fffffca5fffffc63fffff8c7fffff8c7fffff9cffffff39ffffff39fffffe73fffffef7fffffce7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=1,oem,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0ffffffef7fffffdf7fffffdf7ffffffefffffff0ffffff8dffffff7dfffffe7bfffffcfbfffffcf7fffff9f7fffff9e7fffffb87fffff87ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=1,oem,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8dfffffe71fffffce7fffffdeffffff9effffffbcffffff3dffffff7bfffffe73fffffe67fffffd1ffffffbfffffff7fffffff3fffffff03fffffe81fffffdf9fffffbfdfffff7fbfffff7f7fffff00fffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=1,oem,'j'",
+      "result": "ffffffffffffffffffffffffffffffffffffe7ffffffcfffffffeffffffffffffffffffffffffffffffffffffffc7fffffff7ffffffefffffffefffffffdfffffffdfffffffbfffffffbfffffff7fffffff7ffffffefffffffefffffffdfffffffdfffffffbfffffffbfffffff7fffffff7ffffff6fffffff0ffffffe1ffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=1,oem,'m'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff84387fffe3973fffc78f3fffcf9f3fff9f3e7fff9f3e7fff3e7cffff3e7cfffe7cf9fffe7cf9fffcf9f3fffcf9f3fff9f3e7fff9f3e7ffc18307fffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=1,oem,'y'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff871fffffefbfffffcf7fffffdf7fffffdeffffffddffffff9bffffffbbffffffb7ffffff2fffffff1fffffff3fffffff3ffffffe7ffffffefffffffdfffffffdfffffffbfffffff7ffffff2ffffffe1ffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=1,oem,'1'",
+      "result": "fffffffffffffffffffffffffffffffffffffefffffff9fffffff1ffffffe3ffffffd3ffffffe7ffffffe7ffffffcfffffffcfffffff9fffffff9fffffff3fffffff3ffffffe7ffffffe7ffffffcfffffffcfffffff9fffffff9fffffff3fffffff3ffffff83ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=32,weight=400,italic=1,oem,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffff9fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=1,oem,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffefffffffcfffffffdfffffff9fffffff1ffffffebffffffe3ffffffd3ffffffb3ffffff77ffffff67fffffee7fffffdeffffffdeffffffbcffffff7dfffffefdfffffef9fffffdfbfffff803fffff7fbfffff7f3ffffeff7ffffdff7ffffbff7ffffbfeffffe0f07ff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=1,oem,'B'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffff800fffffe7ffffffcfffffffcfefffff9fefffff9fefffff3fcfffff3fcffffe7f9ffffe7f3ffffcfe7ffffcfefffff9f9fffff807fffff3fbfffff3f9ffffe7f9ffffe7f3ffffcff3ffffcff3ffff9fe7ffff9fe7ffff3fcfffff3f9ffffe7f3ffffe7e7ffff801fff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=1,oem,'K'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffff83efffffe7ffffffcfffffffcfefffff9f9fffff9f7fffff3effffff3dfffffe7bfffffe77fffffceffffffccffffff90ffffff8cffffff1cffffff39fffffe79fffffe79fffffcf9fffffcf9fffff9f9fffff9f9fffff3f9fffff3f3ffffe7f3ffffe7f3ffff07c1ff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=1,oem,'M'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffff87ffffffe7ffffffcfffffffcfffffff8fefffff9fdfffff1fcfffff1faffffe9f4ffffe3ecffffd3e9ffffd3d9ffffa7b3ffffa7b3ffff6767ffff4ee7fffecdcffffecdcffffdab9ffffd979ffffb8f3ffffb8f3ffff71e7ffff73e7fffef7cffffee7cffff0fe0ff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=1,oem,'W'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffff073fffffce3fffff9e7fffff9c7fffff3c7fffff38ffffff34effffe74effffe69dffffed9bffffcd9bffffcb37ffff9b37ffff976fffffae5fffff2e5fffff1cbffffe5cbffffe3c7ffffe78fffffd7afffffcf9fffffdf3fffff9f3fffffbf7fffff3e7ffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=1,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff07fffffcf7fffff9fbfffff9fbfffff3f7ffffffe7ffffff07fffff0efffffc7cfffff9fdfffff3f9ffffe7fbffffe7f3ffffcff7ffffcfe7ffffcf87ffffce67fffff1efff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=1,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0e7ffffee8fffffde7fffff9e7fffff3efffffe7cfffffe7cfffffcf9fffffcfbfffffdf3fffff9e7fffff5dfffffee3fffffefffffffdfffffffbfffffff8fffffff90ffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=1,oem,'j'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffff7ffffffebffffffe7ffffffeffffffffffffffffffffffffffffffffffffffffffffff83fffffff3ffffffe7ffffffe7ffffffcfffffffcfffffff9fffffff9fffffff3fffffff3ffffffe7ffffffe7ffffffcfffffffcfffffff9fffffff9fffffff3fffffff3ffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=1,oem,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff841effffc3c9ffffcfc7ffff8fcfffff9fdfffff3fbfffff3fbffffe7f7ffffe7f7ffffcfefefffcfefefff9fdfcfff9fdfcfff3fbf9fff3fbf9ffe7f7f3ffe7f7f3ff070383",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=1,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8707ffffcfefffffdfdfffff9fdfffff9fbfffff9f7fffffbeffffff3dffffff3bffffff3bffffff77fffffe6ffffffe5ffffffe3ffffffe7ffffffd7ffffffcfffffffdffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=1,oem,'1'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffff7ffffffe7ffffff8fffffff4ffffffe9ffffffd9fffffff3fffffff3ffffffe7ffffffe7ffffffcfffffffcfffffff9fffffff9fffffff3fffffff3ffffffe7ffffffe7ffffffcfffffffcfffffff9fffffff9fffffff3fffffff3ffffffe7ffffffe7fffffe03fff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Roman\",h=40,weight=400,italic=1,oem,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffc7ffffffdfffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=8,weight=400,italic=0,oem,'A'",
+      "result": "ffffffffefffffffefffffffefffffffd7ffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=8,weight=400,italic=0,oem,'B'",
+      "result": "ffffffffc7ffffffd7ffffffd7ffffffc7ffffffd7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=8,weight=400,italic=0,oem,'K'",
+      "result": "ffffffffd7ffffffd7ffffffcfffffffcfffffffd7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=8,weight=400,italic=0,oem,'M'",
+      "result": "ffffffffd7ffffffd7ffffffd7ffffffc7ffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=8,weight=400,italic=0,oem,'W'",
+      "result": "ffffffffcbffffffcbffffffcbffffffe7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=8,weight=400,italic=0,oem,'a'",
+      "result": "ffffffffffffffffffffffffe7ffffffd7ffffffd7ffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=8,weight=400,italic=0,oem,'g'",
+      "result": "ffffffffffffffffffffffffe7ffffffd7ffffffd7ffffffc7fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=8,weight=400,italic=0,oem,'j'",
+      "result": "ffffffffffffffffffffffffefffffffefffffffefffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=8,weight=400,italic=0,oem,'m'",
+      "result": "ffffffffffffffffffffffffc3ffffffd3ffffffd3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=8,weight=400,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffd7ffffffd7ffffffefffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=8,weight=400,italic=0,oem,'1'",
+      "result": "ffffffffefffffffefffffffefffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=8,weight=400,italic=0,oem,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=12,weight=400,italic=0,oem,'A'",
+      "result": "fffffffffffffffff7fffffff7ffffffebffffffebffffffebffffffe3ffffffddffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=12,weight=400,italic=0,oem,'B'",
+      "result": "ffffffffffffffffe1ffffffedffffffedffffffe1ffffffedffffffedffffffedfffffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=12,weight=400,italic=0,oem,'K'",
+      "result": "ffffffffffffffffedffffffebffffffebffffffe7ffffffe7ffffffebffffffebffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=12,weight=400,italic=0,oem,'M'",
+      "result": "ffffffffffffffffeeffffffeeffffffe4ffffffe4ffffffe4ffffffe4ffffffeaffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=12,weight=400,italic=0,oem,'W'",
+      "result": "ffffffffffffffffdaffffffdaffffffeaffffffeaffffffe5ffffffe5fffffff5ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=12,weight=400,italic=0,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffff1ffffffe9ffffffedffffffedffffffedffffffe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=12,weight=400,italic=0,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffff1ffffffe9ffffffedffffffedffffffedffffffe1fffffffdfffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=12,weight=400,italic=0,oem,'j'",
+      "result": "ffffffffefffffffe7ffffffffffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=12,weight=400,italic=0,oem,'m'",
+      "result": "ffffffffffffffffffffffffffffffffe2ffffffe17fffffed7fffffed7fffffed7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=12,weight=400,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffdbffffffdbffffffebffffffe7fffffff7fffffff7fffffff7ffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=12,weight=400,italic=0,oem,'1'",
+      "result": "fffffffffffffffffbffffffe3fffffffbfffffffbfffffffbfffffffbfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=12,weight=400,italic=0,oem,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=16,weight=400,italic=0,oem,'A'",
+      "result": "fffffffffffffffffbfffffffbfffffff3fffffff5fffffff5fffffff5ffffffedffffffe1ffffffedffffffeeffffffdeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=16,weight=400,italic=0,oem,'B'",
+      "result": "ffffffffffffffffe1ffffffeeffffffeeffffffeeffffffeeffffffe0ffffffeeffffffeeffffffeeffffffeeffffffeefffffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=16,weight=400,italic=0,oem,'K'",
+      "result": "ffffffffffffffffeeffffffedffffffedffffffebffffffebffffffe3ffffffe3ffffffedffffffedffffffedffffffeeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=16,weight=400,italic=0,oem,'M'",
+      "result": "ffffffffffffffffef7fffffef7fffffe77fffffe67fffffe67fffffe67fffffea7fffffea7fffffea7fffffe97fffffed7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=16,weight=400,italic=0,oem,'W'",
+      "result": "ffffffffffffffffed7fffffed7fffffed7fffffe97fffffe97fffffe97ffffff2fffffff2fffffff2fffffff6fffffff6ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=16,weight=400,italic=0,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff1ffffffedffffffedffffffedffffffedffffffedfffffff5fffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=16,weight=400,italic=0,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff1ffffffedffffffedffffffedffffffedffffffedfffffff5fffffff1fffffffdfffffff9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=16,weight=400,italic=0,oem,'j'",
+      "result": "ffffffffffffffffe7fffffff7fffffffffffffffffffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7ffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=16,weight=400,italic=0,oem,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffe03fffffe4bfffffeddfffffeddfffffeddfffffeddfffffeddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=16,weight=400,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffedffffffedffffffebffffffebfffffff3fffffff3fffffff7fffffff7fffffff7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=16,weight=400,italic=0,oem,'1'",
+      "result": "fffffffffffffffffbfffffffbfffffff3fffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=16,weight=400,italic=0,oem,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=20,weight=400,italic=0,oem,'A'",
+      "result": "fffffffffffffffffffffffffdfffffffdfffffff9fffffffafffffffafffffff6fffffff6fffffff77ffffff07fffffef7fffffef7fffffefbfffffdfbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=20,weight=400,italic=0,oem,'B'",
+      "result": "fffffffffffffffffffffffff03ffffff7bffffff7bffffff7bffffff7bffffff73ffffff03ffffff7bffffff7bffffff7bffffff7bffffff7bffffff73ffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=20,weight=400,italic=0,oem,'K'",
+      "result": "fffffffffffffffffffffffff7bffffff77ffffff77ffffff6fffffff6fffffff5fffffff1fffffff2fffffff6fffffff6fffffff77ffffff77ffffff7bfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=20,weight=400,italic=0,oem,'M'",
+      "result": "fffffffffffffffffffffffff7dffffff7dffffff7dffffff39ffffff39ffffff39ffffff39ffffff55ffffff55ffffff55ffffff55ffffff6dffffff6dfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=20,weight=400,italic=0,oem,'W'",
+      "result": "ffffffffffffffffffffffffeeefffffeeefffffeeefffffeeeffffff55ffffff55ffffff55ffffff55ffffff55ffffff55ffffffbbffffffbbffffffbbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=20,weight=400,italic=0,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffff87ffffff67ffffff77ffffff77fffffef7fffffef7fffffef7ffffff77ffffff67ffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=20,weight=400,italic=0,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffff87ffffff67ffffff77ffffff77fffffef7fffffef7fffffef7ffffff77ffffff67ffffff87fffffff7fffffff7ffffff87fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=20,weight=400,italic=0,oem,'j'",
+      "result": "fffffffffffffffff7fffffff3fffffffffffffffffffffffffffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7fffffff7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=20,weight=400,italic=0,oem,'m'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffff4cffffff337fffff77bfffff77bfffff77bfffff77bfffff77bfffff77bfffff77bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=20,weight=400,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffef7fffffef7fffffeefffffff6fffffff6fffffff5fffffff5fffffff9fffffffbfffffffbfffffffbfffffff7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=20,weight=400,italic=0,oem,'1'",
+      "result": "fffffffffffffffffffffffffcfffffffafffffff6fffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=20,weight=400,italic=0,oem,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=24,weight=400,italic=0,oem,'A'",
+      "result": "fffffffffffffffffffffffffdfffffffdfffffffdfffffffafffffffafffffffafffffffafffffff77ffffff77ffffff77ffffff77fffffe03fffffefbfffffefbfffffefbfffffdfdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=24,weight=400,italic=0,oem,'B'",
+      "result": "fffffffffffffffffffffffff03ffffff7dffffff7dffffff7dffffff7dffffff7dffffff7dffffff79ffffff01ffffff7dffffff7dffffff7dffffff7dffffff7dffffff7dffffff79ffffff87fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=24,weight=400,italic=0,oem,'K'",
+      "result": "fffffffffffffffffffffffff7dffffff7bffffff7bffffff77ffffff77ffffff6fffffff6fffffff5fffffff5fffffff2fffffff2fffffff77ffffff77ffffff7bffffff7bffffff7dfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=24,weight=400,italic=0,oem,'M'",
+      "result": "fffffffffffffffffffffffff7effffff7effffff7effffff3cffffff3cffffff3cffffff3cffffff5cffffff5cffffff5affffff5affffff6affffff6affffff6affffff66ffffff76fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=24,weight=400,italic=0,oem,'W'",
+      "result": "ffffffffffffffffffffffffef77ffffef77ffffef77ffffee77ffffee77fffff6affffff6affffff6affffff6affffff5affffff5affffff5affffff5affffff9dffffffbdffffffbdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=24,weight=400,italic=0,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffcbffffffb3ffffffb3ffffff7bffffff7bfffffefbfffffefbfffffefbffffff7bffffff7bffffffb3ffffffcffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=24,weight=400,italic=0,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffcbffffffb3ffffffb3ffffff7bffffff7bfffffefbfffffefbfffffefbffffff7bffffff7bffffffb3ffffffcbfffffffbfffffffbfffffffbffffffc3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=24,weight=400,italic=0,oem,'j'",
+      "result": "fffffffffffffffffbfffffff3fffffffbfffffffffffffffffffffffffffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=24,weight=400,italic=0,oem,'m'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff463fffff39dfffff39dfffff7bdfffff7bdfffff7bdfffff7bdfffff7bdfffff7bdfffff7bdfffff7bdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=24,weight=400,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefbfffffefbffffff77ffffff77ffffff77ffffff77ffffffafffffffafffffffafffffffafffffffdfffffffdfffffffdfffffffbfffffffbffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=24,weight=400,italic=0,oem,'1'",
+      "result": "fffffffffffffffffffffffffefffffffefffffffcfffffffafffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=24,weight=400,italic=0,oem,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff3fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=32,weight=400,italic=0,oem,'A'",
+      "result": "ffffffffffffffffffffffffffffffffff7fffffff7fffffff7ffffffebffffffebffffffebffffffebffffffddffffffddffffffddffffffddffffffbeffffffbeffffffbeffffff80ffffff7f7fffff7f7fffff7f7fffff7f7ffffeffbffffeffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=32,weight=400,italic=0,oem,'B'",
+      "result": "fffffffffffffffffffffffffffffffff80ffffffbf7fffffbfbfffffbfbfffffbfdfffffbfdfffffbfdfffffbfdfffffbfbfffffbe7fffff80ffffffbf7fffffbfbfffffbfbfffffbfdfffffbfdfffffbfdfffffbfdfffffbfdfffffbfbfffffbe7fffffc1fffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=32,weight=400,italic=0,oem,'K'",
+      "result": "fffffffffffffffffffffffffffffffffbfdfffffbfbfffffbfbfffffbf7fffffbeffffffbeffffffbdffffffbdffffffbbffffffb7ffffffb7ffffffabffffff9bffffff9dffffffbdffffffbeffffffbeffffffbf7fffffbf7fffffbfbfffffbfbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=32,weight=400,italic=0,oem,'M'",
+      "result": "fffffffffffffffffffffffffffffffffbfefffffbfefffffbfefffff9fcfffff9fcfffff9fcfffff9fcfffffafafffffafafffffafafffffafafffffb76fffffb76fffffb76fffffb76fffffbaefffffbaefffffbaefffffbaefffffbdefffffbdeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=32,weight=400,italic=0,oem,'W'",
+      "result": "ffffffffffffffffffffffffffffffffefdf7fffefdf7fffefdf7ffff7df7ffff7aefffff7aefffff7aefffff7aefffffbaefffffbaefffffbaefffffb75fffffb75fffffb75fffffd75fffffd75fffffd75fffffd75fffffcfbfffffefbfffffefbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=32,weight=400,italic=0,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe37fffffdd7fffffde7fffffbf7fffffbf7fffff7f7fffff7f7fffff7f7fffff7f7fffff7f7fffffbf7fffffbf7fffffbe7fffffdd7fffffe3fffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=32,weight=400,italic=0,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe37fffffdd7fffffde7fffffbf7fffffbf7fffff7f7fffff7f7fffff7f7fffff7f7fffff7f7fffffbf7fffffbf7fffffbe7fffffdd7fffffe37fffffff7fffffff7fffffff7ffffffefffffffeffffffe1fffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=32,weight=400,italic=0,oem,'j'",
+      "result": "fffffffffffffffffffffffffdfffffffafffffffdfffffffffffffffffffffffffffffffffffffffffffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffdfffffffbfffffff3ffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=32,weight=400,italic=0,oem,'m'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffb1e3ffffaeddffff9ebdffff9f3effffbf7effffbf7effffbf7effffbf7effffbf7effffbf7effffbf7effffbf7effffbf7effffbf7efffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=32,weight=400,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefefffffefeffffff7dffffff7dffffff7dffffff7dffffffbbffffffbbffffffbbffffffd7ffffffd7ffffffd7ffffffd7ffffffefffffffefffffffefffffffefffffffdfffffffdfffffffdfffffff3ffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=32,weight=400,italic=0,oem,'1'",
+      "result": "ffffffffffffffffffffffffffffffffffbfffffff3fffffff3ffffffebffffffdbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=32,weight=400,italic=0,oem,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffff9fffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=40,weight=400,italic=0,oem,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffbfffffffbfffffff9fffffff5fffffff5fffffff5fffffff6ffffffeeffffffeeffffffeeffffffef7fffffdf7fffffdf7fffffdf7fffffdfbfffffdfbfffffbfbfffffbfdfffff801fffffbfdfffff7fdfffff7fefffff7fefffff7feffffeffeffffefff7fffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=40,weight=400,italic=0,oem,'B'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff801fffffbfefffffbfefffffbff7ffffbff7ffffbffbffffbffbffffbffbffffbffbffffbffbffffbff7ffffbfefffffbfdfffff801fffffbfefffffbff7ffffbff7ffffbffbffffbffbffffbffbffffbffbffffbffbffffbffbffffbff7ffffbff7ffffbfcfffffc03ffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=40,weight=400,italic=0,oem,'K'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffbffbffffbff7ffffbff7ffffbfefffffbfdfffffbfdfffffbfbfffffbf7fffffbf7fffffbeffffffbdffffffb9ffffffb9ffffffb5ffffffb6ffffffaeffffff9f7fffff9f7fffffbfbfffffbfbfffffbfdfffffbfdfffffbfefffffbfefffffbff7ffffbff7fffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=40,weight=400,italic=0,oem,'M'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffbffdffffbffdffff9ffdffff9ff9ffff9ff9ffff9ff9ffffaff9ffffaff5ffffaff5ffffaff5ffffb7f5ffffb7edffffb7edffffb7edffffbbedffffbbedffffbbddffffbdddffffbdddffffbdddffffbdbdffffbebdffffbebdffffbebdffffbe7dffffbf7dfffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=40,weight=400,italic=0,oem,'W'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff7f7f7fff7f7f7fff7f7f7fff7f7f7fffbebeffffbebeffffbebeffffbebeffffbebeffffbebeffffddddffffddddffffddddffffddddffffddddffffddddffffddddffffebebffffebebffffebebffffebebffffebebffffebebfffff7f7fffff7f7fffff7f7fffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=40,weight=400,italic=0,oem,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff05fffffef9fffffdf9fffffdfdfffffbfdfffffbfdfffff7fdfffff7fdfffff7fdfffff7fdfffff7fdfffff7fdfffff7fdfffffbfdfffffbfdfffffdfdfffffe71ffffff8fffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=40,weight=400,italic=0,oem,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff05fffffef9fffffdf9fffffdfdfffffbfdfffffbfdfffff7fdfffff7fdfffff7fdfffff7fdfffff7fdfffff7fdfffff7fdfffffbfdfffffbfdfffffdfdfffffe71ffffff8dffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=40,weight=400,italic=0,oem,'j'",
+      "result": "fffffffffffffffffffffffffffffffffefffffffd7ffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffeffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=40,weight=400,italic=0,oem,'m'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffb83c1fffb7dbefffafd7efffafd7efff9fcfefffbfdfefffbfdfefffbfdfefffbfdfefffbfdfefffbfdfefffbfdfefffbfdfefffbfdfefffbfdfefffbfdfefffbfdfeffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=40,weight=400,italic=0,oem,'y'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fdfffff7fdfffffbfbfffffbfbfffffbfbfffffbfbfffffdf7fffffdf7fffffdf7fffffeeffffffeeffffffeefffffff5fffffff5fffffff5fffffff5fffffffbfffffffbfffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=40,weight=400,italic=0,oem,'1'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffefffffffefffffffcfffffffcfffffff2ffffffeefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffefffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Modern\",h=40,weight=400,italic=0,oem,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffafffffffdffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=8,weight=400,italic=0,oem,'A'",
+      "result": "fffffffff7ffffffe7ffffffc7ffffffc7ffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=8,weight=400,italic=0,oem,'B'",
+      "result": "ffffffffe7ffffffe7ffffffc7ffffffc7ffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=8,weight=400,italic=0,oem,'K'",
+      "result": "ffffffffe3ffffffc3ffffffe7ffffffe7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=8,weight=400,italic=0,oem,'M'",
+      "result": "ffffffffc3ffffffc3ffffffe3ffffffe3fffffff9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=8,weight=400,italic=0,oem,'W'",
+      "result": "ffffffffc1ffffffc3ffffffe3ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=8,weight=400,italic=0,oem,'a'",
+      "result": "ffffffffffffffffffffffffcfffffffcfffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=8,weight=400,italic=0,oem,'g'",
+      "result": "ffffffffffffffffffffffffcfffffffcfffffffcfffffffcfffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=8,weight=400,italic=0,oem,'j'",
+      "result": "ffffffffffffffffdfffffffdfffffffdfffffffdfffffffdfffffff9fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=8,weight=400,italic=0,oem,'m'",
+      "result": "ffffffffffffffffffffffffc7ffffffc7ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=8,weight=400,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffcfffffffcfffffffcfffffffcfffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=8,weight=400,italic=0,oem,'1'",
+      "result": "ffffffffefffffffefffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=8,weight=400,italic=0,oem,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=12,weight=400,italic=0,oem,'A'",
+      "result": "fffffffffbfffffffbfffffff3fffffff3ffffffebffffffe3ffffffe3ffffffd3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=12,weight=400,italic=0,oem,'B'",
+      "result": "fffffffffbfffffff5ffffffe5ffffffe1ffffffe3ffffffe3ffffffe3ffffffe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=12,weight=400,italic=0,oem,'K'",
+      "result": "ffffffffedffffffe1ffffffe3ffffffe7fffffff7ffffffe7ffffffe3ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=12,weight=400,italic=0,oem,'M'",
+      "result": "ffffffffe8ffffffc0ffffffc0ffffffe0ffffffeaffffffeaffffffeafffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=12,weight=400,italic=0,oem,'W'",
+      "result": "ffffffffeaffffffc2ffffffc1ffffffe1fffffff1ffffffe3ffffffebffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=12,weight=400,italic=0,oem,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffe7ffffffc7ffffffc7ffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=12,weight=400,italic=0,oem,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffe7ffffffc7ffffffc7ffffffc7ffffffefffffffcfffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=12,weight=400,italic=0,oem,'j'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffdfffffffdfffffffcfffffffdfffffffbfffffffbfffffffbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=12,weight=400,italic=0,oem,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffe3ffffffc3ffffffe1fffffff9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=12,weight=400,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffd7ffffffd7ffffffc7ffffffc7ffffffefffffffcfffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=12,weight=400,italic=0,oem,'1'",
+      "result": "fffffffffffffffff7ffffffe7fffffff7fffffff7fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=12,weight=400,italic=0,oem,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=16,weight=400,italic=0,oem,'A'",
+      "result": "fffffffffffffffffdfffffffdfffffff9fffffff9ffffffe5ffffffe5ffffffe1ffffffe9ffffffd1ffffffd9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=16,weight=400,italic=0,oem,'B'",
+      "result": "fffffffffffffffff8fffffff2fffffff2ffffffe8ffffffe9ffffffe9ffffffe9ffffffe9ffffffe5ffffffe9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=16,weight=400,italic=0,oem,'K'",
+      "result": "ffffffffffffffffe67fffffe97fffffe9fffffff3fffffff3fffffff3fffffff3fffffff3ffffffe9ffffffcdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=16,weight=400,italic=0,oem,'M'",
+      "result": "ffffffffffffffffe03fffffd0bfffffe4bfffffe4bffffff4bffffff5bffffff57ffffff57fffffed3fffffff3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=16,weight=400,italic=0,oem,'W'",
+      "result": "ffffffffffffffffe5bfffffd57fffffe57fffffe0fffffff0fffffff1fffffff1fffffff5fffffff5ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=16,weight=400,italic=0,oem,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffc7ffffffd7ffffffd7ffffffd3ffffffe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=16,weight=400,italic=0,oem,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffc7ffffffd7ffffffd7ffffffd3ffffffe7ffffffe7ffffffcfffffffcfffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=16,weight=400,italic=0,oem,'j'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffdfffffffdfffffffcfffffffdfffffffbfffffff3fffffff3fffffff3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=16,weight=400,italic=0,oem,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffc1ffffffc1ffffffc9ffffffe8fffffffcffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=16,weight=400,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffd7ffffffd7ffffffd7ffffffc3ffffffc7ffffffefffffffcfffffffcfffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=16,weight=400,italic=0,oem,'1'",
+      "result": "fffffffffffffffffbfffffff3fffffff3fffffffbfffffffbfffffff7fffffff7fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=16,weight=400,italic=0,oem,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=20,weight=400,italic=0,oem,'A'",
+      "result": "fffffffffffffffffefffffffefffffffcfffffffcfffffffcfffffffcfffffff2ffffffe8ffffffe8fffffff4fffffff2ffffffecffffffdeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=20,weight=400,italic=0,oem,'B'",
+      "result": "fffffffffffffffffe7ffffffcbffffffabffffffabffffff6bffffff67ffffff67fffffed7fffffedbfffffedbfffffeb7fffffe57fffffe4ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=20,weight=400,italic=0,oem,'K'",
+      "result": "fffffffffffffffff3dffffff59fffffed5ffffff57ffffff4fffffffdfffffffcfffffffafffffffafffffffafffffff6bfffffd67fffffee7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=20,weight=400,italic=0,oem,'M'",
+      "result": "fffffffffffffffff66fffffe857ffffe997ffffe9b7fffff1b7fffffb37fffffb77fffff377fffff76ffffff76ffffff76bfffff6ebfffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=20,weight=400,italic=0,oem,'W'",
+      "result": "fffffffffffffffff77bffffeb77ffffeb6fffffea6ffffff25ffffffa5ffffffa5ffffff93ffffff93ffffff93ffffff93ffffffb7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=20,weight=400,italic=0,oem,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe1ffffffd9ffffffdbffffffdaffffffd2ffffffe5ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=20,weight=400,italic=0,oem,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe1ffffffd9ffffffdbffffffd9ffffffd1ffffffe3ffffffe7ffffffe7ffffffcfffffffcfffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=20,weight=400,italic=0,oem,'j'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffefffffffcfffffffcfffffffcfffffffdfffffff9fffffffbfffffff3fffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=20,weight=400,italic=0,oem,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03fffffe4bfffffd5bfffffed5fffffed5fffffffbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=20,weight=400,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffedffffffedffffffdbffffffd1ffffffd1ffffffc3ffffffe7ffffffe7ffffffcfffffffcfffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=20,weight=400,italic=0,oem,'1'",
+      "result": "fffffffffffffffffffffffffdfffffff9fffffff5fffffffdfffffffdfffffffbfffffffbfffffffbfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=20,weight=400,italic=0,oem,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffe7fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=24,weight=400,italic=0,oem,'A'",
+      "result": "ffffffffffffffffffffffffff7fffffff7ffffffe7ffffffe7ffffffe7ffffffd7ffffffd7ffffff37ffffff17ffffff27ffffff67ffffff37ffffff37fffffcc7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=24,weight=400,italic=0,oem,'B'",
+      "result": "fffffffffffffffffffffffffe1ffffffcdffffffb6ffffffb6ffffff75ffffff69ffffff67ffffff6bffffff6bffffff6dfffffeedfffffeddfffffedbfffffe03fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=24,weight=400,italic=0,oem,'K'",
+      "result": "fffffffffffffffffffffffff1c7fffff5d7fffff6b7fffff6bffffffabffffffc7ffffffcfffffffcfffffffafffffffafffffffafffffff6efffffd6dfffffc73fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=24,weight=400,italic=0,oem,'M'",
+      "result": "ffffffffffffffffffffffffe221ffffeaadffffeccdffffedddfffff5ddfffff99dfffff99dfffffbbdfffffbbdfffffbbbfffffbbbfffffbbb7ffff77afffffff9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=24,weight=400,italic=0,oem,'W'",
+      "result": "ffffffffffffffffffffffffe3bdffffebbbffffed37ffffed37fffff52ffffffcaffffffcaffffffcaffffffc9ffffff99ffffff99ffffff99ffffffbbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=24,weight=400,italic=0,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5ffffffe9ffffffddffffffd9ffffffd9bfffffd97fffffc0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=24,weight=400,italic=0,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff5ffffffe9ffffffddffffffdbffffffdb7fffffdaffffffc1fffffffbfffffff3ffffffe7ffffffd7ffffffd7ffffffd7ffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=24,weight=400,italic=0,oem,'j'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffffe7ffffffffffffffefffffffefffffffcfffffffdfffffffdbffffffc7ffffffdfffffff9fffffff3fffffff3fffffffbfffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=24,weight=400,italic=0,oem,'m'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff4bfffffe25fffffe25fffffd6dffffff6b7fffff6afffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=24,weight=400,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffedffffffedffffffcdffffffddffffffdb7fffffdaffffffc1fffffffbfffffff3ffffffebffffffd7ffffffd7ffffffd7ffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=24,weight=400,italic=0,oem,'1'",
+      "result": "fffffffffffffffffffffffffefffffffefffffffcfffffffafffffffefffffffefffffffefffffffdfffffffdfffffffdfffffffdfffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=24,weight=400,italic=0,oem,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=32,weight=400,italic=0,oem,'A'",
+      "result": "ffffffffffffffffffffffffffdfffffffdfffffff9fffffff9fffffff9fffffff5fffffff5fffffff5ffffffedffffffedffffff8dffffff5dffffff4dffffff55ffffffb5ffffffb9ffffff59ffffff59fffffee5fffffdf8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=32,weight=400,italic=0,oem,'B'",
+      "result": "ffffffffffffffffffffffffff87ffffff7bfffffebbfffffebbfffffdbbfffffdbbfffffbbbfffffbb3fffffb8ffffffb9ffffff7affffff777fffff777fffff777fffff777fffff6f7fffff6f7fffff6f7fffff4effffff31fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=32,weight=400,italic=0,oem,'K'",
+      "result": "fffffffffffffffffffffffffdfdfffffafafffffafafffff776fffff76ffffff76ffffffb5ffffffcbffffffe7ffffffe7ffffffebffffffdbffffffdbffffffdbffffffdbffffffdbbfffffbb7ffffebb7ffffeba7ffffe7dfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=32,weight=400,italic=0,oem,'M'",
+      "result": "fffffffffffffffffffffffffbce7ffff5b5bffff575bfffee75bfffee75bfffeef3bffff6f3bffffaf3bffffcf7bffffcf7bffffdf7bffffdf7bffffdefbffffdef7ffffdef7ffffdef6ffffdef5ffffbdf5ffffbdf5fffffff3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=32,weight=400,italic=0,oem,'W'",
+      "result": "fffffffffffffffffffffffffbf7dffff5f7bffff5e77fffeee77fffeee6ffffeecefffff6cdfffffacdfffffeadfffffeabfffffeabfffffeabfffffe67fffffd67fffffd67fffffccffffffccffffffccffffffddfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=32,weight=400,italic=0,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2ffffffecffffffeeffffffdcffffffdcdfffffdcbfffffdcbfffffecbffffff27fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=32,weight=400,italic=0,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2ffffffecffffffeeffffffdeffffffddbfffffddbfffffdd7fffffed7ffffff0fffffffbfffffff3fffffff3ffffffebffffffe7ffffffe7ffffffd7ffffffd7ffffffc7ffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=32,weight=400,italic=0,oem,'j'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffefffffffcfffffffdfffffffdbffffffdbffffffd7ffffffd7ffffff8fffffffbfffffff3fffffffbfffffffbfffffff7fffffff7fffffff7fffffff7fffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=32,weight=400,italic=0,oem,'m'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff647ffffe937ffffe937ffffdb77fffff376fffff775fffff775fffff6f5fffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=32,weight=400,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeeffffffeeffffffceffffffdcffffffddbfffffddbfffffdd7fffffd97fffffe0fffffffbfffffff3fffffff3ffffffebffffffe7ffffffe7ffffffd7ffffffd7ffffffc7ffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=32,weight=400,italic=0,oem,'1'",
+      "result": "ffffffffffffffffffffffffffffffffff7fffffff7ffffffe7ffffffe7ffffffd7fffffff7fffffff7fffffff7fffffff7ffffffefffffffefffffffefffffffefffffffefffffffefffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=32,weight=400,italic=0,oem,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffff3fffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=40,weight=400,italic=0,oem,'A'",
+      "result": "fffffffffffffffffffffffffffffffffffbfffffffbfffffff3fffffff3ffffffebffffffebffffffdbffffffdbffffffdbffffffbbffffffbbffffffbbfffffcbbfffffb7bfffffb3bfffffb3bfffffadbfffffcdbfffffdebfffffdebfffffaf3fffff773ffffef9bffffdfe1ffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=40,weight=400,italic=0,oem,'B'",
+      "result": "fffffffffffffffffffffffffffffffffff0ffffffcf7fffffaf7fffffafbfffff77bfffff77bffffef7bffffef7bffffdf77ffffdf6fffffde9fffffde3fffffbedfffffbdefffffbdefffffbdefffffbdefffff7defffff7befffff7befffff77efffff77efffff6bdfffff9c3ffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=40,weight=400,italic=0,oem,'K'",
+      "result": "fffffffffffffffffffffffffffffffffe7f9ffffdbf6ffffdbf6ffffbdeeffffbdeeffffbddfffffbddfffffddbfffffedbffffffa7ffffff9fffffff9fffffffafffffffafffffff6fffffff6fffffff6fffffff6fffffff6ffffffeef7ffffeef7fffedeeffffedf4ffffe3fbffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=40,weight=400,italic=0,oem,'M'",
+      "result": "fffffffffffffffffffffffffffffffff8f1e3fff76eddfff75eddffef5eddffef5ebdffef3ebdffef3e7dfff33e7dfffd3e7dffff3e7dffff7efdffff7efdffff7efdffff7efdfffefdfbfffefdfbfffefdfbfffefdfbfffefdf7fffefdf7bffdfbf77ffdfbf77ffdfbf6fffffff9ffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=40,weight=400,italic=0,oem,'W'",
+      "result": "fffffffffffffffffffffffffffffffff8fefefff77efdfff77cfdffef7cfbffef7cfbffef7af7ffef79f7fff379effffd79efffff75dfffff75dfffff75bfffff6dbfffff6d7fffff6d7fffff5cffffff5cffffff5cffffff59ffffff39ffffff39ffffff39ffffff7bffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=40,weight=400,italic=0,oem,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0bfffffef3fffffef3fffffef3fffffdf7fffffdf7fffffdf7bffffdf77ffffdf77ffffee6ffffff19fffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=40,weight=400,italic=0,oem,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0bfffffef3fffffef3fffffef3fffffdf3fffffdf7fffffdf77ffffdf6fffffdf5fffffee3ffffff17ffffffefffffffcfffffffafffffffaffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=40,weight=400,italic=0,oem,'j'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3fffffff3ffffffffffffffffffffffffffffffefffffffefffffffefffffffdfffffffdfffffffdfffffffddffffffddffffffbbffffffb7ffffff8fffffffbfffffff3fffffff7fffffff7fffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=40,weight=400,italic=0,oem,'m'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff318ffffecd6ffffecd6ffffecceffffddceffffd9defffff9deeffffbdeeffffbdedffff7be9ffffffe7fffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=40,weight=400,italic=0,oem,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefbfffffefbfffffefbfffffcf7fffffdf7fffffdf7fffffde77ffffde6fffffdedfffffd8bfffffe67ffffffefffffffcfffffff9fffffff9ffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=40,weight=400,italic=0,oem,'1'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffdfffffffdfffffff9fffffff9fffffff5ffffffedfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffff7fffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Script\",h=40,weight=400,italic=0,oem,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffff9fffffffdffffffffffffffffffffffffffffffffffffff",
+      "section": "the plotter fonts, which are strokes and have never been drawn here"
+    },
+    {
+      "function": "glyph",
       "args": "\"System\",h=8,weight=400,italic=0,'A'",
       "result": "fffffffffffffffffffffffff9fffffff9fffffff0fffffff0fffffff6ffffffe67fffffe67fffffe07fffffcf3fffffcf3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
       "section": "the bitmap faces, which are strikes rather than outlines"

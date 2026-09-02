@@ -489,6 +489,28 @@ and an empty name all land on Arial in italic and all answer 255.
 Reachable only through `OEM_CHARSET`, which also selects `Roman` when a request
 names no face. **Recorded.**
 
+**What they look like is now recorded and none of it is drawn right.** The glyph
+probe had never been pointed at them: their widths and heights were known to the
+pixel and their ink not at all, which is a shape of gap worth naming, because
+measuring the right numbers about a thing is not the same as drawing it. 420
+cells, three faces, seven sizes from eight pixels to forty, and nought of them
+agree.
+
+Two defects are already visible. The replay was not passing `OEM_CHARSET`
+through at all, so a request for `Roman` was being answered by whatever an ANSI
+request for that name gives -- fixed, and it is what made the first reading look
+like a filled serif letter rather than a stroked one. And the stroke decoding is
+wrong: Roman's `A` comes back as a pair of verticals and a bowl, which is a `B`,
+so either the character table is being indexed a place out or the pen-up pairs
+are absolute where they should be relative. Windows draws a thin single pixel
+`A` with a serif at each foot.
+
+The format is a stream of signed byte pairs with `0x80` lifting the pen, and the
+question is whether the pair after a lift is a position or a displacement. The
+data reads as a displacement -- Roman's first three pairs put the pen at (5,4),
+draw to (5,25), lift by (1,-21) to (6,4) -- and reading it as a position gives a
+letter that is not one.
+
 **Every vertical measure is the design's, scaled and rounded on its own.** The
 height is exactly what was asked for; the ascent, descent and both leadings are
 `round(design * height / designHeight)`, each rounded separately -- so the

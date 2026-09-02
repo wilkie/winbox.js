@@ -1236,7 +1236,12 @@ const ADAPTERS: Record<
         lfHeight: fields.h ?? 0,
         lfWeight: fields.weight ?? 0,
         lfItalic: fields.italic ?? 0,
-        lfCharSet: 0,
+
+        /* The plotter fonts are only reachable through `OEM_CHARSET`, and the
+         * probe says so by writing `oem` among the fields rather than as a
+         * number, since it is the only charset any of these records asks for.
+         */
+        lfCharSet: args.slice(1, -1).includes('oem') ? 255 : 0,
         lfFaceName: String(args[0]),
       });
 
@@ -1288,7 +1293,7 @@ export class Unimplemented extends Error {}
  */
 export const KNOWN_GAPS: Record<string, string> = {
   glyph:
-    'Symbol, and all of it a synthesised style on an outline: the slant at every size the outline answers (68 cells) and the smear at the smallest (28)',
+    'the three plotter fonts, 420 cells that had never been recorded before and none of which we draw right, and Symbol in the styles it has no file for (96)',
   'CreateFont heights':
     'one: Symbol slanted at twelve pixels, which Windows answers a cell shorter',
   'CreateFont extent':

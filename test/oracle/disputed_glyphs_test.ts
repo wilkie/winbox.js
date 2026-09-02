@@ -14,13 +14,19 @@
  * but a list that must stay empty. Section 6 of FONTS.md records what was ruled
  * out getting there.
  *
- * The bitmap faces are counted separately and are not at zero. What is left is
- * all Symbol, and all of it a style the face has no file for: a slant
- * synthesised onto an outline, which is drawn at an angle that is not Windows'
- * -- Symbol is the only installed face that ever asks for one, since the other
- * three outline families ship an italic of their own -- and a smear
- * synthesised onto one at the smallest sizes. Symbol upright agrees at every
- * size but eight.
+ * Everything that is not an outline is counted separately and is not at zero.
+ * Two things are open.
+ *
+ * Symbol, in the styles the face has no file for: a slant synthesised onto an
+ * outline, drawn at an angle that is not Windows' -- Symbol is the only
+ * installed face that ever asks for one, the other three outline families
+ * shipping an italic of their own -- and a smear synthesised onto one at the
+ * smallest sizes. Symbol upright agrees at every size but eight. That is 96
+ * cells.
+ *
+ * And the three plotter fonts, all 420 of them, which had never been drawn
+ * here at all until the probe was pointed at them. They are strokes rather than
+ * strikes or outlines, and nothing about how we draw them is right yet.
  *
  * ## How the last sixteen went
  *
@@ -78,8 +84,8 @@ import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './repl
 const OUTLINE = ['Arial', 'Times New Roman', 'Courier New'];
 const RECORDS = 0;
 const PIXELS = 0;
-const BITMAP_RECORDS = 96;
-const BITMAP_PIXELS = 1091;
+const BITMAP_RECORDS = 516;
+const BITMAP_PIXELS = 26899;
 
 /** Whether a recorded call named one of the three outline families. */
 function isOutline(args: string) {
