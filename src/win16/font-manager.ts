@@ -654,19 +654,22 @@ export class FontManager {
      * be: Courier asked for 38 pixels answers 39, its thirteen row strike three
      * times over, when 32 was available and fits.
      *
-     * The rule it does use has been read out of `GDI.EXE` and is a weighted
-     * penalty over every candidate, in which **the height term is a step rather
-     * than a distance**: nought if the strike's height equals a target worked
-     * out before the loop, 500 if it equals a second target, and 10,000
-     * otherwise. That is why no function of the difference could be fitted to
-     * these answers, and it is why several strikes can tie and be settled by
-     * the order the directory is walked in. `FONTS.md` section 3 has the whole
-     * weights table and where in the image it sits.
+     * The rule it does use has been read out of `GDI.EXE`. It is a weighted
+     * penalty over the candidates, and its height term is a distance with a
+     * two-to-one bias: the mapper works out what cell this candidate would have
+     * to be realised at and charges two per pixel when the candidate is taller
+     * than that and one per pixel when it is shorter. So a strike that is too
+     * small beats one that is too big by the same amount. `FONTS.md` section 3
+     * has the whole weights table and where in the image it sits.
      *
-     * Reproducing it needs the routine that computes those two targets, which
-     * is where the stretching is actually decided. Until that is read, this
-     * stands: exact for a face with one strike and wrong at 38 heights out of
-     * 302 for the faces with several.
+     * Knowing the scoring is not enough to reproduce it, and scoring the
+     * candidates *we* enumerate that way is worse than what is here -- 37
+     * heights wrong against 30, over the same 302. The missing half is which
+     * candidates the mapper is scoring: it walks a directory of the installed
+     * strikes, 46 bytes an entry, and something puts the stretched sizes in
+     * front of it as well. Until that routine is read this stands, which is
+     * exact for a face with one strike and wrong at 38 heights for the faces
+     * with several.
      */
     /* A scalable face has one design and is drawn at whatever size is wanted,
      * so none of the business below -- nearest strike, whole-number stretch,

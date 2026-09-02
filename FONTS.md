@@ -189,69 +189,70 @@ where Windows answers 12.
 
 ### The mapper, read out of GDI
 
-It is a penalty function, and the reason no fit worked is that **the height term
-is not a distance**. It is a step.
-
 `GDI.EXE` segment 3 holds the font code -- `CreateFont`, `GetTextMetrics`,
 `EngineRealizeFont` are all in it. At `17b4` is a routine that takes a logical
-font, one candidate font, a table of weights and a running limit, and returns a
+font, one candidate, a table of weights and a running limit, and returns a
 32-bit penalty; at `2841` is the loop that walks the font directory 46 bytes at
 a time, calls it for each entry, and keeps the lowest. The loop passes its best
-score so far as the limit, and the penalty routine returns early the moment the
-running total passes it, which is why the terms are summed in the order they
-are. It stops outright on a penalty of nought.
+score so far as the limit and the routine returns the moment the running total
+passes it, which is why the terms are summed in the order they are. It stops
+outright on a penalty of nought.
 
 **The weights are twenty-eight words in GDI's data segment at `0x39c`, each
 multiplied by 1024 as the table is built.** A device may supply its own -- the
 builder at `511` reads `[dc+0x9a]` and falls back to the static table when that
-is null -- so these are the defaults rather than the only possible values:
+is null -- so these are defaults rather than the only possible values. In order
+from `0x39c`: 65000, 19000, 15000, 10000, 500, 9000, 8000, 50, 600, 350, 150,
+150, 50, 50, 4, 20, 30, 4, 1, 3, 3, 3, 1, 1, 2, 1, 2, 1, and then two more that
+are not scaled: 1 and 10.
 
-| term                                       | weight |
-| ------------------------------------------ | ------ |
-| height matches neither target              | 10,000 |
-| height matches the second target           | 500    |
-| fixed pitch asked for, variable pitch font | 15,000 |
-| variable pitch asked for, fixed pitch font | 350    |
-| no pitch asked for, fixed pitch font       | 1      |
-| italic mismatch                            | 4      |
-| underline mismatch                         | 3      |
-| strikeout mismatch                         | 3      |
+**The face name is matched by atom.** `EngineRealizeFont` copies the first
+eighteen bytes of the `LOGFONT` into a request structure, then stores at `+0x52`
+an atom for the name it is asking for and at `+0x58` a second one. The penalty
+routine adds `AddAtom` on the candidate's own name, compares, and deletes it
+again: nought if it equals the first, 500 if it equals the second, and **10,000
+if it equals neither**. That term dwarfs everything else, which is why a request
+that names a face gets that face.
 
-The rest run 1, 2, 4, 20, 30, 50, 150, 600, 8000, 9000, 19000, 65000.
+**The height term is a distance, and it is asymmetric.** The routine works out
+what cell this candidate would have to be realised at -- `MulDiv(cell, wanted
+em, own em)`, using `MulDiv` at `seg1:41b0`, which rounds -- and then charges
+the difference from the candidate's own cell: **2 per pixel when the candidate
+is taller than wanted, 1 per pixel when it is shorter**. So the mapper prefers a
+strike that is too small over one that is too big, by exactly two to one.
 
-The height term is the whole of the answer to the question above. The routine
-does not measure how far a strike is from the size asked for. It reads two
-heights that were worked out _before_ the loop and stored in the request, and
-asks only whether this strike's own height equals the first (nought), the second
-(500), or neither (10,000). A term that takes three values cannot be fitted by
-any function of the difference, which is exactly what the sweeps found.
+Two other terms are worth having. Asking for fixed pitch and getting a variable
+pitch font costs 15,000; the other way round costs 350; a request that named no
+pitch at all and got a fixed one costs 1. And italic, underline and strikeout
+mismatches cost 4, 3 and 3, which is to say almost nothing next to the name.
 
-Two consequences worth stating. Because 10,000 swamps everything below it,
-several strikes that match neither target tie on height and the decision falls
-to the small terms and then to the order the directory is walked in. And because
-the answer is always some strike drawn a whole number of times over, **the
-stretch is decided when those two target heights are computed, not while the
-strikes are being scored**.
+**What this does not yet say is where the stretched candidates come from.** The
+loop scores what is in the font directory, one 46-byte entry at a time, and the
+directory holds the installed strikes. Something puts `13 x 3` in front of it as
+well, and that is the routine still to find.
 
-So the remaining work is not a search. It is one routine: whatever fills the two
-words at `+0x52` and `+0x58` of the request structure -- the same structure whose
-first fifty bytes are the `LOGFONT`, since the penalty routine reads `lfCharSet`
-at `+0x0d`, `lfQuality` at `+0x10` and `lfPitchAndFamily` at `+0x11` from it.
-`PROOF_QUALITY` is checked there too, before any term is added, and answers
-`0x7fffffff` -- refusing the candidate outright. Asking Windows what class of
-font that refuses settles it, and confirms the read:
+An earlier reading of this said the height term was a step rather than a
+distance -- nought, 500 or 10,000 -- and that no function of the difference
+could reproduce it. That was wrong, and worth recording as a way of being wrong.
+The step-shaped term is real and sits where I looked, but it compares the field
+at `+0x52` of the request, which I had assumed was a height because the routine
+that fills it sits beside the height arithmetic. It is an atom. Resolving the
+call that produces it -- through the relocation chain, which runs through the
+segment word of each far pointer, to `KERNEL`'s atom table -- is what settled
+it. A field's meaning is not established by what is computed near it.
 
-**At proof quality no strike is ever stretched.** Every answer, across six
-faces and twelve heights each, is a height the face has a strike installed at.
-Fixedsys, whose only strike is fifteen rows, answers fifteen for every request
-from eight to fifty, where the default quality answers 30 and 45; Courier
-answers 13, 16 or 20 and never 26, 32, 40 or 48; MS Serif answers 19 for a
-request of 20 where the default answers 20, its ten row strike doubled.
-**Recorded.**
+**At proof quality no strike is ever stretched.** The routine tests `lfQuality`
+against `PROOF_QUALITY` before adding a single term and answers `0x7fffffff`,
+refusing the candidate. Asking Windows what class of candidate that refuses
+settles it: every answer, across six faces and twelve heights each, is a height
+the face has a strike installed at. Fixedsys, whose only strike is fifteen rows,
+answers fifteen for every request from eight to fifty, where the default quality
+answers 30 and 45; Courier answers 13, 16 or 20 and never 26, 32, 40 or 48; MS
+Serif answers 19 for a request of 20 where the default answers 20, its ten row
+strike doubled. **Recorded.**
 
-That is also the cleanest evidence there is that the stretched sizes are
-_candidates_ -- they can be refused one at a time, so they are being scored one
-at a time, rather than worked out after a strike has been chosen.
+That is also the cleanest evidence that the stretched sizes are _candidates_ --
+they can be refused one at a time, so they are being scored one at a time.
 
 The four exceptions are all a hundred pixels, where refusing every stretch
 leaves the nearest strike so far off that a scalable face wins the comparison
