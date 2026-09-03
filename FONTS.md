@@ -2080,6 +2080,10 @@ So the slant rests at eleven cells of 198 in instruments built to be as sensitiv
 to it as anything can be: everything a pixel wide or more exact, every upright
 cell exact, `glyphs` at 98.0% and `font` at 99.8% of the real corpus.
 
+(That 98.0% stood until the slant itself was read out of GDI's memory; it is
+98.5% now. See "The lean is a whole number of pixels" at the end of this
+section.)
+
 #### Reading the box out of GDI's memory
 
 The instrument the last section asked for turned out not to need ToolHelp, or a
@@ -2488,6 +2492,74 @@ in this section has taken for granted and which ten sizes now refuse.
 The four integers turned into ten, and the ten are worse news than the four
 were. That is the right kind of worse: a model that fitted four points and fails
 ten was fitting the points.
+
+#### The lean is a whole number of pixels
+
+Ten sizes refused `slope x height` because the question had been asked the wrong
+way round. Every fit so far held the _height_ fixed at five hundred units and
+watched the size; the one thing never done was the opposite -- hold the size and
+watch the height. The instruments for it already existed. `dot-rise` and
+`dot-riser` walk a square up the cell at one bearing, and with the probe now
+costing five records a cell instead of eighty-one they could be recorded at all
+eighteen sizes for the price of one earlier recording.
+
+Two hundred (size, height) pairs later, the answer falls out at once. Fit
+`D(y) = round(slope x y) + K` at each size **separately**, and:
+
+- it fits at every size, with **K = 0** at every size. There is no constant
+  term. It was a shear all along.
+- the slope it wants is different at every size -- and at every size it is a
+  **whole number over the size**:
+
+| per em | 9   | 11   | 12   | 14   | 16   | 18   | 20   | 23   | 26   | 33    |
+| ------ | --- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ----- |
+| slope  | 3/9 | 3/11 | 4/12 | 4/14 | 5/16 | 6/18 | 6/20 | 7/23 | 8/26 | 11/33 |
+
+Ten sizes, ten integers, each uniquely determined by its size's cells. And every
+one of them is `floor(ppem / 3)`.
+
+**The synthesised italic leans by a whole number of pixels over one em, and the
+number is a third of the size, truncated.** Nominally one in three; in practice
+one in three rounded down onto the pixel grid, so the slope is `4/12` at twelve
+per em, `5/16` at sixteen, `6/20` at twenty, and exactly a third only where
+three divides the size.
+
+The arithmetic is `(x + 31) >> 6` on `round(x * ppem / 32) + round(m * y / 32)`
+with `m = floor(ppem / 3)` -- the scaled coordinate and the shear rounded
+**separately**, which matters: folded into one rounding it is 945 of 948 rather
+than all of them.
+
+Against every box read so far -- 948 of them, eight instruments, sixteen sizes,
+upright and slanted:
+
+    upright   (x + 31) >> 6                          948 of 948
+    slanted   + round(floor(ppem/3) * y / 32)        948 of 948
+
+#### What it was worth
+
+`Surface.SLANT`, the three tenths this file has carried since section 3, is
+gone. It was never careless -- it was swept over the twenty-four cells wide
+enough to measure a slope and the minimum was sharp and single. It was a sharp
+minimum in the wrong family of curves: those twenty-four cells all sit at sizes
+whose true slope is near three tenths, and a sweep over constants cannot ask for
+a slope that changes with the size.
+
+With the rule in its place, on the fabricated set:
+
+| instrument      | before                     | after                          |
+| --------------- | -------------------------- | ------------------------------ |
+| `symbol-slant`  | 252/288, 72 wrong          | **288/288, 0 wrong**           |
+| `symbol-shapes` | 248/288, 72 wrong          | **288/288, 0 wrong**           |
+| `slant-width`   | 243/288, 93 wrong          | 276/288, 27 wrong              |
+| `slant-baked`   | 249/288, 94 wrong          | 273/288, 30 wrong              |
+| `slant-angle`   | 240/288, 114 wrong         | 269/288, 41 wrong              |
+| whole set       | 25,188/25,770, 5,228 wrong | **25,444/25,770, 4,679 wrong** |
+
+The two instruments built for no other purpose than to measure this are now
+exact. And on the real corpus -- recorded Windows, not fabrications -- `glyphs`
+goes from 5,861 of 5,982 to **5,890 of 5,982, 98.5%**.
+
+The eleven cells that this whole section was written to explain are **two**.
 
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from

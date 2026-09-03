@@ -116,8 +116,9 @@ describe('the fabricated glyph recordings', () => {
    * `symbol-slant` and `symbol-shapes` put known shapes in place of Symbol's
    * letters, upright and slanted, so that the difference between the two cells
    * is the synthesised slant and nothing else. Upright every one of their cells
-   * is exact; slanted they are wrong by about a pixel each, and that is a
-   * measurement -- see `Surface.SLANT`.
+   * is exact; and slanted they are now exact too -- both instruments draw all
+   * 288 of their cells with nothing wrong, which is what reading the lean out
+   * of GDI's memory bought. See `Surface.leanOf`.
    *
    * `slope-sweep` puts a leaning edge in place of Times New Roman's letters,
    * and the 264 cells it exists to measure all agree; the test above says so
@@ -140,8 +141,8 @@ describe('the fabricated glyph recordings', () => {
    * of `FONTS.md` 9, which read 309 of their boxes out of GDI's own working
    * memory.
    */
-  const EXACT = 25188;
-  const WRONG = 5228;
+  const EXACT = 25444;
+  const WRONG = 4679;
 
   /* The one place an unhinted outline is drawn differently.
    *
@@ -545,7 +546,7 @@ describe('the fabricated glyph recordings', () => {
    *
    * Four cells still differ, of the 36 the instrument writes.
    */
-  const DOTS = 4;
+  const DOTS = 1;
 
   present('lean a single pixel', async function () {
     const recording = all.find((entry) => entry.name === 'dot-sweep');
@@ -610,7 +611,7 @@ describe('the fabricated glyph recordings', () => {
    *
    * Four cells differ, of the 88 the instrument writes.
    */
-  const PHASES = 4;
+  const PHASES = 1;
 
   present('walk a leaning dot through a pixel of phase', async function () {
     const recording = all.find((entry) => entry.name === 'dot-phase');
@@ -672,14 +673,15 @@ describe('the fabricated glyph recordings', () => {
    * first column as that crosses a half -- and those bearings straddle it at
    * sixteen per em and at twenty, which the first two instruments miss.
    *
-   * Eleven cells differ of the 198 outside the strike sizes. One is the smear
-   * boundary itself, at twenty-four pixels in `dot-brink`. The other six are a
-   * contiguous run at fifteen pixels in `dot-edge`, all with the *right* number
-   * of pixels in the wrong column -- the crossing landing a column apart, which
-   * is the other of the two phenomena above and which here holds for six
-   * consecutive phases rather than scattering.
+   * Two cells differ of the 198 outside the strike sizes.
+   *
+   * It was eleven, and the eleven were what the stack probe was built to
+   * explain. They are gone because the slant is no longer a constant: it leans
+   * by a whole number of pixels over the em, `floor(ppem / 3)` of them, which
+   * is read out of GDI's own memory across 948 boxes rather than swept for.
+   * See `Surface.leanOf`.
    */
-  const BRINK = 11;
+  const BRINK = 2;
 
   present('bracket the phase where the smear turns on', async function () {
     let differing = 0;

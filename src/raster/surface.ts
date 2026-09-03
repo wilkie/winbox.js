@@ -25,47 +25,6 @@ function entryOf(font) {
 }
 
 export class Surface {
-  /**
-   * How far a synthesised italic leans, as a fraction of its height.
-   *
-   * Only one installed face ever asks for this. Arial, Times New Roman and
-   * Courier New all ship an italic file, so a request for a slanted outline is
-   * answered by opening it; Symbol does not, and until Symbol was probed at the
-   * sizes where it answers with its outline there was nothing to measure
-   * against at all. The tenth that used to be here was swept against a corpus
-   * that did not contain a single synthesised outline slant.
-   *
-   * It is **not** the half the bitmap faces lean by, which an older comment
-   * here claimed it was measured against; a strike leans by its whole overhang
-   * and an outline by about a third of its height.
-   *
-   * Read off `symbol-slant` and `symbol-shapes`, which put known shapes in
-   * place of Symbol's letters and record them upright and slanted, so that the
-   * difference between the two cells is the slant and nothing else.
-   *
-   * **Measured on the cells that can measure it.** A shape whose widest inked
-   * run is four pixels or more has an edge the scan converter finds on its own,
-   * with nothing left to dropout control. Twenty-four of the slanted cells are
-   * that wide, and swept over those alone the minimum is sharp and single: 0.29
-   * costs sixteen pixels, three tenths costs none, 0.31 costs sixteen again.
-   *
-   * **Three tenths and not 0.31, which the narrow cells prefer.** With the stub
-   * check off, 0.310 is the best value on wrong pixels over both instruments --
-   * 84 against 96 -- and it reproduces the twenty pixel bar's ladder exactly,
-   * all fourteen rows, where three tenths gets two of them a row early. It also
-   * breaks eight of the wide cells, which three tenths does not. A slope that
-   * fits the hairlines by fitting the unambiguous shapes worse is compensating
-   * for something rather than correcting anything, so it is not taken.
-   *
-   * The narrower cells cannot be read this way, and reading them anyway is what
-   * put 0.28 here once. A bar one pixel wide is drawn by dropout control, which
-   * places its pixel a column to the left of the run rather than at the edge,
-   * so a slope fitted to its leftmost inked column is fitted to the dropout
-   * rule. Every wrong pixel either instrument still has is in a cell three
-   * pixels across or narrower. See `FONTS.md` section 3.
-   */
-  static SLANT = 0.3;
-
   /* **And the shear is very probably not this at all.**
    *
    * Comparing every slanted cell of the four slant instruments against its own
@@ -534,7 +493,7 @@ export class Surface {
          * across, and slanting leans it over by an amount proportional to how
          * far above the baseline each point sits.
          */
-        const slanted = italic ? this.slant(contours, fitted.scaled ? 1 : scale) : contours;
+        const slanted = italic ? this.slant(contours, fitted.scaled ? 1 : scale, ppem) : contours;
 
         const inked = fill(slanted, {
           // Hinting hands back pixels; an unhinted outline is still in units.
@@ -601,13 +560,61 @@ export class Surface {
    * sits, so the baseline itself stays put and the top of the letter travels
    * furthest. The proportion is the same one the bitmap faces lean by.
    */
-  slant(contours, scale) {
+  slant(contours, scale, ppem) {
+    const lean = Surface.leanOf(ppem);
+
     return contours.map((contour) =>
       contour.map((point) => ({
         ...point,
-        x: point.x + point.y * Surface.SLANT,
+        x: point.x + point.y * lean,
       }))
     );
+  }
+
+  /**
+   * How far a synthesised italic leans at this size.
+   *
+   * A whole number of pixels of lean over one em of rise, and the whole number
+   * is `floor(ppem / 3)`. Nominally a third; in practice a third truncated onto
+   * the pixel grid, so the slope is `4/12` at twelve per em, `5/16` at sixteen,
+   * `6/20` at twenty -- never a third exactly except where three divides the
+   * size.
+   *
+   * **Read out of GDI's memory, not fitted.** `oracle/probes/stack.c` recovers
+   * the box the scan converter is set up from; 948 of them were recorded across
+   * eight instruments and sixteen sizes. Holding the size and letting the ink's
+   * height vary, the displacement the slant applies to the box is a shear with
+   * **no constant term at all** at every size -- and the slope it wants is a
+   * whole number over the size at every size, uniquely: 3/9, 3/11, 4/12, 4/14,
+   * 5/16, 6/18, 6/20, 7/23, 8/26, 11/33. Ten sizes, ten integers, and every one
+   * of them `floor(ppem / 3)`.
+   *
+   * That is why the constant this replaced could never be right. Three tenths
+   * was the best single number over a corpus whose sizes wanted 0.273, 0.286,
+   * 0.3, 0.3125 and 0.333 -- a good average and wrong everywhere. With the rule
+   * in its place `symbol-slant` and `symbol-shapes`, the two instruments built
+   * to measure exactly this, go from 252 and 248 of 288 cells to **288 of 288
+   * with no wrong pixels at all**.
+   *
+   * The three tenths was not carelessness, and the way it was arrived at is
+   * worth keeping. It was swept over the cells that can measure a slope -- the
+   * twenty-four whose widest inked run is four pixels or more, where the scan
+   * converter finds the edge itself and dropout control decides nothing -- and
+   * over those the minimum was sharp and single: 0.29 cost sixteen pixels,
+   * three tenths cost none, 0.31 cost sixteen again. A sharp minimum in the
+   * wrong family of curves. Every one of those twenty-four cells is at a size
+   * whose true slope is near three tenths, and the sweep had no way to ask for
+   * a slope that changed with the size.
+   *
+   * Only one installed face ever asks for this. Arial, Times New Roman and
+   * Courier New all ship an italic file, so a request for a slanted outline is
+   * answered by opening it; Symbol does not. And it is **not** the half the
+   * bitmap faces lean by -- a strike leans by its whole overhang and from the
+   * bottom of the cell, which is a different mechanism with a different number.
+   * See `BitmapFont.SLANT` and `FONTS.md` section 3.
+   */
+  static leanOf(ppem) {
+    return Math.floor(ppem / 3) / ppem;
   }
 
   /**
