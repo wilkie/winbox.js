@@ -1841,6 +1841,33 @@ That is worth more than the false lead cost. The scaler's segments are now known
 by their references -- 36, 37, 39, 40, 41, 42, 44, 45, 47, 48 -- and 43 is out,
 along with the note higher up this file that once counted it in.
 
+#### Every conversion from sixty-fourths, in every segment of the scaler
+
+A box edge has to turn sixty-fourths into pixels, so the ten segments were
+searched for every shift of six there is. There are four places, and that is all:
+
+| where       | what it is                                                         |
+| ----------- | ------------------------------------------------------------------ |
+| `36:0x0388` | the 26.6 multiply: `imul`, `add ax,0x20`, `shr ax,6`               |
+| `36:0x0ca7` | the four metric edges, `(v + 31) >> 6`, measured above and refused |
+| `36:0x2143` | the memory sizing, with its "if it came out nought, make it one"   |
+| `41:0x003f` | a coordinate transform, origin subtracted then split 26.6          |
+| `42:0x1189` | `CalcLine`'s own, which this file matches                          |
+
+Segments 37, 39, 40, 44, 45, 47 and 48 contain **no shift of six at all**.
+
+Two things fall out. The multiply at `0x0388` rounds with **32** -- `(a * b + 32)
+
+> > 6`, round to nearest -- which is what `sixtyFourth`does here, so the scaling
+is confirmed from the source rather than inferred. And the index conversions
+round with **31**, which is what`above` does, so that is confirmed too.
+
+But **the scan box is not computed anywhere in the scaler.** The only candidate
+of the right form is the metrics at `0x0ca7`, and the recordings refuse it. So
+the box is made on GDI's side and handed down -- which is what `fsc_SetupScan`
+taking a `prectBox` said all along, and what the marshalling in segment 40
+carries. The search moves out of the scaler's segments and into GDI's own.
+
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
 changing the code outright and re-running the ratchet.)
