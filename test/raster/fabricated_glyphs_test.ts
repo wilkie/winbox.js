@@ -132,8 +132,8 @@ describe('the fabricated glyph recordings', () => {
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 22694;
-  const WRONG = 5010;
+  const EXACT = 23249;
+  const WRONG = 5059;
 
   /* The one place an unhinted outline is drawn differently.
    *
@@ -640,6 +640,75 @@ describe('the fabricated glyph recordings', () => {
 
     expect(leaning).toBeGreaterThanOrEqual(88);
     expect(differing).toBeLessThanOrEqual(PHASES);
+  });
+
+  /* And the same dot again at a third the step, across each crossing.
+   *
+   * `dot-phase` can see the smear turn on and off but not where, its step being
+   * a twelfth of a pixel. `dot-edge` and `dot-brink` step three font units
+   * instead of nine, across the two crossings `dot-phase` straddles, everything
+   * else held.
+   *
+   * They say two things. At twenty-four pixels the upper crossing sits between
+   * side bearings of 281 and 284, and **this turns on in the same three units
+   * Windows does** -- no displacement there at all. At the lower crossing
+   * Windows stops smearing between 206 and 209 and this stops between 209 and
+   * 212: three font units late, 0.029 of a pixel, about two sixty-fourths. So
+   * the boundary is met exactly at one crossing and missed by two sixty-fourths
+   * at the one before it, which is far finer than the twelfth of a pixel
+   * `dot-phase` could resolve, and is not a uniform offset.
+   *
+   * Seven cells differ of the 132 outside the strike sizes. One is the smear
+   * boundary itself, at twenty-four pixels in `dot-brink`. The other six are a
+   * contiguous run at fifteen pixels in `dot-edge`, all with the *right* number
+   * of pixels in the wrong column -- the crossing landing a column apart, which
+   * is the other of the two phenomena above and which here holds for six
+   * consecutive phases rather than scattering.
+   */
+  const BRINK = 7;
+
+  present('bracket the phase where the smear turns on', async function () {
+    let differing = 0;
+    let leaning = 0;
+
+    for (const name of ['dot-edge', 'dot-brink']) {
+      const recording = all.find((entry) => entry.name === name);
+
+      expect(recording).toBeTruthy();
+
+      const manager: any = await prepareFonts();
+      const font: any = new TrueTypeFont(new Uint8Array(readFileSync(recording.file)));
+      const face = font.faceName;
+      const installed = manager._outlines[face];
+
+      manager._outlines[face] = {
+        ...(installed ?? {}),
+        [FontManager.styleKey(font.boldFace, font.italicFace)]: font,
+      };
+
+      try {
+        for (const record of recording.fixture.records) {
+          const asked = /^"Symbol",h=(\d+),weight=400,italic=1,'[ABKMWagjmy1]'$/.exec(record.args);
+
+          if (!asked || asked[1] === '13' || asked[1] === '16') {
+            continue;
+          }
+
+          leaning++;
+
+          if (
+            (await replayRecord(record, recording.fixture.display ?? 'vga')).outcome !== 'agreed'
+          ) {
+            differing++;
+          }
+        }
+      } finally {
+        manager._outlines[face] = installed;
+      }
+    }
+
+    expect(leaning).toBeGreaterThanOrEqual(130);
+    expect(differing).toBeLessThanOrEqual(BRINK);
   });
 
   const NARROW = 4;

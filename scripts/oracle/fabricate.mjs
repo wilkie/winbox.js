@@ -4670,6 +4670,14 @@ export const FABRICATIONS = [
     describe: 'the same dot, walked through one whole pixel of each phase at a step of a sixth',
   }),
 
+  dotEdge('dot-edge', {
+    describe: 'the same dot at a third the step, across the phase where the smear turns on',
+  }),
+
+  dotBrink('dot-brink', {
+    describe: 'and across the other crossing, the one where the two sides part',
+  }),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -4931,6 +4939,117 @@ function slantShapes(name, { box, describe, source = 'SYMBOL.TTF' }) {
  * comes free from the sizes -- the probe records eight, from six to twenty per
  * em, and the shear at a fixed height is a different fraction of a pixel in each.
  */
+/**
+ * The dot again, at a third the step, across the phase where the smear begins.
+ *
+ * `dot-phase` shows the smear is a threshold: at twenty-four pixels Windows
+ * draws one pixel for the first nine phases of eleven and two for the last two,
+ * and this turns on about one step out either way. A step there is nine font
+ * units, a twelfth of a pixel, which is as fine as that instrument can see.
+ *
+ * This looks at the same boundary three times as closely. The eleven letters
+ * step three font units apart instead of nine, starting below where Windows
+ * changes its mind, so the crossing is bracketed rather than straddled. What
+ * comes back should say where each side's threshold sits to a thirty-sixth of a
+ * pixel, and so how far apart they really are.
+ *
+ * The height is `dot-phase`'s, so that everything but the phase is held.
+ */
+/**
+ * The dot across the *other* crossing, where the two sides part.
+ *
+ * `dot-edge` brackets the smear's threshold at twenty-four pixels between side
+ * bearings of 281 and 284 font units, and finds this implementation turning on
+ * in the same three units Windows does. So the threshold is not displaced there.
+ *
+ * But `dot-phase` disagrees at its first phase, a bearing of 209 -- a whole
+ * pixel below, at the previous crossing of the same boundary. If a threshold can
+ * be met exactly at one crossing and missed at the one before it, the two sides
+ * do not have the same *period*, and that is a different thing from an offset.
+ *
+ * So this brackets the earlier crossing at the same three unit step, from 200 to
+ * 230, everything else held as `dot-edge` holds it.
+ */
+function dotBrink(name, { describe, source = 'SYMBOL.TTF' }) {
+  const SIDE = 100;
+  // The letters the glyph probe asks Symbol for; see `dotPhase`.
+  const RECORDED = 'ABKMWagjmy1';
+
+  return {
+    name,
+    from: source,
+    as: source,
+
+    describe,
+
+    edit: (bytes) => {
+      for (let index = 0; index < RECORDED.length; index++) {
+        const x0 = 200 + index * 3;
+        const y0 = 500;
+
+        const glyph = glyphFor(bytes, 0xf000 + RECORDED.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: x0 + SIDE + 200,
+          height: y0 + SIDE,
+          points: [
+            [x0, y0],
+            [x0, y0 + SIDE],
+            [x0 + SIDE, y0 + SIDE],
+            [x0 + SIDE, y0],
+          ],
+          program: [],
+        });
+
+        // The trap `setBearing` exists for; see `slantBar`.
+        setBearing(bytes, glyph, x0);
+      }
+
+      return bytes;
+    },
+  };
+}
+
+function dotEdge(name, { describe, source = 'SYMBOL.TTF' }) {
+  const SIDE = 100;
+  // The letters the glyph probe asks Symbol for; see `dotPhase`.
+  const RECORDED = 'ABKMWagjmy1';
+
+  return {
+    name,
+    from: source,
+    as: source,
+
+    describe,
+
+    edit: (bytes) => {
+      for (let index = 0; index < RECORDED.length; index++) {
+        const x0 = 254 + index * 3;
+        const y0 = 500;
+
+        const glyph = glyphFor(bytes, 0xf000 + RECORDED.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: x0 + SIDE + 200,
+          height: y0 + SIDE,
+          points: [
+            [x0, y0],
+            [x0, y0 + SIDE],
+            [x0 + SIDE, y0 + SIDE],
+            [x0 + SIDE, y0],
+          ],
+          program: [],
+        });
+
+        // The trap `setBearing` exists for; see `slantBar`.
+        setBearing(bytes, glyph, x0);
+      }
+
+      return bytes;
+    },
+  };
+}
+
 function dotPhase(name, { describe, source = 'SYMBOL.TTF' }) {
   const SIDE = 100;
   // The letters the glyph probe asks Symbol for, and the only ones worth writing.

@@ -1460,10 +1460,46 @@ constant set wrongly. It is conditional: something that happens at some phases
 and not at others, which is what a threshold is, and the condition is not any of
 the quantities measured here.
 
-And it is worth being plain about the size of what is left: four cells of an
-eighty-eight cell instrument built to be as sensitive to the slant as anything
-can be, on a font that does not exist, drawing a dot smaller than a pixel, in the
-configuration where both dropout passes fire on the same dot at once.
+#### The smear needs the slant, and the boundary is two sixty-fourths out
+
+Two more questions, both smaller than the last.
+
+**Does a sub-pixel dot need the slant to smear?** The recordings already held the
+answer: across `dot-sweep` and `dot-phase`, an upright dot comes back as one
+pixel or none, **102 cells and not one of them two**, while a slanted dot comes
+back as two in ten of ninety-two. So the second pixel is a consequence of the
+shear and not of sub-pixel dots in general -- which makes sense of it, since the
+shear moves the dot across the column grid while leaving its row alone, and can
+part the column the horizontal pass rescues into from the column the vertical
+pass finds.
+
+**And where exactly is the boundary?** `dot-phase` steps nine font units, a
+twelfth of a pixel, which is too coarse to say. `dot-edge` and `dot-brink` step
+three across the two crossings it straddles:
+
+    bearing        200 203 206 209 212 ...            281 284
+    h=24 Windows     2   2   2   1   1                  1   2
+    h=24 here        2   2   2   2   1                  1   2
+
+**At the upper crossing the two turn on in the same three units.** At the lower
+one Windows stops smearing between 206 and 209 and this stops between 209 and
+212 -- three font units late, 0.029 of a pixel, **about two sixty-fourths**. So
+the displacement is not a twelfth of a pixel as the coarser instrument suggested,
+it is not uniform across crossings, and at one crossing there is none.
+
+Two sixty-fourths is the size of a placement offset, and one was tried:
+`originX + 1/64` for a slanted glyph is better or equal on all four instruments
+and breaks no wide cell -- `dot-brink` 91 cells of 96 against 90, `symbol-shapes`
+64 wrong pixels against 72, `symbol-slant` unchanged. **The real corpus refuses
+it**: glyphs falls from 5,861 to 5,860. So it is fitted to the fabricated dots
+and it is not taken.
+
+And it is worth being plain about the size of what is left. Seven cells differ
+across the two bracketing instruments, of the 132 outside the strike sizes: one
+is the smear boundary at twenty-four pixels, and six are a contiguous run at
+fifteen pixels with the right number of pixels in the wrong column. The rest of
+the slant -- every shape a pixel wide or more, every upright cell, both bracketed
+crossings at twenty-four pixels -- is exact.
 
 Where none of this goes is into the scaler. Segment 36's public entries are four
 thunks that load a dispatch index into `bx` and a word count into `cx` and jump
