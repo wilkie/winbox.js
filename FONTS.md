@@ -2561,6 +2561,63 @@ goes from 5,861 of 5,982 to **5,890 of 5,982, 98.5%**.
 
 The eleven cells that this whole section was written to explain are **two**.
 
+#### The box's own arithmetic, and what the corpus refused
+
+The box rule is now known exactly, and both edges of it check out against every
+box read:
+
+    left    round(x_min * ppem / 32) + round(m * y_min / 32), then (v + 31) >> 6
+    right   round(x_max * ppem / 32) + round(m * y_max / 32), then (v + 32) >> 6,
+            floored at left + 1 as the upright box already is
+
+    948 of 948, both edges, eight instruments and sixteen sizes.
+
+Two things about it are worth separating, because only one of them survived
+contact with the recorded corpus.
+
+**The two roundings stay apart.** The scaled coordinate is rounded to a
+sixty-fourth, the shear is rounded to a sixty-fourth, and then they are added.
+Folded into one rounding it is 945 of 948; kept apart it is 948. That is
+measured, it is implemented, and -- honestly -- it moves no pixel in anything
+recorded so far. It is three boxes in a thousand and none of them decides a
+crossing.
+
+**The corners were an assumption, and a wrong one.** Every instrument in this
+section is a rectangle, where the leftmost point _is_ the lowest point, so none
+of them can tell "the sheared corners of the glyph's bounding box" from "the
+minimum over the sheared points". Building the box from `(x_min, y_min)` and
+`(x_max, y_max)` -- which is what a bounding box means, and what GDI most likely
+holds -- costs **five records of the real corpus**, where a glyph's leftmost
+point and its lowest point are different points. So the minimum over points
+stands, and the corner reading is written down here as refused rather than left
+looking plausible.
+
+#### Bold does not widen the box
+
+The same probe answers the other synthesis in one recording. Symbol ships no
+bold file either, so a request for one is emboldened; and whatever emboldening
+does, it must do to the box first if it is the scan converter's business.
+
+It is not. **The box GDI hands the scan converter for a bold glyph is byte for
+byte the box it hands it for a plain one** -- identical left and right, at all
+sixteen sizes and all eleven bearings of `dot-edge`, with not one cell
+differing. Emboldening is a smear of the finished bitmap and nothing to do with
+the outline or the box.
+
+Which makes the twenty bold records the corpus still disagrees on a puzzle
+rather than a box question, and one specific reading of them is now closed off.
+Symbol's `K` at ten pixels is bold exactly where the plain glyph is one column
+narrower than its widest row, and _not_ bold on the two rows that reach that
+width -- which looks precisely like the smear being clipped at the box's right
+edge, the way a run is. It is not that: clipping the smear to the box costs 786
+cells of the fabricated set and 37 records of the corpus, because a feature
+narrower than a pixel is bold in Windows and its box is one column wide. Both
+readings were tried; both are worse; the unclipped smear stands.
+
+That leaves the corpus at `glyphs` 5,890 of 5,982 and `font` 5,047 of 5,057,
+with the remainder in four groups: 23 synthesised italic, 20 synthesised bold,
+32 in the plotter faces, and 8 in Symbol upright at eight pixels.
+
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
 changing the code outright and re-running the ratchet.)

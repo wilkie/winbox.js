@@ -378,7 +378,16 @@ function crossesAt(piece, y, into) {
  * negated going in and the emitted scan rows come back as `-row - 1`.
  */
 export function fillWalked(contours, options) {
-  const { scale, originX = 0, originY = 0, width, height, dropout = false, stubs = true } = options;
+  const {
+    scale,
+    originX = 0,
+    originY = 0,
+    width,
+    height,
+    dropout = false,
+    stubs = true,
+    lean = 0,
+  } = options;
 
   const pixels = new Uint8Array(width * height);
   /* Halves go away from zero, not upward.
@@ -499,6 +508,26 @@ export function fillWalked(contours, options) {
   let highest = Infinity;
   let lowest = -Infinity;
 
+  /* A slanted glyph's box keeps its two roundings apart.
+   *
+   * The scaled coordinate is rounded to a sixty-fourth, the shear is rounded to
+   * a sixty-fourth, and then the two are added. Folding them into one rounding
+   * costs three of the 948 boxes read out of GDI's memory; keeping them apart
+   * costs none. See `Surface.leanOf`.
+   *
+   * The points arriving here are already sheared, so the lean is taken back off
+   * to recover the coordinate the first rounding applies to, and put back on
+   * through the second.
+   *
+   * **The minimum is still over the points**, not over the corners of the
+   * glyph's bounding box. Building it from `(xMin, yMin)` and `(xMax, yMax)`
+   * instead is indistinguishable on every instrument here -- they are all
+   * rectangles, where the leftmost point *is* the lowest point -- and it costs
+   * five records of the real corpus, where they are not. So the corner reading
+   * is the one thing about this box that was assumed rather than measured, and
+   * the recorded glyphs refuse it.
+   */
+
   for (const contour of contours) {
     for (const piece of segmentsOf(contour)) {
       for (const point of [piece.from, piece.to, piece.control]) {
@@ -512,6 +541,16 @@ export function fillWalked(contours, options) {
         rightmost = Math.max(rightmost, at[0]);
         highest = Math.min(highest, at[1]);
         lowest = Math.max(lowest, at[1]);
+
+        if (lean) {
+          const apart =
+            originX +
+            (sixtyFourth(point[0] - lean * point[1]) + Math.round(lean * point[1] * scale * 64)) /
+              64;
+
+          leftmost = Math.min(leftmost, apart);
+          rightmost = Math.max(rightmost, apart);
+        }
       }
     }
   }

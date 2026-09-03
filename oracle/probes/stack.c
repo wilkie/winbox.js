@@ -148,7 +148,7 @@ static void captureStack(void)
  * enters the scaler -- the residue would then be a picture of the wrong thing,
  * and an empty one at that.
  */
-static void probeCell(LPCSTR face, int height, BYTE italic, char character)
+static void probeCell(LPCSTR face, int height, int weight, BYTE italic, char character)
 {
     HFONT font;
     HFONT previous;
@@ -156,7 +156,7 @@ static void probeCell(LPCSTR face, int height, BYTE italic, char character)
     char name[80];
     unsigned index;
 
-    font = CreateFont(height, 0, 0, 0, FW_NORMAL, italic, 0, 0, ANSI_CHARSET,
+    font = CreateFont(height, 0, 0, 0, weight, italic, 0, 0, ANSI_CHARSET,
                       OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
                       DEFAULT_PITCH, face);
 
@@ -180,8 +180,8 @@ static void probeCell(LPCSTR face, int height, BYTE italic, char character)
 
     captureStack();
 
-    wsprintf(name, "\"%s\",h=%d,italic=%d,'%c'", (LPSTR)face, height,
-             (int)italic, character);
+    wsprintf(name, "\"%s\",h=%d,weight=%d,italic=%d,'%c'", (LPSTR)face, height,
+             weight, (int)italic, character);
 
     wsprintf(probeResult, "sp=%04x,depth=%d", (int)residueTop, DEPTH);
     probe("stack", name, probeResult);
@@ -265,11 +265,20 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
 
         for (size = 0; size < sizeof(HEIGHTS) / sizeof(HEIGHTS[0]); size++) {
             for (index = 0; CHARS[index]; index++) {
-                probeCell("Symbol", HEIGHTS[size], 1, CHARS[index]);
+                probeCell("Symbol", HEIGHTS[size], FW_NORMAL, 1, CHARS[index]);
             }
 
             for (index = 0; CHARS[index]; index++) {
-                probeCell("Symbol", HEIGHTS[size], 0, CHARS[index]);
+                probeCell("Symbol", HEIGHTS[size], FW_NORMAL, 0, CHARS[index]);
+            }
+
+            /* And bold, which is the other synthesis. Symbol ships no bold
+             * file either, so a request for one is emboldened rather than
+             * opened -- and whatever that does to the glyph, it must do to the
+             * box first, because the box is what the scan converter is given.
+             */
+            for (index = 0; CHARS[index]; index++) {
+                probeCell("Symbol", HEIGHTS[size], FW_BOLD, 0, CHARS[index]);
             }
         }
     }

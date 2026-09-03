@@ -524,6 +524,10 @@ export class Surface {
            * inks 3 to 10 again. See `FONTS.md` section 3.
            */
           stubs: !italic,
+          /* And the box is built from the sheared corners of the glyph's
+           * bounding box rather than from the outline's own extent; see
+           * `leanOf` and the note in `glyph-raster`. */
+          lean: italic ? Surface.leanOf(ppem) : 0,
         });
 
         const from = Math.max(0, cellTop);
@@ -534,6 +538,15 @@ export class Surface {
             if (inked[row * this.width + column]) {
               this.context.setPixel(column, row, colour);
 
+              /* Emboldening draws the glyph again a column across, and it is
+               * done here rather than inside the scan converter because the
+               * stack probe says it is not the scan converter's business: the
+               * box GDI hands it for a bold glyph is byte for byte the box it
+               * hands it for a plain one, at all sixteen sizes and all eleven
+               * bearings. Bold does not widen the box, so the smear is not
+               * bounded by it -- and clipping it to the box, which looked
+               * obvious from Symbol's `K` at ten pixels, costs 786 cells.
+               */
               if (bold) {
                 this.context.setPixel(column + 1, row, colour);
               }
