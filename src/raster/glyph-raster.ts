@@ -537,20 +537,18 @@ export function fillWalked(contours, options) {
 
         const at = place(point);
 
-        leftmost = Math.min(leftmost, at[0]);
-        rightmost = Math.max(rightmost, at[0]);
+        /* When the glyph is being slanted the two roundings are kept apart, so
+         * the x this box is built from is not the one `place` gives. */
+        const across = lean
+          ? originX +
+            (sixtyFourth(point[0] - lean * point[1]) + Math.round(lean * point[1] * scale * 64)) /
+              64
+          : at[0];
+
+        leftmost = Math.min(leftmost, across);
+        rightmost = Math.max(rightmost, across);
         highest = Math.min(highest, at[1]);
         lowest = Math.max(lowest, at[1]);
-
-        if (lean) {
-          const apart =
-            originX +
-            (sixtyFourth(point[0] - lean * point[1]) + Math.round(lean * point[1] * scale * 64)) /
-              64;
-
-          leftmost = Math.min(leftmost, apart);
-          rightmost = Math.max(rightmost, apart);
-        }
       }
     }
   }

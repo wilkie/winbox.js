@@ -2618,6 +2618,39 @@ That leaves the corpus at `glyphs` 5,890 of 5,982 and `font` 5,047 of 5,057,
 with the remainder in four groups: 23 synthesised italic, 20 synthesised bold,
 32 in the plotter faces, and 8 in Symbol upright at eight pixels.
 
+#### The probe pointed at the real face
+
+Every recording of the stack probe so far has been against a fabricated Symbol,
+because a fabrication is what makes a box predictable. Pointed at the **real**
+face it answers a different question: not what the rule is, but where our
+implementation of it still parts company with GDI.
+
+132 cells comparable, and the split is clean:
+
+- **117 agree**, upright and slanted.
+- **15 differ, and every one of them is an italic cell whose pixels also
+  disagree.** In all fifteen GDI's left edge is _further right_ than ours --
+  never once further left.
+
+So what is left of the synthesised slant is not a slant question at all. It is
+one box edge, in named glyphs: Symbol's mu, alpha, phi, Omega and its digit one,
+at the sizes where those disagree and nowhere else. The recording is kept as
+`oracle/fixtures/stack.json` so the next attempt has the fifteen to check
+against rather than the pixels to infer them from.
+
+One reading is already closed. A shear taken from the bottom of the cell rather
+than from the baseline -- which is exactly what the bitmap faces do, and the
+obvious candidate for a whole-glyph displacement -- adds a constant to every
+point. It cannot be that: at sixteen per em `g` needs that constant below 0.33
+pixels to keep the box it has, and `1` needs it above 1.31 to reach the box GDI
+gives it. No constant satisfies both, so the displacement is not a translation.
+
+(And one bug went with it. The box's left edge was being taken as the minimum
+over _both_ roundings -- the folded one and the separated one -- so the
+separated rounding, which is the measured arithmetic, could never actually
+bite. Fixing it is worth two pixels and a good deal of confidence in the next
+measurement taken with it.)
+
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
 changing the code outright and re-running the ratchet.)

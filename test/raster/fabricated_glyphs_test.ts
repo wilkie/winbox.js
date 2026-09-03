@@ -142,7 +142,7 @@ describe('the fabricated glyph recordings', () => {
    * memory.
    */
   const EXACT = 25444;
-  const WRONG = 4679;
+  const WRONG = 4677;
 
   /* The one place an unhinted outline is drawn differently.
    *
