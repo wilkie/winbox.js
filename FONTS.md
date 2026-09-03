@@ -1520,6 +1520,30 @@ signature of a positional difference of a fraction of a sixty-fourth, visible
 only where the exact value happens to sit within that fraction of a rounding
 boundary, rather than of a term that is simply missing.
 
+#### Where the shear is rounded, which turns out not to matter
+
+A fraction of a sixty-fourth has one obvious source. The scaler works in F26Dot6,
+so Windows shears coordinates that have already been scaled and rounded onto the
+sixty-fourth grid; this shears the design coordinates and rounds once at the end.
+The two differ by at most about two thirds of a sixty-fourth -- which is the size
+the measurements ask for.
+
+So it was tried, three ways, over every slant instrument at once -- 47,856 cells:
+
+| shear                                       | cells  | wrong pixels |
+| ------------------------------------------- | ------ | ------------ |
+| in design units, rounded once               | 47,329 | 810          |
+| on the sixty-fourth grid, rounding the lean | 47,330 | 814          |
+| the same, flooring it                       | 47,305 | 845          |
+| the same, ceiling it                        | 47,331 | 809          |
+
+**Two cells in forty-eight thousand.** The six at fifteen pixels are untouched by
+all three -- had they moved, the aggregate would have shown at least six. So the
+order in which the shear and the scaling are rounded is not where the difference
+is: the two orderings are, in effect, the same. (Ceiling is a hair ahead of what
+is here and is not taken; a rounding rule chosen on a two cell margin is a fitted
+constant by another name.)
+
 And it is worth being plain about the size of what is left. Seven cells differ
 across the two bracketing instruments, of the 132 outside the strike sizes: one
 is the smear boundary at twenty-four pixels, and six are that run at fifteen. The
