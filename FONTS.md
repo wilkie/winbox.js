@@ -1583,6 +1583,34 @@ But the narrowing is real, and it is the first one in a while: **the six cells a
 fifteen pixels are not a crossing landing a column apart.** They are the same
 crossings placed differently, and the placement is decided by the box.
 
+#### Where the box turns over, to the sixty-fourth
+
+Dumping the box's own inputs across the run gives the transition exactly. The
+left edge advances a sixty-fourth a step:
+
+    bearing   leftmost   box       narrow   Windows   here
+    254       4.3750     [4,5)     false    4         4
+    257       4.3906     [4,5)     false    4         4
+    260       4.4063     [4,5)     false    5         4
+    275       4.4844     [4,5)     false    5         4
+    278       4.5156     [5,6)     true     5         5
+    281       4.5313     [5,6)     true     5         5
+
+**This collapses the box when `leftmost` crosses 4.5** -- `ceil(leftmost - 0.5)`
+steps from 4 to 5 there -- and once collapsed the horizontal rescue at `on - 1`,
+which is 4, is clamped back up to `boxLeft`, 5. **Windows reaches that answer at
+4.406**, six sixty-fourths earlier, and holds it for the six bearings between.
+
+So the difference is one number: where the box gives up its first column. And it
+is not an offset. Biasing the box's edges by a constant and leaving the ink alone
+is monotonically worse -- 602 wrong pixels at two sixty-fourths, 624 at four, 676
+at six, 704 at eight, against 517 at none.
+
+Which is the same shape of answer as every other parameter this section has
+swept, and by now the pattern is the finding: **each constant that would fix the
+narrow cells is refused by the wide ones, because the difference is conditional
+and a constant is not.**
+
 And it is worth being plain about the size of what is left. Seven cells differ
 across the two bracketing instruments, of the 132 outside the strike sizes: one
 is the smear boundary at twenty-four pixels, and six are that run at fifteen. The
