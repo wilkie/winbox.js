@@ -132,8 +132,8 @@ describe('the fabricated glyph recordings', () => {
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 22092;
-  const WRONG = 5128;
+  const EXACT = 22417;
+  const WRONG = 4986;
 
   /* The one place an unhinted outline is drawn differently.
    *
@@ -519,6 +519,68 @@ describe('the fabricated glyph recordings', () => {
     expect(upright).toBeGreaterThanOrEqual(88);
     expect(differing).toBe(0);
   }
+
+  /* One dot per glyph, which is the smallest question that can be asked of the
+   * slant and the one that answered it.
+   *
+   * `dot-sweep` puts a square a hundred font units on a side in each glyph --
+   * under a pixel at every size recorded -- at six heights and six bearings.
+   * Upright each comes back as exactly one inked pixel, and the italic cell then
+   * says where the lean puts that pixel. The row never changes, in any cell; the
+   * column moves right by a step that grows with the height at about a third.
+   *
+   * And sometimes one pixel comes back as **two**, which is what no shear of an
+   * outline and no shift of a bitmap can do, and which turned out to be both
+   * dropout passes firing: the horizontal one across the row and the vertical
+   * one down the next column. See the note beside the vertical stub check in
+   * `glyph-raster.ts`.
+   *
+   * Four cells still differ, of the 36 the instrument writes.
+   */
+  const DOTS = 4;
+
+  present('lean a single pixel', async function () {
+    const recording = all.find((entry) => entry.name === 'dot-sweep');
+
+    expect(recording).toBeTruthy();
+
+    const manager: any = await prepareFonts();
+    const font: any = new TrueTypeFont(new Uint8Array(readFileSync(recording.file)));
+    const face = font.faceName;
+    const installed = manager._outlines[face];
+
+    manager._outlines[face] = {
+      ...(installed ?? {}),
+      [FontManager.styleKey(font.boldFace, font.italicFace)]: font,
+    };
+
+    let upright = 0;
+    let leaning = 0;
+
+    try {
+      for (const record of recording.fixture.records) {
+        const asked = /^"Symbol",h=\d+,weight=400,italic=([01]),'(.)'$/.exec(record.args);
+
+        if (!asked || !WALKED.includes(asked[2])) {
+          continue;
+        }
+
+        const agreed =
+          (await replayRecord(record, recording.fixture.display ?? 'vga')).outcome === 'agreed';
+
+        if (asked[1] === '0') {
+          if (!agreed) upright++;
+        } else if (!agreed) {
+          leaning++;
+        }
+      }
+    } finally {
+      manager._outlines[face] = installed;
+    }
+
+    expect(upright).toBe(0);
+    expect(leaning).toBeLessThanOrEqual(DOTS);
+  });
 
   const NARROW = 4;
 

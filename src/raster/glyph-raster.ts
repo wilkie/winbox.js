@@ -762,7 +762,19 @@ export function fillWalked(contours, options) {
         );
       };
 
-      if (!continues(-1) || !continues(1)) {
+      /* And the same exemption the horizontal pass takes; see `stubs`.
+       *
+       * `DoVertDropout` carries stub control word for word as `DoHorizDropout`
+       * does, so a glyph Windows is slanting is spared it in both passes or
+       * neither. Sparing it in only one was worth nothing here and everything
+       * on a dot: `dot-sweep` puts a single sub-pixel square in each glyph, and
+       * where the slant leaves it straddling a column both passes find a
+       * zero-length run -- the horizontal one across the row, the vertical one
+       * down the next column -- and Windows draws both pixels. With this pass
+       * still checking for stubs the second was refused and the dot came back
+       * one pixel wide.
+       */
+      if (stubs && (!continues(-1) || !continues(1))) {
         continue;
       }
 

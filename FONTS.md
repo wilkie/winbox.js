@@ -1272,9 +1272,43 @@ a request for italic 1 are the same request by the time anything compares them.
 `FontManager` reads `!!request.italic`, which agrees.
 
 **So the realization path records the choice and does not apply it.** Nothing
-between the `LOGFONT` arriving and the font being realized touches the lean. The
-synthesis happens at draw time, on the way to the scaler, which is a third place
-again -- and the reading has not reached it.
+between the `LOGFONT` arriving and the font being realized touches the lean.
+
+### `dot-sweep`, and the second pass
+
+Reading further would have been the wrong move. The smallest question that can be
+asked of the slant had not been asked: **what does it do to a single pixel?**
+
+`dot-sweep` puts a square a hundred font units on a side in each glyph -- under a
+pixel at every size recorded, so upright it comes back as exactly one inked pixel
+-- at six heights above the baseline and six side bearings. The italic cell then
+says where the lean puts that one pixel.
+
+- **The row never changes.** Not in one cell of the thirty-six, at any size.
+- The column moves right by a step that grows with the height at about a third:
+  at twenty-four pixels, 0 or 1 at a pixel and a half up, 2 at five and a third,
+  3 at nine and a quarter.
+- **And sometimes one pixel comes back as two, side by side.** That is the thing
+  no shear of an outline and no shift of a bitmap can do, and it is what the
+  fabricated instruments had been showing all along as a stray at the ends of a
+  bar.
+
+Scored against this implementation the instrument was exact everywhere except ten
+cells, and seven of those were the same shape: **Windows two pixels, us one.**
+Dumping the lists for one of them says it in a line. At twenty-four pixels the
+dot's italic cell has `hOn 18:[4] hOff 18:[5]` -- a run inking column 4 -- and
+`vOn 5:[-18] vOff 5:[-18]`, **a zero-length vertical run in column 5**. Windows
+draws both pixels. This drew one, because the vertical pass refused its rescue on
+a stub check.
+
+The horizontal pass had been spared that check for a slanted glyph several
+sections above; the vertical one had not. `DoVertDropout` carries stub control
+word for word as `DoHorizDropout` does, so a glyph being slanted is spared it in
+both passes or neither. Sparing it in one was worth nothing on a bar, where the
+vertical pass rarely finds anything, and everything on a dot.
+
+Worth 12 records of the real corpus -- glyphs goes from 5,849 to **5,861** of
+5,982, 98.0% -- and the instrument from ten differing cells to four.
 
 Where none of this goes is into the scaler. Segment 36's public entries are four
 thunks that load a dispatch index into `bx` and a word count into `cx` and jump

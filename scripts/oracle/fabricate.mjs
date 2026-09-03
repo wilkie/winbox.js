@@ -4662,6 +4662,10 @@ export const FABRICATIONS = [
       'the leaning bar baked at a dozen widths, to read off how much wider the synthesis is',
   }),
 
+  dotSweep('dot-sweep', {
+    describe: 'one sub-pixel dot per glyph, swept in height and phase, to watch the slant move it',
+  }),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -4876,6 +4880,67 @@ function slantShapes(name, { box, describe, source = 'SYMBOL.TTF' }) {
  * the size, it is a widening in font units; if they are constant in pixels, it
  * is a widening in device space, which is what emboldening would be.
  */
+/**
+ * One dot per glyph, swept in height and in phase.
+ *
+ * Everything the slant instruments measure is a shape drawn twice, and
+ * everything they have ruled out was ruled out by comparing two drawings of a
+ * shape. This asks a simpler question: what does the synthesis do to a single
+ * pixel?
+ *
+ * Each glyph is a square a hundred font units on a side, which is under a pixel
+ * at every size the probe records, so upright it comes back as exactly one inked
+ * pixel -- by a run where it covers a sample point and by dropout control where
+ * it does not. Six heights above the baseline and six side bearings make the
+ * thirty-six, so the dot is put at a spread of places in the cell and a spread of
+ * phases within its pixel.
+ *
+ * The italic cell then says, for a known pixel at a known height, where the lean
+ * puts it -- and if it ever comes back as two pixels, that a single pixel can be
+ * smeared, which is the one thing neither a shear of an outline nor a shift of a
+ * bitmap can do.
+ */
+function dotSweep(
+  name,
+  { describe, source = 'SYMBOL.TTF', characters = 'ABEKMNRSWXZabdefgjkmnostwy0123456789' }
+) {
+  const SIDE = 100;
+  const HEIGHTS = [100, 300, 500, 700, 900, 1100];
+
+  return {
+    name,
+    from: source,
+    as: source,
+    describe,
+
+    edit: (bytes) => {
+      for (let index = 0; index < characters.length; index++) {
+        const x0 = 200 + (index % 6) * 31;
+        const y0 = HEIGHTS[Math.floor(index / 6) % HEIGHTS.length];
+
+        const glyph = glyphFor(bytes, 0xf000 + characters.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: x0 + SIDE + 200,
+          height: y0 + SIDE,
+          points: [
+            [x0, y0],
+            [x0, y0 + SIDE],
+            [x0 + SIDE, y0 + SIDE],
+            [x0 + SIDE, y0],
+          ],
+          program: [],
+        });
+
+        // The trap `setBearing` exists for; see `slantBar`.
+        setBearing(bytes, glyph, x0);
+      }
+
+      return bytes;
+    },
+  };
+}
+
 function slantWidth(
   name,
   { describe, source = 'SYMBOL.TTF', characters = 'ABEKMNRSWXZabdefgjkmnostwy0123456789' }
