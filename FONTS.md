@@ -1611,6 +1611,29 @@ swept, and by now the pattern is the finding: **each constant that would fix the
 narrow cells is refused by the wide ones, because the difference is conditional
 and a constant is not.**
 
+#### The condition, bracketed to a sixty-fourth and still not named
+
+The transition above pins Windows' threshold between `leftmost` 4.3906 and
+4.4063 -- one sixty-fourth of uncertainty -- against 4.5 here. That is tight
+enough to test a candidate by arithmetic rather than by recording, and one
+candidate fits it well: **half the shear across the glyph's own height.** The dot
+is 0.586 px tall at twelve per em, the lean carries its top 0.176 px right of its
+foot, and half of that is 0.088 -- inside the bracket.
+
+It is wrong. At twenty per em the dot is 0.977 px tall, so half its shear is
+0.147 px, and the threshold there is displaced by at most 0.059. Worse, the
+candidate has the displacement _growing_ with the size where the measurements
+have it shrinking: 0.094 to 0.109 of a pixel at twelve per em, no more than 0.059
+at twenty, and nothing at all at six, nine or sixteen.
+
+So three candidates are refused for this one number -- a constant bias,
+`ceil(leftmost)`, and half the shear -- and what is left is two measurements, one
+of them a bound, which is not enough to fit a law to and not enough to name a
+condition from. **This is where the chase stops**: the difference is one
+comparison, in a quantity `scanlist.c` receives rather than computes, bracketed
+to a sixty-fourth at one size and to six at another, on seven cells of 132 in
+instruments built for nothing else.
+
 And it is worth being plain about the size of what is left. Seven cells differ
 across the two bracketing instruments, of the 132 outside the strike sizes: one
 is the smear boundary at twenty-four pixels, and six are that run at fifteen. The
