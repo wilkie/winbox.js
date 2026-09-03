@@ -1310,6 +1310,39 @@ vertical pass rarely finds anything, and everything on a dot.
 Worth 12 records of the real corpus -- glyphs goes from 5,849 to **5,861** of
 5,982, 98.0% -- and the instrument from ten differing cells to four.
 
+#### The four that are left
+
+They are two things, not one.
+
+**Two are crossings, with no dropout in them at all.** At eight pixels the dot's
+row reads `hOn 4:[3] hOff 4:[4]` -- an ordinary run, one pixel wide, inking
+column 3 -- and Windows inks column 4. At twenty pixels another reads
+`hOn 10:[5] hOff 10:[6]` and inks 5 where Windows inks 6. Both runs are
+non-empty, so nothing here is rescued: the two sides simply put the sheared dot's
+crossing one column apart. That is the scan conversion of a sub-pixel dot at a
+particular phase, and it is the same _kind_ of difference the slant instruments
+started with.
+
+**Two are the two passes disagreeing about how many pixels a dot is worth.**
+
+At twenty pixels one dot has a zero-length horizontal run at column 6 and
+zero-length _vertical_ runs in two columns, 5 and 6. This rescues both -- column
+6 at row 13, and column 5 at row 14, whose row is then clamped to 13 because the
+box ends there -- and paints two pixels. Windows paints one, the column 6 one.
+The clamp is the source's own: `DoVertDropout` returns early only when the row is
+outside the band, and 14 is not outside a band that ends at 14, so it clamps to
+13 and writes. We do what it says and Windows does not.
+
+The other has a zero-length horizontal run at column 7 and a zero-length vertical
+run in column 6. Windows paints 6 **and** 7; this paints only 6. Its horizontal
+rescue never reached the placement at all, so the pixel at 7 -- which is the
+run's own column, not a rescue -- comes from somewhere this does not look.
+
+So the residual is no longer one thing that might have one cause. Two cells are a
+crossing landing a column apart on a sub-pixel dot; two are the two dropout
+passes, once too eager and once not eager enough, in the one configuration where
+both of them fire on the same dot.
+
 Where none of this goes is into the scaler. Segment 36's public entries are four
 thunks that load a dispatch index into `bx` and a word count into `cx` and jump
 to a stack switcher at `0xe1`, which copies the arguments onto the scaler's own
