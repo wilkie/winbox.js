@@ -1783,9 +1783,40 @@ GDI's side of that marshalling, in segment 1 or in whatever reaches it, and
 handed through segment 40 to the thunk in segment 36 and thence to the walk in
 segment 42.
 
-That is where the next dive starts, and it is worth saying what it costs: four
-segments and a marshalling layer between the value and its use, with the block's
-own layout now known but its source not.
+That is where the next dive starts.
+
+#### Following it up, and a correction
+
+**Two of those three "callers" are not calls.** A relocation records a fixed-up
+word, and a far pointer stored in a _table_ is fixed up exactly as a `call far`
+is. `1:0x7c14` is one of five entries eight bytes apart at `1:0x7bf4` --
+`36:0x190d`, `42:0x0001`, `44:0x0001`, `45:0x0001`, `40:0x0001` -- and four of
+them name offset 1, which is no entry point. It is a table of the scaler's
+segments, for loading and locking. `47:0x002c` is data too. Only `36:0x18dc` is
+an instruction.
+
+It leads somewhere, but not to the box. `36:0x18d9` calls `40:0x0606` with a
+pointer to a local block, which the loader fills; the caller then walks that block
+four bytes at a time and hands each non-null pair to `0x1400`, which is a free.
+The block holds allocation handles. And segment 40 contains **no shift of six
+anywhere in it** -- no conversion from sixty-fourths to pixels at all -- so the
+box is not computed there either.
+
+Where that form does appear again is segment 43, at `0x0e36` and `0x0e50`:
+
+    cx = [bp-0x12] ; add cx,0x1f ; and cl,0xc0 ; shift right 6   -> [0x890]
+    ax = [bp-0x22] ; add ax,0x1f ; and al,0xc0 ; shift right 6   -> [0x892]
+
+`((v + 31) & ~63) >> 6` is `CalcLine`'s own rounding, written out, and the results
+are shifted left two and added to a base -- indices into an array of far pointers,
+which is what a sample index is used for. Two edges, both biased with 31.
+
+So the same bias keeps appearing wherever the shipped code turns a sixty-fourth
+into an index, and this implementation's right edge is still the one place using
+32 -- yet using 31 there measurably loses. Something is being missed about which
+of these values is the box's right edge, and the segments hold at least three
+candidate sites now: `36:0x0ca7`, `43:0x0e36`, and whatever fills the block
+segment 40 marshals.
 
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
