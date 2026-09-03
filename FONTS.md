@@ -2051,6 +2051,35 @@ bracketing instruments remain, the box is exactly right for every upright glyph
 recorded, and the second branch of the fork -- a box carried in design units --
 is the only thing left that the pixels cannot answer.
 
+#### Where the reading has been, and where it stops
+
+A box in design units would be read out of the font and scaled, so the loader was
+searched for it: a big-endian field arrives byte-swapped, and segment 40 -- the
+whole glyph loader -- contains exactly **six** byte swaps. Two read a table's
+count and its offset. One negates a value and writes it back, which is a mirror.
+One divides by 360, which is an angle. None of them is a bounding box.
+
+That exhausts what this file can search. Set out plainly, so that nobody repeats
+it:
+
+- Every conversion of sixty-fourths to pixels in the ten scaler segments: five,
+  all identified, only four of the box's shape, and those four are the metrics.
+- The same in GDI's thirty-five segments: none.
+- Every caller of the two shift helpers the scaler uses, which is where a
+  variable shift could hide: ten, six of them shifting by other amounts.
+- Every byte swap in the glyph loader: six, none a bounding box.
+- Both of the box's own constants, swept: one optimum, already sat on.
+
+**The box is handed to `fsc_SetupScan` by a caller this file has not found, and
+the reading cannot get further from the image alone.** What would get further is
+watching the running system -- the marshalling in segment 40 fills the block from
+a caller's structure, and a probe that could read that structure would answer it
+in one recording. That is a different kind of instrument from any built here.
+
+So the slant rests at eleven cells of 198 in instruments built to be as sensitive
+to it as anything can be: everything a pixel wide or more exact, every upright
+cell exact, `glyphs` at 98.0% and `font` at 99.8% of the real corpus.
+
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
 changing the code outright and re-running the ratchet.)
