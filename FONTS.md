@@ -2256,9 +2256,80 @@ wider than one, at a fixed bearing and height, reading the box at every step.
 Where the box stops collapsing is where the two rules part, and that boundary is
 what is missing.
 
-None of this is guesswork any more. The box is readable, sixty-three of them
-have been read, and what remains is one comparison in a place the instruments
-have not yet been pointed.
+#### The collapse is not it, and neither is the height
+
+The instrument that boundary called for is `dot-widen`: one bearing, one lower
+edge, one height, and eleven **widths**, from forty font units to three hundred
+and forty. At sixteen per em that walks the ink from a third of a pixel to two
+and two thirds, which takes the box from one column through two to three, so
+the collapse boundary is crossed twice inside one recording. Nothing else about
+the eleven glyphs differs at all.
+
+The answer is flat:
+
+| width, units  | 40  | 70  | 100 | 130 | 160 | 190 | 220 | 250 | 280 | 310 | 340 |
+| ------------- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| slanted left  | 5   | 5   | 5   | 5   | 5   | 5   | 5   | 5   | 5   | 5   | 5   |
+| slanted right | 6   | 6   | 6   | 6   | 7   | 7   | 7   | 7   | 8   | 8   | 8   |
+
+**The left edge does not move.** The right edge does, exactly as a right edge
+should. So the collapse is not what displaced the odd cell, and the hypothesis
+that prompted this instrument is dead -- which is what the instrument was for.
+
+`dot-taller` asks the only other question of the same shape: one bearing, one
+lower edge, one width, eleven **heights** from forty units to six hundred and
+forty. The left edge does not move there either, and the right edge grows with
+the height, which is a second independent reading of the same slope in the same
+recording.
+
+Between them that is a construction rather than a fit. **The box's left edge is
+a function of the ink's lower-left corner and nothing else** -- not its width,
+not its height, not whether the box collapsed. Which is precisely the shape
+"shear the bottom-left corner" predicts, and it is now measured instead of
+assumed.
+
+#### Two slopes reconcile into one
+
+With `dot-taller` and `dot-widen` recorded, and the bearing sweeps repeated at
+nine and twenty per em as well as twelve and sixteen, **172 boxes have been read
+out of GDI's memory**. One model fits 170 of them:
+
+> the ink's lower-left corner, sheared; displaced left by a constant number of
+> **font units**; and rounded with a constant near 50 rather than the 31 the
+> upright box uses.
+
+And the slope that model wants is **0.303 to 0.305** -- the outline's own three
+tenths, to the resolution the data has. The `22/64` of the previous section was
+never a second slope. It was this constant displacement, which is a fraction of
+the em and therefore grows with the size, being absorbed into a slope by a model
+that had nowhere else to put it. Fit a slope alone across sizes and it comes out
+too steep by exactly the amount the displacement contributes; admit the
+displacement and the slope falls back onto the outline's.
+
+That resolves the uncomfortable claim this file made a section ago. **There is
+one slant, not two.** GDI shears the box's corner by the same three tenths the
+scaler shears the outline by, and then moves it.
+
+What is not settled is the displacement itself. Slope, displacement and rounding
+constant are correlated -- a font-unit displacement and a sixty-fourths constant
+trade against each other along a line, and four sizes from nine per em to twenty
+do not separate them. The region within two misses spans slopes 0.303 to 0.325,
+displacements of 20 to 48 font units, and constants from 41 to 54. A
+displacement of 32 units -- one sixty-fourth of an em -- sits inside it and is
+the only round number there, but it is inside a region, not pinned by it.
+
+Two cells of the 172 resist every combination: `dot-third` at twenty-four pixels
+and the largest bearing, and `dot-edge` at ten pixels, which is the smallest
+size recorded and the one where the sweep is coarsest against the pixel grid.
+Neither is the two-column cell that prompted `dot-widen`; that one now fits.
+
+Separating the three is a question of range rather than of cleverness. The
+displacement's contribution scales with the size and the rounding constant's
+does not, so what breaks the correlation is a bearing sweep fine enough to place
+a threshold _and_ sizes far enough apart to make the two terms differ -- which
+means the very small sizes, six and seven per em, where a font unit is worth
+under a fifth of a sixty-fourth and the sweep would have to be several hundred
+units wide to contain a threshold at all.
 
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from

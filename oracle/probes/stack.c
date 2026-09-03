@@ -282,6 +282,66 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      * an instrument built on even coordinates is measured rather than
      * approximated. `dot-riser` is built for this pass.
      */
+    /*
+     * And at nine and twenty per em as well.
+     *
+     * The three quantities left in the box's left edge -- the slope, a shift
+     * that is a fraction of the em, and a rounding constant -- cannot be told
+     * apart at one size, because a shift measured in font units grows with the
+     * size and a constant in sixty-fourths does not. Two sizes separate them
+     * only as well as the two sizes are far apart. Four, spanning nine per em
+     * to twenty, is what this pass is for.
+     */
+    probeNote("the eleven at nine per em");
+    probeCell("Symbol", 12, 1, 'A');
+    probeCell("Symbol", 12, 1, 'B');
+    probeCell("Symbol", 12, 1, 'K');
+    probeCell("Symbol", 12, 1, 'M');
+    probeCell("Symbol", 12, 1, 'W');
+    probeCell("Symbol", 12, 1, 'a');
+    probeCell("Symbol", 12, 1, 'g');
+    probeCell("Symbol", 12, 1, 'j');
+    probeCell("Symbol", 12, 1, 'm');
+    probeCell("Symbol", 12, 1, 'y');
+    probeCell("Symbol", 12, 1, '1');
+
+    probeCell("Symbol", 12, 0, 'A');
+    probeCell("Symbol", 12, 0, 'B');
+    probeCell("Symbol", 12, 0, 'K');
+    probeCell("Symbol", 12, 0, 'M');
+    probeCell("Symbol", 12, 0, 'W');
+    probeCell("Symbol", 12, 0, 'a');
+    probeCell("Symbol", 12, 0, 'g');
+    probeCell("Symbol", 12, 0, 'j');
+    probeCell("Symbol", 12, 0, 'm');
+    probeCell("Symbol", 12, 0, 'y');
+    probeCell("Symbol", 12, 0, '1');
+
+    probeNote("and at twenty per em");
+    probeCell("Symbol", 24, 1, 'A');
+    probeCell("Symbol", 24, 1, 'B');
+    probeCell("Symbol", 24, 1, 'K');
+    probeCell("Symbol", 24, 1, 'M');
+    probeCell("Symbol", 24, 1, 'W');
+    probeCell("Symbol", 24, 1, 'a');
+    probeCell("Symbol", 24, 1, 'g');
+    probeCell("Symbol", 24, 1, 'j');
+    probeCell("Symbol", 24, 1, 'm');
+    probeCell("Symbol", 24, 1, 'y');
+    probeCell("Symbol", 24, 1, '1');
+
+    probeCell("Symbol", 24, 0, 'A');
+    probeCell("Symbol", 24, 0, 'B');
+    probeCell("Symbol", 24, 0, 'K');
+    probeCell("Symbol", 24, 0, 'M');
+    probeCell("Symbol", 24, 0, 'W');
+    probeCell("Symbol", 24, 0, 'a');
+    probeCell("Symbol", 24, 0, 'g');
+    probeCell("Symbol", 24, 0, 'j');
+    probeCell("Symbol", 24, 0, 'm');
+    probeCell("Symbol", 24, 0, 'y');
+    probeCell("Symbol", 24, 0, '1');
+
     probeNote("the eleven again at the size where the arithmetic is exact");
     probeCell("Symbol", 20, 1, 'A');
     probeCell("Symbol", 20, 1, 'B');

@@ -4690,6 +4690,14 @@ export const FABRICATIONS = [
     describe: 'and again where the arithmetic is exact, to put the step in the staircase',
   }),
 
+  dotWiden('dot-widen', {
+    describe: 'one bearing, one height, eleven widths, across where the box stops collapsing',
+  }),
+
+  dotTaller('dot-taller', {
+    describe: 'one bearing, one lower edge, eleven heights, to separate the height from the offset',
+  }),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -5137,6 +5145,158 @@ function dotBrink(name, { describe, source = 'SYMBOL.TTF' }) {
  * for -- and unlike the bracket, whichever answer comes back is a whole number
  * of sixty-fourths rather than an interval.
  */
+/*
+ * One bearing, one height, and eleven widths.
+ *
+ * Sixty-three boxes read out of GDI's memory are fitted by a single slope and a
+ * single rounding constant -- except for one, and the exception is not random.
+ * It is the only cell of the sixty-three whose box is **two columns wide**
+ * instead of one, and the only one where Windows draws two pixels instead of
+ * one. Every model that fits the other sixty-two puts its left edge a column to
+ * the right of where GDI put it.
+ *
+ * So the rule holds for a box that has collapsed onto a single column and
+ * breaks for one that has not, and the thing to measure is the boundary between
+ * those two. That is what this is.
+ *
+ * Everything is held still except the one variable. The bearing is the same in
+ * all eleven, so the left edge of the ink is the same number in all eleven; the
+ * height is the same, so the shear owes every one of them the same; and the
+ * *width* walks from forty font units to three hundred and forty. At sixteen
+ * per em that is a third of a pixel up to two and two thirds, which takes the
+ * box from one column through two to three.
+ *
+ * The reading is then as direct as an instrument gets. The box's left edge
+ * cannot depend on the width under any rule proposed so far -- it is a shear
+ * applied to a corner that none of these eleven glyphs move. **If it steps
+ * anyway, the collapse is what stepped it**, and where it steps is the
+ * boundary. If it does not step, the fault is not the collapse and one of the
+ * sixty-three readings needs explaining instead.
+ *
+ * Both are worth a recording, which is what makes this the right instrument
+ * rather than another sweep of the same shape.
+ */
+/*
+ * One bearing, one lower edge, and eleven heights.
+ *
+ * Ninety-five boxes read out of GDI's memory are fitted to within a single cell
+ * by shearing the ink's lower edge at the outline's own slope and then taking
+ * the shear from a height about a hundred and twenty font units *below* it.
+ * That offset is the whole of what is not understood, and it has a confound
+ * sitting in plain sight: every instrument built so far uses a square of side
+ * one hundred, so "a hundred units below the lower edge" and "one ink-height
+ * below the lower edge" are the same sentence and no recording can tell them
+ * apart.
+ *
+ * `dot-widen` showed the left edge does not move with the width. This moves the
+ * height, which is the only dimension left, and the two readings are far apart
+ * rather than adjacent:
+ *
+ * - if the offset is a constant, the left edge is the same in all eleven,
+ *   because the ink's lower edge and its bearing are;
+ * - if the offset is the ink's own height, the left edge walks two whole
+ *   columns down the sweep, because forty units and six hundred and forty
+ *   shear by very different amounts.
+ *
+ * The lower edge is held at five hundred and the width at a hundred so that
+ * only the top of the rectangle moves. A tall one leans its upper corner
+ * further right, which the box's *right* edge should follow and its left edge
+ * should not -- so the right edge is a second, independent reading of the same
+ * slope in the same recording.
+ */
+function dotTaller(name, { describe, source = 'SYMBOL.TTF' }) {
+  // The letters the glyph probe asks Symbol for; see `dotPhase`.
+  const RECORDED = 'ABKMWagjmy1';
+
+  /* Even, for the exact arithmetic at sixteen per em; and the same bearing,
+   * lower edge and width the other instruments use, so that the height is the
+   * only thing that has changed about them.
+   */
+  const X0 = 254;
+  const Y0 = 500;
+  const WIDE = 100;
+
+  return {
+    name,
+    from: source,
+    as: source,
+
+    describe,
+
+    edit: (bytes) => {
+      for (let index = 0; index < RECORDED.length; index++) {
+        const tall = 40 + index * 60;
+
+        const glyph = glyphFor(bytes, 0xf000 + RECORDED.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: X0 + WIDE + 200,
+          height: Y0 + tall,
+          points: [
+            [X0, Y0],
+            [X0, Y0 + tall],
+            [X0 + WIDE, Y0 + tall],
+            [X0 + WIDE, Y0],
+          ],
+          program: [],
+        });
+
+        // The trap `setBearing` exists for; see `slantBar`.
+        setBearing(bytes, glyph, X0);
+      }
+
+      return bytes;
+    },
+  };
+}
+
+function dotWiden(name, { describe, source = 'SYMBOL.TTF' }) {
+  // The letters the glyph probe asks Symbol for; see `dotPhase`.
+  const RECORDED = 'ABKMWagjmy1';
+
+  /* Even, so that at sixteen per em they are exact numbers of sixty-fourths.
+   * The bearing is the one `dot-edge` and `dot-riser` agree with Windows at,
+   * and the height is `dot-edge`'s, so a disagreement here is about the width
+   * and cannot be about either of the other two.
+   */
+  const X0 = 254;
+  const Y0 = 500;
+  const TALL = 100;
+
+  return {
+    name,
+    from: source,
+    as: source,
+
+    describe,
+
+    edit: (bytes) => {
+      for (let index = 0; index < RECORDED.length; index++) {
+        const wide = 40 + index * 30;
+
+        const glyph = glyphFor(bytes, 0xf000 + RECORDED.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: X0 + wide + 200,
+          height: Y0 + TALL,
+          points: [
+            [X0, Y0],
+            [X0, Y0 + TALL],
+            [X0 + wide, Y0 + TALL],
+            [X0 + wide, Y0],
+          ],
+          program: [],
+        });
+
+        // The trap `setBearing` exists for; see `slantBar`.
+        setBearing(bytes, glyph, X0);
+      }
+
+      return bytes;
+    },
+  };
+}
+
 function dotRiser(name, { describe, source = 'SYMBOL.TTF' }) {
   const SIDE = 100;
   // The letters the glyph probe asks Symbol for; see `dotPhase`.
