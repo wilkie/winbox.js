@@ -132,8 +132,8 @@ describe('the fabricated glyph recordings', () => {
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 23249;
-  const WRONG = 5059;
+  const EXACT = 23526;
+  const WRONG = 5082;
 
   /* The one place an unhinted outline is drawn differently.
    *
@@ -658,20 +658,26 @@ describe('the fabricated glyph recordings', () => {
    * at the one before it, which is far finer than the twelfth of a pixel
    * `dot-phase` could resolve, and is not a uniform offset.
    *
-   * Seven cells differ of the 132 outside the strike sizes. One is the smear
+   * `dot-third` joins them at bearings 292 to 312, chosen because the box's
+   * turnover is predictable -- the left edge is
+   * `pen + x0 * ppem / 2048 + 0.3 * y0 * ppem / 2048`, and the box gives up its
+   * first column as that crosses a half -- and those bearings straddle it at
+   * sixteen per em and at twenty, which the first two instruments miss.
+   *
+   * Eleven cells differ of the 198 outside the strike sizes. One is the smear
    * boundary itself, at twenty-four pixels in `dot-brink`. The other six are a
    * contiguous run at fifteen pixels in `dot-edge`, all with the *right* number
    * of pixels in the wrong column -- the crossing landing a column apart, which
    * is the other of the two phenomena above and which here holds for six
    * consecutive phases rather than scattering.
    */
-  const BRINK = 7;
+  const BRINK = 11;
 
   present('bracket the phase where the smear turns on', async function () {
     let differing = 0;
     let leaning = 0;
 
-    for (const name of ['dot-edge', 'dot-brink']) {
+    for (const name of ['dot-edge', 'dot-brink', 'dot-third']) {
       const recording = all.find((entry) => entry.name === name);
 
       expect(recording).toBeTruthy();

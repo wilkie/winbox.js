@@ -4678,6 +4678,10 @@ export const FABRICATIONS = [
     describe: 'and across the other crossing, the one where the two sides part',
   }),
 
+  dotThird('dot-third', {
+    describe: 'and across the crossings at sixteen and twenty per em, for a third reading',
+  }),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -4970,6 +4974,64 @@ function slantShapes(name, { box, describe, source = 'SYMBOL.TTF' }) {
  * So this brackets the earlier crossing at the same three unit step, from 200 to
  * 230, everything else held as `dot-edge` holds it.
  */
+/**
+ * The dot across the crossings at sixteen and twenty per em.
+ *
+ * `dot-edge` and `dot-brink` bracket the box's turnover at twelve per em to a
+ * sixty-fourth and at twenty to six, which is two measurements and one of them a
+ * bound -- not enough to fit a rule to. A third is wanted, and the two
+ * instruments so far happen to miss it: their bearings put the left edge nowhere
+ * near a half-pixel at either of the larger sizes.
+ *
+ * Where the turnover falls is predictable, since the left edge is
+ * `pen + x0 * ppem / 2048 + 0.3 * y0 * ppem / 2048` and the box gives up its
+ * first column as that crosses a half. At sixteen per em it crosses at a bearing
+ * near 298, and at twenty near 311, so bearings from 292 to 312 straddle both.
+ *
+ * The step is two font units, which at sixteen per em is exactly one
+ * sixty-fourth of a pixel and at twenty is a shade over one -- the finest either
+ * can be read.
+ */
+function dotThird(name, { describe, source = 'SYMBOL.TTF' }) {
+  const SIDE = 100;
+  // The letters the glyph probe asks Symbol for; see `dotPhase`.
+  const RECORDED = 'ABKMWagjmy1';
+
+  return {
+    name,
+    from: source,
+    as: source,
+
+    describe,
+
+    edit: (bytes) => {
+      for (let index = 0; index < RECORDED.length; index++) {
+        const x0 = 292 + index * 2;
+        const y0 = 500;
+
+        const glyph = glyphFor(bytes, 0xf000 + RECORDED.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: x0 + SIDE + 200,
+          height: y0 + SIDE,
+          points: [
+            [x0, y0],
+            [x0, y0 + SIDE],
+            [x0 + SIDE, y0 + SIDE],
+            [x0 + SIDE, y0],
+          ],
+          program: [],
+        });
+
+        // The trap `setBearing` exists for; see `slantBar`.
+        setBearing(bytes, glyph, x0);
+      }
+
+      return bytes;
+    },
+  };
+}
+
 function dotBrink(name, { describe, source = 'SYMBOL.TTF' }) {
   const SIDE = 100;
   // The letters the glyph probe asks Symbol for; see `dotPhase`.

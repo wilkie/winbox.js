@@ -1627,12 +1627,34 @@ have it shrinking: 0.094 to 0.109 of a pixel at twelve per em, no more than 0.05
 at twenty, and nothing at all at six, nine or sixteen.
 
 So three candidates are refused for this one number -- a constant bias,
-`ceil(leftmost)`, and half the shear -- and what is left is two measurements, one
-of them a bound, which is not enough to fit a law to and not enough to name a
-condition from. **This is where the chase stops**: the difference is one
-comparison, in a quantity `scanlist.c` receives rather than computes, bracketed
-to a sixty-fourth at one size and to six at another, on seven cells of 132 in
-instruments built for nothing else.
+`ceil(leftmost)`, and half the shear -- and two measurements, one of them a
+bound, are not enough to fit a law to. A third was wanted, and where to find it
+is calculable: the left edge is
+`pen + x0 * ppem / 2048 + 0.3 * y0 * ppem / 2048` and the box gives up its first
+column as that crosses a half, so bearings 292 to 312 straddle the turnover at
+sixteen per em and at twenty, which the first two instruments miss.
+
+`dot-third` records them, and the answer is not a third point on a curve.
+
+At sixteen per em the two sides part by three sixty-fourths -- Windows settles on
+column 6 at a left edge of 5.4688 and this settles at 5.5156 -- and the smear
+moves with it, Windows' at 5.4531 against ours at 5.4844. One difference,
+shifting both.
+
+**At twenty per em there is no difference at all.** Both settle on column 7
+between 6.5000 and 6.5156, in the same step of a sixty-fourth. And `dot-edge`
+found the same at twenty per em, at a different crossing.
+
+That is the finding, and it is a negative about the shape of the question rather
+than another candidate refused. The displacement is 7 sixty-fourths at twelve per
+em, 3 at sixteen, and **nought at twenty at two crossings out of three** -- so it
+varies not only with the size but _between crossings at the same size_. A
+positional difference cannot do that: an offset of any size displaces every
+crossing at a size equally, and this one displaces one and not its neighbour.
+
+So the framing the last several sections have worked under -- a small error in
+where the sheared glyph sits -- is wrong. Whatever differs is decided afresh at
+each crossing, which is what a comparison does and not what a coordinate does.
 
 And it is worth being plain about the size of what is left. Seven cells differ
 across the two bracketing instruments, of the 132 outside the strike sizes: one
