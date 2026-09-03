@@ -2024,8 +2024,32 @@ The box's own two constants have one optimum, this file already sits on it in
 measured one with nothing in the box to make up the difference.
 
 So the first branch of the fork closes: if a compensating error exists it is not
-in the box. The second -- that the box is carried in design units and never
-converted -- is still open, and cannot be settled from the pixels.
+in the box.
+
+#### Which cells the two values of `q` actually decide
+
+Thirty-three pixels is small enough to look at one at a time. Over every
+fabricated recording there are, between `q = 31` and `q = 32`, **eighteen cells
+that differ at all** -- and every one of the eighteen is `italic=0`:
+
+    cour-gaps        h=10  K M N R S W X Z a
+    cour-hairslants  h=14 k, h=16 '0', h=20 S
+    cour-offsets     h=10 N '8', h=12 '0', h=14 '1', h=16 w
+    cour-shapes      h=12 o
+
+Upright Courier New, every one, and `q = 32` is right on all eighteen.
+
+**So the two constants do not touch the slant at all.** The right edge's bias is
+decided entirely by upright glyphs whose right edge lands exactly on a half
+pixel, it is 32, and the italic cells cannot see the difference. That closes the
+question in a better way than the sweep did: the metrics' 31 and the scan box's
+32 are not a discrepancy to be reconciled but two different quantities, and the
+recordings say which is which.
+
+It also says the slant residual has nothing to gain here. Eleven cells in the
+bracketing instruments remain, the box is exactly right for every upright glyph
+recorded, and the second branch of the fork -- a box carried in design units --
+is the only thing left that the pixels cannot answer.
 
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
