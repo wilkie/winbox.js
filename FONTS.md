@@ -1343,6 +1343,34 @@ crossing landing a column apart on a sub-pixel dot; two are the two dropout
 passes, once too eager and once not eager enough, in the one configuration where
 both of them fire on the same dot.
 
+**And the two crossings are not the slant, which is worth checking because a dot
+is the most sensitive thing there is to measure a shear with.** Both of them ink
+one column left of Windows, which a slightly steeper lean would fix. Swept on the
+dot instrument alone, a steeper lean does look better -- 88 cells of 96 and 19
+wrong pixels at 0.320 against 87 and 21 at three tenths. But that margin is two
+pixels across ninety-six cells, and the cells that can settle it say something
+else entirely:
+
+| slant     | `symbol-shapes` wide cells wrong | `dot-sweep`  |
+| --------- | -------------------------------- | ------------ |
+| 0.290     | 8                                | 87/96, 22 px |
+| 0.295     | 8                                | 87/96, 22 px |
+| **0.300** | **0**                            | 87/96, 21 px |
+| 0.305     | 8                                | 85/96, 23 px |
+| 0.310     | 8                                | 86/96, 22 px |
+| 0.320     | 8                                | 88/96, 19 px |
+| 0.330     | 8                                | 86/96, 19 px |
+
+A wide cell is one whose narrowest feature is four pixels across, where nothing
+is left to dropout control and the ink is the shape. **Nought at three tenths and
+eight everywhere else** -- the same sharp, single answer those cells gave before
+either dropout fix, and unmoved by them. Two pixels of preference on the dots
+does not outweigh eight cells that admit no ambiguity.
+
+So three tenths stands, and the two crossing cells stay open as what they are: a
+sub-pixel dot whose sheared crossing this puts one column left of where Windows
+puts it, at two phases out of thirty-six.
+
 Where none of this goes is into the scaler. Segment 36's public entries are four
 thunks that load a dispatch index into `bx` and a word count into `cx` and jump
 to a stack switcher at `0xe1`, which copies the arguments onto the scaler's own
