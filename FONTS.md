@@ -1728,6 +1728,38 @@ Windows turns over as the width the comparison sees goes from 48 sixty-fourths t
 Whether that is the rule or a coincidence of one crossing cannot be told from one
 crossing, and the two others bracketed do not repeat it.
 
+#### What the shipped code rounds a box edge with
+
+Rather than guess further, the disassembler was pointed at the rounding itself.
+Searching the scaler's segments for a bias added to a sixty-fourth value before a
+shift of six -- the shape any box edge must have -- turns up four in a row, in
+segment 36 at `0x0ca7`:
+
+    ax = [bx+0x7c] ; scale ; add ax,0x1f ; shift right 6
+    ax = [bx+0x76] ; scale ; add ax,0x1f ; shift right 6
+    ax = [bx+0x7a] ; scale ; add ax,0x1f ; shift right 6
+    ...            ; then differences of the results
+
+**`(v + 31) >> 6`**, four times, on four fields of the glyph's block, and then
+subtracted from one another to give extents. For a value in sixty-fourths that is
+`ceil((v - 32) / 64)`, which is exactly what `boxLeft` computes here and exactly
+what `CalcLine` uses for a sample index. The right edge here uses 32 rather than
+31, so a coordinate landing precisely on a half pixel falls the other way.
+
+So it was taken -- and the recordings refused it. Rounding this implementation's
+right edge with 31 costs 23,508 fabricated cells of 24,042 against 23,526, and
+5,115 wrong pixels against 5,082.
+
+**Which settles what those four fields are not.** They round the way a scan box
+must, but the scan box's right edge does not round that way, so they are some
+other extent of the glyph -- its metrics, most likely, which the caller needs and
+the scan converter does not. The search for where the box is built continues past
+them.
+
+(A first pass at this measured no difference at all, because the flag it was
+switched with reached only one of the two call sites. The number above is from
+changing the code outright and re-running the ratchet.)
+
 And it is worth being plain about the size of what is left. Seven cells differ
 across the two bracketing instruments, of the 132 outside the strike sizes: one
 is the smear boundary at twenty-four pixels, and six are that run at fifteen. The
