@@ -4666,6 +4666,10 @@ export const FABRICATIONS = [
     describe: 'one sub-pixel dot per glyph, swept in height and phase, to watch the slant move it',
   }),
 
+  dotPhase('dot-phase', {
+    describe: 'the same dot, walked through one whole pixel of each phase at a step of a sixth',
+  }),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -4900,6 +4904,74 @@ function slantShapes(name, { box, describe, source = 'SYMBOL.TTF' }) {
  * smeared, which is the one thing neither a shear of an outline nor a shift of a
  * bitmap can do.
  */
+/**
+ * The dot again, walked through one whole pixel of each phase.
+ *
+ * `dot-sweep` found what the slant does to a single pixel, and left four cells
+ * of its thirty-six unexplained: two where the sheared dot's crossing lands a
+ * column left of Windows', and two where the two dropout passes fire on the same
+ * dot and disagree about how many pixels it is worth. Four cells is too few to
+ * see a rule in, and its steps are too coarse to say where each begins.
+ *
+ * So this samples the two phases that decide the matter, finely and over exactly
+ * one period each. The dot's own position across its pixel is one; the shear is
+ * the other, and since the lean is three tenths the shear walks a whole pixel for
+ * every three and a third the dot rises. At twenty pixels per em, where a pixel
+ * is 102 font units, that is 17 units a step across and 57 up -- six of each,
+ * thirty-six in all, one full period of both.
+ *
+ * **The probe only records eleven of Symbol's letters** -- `ABKMWagjmy1` and the
+ * full stop -- so an instrument written across thirty-six of them has eleven
+ * usable slots and twenty-five that are never asked for. `dot-sweep` spent its
+ * thirty-six on a six by six grid and got eleven scattered cells of it back; this
+ * spends the eleven on one axis instead.
+ *
+ * So: the dot at a fixed height, its side bearing stepping nine font units a
+ * letter, which is a pixel at twenty per em across the eleven. The other phase
+ * comes free from the sizes -- the probe records eight, from six to twenty per
+ * em, and the shear at a fixed height is a different fraction of a pixel in each.
+ */
+function dotPhase(name, { describe, source = 'SYMBOL.TTF' }) {
+  const SIDE = 100;
+  // The letters the glyph probe asks Symbol for, and the only ones worth writing.
+  const RECORDED = 'ABKMWagjmy1';
+  const characters = RECORDED;
+
+  return {
+    name,
+    from: source,
+    as: source,
+
+    describe,
+
+    edit: (bytes) => {
+      for (let index = 0; index < characters.length; index++) {
+        const x0 = 200 + (RECORDED.indexOf(characters[index]) + 1) * 9;
+        const y0 = 500;
+
+        const glyph = glyphFor(bytes, 0xf000 + characters.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: x0 + SIDE + 200,
+          height: y0 + SIDE,
+          points: [
+            [x0, y0],
+            [x0, y0 + SIDE],
+            [x0 + SIDE, y0 + SIDE],
+            [x0 + SIDE, y0],
+          ],
+          program: [],
+        });
+
+        // The trap `setBearing` exists for; see `slantBar`.
+        setBearing(bytes, glyph, x0);
+      }
+
+      return bytes;
+    },
+  };
+}
+
 function dotSweep(
   name,
   { describe, source = 'SYMBOL.TTF', characters = 'ABEKMNRSWXZabdefgjkmnostwy0123456789' }

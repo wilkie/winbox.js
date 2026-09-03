@@ -1381,8 +1381,41 @@ dropped instead of clamped, which is exactly the pixel Windows does not paint.
 cells of 25,620 against 25,327, and 748 wrong pixels against 467. So the guard is
 right as it stands, and the pixel comes from somewhere else.
 
-Which leaves the two of them where the last section put them, and it is worth
-being plain about the size of what is left. Two cells of a thirty-six cell
+#### `dot-phase`: the smear is a threshold, and ours is a step out
+
+Four scattered cells are too few to see a rule in, so the dot was walked through
+a whole pixel of each phase. That turned up a fact about the harness first:
+**the glyph probe only asks Symbol for eleven letters** -- `ABKMWagjmy1` and the
+full stop. An instrument written across thirty-six of them, as `dot-sweep` was,
+has eleven usable slots and twenty-five that are never recorded, which is why its
+six by six grid came back mostly empty.
+
+`dot-phase` spends the eleven on one axis: the dot at a fixed height, its side
+bearing stepping nine font units a letter, a pixel across the eleven at twenty
+per em. The other phase comes free from the eight sizes, whose shear at that
+height is a different fraction of a pixel in each. Pixels drawn by Windows, with
+`!` where the count differs here and `~` where the count agrees and the column
+does not:
+
+    h= 8   1   1   1   1   1   1   1   1   1   1   1
+    h=10   0   0   0   0   0   0   0   0   0   0   0
+    h=12   1   1   1   1   1   1   1   1   1   1   1
+    h=15   1   1   1   1   1   1   1~  1~  1   1   1
+    h=20   1   1   1   1   1   1   1   1   1   2!  1
+    h=24   1!  1   1   1   1   1   1   1   1   2   2
+
+**The smear is a threshold in phase, not a scatter.** At twenty-four pixels
+Windows draws one pixel for the first nine phases and two for the last two; at
+twenty it draws two at the ninth alone. And ours turns on about one step out: at
+twenty-four it smears at the phase before Windows starts, and at twenty it fails
+to smear where Windows does. One step is nine font units, a twelfth of a pixel
+there.
+
+So the two dropout cells are one phenomenon after all -- a boundary in the same
+place to within a twelfth of a pixel, and off by that much -- rather than one
+pass being too eager and another not eager enough.
+
+That leaves it here, and it is worth being plain about the size of what is left. Two cells of a thirty-six cell
 instrument built to be as sensitive to the slant as anything can be; a font that
 does not exist; a dot smaller than a pixel; and in both cells the two dropout
 passes firing on the same dot at once, which is the rarest configuration the

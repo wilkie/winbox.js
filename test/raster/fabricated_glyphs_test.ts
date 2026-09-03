@@ -132,8 +132,8 @@ describe('the fabricated glyph recordings', () => {
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    */
-  const EXACT = 22417;
-  const WRONG = 4986;
+  const EXACT = 22694;
+  const WRONG = 5010;
 
   /* The one place an unhinted outline is drawn differently.
    *
@@ -580,6 +580,66 @@ describe('the fabricated glyph recordings', () => {
 
     expect(upright).toBe(0);
     expect(leaning).toBeLessThanOrEqual(DOTS);
+  });
+
+  /* And the same dot walked through one whole pixel of phase.
+   *
+   * `dot-sweep`'s six by six grid came back mostly empty, because **the glyph
+   * probe only asks Symbol for eleven letters** -- `ABKMWagjmy1` and the full
+   * stop -- so an instrument written across thirty-six of them has eleven usable
+   * slots. `dot-phase` spends those eleven on one axis: the dot at a fixed
+   * height with its side bearing stepping nine font units a letter, which is a
+   * pixel across the eleven at twenty per em. The other phase comes free from
+   * the eight sizes recorded, whose shear at that height is a different fraction
+   * of a pixel in each.
+   *
+   * What it shows is that the smear is a **threshold in phase**, not a scatter.
+   * At twenty-four pixels Windows draws one pixel for the first nine phases and
+   * two for the last two; at twenty it draws two at the ninth alone. Ours turns
+   * on about one step out: at twenty-four we smear at the phase before Windows
+   * starts, and at twenty we do not smear where it does. One step is nine font
+   * units, which is a twelfth of a pixel there.
+   *
+   * Four cells differ, of the 88 the instrument writes.
+   */
+  const PHASES = 4;
+
+  present('walk a leaning dot through a pixel of phase', async function () {
+    const recording = all.find((entry) => entry.name === 'dot-phase');
+
+    expect(recording).toBeTruthy();
+
+    const manager: any = await prepareFonts();
+    const font: any = new TrueTypeFont(new Uint8Array(readFileSync(recording.file)));
+    const face = font.faceName;
+    const installed = manager._outlines[face];
+
+    manager._outlines[face] = {
+      ...(installed ?? {}),
+      [FontManager.styleKey(font.boldFace, font.italicFace)]: font,
+    };
+
+    let leaning = 0;
+    let differing = 0;
+
+    try {
+      for (const record of recording.fixture.records) {
+        if (!/^"Symbol",h=\d+,weight=400,italic=1,'[ABKMWagjmy1]'$/.test(record.args)) {
+          continue;
+        }
+
+        leaning++;
+
+        if ((await replayRecord(record, recording.fixture.display ?? 'vga')).outcome !== 'agreed') {
+          differing++;
+        }
+      }
+    } finally {
+      manager._outlines[face] = installed;
+    }
+
+    expect(leaning).toBeGreaterThanOrEqual(88);
+    expect(differing).toBeLessThanOrEqual(PHASES);
   });
 
   const NARROW = 4;
