@@ -1863,10 +1863,36 @@ is confirmed from the source rather than inferred. And the index conversions
 round with **31**, which is what`above` does, so that is confirmed too.
 
 But **the scan box is not computed anywhere in the scaler.** The only candidate
-of the right form is the metrics at `0x0ca7`, and the recordings refuse it. So
-the box is made on GDI's side and handed down -- which is what `fsc_SetupScan`
-taking a `prectBox` said all along, and what the marshalling in segment 40
-carries. The search moves out of the scaler's segments and into GDI's own.
+of the right form is the metrics at `0x0ca7`, and the recordings refuse it.
+
+#### Nor anywhere in GDI
+
+The same search over GDI's own thirty-five segments finds **nothing at all**: no
+shift of six, in any register, anywhere. The single `mov cl,6` in segment 1 is a
+`rep stosw` count, not a shift.
+
+So neither side converts sixty-fourths to pixels for a box, and the only thing of
+that shape in the whole image is the four metric edges. **The box a glyph is
+scanned in must be its metrics** -- which is to say, the _upright_ glyph's, since
+a synthesised lean is applied after the metrics are taken and the box never hears
+about it.
+
+That predicts the crossing at fifteen pixels exactly. Quantising the unsheared
+dot the way the scaler does, at a bearing of 254 its edges are 3.484 and 4.078,
+so `boxLeft` is 3 and `wanted` is 4 and the box keeps two columns; at 257, 3.500
+and 4.094, still 3 and 4; at 260, **3.531 and 4.109, which are 4 and 4** -- the
+box gives up its first column exactly where Windows changes its answer, and stays
+given up for every bearing after. The sheared box does not do that until 278.
+
+**And putting it into the code does not reproduce it.** Scanning a slanted glyph
+in its upright box outright costs 23,373 cells of 24,042 against 23,526; using
+the upright extent for the `narrow` test alone costs 23,482 and 5,587 wrong
+pixels against 5,082 -- and, tellingly, **leaves every dot instrument byte for
+byte unchanged** while making the bar instruments much worse (`symbol-slant` 322
+wrong pixels against 118). The arithmetic says the predicate should have flipped
+on those very cells and the recording says it did not, so the two disagree and
+the disagreement is not yet explained. It is written down here rather than
+resolved.
 
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
