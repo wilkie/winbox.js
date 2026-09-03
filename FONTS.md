@@ -1927,6 +1927,39 @@ So the box is not the upright box moved across. It is something that _coincides_
 with the upright box moved across when the glyph is smaller than a pixel, and
 the six cells at fifteen pixels are the only place recorded where the two part.
 
+#### What the two regimes have in common, and what refuses it
+
+There is a rule that is both at once: **put every point where the lean would put
+it if the lean moved whole pixels, and take the extremes of that.** For a dot half
+a pixel tall the foot leans 0.879 and the top 1.055, both of which round to one,
+so the box is the upright box moved across by one -- the rule that gets all four
+bearings right. For a bar seven pixels tall the foot and the top round to
+different numbers, so the box stretches with the glyph and stays wide enough to
+hold it.
+
+Measured, it does what it promises at both ends and still loses overall: 5,233
+wrong pixels against 5,082. Per instrument:
+
+| instrument     | before | after  |
+| -------------- | ------ | ------ |
+| `dot-edge`     | 76     | **70** |
+| `dot-phase`    | 70     | **69** |
+| `dot-sweep`    | 70     | 77     |
+| `symbol-slant` | 118    | 178    |
+| `corner-phase` | 161    | 198    |
+| `slant-baked`  | **0**  | 149    |
+
+The six cells go, as promised. And `slant-baked` -- exact today, every cell of it
+-- loses 149 pixels, which is the sharpest constraint this chase has produced on
+what the box can be. Rounding the lean to whole pixels moves each edge by up to
+half a pixel, and on a glyph tall enough for its two edges to round differently
+that is enough to shift a column.
+
+So the sheared extent is right for everything that is not sub-pixel, the
+whole-pixel lean is right for the dot, and nothing yet is right for both.
+**`slant-baked` at nought is the guard rail**: any rule proposed for this box has
+to leave it there.
+
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
 changing the code outright and re-running the ratchet.)
