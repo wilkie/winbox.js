@@ -1415,6 +1415,23 @@ So the two dropout cells are one phenomenon after all -- a boundary in the same
 place to within a twelfth of a pixel, and off by that much -- rather than one
 pass being too eager and another not eager enough.
 
+**And a twelfth of a pixel is a useful size, because it brackets what can be
+wrong.** Two candidates, one either side of it:
+
+- **The box, a column wider.** The vertical pass only scans columns inside
+  `[boxLeft, boxRight)`, so a box a column short would miss the smear
+  systematically -- which is what happens at twenty pixels, where Windows smears
+  at one phase and this smears at none. Widening `boxRight` by one costs 25,188
+  cells of 25,620 against 25,358, and 721 wrong pixels against 376.
+- **The shear, quantised to sixty-fourths.** The scaler works in F26Dot6, so a
+  lean landing between two sixty-fourths of a device pixel is a place the two
+  sides could part. Rounding the shear onto that grid changes one pixel in
+  twenty-five thousand cells -- 377 against 376 -- and flooring it costs 404.
+
+A sixty-fourth is 0.016 of a pixel and a column is a whole one; the boundary is
+out by 0.07 to 0.18. **So it is too big to be a rounding and too small to be the
+box**, and whatever sets it is neither of the two quantities that bound it.
+
 That leaves it here, and it is worth being plain about the size of what is left. Two cells of a thirty-six cell
 instrument built to be as sensitive to the slant as anything can be; a font that
 does not exist; a dot smaller than a pixel; and in both cells the two dropout
