@@ -72,6 +72,24 @@
  * inside what `probe()` will carry. */
 #define CHUNK 32
 
+/*
+ * The part of the capture worth writing down.
+ *
+ * The first recordings wrote the whole window, which is what a probe should do
+ * when it does not yet know what it is looking for. It knows now: the box the
+ * scan converter is set up from lies at 0x24e and 0x24a below the call, in
+ * every cell of every instrument and at every size. Eighty-one records a cell
+ * to carry two words is what was stopping this from being run at eighteen
+ * sizes instead of six.
+ *
+ * So the capture is still taken whole -- it costs nothing and a shallow capture
+ * would be the one mistake that cannot be undone after the fact -- and only the
+ * chunks that can contain the box are written out. Generously bracketed, in
+ * case a size moves the frame: 128 bytes where 4 would do.
+ */
+#define WINDOW_LO 0x280
+#define WINDOW_HI 0x200
+
 static HDC memory;
 static HBITMAP canvas;
 
@@ -168,7 +186,7 @@ static void probeCell(LPCSTR face, int height, BYTE italic, char character)
     wsprintf(probeResult, "sp=%04x,depth=%d", (int)residueTop, DEPTH);
     probe("stack", name, probeResult);
 
-    for (index = 0; index < DEPTH; index += CHUNK) {
+    for (index = DEPTH - WINDOW_LO; index < DEPTH - WINDOW_HI; index += CHUNK) {
         LPSTR at = probeResult;
         unsigned byte;
 
@@ -214,223 +232,47 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     SelectObject(memory, canvas);
 
     /*
-     * The eleven characters `dot-edge` gives a bearing to, at the one size
-     * where the disagreement lives, slanted and upright.
+     * The eleven bearings, at every size Symbol answers with its outline.
      *
-     * `dot-edge` puts the same hundred-unit square in all eleven, three font
-     * units further right each time -- a fiftieth of a pixel a step, so the
-     * eleven together walk the square through a fifth of a pixel of phase and
-     * nothing else about them differs at all. At fifteen pixels and slanted,
-     * six of the eleven come out of Windows differently than we draw them, and
-     * they are the middle six: `A` and `B` agree, `K` `M` `W` `a` `g` and `j`
-     * do not, and `m` `y` and `1` agree again. A window of phase, with an edge
-     * on each side of it.
+     * The displacement the slant applies to the box is now measured rather
+     * than fitted: take the upright rule, which is exact on every box read so
+     * far, and ask what displacement put through it reproduces the slanted box.
+     * Four sizes gave four integers -- 31, 64, 78 and 94 sixty-fourths at six,
+     * twelve, sixteen and twenty per em -- and no rule proposed so far
+     * generates them.
      *
-     * That is what makes this recording able to answer the question. A word
-     * that is the box will be one number for the two cells at the bottom of
-     * the window, another for the six inside it, and a third for the three
-     * above -- and our own box, computed from the outline, steps in the wrong
-     * place. Somewhere in this dump is a word that steps in the right one.
+     * Four points is not a curve. This records eighteen, which it can afford
+     * because the output is windowed on the two words the box lives in rather
+     * than the whole two and a half kilobytes.
      *
-     * The upright pass is the control: the same eleven, drawn by a path we
-     * already agree with everywhere, so a word that moves between the two
-     * passes is a word the synthesised slant reaches and the rest is scenery.
+     * Not every height in the list will answer with an outline: Symbol has
+     * bitmap strikes, and thirteen and sixteen pixels are known to be two of
+     * them. A strike is drawn by an entirely different mechanism and its box is
+     * not this box, so those sizes are recorded and then told apart afterwards
+     * -- by the upright rule, which holds for an outline and has no reason to
+     * hold for a strike.
      */
-    probeNote("the eleven bearings at the size where the slant disagrees, slanted");
-    probeCell("Symbol", 15, 1, 'A');
-    probeCell("Symbol", 15, 1, 'B');
-    probeCell("Symbol", 15, 1, 'K');
-    probeCell("Symbol", 15, 1, 'M');
-    probeCell("Symbol", 15, 1, 'W');
-    probeCell("Symbol", 15, 1, 'a');
-    probeCell("Symbol", 15, 1, 'g');
-    probeCell("Symbol", 15, 1, 'j');
-    probeCell("Symbol", 15, 1, 'm');
-    probeCell("Symbol", 15, 1, 'y');
-    probeCell("Symbol", 15, 1, '1');
+    probeNote("the eleven bearings, at every size, slanted and upright");
+    {
+        static const int HEIGHTS[] = {
+            8, 9, 10, 11, 12, 14, 15, 17, 18, 19,
+            20, 21, 22, 24, 26, 28, 32, 40
+        };
+        static const char CHARS[] = "ABKMWagjmy1";
 
-    /*
-     * And the same character across every size the glyph probe records, in
-     * both passes.
-     *
-     * The eleven above say *that* the slanted box is the upright box moved
-     * over; they cannot say by how much in general, because they are all one
-     * size and the answer there is one column. A translation has to be a
-     * number that comes from somewhere, and the only way to see where is to
-     * watch it change.
-     */
-    probeNote("one bearing across every size, to see what the translation is");
-    probeCell("Symbol", 8, 0, 'A');
-    probeCell("Symbol", 8, 1, 'A');
-    probeCell("Symbol", 10, 0, 'A');
-    probeCell("Symbol", 10, 1, 'A');
-    probeCell("Symbol", 12, 0, 'A');
-    probeCell("Symbol", 12, 1, 'A');
-    probeCell("Symbol", 13, 0, 'A');
-    probeCell("Symbol", 13, 1, 'A');
-    probeCell("Symbol", 16, 0, 'A');
-    probeCell("Symbol", 16, 1, 'A');
-    probeCell("Symbol", 20, 0, 'A');
-    probeCell("Symbol", 20, 1, 'A');
-    probeCell("Symbol", 24, 0, 'A');
-    probeCell("Symbol", 24, 1, 'A');
+        int size;
+        int index;
 
-    /*
-     * And the same eleven at twenty pixels, which is sixteen per em.
-     *
-     * That is the size where a design unit is exactly half a sixty-fourth, so
-     * an instrument built on even coordinates is measured rather than
-     * approximated. `dot-riser` is built for this pass.
-     */
-    /*
-     * And at nine and twenty per em as well.
-     *
-     * The three quantities left in the box's left edge -- the slope, a shift
-     * that is a fraction of the em, and a rounding constant -- cannot be told
-     * apart at one size, because a shift measured in font units grows with the
-     * size and a constant in sixty-fourths does not. Two sizes separate them
-     * only as well as the two sizes are far apart. Four, spanning nine per em
-     * to twenty, is what this pass is for.
-     */
-    /* And at six per em, which is the far end of the lever; see `dot-small`. */
-    probeNote("the eleven at six per em");
-    probeCell("Symbol", 8, 1, 'A');
-    probeCell("Symbol", 8, 1, 'B');
-    probeCell("Symbol", 8, 1, 'K');
-    probeCell("Symbol", 8, 1, 'M');
-    probeCell("Symbol", 8, 1, 'W');
-    probeCell("Symbol", 8, 1, 'a');
-    probeCell("Symbol", 8, 1, 'g');
-    probeCell("Symbol", 8, 1, 'j');
-    probeCell("Symbol", 8, 1, 'm');
-    probeCell("Symbol", 8, 1, 'y');
-    probeCell("Symbol", 8, 1, '1');
+        for (size = 0; size < sizeof(HEIGHTS) / sizeof(HEIGHTS[0]); size++) {
+            for (index = 0; CHARS[index]; index++) {
+                probeCell("Symbol", HEIGHTS[size], 1, CHARS[index]);
+            }
 
-    probeCell("Symbol", 8, 0, 'A');
-    probeCell("Symbol", 8, 0, 'B');
-    probeCell("Symbol", 8, 0, 'K');
-    probeCell("Symbol", 8, 0, 'M');
-    probeCell("Symbol", 8, 0, 'W');
-    probeCell("Symbol", 8, 0, 'a');
-    probeCell("Symbol", 8, 0, 'g');
-    probeCell("Symbol", 8, 0, 'j');
-    probeCell("Symbol", 8, 0, 'm');
-    probeCell("Symbol", 8, 0, 'y');
-    probeCell("Symbol", 8, 0, '1');
-
-    /* Seven per em as well, which `dot-edge`'s span happens to step in. */
-    probeNote("the eleven at seven per em");
-    probeCell("Symbol", 10, 1, 'A');
-    probeCell("Symbol", 10, 1, 'B');
-    probeCell("Symbol", 10, 1, 'K');
-    probeCell("Symbol", 10, 1, 'M');
-    probeCell("Symbol", 10, 1, 'W');
-    probeCell("Symbol", 10, 1, 'a');
-    probeCell("Symbol", 10, 1, 'g');
-    probeCell("Symbol", 10, 1, 'j');
-    probeCell("Symbol", 10, 1, 'm');
-    probeCell("Symbol", 10, 1, 'y');
-    probeCell("Symbol", 10, 1, '1');
-
-    probeCell("Symbol", 10, 0, 'A');
-    probeCell("Symbol", 10, 0, 'B');
-    probeCell("Symbol", 10, 0, 'K');
-    probeCell("Symbol", 10, 0, 'M');
-    probeCell("Symbol", 10, 0, 'W');
-    probeCell("Symbol", 10, 0, 'a');
-    probeCell("Symbol", 10, 0, 'g');
-    probeCell("Symbol", 10, 0, 'j');
-    probeCell("Symbol", 10, 0, 'm');
-    probeCell("Symbol", 10, 0, 'y');
-    probeCell("Symbol", 10, 0, '1');
-
-    probeNote("the eleven at nine per em");
-    probeCell("Symbol", 12, 1, 'A');
-    probeCell("Symbol", 12, 1, 'B');
-    probeCell("Symbol", 12, 1, 'K');
-    probeCell("Symbol", 12, 1, 'M');
-    probeCell("Symbol", 12, 1, 'W');
-    probeCell("Symbol", 12, 1, 'a');
-    probeCell("Symbol", 12, 1, 'g');
-    probeCell("Symbol", 12, 1, 'j');
-    probeCell("Symbol", 12, 1, 'm');
-    probeCell("Symbol", 12, 1, 'y');
-    probeCell("Symbol", 12, 1, '1');
-
-    probeCell("Symbol", 12, 0, 'A');
-    probeCell("Symbol", 12, 0, 'B');
-    probeCell("Symbol", 12, 0, 'K');
-    probeCell("Symbol", 12, 0, 'M');
-    probeCell("Symbol", 12, 0, 'W');
-    probeCell("Symbol", 12, 0, 'a');
-    probeCell("Symbol", 12, 0, 'g');
-    probeCell("Symbol", 12, 0, 'j');
-    probeCell("Symbol", 12, 0, 'm');
-    probeCell("Symbol", 12, 0, 'y');
-    probeCell("Symbol", 12, 0, '1');
-
-    probeNote("and at twenty per em");
-    probeCell("Symbol", 24, 1, 'A');
-    probeCell("Symbol", 24, 1, 'B');
-    probeCell("Symbol", 24, 1, 'K');
-    probeCell("Symbol", 24, 1, 'M');
-    probeCell("Symbol", 24, 1, 'W');
-    probeCell("Symbol", 24, 1, 'a');
-    probeCell("Symbol", 24, 1, 'g');
-    probeCell("Symbol", 24, 1, 'j');
-    probeCell("Symbol", 24, 1, 'm');
-    probeCell("Symbol", 24, 1, 'y');
-    probeCell("Symbol", 24, 1, '1');
-
-    probeCell("Symbol", 24, 0, 'A');
-    probeCell("Symbol", 24, 0, 'B');
-    probeCell("Symbol", 24, 0, 'K');
-    probeCell("Symbol", 24, 0, 'M');
-    probeCell("Symbol", 24, 0, 'W');
-    probeCell("Symbol", 24, 0, 'a');
-    probeCell("Symbol", 24, 0, 'g');
-    probeCell("Symbol", 24, 0, 'j');
-    probeCell("Symbol", 24, 0, 'm');
-    probeCell("Symbol", 24, 0, 'y');
-    probeCell("Symbol", 24, 0, '1');
-
-    probeNote("the eleven again at the size where the arithmetic is exact");
-    probeCell("Symbol", 20, 1, 'A');
-    probeCell("Symbol", 20, 1, 'B');
-    probeCell("Symbol", 20, 1, 'K');
-    probeCell("Symbol", 20, 1, 'M');
-    probeCell("Symbol", 20, 1, 'W');
-    probeCell("Symbol", 20, 1, 'a');
-    probeCell("Symbol", 20, 1, 'g');
-    probeCell("Symbol", 20, 1, 'j');
-    probeCell("Symbol", 20, 1, 'm');
-    probeCell("Symbol", 20, 1, 'y');
-    probeCell("Symbol", 20, 1, '1');
-
-    probeCell("Symbol", 20, 0, 'A');
-    probeCell("Symbol", 20, 0, 'B');
-    probeCell("Symbol", 20, 0, 'K');
-    probeCell("Symbol", 20, 0, 'M');
-    probeCell("Symbol", 20, 0, 'W');
-    probeCell("Symbol", 20, 0, 'a');
-    probeCell("Symbol", 20, 0, 'g');
-    probeCell("Symbol", 20, 0, 'j');
-    probeCell("Symbol", 20, 0, 'm');
-    probeCell("Symbol", 20, 0, 'y');
-    probeCell("Symbol", 20, 0, '1');
-
-    probeNote("and upright, which is the control");
-    probeCell("Symbol", 15, 0, 'A');
-    probeCell("Symbol", 15, 0, 'B');
-    probeCell("Symbol", 15, 0, 'K');
-    probeCell("Symbol", 15, 0, 'M');
-    probeCell("Symbol", 15, 0, 'W');
-    probeCell("Symbol", 15, 0, 'a');
-    probeCell("Symbol", 15, 0, 'g');
-    probeCell("Symbol", 15, 0, 'j');
-    probeCell("Symbol", 15, 0, 'm');
-    probeCell("Symbol", 15, 0, 'y');
-    probeCell("Symbol", 15, 0, '1');
+            for (index = 0; CHARS[index]; index++) {
+                probeCell("Symbol", HEIGHTS[size], 0, CHARS[index]);
+            }
+        }
+    }
 
     DeleteObject(canvas);
     DeleteDC(memory);

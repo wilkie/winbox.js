@@ -2442,6 +2442,53 @@ generates those four numbers from the size is not known. What it is not, now, is
 vague -- a candidate has four integers to reproduce and 309 boxes to be checked
 against.
 
+#### Ten sizes instead of four
+
+Four points are not a curve, and the reason there were only four was the
+instrument rather than the question. The probe was writing eighty-one records a
+cell to carry two words. It now writes **five**: the capture is still taken
+whole -- a shallow capture is the one mistake that cannot be undone afterwards
+-- and only the 128 bytes that can contain the box are written out. Sixteen
+times cheaper, and what that buys is the eleven bearings at _eighteen_ sizes
+across all four bearing sweeps, in four recordings.
+
+Two of the eighteen are not outlines at all. Symbol has bitmap strikes, and at
+nineteen and twenty-one pixels the box words hold 149 and 0 -- values the
+upright rule cannot produce -- and do not vary with the fabricated bearing.
+A strike ignores the outline we wrote, so it ignores the bearing we wrote, and
+it says so. They exclude themselves.
+
+The mapper also quantises, which is worth writing down on its own: **twenty-four
+and twenty-six pixels produce identical staircases**, stepping at the same two
+bearings, so they are the same em size and not two.
+
+That leaves ten distinct sizes with the displacement pinned:
+
+| per em   | 6   | 11  | 12  | 14  | 16  | 18  | 20  | 23  | 26  | 33  |
+| -------- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| D, 64ths | 31  | 47  | 64  | 64  | 78  | 93  | 94  | 110 | 126 | 173 |
+
+#### And what ten sizes rule out
+
+At a fixed design height, a shear is proportional to the em size. This is not.
+
+Divide each displacement by the height it is applied to and the implied slope
+does not settle: 0.268 to 0.279 at eleven per em, 0.336 to 0.347 at twelve.
+Those two intervals are **disjoint**, and they are adjacent sizes. Between them
+the displacement moves seventeen sixty-fourths where a shear of that height
+would move five; between twelve and fourteen per em it does not move at all.
+
+So the displacement is not the shear of the ink's height, and no rounding of one
+will make it so. That does not undo what `dot-widen` and `dot-taller` settled --
+the left edge still comes from the ink's lower-left corner and from nothing else
+about the glyph, and it still moves with the height at a fixed size. What it
+undoes is the assumption that the amount is `slope × height`, which every model
+in this section has taken for granted and which ten sizes now refuse.
+
+The four integers turned into ten, and the ten are worse news than the four
+were. That is the right kind of worse: a model that fitted four points and fails
+ten was fitting the points.
+
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
 changing the code outright and re-running the ratchet.)
