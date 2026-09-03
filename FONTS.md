@@ -1811,12 +1811,35 @@ Where that form does appear again is segment 43, at `0x0e36` and `0x0e50`:
 are shifted left two and added to a base -- indices into an array of far pointers,
 which is what a sample index is used for. Two edges, both biased with 31.
 
-So the same bias keeps appearing wherever the shipped code turns a sixty-fourth
-into an index, and this implementation's right edge is still the one place using
-32 -- yet using 31 there measurably loses. Something is being missed about which
-of these values is the box's right edge, and the segments hold at least three
-candidate sites now: `36:0x0ca7`, `43:0x0e36`, and whatever fills the block
-segment 40 marshals.
+Read closely, segment 43 has the whole shape of it. Four edges in a row, each
+`((v + 31) & ~63) >> 6`, into four consecutive globals `0x88c` to `0x892`; then
+at `0x1121` the two ends of one axis are compared and the routine gives up if
+they are equal; then at `0x112d`:
+
+    ax = [0x88c] ; cmp [0x890],ax ; jz 0x1139     ; else jmp 0x122b
+
+**Both ends of the other axis rounded the same way, compared for equality, and a
+separate path when they match.** That is `narrow`, written out: this
+implementation computes the same predicate as
+`floor(rightmost + 0.5) <= boxLeft`, which is the same comparison with 32 on the
+right end instead of 31.
+
+So the test was changed to the read form -- and it loses: 23,508 fabricated cells
+of 24,042 against 23,526, and 5,115 wrong pixels against 5,082. Exactly the same
+loss as rounding the edge itself, which locates it: the loss is entirely in the
+predicate.
+
+**And then the relocations say why.** Segment 36 references segments 1, 37, 39,
+40, 41, 42, 47 and 48. Segment 42 references 36, 44, 45, 47 and 48. **Neither of
+them references 43.** Segment 43 is reached only from segments 8 and 48 and
+refers only to segment 1: it is not part of the scaler at all, and the box read
+out of it belongs to some other subsystem that happens to round its edges the
+same way. Applying another subsystem's predicate to this one loses, which is what
+it should do.
+
+That is worth more than the false lead cost. The scaler's segments are now known
+by their references -- 36, 37, 39, 40, 41, 42, 44, 45, 47, 48 -- and 43 is out,
+along with the note higher up this file that once counted it in.
 
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
