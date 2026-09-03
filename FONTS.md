@@ -2080,6 +2080,112 @@ So the slant rests at eleven cells of 198 in instruments built to be as sensitiv
 to it as anything can be: everything a pixel wide or more exact, every upright
 cell exact, `glyphs` at 98.0% and `font` at 99.8% of the real corpus.
 
+#### Reading the box out of GDI's memory
+
+The instrument the last section asked for turned out not to need ToolHelp, or a
+way into GDI's data segment, or anything else that sounds hard. It needed one
+observation about how Win16 works.
+
+**A DLL has no stack of its own.** It runs on the stack of whoever called it,
+and GDI is a DLL. So every frame the font scaler pushes -- the parameter block
+`fsc_SetupScan` reads its bounds out of, included -- is built on the _calling
+program's_ stack, in the memory immediately below its call to `TextOut`. When
+`TextOut` returns, none of that is cleared. It is abandoned, and it is still
+there.
+
+`oracle/probes/stack.c` is that observation and nothing else. It draws one
+character, copies the memory below the call into a buffer on the global heap
+before anything can touch it, and writes the bytes down. Two details are
+load-bearing and both are about not disturbing the evidence: the copy has to
+happen before any record is written, because `probe()` builds its record in a
+2400 byte local and writing one obliterates most of what is worth reading; and
+the copy loop contains no call, because a call would push a frame into the
+middle of it. Reading below the stack pointer is safe here rather than reckless
+-- in the large model the stack sits at the top of the program's own data
+segment, so an address below it is still an address inside a segment this
+program owns, and the probe checks the offset rather than trusting it.
+
+The first recording, four kilobytes deep, showed the drawing reaching 2446 bytes
+below the call and not one byte further; everything deeper was still zero. The
+scaler is entirely inside a window this probe can hold.
+
+#### What the dump says
+
+Two words at a fixed depth carry the box, and three separate copies of the left
+one agree in every cell recorded. They are found not by guessing but by asking
+which words in the dump hold the numbers our own scan converter computes: the
+upright box left, which we know is right because every upright cell in every
+instrument is exact.
+
+For `dot-edge` at fifteen pixels -- eleven copies of one square, each three font
+units further right, a fiftieth of a pixel a step:
+
+|                  | A   | B   | K   | M   | W   | a   | g   | j   | m   | y   | 1   |
+| ---------------- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| GDI upright left | 3   | 3   | 4   | 4   | 4   | 4   | 4   | 4   | 4   | 4   | 4   |
+| GDI slanted left | 4   | 4   | 5   | 5   | 5   | 5   | 5   | 5   | 5   | 5   | 5   |
+| ours, slanted    | 4   | 4   | 4   | 4   | 4   | 4   | 4   | 4   | 5   | 5   | 5   |
+
+The slanted box is the upright box moved over by one whole column, in all
+eleven. It is **not** the box of the sheared outline. Ours is, and ours steps
+one column late -- at `m`, where the sheared left edge crosses a pixel centre,
+rather than at `K`, where the upright one does.
+
+And the six cells where the two rows disagree are exactly the six cells whose
+pixels disagree. `A` and `B` agree, `K` `M` `W` `a` `g` `j` do not, `m` `y` and
+`1` agree again. **The box read out of GDI's memory predicts the disagreement
+with no exceptions**, which is the strongest evidence in this file that the box
+is where the fault is and not somewhere downstream of it.
+
+So the rounding happens before the shear, not after it. That is a statement
+about _order_, and it is the first thing about the synthesised slant that was
+read rather than fitted.
+
+#### Weighing the slant against y
+
+One column, in eleven cells that differ only in x, also says the translation
+does not depend on x. What it can depend on is how far above the baseline the
+ink is, because that is what a shear multiplies -- so `dot-rise` holds x still
+at the bearing where `dot-edge` agrees at every size, and moves the same square
+up instead, eleven heights from 200 to 2000 font units.
+
+| y0               | 200 | 380 | 560 | 740 | 920 | 1100 | 1280 | 1460 | 1640 | 1820 | 2000 |
+| ---------------- | --- | --- | --- | --- | --- | ---- | ---- | ---- | ---- | ---- | ---- |
+| GDI slanted left | 4   | 4   | 5   | 5   | 5   | 6    | 6    | 6    | 7    | 7    | 7    |
+| ours             | 4   | 4   | 4   | 5   | 5   | 5    | 6    | 6    | 6    | 7    | 7    |
+
+Ours is the same staircase one step late, again. The three cells where they
+differ are `K`, `a`, and `m`; the pixels disagree at `K` and `a`, and at `m`
+Windows draws nothing at all, so there is no pixel that could show it. Again no
+exceptions.
+
+The ink column and the box's left column are the same number in every one of
+these cells, which is what a feature narrower than a pixel does: the dropout
+rescue puts its one pixel at the box's left edge. That makes the fixture an
+independent check on the dump, and the two agree.
+
+#### What is still not read
+
+Put the two instruments together and they bracket the slope the _box_ is sheared
+by, if it is sheared at the ink's lower edge with the same `(x + 31) >> 6` the
+upright box uses. `dot-edge` needs it in `[0.336, 0.347)`; `dot-rise` needs it in
+`[0.315, 0.344)`; both together give **`[0.336, 0.344)`**, which contains
+`22/64 = 0.34375` and does not contain the `0.3` the outline is sheared by.
+
+Two different slopes is not a thing to believe on eleven cells, and the outline's
+`0.3` is not in doubt -- it was measured on features four pixels and wider, where
+a slope of `0.34` would be plainly visible and is not. So the bracket is a
+measurement of _something_, and the something is not yet named. The honest
+statement is the one above it: the box is rounded before the shear rather than
+after, and the quantity the shear is applied to has been bracketed and not
+identified.
+
+What would name it is more of the same instrument. `dot-rise` steps 180 font
+units at a time, which at twelve per em is a third of a pixel -- coarse. The
+same sweep at twenty per em with a step of thirty-two font units would resolve
+sixty-fourths, and the staircase would then have its risers in known places
+rather than in intervals.
+
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
 changing the code outright and re-running the ratchet.)

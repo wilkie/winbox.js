@@ -131,9 +131,15 @@ describe('the fabricated glyph recordings', () => {
    * shape fonts were built to disagree informatively rather than to pass. They
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
+   *
+   * Both numbers moved when `dot-rise` was added: 288 cells, 276 of them exact
+   * and 28 wrong pixels. A new instrument raises the ceiling by whatever it
+   * brings with it, and this one was built to disagree in three known places --
+   * see the closing sections of `FONTS.md` 9, which read its box out of GDI's
+   * own memory and predicted which three before the cells were replayed.
    */
-  const EXACT = 23526;
-  const WRONG = 5082;
+  const EXACT = 23802;
+  const WRONG = 5110;
 
   /* The one place an unhinted outline is drawn differently.
    *

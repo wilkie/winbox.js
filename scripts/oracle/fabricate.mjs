@@ -4682,6 +4682,10 @@ export const FABRICATIONS = [
     describe: 'and across the crossings at sixteen and twenty per em, for a third reading',
   }),
 
+  dotRise('dot-rise', {
+    describe: 'the same dot at one bearing and eleven heights, to weigh the slant against y',
+  }),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -5065,6 +5069,74 @@ function dotBrink(name, { describe, source = 'SYMBOL.TTF' }) {
 
         // The trap `setBearing` exists for; see `slantBar`.
         setBearing(bytes, glyph, x0);
+      }
+
+      return bytes;
+    },
+  };
+}
+
+/*
+ * The same dot at one bearing and eleven heights.
+ *
+ * Every other instrument here moves the square sideways, because the question
+ * has always been about phase in x. This one holds x still and moves it *up*,
+ * which is the question the stack probe raised.
+ *
+ * Reading GDI's own memory showed that the box it hands the scan converter for
+ * a synthesised italic is the upright box translated by a whole number of
+ * columns -- not the box of the sheared outline. Eleven bearings at one size
+ * all shared the same translation of one column, which is what says the
+ * translation does not depend on x. What it does depend on is the only thing
+ * left: how far above the baseline the ink is, because that is what a shear
+ * multiplies.
+ *
+ * So: one bearing, and a square that climbs. At two hundred units it is a
+ * third of a pixel above the baseline at twelve per em and the shear owes it
+ * almost nothing; at two thousand it is nearly a whole em up and the shear owes
+ * it three columns. Eleven steps across that range put a rounding boundary or
+ * two inside the recording, and where those boundaries fall is the rule.
+ *
+ * The height is the *only* thing that varies, so a translation that changes
+ * between two of these characters changed because of y and nothing else.
+ */
+function dotRise(name, { describe, source = 'SYMBOL.TTF' }) {
+  const SIDE = 100;
+  // The letters the glyph probe asks Symbol for; see `dotPhase`.
+  const RECORDED = 'ABKMWagjmy1';
+
+  /* One bearing for all eleven, chosen where `dot-edge` agrees with Windows at
+   * every size, so that a disagreement here is about the height and cannot be
+   * about the phase. */
+  const X0 = 254;
+
+  return {
+    name,
+    from: source,
+    as: source,
+
+    describe,
+
+    edit: (bytes) => {
+      for (let index = 0; index < RECORDED.length; index++) {
+        const y0 = 200 + index * 180;
+
+        const glyph = glyphFor(bytes, 0xf000 + RECORDED.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: X0 + SIDE + 200,
+          height: y0 + SIDE,
+          points: [
+            [X0, y0],
+            [X0, y0 + SIDE],
+            [X0 + SIDE, y0 + SIDE],
+            [X0 + SIDE, y0],
+          ],
+          program: [],
+        });
+
+        // The trap `setBearing` exists for; see `slantBar`.
+        setBearing(bytes, glyph, X0);
       }
 
       return bytes;
