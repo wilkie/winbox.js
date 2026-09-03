@@ -1494,12 +1494,37 @@ and breaks no wide cell -- `dot-brink` 91 cells of 96 against 90, `symbol-shapes
 it**: glyphs falls from 5,861 to 5,860. So it is fitted to the fabricated dots
 and it is not taken.
 
+#### The column threshold, and how far out it is at each size
+
+Printing the columns rather than the counts turns the second phenomenon into a
+number as well. Windows' column at each bearing, with ours after a slash where
+they differ:
+
+    dot-edge, bearing 254 + 3n
+      h= 8     3      3      3      3      3      3      3      3      3     3     3
+      h=12     4      4      4      4      4      4      4      4      4     4     4
+      h=15     4      4    5/4    5/4    5/4    5/4    5/4    5/4      5     5     5
+      h=20     5      5      5      5      5      5      5      5      5     5     5
+      h=24     6      6      6      6      6      6      6      6      6     6   6,7
+
+**At fifteen pixels Windows steps from column 4 to column 5 at a bearing of 260
+and this steps at 278.** Eighteen font units, which at twelve per em is 0.105 of
+a pixel. At twenty-four the same kind of threshold is out by no more than six
+units, 0.06 of a pixel, and at eight, twelve and twenty it is not out at all
+across these windows.
+
+So the displacement is neither a constant number of pixels nor a constant number
+of font units: 0.105 px at twelve per em, under 0.06 at twenty, nothing at the
+rest. It is small, it is size-dependent, and it is mostly zero -- which is the
+signature of a positional difference of a fraction of a sixty-fourth, visible
+only where the exact value happens to sit within that fraction of a rounding
+boundary, rather than of a term that is simply missing.
+
 And it is worth being plain about the size of what is left. Seven cells differ
 across the two bracketing instruments, of the 132 outside the strike sizes: one
-is the smear boundary at twenty-four pixels, and six are a contiguous run at
-fifteen pixels with the right number of pixels in the wrong column. The rest of
-the slant -- every shape a pixel wide or more, every upright cell, both bracketed
-crossings at twenty-four pixels -- is exact.
+is the smear boundary at twenty-four pixels, and six are that run at fifteen. The
+rest of the slant -- every shape a pixel wide or more, every upright cell, three
+of the five sizes in both bracketing windows -- is exact.
 
 Where none of this goes is into the scaler. Segment 36's public entries are four
 thunks that load a dispatch index into `bx` and a word count into `cx` and jump
