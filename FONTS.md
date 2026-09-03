@@ -1981,8 +1981,23 @@ narrowed to a contradiction of its own: it is not in the scaler's ten segments a
 not in GDI's thirty-five, because **neither contains an instruction that turns
 sixty-fourths into pixels** apart from the five already accounted for. Either the
 box is carried in design units and scaled by the metrics path, or it is built
-somewhere the shift is hidden in a helper. That is the next thread, and it is a
-reading rather than a fitting.
+somewhere the shift is hidden in a helper.
+
+The helpers were checked. The scaler shifts through two of them, `0x1aba` and
+`0x1ae6`, taking the count in `cl`, so a search for `mov cl,6` cannot see a
+variable shift. `0x1ae6` has ten callers: four are the metric edges already
+known, and the other six shift by one, by ten, by fourteen, by eight after a bias
+of 128, and one biases by 512. **Not one of them turns a sixty-fourth into a
+pixel.**
+
+So the count is closed. In the whole image the only conversions of the box-edge
+form are the four metric edges at `36:0x0ca7`, and rounding this implementation's
+right edge their way loses eighteen cells. Either those four **are** the box and
+something else here is off by an offsetting amount -- the box rule in this file
+was fitted rather than read, and a fitted constant can hide another error -- or
+the box is carried in design units and never converted at all.
+
+That is a real fork, and neither branch can be taken from the pixels.
 
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
