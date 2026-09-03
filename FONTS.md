@@ -1997,7 +1997,35 @@ something else here is off by an offsetting amount -- the box rule in this file
 was fitted rather than read, and a fitted constant can hide another error -- or
 the box is carried in design units and never converted at all.
 
-That is a real fork, and neither branch can be taken from the pixels.
+That is a real fork, and the first branch of it can be tested. If a fitted
+constant is hiding another error, then correcting it should let the other one be
+found: fix the right edge at the read value and search the box's remaining
+freedom for something that pays it back.
+
+Both edges were parametrised in sixty-fourths -- `boxLeft` as
+`floor((left * 64 + p) / 64)` and `wanted` as `floor((right * 64 + q) / 64)`,
+which reproduces this file's own numbers exactly at `p = 31, q = 32` -- and swept
+over a subset holding the dot instrument, a bar instrument, `slant-baked` and an
+upright letter fabrication:
+
+    q=31  q=32  q=33
+    343   343   343   p=30
+    334   334   337   p=31
+    360   360   363   p=32
+
+**The minimum is at `p = 31`**, which is the value read out of the shipped code,
+and it is a clear minimum: thirty and thirty-two both cost. So the left edge is
+confirmed twice over, by reading and by measurement.
+
+And `q` is flat. Thirty-one and thirty-two tie here, and over the whole
+fabricated set thirty-one costs 33 wrong pixels. **There is no compensating pair.**
+The box's own two constants have one optimum, this file already sits on it in
+`p`, and the read value of `q` is a third of a hundred pixels away from the
+measured one with nothing in the box to make up the difference.
+
+So the first branch of the fork closes: if a compensating error exists it is not
+in the box. The second -- that the box is carried in design units and never
+converted -- is still open, and cannot be settled from the pixels.
 
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
