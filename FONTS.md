@@ -1960,6 +1960,30 @@ whole-pixel lean is right for the dot, and nothing yet is right for both.
 **`slant-baked` at nought is the guard rail**: any rule proposed for this box has
 to leave it there.
 
+The obvious repair does not repair it. Rounding the lean per _outline point_ is
+crude for a tall glyph, whose points sit at arbitrary heights; rounding it per
+_row_ is what a bitmap displacement would actually do, so the box becomes the
+upright box with its bottom row's lean on the left and its top row's on the
+right. That is more principled and measures no better: 5,277 wrong pixels against
+5,082, with the same shape of loss.
+
+The reason is now plain enough to state as a bound. **Any rounding of the box's
+edges moves them by up to half a pixel relative to the ink**, and `slant-baked`
+is exact today with the edges unrounded, so any rule that rounds them loses
+there. But the dot at fifteen pixels needs them rounded, because that is the only
+way its box gives up its first column where Windows' does. The two requirements
+are contradictory for every form tried, and no form has been found that is
+conditional on anything but the answer.
+
+Which is where this stops being a search and starts being a guess, so it stops.
+What would settle it is the code that builds the box, and the search for that has
+narrowed to a contradiction of its own: it is not in the scaler's ten segments and
+not in GDI's thirty-five, because **neither contains an instruction that turns
+sixty-fourths into pixels** apart from the five already accounted for. Either the
+box is carried in design units and scaled by the metrics path, or it is built
+somewhere the shift is hidden in a helper. That is the next thread, and it is a
+reading rather than a fitting.
+
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
 changing the code outright and re-running the ratchet.)
