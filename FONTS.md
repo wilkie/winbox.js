@@ -1544,6 +1544,45 @@ is: the two orderings are, in effect, the same. (Ceiling is a hair ahead of what
 is here and is not taken; a rounding rule chosen on a two cell margin is a fitted
 constant by another name.)
 
+#### And the six at fifteen pixels are not in the crossings at all
+
+The scale factor can be eliminated with arithmetic rather than a recording.
+Symbol's em is 2048 units, a power of two, so `ppem / 2048` is exact in binary
+and `v * scale * 64` is `v * ppem / 32` -- exactly representable for any integer
+coordinate. No fixed-point form of the scale can differ from the float one, and
+the same goes for any fixed-point value of three tenths: the closest candidates,
+19/64 and 77/256, move a coordinate by less than a sixty-fourth at these sizes,
+where the measurements want a tenth of a pixel.
+
+So the lists were dumped instead, at four bearings across the run at fifteen
+pixels:
+
+    bearing 257   win col 4   us col 4   hOn 8:[5] hOff 8:[5] | vOn 4:[-9] vOff 4:[-9]
+    bearing 260   win col 5   us col 4   hOn 8:[5] hOff 8:[5] | vOn 4:[-9] vOff 4:[-9]
+    bearing 275   win col 5   us col 4   hOn 8:[5] hOff 8:[5] | vOn 4:[-9] vOff 4:[-9]
+    bearing 284   win col 5   us col 5   hOn 8:[5] hOff 8:[5] | vOn      vOff
+
+**Our crossing lists are identical at all four**, and identical where the two
+sides agree as well as where they part. So the walk is not the difference: the
+same lists produce column 4 here and column 5 in Windows over a run of six
+bearings.
+
+What changes at 284, where the two agree again, is the _box_: the vertical lists
+empty, the box collapses to the single column 5, and the horizontal rescue --
+`on - 1`, which is 4 -- is clamped back up to 5 by `boxLeft`. Windows reaches
+that answer 18 font units earlier, which is to say **its box collapses earlier
+than ours**.
+
+The obvious rule for that was tried: `boxLeft = ceil(leftmost)` rather than
+`ceil(leftmost - 0.5)`, which would put the left edge a column further right at
+exactly this phase. It costs 36,952 cells of 37,584 against 37,219, and 1,735
+wrong pixels against 517. So it is not that either, and the box rule stands as
+measured.
+
+But the narrowing is real, and it is the first one in a while: **the six cells at
+fifteen pixels are not a crossing landing a column apart.** They are the same
+crossings placed differently, and the placement is decided by the box.
+
 And it is worth being plain about the size of what is left. Seven cells differ
 across the two bracketing instruments, of the 132 outside the strike sizes: one
 is the smear boundary at twenty-four pixels, and six are that run at fifteen. The
