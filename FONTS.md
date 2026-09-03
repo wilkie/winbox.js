@@ -1432,11 +1432,38 @@ A sixty-fourth is 0.016 of a pixel and a column is a whole one; the boundary is
 out by 0.07 to 0.18. **So it is too big to be a rounding and too small to be the
 box**, and whatever sets it is neither of the two quantities that bound it.
 
-That leaves it here, and it is worth being plain about the size of what is left. Two cells of a thirty-six cell
-instrument built to be as sensitive to the slant as anything can be; a font that
-does not exist; a dot smaller than a pixel; and in both cells the two dropout
-passes firing on the same dot at once, which is the rarest configuration the
-scan converter has.
+A placement offset is that size, so the sheared glyph was slid sideways in
+thirty-seconds of a pixel and both instruments scored at each step:
+
+| shift      | `dot-phase`      | `symbol-shapes`  |
+| ---------- | ---------------- | ---------------- |
+| -0.063     | 85/96, 25 px     | 40/96, 156 px    |
+| **0.000**  | 87/96, 21 px     | **56/96, 72 px** |
+| +0.031     | 87/96, 20 px     | 52/96, 68 px     |
+| +0.063     | 89/96, 16 px     | 52/96, 96 px     |
+| **+0.094** | **89/96, 13 px** | 36/96, 120 px    |
+| +0.125     | 86/96, 16 px     | 36/96, 132 px    |
+
+**The dots want the glyph about a tenth of a pixel further right and the shapes
+want it where it is**, and the trade is the same one the slope sweep found.
+Which is not a coincidence: every dot in `dot-phase` sits at one height, so for
+those cells a sideways shift and a steeper lean are the same change, and a shift
+of 0.09 px at five and a third pixels up is a lean of 0.317.
+
+So the two parameterisations agree, and they agree on a _negative_. **No affine
+change to the shear satisfies both** -- not the slope, not the origin, not the
+placement -- because each buys the dots at the cost of the cells where the ink is
+the shape and nothing is left to judgement.
+
+That is the closing statement of this chase. The remaining difference is not a
+constant set wrongly. It is conditional: something that happens at some phases
+and not at others, which is what a threshold is, and the condition is not any of
+the quantities measured here.
+
+And it is worth being plain about the size of what is left: four cells of an
+eighty-eight cell instrument built to be as sensitive to the slant as anything
+can be, on a font that does not exist, drawing a dot smaller than a pixel, in the
+configuration where both dropout passes fire on the same dot at once.
 
 Where none of this goes is into the scaler. Segment 36's public entries are four
 thunks that load a dispatch index into `bx` and a word count into `cx` and jump
