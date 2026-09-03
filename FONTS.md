@@ -2180,11 +2180,85 @@ statement is the one above it: the box is rounded before the shear rather than
 after, and the quantity the shear is applied to has been bracketed and not
 identified.
 
-What would name it is more of the same instrument. `dot-rise` steps 180 font
-units at a time, which at twelve per em is a third of a pixel -- coarse. The
-same sweep at twenty per em with a step of thirty-two font units would resolve
-sixty-fourths, and the staircase would then have its risers in known places
-rather than in intervals.
+#### Sixty-three boxes, and what they rule out
+
+`dot-riser` is that sweep, built where the arithmetic stops rounding. At twenty
+pixels Symbol answers with sixteen per em, and sixteen per em is the size where
+2048 design units go to sixteen pixels -- one unit to exactly half a
+sixty-fourth. Even coordinates are then exact, and a height in multiples of
+twenty makes the shear exact as well, so the whole staircase can be predicted in
+integers and compared against integers. Eleven heights twenty units apart move
+it three sixty-fourths a step.
+
+With `dot-third` recorded too, sixty-three boxes have now been read out of GDI's
+memory, across four instruments and six sizes. What they say:
+
+- **The upright box is `(x + 31) >> 6` on the outline's own extent, in all
+  sixty-three.** That is not news, but it is the control: a model that breaks it
+  is not considered.
+- **The outline's own three tenths fits the slanted box nowhere.** Sweeping the
+  slope, the height the shear is taken at, and the rounding constant together,
+  no combination containing `0.3` fits. This is the strongest statement in this
+  section and the one to build on: the box is not the sheared outline, rounded.
+- **One slope and one constant fit sixty-two of the sixty-three**, at
+  `s ≈ 0.342` with `(x + 30) >> 6`, or `22/64` with the same constant on the
+  thirty-nine cells recorded before `dot-third`.
+
+And the outline's slope is not in doubt either, because the obvious escape was
+tried: setting `Surface.SLANT` to `22/64` so that one number does both costs 745
+wrong pixels across the fabricated set and 53 cells. Three tenths draws the
+ink; something near `0.342` places the box; they are different numbers.
+
+#### The box clips, and that is why the box alone was not enough
+
+Making our box agree with GDI's is not the same as making the pixels agree, and
+finding that out was worth as much as the box was.
+
+With the measured rule in place our box matched GDI's in all thirty-three cells
+of the first three instruments -- and the pixels still disagreed. The comparison
+says why. At fifteen pixels Windows draws `dot-edge`'s `K` as **one** pixel at
+column 5. We drew **two**, at 4 and at 5: column 5 from the dropout, and column
+4 from the ordinary fill, because the sheared outline really does cross the
+sample column at 4.5. Windows does not draw it, and the reason is that there is
+nowhere to put it -- the bitmap `Blit` fills _is_ the box, its column zero is
+`boxLeft`, and a run reaching left of that is not clipped so much as absent.
+
+For an upright glyph this can never happen: the box is the outline's own extent
+rounded outwards, so it contains every run by construction, which is why the
+clip was never needed and never noticed. For a synthesised italic the box leans
+further than the outline, stands a column to the right of the ink, and takes the
+leftmost column away. **Windows draws the column the box has, not the column the
+outline crosses.**
+
+Two writes need it -- the horizontal fill and the vertical dropout, which places
+its column without clamping it -- and with both clipped, `dot-edge`'s six cells
+at fifteen pixels come right.
+
+#### Why it is not shipped
+
+It is not shipped because it costs more than it earns: `dot-edge` gains six
+cells and `dot-third`, `dot-sweep` and `dot-brink` lose ten between them, for a
+net of nine cells against the ratchet. The box is right where it has been
+measured and wrong where it has not, and a rule that is wrong in places does
+more harm once the fill is clipped to it than it did when the fill ignored it.
+
+The one cell that resists every model says where to look. It is `dot-third` at
+twenty pixels and a bearing of 292, and it is the **only cell of the sixty-three
+whose box is two columns wide** -- `5,7` where every other slanted box in the
+set is one column. It is also the only one where Windows draws two pixels rather
+than one. Every model that fits the other sixty-two puts its left edge at 6;
+GDI's memory says 5.
+
+So the rule holds for a box that has collapsed onto a single column and breaks
+for one that has not, which is a sharp enough statement to build the next
+instrument from: a sweep that walks a feature from narrower than a pixel to
+wider than one, at a fixed bearing and height, reading the box at every step.
+Where the box stops collapsing is where the two rules part, and that boundary is
+what is missing.
+
+None of this is guesswork any more. The box is readable, sixty-three of them
+have been read, and what remains is one comparison in a place the instruments
+have not yet been pointed.
 
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from

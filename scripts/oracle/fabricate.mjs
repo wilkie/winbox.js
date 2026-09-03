@@ -4686,6 +4686,10 @@ export const FABRICATIONS = [
     describe: 'the same dot at one bearing and eleven heights, to weigh the slant against y',
   }),
 
+  dotRiser('dot-riser', {
+    describe: 'and again where the arithmetic is exact, to put the step in the staircase',
+  }),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -5100,6 +5104,82 @@ function dotBrink(name, { describe, source = 'SYMBOL.TTF' }) {
  * The height is the *only* thing that varies, so a translation that changes
  * between two of these characters changed because of y and nothing else.
  */
+/*
+ * The rising dot again, at the one size where none of the arithmetic rounds.
+ *
+ * `dot-rise` bracketed the slope the box is sheared by and could not name it,
+ * because at twelve per em a design unit is three eighths of a sixty-fourth and
+ * every quantity in the chain is a fraction that has already been rounded once
+ * by the time it is compared. A bracket of `[0.336, 0.344)` that excludes the
+ * `0.3` the outline is sheared by is exactly the shape a rounding artefact
+ * takes, and it is not worth another guess while the numbers are inexact.
+ *
+ * At twenty pixels the request maps to sixteen per em, and sixteen per em is
+ * the size where this stops being a problem: 2048 design units to sixteen
+ * pixels is one unit to half a sixty-fourth, so an *even* coordinate is an
+ * exact number of sixty-fourths and nothing is lost scaling it. Take the height
+ * in multiples of twenty as well and the shear itself is exact -- three tenths
+ * of twenty halves is three, on the nose -- so the whole staircase can be
+ * predicted in integers and compared against integers.
+ *
+ * Eleven heights twenty units apart move the shear by exactly three
+ * sixty-fourths a step, and the range covers the step in the staircase under
+ * every reading on the table:
+ *
+ * - sheared at the ink's lower edge with the outline's own `0.3`, the box
+ *   should step between 220 and 240;
+ * - sheared at the lower edge with the `0.34375` the bracket allows, between
+ *   180 and 200;
+ * - sheared at the ink's *upper* edge under either, before the sweep begins,
+ *   so every one of the eleven reads the same and the sweep says so.
+ *
+ * Three readings, three different answers, one recording. That is what this is
+ * for -- and unlike the bracket, whichever answer comes back is a whole number
+ * of sixty-fourths rather than an interval.
+ */
+function dotRiser(name, { describe, source = 'SYMBOL.TTF' }) {
+  const SIDE = 100;
+  // The letters the glyph probe asks Symbol for; see `dotPhase`.
+  const RECORDED = 'ABKMWagjmy1';
+
+  /* Even, so that at sixteen per em it is an exact number of sixty-fourths:
+   * 254 units is 127, and the origin the probe draws at adds 128 more. */
+  const X0 = 254;
+
+  return {
+    name,
+    from: source,
+    as: source,
+
+    describe,
+
+    edit: (bytes) => {
+      for (let index = 0; index < RECORDED.length; index++) {
+        const y0 = 180 + index * 20;
+
+        const glyph = glyphFor(bytes, 0xf000 + RECORDED.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: X0 + SIDE + 200,
+          height: y0 + SIDE,
+          points: [
+            [X0, y0],
+            [X0, y0 + SIDE],
+            [X0 + SIDE, y0 + SIDE],
+            [X0 + SIDE, y0],
+          ],
+          program: [],
+        });
+
+        // The trap `setBearing` exists for; see `slantBar`.
+        setBearing(bytes, glyph, X0);
+      }
+
+      return bytes;
+    },
+  };
+}
+
 function dotRise(name, { describe, source = 'SYMBOL.TTF' }) {
   const SIDE = 100;
   // The letters the glyph probe asks Symbol for; see `dotPhase`.

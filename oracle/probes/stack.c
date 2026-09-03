@@ -275,6 +275,38 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeCell("Symbol", 24, 0, 'A');
     probeCell("Symbol", 24, 1, 'A');
 
+    /*
+     * And the same eleven at twenty pixels, which is sixteen per em.
+     *
+     * That is the size where a design unit is exactly half a sixty-fourth, so
+     * an instrument built on even coordinates is measured rather than
+     * approximated. `dot-riser` is built for this pass.
+     */
+    probeNote("the eleven again at the size where the arithmetic is exact");
+    probeCell("Symbol", 20, 1, 'A');
+    probeCell("Symbol", 20, 1, 'B');
+    probeCell("Symbol", 20, 1, 'K');
+    probeCell("Symbol", 20, 1, 'M');
+    probeCell("Symbol", 20, 1, 'W');
+    probeCell("Symbol", 20, 1, 'a');
+    probeCell("Symbol", 20, 1, 'g');
+    probeCell("Symbol", 20, 1, 'j');
+    probeCell("Symbol", 20, 1, 'm');
+    probeCell("Symbol", 20, 1, 'y');
+    probeCell("Symbol", 20, 1, '1');
+
+    probeCell("Symbol", 20, 0, 'A');
+    probeCell("Symbol", 20, 0, 'B');
+    probeCell("Symbol", 20, 0, 'K');
+    probeCell("Symbol", 20, 0, 'M');
+    probeCell("Symbol", 20, 0, 'W');
+    probeCell("Symbol", 20, 0, 'a');
+    probeCell("Symbol", 20, 0, 'g');
+    probeCell("Symbol", 20, 0, 'j');
+    probeCell("Symbol", 20, 0, 'm');
+    probeCell("Symbol", 20, 0, 'y');
+    probeCell("Symbol", 20, 0, '1');
+
     probeNote("and upright, which is the control");
     probeCell("Symbol", 15, 0, 'A');
     probeCell("Symbol", 15, 0, 'B');
