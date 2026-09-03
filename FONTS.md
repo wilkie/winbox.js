@@ -1756,6 +1756,37 @@ other extent of the glyph -- its metrics, most likely, which the caller needs an
 the scan converter does not. The search for where the box is built continues past
 them.
 
+#### The block the box arrives in, and the chain it comes down
+
+`0x0042`'s prologue reads its bounds out of a block passed in `dx`, and what it
+does with them names them. It calls the allocator at `0x0d6a` twice: once with a
+count of `[dx+0x10] - [dx+0x0c]`, storing the result at `[state+8]`, and once
+with `[dx+0x0e] - [dx+0x0a]`, storing that at `[state+6]` and then into `[0x1c6]`
+-- which the walk uses as **the base of the column list array**. So:
+
+| field            | what it is                            |
+| ---------------- | ------------------------------------- |
+| `+0x0a`, `+0x0e` | the box's left and right, in columns  |
+| `+0x0c`, `+0x10` | the scan band's low and high, in rows |
+| `+0x02`, `+0x06` | the column arrays' handles            |
+| `+0x04`, `+0x08` | the row arrays'                       |
+
+The block is not filled in segment 42. Segment 40 at `0x07c5` fills it, by reading
+words sequentially out of a caller's structure and scattering them into exactly
+those offsets -- `[es:di+0x0a]`, `[es:di+0x06]`, `[es:di+0x1c]`, `[es:di+0x1a]`,
+`[es:di+0x0c]` -- with ten more copied wholesale. It is a marshalling layer, not
+a computation: **the box arrives already made.**
+
+And the chain it arrives down is short. Segment 40 is entered from three places
+only -- `1:0x7c14`, `47:0x002c` and `36:0x18dc` -- so the box is computed on
+GDI's side of that marshalling, in segment 1 or in whatever reaches it, and
+handed through segment 40 to the thunk in segment 36 and thence to the walk in
+segment 42.
+
+That is where the next dive starts, and it is worth saying what it costs: four
+segments and a marshalling layer between the value and its use, with the block's
+own layout now known but its source not.
+
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
 changing the code outright and re-running the ratchet.)
