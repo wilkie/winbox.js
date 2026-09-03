@@ -1371,6 +1371,23 @@ So three tenths stands, and the two crossing cells stay open as what they are: a
 sub-pixel dot whose sheared crossing this puts one column left of where Windows
 puts it, at two phases out of thirty-six.
 
+**And the two dropout cells are not the band edge.** The over-eager one paints
+its extra pixel from a vertical rescue whose row is the box's bottom edge, 14,
+and which the clamp brings in to 13. That looked like a half-open band: read the
+guard as `row >= boxBottom` rather than `row > boxBottom` and the rescue is
+dropped instead of clamped, which is exactly the pixel Windows does not paint.
+
+`DoVertDropout` says `>`, and measuring says `>` too: half-open costs 25,156
+cells of 25,620 against 25,327, and 748 wrong pixels against 467. So the guard is
+right as it stands, and the pixel comes from somewhere else.
+
+Which leaves the two of them where the last section put them, and it is worth
+being plain about the size of what is left. Two cells of a thirty-six cell
+instrument built to be as sensitive to the slant as anything can be; a font that
+does not exist; a dot smaller than a pixel; and in both cells the two dropout
+passes firing on the same dot at once, which is the rarest configuration the
+scan converter has.
+
 Where none of this goes is into the scaler. Segment 36's public entries are four
 thunks that load a dispatch index into `bx` and a word count into `cx` and jump
 to a stack switcher at `0xe1`, which copies the arguments onto the scaler's own
