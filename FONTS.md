@@ -2381,6 +2381,67 @@ The two cells that carry it are `dot-edge` at fifteen pixels and bearings 260
 and 263 -- which are, by an accident worth noticing, two of the original six
 that started this section.
 
+#### Measuring the term instead of fitting it
+
+`dot-far` finishes what `dot-small` started. With 223 boxes read, the step at
+six per em could be predicted rather than guessed at: eleven bearings from 335
+to 385 in fives, spaced so that **the bearing the box first steps at is the
+answer read straight off a table**. It steps between 345 and 350, and the ink
+columns in the glyph recording step in the same place, so the reading has two
+independent witnesses.
+
+That, plus seven per em added to the probe, makes **309 boxes**. And the upright
+control still holds on every one of them: `(x + 31) >> 6` on the coordinate
+rounded to nearest, exact and unique, now at 309.
+
+Which is what lets the term be _measured_ rather than fitted. Take the upright
+rule as given -- it is exact -- and ask what displacement `D`, in sixty-fourths,
+put through that same rule reproduces the slanted box. Every cell gives an
+interval; a size's cells intersect to give the size's answer:
+
+| per em | cells | D, sixty-fourths | implied slope |
+| ------ | ----- | ---------------- | ------------- |
+| 6      | 33    | **31**           | 0.331         |
+| 7      | 22    | 24 to 34         | —             |
+| 9      | 44    | 26 to 52         | —             |
+| 12     | 56    | **64**           | 0.338         |
+| 16     | 56    | **78**           | 0.312         |
+| 20     | 44    | **94**           | 0.301         |
+
+Four of the six are pinned to a single sixty-fourth. And the intersection being
+non-empty at all is itself a result: `D` is **constant across the bearings**
+within a size -- fifty-six cells at sixteen per em agree on one value to a
+sixty-fourth -- which is a strong check that the displacement depends on the
+size and the height and not on where the glyph sits.
+
+#### What the numbers say, and what they refuse
+
+The implied slope **falls with the size** -- 0.331, 0.338, 0.312, 0.301 -- and
+lands on the outline's own three tenths at the largest size measured. A shear at
+three tenths accounts for 28, 56, 75 and 94 sixty-fourths of those four
+displacements, so the excess is:
+
+    3, 8, 3, 0    at 6, 12, 16 and 20 per em
+
+Small, and not proportional to anything: not to the size, not to the height, not
+to the em. Eight sixty-fourths at twelve per em is an eighth of a pixel, and it
+is more than twice the excess on either side of it.
+
+So the term is real, it is bounded, and it is not a shear. Searching every
+ordering of the arithmetic -- three roundings for the horizontal scale, three
+for the vertical, three for the shear, twenty-seven in all, against a slope swept
+at fixed-point resolution, a displacement in font units and a rounding constant
+-- the best fit over all 309 misses **seven**. It missed three of 223 before the
+small sizes were added, which is the more honest way to read the earlier number:
+the model was never right, it was under-tested.
+
+That is the state. The box is the ink's lower-left corner, sheared, displaced
+and rounded; the rounding is `(x + 31) >> 6` and confirmed on 309; the
+displacement is measured at four sizes to the sixty-fourth; and the rule that
+generates those four numbers from the size is not known. What it is not, now, is
+vague -- a candidate has four integers to reproduce and 309 boxes to be checked
+against.
+
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
 changing the code outright and re-running the ratchet.)

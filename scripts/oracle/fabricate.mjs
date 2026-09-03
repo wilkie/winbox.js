@@ -4702,6 +4702,10 @@ export const FABRICATIONS = [
     describe: 'a bearing sweep placed where six per em has its step, to break the correlation',
   }),
 
+  dotFar('dot-far', {
+    describe: 'and further out again, where six per em really has it, to read the term off',
+  }),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -5238,6 +5242,72 @@ function dotBrink(name, { describe, source = 'SYMBOL.TTF' }) {
  * constant large; if near 321, the other way about. Either way it is one number
  * rather than a region.
  */
+/*
+ * The bearing sweep that six per em actually steps in.
+ *
+ * `dot-small` was aimed at 280 to 330 and found the box flat at three the whole
+ * way, which bounded the six-per-em offset without pinning it. With 223 boxes
+ * read, the offset each size demands can now be measured directly rather than
+ * predicted: fix the slope and let every size have its own whole offset in
+ * sixty-fourths, and twelve per em wants 36, sixteen wants 31 and twenty wants
+ * 27. Those three are not on a straight line, which is exactly the
+ * size-dependent term that keeps three boxes of 223 from fitting.
+ *
+ * Six per em is where the term is largest and least constrained -- anything
+ * from below zero to 36 is still allowed there. This sweep is placed on its
+ * step, which those same 223 boxes put just past where `dot-small` stopped, and
+ * the eleven bearings are spaced so that each one is a different answer:
+ *
+ *     335 → 36    350 → 33    365 → 30    380 → 27
+ *     340 → 35    355 → 32    370 → 29    385 → 27
+ *     345 → 34    360 → 31    375 → 28
+ *
+ * So the bearing the box first steps at *is* the offset, read straight off the
+ * table, over precisely the range the other sizes occupy. If it steps at 335
+ * the term is flat below twelve per em; if at 380 it is monotone; and the two
+ * readings imply very different things about what the term is.
+ */
+function dotFar(name, { describe, source = 'SYMBOL.TTF' }) {
+  // The letters the glyph probe asks Symbol for; see `dotPhase`.
+  const RECORDED = 'ABKMWagjmy1';
+
+  const SIDE = 100;
+  const Y0 = 500;
+
+  return {
+    name,
+    from: source,
+    as: source,
+
+    describe,
+
+    edit: (bytes) => {
+      for (let index = 0; index < RECORDED.length; index++) {
+        const x0 = 335 + index * 5;
+
+        const glyph = glyphFor(bytes, 0xf000 + RECORDED.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: x0 + SIDE + 200,
+          height: Y0 + SIDE,
+          points: [
+            [x0, Y0],
+            [x0, Y0 + SIDE],
+            [x0 + SIDE, Y0 + SIDE],
+            [x0 + SIDE, Y0],
+          ],
+          program: [],
+        });
+
+        // The trap `setBearing` exists for; see `slantBar`.
+        setBearing(bytes, glyph, x0);
+      }
+
+      return bytes;
+    },
+  };
+}
+
 function dotSmall(name, { describe, source = 'SYMBOL.TTF' }) {
   // The letters the glyph probe asks Symbol for; see `dotPhase`.
   const RECORDED = 'ABKMWagjmy1';

@@ -318,6 +318,32 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeCell("Symbol", 8, 0, 'y');
     probeCell("Symbol", 8, 0, '1');
 
+    /* Seven per em as well, which `dot-edge`'s span happens to step in. */
+    probeNote("the eleven at seven per em");
+    probeCell("Symbol", 10, 1, 'A');
+    probeCell("Symbol", 10, 1, 'B');
+    probeCell("Symbol", 10, 1, 'K');
+    probeCell("Symbol", 10, 1, 'M');
+    probeCell("Symbol", 10, 1, 'W');
+    probeCell("Symbol", 10, 1, 'a');
+    probeCell("Symbol", 10, 1, 'g');
+    probeCell("Symbol", 10, 1, 'j');
+    probeCell("Symbol", 10, 1, 'm');
+    probeCell("Symbol", 10, 1, 'y');
+    probeCell("Symbol", 10, 1, '1');
+
+    probeCell("Symbol", 10, 0, 'A');
+    probeCell("Symbol", 10, 0, 'B');
+    probeCell("Symbol", 10, 0, 'K');
+    probeCell("Symbol", 10, 0, 'M');
+    probeCell("Symbol", 10, 0, 'W');
+    probeCell("Symbol", 10, 0, 'a');
+    probeCell("Symbol", 10, 0, 'g');
+    probeCell("Symbol", 10, 0, 'j');
+    probeCell("Symbol", 10, 0, 'm');
+    probeCell("Symbol", 10, 0, 'y');
+    probeCell("Symbol", 10, 0, '1');
+
     probeNote("the eleven at nine per em");
     probeCell("Symbol", 12, 1, 'A');
     probeCell("Symbol", 12, 1, 'B');
