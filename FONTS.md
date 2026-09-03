@@ -1685,8 +1685,48 @@ comparison sees is 48 sixty-fourths at one bearing and 49 at the next.
 That is a predicate whose threshold moves with the size, with the phase, and with
 which side of a sixty-fourth each edge happens to land on -- which is exactly the
 per-crossing behaviour the third bracket found, and not something any offset
-could imitate. The remaining question is no longer where the glyph sits. It is
-what Windows' form of this one comparison is.
+could imitate.
+
+#### What Windows' form of it is not
+
+The obvious other form is the one the column sweep actually wants: not "the box
+collapsed" but **"the glyph crosses no vertical scan line"**, which is what makes
+the sweep the right thing to do. Swapping the box test for `lists.vertOn.size
+=== 0` over every instrument and the letter fabrications -- 43,566 cells --
+gives 43,149 cells and 586 wrong pixels **either way, to the cell**.
+
+They are the same predicate. The box's columns are exactly the vertical scan
+lines the glyph spans, so collapsing the box and crossing no scan line are one
+condition written twice. That is worth knowing -- two framings this section has
+alternated between are not alternatives -- but it is not a new candidate.
+
+And it closes the pincer. The predicate is the right one; the geometry it is
+applied to is the same on both sides, since `slant-baked` shows Windows
+rasterising this very outline identically; and yet the answer differs at three
+crossings of the eight bracketed. Every way of moving the geometry has been
+refused by the wide cells, and the one alternative form of the predicate is not
+an alternative.
+
+Here is the whole of the crossing at twelve per em, in sixty-fourths, for anyone
+resuming:
+
+    bearing   left   right   width   Windows   here
+    254       280     328      48    wide      wide
+    257       281     329      48    wide      wide
+    260       282     331      49    NARROW    wide
+    263       283     332      49    NARROW    wide
+    266       284     333      49    NARROW    wide
+    269       285     334      49    NARROW    wide
+    272       286     335      49    NARROW    wide
+    275       287     336      49    NARROW    wide
+    278       289     337      48    NARROW    NARROW
+    281       290     338      48    NARROW    NARROW
+    284       291     340      49    NARROW    NARROW
+
+Windows turns over as the width the comparison sees goes from 48 sixty-fourths to
+49; this turns over as the left edge passes 288, which is four and a half pixels.
+Whether that is the rule or a coincidence of one crossing cannot be told from one
+crossing, and the two others bracketed do not repeat it.
 
 And it is worth being plain about the size of what is left. Seven cells differ
 across the two bracketing instruments, of the 132 outside the strike sizes: one
