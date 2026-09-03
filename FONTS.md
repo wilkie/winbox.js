@@ -1884,15 +1884,48 @@ and 4.094, still 3 and 4; at 260, **3.531 and 4.109, which are 4 and 4** -- the
 box gives up its first column exactly where Windows changes its answer, and stays
 given up for every bearing after. The sheared box does not do that until 278.
 
-**And putting it into the code does not reproduce it.** Scanning a slanted glyph
-in its upright box outright costs 23,373 cells of 24,042 against 23,526; using
-the upright extent for the `narrow` test alone costs 23,482 and 5,587 wrong
-pixels against 5,082 -- and, tellingly, **leaves every dot instrument byte for
-byte unchanged** while making the bar instruments much worse (`symbol-slant` 322
-wrong pixels against 118). The arithmetic says the predicate should have flipped
-on those very cells and the recording says it did not, so the two disagree and
-the disagreement is not yet explained. It is written down here rather than
-resolved.
+**Putting it into the code needs one more piece, and then it works -- locally.**
+
+The first attempt swapped the `narrow` test for the upright one and left every
+dot cell unchanged, which read as the predicate not flipping. **It flipped.**
+Printing both boxes side by side on the same cells says so plainly:
+
+    bearing 254  sheared [4,5) wide    | upright [3,4) wide
+    bearing 257  sheared [4,5) wide    | upright [3,4) wide
+    bearing 260  sheared [4,5) wide    | upright [4,4) NARROW
+    bearing 275  sheared [4,5) wide    | upright [4,4) NARROW
+
+What did not change is the answer, because `narrow` only chooses the _path_: the
+column sweep it selects then draws out of `boxLeft`, and `boxLeft` was still the
+sheared one, still 4. The predicate turned over and the drawing did not follow.
+
+Follow it and the four bearings come out exactly right. Take the upright box,
+move it across by the lean **rounded to a whole pixel** -- 0.875 of a pixel here,
+so one -- and every one of them agrees with Windows:
+
+    bearing 254   displacement 0.891 -> 1   box [4,5)   wide     Windows wide
+    bearing 257   displacement 0.891 -> 1   box [4,5)   wide     Windows wide
+    bearing 260   displacement 0.875 -> 1   box [5,5)   NARROW   Windows NARROW
+    bearing 275   displacement 0.875 -> 1   box [5,5)   NARROW   Windows NARROW
+
+And measured, it does fix them: `dot-edge` falls from 76 wrong pixels to 70,
+which is the six.
+
+**It costs more than it fixes.** The same rule takes `symbol-slant` from 118
+wrong pixels to 250, `corner-phase` from 161 to 240, and `slant-baked` -- exact
+until now -- from nought to 183; the total goes from 5,082 to 5,486. Keeping the
+sheared right edge and moving only the left recovers some of it, 5,233, and is
+still a loss.
+
+The reason is visible in the shapes. A dot is half a pixel tall, so the lean
+displaces its foot and its top by nearly the same amount and a single rounded
+displacement describes it. A bar is seven pixels tall, its top leans two pixels
+further than its foot, and no single displacement describes it at all: the box
+comes out far too narrow and the ink is clamped into it.
+
+So the box is not the upright box moved across. It is something that _coincides_
+with the upright box moved across when the glyph is smaller than a pixel, and
+the six cells at fifteen pixels are the only place recorded where the two part.
 
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
