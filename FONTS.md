@@ -1656,6 +1656,38 @@ So the framing the last several sections have worked under -- a small error in
 where the sheared glyph sits -- is wrong. Whatever differs is decided afresh at
 each crossing, which is what a comparison does and not what a coordinate does.
 
+#### The comparison, named
+
+There is one, and instrumenting which pass inks the pixel finds it. Across the
+run at twelve per em:
+
+    bearing 254   win col 4   us col 4   V col=4 row=9 -> row 8
+    bearing 257   win col 4   us col 4   V col=4 row=9 -> row 8
+    bearing 260   win col 5   us col 4   V col=4 row=9 -> row 8
+    bearing 275   win col 5   us col 4   V col=4 row=9 -> row 8
+    bearing 284   win col 5   us col 5   (no rescue at all)
+
+Below the turnover the pixel is placed by the **vertical** rescue, into column 4.
+Above it no rescue runs: the box has collapsed, `narrow` is true, and the
+column sweep -- the path for a glyph narrower than a sample column -- draws
+column 5 instead. Windows switches between exactly those two behaviours, and it
+switches earlier.
+
+**So the comparison is `narrow`**, which is
+`floor(rightmost + 0.5) <= ceil(leftmost - 0.5)`: the glyph covers no sample
+column. And naming it explains the thing that refuted the positional framing.
+`narrow` compares two _separately rounded_ quantities, so where it flips depends
+on the rounded width as well as the position -- and the rounded width changes on
+its own. Across those same bearings the left edge steps a sixty-fourth at a time
+while the right edge steps 328, 329, 331 sixty-fourths, so the width the
+comparison sees is 48 sixty-fourths at one bearing and 49 at the next.
+
+That is a predicate whose threshold moves with the size, with the phase, and with
+which side of a sixty-fourth each edge happens to land on -- which is exactly the
+per-crossing behaviour the third bracket found, and not something any offset
+could imitate. The remaining question is no longer where the glyph sits. It is
+what Windows' form of this one comparison is.
+
 And it is worth being plain about the size of what is left. Seven cells differ
 across the two bracketing instruments, of the 132 outside the strike sizes: one
 is the smear boundary at twenty-four pixels, and six are that run at fifteen. The
