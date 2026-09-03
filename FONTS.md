@@ -2323,13 +2323,63 @@ and the largest bearing, and `dot-edge` at ten pixels, which is the smallest
 size recorded and the one where the sweep is coarsest against the pixel grid.
 Neither is the two-column cell that prompted `dot-widen`; that one now fits.
 
-Separating the three is a question of range rather than of cleverness. The
-displacement's contribution scales with the size and the rounding constant's
-does not, so what breaks the correlation is a bearing sweep fine enough to place
-a threshold _and_ sizes far enough apart to make the two terms differ -- which
-means the very small sizes, six and seven per em, where a font unit is worth
-under a fifth of a sixty-fourth and the sweep would have to be several hundred
-units wide to contain a threshold at all.
+#### The small end, and what it pins
+
+`dot-small` is that sweep. At six per em a whole pixel is three hundred and
+forty font units, so `dot-edge`'s thirty-unit span cannot contain a step; rather
+than widen the sweep and lose resolution, it is **placed**. Every combination
+still standing after 172 boxes put the step between a bearing of 285 and one of
+321, so the eleven walk from 280 to 330 in fives -- under a sixty-fourth a step
+at that size, finer against the pixel grid than any sweep built before it.
+
+The step is not there. At six per em the box reads 3 at every one of the eleven
+bearings, and reads 3 **upright as well**: at that size the synthesised slant
+does not move the box at all. The prediction was wrong, which is a result --
+the step is above 330, and "above 330" is a constraint the fit did not have.
+
+Sixteen and twenty per em do step inside the sweep, so the recording is not a
+loss even where it was aimed wrongly. **223 boxes** are now read.
+
+#### What 223 boxes pin, and what they do not
+
+The upright control first, because everything rests on it. Across all 223, the
+upright box is `(x + 31) >> 6` on the outline's extent with the scaling rounded
+to nearest -- **exactly, with no exceptions, and uniquely**: every other pairing
+of scaling and constant misses at least one. So the scaling this file has
+assumed throughout is confirmed at a scale it had not been before, and any
+residual in the slanted box is the slant's and not the scaling's.
+
+For the slanted box, the model is now sharp where it was a region:
+
+|                   | before `dot-small` | after                    |
+| ----------------- | ------------------ | ------------------------ |
+| rounding constant | 41 to 54           | **41**, and nothing else |
+| shift, font units | −48 to −20         | **−22 to −20**           |
+| slope             | 0.303 to 0.325     | 0.311 to 0.315           |
+
+Three cells of the 223 resist every combination. Sweeping the slope at
+fixed-point resolution rather than thousandths does not help, and neither does
+the order of the arithmetic: shearing in font units and scaling once, scaling
+and shearing separately, and shearing coordinates already rounded to
+sixty-fourths all bottom out at the same three.
+
+And the diagnosis is sharper than the failure. **Fitted one size at a time,
+every size fits perfectly** -- six, nine, twelve, sixteen and twenty per em each
+admit a slope, a shift and a constant that reproduce every box at that size with
+nothing left over. The form of the model is right. What is missing is a term
+that varies with the size, and it is small: two of the three failures are one
+column, at twelve per em, in a window six font units wide.
+
+Which is worth stating plainly, because it is the shape of the remaining work.
+This is no longer a question about what the box _is_ -- it is the ink's
+lower-left corner, sheared, displaced, rounded, and every one of those four
+words is now measured rather than supposed. It is a question about one
+size-dependent term of a couple of sixty-fourths, in a model that is otherwise
+exact on 220 of 223 boxes and on 223 of 223 upright.
+
+The two cells that carry it are `dot-edge` at fifteen pixels and bearings 260
+and 263 -- which are, by an accident worth noticing, two of the original six
+that started this section.
 
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from

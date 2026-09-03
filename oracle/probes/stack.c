@@ -292,6 +292,32 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      * only as well as the two sizes are far apart. Four, spanning nine per em
      * to twenty, is what this pass is for.
      */
+    /* And at six per em, which is the far end of the lever; see `dot-small`. */
+    probeNote("the eleven at six per em");
+    probeCell("Symbol", 8, 1, 'A');
+    probeCell("Symbol", 8, 1, 'B');
+    probeCell("Symbol", 8, 1, 'K');
+    probeCell("Symbol", 8, 1, 'M');
+    probeCell("Symbol", 8, 1, 'W');
+    probeCell("Symbol", 8, 1, 'a');
+    probeCell("Symbol", 8, 1, 'g');
+    probeCell("Symbol", 8, 1, 'j');
+    probeCell("Symbol", 8, 1, 'm');
+    probeCell("Symbol", 8, 1, 'y');
+    probeCell("Symbol", 8, 1, '1');
+
+    probeCell("Symbol", 8, 0, 'A');
+    probeCell("Symbol", 8, 0, 'B');
+    probeCell("Symbol", 8, 0, 'K');
+    probeCell("Symbol", 8, 0, 'M');
+    probeCell("Symbol", 8, 0, 'W');
+    probeCell("Symbol", 8, 0, 'a');
+    probeCell("Symbol", 8, 0, 'g');
+    probeCell("Symbol", 8, 0, 'j');
+    probeCell("Symbol", 8, 0, 'm');
+    probeCell("Symbol", 8, 0, 'y');
+    probeCell("Symbol", 8, 0, '1');
+
     probeNote("the eleven at nine per em");
     probeCell("Symbol", 12, 1, 'A');
     probeCell("Symbol", 12, 1, 'B');

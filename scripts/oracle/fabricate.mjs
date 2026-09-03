@@ -4698,6 +4698,10 @@ export const FABRICATIONS = [
     describe: 'one bearing, one lower edge, eleven heights, to separate the height from the offset',
   }),
 
+  dotSmall('dot-small', {
+    describe: 'a bearing sweep placed where six per em has its step, to break the correlation',
+  }),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -5204,6 +5208,77 @@ function dotBrink(name, { describe, source = 'SYMBOL.TTF' }) {
  * should not -- so the right edge is a second, independent reading of the same
  * slope in the same recording.
  */
+/*
+ * A bearing sweep placed where six per em puts its step.
+ *
+ * The box's left edge is now known to be the ink's lower-left corner, sheared,
+ * displaced left by some number of font units, and rounded with some constant
+ * in sixty-fourths. The three do not separate: a displacement in font units is
+ * worth more sixty-fourths the larger the size, and a constant in sixty-fourths
+ * is worth the same at every size, so across a narrow range of sizes the two
+ * trade against each other and the slope absorbs whatever is left. Nine per em
+ * to twenty is a narrow range.
+ *
+ * Six per em is not. There a font unit is worth three sixteenths of a
+ * sixty-fourth, so the displacement contributes barely a third of what it
+ * contributes at twenty, while the rounding constant contributes exactly what
+ * it always did. One threshold measured there is worth more than another
+ * hundred cells in the middle of the range.
+ *
+ * The difficulty is that a threshold has to be *in* the sweep to be measured,
+ * and at six per em a whole pixel is three hundred and forty font units, so
+ * `dot-edge`'s thirty-unit span cannot contain one. This sweep is placed
+ * instead of widened: every combination still standing after 172 boxes puts the
+ * step somewhere between a bearing of 285 and one of 321, so the eleven walk
+ * from 280 to 330 in fives. That is under a sixty-fourth a step at this size --
+ * finer against the pixel grid than any sweep built so far, at the size where
+ * it counts for most.
+ *
+ * If the step lands near 285 the displacement is small and the rounding
+ * constant large; if near 321, the other way about. Either way it is one number
+ * rather than a region.
+ */
+function dotSmall(name, { describe, source = 'SYMBOL.TTF' }) {
+  // The letters the glyph probe asks Symbol for; see `dotPhase`.
+  const RECORDED = 'ABKMWagjmy1';
+
+  const SIDE = 100;
+  const Y0 = 500;
+
+  return {
+    name,
+    from: source,
+    as: source,
+
+    describe,
+
+    edit: (bytes) => {
+      for (let index = 0; index < RECORDED.length; index++) {
+        const x0 = 280 + index * 5;
+
+        const glyph = glyphFor(bytes, 0xf000 + RECORDED.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: x0 + SIDE + 200,
+          height: Y0 + SIDE,
+          points: [
+            [x0, Y0],
+            [x0, Y0 + SIDE],
+            [x0 + SIDE, Y0 + SIDE],
+            [x0 + SIDE, Y0],
+          ],
+          program: [],
+        });
+
+        // The trap `setBearing` exists for; see `slantBar`.
+        setBearing(bytes, glyph, x0);
+      }
+
+      return bytes;
+    },
+  };
+}
+
 function dotTaller(name, { describe, source = 'SYMBOL.TTF' }) {
   // The letters the glyph probe asks Symbol for; see `dotPhase`.
   const RECORDED = 'ABKMWagjmy1';
