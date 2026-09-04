@@ -433,6 +433,38 @@ export class Surface {
         : outline.hintedOutline(glyph, ppem);
       const contours = fitted.contours;
 
+      /* A slanted glyph is carried across its side bearing in whole pixels.
+       *
+       * A hinted outline arrives already carried across the gap between its
+       * stored left edge and its side bearing -- the phantom points see to it.
+       * The raw outline the slant is drawn from has not been carried at all,
+       * and Symbol is a face where that matters: every glyph in it is stored
+       * from zero, with the bearing held apart, from twenty units for the
+       * capitals to two hundred and forty for the digit one.
+       *
+       * **Read, not fitted.** `dot-bearing` holds one square still and walks
+       * its bearing through eleven values either side of its edge; upright, the
+       * box GDI hands the scan converter moves with the bearing to the
+       * sixty-fourth, and slanted it moves by the bearing **rounded to a whole
+       * pixel**, at every one of nine sizes. And the fifteen boxes the real
+       * face still disagreed on were exactly the glyphs whose bearing rounds to
+       * a pixel or more at that size, short by exactly that many columns.
+       *
+       * Rounded as a 26.6 quantity is rounded to a pixel, which is what puts
+       * the period's 145 units at seven per em -- 31.7 sixty-fourths -- across
+       * the half and into the next column, where Windows draws it.
+       */
+      const shift = Math.round((outline.bearingShift(glyph) * ppem * 64) / outline.unitsPerEm);
+
+      /* An upright glyph that has no program of its own comes back from
+       * `hintedOutline` exactly as stored, and so has not been carried across
+       * its bearing either. GDI carries it to the sixty-fourth -- `dot-bearing`
+       * upright moves with its bearing at that resolution, at every size -- and
+       * a hinted outline already has, through its phantom points, so only the
+       * raw case needs it here.
+       */
+      const carried = italic ? Math.round(shift / 64) : fitted.hinted ? 0 : shift / 64;
+
       /* An outline that reaches too far out of its cell is not drawn at all.
        *
        * Not the part outside -- none of it, including the part that was inside.
@@ -498,7 +530,7 @@ export class Surface {
         const inked = fill(slanted, {
           // Hinting hands back pixels; an unhinted outline is still in units.
           scale: fitted.scaled ? 1 : scale,
-          originX: pen,
+          originX: pen + carried,
           originY: baseline,
           width: this.width,
           height: this.height,

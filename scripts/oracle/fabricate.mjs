@@ -4706,6 +4706,10 @@ export const FABRICATIONS = [
     describe: 'and further out again, where six per em really has it, to read the term off',
   }),
 
+  dotBearing('dot-bearing', {
+    describe: 'one outline, eleven side bearings, to see how the bearing enters the slanted box',
+  }),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -5267,6 +5271,69 @@ function dotBrink(name, { describe, source = 'SYMBOL.TTF' }) {
  * the term is flat below twelve per em; if at 380 it is monotone; and the two
  * readings imply very different things about what the term is.
  */
+/*
+ * One outline and eleven side bearings.
+ *
+ * Every instrument before this one set the left side bearing equal to the
+ * outline's own left edge, which is the convention a well-formed TrueType font
+ * follows and which Symbol does not: every glyph of Symbol's stores its outline
+ * starting at zero and carries the bearing separately, from twenty units for
+ * the capitals to two hundred and forty for the digit one. And pointed at the
+ * real face, the stack probe found our slanted box a column to the left of
+ * GDI's in exactly the glyphs with the large bearings, and nowhere else.
+ *
+ * So the bearing is doing something to the slanted glyph that it does not do
+ * to the upright one, and no square with its bearing equal to its edge could
+ * ever have shown it. This one holds the outline still -- the same square, the
+ * same edge, the same height -- and walks the *bearing* through eleven values
+ * either side of the edge, which separates the two quantities the earlier
+ * instruments had tied together.
+ *
+ * Read upright, it says how a bearing that disagrees with the edge positions
+ * the glyph at all. Read slanted, it says how much of that positioning the
+ * slant applies a second time.
+ */
+function dotBearing(name, { describe, source = 'SYMBOL.TTF' }) {
+  const SIDE = 100;
+  // The letters the glyph probe asks Symbol for; see `dotPhase`.
+  const RECORDED = 'ABKMWagjmy1';
+  const DELTAS = [-60, -30, 0, 20, 40, 60, 80, 100, 130, 160, 200];
+
+  const X0 = 254;
+  const Y0 = 500;
+
+  return {
+    name,
+    from: source,
+    as: source,
+
+    describe,
+
+    edit: (bytes) => {
+      for (let index = 0; index < RECORDED.length; index++) {
+        const glyph = glyphFor(bytes, 0xf000 + RECORDED.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: X0 + SIDE + 400,
+          height: Y0 + SIDE,
+          points: [
+            [X0, Y0],
+            [X0, Y0 + SIDE],
+            [X0 + SIDE, Y0 + SIDE],
+            [X0 + SIDE, Y0],
+          ],
+          program: [],
+        });
+
+        // Deliberately not the edge, which is the whole point.
+        setBearing(bytes, glyph, X0 + DELTAS[index]);
+      }
+
+      return bytes;
+    },
+  };
+}
+
 function dotFar(name, { describe, source = 'SYMBOL.TTF' }) {
   // The letters the glyph probe asks Symbol for; see `dotPhase`.
   const RECORDED = 'ABKMWagjmy1';

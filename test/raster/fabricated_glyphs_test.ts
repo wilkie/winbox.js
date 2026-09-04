@@ -133,16 +133,15 @@ describe('the fabricated glyph recordings', () => {
    * are a ratchet: the totals may improve and must not quietly get worse, which
    * is the property the recordings had lost by not being replayed at all.
    *
-   * Both numbers have moved six times now, as `dot-rise`, `dot-riser`,
-   * `dot-widen`, `dot-taller`, `dot-small` and `dot-far` were added: 1,728
-   * cells between them, 1,662 exact and 146 wrong pixels. A new instrument
-   * raises the ceiling by whatever it brings with it, and these six exist to be
-   * read with the stack probe rather than to pass -- see the closing sections
-   * of `FONTS.md` 9, which read 309 of their boxes out of GDI's own working
-   * memory.
+   * Both numbers have moved seven times now, as `dot-rise`, `dot-riser`,
+   * `dot-widen`, `dot-taller`, `dot-small`, `dot-far` and `dot-bearing` were
+   * added. A new instrument raises the ceiling by whatever it brings with it,
+   * and these seven exist to be read with the stack probe rather than to pass
+   * -- see the closing sections of `FONTS.md` 9, which read over a thousand of
+   * their boxes out of GDI's own working memory.
    */
-  const EXACT = 25444;
-  const WRONG = 4677;
+  const EXACT = 25808;
+  const WRONG = 4460;
 
   /* The one place an unhinted outline is drawn differently.
    *

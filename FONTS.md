@@ -2651,6 +2651,45 @@ separated rounding, which is the measured arithmetic, could never actually
 bite. Fixing it is worth two pixels and a good deal of confidence in the next
 measurement taken with it.)
 
+#### The bearing, carried twice over and once not at all
+
+Sixteen of the twenty-three italic disagreements were the same thing: our whole
+glyph one column left of Windows' -- including the period, at every size from
+ten pixels to twenty-four, a glyph sitting on the baseline that a shear barely
+touches. So something translates, and it is not the slant.
+
+The metrics say what. Every glyph in Symbol stores its outline from `xMin = 0`
+and holds its left side bearing apart in `hmtx`, and the glyphs that shift are
+exactly the ones with a large bearing: the digit one at 240 units, the period at
+145, mu at 124, alpha at 84, phi at 69. The capitals at 20 to 37 do not shift,
+and gamma at -1 does not. No fabrication before this could have shown it,
+because every one of them set the bearing equal to the edge.
+
+`dot-bearing` sets them apart: one square, one edge, one height, and eleven
+bearings from sixty units left of the edge to two hundred right of it. Read out
+of GDI's memory at nine sizes:
+
+- **upright, the box moves with the bearing to the sixty-fourth**;
+- **slanted, it moves with the bearing rounded to a whole pixel**.
+
+Two things were wrong on our side, and they were different things. The slanted
+glyph is drawn from the raw outline, which had never been carried across its
+bearing at all -- carrying it by the bearing rounded to a pixel, as a 26.6
+quantity is rounded (which is what takes the period's 145 units at seven per em,
+31.7 sixty-fourths, across the half), is worth **fifteen records of the
+corpus**, which were the fifteen boxes. And an _upright_ glyph with no program
+of its own comes back from the hinter exactly as stored, uncarried too; GDI
+carries it to the sixty-fourth, and doing likewise takes the instrument from 234
+of 288 cells to 284.
+
+    glyphs   5,890 -> 5,905 of 5,982    98.5% -> 98.7%
+    slant-width  276 -> 281,  slant-baked  273 -> 278,  slant-angle  269 -> 274
+
+Why a whole pixel for the slanted glyph and a sixty-fourth for the upright one
+is not read; it is measured. The likeliest reason is that the transformed glyph
+is placed by the integer metrics GDI keeps for it rather than by the phantom
+point the hinted path carries -- but that is a guess, and it is marked as one.
+
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
 changing the code outright and re-running the ratchet.)
