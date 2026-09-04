@@ -4130,6 +4130,43 @@ the origin is the same origin, and the box GDI made from them is still a column
 to the right of what its own rule makes of them. Whatever that cell does, it does
 between the point array and the box, and both ends are now visible.
 
+#### What is between them is code, and nothing else
+
+The obvious next question is where the box is kept while it is being made, and
+the answer is that it is not kept anywhere. Searched across the whole sixteen
+kilobyte block, **no word holds 3 and 4 for one cell and 4 and 5 for the other**
+-- the only pair anywhere that steps by one is a flag at `+0x1492` going from
+nought to one. The box exists on the stack, in the parameter block the scan
+driver is entered with, and nowhere else. So the step from the point array to the
+box is code with no intermediate that outlives it.
+
+Three things the block does hold, now that its fields have names:
+
+- **the scaler's own code**, which the far pointers point into
+- **a glyph cache**: a record per drawn glyph carrying the character code at
+  `+0x1583` and the glyph index at `+0x1396` -- 92 for `y` and 20 for `1`, which
+  are the indices `Symbol` gives them
+- **an allocation cursor**. The words near `+0x139a` that first looked like
+  geometry, because they moved by eight between the two cells, are 0x0BB7 and
+  0x0BBF; read in the order the characters were _drawn_ rather than the order
+  they are listed they go 2999, 3007, 3015, 3023, 3023, 3031 … , stepping eight
+  bytes for each new glyph put in the cache and standing still for one already
+  there. It is the cache's free pointer and it has nothing to do with the box.
+
+And the arithmetic is not written the way the recording states it. `(x + 31) >> 6`
+is what the 528 boxes say the rule _is_; the instruction `add bx, +0x1f` occurs
+**exactly once in the whole of `GDI.EXE`**, at `0x14e5d`, and disassembling it
+shows `and bx, -0x20` and `shr bx, 3` after it -- rounding a bitmap's row up to a
+multiple of thirty-two bits and dividing to bytes. That is DIB stride, not a box.
+So the box's rounding is either written some other way or lives in the scaler's
+own segment rather than GDI's.
+
+Where that leaves it: the two ends are known and named, the middle is code, and
+the places it is _not_ are three fewer than they were. The way in from here is
+the stack again rather than the heap -- the frame that carries the box also
+carries a pointer to the element it was made from, and finding which pointer that
+is names the routine that fills the parameter block.
+
 ### And the last of `slope-sweep` is residue
 
 The one `slope-sweep` cell is `å` at thirty-one pixels, where Windows draws a
