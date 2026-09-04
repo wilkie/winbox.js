@@ -181,7 +181,7 @@ export function flatten(contour) {
  * @param {Array} contour - Points, each `{x, y, on}`.
  * @returns {Array} Pieces, each `{from, to}` and a `control` if it curves.
  */
-export function segmentsOf(contour) {
+export function segmentsOf(contour, between: any = null) {
   if (contour.length === 0) {
     return [];
   }
@@ -227,7 +227,10 @@ export function segmentsOf(contour) {
 
     if (control) {
       // Two controls in a row: the point between them is on the curve.
-      curve(control, [(control.x + point.x) / 2, (control.y + point.y) / 2]);
+      curve(
+        control,
+        between ? between(control, point) : [(control.x + point.x) / 2, (control.y + point.y) / 2]
+      );
     }
 
     control = point;
@@ -419,13 +422,45 @@ export function fillWalked(contours, options) {
     originY - sixtyFourth(point[1]) / 64,
   ];
 
+  /* Where two off-curve points meet, and which coordinates that midpoint is of.
+   *
+   * A pair of consecutive controls implies an on-curve point between them, and
+   * a font is written expecting one. The question is what it is the midpoint
+   * *of*: the design coordinates, or the scaled ones the scaler is working in.
+   * It is the second, and it is halved the way every other halving in the walk
+   * is halved -- `(a + b + 1) >> 1`, the same form `EvaluateSpline` uses for the
+   * control it makes when it subdivides.
+   *
+   * **Recorded, and it is the last two cells of the glyph corpus.** Halving the
+   * design coordinates and scaling afterwards puts Symbol's slanted `t` at
+   * thirty-two pixels a column wide at two rows; halving the scaled ones puts it
+   * exactly where Windows draws it. The difference is half a sixty-fourth on one
+   * point, and it reaches the picture because it moves the second difference of
+   * the piece that point belongs to -- which is what decides how finely the walk
+   * flattens it. Truncating the halving instead of rounding it up costs 121
+   * records, so the `+ 1` is measured and not inherited.
+   *
+   *     design coordinates, exact half   6,044 of 6,046
+   *     scaled coordinates, truncated    5,925
+   *     scaled coordinates, half up      **6,046**
+   *
+   * The fabricated corpus does not move: 26,055 cells and 9 wrong pixels either
+   * way.
+   */
+  const between = (one, two) => {
+    const half = (at: number, to: number) =>
+      ((Math.round(at * scale * 64) + Math.round(to * scale * 64) + 1) >> 1) / (scale * 64);
+
+    return [half(one.x, two.x), half(one.y, two.y)];
+  };
+
   const lists = empty();
   const sub = (value) => Math.round(value * 64);
 
   const ends = new Endpoints(lists);
 
   for (const contour of contours) {
-    const made = segmentsOf(contour);
+    const made = segmentsOf(contour, between);
 
     if (!made.length) {
       continue;
@@ -529,7 +564,7 @@ export function fillWalked(contours, options) {
    */
 
   for (const contour of contours) {
-    for (const piece of segmentsOf(contour)) {
+    for (const piece of segmentsOf(contour, between)) {
       for (const point of [piece.from, piece.to, piece.control]) {
         if (!point) {
           continue;

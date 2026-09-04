@@ -4103,6 +4103,53 @@ shift -- the model section 3 built out of the row-by-row comparison and did not
 ship -- cannot even be asked here: Windows's slanted `t` inks **one** column at
 row 18 where its own upright inks two, so that row is no shift of that row.
 
+#### It was the point between two controls, and which coordinates it halves
+
+Everything above chased the corner: its curvature, its depth, its shear, its
+threshold. The corner was never the thing. **What was wrong was one of its
+endpoints**, and it is a rule that had never been asked about at all.
+
+A pair of consecutive off-curve points implies an on-curve point between them,
+which a font is written expecting; TrueType says it is their midpoint. What it
+does not say -- because for a font it makes no difference -- is _which_
+coordinates it is the midpoint of. This halved the design coordinates and scaled
+the result. The scaler is working in sixty-fourths and halves those, the way it
+halves everything else: `(a + b + 1) >> 1`, the same form `EvaluateSpline` uses
+for the control it makes when it subdivides.
+
+Half a sixty-fourth on one point, and it reaches the picture because that point
+is an _end_ of the piece the corner belongs to. Move it and the piece's second
+difference moves; move that and `size` comes off 128; come off 128 and the walk
+flattens it into four chords instead of two, which is exactly what the crossings
+wanted all along.
+
+| the implied point halves        | recorded glyphs |
+| ------------------------------- | --------------- |
+| the design coordinates, exactly | 6,044           |
+| the scaled ones, truncated      | 5,925           |
+| the scaled ones, rounded up     | **6,046**       |
+
+Truncating costs 121 records, so the `+ 1` is measured here and not just
+inherited from the subdivision. The fabricated corpus does not move: 26,055 cells
+and 9 wrong pixels either way.
+
+    font      5,057 of 5,057   100%
+    glyphs    6,046 of 6,046   100%
+    hinting   7,828 of 7,828   100%
+    lines       248 of   248   100%
+
+**`KNOWN_GAPS` is empty.** Every record of every fixture the oracle has recorded
+of fonts -- mapping, metrics, extents, advances and pixels -- this reproduces.
+
+It is worth saying what the six rounds of refusals bought, since none of them was
+the answer. They are what made the last step readable: because the shear, the
+lean, the depth, the threshold, the splits and the row shift had each been swept
+and each refused by hundreds of records, the only thing left that could move a
+crossing by half a sixty-fourth was a coordinate nobody had questioned. The
+corner was never near the boundary for a reason of its own -- section above --
+and once that was known, the question stopped being "how finely is this curve
+walked" and became "where does this piece actually begin".
+
 #### Asking `IP` directly, and being wrong about the answer
 
 An observation of a real letter says where its program put a point and leaves
@@ -10593,14 +10640,12 @@ it stands:
 | Fixture                                                      | Records | Agreement |
 | ------------------------------------------------------------ | ------- | --------- |
 | `font`                                                       | 5,057   | **100%**  |
-| `glyphs`                                                     | 6,046   | 6,044     |
+| `glyphs`                                                     | 6,046   | **100%**  |
 | `hinting`                                                    | 7,828   | **100%**  |
 | `lines`                                                      | 248     | **100%**  |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
 
-`KNOWN_GAPS` holds one entry, and it is the two glyph records above: Symbol
-slanted at a thirty-two pixel cell, where one letter's stem is a column too wide
-for two of its rows. The `stack` fixture is not in the table because it is an
+`KNOWN_GAPS` is empty. The `stack` fixture is not in the table because it is an
 instrument rather than an oracle: its 3,650 records are the scaler's own stack,
 which nothing on this side is meant to reproduce, and the conformance suite
 reports them as unsupported.

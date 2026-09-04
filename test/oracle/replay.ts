@@ -1360,10 +1360,7 @@ export class Unimplemented extends Error {}
  *
  * All 2,574 records agree.
  */
-export const KNOWN_GAPS: Record<string, string> = {
-  glyph:
-    "two of 6,046, and one glyph counted twice: Symbol slanted at a thirty-two pixel cell, where the `t`'s stem inks two columns for two of its rows and Windows inks one. Traced to one spline -- the inner corner of the stem, under two pixels long -- whose flattened chords cross those rows two and three sixty-fourths right of where the spline itself crosses; the spline's own crossings are Windows's. Its second differences make `size` exactly 128, so the only threshold that would give it another level is an inclusive test, and that wins these two and loses three others whose splines are the same size. The weights and the turning point splits were swept too and cost hundreds. See FONTS.md",
-};
+export const KNOWN_GAPS: Record<string, string> = {};
 
 /**
  * Functions a module declares but wires to a stub.
