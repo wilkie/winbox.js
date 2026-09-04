@@ -206,11 +206,18 @@ export class BitmapContext {
       const last = index === this._path.length - 1;
       const stop = last && this.excludeLast ? steps : steps + 1;
 
+      /* A segment from a point to itself draws nothing.
+       *
+       * `LineTo` draws every pixel of a line but its endpoint, and a line with
+       * no length has no other pixels. Drawing the one pixel anyway looked
+       * harmless, because the next segment starts there and draws it -- unless
+       * there is no next segment worth the name. The plotter faces' periods,
+       * and the dots on their `j`s, are tiny closed loops whose every point
+       * rounds to one pixel at text sizes: five coincident points, four
+       * zero-length segments, and Windows draws nothing at all where this drew
+       * the pixel four times over.
+       */
       if (steps === 0) {
-        if (stop > 0) {
-          this.setPixel(fromX, fromY, colour);
-        }
-
         continue;
       }
 

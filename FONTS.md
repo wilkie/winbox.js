@@ -2751,6 +2751,26 @@ bare post does not carry the period, whose box has not collapsed. Whatever the
 shipped continuation test really is, it is not the reference's, and the eight
 records wait on reading it rather than on any measurement this file can make.
 
+#### The plotter faces' periods
+
+The plotter group -- Roman, Modern and Script, drawn as polylines -- had one
+shape in common across half its records: Windows draws **nothing** for Roman's
+period at eight and twelve pixels, and nothing for the dot on Script's and
+Modern's `j` at any size up to thirty-two, where we drew a pixel.
+
+The period is a five-point closed diamond two design units across, and at text
+sizes every one of its points rounds to the same pixel: four segments of no
+length. `LineTo` draws every pixel of a line but its endpoint, and a line with
+no length has no other pixels -- so a polyline of coincident points is nothing.
+The polyline routine here drew the pixel for a zero-length segment that was not
+the last, on the reasoning that the next segment would draw it anyway; when the
+next segment is also nothing, that reasoning fails. Made to draw nothing:
+
+    glyphs   5,913 -> 5,927 of 5,982    98.8% -> 99.1%
+    lines    248 of 248, unchanged
+
+Fourteen records, and the plotter group falls from thirty-two to eighteen.
+
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
 changing the code outright and re-running the ratchet.)
