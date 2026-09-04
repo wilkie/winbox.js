@@ -3827,6 +3827,80 @@ corpus's open question, not this one. It is in `KNOWN_GAPS` under that
 description, and it was found by recording a character that had never been
 recorded at that size rather than by anything changing.
 
+### The fabricated corpus: a program that names a point it does not have
+
+With the recorded fixtures whole, the remaining error was the fabricated corpus,
+and it was not spread across it. Of 26,058 cells and 4,320 wrong pixels, **4,316
+of those pixels were in one instrument**, `slope-sweep`, and every wrong cell in
+it was an accented letter: 29 characters, six sizes, upright plain, 174 cells.
+
+Which is not what that instrument is about. It cuts thirty-six base letters down
+to a four point parallelogram to walk a leaning edge across the sample grid, and
+those thirty-six all agree. What it does _not_ touch is the accented composites
+built on them -- `À` is the base `A` plus a grave, by index -- so cutting `A`
+from a hundred-odd points to four leaves `À`'s own program naming points that are
+no longer there. **The fabrication asked a question by accident, and it is a good
+one: what does the interpreter do when a glyph program names a point the glyph
+does not have?**
+
+The reference answers plainly. Every one of its point checks --
+`CHECK_POINT`, `CHECK_CONTOUR`, `CHECK_ELEMENT` -- is inside `#ifdef
+FSCFG_DEBUG` and compiled out of anything shipped. So nothing stops the
+instruction. It writes past the end of the element's point array, into the rest
+of a buffer the scaler allocated from `maxp` for the largest glyph in the font,
+and nothing ever reads that back as part of an outline.
+
+**Arrays that grow are not the same thing as memory that overflows**, and the
+difference is the whole of the first bug. Ours grew: the phantom points are read
+as `length - 3` and `length - 4`, so one write past the last point moved the end
+and the glyph's own origin came out of a hole. `undefined` in an arithmetic
+instruction is `NaN`, `NaN` reaches the phantoms, and every letter built on a cut
+base came out as a bar in column nought. Fixing the length alone changes nothing
+-- the holes are still holes. What fixes it is modelling the buffer: the point
+count is sealed when the glyph's points are all in, and the arrays are padded
+with nought out to `maxp`'s largest glyph plus its four phantoms, so a point past
+the end reads as memory rather than as absence.
+
+    slope-sweep   990 -> 1,073 of 1,164 cells,  4,316 -> 2,208 wrong pixels
+
+### Where a composite is placed, and where a simple glyph is
+
+The 91 cells left were two shapes, and both were a translation: `â` at
+thirty-one pixels drawn eight columns right of Windows, `Å` at twelve drawn four
+columns left, every pixel of the shape otherwise identical. A whole-pixel shift
+of a whole glyph is the origin, and the origin is the phantom point these
+programs are now naming by accident.
+
+The outline is carried back onto the pen when the program is done, and it is
+carried onto **where the origin phantom finished** -- which is recorded, from
+Times New Roman's right guillemet, whose program shifts the origin a whole pixel
+at some sizes and whose letter is that far out if the move is ignored. Carrying
+every glyph onto where its origin _started_ instead does better on the fabricated
+corpus, 1,754 wrong pixels against 2,212 -- and breaks eight recorded cells. So
+it is not a rule about glyphs.
+
+It is a rule about composites. A composite's components are placed in device
+space as they are assembled, each carrying its own bearing and having the
+composite's put back; by the time the composite's own program runs the outline is
+already where it goes, and its origin phantom is a reference the program may move
+rather than the position the glyph is placed at. A simple glyph has no such
+earlier placement and is carried onto wherever its program leaves the origin.
+
+The reference's own placement is not in the three files here -- they are the
+interpreter, the scan list and the spline, and the placement is in the scaler
+around them -- so this is measured rather than read. What can be said is what
+each reading costs:
+
+| the outline is carried onto                | fabricated cells | wrong pixels | recorded cells |
+| ------------------------------------------ | ---------------- | ------------ | -------------- |
+| where the origin finished                  | 25,965           | 2,212        | all            |
+| where the origin started                   | 25,987           | 1,754        | **eight lost** |
+| started for composites, finished otherwise | **26,029**       | **118**      | all            |
+
+    fabricated   25,882 -> 26,029 of 26,058 cells,  4,320 -> 118 wrong pixels
+
+Twenty-seven `slope-sweep` cells and two of `dot-bearing` are what is left of it.
+
 #### Asking `IP` directly, and being wrong about the answer
 
 An observation of a real letter says where its program put a point and leaves

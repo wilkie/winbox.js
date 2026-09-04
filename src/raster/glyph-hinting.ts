@@ -155,6 +155,7 @@ export class Zone {
   declare touchedX: boolean[];
   declare touchedY: boolean[];
   declare ends: number[];
+  declare count: number | null;
 
   constructor(count = 0) {
     this.x = new Array(count).fill(0);
@@ -167,10 +168,59 @@ export class Zone {
     this.touchedX = new Array(count).fill(false);
     this.touchedY = new Array(count).fill(false);
     this.ends = [];
+
+    /* How many points this zone has, which is not the same as how many the
+     * arrays below have come to hold.
+     *
+     * A glyph program is free to name a point that does not exist, and the
+     * reference interpreter does not stop it: every `CHECK_POINT` in it is
+     * inside `FSCFG_DEBUG` and compiled out of anything shipped. What it does
+     * instead is what C does -- it writes past the end of the element's point
+     * array, into memory that is not part of the outline, and nothing ever
+     * reads it back as a point. The outline drawn is the points the glyph
+     * declared, and the phantom points are the four at the end of those.
+     *
+     * Arrays here grow instead of overflowing, which is safer in every way but
+     * one: it moves the end. The advance and the pen are read as `length - 3`
+     * and `length - 4`, so one write to a point past the last is enough to make
+     * a glyph's own origin come out of somewhere else -- and the glyph lands in
+     * a column of its own. So the count is fixed when the zone is finished and
+     * the arrays are allowed to grow behind it, which is as close to writing
+     * past the end as this can get.
+     */
+    this.count = count > 0 ? count : null;
+  }
+
+  /**
+   * Fixes the point count, once every point the glyph has is in, and pads the
+   * arrays out to the buffer the scaler would have allocated.
+   *
+   * The padding is what makes a point past the end behave like memory rather
+   * than like a hole. A program that names one gets a number -- nought, which
+   * is what the buffer holds where no outline has been written into it -- and
+   * writes what it likes back there without any of it reaching the glyph. Left
+   * as holes, the same read is `undefined`, and one `undefined` in an
+   * arithmetic instruction turns a real point into `NaN` and takes the whole
+   * outline with it.
+   */
+  seal(capacity = 0) {
+    this.count = this.x.length;
+
+    while (this.x.length < capacity) {
+      this.x.push(0);
+      this.y.push(0);
+      this.originalX.push(0);
+      this.originalY.push(0);
+      this.unscaledX.push(0);
+      this.unscaledY.push(0);
+      this.onCurve.push(false);
+      this.touchedX.push(false);
+      this.touchedY.push(false);
+    }
   }
 
   get length() {
-    return this.x.length;
+    return this.count ?? this.x.length;
   }
 }
 
@@ -690,6 +740,8 @@ export class Hinter {
       zone.unscaledY = zone.originalY.slice();
     }
 
+    zone.seal(this.font.maxPoints);
+
     this.zones[1] = zone;
     this.zones[0] = new Zone(this.font.maxTwilight ?? 16);
 
@@ -716,7 +768,7 @@ export class Hinter {
      * them afterwards is the advance, and it is exactly what `hdmx` tabulates,
      * which makes that table a check on this one.
      */
-    const last = zone.x.length;
+    const last = zone.length;
 
     this.advance = Math.round((zone.x[last - 3] - zone.x[last - 4]) / ONE);
 
@@ -751,7 +803,27 @@ export class Hinter {
      * it moved and nowhere else. Its mirror image, the left guillemet, moves
      * the advance phantom instead and was right all along.
      */
-    const pen = zone.x[zone.x.length - 4];
+    /* A composite is carried onto where its origin phantom *started* instead.
+     *
+     * Its components were placed in device space as they were assembled, each
+     * one carrying its own bearing and having the composite's put back -- see
+     * `compositeInPixels`. So by the time the composite's own program runs, the
+     * outline is already where it goes, and the origin phantom is a reference
+     * the program may move rather than the position the glyph is placed at.
+     *
+     * **Measured, and the two halves refuse each other.** `slope-sweep` cuts
+     * base letters down to four points and leaves the accented composites built
+     * on them alone, so their programs -- written for the points the base used
+     * to have -- name the phantoms instead, and a composite whose origin phantom
+     * has been moved is exactly the case this decides. Carrying every glyph onto
+     * where its origin finished puts the fabricated corpus at 25,965 of 26,058
+     * cells and 2,212 wrong pixels. Carrying every glyph onto where its origin
+     * started does better there -- 25,987 and 1,754 -- and **breaks eight
+     * recorded cells**, the guillemets above, which is what says it is not a
+     * rule about glyphs in general. Splitting it puts the corpus at **26,029 of
+     * 26,058 and 118 wrong pixels** with every recorded cell still standing.
+     */
+    const pen = composite ? origin : zone.x[zone.length - 4];
 
     let index = 0;
 

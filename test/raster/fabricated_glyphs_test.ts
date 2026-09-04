@@ -140,8 +140,8 @@ describe('the fabricated glyph recordings', () => {
    * -- see the closing sections of `FONTS.md` 9, which read over a thousand of
    * their boxes out of GDI's own working memory.
    */
-  const EXACT = 25882;
-  const WRONG = 4320;
+  const EXACT = 26029;
+  const WRONG = 118;
 
   /* The one place an unhinted outline is drawn differently.
    *

@@ -1061,6 +1061,24 @@ export class TrueTypeFont {
     return this._cmap;
   }
 
+  /**
+   * How many points the scaler's own point buffer holds.
+   *
+   * The reference allocates one buffer per glyph out of `maxp`, big enough for
+   * the largest glyph in the font and its four phantoms, and the outline being
+   * fitted sits at the front of it. Nothing bounds a program to the outline:
+   * every `CHECK_POINT` in the interpreter is inside `FSCFG_DEBUG` and compiled
+   * out of anything shipped, so an instruction naming a point the glyph does
+   * not have reaches the rest of the buffer instead. See `Zone`.
+   */
+  get maxPoints() {
+    if (!this.has('maxp') || this._tables['maxp'].length < 12) {
+      return 0;
+    }
+
+    return Math.max(this.unsigned('maxp', 6), this.unsigned('maxp', 10)) + 4;
+  }
+
   /** How many points the twilight zone holds, which the hinting programs use. */
   get maxTwilight() {
     return this.has('maxp') && this._tables['maxp'].length >= 18 ? this.unsigned('maxp', 16) : 16;
