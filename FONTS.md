@@ -4000,6 +4000,43 @@ that differ are all at a fifteen-per-em cell height of twenty-one, which is a
 size Symbol answers with a strike**, where the residue is not a box at all. The
 cell in question came back `4,5` both times.
 
+#### The instrument cannot see what the box was made of
+
+There was one thing left to try on it: widen the residue window and look for the
+number the box came from. The probe captures 128 bytes around the box because
+that is all it needs once the box is found; the frame is 2,446 bytes deep, and
+the scaled coordinates that feed a box have to be somewhere.
+
+They are not. Recorded at that one cell height with the window opened to the
+whole frame -- 2,240 bytes -- and diffed between `y`, whose box is the rule's,
+and `1`, whose box is not, **twelve bytes differ in the entire frame**:
+
+- the box, in four copies, at `-0x24a`, `-0x24e`, `-0x246` and `-0x263`
+- a word at `-0x268` that steps by seven on every cell of the sweep whatever the
+  bearing, so it is a counter and not geometry
+- the character being drawn, at `-0x20d`, and the one drawn before it at `-0x946`
+- three shallow bytes -- `-0x194`, `-0x108`, `-0xda` -- which move with the
+  column the ink lands in, so they are downstream of the box
+
+**No sixty-fourth of a coordinate differs anywhere.** The bearing is 160 units
+for one and 200 for the other, which is 30 and 37.5 sixty-fourths, and neither
+number nor any difference of them appears in the frame. So the box is not
+computed here: it arrives already made, out of the scaler's own buffers, which
+are on the heap and which this probe cannot see. The residue reads the deepest
+thing it can reach and the answer is upstream of it.
+
+And the arithmetic says no rounding gets there anyway. Scaling with a 16.16
+factor -- `round(6 * 64 * 65536 / 2048)` is 12,288 exactly -- puts `xMin` at 47
+truncated or 48 rounded and the bearing at 37 or 38, so the left edge is between
+212 and 214 sixty-fourths whichever way each is taken. The box says at least 225.
+**Twelve sixty-fourths is not reachable from `pen + bearing + xMin` by any
+rounding of either term**, so whatever GDI did for this one cell, it did not do
+by that sum.
+
+That is where it stops. The box is recorded, it is reproducible, it is a column
+right of where the rule that fits the other 527 puts it, and the instrument that
+found the rule cannot see far enough to say why.
+
 ### And the last of `slope-sweep` is residue
 
 The one `slope-sweep` cell is `å` at thirty-one pixels, where Windows draws a
