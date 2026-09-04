@@ -3921,9 +3921,59 @@ before this one can change what this one looks like -- true of the reference and
 of anything faithful to it, and reachable only by a program that reads past its
 own outline, which is to say only by a font somebody has cut down.
 
-Three cells are what is left: one of `slope-sweep` at five wrong pixels, and the
-two `dot-bearing` cells at four, which are a different question -- a dot placed
-at a bearing, at the one size where the two disagree.
+Three cells are what is left, and they are two questions.
+
+### The dot at the bearing is a box, and the box is recorded
+
+The two `dot-bearing` cells are one dot: `'1'` at an eight pixel cell, plain and
+emboldened, which is the plain cell and its smear. Windows draws it in column 4
+and this draws it in column 3.
+
+It is not a dropout. Traced, the run is an ordinary one -- `row=4 on=3 off=4`,
+one column wide -- so nothing here is being rescued, and both pictures are simply
+the box each side computed. **And the box is recorded.** The stack probe was run
+against these fabrications, so GDI's own left and right for this exact cell are
+on disk: `4,5`, where this makes `3,4`.
+
+Which turns the question into a clean one, because the recording has 528 upright
+boxes across the nine dot instruments to test a rule against. Scored against all
+of them, with each coordinate rounded to a sixty-fourth as the scaler rounds it:
+
+| the bearing is carried as  | boxes wrong of 528 |
+| -------------------------- | ------------------ |
+| sixty-fourths, a half down | **1**              |
+| sixty-fourths, a half up   | 2                  |
+| whole pixels               | 38                 |
+
+So the rule in `Surface` is right, and right by a wide margin -- the whole pixel
+reading, which is what the slant uses and what this one cell would want, is
+refused thirty-eight times. The half is not the discriminator either: **39 of the
+528 are exact halves and 38 of them agree**, so the one that does not is not
+being decided by its tie.
+
+Nor can any rule of this shape reach it. The dot's own numbers at six pixels per
+em are a bearing of 37.5 sixty-fourths and an `xMin` of 47.625, so the left edge
+is 128 + 37 + 48 = 213 sixty-fourths; GDI's box says its left edge was at least 225. **Twelve sixty-fourths is a fifth of a pixel, and there is no quantity in
+the glyph that size** -- not the tie, worth one; not the coordinate rounding,
+worth one; only a whole pixel is bigger, and a whole pixel is what the other 527
+refuse.
+
+So it stands as recorded and unexplained: one box in 528 that GDI puts a column
+right of where its own rule puts every other. It is written here rather than
+fitted, because a rule that reached it would have to be a rule about one cell.
+
+### And the last of `slope-sweep` is residue
+
+The one `slope-sweep` cell is `å` at thirty-one pixels, where Windows draws a
+mark two columns wide beside the stem that this merges into it. It is a contour
+its program moved to somewhere it read past its own outline, so what it comes to
+depends on what the point buffer held -- and the corpus already says how much:
+clearing the buffer instead of keeping it costs 26 cells and 109 pixels, of which
+this is one that keeping it does not recover. Reproducing it exactly means
+reproducing the order and the contents of a scratch buffer in a scaler nobody
+has the placement code for. It is left as the last of that, at five pixels.
+
+    fabricated   26,055 of 26,058 cells,  9 wrong pixels
 
 #### Asking `IP` directly, and being wrong about the answer
 
