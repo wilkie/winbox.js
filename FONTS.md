@@ -3962,6 +3962,44 @@ So it stands as recorded and unexplained: one box in 528 that GDI puts a column
 right of where its own rule puts every other. It is written here rather than
 fitted, because a rule that reached it would have to be a rule about one cell.
 
+#### Four more ways it is not, and the recording holds
+
+The first scoring of those carry rules was done from unrounded coordinates and
+its numbers were wrong; redone the way `place` actually rounds, against all 528:
+
+| the bearing is carried as         | boxes wrong of 528 |
+| --------------------------------- | ------------------ |
+| sixty-fourths, a half down        | **1**              |
+| sixty-fourths, a half up          | 2                  |
+| `MulDiv`, a half away from nought | 2                  |
+| scaled by the **cell height**     | 36                 |
+
+The cell height was worth re-testing because it is the one quantity that would
+reach this cell -- at eight pixels it carries 200 units to 50 sixty-fourths
+instead of 37, which is enough -- and it costs 36 boxes elsewhere.
+
+**And it is not the size either.** At seven pixels per em the box for this cell
+comes out `4,5` exactly, and all eleven of the eight-pixel boxes come out right,
+because ten of them cannot tell six per em from seven. But Windows says what size
+it used: `CreateFont` at a cell of eight reports `height=7, internal=1` for
+Symbol, which is six. So the agreement at seven is a coincidence of a sub-pixel
+square, not a size this was drawn at.
+
+**Nor is it the bearing's value.** `dot-bearing`'s `j` at a fifteen pixel cell
+has a bearing of exactly the same 37.5 sixty-fourths, and there the rule's box is
+the recorded one. The same scaled bearing behaves at one size and not at the
+other.
+
+**Nor is the recording wrong.** The residue was re-read word by word around the
+box for `y`, `m` and `1` at that size: the stack pointer is the same, the frame
+is the same, every word within fifty of the box is the same, and only the two box
+words and the one beside them move -- 3, 4 for the first two and 4, 5 for the
+last. And the whole instrument was fabricated and recorded again from scratch:
+**594 cells in common with the first recording, 583 identical, and the eleven
+that differ are all at a fifteen-per-em cell height of twenty-one, which is a
+size Symbol answers with a strike**, where the residue is not a box at all. The
+cell in question came back `4,5` both times.
+
 ### And the last of `slope-sweep` is residue
 
 The one `slope-sweep` cell is `å` at thirty-one pixels, where Windows draws a
