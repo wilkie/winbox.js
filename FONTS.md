@@ -2792,6 +2792,35 @@ Twenty-seven records. The plotter group, which stood at forty-one when this
 file first counted it, is **empty**: every one of the twenty-eight records the
 corpus still disagrees on is Symbol.
 
+#### What the last twenty-eight are, and three readings refused
+
+All twenty-eight are Symbol, in four groups, and this round tried the obvious
+reading of each and wrote down what it cost:
+
+- **Fifteen at eight pixels** -- eight upright and the same seven emboldened --
+  are the stub contradiction above. Nothing new to try there short of the
+  shipped continuation test.
+- **Four bold at ten pixels** (`A`, `B`, `K`, `j`) are exceptions to the byte
+  rule: their boxes end at columns 6 and 7, which the rule lets the smear reach
+  and Windows does not. They join mu at twenty-four as the rule's five
+  exceptions in 132. Clipping the smear to the box was already refused (786
+  cells); clipping the _strike_ faces' smear to their stored width, which the
+  same four cells would suggest if they were strikes, costs **349 records**
+  across every bitmap face -- the smear into the extra column is the rule for
+  strikes, not the exception.
+- **Seven italic**, scattered. Three (`W` and `1` at twenty-four, `y` at
+  twenty) lack their rightmost pixel; building the italic box's right edge from
+  the sheared upper corner of the bounding box, rather than from the outline's
+  points, changes nothing at all -- not one record, not one cell -- so it is
+  not that. Alpha at fifteen is a whole column left of Windows with a bearing of
+  exactly 31.5 sixty-fourths, and rounding that bearing the other way (plain
+  round to a pixel with no 26.6 step) leaves the record disagreeing and costs 35
+  fabricated cells, so it is not that either.
+- **Two more bold**, mu at twenty-four (above) and one at ten.
+
+  glyphs 5,954 of 5,982 99.5%
+  font 5,047 of 5,057 99.8%
+
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
 changing the code outright and re-running the ratchet.)
