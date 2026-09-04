@@ -4033,9 +4033,53 @@ truncated or 48 rounded and the bearing at 37 or 38, so the left edge is between
 rounding of either term**, so whatever GDI did for this one cell, it did not do
 by that sum.
 
-That is where it stops. The box is recorded, it is reproducible, it is a column
-right of where the rule that fits the other 527 puts it, and the instrument that
-found the rule cannot see far enough to say why.
+That is where the _stack_ stops. The box is recorded, it is reproducible, it is a
+column right of where the rule that fits the other 527 puts it, and the residue
+cannot see far enough to say why -- because what it is looking for is not on the
+stack.
+
+### `heap`: reading the scaler's own memory
+
+If the numbers are on the heap, then read the heap. `TOOLHELP` ships with
+Windows 3.1 and has exactly the three things that takes: `GlobalFirst` and
+`GlobalNext` walk every block in the system and say who owns each,
+`GlobalHandleToSel` turns a handle into a selector, and **`MemoryRead` reads
+through that selector without the program ever holding a pointer it might not be
+allowed to hold.** Nothing in the probe writes.
+
+The method is the stack probe's, one storey down. A block whose contents are the
+same after drawing one character as after drawing another holds nothing about the
+glyph. So: draw one, hash every block; draw the other, hash again; and write out
+in full the blocks whose hash moved. What does not move is left out, which is
+most of the heap.
+
+**The census has to be of everything.** The first one filtered to blocks GDI
+owns and found only the bitmap being drawn into -- because a buffer allocated for
+a call and freed at the end of it belongs to nobody afterwards while still
+holding what it held. Walking all 225 blocks settles that: the buffer is not a
+freed block either.
+
+What it finds, between the two cells of the anomaly:
+
+| block          | size       | what it is                                               | bytes differing |
+| -------------- | ---------- | -------------------------------------------------------- | --------------- |
+| `0b4f`         | 192        | the destination bitmap                                   | **1**           |
+| `0857`         | 16,384     | GDI's, and the only thing here that could be the outline | **229**         |
+| `085f`         | 12,672     | GDI's `DGROUP`                                           | 3               |
+| `0b97`, `0baf` | 160, 3,552 | GDI's, and unmoved between these two cells               | 0               |
+
+The bitmap is the answer being checked rather than the question: one byte at
+`+0x30`, `ef` where the ten cells whose box is `3,4` put their pixel in column 3
+and `f7` where this one puts it in column 4. The `DGROUP`'s three bytes each
+count down by one and are counters. **The 16K block is what the stack could not
+reach**, and inside it, where most of the differences are, sit three words that
+move by **-8** where the bearing between the two cells moves by 7.5
+sixty-fourths.
+
+That is as far as this goes here. Naming the fields of a sixteen kilobyte
+structure is its own chase and it is not this one's. What matters is that the
+chase is now possible: **the scaler's working memory is readable, block by block
+and byte by byte, and the thing that decides this box is in it.**
 
 ### And the last of `slope-sweep` is residue
 

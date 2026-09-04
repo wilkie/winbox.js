@@ -127,10 +127,20 @@ async function build(name) {
 
   /* `system windows` brings the library paths and the NE output format with
    * it, so there is nothing to spell out here.
+   *
+   * `TOOLHELP` is not among the libraries it brings, and one probe needs it:
+   * the heap census walks the global heap and reads other modules' blocks, and
+   * those four entry points live nowhere else. Naming the library for every
+   * probe would add an import to programs that make no use of it, so it is
+   * added only for the source that mentions it.
    */
+  const extra = (await readFile(source, 'latin1')).includes('<toolhelp.h>')
+    ? ['library', 'toolhelp']
+    : [];
+
   await run(
     'wlink',
-    ['system', 'windows', 'option', 'quiet', 'name', executable, 'file', object],
+    ['system', 'windows', 'option', 'quiet', 'name', executable, 'file', object, ...extra],
     BUILD
   );
 
