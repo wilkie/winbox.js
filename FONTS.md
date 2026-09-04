@@ -4552,6 +4552,25 @@ convex quadrilateral: at any row it is one run. Windows draws two, with a gap at
 column 7 and ink out at 8 and 9. So GDI has a loop there that this does not --
 its moved ring landed in the middle of the letter where ours landed above it.
 
+#### The buffer's shape, confirmed from its own layout
+
+One thing did fall out of looking again, and it is the model itself. In the
+scaler's segment the dot's `x` array sits at `+0x227c` and its `y` array at
+`+0x2352` -- **214 bytes apart, which is 107 words.** The fabricated Symbol's
+`maxp` says `maxPoints` is 103.
+
+    107 = 103 + 4
+
+So the arrays are **fixed at `maxPoints` plus the four phantoms and laid end to
+end**, which is exactly the capacity `Zone.seal` pads to and exactly the reason
+a program that names a point past the outline reads the last glyph's value at
+that index rather than nonsense. The model was measured into place by counting
+cells; here it is in GDI's own layout, to the word.
+
+That is also why the sequence matters and why it lines up: each composite record
+fits its ring component and then the composite -- 28 points and then 32 -- so the
+tail beyond 32 is whatever the record before it left, in both.
+
 That is the whole of the last cell. Both sides moved the same loop with the same
 instructions for the same reason; they read different numbers out of the buffer
 past the outline and put it in different places. Nothing about the interpreter,
