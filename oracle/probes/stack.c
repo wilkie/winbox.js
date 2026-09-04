@@ -252,13 +252,26 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      * -- by the upright rule, which holds for an outline and has no reason to
      * hold for a strike.
      */
+    /* Courier New too, at the sizes `cour-stubs` was measured at, for the
+     * scan kind: the word beside the box that Symbol always shows as 2. */
+    probeNote("Courier New, for the scan kind beside the box");
+    {
+        static const int SIZES[] = { 8, 10, 12, 13, 16, 20 };
+        int size;
+        for (size = 0; size < sizeof(SIZES) / sizeof(SIZES[0]); size++) {
+            probeCell("Courier New", SIZES[size], FW_NORMAL, 0, 'l');
+            probeCell("Courier New", SIZES[size], FW_NORMAL, 0, 'i');
+            probeCell("Courier New", SIZES[size], FW_NORMAL, 0, 'A');
+        }
+    }
+
     probeNote("the eleven bearings, at every size, slanted and upright");
     {
         static const int HEIGHTS[] = {
             8, 9, 10, 11, 12, 14, 15, 17, 18, 19,
             20, 21, 22, 24, 26, 28, 32, 40
         };
-        static const char CHARS[] = "ABKMWagjmy1";
+        static const char CHARS[] = "ABKMWagjmy1.";
 
         int size;
         int index;

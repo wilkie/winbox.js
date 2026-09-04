@@ -2821,6 +2821,54 @@ reading of each and wrote down what it cost:
   glyphs 5,954 of 5,982 99.5%
   font 5,047 of 5,057 99.8%
 
+#### Reading the shipped `LookForDropouts`
+
+With nothing left to measure, the eight-pixel group came down to reading the
+continuation test out of segment 42, which this round did, from `0x0978` down
+through both continuation sums and the crossings counter. What it found is
+mostly a confirmation, and one thing that is not.
+
+**The shipped code is the reference, branch for branch.** The horizontal pass
+gates the stub check on a flag, then requires both sums to reach two: above,
+`HorizCrossings(x, y+1) + VertCrossings(x-1, y+1) + VertCrossings(x, y+1)`;
+below, the same one row down. The vertical pass reuses the _same two functions_
+with the list bases swapped and the roles of row and column exchanged, and the
+terms that come out are the reference's vertical test exactly -- right side
+`VertCrossings(x+1, y) + HorizCrossings(x+1, y-1) + HorizCrossings(x+1, y)`,
+left side likewise at `x-1` and `x`. The box and band bounds the reference keeps
+inside the counters are hoisted into the callers as guards, and each sum stops
+early once it reaches two. The one difference is the counter itself, at
+`0x0db4`: it returns whether an `on` entry matches plus whether an `off` entry
+matches -- 0, 1 or 2 -- where the reference counts every match. For a test of
+"at least two" that can only matter when one list holds two matches and the
+other none, which no shape here produces.
+
+**So the period is not saved by the continuation test.** Whatever draws it, it
+is not a difference in how the check is written.
+
+**The flag is the scan kind's high word.** `LookForDropouts` takes the kind in
+`DX:AX` from the driver's own stack arguments `[bp+8]:[bp+6]`, keeps `DX & 1` as
+the stub flag and discards `AX`; and the driver switches dropout control off
+entirely when the whole long is zero. The reference's `itrp_QueryScanInfo`
+splits `scanControl` the same way -- `SCANTYPE` in the high word, `SCANCTRL` in
+the low -- so the flag is bit 0 of `SCANTYPE`, which every installed face sets
+to 1. That says the stub check is _on_ for Symbol, and the period refused, and
+Windows draws it anyway. The contradiction is now confined to a value rather
+than to code: either the long GDI passes is not `scanControl`, or something
+before `LookForDropouts` puts the period's pixel down.
+
+**The word beside the box is not the kind.** The constant 2 that sits between
+the two box words in every dump is 2 for Courier New as well -- recorded through
+the probe for the first time here, at the sizes `cour-stubs` was measured at --
+so it cannot be what tells the two faces apart, and nothing in the deep residue
+does: no word small enough to be a flag differs between Symbol and Courier
+anywhere in it. The flag's own frame does not survive to be read; it is
+overwritten between `LookForDropouts` returning and the probe's capture, and
+only the `STATE` copies of the box live long enough.
+
+That is where the eight records rest: the test is the reference's, the flag is
+unread, and the next instrument would have to catch the value _during_ the call.
+
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
 changing the code outright and re-running the ratchet.)
