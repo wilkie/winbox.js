@@ -454,7 +454,17 @@ export class Surface {
        * the period's 145 units at seven per em -- 31.7 sixty-fourths -- across
        * the half and into the next column, where Windows draws it.
        */
-      const shift = Math.round((outline.bearingShift(glyph) * ppem * 64) / outline.unitsPerEm);
+      /* The bearing in sixty-fourths, with a half going *down*.
+       *
+       * Two ties decide the direction and they pull opposite ways: alpha at
+       * twelve per em has a bearing of exactly 31.5 sixty-fourths and Windows
+       * carries it as nothing, while the period at seven per em has 31.72 and
+       * is carried a whole pixel. Rounding the half up gives alpha 32, then a
+       * half pixel, then one; truncating gives the period 31 and no pixel.
+       * Only a half rounded down fits both. It is the one tie in the corpus,
+       * and it is written down as that.
+       */
+      const shift = Math.ceil((outline.bearingShift(glyph) * ppem * 64) / outline.unitsPerEm - 0.5);
 
       /* An upright glyph that has no program of its own comes back from
        * `hintedOutline` exactly as stored, and so has not been carried across
