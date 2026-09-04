@@ -2771,6 +2771,26 @@ next segment is also nothing, that reasoning fails. Made to draw nothing:
 
 Fourteen records, and the plotter group falls from thirty-two to eighteen.
 
+And the other half of the group was the same rule from the other side. Every
+remaining plotter difference was one extra pixel of ours at the _start_ of a
+run's final segment -- the hook of a `j`, the tail of a `y`, the foot of an `a`
+-- and the device points say why: that final segment is short, and behind it
+sit several segments of no length. The polyline routine drew `steps + 1` pixels
+for every segment but the last, on the reasoning that the next segment starts
+at the endpoint and draws it anyway. When the next segment goes nowhere it
+draws nothing, and `LineTo` never drew that endpoint in the first place: every
+segment draws from its start up to but not including its end, and the shared
+point belongs to whichever segment leaves it.
+
+Made so -- `stop = steps` for every segment, with a caller that wants the very
+last point getting it from the last segment alone:
+
+    glyphs   5,927 -> 5,954 of 5,982    99.1% -> 99.5%
+    lines    248 of 248, unchanged;  text  55 of 55, unchanged
+
+Twenty-seven records. The plotter group, which stood at forty-one when this
+file first counted it, is three.
+
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
 changing the code outright and re-running the ratchet.)

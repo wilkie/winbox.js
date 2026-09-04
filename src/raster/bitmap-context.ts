@@ -203,8 +203,24 @@ export class BitmapContext {
       const acrossX = Math.abs(dx) >= Math.abs(dy);
       const steps = acrossX ? Math.abs(dx) : Math.abs(dy);
 
+      /* Every segment draws its pixels from the start up to but not including
+       * the end -- `LineTo`'s rule, for every `LineTo` in the chain and not
+       * only the last. The endpoint of one segment is the start of the next,
+       * which draws it if it goes anywhere; a segment that goes nowhere draws
+       * nothing, and then the shared point is never drawn at all.
+       *
+       * Drawing `steps + 1` for the segments before the last looked like the
+       * same thing, and is the same thing whenever every segment has length.
+       * The plotter faces are where it is not: Roman's `j` ends its hook with
+       * one short segment and five of no length behind it, and Windows draws
+       * the short segment's start and nothing more, where the extra pixel put
+       * its end there too. Fifteen records of the corpus were that pixel.
+       *
+       * A caller that wants the final point drawn as well -- `excludeLast`
+       * off -- gets it from the last segment alone.
+       */
       const last = index === this._path.length - 1;
-      const stop = last && this.excludeLast ? steps : steps + 1;
+      const stop = last && !this.excludeLast ? steps + 1 : steps;
 
       /* A segment from a point to itself draws nothing.
        *
