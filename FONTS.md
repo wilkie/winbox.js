@@ -4376,7 +4376,54 @@ probe.
 
 What the disassembly did settle is worth the trip: the box's rounding and the
 fact that it is a minimum over points rather than corners were both _fitted_ from
-recordings, and both are now read from instructions. The one cell that disagrees
+recordings, and both are now read from instructions.
+
+### `dot-fine`, and the boundary was in the wrong place
+
+A breakpoint samples one point; a sweep finds a boundary. Before building the
+first, the second was cheap: `dot-fine` is `dot-bearing`'s square again with the
+bearing stepped **four font units at a time from 414 to 454**, which is the gap
+the coarse sweep left either side of the cell that disagrees. Four units is a
+fortieth of a pixel at six per em, finer than the sixty-fourth the box rounds on,
+so no two of them can round alike.
+
+    shift   scaled   carried   GDI's box
+      160   30.000        30   3,4
+      164   30.750        31   3,4
+      168   31.500        31   3,4
+      172   32.250        32   **4,5**
+      176   33.000        33   4,5
+      ...
+      200   37.500        37   4,5
+
+**The box steps when the carried bearing reaches 32 sixty-fourths, which is half
+a pixel.** It does not wait for the sum to cross a column, which at this size
+would take 49. The rule in `Surface` predicts `3,4` for all eleven of these; GDI
+gives `4,5` for eight.
+
+So the anomaly was never one cell. Scored against all 736 recorded upright boxes
+-- the 528 plus this sweep -- the implemented rule is wrong about 25, of which
+nine are the unrewritten `.` that this predictor has no business being right
+about, and **the other sixteen are all at an eight pixel cell**: the one already
+known and eight of the nine new ones either side of it. Every other size still
+fits.
+
+    the bearing carried in       boxes wrong of 736
+    sixty-fourths (implemented)  25
+    whole pixels, a half down    83
+    whole pixels, a half up      88
+
+Which is not a licence to take the whole-pixel reading -- it is three times
+worse. What the sweep has done is turn one unexplained cell into a **bracketed
+boundary**: at six pixels per em GDI's box moves when the carry crosses 32, and
+between 31 and 32 there is now a recorded cell on each side. The rule that
+explains that, and still fits the other 711, is the thing to find, and it is a
+much better-posed question than the one this section started with.
+
+That is also why the debugger was not built. A mechanism that stops the machine
+mid-call would have read one set of coordinates for one cell; the sweep bracketed
+the rule's failure to a single sixty-fourth at one size, for the cost of a
+fabrication and one recording. The one cell that disagrees
 needs a minimum of 225 sixty-fourths where the outline's `xMin` of 48, origin of
 -37 and pen of 128 make 213, so whatever the transform does, it is not those
 three added -- and that is as far as reading memory can take it. What the recordings have settled is the shape of it: the scaler

@@ -4710,6 +4710,11 @@ export const FABRICATIONS = [
     describe: 'one outline, eleven side bearings, to see how the bearing enters the slanted box',
   }),
 
+  dotFine('dot-fine', {
+    describe:
+      'the same outline again, eleven bearings four units apart, across where the box steps',
+  }),
+
   readout('times-cvt0-plain', {
     index: 0,
     bases: [0, 0, 0, 0, 0, 0],
@@ -5327,6 +5332,62 @@ function dotBearing(name, { describe, source = 'SYMBOL.TTF' }) {
 
         // Deliberately not the edge, which is the whole point.
         setBearing(bytes, glyph, X0 + DELTAS[index]);
+      }
+
+      return bytes;
+    },
+  };
+}
+
+/*
+ * `dot-bearing` at four units to the step, across the one place its box moves.
+ *
+ * At an eight pixel cell that sweep runs the bearing from 194 to 454 font units
+ * and GDI's box is the same column for ten of the eleven and one column further
+ * for the last. Every rule that fits the other 527 boxes of the whole set puts
+ * that last one where the other ten are, so what is wanted is not another cell
+ * but the *boundary*: the bearing at which the box actually steps. Eleven values
+ * four units apart from 414 to 454 put nine new cells inside the gap the coarse
+ * sweep left, and a threshold that lands between two of them is a number rather
+ * than a mystery.
+ *
+ * Four units is a fortieth of a pixel at six per em, which is finer than the
+ * sixty-fourth the box is rounded on -- so no two of these can round alike by
+ * accident, and the step has to fall between a named pair.
+ */
+function dotFine(name, { describe, source = 'SYMBOL.TTF' }) {
+  const SIDE = 100;
+  // The letters the glyph probe asks Symbol for; see `dotPhase`.
+  const RECORDED = 'ABKMWagjmy1';
+
+  const X0 = 254;
+  const Y0 = 500;
+
+  return {
+    name,
+    from: source,
+    as: source,
+
+    describe,
+
+    edit: (bytes) => {
+      for (let index = 0; index < RECORDED.length; index++) {
+        const glyph = glyphFor(bytes, 0xf000 + RECORDED.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: X0 + SIDE + 400,
+          height: Y0 + SIDE,
+          points: [
+            [X0, Y0],
+            [X0, Y0 + SIDE],
+            [X0 + SIDE, Y0 + SIDE],
+            [X0 + SIDE, Y0],
+          ],
+          program: [],
+        });
+
+        // 414 to 454, which is where the coarse sweep's box steps.
+        setBearing(bytes, glyph, X0 + 160 + index * 4);
       }
 
       return bytes;
