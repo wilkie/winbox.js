@@ -489,13 +489,73 @@ export class Hinter {
 
     const whole = Hinter.toward(bearing, ONE);
 
+    /* When the font has switched its instructions off, the bearing is carried
+
+     * in whole pixels.
+
+     *
+
+     * With `INSTCTRL` inhibiting grid-fitting -- Symbol below seven pixels per
+
+     * em, Courier New below nine -- no program runs, and the outline is placed
+
+     * with its scaled side bearing **rounded to a pixel** rather than to the
+
+     * sixty-fourth it is carried to everywhere else. `dot-bearing` showed it
+
+     * first and it went unread: at every size from nine to thirty-three per em
+
+     * the box GDI hands the scan converter moves with the bearing to the
+
+     * sixty-fourth, and at six per em, alone, it moves in whole pixels. Six
+
+     * per em is where Symbol's prep says `MPPEM LT 7 INSTCTRL`.
+
+     *
+
+     * The period at eight pixels is why it mattered. Its bearing of 145 units
+
+     * is 0.42 of a pixel there, and carried exactly it puts the dot at
+
+     * 2.42..3.08, whose one scanline crosses it at 2.56 and 2.94 -- both
+
+     * rounding to 3, a run of no length, a dropout that the stub check refuses
+
+     * because nothing continues above or below a period. Carried as nothing,
+
+     * the dot sits at 2.00..2.66 and the same scanline crosses it at 2.14 and
+
+     * 2.52: a run of one pixel, no rescue needed, and the pixel Windows draws.
+
+     * Every other letter Symbol had wrong at eight pixels was the same tenth of
+
+     * a pixel deciding a different crossing.
+
+     *
+
+     * **Measured**, not fitted: fifteen records of the corpus and thirty-four
+
+     * fabricated cells, with the hinting fixture untouched at 1,442 of 1,442 --
+
+     * and the alternatives refused first. Running the programs anyway costs
+
+     * seven records and breaks the four letters that agreed; rounding the
+
+     * bearing on the raw path, which an inhibited glyph never takes, changes
+
+     * nothing here and costs eighteen cells elsewhere.
+
+     */
+
+    const carried = this.gridFit ? bearing : Math.round(bearing / ONE) * ONE;
+
     for (const contour of outline) {
       for (const point of contour) {
         /* A composite arrives already in pixels, because it was assembled in
          * pixels: its components were scaled and then put together, so there
          * is no design-unit outline of the whole to scale here.
          */
-        zone.x.push((composite ? point.x : this.toPixels(point.x)) + bearing - whole);
+        zone.x.push((composite ? point.x : this.toPixels(point.x)) + carried - whole);
         zone.y.push(composite ? point.y : this.toPixels(point.y));
         zone.unscaledX.push(point.x + shift);
         zone.unscaledY.push(point.y);

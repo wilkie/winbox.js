@@ -2869,6 +2869,48 @@ only the `STATE` copies of the box live long enough.
 That is where the eight records rest: the test is the reference's, the flag is
 unread, and the next instrument would have to catch the value _during_ the call.
 
+#### The eight records, found: an inhibited glyph carries its bearing in whole pixels
+
+They were not about the stub test at all. Two experiments settled where they
+were, and both are worth keeping because the obvious reading of each is wrong:
+
+- **Windows honours `INSTCTRL`.** Symbol's prep says `MPPEM LT 7 INSTCTRL` and
+  Courier New's says the same at nine, the identical idiom. Forcing the glyph
+  programs to run at six per em fixes the period and breaks the four letters
+  that agreed; forcing them everywhere costs seven glyph records, four `font`
+  records and two of `hinting`. So the shipped scaler does what the reference
+  does: below the threshold no program runs.
+- **But the period comes out grid-fitted anyway.** With no program to move its
+  points, the only thing that can differ is where the outline is _put_, and
+  `dot-bearing` had already measured that and been read past: at every size
+  from nine to thirty-three per em the box moves with the bearing to the
+  sixty-fourth, and at six per em -- alone -- it moves in **whole pixels**. Six
+  per em is the inhibited size.
+
+So when instructions are off the scaled side bearing is rounded to a pixel
+before the outline is placed. For the period at eight pixels that is 0.42 of a
+pixel rounded to nothing: the dot moves from 2.42..3.08 to 2.00..2.66, and its
+one scanline, which crossed it at 2.56 and 2.94 -- a run of no length, a
+dropout, a stub refused -- now crosses at 2.14 and 2.52: a run of one pixel, no
+rescue needed, and the pixel Windows draws. Every other letter Symbol had wrong
+at eight pixels was the same tenth of a pixel deciding a different crossing.
+
+Put where it belongs, in the hinter's own carry for a glyph whose program has
+been inhibited:
+
+    glyphs    5,954 -> 5,969 of 5,982    99.5% -> 99.8%
+    hinting   1,442 of 1,442, unchanged
+    Symbol at eight pixels: every cell agrees, upright and bold
+
+Fifteen records, and the stub contradiction this section has carried since
+`cour-stubs` loses its fourth form -- which was never a form of it. The other
+two readings were tried and refused first: rounding the bearing on the raw
+outline path, which an inhibited glyph never takes, changes nothing here and
+costs eighteen cells elsewhere; and the whole-pixel carry for the _slanted_
+glyph, found earlier, is now seen to be the same rule from the other side -- an
+italic is drawn from the raw outline with no program run, and its bearing is
+rounded for the same reason.
+
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
 changing the code outright and re-running the ratchet.)
