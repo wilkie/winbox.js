@@ -4497,6 +4497,38 @@ a size where the rule is a different one.**
 What is left of the fabricated corpus is the single `slope-sweep` cell whose
 program reads scratch-buffer residue, and nothing else.
 
+### The last cell, and what the heap probe says about it
+
+The `heap` probe was pointed at it -- the face, the cell height and the two
+characters it compares are now three defines at the top of the source, so it can
+be aimed at whatever a fabrication rewrote. Two things came back.
+
+**The scaler's segment cannot be found by its size.** It was 16 kilobytes for
+Symbol and is not for Times New Roman, so the probe now finds it the way it was
+identified in the first place: the block whose head holds _this program's own
+stack pointer_, which the thunk writes there before it switches. That signature
+is unique and size-independent, and the census reads the head of every block to
+match it.
+
+**And for a glyph this size the dumps are mostly pictures.** Between `ä` and `å`
+at a thirty-one pixel cell, 650 bytes differ over 250 runs, and the long ones are
+rows of a rendered bitmap rather than coordinates: the fitted contours this draws
+-- `0 253 450 197` for the cut base, and the ring's two twelve-point loops -- are
+nowhere in the twelve kilobytes read back. So the arrays that were readable for a
+four point square at six per em are not readable for a composite at
+twenty-seven, and the instrument does not reach this one.
+
+What is certain is the shape of the problem, and it has not changed: the cell is
+inside the residue regime. Clearing the buffer tail instead of carrying it costs
+this instrument 26 cells and 109 wrong pixels -- 1,163 of 1,164 against 1,137 --
+so the model is doing nearly all of the work and the five pixels left are a
+detail of _which_ residue, not of whether there is any.
+
+    fabricated   26,057 of 26,058 cells,  5 wrong pixels
+
+That is one cell of a corpus of twenty-six thousand, in the one place where being
+right means reproducing the contents of a scratch buffer byte for byte.
+
 ### And the last of `slope-sweep` is residue
 
 The one `slope-sweep` cell is `å` at thirty-one pixels, where Windows draws a

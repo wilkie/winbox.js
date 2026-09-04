@@ -31,6 +31,14 @@
 
 #define OUTPUT "C:\\ORACLE\\HEAP.OUT"
 
+/* What this run reads. The two characters are written down as `y` and `1` in the
+ * records whatever they are, because every reader of this fixture compares two
+ * cells and does not care what they were called. */
+#define PROBE_FACE   "Times New Roman"
+#define PROBE_HEIGHT 31
+#define PROBE_ONE    ((char)0xe4)
+#define PROBE_TWO    ((char)0xe5)
+
 /* The same cell every other probe draws into. */
 #define CELL_WIDTH  32
 #define CELL_HEIGHT 32
@@ -47,6 +55,7 @@ static HBITMAP canvas;
 static HGLOBAL blocks[MAX_BLOCKS];
 static DWORD sizes[MAX_BLOCKS];
 static HGLOBAL owners[MAX_BLOCKS];
+static int scalerBlock = -1;
 static HMODULE gdiModule;
 static int found;
 
@@ -248,6 +257,14 @@ static void probeFrame(LPCSTR face, int height, char character)
             }
 
             *out = '\0';
+
+            /* And the one whose head carries this program's own stack pointer is
+             * the scaler's segment, whatever size the loader gave it. Matching
+             * on the size only worked for the font it was first written for. */
+            if ((buffer[0x18 - 0x10] | (buffer[0x19 - 0x10] << 8)) ==
+                (int)(WORD)((DWORD)(char far *)&font >> 16)) {
+                scalerBlock = index;
+            }
 
             wsprintf(probeArgs, "'%c',%d", character, index);
             probe("head", probeArgs, probeResult);
@@ -458,7 +475,7 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     {
         HFONT font = CreateFont(8, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET,
                                 OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
-                                DEFAULT_QUALITY, DEFAULT_PITCH, "Symbol");
+                                DEFAULT_QUALITY, DEFAULT_PITCH, PROBE_FACE);
         HFONT was = (HFONT)SelectObject(memory, font);
 
         TextOut(memory, 2, 0, "Z", 1);
@@ -498,7 +515,7 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      */
     probeNote("the frame and the block together, each on the character's first draw");
     {
-        static const char CHARS[] = "ABKMWagjm";
+        static const char CHARS[] = "";
         int which;
         int index;
         int scaler = -1;
@@ -509,18 +526,32 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
             }
         }
 
-        if (scaler >= 0) {
+        (void)scaler;
+
+        {
             /* The frame and the block for one character together, both from its
              * first draw, so that a pointer found in the frame can be looked up
              * in the block as it stood at that moment. Drawing it again to read
              * the second of them would be reading a blit. */
-            probeFrame("Symbol", 8, 'y');
-            dumpSelector(0x00bc, 'y', 0x4000L);
-            dump(scaler, 'y');
+            /* Two characters of whatever face the recording is pointed at.
+             *
+             * `PROBE_FACE`, `PROBE_HEIGHT` and the two characters are the whole
+             * of what a run varies. A fabrication that rewrites one face wants
+             * its own face read, and the cell that is still wrong is an accented
+             * letter of Times New Roman at a thirty-one pixel cell rather than a
+             * dot of Symbol at eight.
+             */
+            probeFrame(PROBE_FACE, PROBE_HEIGHT, PROBE_ONE);
 
-            probeFrame("Symbol", 8, '1');
-            dumpSelector(0x00bc, '1', 0x4000L);
-            dump(scaler, '1');
+            if (scalerBlock >= 0) {
+                dump(scalerBlock, 'y');
+            }
+
+            probeFrame(PROBE_FACE, PROBE_HEIGHT, PROBE_TWO);
+
+            if (scalerBlock >= 0) {
+                dump(scalerBlock, '1');
+            }
 
             /* And GDI's own data segment, once.
              *
@@ -537,7 +568,7 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
             }
 
             for (which = 0; CHARS[which]; which++) {
-                draw("Symbol", 8, CHARS[which]);
+                draw(PROBE_FACE, PROBE_HEIGHT, CHARS[which]);
 
                 dumpRange(scaler, CHARS[which], 0x1380L, 0x1400L);
                 dumpRange(scaler, CHARS[which], 0x2260L, 0x22a0L);
