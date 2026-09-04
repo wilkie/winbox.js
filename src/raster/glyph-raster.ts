@@ -945,6 +945,9 @@ export function fillWalked(contours, options) {
     }
   }
 
+  /* The box travels out with the pixels, because emboldening needs it. */
+  (pixels as any).box = { left: boxLeft, right: boxRight };
+
   return pixels;
 }
 

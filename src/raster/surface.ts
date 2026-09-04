@@ -562,6 +562,8 @@ export class Surface {
           lean: italic ? Surface.leanOf(ppem) : 0,
         });
 
+        const box = (inked as any).box ?? { left: 0, right: this.width };
+
         const from = Math.max(0, cellTop);
         const to = Math.min(this.height, cellBottom);
 
@@ -570,16 +572,31 @@ export class Surface {
             if (inked[row * this.width + column]) {
               this.context.setPixel(column, row, colour);
 
-              /* Emboldening draws the glyph again a column across, and it is
-               * done here rather than inside the scan converter because the
-               * stack probe says it is not the scan converter's business: the
-               * box GDI hands it for a bold glyph is byte for byte the box it
-               * hands it for a plain one, at all sixteen sizes and all eleven
-               * bearings. Bold does not widen the box, so the smear is not
-               * bounded by it -- and clipping it to the box, which looked
-               * obvious from Symbol's `K` at ten pixels, costs 786 cells.
+              /* Emboldening draws the glyph again a column across.
+               *
+               * It is done here rather than inside the scan converter because
+               * the stack probe says it is not the scan converter's business:
+               * the box GDI hands it for a bold glyph is byte for byte the box
+               * it hands it for a plain one, at every size and bearing. So the
+               * smear is not bounded by the box -- in 102 of 132 cells read
+               * against their boxes the bold ink reaches the column just past
+               * the box's last, and clipping it to the box costs 786 cells.
+               *
+               * **What does bound it is a byte.** In every cell where the bold
+               * ink fails to reach that column, the box's right edge is 8 or
+               * 16: a multiple of eight in device columns, so the column past
+               * it is the first bit of a byte the glyph never touched. And in
+               * no cell where the edge is anything else does it fail. A smear
+               * that is ORed into the destination a byte at a time will do
+               * exactly that: the overhang lands when it falls inside a byte
+               * the glyph already wrote and is dropped when it would need one
+               * more. Worth eight records of the corpus and sixteen cells.
+               *
+               * One cell resists it -- Symbol's mu at twenty-four pixels, whose
+               * lone pixel in row 18 does not smear though its edge is 14 --
+               * and it is left unexplained rather than fitted.
                */
-              if (bold) {
+              if (bold && (column + 1 < box.right || box.right % 8 !== 0)) {
                 this.context.setPixel(column + 1, row, colour);
               }
             }

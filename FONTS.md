@@ -2690,6 +2690,36 @@ is not read; it is measured. The likeliest reason is that the transformed glyph
 is placed by the integer metrics GDI keeps for it rather than by the phantom
 point the hinted path carries -- but that is a guess, and it is marked as one.
 
+#### Bold stops at a byte
+
+With the boxes readable, the twenty bold records could be asked a precise
+question: where does the bold ink stop, relative to the box the scan converter
+was given? Across 132 cells of the real face and the wide squares, read against
+their own boxes:
+
+- in **102**, the bold ink reaches the column just _past_ the box's last --
+  emboldening is not bounded by the box, which is why clipping it there cost
+  786 cells when it was tried;
+- in every cell where it does **not** reach that column, the box's right edge
+  is **8 or 16** -- a multiple of eight in device columns -- and in no cell
+  where the edge is anything else does it fail.
+
+The exceptions that looked like counter-examples were not: at ten pixels Symbol
+answers with its bitmap strike (the fabricated square is blank there), which
+is emboldened by a different mechanism entirely; and the rows where bold grew by
+a column without reaching the box were rows where the plain ink had not filled
+the box either.
+
+So the overhang column is drawn when it falls inside a byte the glyph already
+touched, and dropped when it would need one more -- which is what a smear ORed
+into the destination a byte at a time does. Implemented as exactly that test,
+it is worth **eight records of the corpus and sixteen cells**:
+
+    glyphs   5,905 -> 5,913 of 5,982    98.7% -> 98.8%
+
+One cell resists: Symbol's mu at twenty-four pixels, whose lone pixel in row 18
+does not smear though its edge is 14. Left unexplained.
+
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
 changing the code outright and re-running the ratchet.)
