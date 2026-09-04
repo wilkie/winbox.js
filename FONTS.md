@@ -3629,6 +3629,40 @@ worse or identical:
   instruction move something here: **60 of 60**, and `hdmx` from 5 wrong to 49.
   Decisively not it.
 
+#### The slant's last sixty-fourth, and the tie in the bearing
+
+With the eight-pixel group gone, twelve records remained and seven of them were
+synthesised italic: single pixels, each a crossing sitting on a half. The box
+had already been read to keep its two roundings apart -- the scaled coordinate
+to a sixty-fourth, the shear to a sixty-fourth, then the sum -- and the outline
+was still being sheared in font units and rounded once. To within a
+sixty-fourth that is the same thing, and a sixty-fourth is what a crossing on a
+half decides by. Shearing each point the way the box is sheared:
+
+    glyphs          5,970 -> 5,977 of 5,982    99.8% -> 99.9%
+    fabricated     25,858 -> 25,882 of 26,058
+    slant-angle, slant-baked, slant-width: 288 of 288, no wrong pixels
+
+Every slant instrument is now exact. Rounding the shear term down rather than to
+nearest costs four records, and is refused.
+
+One more record fell to a tie. Alpha at twelve per em has a bearing of exactly
+31.5 sixty-fourths and Windows carries it as nothing; the period at seven per em
+has 31.72 and is carried a whole pixel. A half rounded up gives alpha a pixel it
+does not have; truncation takes the period's away; only a half rounded down fits
+both, and it is the one tie the corpus has.
+
+And the bold exceptions were given one more chance and refused it. The five
+cells where the smear stops short of the column past the box -- four at ten
+pixels, mu at twenty-four -- do not sit on a byte boundary; tabulated against
+the glyph's hinted advance, `R - cell` is zero for escaping and blocked cells
+alike, so the character cell's edge is not the rule either. They stay as the
+byte rule's five exceptions in 132, and Symbol has no ten-pixel strike for them
+to be coming from: its bitmap face holds 13, 16, 19, 21, 27 and 35.
+
+    glyphs   5,977 of 5,982    99.9%
+    font     5,047 of 5,057    99.8%
+
 #### Asking `IP` directly, and being wrong about the answer
 
 An observation of a real letter says where its program put a point and leaves
