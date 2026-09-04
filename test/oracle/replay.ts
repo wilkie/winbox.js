@@ -1362,7 +1362,7 @@ export class Unimplemented extends Error {}
  */
 export const KNOWN_GAPS: Record<string, string> = {
   glyph:
-    "two of 6,046, and they are one glyph counted twice: Symbol slanted at a thirty-two pixel cell, twenty-six per em, where the `t`'s stem inks two columns for two of its rows and Windows inks one -- the pair record shows the same stem twice because the pen beside it is right. It is a shape and not a step, and it belongs with the fabricated corpus's remaining dropout cells rather than with the string metrics",
+    "two of 6,046, and one glyph counted twice: Symbol slanted at a thirty-two pixel cell, twenty-six per em, where the `t`'s stem inks two columns for two of its rows and Windows inks one. Traced to a margin: the sheared stem's right edge passes the sample column by 1.40 sixty-fourths at one row and 0.28 at the other, and Windows counts neither as covered. The shear's rounding, the lean and the spline depth have each been swept and each alternative is refused by hundreds of records, so what is left is under a sixty-fourth of an edge and nothing in the walk accounts for it",
 };
 
 /**

@@ -3975,6 +3975,43 @@ has the placement code for. It is left as the last of that, at five pixels.
 
     fabricated   26,055 of 26,058 cells,  9 wrong pixels
 
+### And the last two recorded cells are a sixty-fourth of an edge
+
+The two `glyph` records in `KNOWN_GAPS` are one glyph counted twice -- Symbol
+slanted at a thirty-two pixel cell, twenty-six per em, drawn alone and again as
+the second of a pair. Rows 22 and 23 of the `t`'s stem ink two columns here and
+one in Windows.
+
+Traced, they are not rescues. The runs are ordinary ones, so the question is
+where the sheared edge crosses the sample line, and dumping the chords the walk
+actually hands the line stepper puts a number on it:
+
+| row | the stem's span | the right edge, past the 9.5 sample |
+| --- | --------------- | ----------------------------------- |
+| 21  | 8.373 -- 9.781  | +18.0 sixty-fourths, both ink it    |
+| 22  | 8.052 -- 9.522  | **+1.40**, Windows does not         |
+| 23  | 7.799 -- 9.504  | **+0.28**, Windows does not         |
+
+So the edge passes the sample by a sixty-fourth and a bit, and where this counts
+the column covered Windows leaves it clear. Every row that clears the sample by
+any margin worth the name agrees.
+
+Three things it is not, each swept against the 6,046 recorded glyph cells:
+
+| what was varied              | best                            | the alternatives                                                  |
+| ---------------------------- | ------------------------------- | ----------------------------------------------------------------- |
+| the shear's rounding         | 6,044 (round)                   | 6,043 half-down, 6,021 floor, 6,021 ceil, 6,020 truncate          |
+| the lean                     | 6,044 (`floor(ppem/3)/ppem`)    | 6,020 `round(ppem/3)/ppem`, 5,989 ceil, 5,980 a flat three tenths |
+| the spline subdivision depth | 6,044 (as read from the binary) | 5,754 one deeper, 5,681 two, 5,667 three                          |
+
+The last of those is worth keeping. **Refining the curve makes it worse by 290
+records**, which says the coarse chords are not an approximation this happens to
+share with Windows -- they are what Windows draws, and our reading of the depth
+is right. So the polyline is the same polyline, the crossings should be the same
+crossings, and what is left is under a sixty-fourth of an edge on a glyph the
+slant has widened. It is the same residue section 8 ends on, now with a margin
+attached to it.
+
 #### Asking `IP` directly, and being wrong about the answer
 
 An observation of a real letter says where its program put a point and leaves
