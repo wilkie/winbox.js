@@ -168,6 +168,48 @@ static void draw(LPCSTR face, int height, char character)
     DeleteObject(font);
 }
 
+/* Writes part of a block out, thirty-two bytes to a record. */
+static void dumpRange(int index, char character, DWORD from, DWORD to)
+{
+    WORD selector = GlobalHandleToSel(blocks[index]);
+    DWORD at = from;
+
+    if (selector == 0) {
+        return;
+    }
+
+    while (at < to) {
+        DWORD want = to - at;
+        DWORD got;
+        LPSTR out = probeResult;
+        int byte;
+
+        if (want > 32) {
+            want = 32;
+        }
+
+        got = MemoryRead(selector, at, buffer, want);
+
+        if (got == 0) {
+            break;
+        }
+
+        for (byte = 0; byte < (int)got; byte++) {
+            unsigned char value = (unsigned char)buffer[byte];
+
+            *out++ = HEX[(value >> 4) & 0x0f];
+            *out++ = HEX[value & 0x0f];
+        }
+
+        *out = '\0';
+
+        wsprintf(probeArgs, "'%c',%d,+%04x", character, index, (int)at);
+        probe("window", probeArgs, probeResult);
+
+        at += got;
+    }
+}
+
 /* Writes a block out, thirty-two bytes to a record. */
 static void dump(int index, char character)
 {
@@ -232,14 +274,14 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     /* One draw before the census, so that whatever the scaler allocates for
      * this size exists to be counted. A block that is not there yet cannot be
      * watched. */
-    probeNote("one draw to make the scaler allocate, then the census");
+    probeNote("one draw of a character the sweep does not use, then the census");
     {
         HFONT font = CreateFont(8, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET,
                                 OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
                                 DEFAULT_QUALITY, DEFAULT_PITCH, "Symbol");
         HFONT was = (HFONT)SelectObject(memory, font);
 
-        TextOut(memory, 2, 0, "K", 1);
+        TextOut(memory, 2, 0, "Z", 1);
 
         SelectObject(memory, was);
         DeleteObject(font);
@@ -259,60 +301,46 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      * written out in both states. Everything that does not move is left out,
      * which is most of GDI's heap and all of its code.
      */
-    probeNote("the blocks that differ between the two cells, in full");
+    /*
+     * The sweep, and every draw in it the first of its character.
+     *
+     * This has to come before anything else touches these glyphs. GDI keeps
+     * drawn glyphs, and a second request for one is a blit that never enters
+     * the scaler at all -- so a block read after a cached draw holds whatever
+     * the last *uncached* glyph left in it, which is a different character's
+     * answer wearing this character's name. Reading the block for the eleven
+     * bearings after they had each been drawn once already gives eleven
+     * identical dumps, which is how this was found.
+     *
+     * The two cells the box disagrees about are dumped whole; the other nine
+     * are dumped at the three places the whole-block comparison showed moving,
+     * which is enough to read a field against the sweep.
+     */
+    probeNote("the scaler's block, each character on its first draw");
     {
-        static WORD before[MAX_BLOCKS];
-        static char changed[MAX_BLOCKS];
+        static const char CHARS[] = "ABKMWagjm";
+        int which;
         int index;
-
-        draw("Symbol", 8, 'y');
-
-        for (index = 0; index < found; index++) {
-            before[index] = checksum(blocks[index], sizes[index]);
-        }
-
-        draw("Symbol", 8, '1');
+        int scaler = -1;
 
         for (index = 0; index < found; index++) {
-            /* Whose block it is decides whether it is worth writing out.
-             *
-             * The census is of everything, because the point buffer need not
-             * belong to anyone by the time it is read. What comes out of the
-             * comparison, though, is mostly other modules getting on with their
-             * own business between two draws -- one block that moves is full of
-             * another module's text. Only GDI's are dumped.
-             */
-            changed[index] = (char)(owners[index] == gdiModule &&
-                                    checksum(blocks[index], sizes[index]) != before[index]);
-
-            if (changed[index]) {
-                dump(index, '1');
+            if (owners[index] == gdiModule && sizes[index] == 0x4000L) {
+                scaler = index;
             }
         }
 
-        draw("Symbol", 8, 'y');
+        if (scaler >= 0) {
+            draw("Symbol", 8, 'y');
+            dump(scaler, 'y');
 
-        for (index = 0; index < found; index++) {
-            if (changed[index]) {
-                dump(index, 'y');
-            }
-        }
-
-        /* And then the small ones across the whole sweep, so that a byte which
-         * moves can be read against the bearing that moved it rather than
-         * against one other character. */
-        {
-            static const char CHARS[] = "ABKMWagjmy1";
-            int which;
+            draw("Symbol", 8, '1');
+            dump(scaler, '1');
 
             for (which = 0; CHARS[which]; which++) {
                 draw("Symbol", 8, CHARS[which]);
 
-                for (index = 0; index < found; index++) {
-                    if (changed[index] && sizes[index] <= 0x400L) {
-                        dump(index, CHARS[which]);
-                    }
-                }
+                dumpRange(scaler, CHARS[which], 0x1380L, 0x1400L);
+                dumpRange(scaler, CHARS[which], 0x2260L, 0x22a0L);
             }
         }
     }

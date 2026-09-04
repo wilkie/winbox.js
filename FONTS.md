@@ -4076,10 +4076,59 @@ reach**, and inside it, where most of the differences are, sit three words that
 move by **-8** where the bearing between the two cells moves by 7.5
 sixty-fourths.
 
-That is as far as this goes here. Naming the fields of a sixteen kilobyte
-structure is its own chase and it is not this one's. What matters is that the
-chase is now possible: **the scaler's working memory is readable, block by block
-and byte by byte, and the thing that decides this box is in it.**
+#### Every draw in the sweep has to be the first of its character
+
+The first sweep with it came back with eleven identical dumps, which was the
+instrument teaching its user something. **GDI keeps drawn glyphs**, and a second
+request for one is a blit that never enters the scaler at all -- so a block read
+after a cached draw holds whatever the last _uncached_ glyph left in it, wearing
+this character's name. Read on first draws instead, the whole-block difference
+between the two cells falls from 229 bytes to **50**: the rest was cache churn.
+
+Most of those fifty are the cache itself. The block holds x86 code, a record per
+cached glyph carrying the character code -- `0x79` against `0x31` at `+0x1583`
+and `+0x15ff` -- and a set of far pointers into itself, `0857:0BBF` against
+`0857:0BC7`, one entry further along. None of that is geometry.
+
+#### The point array, and two roundings read rather than fitted
+
+The geometry is at `+0x227c`, and it is unmistakable once seen:
+
+    +227c   48   48   66   66   -30 …      (the y cell)
+    +227c   48   48   66   66   -37 …      (the 1 cell)
+
+The dot is a square from 254 to 354 font units. At six pixels per em that is
+47.625 and 66.375 sixty-fourths, which round to **48 and 66** -- the four x
+coordinates of its four points, in the order the outline gives them. The `y`
+array is at `+0x2352`: `94 113 113 94`, from 500 and 600 units, or 93.75 and
+112.5.
+
+And then the word after the points, at `+0x2284`, swept across all eleven
+bearings:
+
+    GDI          11    6    0   -4   -7  -11  -15  -19  -24  -30  -37
+    the rule     11    6    0   -4   -7  -11  -15  -19  -24  -30  -37
+
+**Eleven of eleven.** That is `-ceil(shift * ppem * 64 / upem - 0.5)`, the carry
+`Surface` applies, negated because the outline keeps its own coordinates and the
+origin moves instead. Two of the eleven are exact halves -- `W` at 7.5 and `1` at
+37.5 -- and **both go down**, which is the one tie the corpus had to decide and
+decided the same way. The coordinates round the other way: 112.5 becomes 113.
+Half up for a coordinate, half down for the bearing, both now read out of the
+scaler's memory rather than fitted to pixels.
+
+#### And the box is not made of them
+
+Which settles what the anomaly is not. GDI's own numbers for that cell are the
+ones this computes: points at 48 and 66, origin at -37, so the left edge sits at
+`48 - (-37)` = 85 sixty-fourths from the origin and 213 with the pen at two
+pixels -- 3.328, exactly ours. Put through the box rule the recording itself
+established, `(213 + 31) >> 6`, that is **3**. GDI's box says 4.
+
+So the inputs are not where the two part. The scaled outline is the same outline,
+the origin is the same origin, and the box GDI made from them is still a column
+to the right of what its own rule makes of them. Whatever that cell does, it does
+between the point array and the box, and both ends are now visible.
 
 ### And the last of `slope-sweep` is residue
 
