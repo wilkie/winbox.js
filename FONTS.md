@@ -3899,7 +3899,31 @@ each reading costs:
 
     fabricated   25,882 -> 26,029 of 26,058 cells,  4,320 -> 118 wrong pixels
 
-Twenty-seven `slope-sweep` cells and two of `dot-bearing` are what is left of it.
+### The buffer is one buffer
+
+The twenty-seven left were still the same question, asked more finely. `å` at
+thirty-one pixels came back with a mark two columns wide beside its stem that we
+did not draw at all; `ñ`'s tilde was drawn by Windows and missing here entirely.
+Both are contours the program has moved somewhere out of what it read past the
+outline -- and reading nought there is a choice, not a measurement.
+
+The reference does not clear it. It allocates the point buffer per size and fits
+every glyph of that size in it in turn, so what lies past the outline is the tail
+of whatever was fitted before. Carrying the previous glyph's tail forward instead
+of clearing it:
+
+    fabricated   26,029 -> 26,055 of 26,058 cells,  118 -> 9 wrong pixels
+
+with every recorded cell unchanged. **26 more cells and 109 fewer wrong pixels
+for keeping memory rather than zeroing it**, which is about as direct a
+confirmation of the model as the corpus can give. It also means the glyph drawn
+before this one can change what this one looks like -- true of the reference and
+of anything faithful to it, and reachable only by a program that reads past its
+own outline, which is to say only by a font somebody has cut down.
+
+Three cells are what is left: one of `slope-sweep` at five wrong pixels, and the
+two `dot-bearing` cells at four, which are a different question -- a dot placed
+at a bearing, at the one size where the two disagree.
 
 #### Asking `IP` directly, and being wrong about the answer
 
