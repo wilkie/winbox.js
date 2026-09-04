@@ -4061,6 +4061,48 @@ is right about every other spline in six thousand cells. What is not known is
 what tells that corner apart from the two that want the coarse reading, and
 nothing in the second differences does.
 
+#### The corner sits on the threshold because the shear put it there
+
+The corner's `size` is 128 because the shear made it so. Unsheared, its second
+differences are about 30 and 42, which is a size of 114 and a comfortable depth
+of one; leaning it adds roughly `lean` times the `y` difference to the `x` one,
+which carries 30 to 43 and 114 to **exactly the threshold**. So the glyph does
+not sit near the boundary for any reason of its own. The slant puts it there.
+
+Which makes the shear's own rounding the thing to ask about, and there is a real
+question in it. `Surface.slant` applies the lean to the coordinate **already on
+the sixty-fourth grid** -- `round(lean * round(y * k))` -- while the box in
+`glyph-raster` applies it to the **exact** scaled coordinate, `round(lean * y *
+k)`. The two differ by a sixty-fourth, and a sixty-fourth is what this corner
+turns on. Applying the lean to the exact coordinate moves the corner's first
+point from 616 to 617, its `size` from 128 to 130, and **the two `t` records come
+right**.
+
+They come right and something else goes wrong. `z` at thirty-six pixels loses a
+pixel of its smear -- a rescue and not a spline; it has no piece anywhere near
+the threshold -- so the recorded corpus is 6,044 either way, one glyph for
+another. The recorded boxes cannot choose between them either: both readings put
+197 of the 198 slanted boxes exactly where GDI's memory says. **The fabricated
+corpus decides it**, and it decides against the change:
+
+| the lean is applied to            | recorded glyphs   | fabricated cells | wrong pixels |
+| --------------------------------- | ----------------- | ---------------- | ------------ |
+| the gridded coordinate (as it is) | 6,044 (`t` wrong) | **26,055**       | **9**        |
+| the exact coordinate              | 6,044 (`z` wrong) | 26,046           | 19           |
+
+So the outline keeps the gridded reading. What is left standing is the oddity
+that put the question: **the box shears one way and the outline the other, and
+each is the better of the two where it is measured** -- the box 948 of 948 on the
+stack recordings, the outline nine cells and ten pixels better on the
+fabrications. They are different code in GDI as well, and this is the first thing
+found that tells them apart.
+
+Two more readings were tried and refused. Making the subdivision test inclusive
+alongside the exact shear is worse than either alone, 6,041. And the bitmap row
+shift -- the model section 3 built out of the row-by-row comparison and did not
+ship -- cannot even be asked here: Windows's slanted `t` inks **one** column at
+row 18 where its own upright inks two, so that row is no shift of that row.
+
 #### Asking `IP` directly, and being wrong about the answer
 
 An observation of a real letter says where its program put a point and leaves
