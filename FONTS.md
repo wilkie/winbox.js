@@ -4241,6 +4241,55 @@ below its stack pointer -- are the frames the box was made in.
 So the instrument was pointed at the wrong stack for as long as there has been an
 instrument, and both stacks are now readable.
 
+#### What is on the scaler's stack, and what is not
+
+Read below its stack pointer, the scaler's frames hold **one piece of geometry**:
+`48` and `94` at `+0x142e` and `+0x1430`, which are the square's scaled `xMin`
+and `yMin` -- and they are **the same for both cells**. The bearing is not in
+them. Nor is the box: searched byte by byte over all sixteen kilobytes, nothing
+holds 3 for the `y` cell and 4 for the `1` cell, and nothing holds 4 and 5. The
+only pair that steps by one anywhere in the segment is a flag at `+0x1492`.
+
+So the scaler computes the glyph's own bounding box, in the glyph's own
+coordinates, and the bearing is applied outside it. Which agrees with what its
+static area holds -- the point array at `+0x227c` and the origin phantom at
+`+0x2284`, the second of which is the bearing and the first of which has no
+bearing in it.
+
+**And the box is on the caller's stack, in the parameter block the thunk copies
+across.** That is why it is there at all: the switch happens after the arguments
+are built, so a box marshalled before the switch is on the old stack and a box
+computed after it would be on the new one. It is on the old one.
+
+Yet the caller's stack holds none of the inputs either. Searched for the scaled
+`xMin` of 48, for the origin of -37, for their sum of 85 and for that plus the
+pen at 213 -- **not one of them is in the 2,560 byte frame**. So the caller does
+not add the bearing to the outline's edge on its own stack; whatever it turns
+into a box, it is not those two numbers put together there.
+
+#### Why nothing in data ever points at that segment
+
+One loose end from the last sitting closes here. The scaler's segment is named by
+a **relocated immediate in the instruction stream** -- `mov ax,0xbc` at segment
+36 offset `0xe5`, where the `0xbc` is a fixup slot -- so GDI reaches it without
+any pointer in memory at all. That is why the frame has none, why `DGROUP` has
+none, and why looking for one was never going to work.
+
+The same fixup chain names every other place that loads it: segment 36 offsets
+`0x31`, `0xbc`, `0xe6`, `0x1c3`, `0x2898`, `0x295c` and `0x2964`. Disassembled,
+the later ones are `mov ax,SEG / mov ds,ax` in front of code that reads words
+through `les bx,[bp-0x1a]` and swaps their halves -- big-endian reads, which is
+font file parsing. So segment 36 is the font driver and it borrows the scaler's
+segment as data.
+
+What is left is to follow segment 36 from its entry to the routine that fills the
+parameter block, which is a disassembly rather than a recording, and larger than
+what is here. What the recordings have settled is the shape of it: the scaler
+produces a bounding box without a bearing, something outside it produces a box
+with one, the two stacks that could hold the join hold neither the sum nor the
+parts, and the segment doing the work is named by an immediate rather than a
+pointer.
+
 ### And the last of `slope-sweep` is residue
 
 The one `slope-sweep` cell is `å` at thirty-one pixels, where Windows draws a
