@@ -141,6 +141,41 @@ static void captureStack(void)
 }
 
 /*
+ * Writes down a capture, under the name of the cell it came from.
+ *
+ * Shared by the single character cells and the pairs, so that a record of one
+ * kind and a record of the other are the same bytes read the same way and can
+ * be subtracted from each other without a second thought.
+ */
+static void emitResidue(LPCSTR name)
+{
+    unsigned index;
+
+    wsprintf(probeResult, "sp=%04x,depth=%d", (int)residueTop, DEPTH);
+    probe("stack", name, probeResult);
+
+    for (index = DEPTH - WINDOW_LO; index < DEPTH - WINDOW_HI; index += CHUNK) {
+        LPSTR at = probeResult;
+        unsigned byte;
+
+        for (byte = 0; byte < CHUNK; byte++) {
+            unsigned char value = (unsigned char)residue[index + byte];
+
+            *at++ = HEX[(value >> 4) & 0x0f];
+            *at++ = HEX[value & 0x0f];
+        }
+
+        *at = '\0';
+
+        /* Named by how far below the capture the chunk starts, because that is
+         * the coordinate a frame lives in. The absolute address is in the
+         * `stack` record above and is not the same twice. */
+        wsprintf(probeArgs, "%s,-%04x", (LPSTR)name, (int)(DEPTH - index));
+        probe("residue", probeArgs, probeResult);
+    }
+}
+
+/*
  * Draws one character and records the stack it was drawn on.
  *
  * The font is created and destroyed around the single call so that the glyph
@@ -154,7 +189,6 @@ static void probeCell(LPCSTR face, int height, int weight, BYTE italic, char cha
     HFONT previous;
     char text[2];
     char name[80];
-    unsigned index;
 
     font = CreateFont(height, 0, 0, 0, weight, italic, 0, 0, ANSI_CHARSET,
                       OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
@@ -183,28 +217,67 @@ static void probeCell(LPCSTR face, int height, int weight, BYTE italic, char cha
     wsprintf(name, "\"%s\",h=%d,weight=%d,italic=%d,'%c'", (LPSTR)face, height,
              weight, (int)italic, character);
 
-    wsprintf(probeResult, "sp=%04x,depth=%d", (int)residueTop, DEPTH);
-    probe("stack", name, probeResult);
+    emitResidue(name);
 
-    for (index = DEPTH - WINDOW_LO; index < DEPTH - WINDOW_HI; index += CHUNK) {
-        LPSTR at = probeResult;
-        unsigned byte;
+    SelectObject(memory, previous);
+    DeleteObject(font);
+}
 
-        for (byte = 0; byte < CHUNK; byte++) {
-            unsigned char value = (unsigned char)residue[index + byte];
+/*
+ * Draws the same character twice, for the step the pen took between them.
+ *
+ * The residue carries the box of the last glyph the scan converter handled, so
+ * a string of two says where the second one was put: its box left, less the box
+ * left of that character drawn alone at the same size, is the advance GDI
+ * stepped by. Nothing returns that number. `GetTextExtent` measures a string
+ * through the very path that would be at fault, so asking it what the pen did
+ * is asking the suspect.
+ *
+ * The same character twice on purpose. Two boxes of the same shape differ by
+ * the step and by nothing else, where two different letters would differ by
+ * their bearings as well and need a second measurement to take them off again.
+ *
+ * The question is Symbol slanted, whose advance the corpus now says is the
+ * scaler's unhinted one rather than the upright's hinted one -- but the upright
+ * is recorded at every size beside it, because a reading method has to be shown
+ * working on an answer already known before it is trusted on one that is not.
+ */
+static void probePair(LPCSTR face, int height, int weight, BYTE italic, char character)
+{
+    HFONT font;
+    HFONT previous;
+    char text[3];
+    char name[80];
 
-            *at++ = HEX[(value >> 4) & 0x0f];
-            *at++ = HEX[value & 0x0f];
-        }
+    font = CreateFont(height, 0, 0, 0, weight, italic, 0, 0, ANSI_CHARSET,
+                      OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+                      DEFAULT_PITCH, face);
 
-        *at = '\0';
-
-        /* Named by how far below the capture the chunk starts, because that is
-         * the coordinate a frame lives in. The absolute address is in the
-         * `stack` record above and is not the same twice. */
-        wsprintf(probeArgs, "%s,-%04x", (LPSTR)name, (int)(DEPTH - index));
-        probe("residue", probeArgs, probeResult);
+    if (font == NULL) {
+        return;
     }
+
+    previous = (HFONT)SelectObject(memory, font);
+
+    PatBlt(memory, 0, 0, CELL_WIDTH, CELL_HEIGHT, WHITENESS);
+
+    SetTextColor(memory, RGB(0, 0, 0));
+    SetBkColor(memory, RGB(255, 255, 255));
+    SetBkMode(memory, OPAQUE);
+
+    text[0] = character;
+    text[1] = character;
+    text[2] = '\0';
+
+    /* Two pixels in, where every other cell here starts. */
+    TextOut(memory, 2, 0, text, 2);
+
+    captureStack();
+
+    wsprintf(name, "\"%s\",h=%d,weight=%d,italic=%d,'%c%c'", (LPSTR)face,
+             height, weight, (int)italic, character, character);
+
+    emitResidue(name);
 
     SelectObject(memory, previous);
     DeleteObject(font);
@@ -293,6 +366,43 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
             for (index = 0; CHARS[index]; index++) {
                 probeCell("Symbol", HEIGHTS[size], FW_BOLD, 0, CHARS[index]);
             }
+        }
+    }
+
+    /*
+     * The pen, at the sizes where the two candidate advances disagree.
+     *
+     * Symbol slanted is measured with the scaler's unhinted advance and drawn
+     * with the upright's hinted one, and the two are not the same number at
+     * most sizes -- so a string of it either measures what it draws or does
+     * not, and nothing recorded so far can tell. These sixteen sizes are the
+     * ones where the two differ by a whole pixel or more, with the character
+     * at each chosen for the widest disagreement; none of them is a size
+     * Symbol answers with a strike.
+     */
+    probeNote("two characters, for the step the pen took between them");
+    {
+        static const int PAIR_HEIGHTS[] = { 9,  11, 12, 14, 15, 17, 20, 22,
+                                            23, 24, 28, 30, 32, 34, 36, 38 };
+        static const char PAIR_CHARS[] = "NyyTFpyzyyzztzzI";
+
+        int index;
+
+        for (index = 0;
+             index < sizeof(PAIR_HEIGHTS) / sizeof(PAIR_HEIGHTS[0]);
+             index++) {
+            probePair("Symbol", PAIR_HEIGHTS[index], FW_NORMAL, 1,
+                      PAIR_CHARS[index]);
+            probePair("Symbol", PAIR_HEIGHTS[index], FW_NORMAL, 0,
+                      PAIR_CHARS[index]);
+
+            /* And each of them alone, so the pair has something at the same
+             * size to be subtracted from without depending on a pass recorded
+             * for another purpose. */
+            probeCell("Symbol", PAIR_HEIGHTS[index], FW_NORMAL, 1,
+                      PAIR_CHARS[index]);
+            probeCell("Symbol", PAIR_HEIGHTS[index], FW_NORMAL, 0,
+                      PAIR_CHARS[index]);
         }
     }
 

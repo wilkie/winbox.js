@@ -253,6 +253,121 @@ static void probeStyled(LPCSTR face, int weight, BYTE italic)
 }
 
 /*
+ * Two characters, for where the pen goes between them.
+ *
+ * Every other cell here draws one glyph, which says what a glyph looks like
+ * and never what a string does. The step between two of them is a separate
+ * question with a separate answer: what a face measures with and what it draws
+ * with are two pieces of code, and nothing recorded so far makes them meet.
+ *
+ * Symbol slanted is where they can part. Windows has no italic Symbol, so the
+ * upright is sheared -- drawn from the raw outline with no program run, and
+ * measured with the scaler's unhinted advance rather than the hinted one the
+ * upright would use. Whether the pen steps by the same number is what this
+ * asks. At these sizes the two candidates differ by a whole pixel or more, so
+ * the second glyph lands in a different column depending on the answer, and
+ * the picture says which.
+ *
+ * The same character twice, so that anything the second cell shows which the
+ * first does not is the step and not the letter. The upright is recorded
+ * beside the slant at every size as the control: there the two candidates are
+ * the same number, so its pair must come out at the sum of two known advances
+ * or the instrument itself is wrong.
+ *
+ * The stack probe asked this first and could not answer it. Its residue
+ * carries the box of a glyph the scan converter handled, and a two character
+ * `TextOut` leaves something else at those offsets -- the words come back as a
+ * clip of the cell rather than a box, at every size. So the string is built by
+ * a path the single character call does not take, and pixels are the only
+ * ground left to read it on.
+ */
+static void probePair(LPCSTR name, HFONT font, char character)
+{
+    HFONT previous;
+    LPSTR at;
+    int index;
+    char text[3];
+
+    if (font == NULL) {
+        return;
+    }
+
+    previous = (HFONT)SelectObject(memory, font);
+
+    PatBlt(memory, 0, 0, CELL_WIDTH, CELL_HEIGHT, WHITENESS);
+
+    SetTextColor(memory, RGB(0, 0, 0));
+    SetBkColor(memory, RGB(255, 255, 255));
+    SetBkMode(memory, OPAQUE);
+
+    text[0] = character;
+    text[1] = character;
+    text[2] = '\0';
+
+    TextOut(memory, 2, 0, text, 2);
+
+    GetBitmapBits(canvas, (LONG)CELL_BYTES, bits);
+
+    at = probeResult;
+
+    for (index = 0; index < CELL_BYTES; index++) {
+        *at++ = HEX[(bits[index] >> 4) & 0x0f];
+        *at++ = HEX[bits[index] & 0x0f];
+    }
+
+    *at = '\0';
+
+    wsprintf(probeArgs, "%s,'%c%c'", (LPSTR)name, character, character);
+
+    probe("glyph", probeArgs, probeResult);
+
+    SelectObject(memory, previous);
+}
+
+/*
+ * The sizes where the slant's two candidate advances disagree.
+ *
+ * Sixteen of them, with the character at each chosen for the widest
+ * disagreement between the unhinted advance and the hinted one -- and small
+ * enough at every size that two glyphs still land inside the cell, which is
+ * what bounds the list at the top end rather than any lack of sizes. None is a
+ * height Symbol answers with a strike; a strike has neither advance and would
+ * be measuring something else.
+ */
+static void probePairs(void)
+{
+    static const int HEIGHTS[] = { 9,  11, 12, 14, 15, 17, 20, 22,
+                                   23, 24, 28, 30, 32, 34, 36, 38 };
+    static const char CHARS[] = "NyyTFpyzyyzztzzI";
+
+    int size;
+    int style;
+    char name[64];
+
+    for (size = 0; size < sizeof(HEIGHTS) / sizeof(HEIGHTS[0]); size++) {
+        for (style = 1; style >= 0; style--) {
+            HFONT font = CreateFont(HEIGHTS[size], 0, 0, 0, FW_NORMAL,
+                                    (BYTE)style, 0, 0, ANSI_CHARSET,
+                                    OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+                                    DEFAULT_QUALITY, DEFAULT_PITCH, "Symbol");
+
+            wsprintf(name, "\"Symbol\",h=%d,weight=400,italic=%d",
+                     HEIGHTS[size], style);
+
+            /* The single character too, at the same size and in the same pass,
+             * so the pair has the letter alone to be read against without
+             * depending on a sweep recorded for another purpose. */
+            probeGlyph(name, font, CHARS[size]);
+            probePair(name, font, CHARS[size]);
+
+            if (font) {
+                DeleteObject(font);
+            }
+        }
+    }
+}
+
+/*
  * The bitmap faces, at a spread of sizes and in each style.
  *
  * These have no outline and no interpreter: every glyph is stored ink, picked
@@ -470,6 +585,9 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeSized("MS Sans Serif", 16, FW_NORMAL, 1);
     probeSized("Arial", 16, FW_BOLD, 0);
     probeSized("Arial", 16, FW_NORMAL, 1);
+
+    probeNote("two characters, for the step the pen takes between them");
+    probePairs();
 
     DeleteObject(canvas);
     DeleteDC(memory);

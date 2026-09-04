@@ -631,14 +631,31 @@ export class Surface {
         }
       }
 
-      /* The same three sources `LogicalFont.measure` asks, in the same order,
-       * so that where the pen lands and what a string measures cannot disagree.
+      /* The same sources `LogicalFont.measure` asks, in the same order, so that
+       * where the pen lands and what a string measures cannot disagree.
+       *
+       * Including the slant, which has a source of its own. A face Windows is
+       * shearing is drawn with no program run and measured with the scaler's
+       * unhinted advance, and the pen steps by that too -- it is one number,
+       * not a measured one and a drawn one.
+       *
+       * **Recorded**, because the two had been allowed to differ here and
+       * nothing could see it: every cell of the glyph corpus draws a single
+       * character, and a single character never steps. `glyphs` now draws
+       * sixteen pairs of Symbol slanted, at the sizes where the unhinted
+       * advance and the upright's hinted one differ by a whole pixel or more.
+       * Stepping by the upright's advance puts the second glyph in the wrong
+       * column in **all sixteen**; stepping by this puts it in the right one in
+       * all sixteen. The upright pairs recorded beside them are the control --
+       * there the two candidates are the same number, and both readings agree
+       * with Windows at every size.
        */
-      pen +=
-        outline.deviceAdvance(ppem, glyph) ??
-        outline.linearAdvance(glyph, ppem) ??
-        outline.hintedAdvance(glyph, ppem) ??
-        Math.round(outline.advanceOf(glyph) * scale);
+      pen += italic
+        ? outline.unhintedAdvance(glyph, ppem)
+        : (outline.deviceAdvance(ppem, glyph) ??
+          outline.linearAdvance(glyph, ppem) ??
+          outline.hintedAdvance(glyph, ppem) ??
+          Math.round(outline.advanceOf(glyph) * scale));
     }
   }
 

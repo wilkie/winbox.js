@@ -1360,7 +1360,10 @@ export class Unimplemented extends Error {}
  *
  * All 2,574 records agree.
  */
-export const KNOWN_GAPS: Record<string, string> = {};
+export const KNOWN_GAPS: Record<string, string> = {
+  glyph:
+    "two of 6,046, and they are one glyph counted twice: Symbol slanted at a thirty-two pixel cell, twenty-six per em, where the `t`'s stem inks two columns for two of its rows and Windows inks one -- the pair record shows the same stem twice because the pen beside it is right. It is a shape and not a step, and it belongs with the fabricated corpus's remaining dropout cells rather than with the string metrics",
+};
 
 /**
  * Functions a module declares but wires to a stub.

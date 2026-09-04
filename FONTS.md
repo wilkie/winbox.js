@@ -3783,8 +3783,49 @@ own and rounds up.
     font      5,057 of 5,057    100.0%
     hinting   7,828 of 7,828    100.0%
 
-`KNOWN_GAPS` is empty. Every record in every fixture the oracle has recorded of
-fonts -- mapping, metrics, extents, advances and pixels -- this reproduces.
+Every record in every fixture the oracle has recorded of fonts -- mapping,
+metrics, extents, advances and pixels -- this reproduces.
+
+#### What a string does that a character cannot
+
+Closing the corpus exposed a hole in it. `LogicalFont.measure` now steps a
+synthesised slant by the scaler's unhinted advance, and `Surface` still stepped
+its pen by the upright's hinted one -- two numbers for one thing, with a comment
+over each saying they must agree. **Nothing could see it.** Every cell of the
+glyph corpus draws a single character, and a single character never steps.
+
+The stack probe was asked first, since it already reads the box the scan
+converter is given, and it could not answer. Its residue carries the box of a
+glyph that went through the scan converter, and a two character `TextOut` leaves
+something else at those offsets: the two words come back as 0 and 2 at every
+size, with the word beside them tracking the string's width capped at the
+bitmap's -- a clip of the cell rather than a box. So a string is built by a path
+a single character does not take, and the residue reads the wrong frame. That is
+a negative result about the instrument and not about the pen.
+
+Pixels then, on the probe that already records them. `glyphs` gained sixteen
+pairs of Symbol slanted -- the same character twice, so that two boxes of the
+same shape differ by the step and nothing else -- at the sixteen sizes where the
+unhinted advance and the upright's hinted one differ by a whole pixel or more,
+with each size's character chosen for the widest disagreement, and with the
+upright recorded beside it as the control.
+
+**Sixteen of sixteen wrong, and the control clean.** Stepping by the upright's
+advance put the second glyph in the wrong column at every slanted size; the
+sixteen upright pairs, where the two candidates are the same number, agreed
+before the change and after it. Stepping by the unhinted advance puts all
+sixteen right.
+
+    glyphs   6,044 of 6,046   100.0%
+
+The two left are one glyph counted twice. Symbol slanted at a thirty-two pixel
+cell, twenty-six per em: the `t`'s stem inks two columns for two of its rows
+where Windows inks one, in the single character and again in the pair. The pair
+puts the second `t` in exactly Windows's column, so the step is right and the
+shape is not -- and a shape a column too wide at one size is the fabricated
+corpus's open question, not this one. It is in `KNOWN_GAPS` under that
+description, and it was found by recording a character that had never been
+recorded at that size rather than by anything changing.
 
 #### Asking `IP` directly, and being wrong about the answer
 
@@ -10270,12 +10311,31 @@ kind of edge, that no stage of the documented algorithm accounts for.
 
 ## 9. Where the numbers stand
 
-| Fixture                                                      | Agreement |
-| ------------------------------------------------------------ | --------- |
-| `strings`, `memory`, `handles`, `profile`, `text`, `devcaps` | 100%      |
-| `font` (2,655 records)                                       | **100%**  |
-| `glyphs` (846 records)                                       | 82.9%     |
-| `hinting` (927 records)                                      | **100%**  |
+Every fixture the oracle has recorded, replayed against this implementation as
+it stands:
+
+| Fixture                                                      | Records | Agreement |
+| ------------------------------------------------------------ | ------- | --------- |
+| `font`                                                       | 5,057   | **100%**  |
+| `glyphs`                                                     | 6,046   | 6,044     |
+| `hinting`                                                    | 7,828   | **100%**  |
+| `lines`                                                      | 248     | **100%**  |
+| `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
+
+`KNOWN_GAPS` holds one entry, and it is the two glyph records above: Symbol
+slanted at a thirty-two pixel cell, where one letter's stem is a column too wide
+for two of its rows. The `stack` fixture is not in the table because it is an
+instrument rather than an oracle: its 3,650 records are the scaler's own stack,
+which nothing on this side is meant to reproduce, and the conformance suite
+reports them as unsupported.
+
+What is not whole is the fabricated corpus -- the fonts rewritten to isolate one
+mechanism each, which ask questions no stock face does. It stands at **25,882 of
+26,058 cells and 4,320 wrong pixels**, and that is where the work is.
+
+The rest of this section is the chase that got the recorded fixtures here, in
+the order it happened. **The figures inside it are the figures at the time**, and
+the tables below were current when they were written rather than now.
 
 Of the glyph records, every bitmap and plotter one is pixel-identical -- all
 forty-two of them, across four faces and two stock handles. That is the control,

@@ -35901,6 +35901,390 @@
       "args": "\"Arial\",h=16,weight=400,italic=1,'.'",
       "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
       "section": "and the styles, which are synthesised for some faces and not others"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=9,weight=400,italic=1,'N'",
+      "result": "ffffffffffffffffe6fffffff5ffffffe9ffffffe9ffffffcdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=9,weight=400,italic=1,'NN'",
+      "result": "ffffffffffffffffe637fffff5afffffe94fffffe94fffffcc6fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=9,weight=400,italic=0,'N'",
+      "result": "ffffffffffffffffcc7fffffe6ffffffeaffffffecffffffc6ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=9,weight=400,italic=0,'NN'",
+      "result": "ffffffffffffffffcc18ffffe6cdffffead5ffffecd9ffffc68dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=11,weight=400,italic=1,'y'",
+      "result": "ffffffffffffffffffffffffffffffffeaffffffe5ffffffe5ffffffe3fffffff7ffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=11,weight=400,italic=1,'yy'",
+      "result": "ffffffffffffffffffffffffffffffffeaabffffe597ffffe597ffffe38ffffff7dfffffefbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=11,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffd5ffffffd5ffffffd5ffffffe3fffffff7fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=11,weight=400,italic=0,'yy'",
+      "result": "ffffffffffffffffffffffffffffffffd4afffffd4afffffd4afffffe31ffffff7bffffff7bfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=1,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffe27fffffeaffffffe9ffffffe5fffffff3fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=1,'yy'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffe209ffffeaabffffe9a7ffffe597fffff3cffffff7dfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffca7fffffeaffffffeafffffff1fffffffbfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=0,'yy'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffca14ffffead5ffffead5fffff1e3fffffbf7fffffbf7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=14,weight=400,italic=1,'T'",
+      "result": "ffffffffffffffffffffffffffffffffe03ffffffdfffffffdfffffffbfffffffbfffffffbffffffe1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=14,weight=400,italic=1,'TT'",
+      "result": "ffffffffffffffffffffffffffffffffe0007ffffdfbfffffdfbfffffbf7fffffbf7fffffbf7ffffe1c3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=14,weight=400,italic=0,'T'",
+      "result": "ffffffffffffffffffffffffc1ffffffd5fffffff7fffffff7fffffff7fffffff7fffffff7ffffffe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=14,weight=400,italic=0,'TT'",
+      "result": "ffffffffffffffffffffffffc00fffffd4affffff7bffffff7bffffff7bffffff7bffffff7bfffffe31fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=1,'F'",
+      "result": "fffffffffffffffffffffffffffffffffe1ffffffc1ffffff26ffffff6efffffeedfffffecdffffff03ffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=1,'FF'",
+      "result": "fffffffffffffffffffffffffffffffffe1f0ffffc1e0ffff26937fff6eb77ffeed76fffecd66ffff0381ffff0f87fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=0,'F'",
+      "result": "fffffffffffffffffffffffffffffffffc7ffffffefffffff01fffffeeefffffeeeffffff01ffffffefffffffc7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=0,'FF'",
+      "result": "fffffffffffffffffffffffffffffffffc7f8ffffeffdffff01e03ffeeedddffeeedddfff01e03fffeffdffffc7f8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=17,weight=400,italic=1,'p'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01fffffeafffffff6fffffff6fffffff57fffffee7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=17,weight=400,italic=1,'pp'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0101fffeaeafffff6f6fffff6f6fffff5757fffee6e7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=17,weight=400,italic=0,'p'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0ffffffd5fffffff5fffffff5fffffff5ffffffe4ffffffecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=17,weight=400,italic=0,'pp'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffe083ffffd557fffff5d7fffff5d7fffff5d7ffffe493ffffecb3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=1,'y'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b1fffffb67fffffb6ffffff36ffffff2cffffff2dffffffa3ffffffdfffffffdfffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=1,'yy'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b0763ffb676cfffb6f6dfff36e6dfff2ce59fff2de5bfffa3f47fffdffbffffdffbffffdffbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe773fffff777fffff777fffff777fffff777fffff777fffffb6ffffffc1fffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=0,'yy'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe772773ff777777ff777777ff777777ff777777ff777777ffb6fb6fffc1fc1ffff7ff7ffff7ff7ffff7ff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=22,weight=400,italic=1,'z'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffb3ffffff47ffffffbffffffe7ffffffdfffffffbfffffffbfffffff7fffffff7fffffff7fffffff7fffffff03fffffff9fffffffbfffffff7ffffffcffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=22,weight=400,italic=1,'zz'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffb3d9ffff47a3ffffbfdffffe7f3ffffdfefffffbfdfffffbfdfffff7fbfffff7fbfffff7fbfffff7fbfffff0381fffff9fcfffffbfdfffff7fbffffcfe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=22,weight=400,italic=0,'z'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffdfffffffb9ffffffc3ffffffdfffffffbfffffff7ffffffe7ffffffefffffffefffffffeffffffff7fffffff81fffffffefffffffefffffffefffffff1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=22,weight=400,italic=0,'zz'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffdffbffffb9f73fffc3f87fffdffbffffbff7ffff7feffffe7fcffffeffdffffeffdffffeffdfffff7fefffff81f03ffffeffdffffeffdffffeffdffff1fe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=23,weight=400,italic=1,'y'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9de7ffff9dcfffff9d9fffff9b9fffff9b3fffffbb3fffffb67fffffb6ffffffd1ffffffefffffffefffffffefffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=23,weight=400,italic=1,'yy'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9de4ef3f9dccee7f9d9cecff9b9cdcff9b3cd9ffbb3dd9ffb67db3ffb6fdb7ffd1fe8fffefff7fffefff7fffefff7fffdffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=23,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe79e7ffff39cfffff39cfffff39cfffff39cfffff39cfffff199fffff999fffffe07ffffff9fffffff9fffffff9fffffff9fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=23,weight=400,italic=0,'yy'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe79e4f3cf39ce739f39ce739f39ce739f39ce739f39ce739f199e333f999f333fe07fc0fff9fff3fff9fff3fff9fff3fff9fff3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,'y'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9ce3ffff9dcfffff9ddfffff9d9fffff9b9fffff9b3fffff9b7fffff967fffffd5ffffffe3ffffffefffffffefffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,'yy'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9ce2738f9dce773f9dde777f9d9e767f9b9e6e7f9b3e6cff9b7e6dff967e59ffd5ff57ffe3ff8fffefffbfffefffbfffefffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe79e7ffff39cfffff39cfffff39cfffff39cfffff39cfffff39cfffff999fffffc93fffffe07ffffff9fffffff9fffffff9fffffff9fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,'yy'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe79e679ef39cf39cf39cf39cf39cf39cf39cf39cf39cf39cf39cf39cf999f999fc93fc93fe07fe07ff9fff9fff9fff9fff9fff9fff9fff9fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=28,weight=400,italic=1,'z'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffdc7fffffb1ffffffcfffffffbfffffff7ffffffefffffffdfffffffdfffffffbfffffffbfffffff7fffffff7fffffff7fffffff00ffffff007ffffffe7ffffffefffffffeffffffedffffffc3fffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=28,weight=400,italic=1,'zz'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeffdffffdc7b8fffb1f63fffcff9ffffbff7ffff7feffffeffdffffdffbffffdffbffffbff7ffffbff7ffff7fefffff7fefffff7fefffff00e01fff00600ffffe7fcffffeffdffffeffdfffedfdbfffc3f87ffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=28,weight=400,italic=0,'z'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffbcffffffb1ffffffc3ffffffdfffffffbfffffff7fffffff7fffffff7ffffffefffffffefffffffefffffffefffffffe7fffffff00ffffff807fffffff7fffffff7fffffff7ffffffefffffff1fffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=28,weight=400,italic=0,'zz'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffdffdffffbcfbcfffb1fb1fffc3fc3fffdffdffffbffbffff7ff7ffff7ff7ffff7ff7fffeffeffffeffeffffeffeffffeffeffffe7fe7ffff00f00fff807807ffff7ff7ffff7ff7ffff7ff7fffeffeffff1ff1ffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=30,weight=400,italic=1,'z'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffef3fffffd87fffffc1ffffffdfffffffbfffffff7ffffffefffffffdfffffffdfffffffbfffffffbfffffff7fffffff7fffffff3fffffff00ffffff807ffffffe7fffffff7ffffffeffffffedffffffe3fffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=30,weight=400,italic=1,'zz'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ff7fffef3ef3ffd87d87ffc1fc1fffdffdffffbffbffff7ff7fffeffeffffdffdffffdffdffffbffbffffbffbffff7ff7ffff7ff7ffff3ff3ffff00f00fff807807fffe7fe7ffff7ff7fffeffefffedfedfffe3fe3ffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=30,weight=400,italic=0,'z'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffbe7fffffb8ffffffc1ffffffcfffffff9fffffff3fffffff7fffffff7ffffffefffffffefffffffefffffffefffffffe7fffffff007fffff803fffffffbfffffffbfffffffbfffffff7ffffff8fffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=30,weight=400,italic=0,'zz'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdffeffffbe7df3ffb8fdc7ffc1fe0fffcffe7fff9ffcffff3ff9ffff7ffbffff7ffbfffefff7fffefff7fffefff7fffefff7fffe7ff3ffff007803ff803c01ffffbffdffffbffdffffbffdffff7ffbfff8ffc7fffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=32,weight=400,italic=1,'t'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff80fffffe00fffffecffffff9dfffffffdfffffff9fffffffbfffffff3fffffff7fffffff77ffffff0fffffff1fffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=32,weight=400,italic=1,'tt'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff80f01ffe00c01ffecfd9fff9df3bffffdffbffff9ff3ffffbff7ffff3fe7ffff7fefffff77eeffff0fe1ffff1fe3ffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=32,weight=400,italic=0,'t'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff807fffff007fffff67fffffee7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe77fffffe27fffffe0fffffff1fffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=32,weight=400,italic=0,'tt'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff807807ff007007ff67f67ffee7ee7fffe7fe7fffe7fe7fffe7fe7fffe7fe7fffe77e77ffe27e27ffe0fe0ffff1ff1ffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=34,weight=400,italic=1,'z'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffff78fffffee1fffffe07ffffff7ffffffefffffff9fffffff3fffffff7ffffffefffffffdfffffffdfffffffbfffffffbfffffffbfffffff3fffffff3fffffff003fffff803fffffef3fffffffbfffffff7fffffff7fffffe0fffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=34,weight=400,italic=1,'zz'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbffdffff78fbcffee1f70ffe07f03fff7ffbfffefff7fff9ffcffff3ff9ffff7ffbfffefff7fffdffeffffdffeffffbffdffffbffdffffbffdffff3ff9ffff3ff9ffff003801ff803c01ffef3f79ffffbffdffff7ffbffff7ffbffe0ff07f",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=34,weight=400,italic=0,'z'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffcf9fffffde1fffffdc3fffffe0ffffffe7ffffffdfffffffbfffffff3fffffff7ffffffe7ffffffefffffffefffffffefffffffeffffffff7fffffff001fffffc00fffffffcfffffffefffffffefffffffcffffffc1ffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=34,weight=400,italic=0,'zz'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffefffcf9f9f3fde1fbc3fdc3fb87fe0ffc1ffe7ffcfffdfffbfffbfff7fff3ffe7fff7ffefffe7ffcfffefffdfffefffdfffefffdfffefffdffff7ffeffff001e003fc00f801fffcfff9fffefffdfffefffdfffcfff9ffc1ff83",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=36,weight=400,italic=1,'z'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9fffffff78fffffe61fffffe07ffffff7ffffffefffffffdfffffffbfffffff7ffffffefffffffefffffffdfffffff9fffffffbfffffffbfffffff3fffffff3fffffff1fffffff001fffff801ffffff79fffffffdfffffffbffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=36,weight=400,italic=1,'zz'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9ffe7fff78fdeffe61f98ffe07f81fff7ffdfffefffbfffdfff7fffbffeffff7ffdfffefffbfffefffbfffdfff7fff9ffe7fffbffeffffbffeffff3ffcffff3ffcffff1ffc7fff001c007f801e007ff79fde7fffdfff7fffbffef",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=36,weight=400,italic=0,'z'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffcf1fffffde1fffffd87fffffe1ffffffefffffffdfffffffbfffffff3fffffff7fffffff7ffffffefffffffefffffffefffffffefffffffefffffffeffffffff7fffffff001fffffc00fffffffcfffffffeffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=36,weight=400,italic=0,'zz'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffefffcf1f9e3fde1fbc3fd87fb0ffe1ffc3ffefffdfffdfffbfffbfff7fff3ffe7fff7ffeffff7ffefffefffdfffefffdfffefffdfffefffdfffefffdfffefffdffff7ffeffff001e003fc00f801fffcfff9fffefffd",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=38,weight=400,italic=1,'I'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc03fffffb0fffffff1fffffff1ffffffe3ffffffe3ffffffe3ffffffc7ffffffc7ffffffc7ffffff8fffffff8fffffff8fffffff1fffffff1fffffff1ffffffe3ffffffe3ffffffe3ffffffc3fffffe00fffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=38,weight=400,italic=1,'II'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc0300fffb0ec3ffff1fc7ffff1fc7fffe3f8ffffe3f8ffffe3f8ffffc7f1ffffc7f1ffffc7f1ffff8fe3ffff8fe3ffff8fe3ffff1fc7ffff1fc7ffff1fc7fffe3f8ffffe3f8ffffe3f8ffffc3f0fffe00803ffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=38,weight=400,italic=0,'I'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe00ffffff83ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffff83fffffe00fffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=38,weight=400,italic=0,'II'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe00c01fff83f07fffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffff83f07ffe00c01ffffffffff",
+      "section": "two characters, for the step the pen takes between them"
     }
   ]
 }
