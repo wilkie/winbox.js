@@ -53,6 +53,14 @@ static int found;
 static char buffer[CHUNK];
 static const char HEX[] = "0123456789abcdef";
 
+/* How far below the drawing call to keep, which is what the stack probe found
+ * the whole frame to be. */
+#define DEPTH 2560
+
+/* Not on the stack, because the stack is the thing being copied. */
+static char residue[DEPTH];
+static WORD residueTop;
+
 /*
  * A running sum over a block, rotated so that order matters.
  *
@@ -135,6 +143,94 @@ static void census(void)
 
     wsprintf(probeResult, "blocks=%d,gdi=%04x", found, (int)gdi);
     probe("census", "all", probeResult);
+}
+
+/*
+ * Copies the stack below this call out, so that the frame and the heap can be
+ * read in the same run.
+ *
+ * The two have to come from one run or they cannot be put together: a selector
+ * is whatever the heap handed out that time, so a pointer found in a frame
+ * recorded on Tuesday means nothing against a census taken on Wednesday. There
+ * is deliberately no call in the loop, for the reason `stack.c` gives.
+ */
+static void captureStack(void)
+{
+    char marker;
+    char far *base = (char far *)&marker;
+    unsigned index;
+
+    residueTop = (WORD)(DWORD)base;
+
+    if (residueTop < DEPTH) {
+        return;
+    }
+
+    base = base - DEPTH;
+
+    for (index = 0; index < DEPTH; index++) {
+        residue[index] = base[index];
+    }
+}
+
+/*
+ * Draws one character and keeps the stack it was drawn on.
+ *
+ * The capture has to be the first thing after the call, before the font is let
+ * go and before anything is written down, because every one of those is a call
+ * and a call lands on the very bytes being read.
+ */
+static void probeFrame(LPCSTR face, int height, char character)
+{
+    HFONT font = CreateFont(height, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET,
+                            OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+                            DEFAULT_QUALITY, DEFAULT_PITCH, face);
+    HFONT previous;
+    char text[2];
+    unsigned at;
+
+    if (font == NULL) {
+        return;
+    }
+
+    previous = (HFONT)SelectObject(memory, font);
+
+    PatBlt(memory, 0, 0, CELL_WIDTH, CELL_HEIGHT, WHITENESS);
+
+    SetTextColor(memory, RGB(0, 0, 0));
+    SetBkColor(memory, RGB(255, 255, 255));
+    SetBkMode(memory, OPAQUE);
+
+    text[0] = character;
+    text[1] = '\0';
+
+    TextOut(memory, 2, 0, text, 1);
+
+    captureStack();
+
+    SelectObject(memory, previous);
+    DeleteObject(font);
+
+    wsprintf(probeArgs, "'%c'", character);
+    wsprintf(probeResult, "sp=%04x,depth=%d", (int)residueTop, DEPTH);
+    probe("frame", probeArgs, probeResult);
+
+    for (at = 0; at < DEPTH; at += 32) {
+        LPSTR out = probeResult;
+        int byte;
+
+        for (byte = 0; byte < 32; byte++) {
+            unsigned char value = (unsigned char)residue[at + byte];
+
+            *out++ = HEX[(value >> 4) & 0x0f];
+            *out++ = HEX[value & 0x0f];
+        }
+
+        *out = '\0';
+
+        wsprintf(probeArgs, "'%c',-%04x", character, (int)(DEPTH - at));
+        probe("stack", probeArgs, probeResult);
+    }
 }
 
 /* Draws a character without recording anything, to put the heap in the state
@@ -316,7 +412,7 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      * are dumped at the three places the whole-block comparison showed moving,
      * which is enough to read a field against the sweep.
      */
-    probeNote("the scaler's block, each character on its first draw");
+    probeNote("the frame and the block together, each on the character's first draw");
     {
         static const char CHARS[] = "ABKMWagjm";
         int which;
@@ -330,11 +426,29 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
         }
 
         if (scaler >= 0) {
-            draw("Symbol", 8, 'y');
+            /* The frame and the block for one character together, both from its
+             * first draw, so that a pointer found in the frame can be looked up
+             * in the block as it stood at that moment. Drawing it again to read
+             * the second of them would be reading a blit. */
+            probeFrame("Symbol", 8, 'y');
             dump(scaler, 'y');
 
-            draw("Symbol", 8, '1');
+            probeFrame("Symbol", 8, '1');
             dump(scaler, '1');
+
+            /* And GDI's own data segment, once.
+             *
+             * The frame holds no pointer to the block the points are in -- the
+             * only selector of GDI's it carries in quantity is `DGROUP` itself.
+             * So the element is reached through a field in GDI's data rather
+             * than through anything passed on the stack, and that field is what
+             * names the routine which reads it.
+             */
+            for (index = 0; index < found; index++) {
+                if (owners[index] == gdiModule && sizes[index] == 0x3180L) {
+                    dump(index, 'd');
+                }
+            }
 
             for (which = 0; CHARS[which]; which++) {
                 draw("Symbol", 8, CHARS[which]);
@@ -345,6 +459,17 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
         }
     }
 
+    /*
+     * And the frame the box is marshalled in, from the same run as the census.
+     *
+     * The box is not in any block, so the step that makes it leaves nothing
+     * behind but the frame it ran in. What the frame can still say is *which*
+     * structure it was made from: a far pointer whose selector is the scaler's
+     * block names the thing being read, and the offset says which part of it.
+     * Both characters are drawn fresh, after everything above has already put
+     * them in the cache -- so these two frames are a cached draw and are worth
+     * exactly what a cached draw is worth, which the analysis has to allow for.
+     */
     DeleteObject(canvas);
     DeleteDC(memory);
     ReleaseDC(NULL, screen);

@@ -4162,10 +4162,42 @@ So the box's rounding is either written some other way or lives in the scaler's
 own segment rather than GDI's.
 
 Where that leaves it: the two ends are known and named, the middle is code, and
-the places it is _not_ are three fewer than they were. The way in from here is
-the stack again rather than the heap -- the frame that carries the box also
-carries a pointer to the element it was made from, and finding which pointer that
-is names the routine that fills the parameter block.
+the places it is _not_ are three fewer than they were.
+
+#### The frame carries no pointer to the points
+
+The obvious way in was the stack again: the frame that carries the box ought to
+carry a pointer to the element it was made from, and that pointer would name the
+routine. It does not, and settling that took reading both at once.
+
+**Both have to come from one run.** A selector is whatever the heap handed out
+that time, so a pointer found in a frame recorded once means nothing against a
+census taken another time. So the heap probe gained the stack capture: draw, copy
+the frame out before anything else can touch it, and write down the census's
+selectors beside it.
+
+The frame is the right frame -- the box is in it, at `-0x24c` and `-0x250`, two
+bytes off where `stack.c` finds it because this probe's own frame is two bytes
+different. Around it sit two more copies of each edge, at `-0x248` and `-0x265`
+and `-0x26b`, and a byte that is `7 - boxLeft`. And:
+
+- **the scaler block's selector appears nowhere in the 2,560 byte frame.** The
+  only selector of GDI's the frame carries in quantity is `DGROUP` itself, 14
+  times, which is what saving `DS` across calls looks like.
+- **the element's offsets appear nowhere either**, near or far -- not `0x227c`
+  where the `x` array is, nor `0x2352` where the `y` array is, nor either of
+  their second copies at `0x17e4` and `0x19e6`.
+- **`DGROUP` holds no pointer to it.** Dumped whole, all 12,672 bytes, it has one
+  word pair whose high half is that selector, and that pair's offset is past the
+  end of the block -- two adjacent numbers, not a pointer.
+- the one far pointer the parameter block does carry is `0B97:0004`, into a 160
+  byte block of GDI's, not the outline.
+
+So the link from the point array to the box is not a stored pointer at all. The
+element is reached through segment state that neither instrument records, and the
+box is computed and pushed without either end being written where both can be
+seen at once. Two searches of the frame and one of the data segment say so, which
+is worth more than the assumption it replaces.
 
 ### And the last of `slope-sweep` is residue
 
