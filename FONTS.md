@@ -4342,12 +4342,44 @@ the other thing section 3 had to settle by counting records: building it from th
 corners cost five of the real corpus, and the minimum over points stood. It
 stands here for a better reason.
 
-What is left is one step, and it is now a sharp one. The rule is not in question
-and neither is its input's shape: for the cell that disagrees, the minimum this
-loop accumulated must have been 225 sixty-fourths or more, where the outline's
-own `xMin` of 48 and origin of -37 and a pen of 128 make 213. So the device
-coordinates the scan converter walks are not those three added, and what
-transforms them is the last thing unread. What the recordings have settled is the shape of it: the scaler
+#### What the routine walks, and why the transform cannot be read this way
+
+The routine takes one pointer, at `[bp-0x3a]`, and everything else comes out of
+it:
+
+    0f54  mov bx,[bx+0x10]     ; one contour index array
+    0f62  mov bx,[bx+0xe]      ; the other
+    0f73  add cx,[bx]          ; the first coordinate array
+    0f78  add si,[bx+0x2]      ; the second
+    0feb  mov ax,[si]          ; and the walk reads them word by word
+    0ff7  mov ax,[si]
+
+That is the element the reference describes -- two coordinate arrays and the
+contour ends beside them -- and the box is accumulated from the words the walk
+reads out of it, with no arithmetic on them in this routine at all. **So the
+transform is upstream of the scan converter**, and what it hands over is already
+in device sixty-fourths.
+
+And those are the numbers that cannot be recovered afterwards. Searched over the
+whole segment, no word holds 206 for the `y` cell and 213 for the `1` cell, and
+none differs anywhere near them. What survives the call is the _glyph_ space
+copy, twice -- `48 48 66 66` at `+0x17e4` and again at `+0x227c`, with the origin
+phantom beside the second -- which is the element's own arrays, bearing not
+applied. The device arrays are transient: written into a buffer, walked, and gone
+by the time anything can read them.
+
+Which sets the boundary of this instrument honestly. A probe reads memory after a
+call; a value that exists only during one is out of its reach, and the transform's
+output is such a value. Seeing it wants a different mechanism -- something that
+stops the machine mid-call rather than sifting what it left -- and that is not a
+probe.
+
+What the disassembly did settle is worth the trip: the box's rounding and the
+fact that it is a minimum over points rather than corners were both _fitted_ from
+recordings, and both are now read from instructions. The one cell that disagrees
+needs a minimum of 225 sixty-fourths where the outline's `xMin` of 48, origin of
+-37 and pen of 128 make 213, so whatever the transform does, it is not those
+three added -- and that is as far as reading memory can take it. What the recordings have settled is the shape of it: the scaler
 produces a bounding box without a bearing, something outside it produces a box
 with one, the two stacks that could hold the join hold neither the sum nor the
 parts, and the segment doing the work is named by an immediate rather than a
