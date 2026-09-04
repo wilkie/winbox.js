@@ -4282,9 +4282,72 @@ through `les bx,[bp-0x1a]` and swaps their halves -- big-endian reads, which is
 font file parsing. So segment 36 is the font driver and it borrows the scaler's
 segment as data.
 
-What is left is to follow segment 36 from its entry to the routine that fills the
-parameter block, which is a disassembly rather than a recording, and larger than
-what is here. What the recordings have settled is the shape of it: the scaler
+#### The box rule, read out of the instruction stream
+
+Following it is a matter of knowing where to start, and the recordings say where.
+The thunk calls `far [bx+0x1e]` with `bx` doubled from 0x12, which is `47:[0x42]`
+-- a dispatch table in the scaler's own segment, whose selector halves are the
+fixup slots that become segment 36. Read out of the file, the entry is `36:1910`,
+and descending it finds big-endian word reads and table tags: segment 36 is the
+font _file_ driver, not the scan converter.
+
+The scan converter is segment 42, and it can be found by what it must contain.
+`sar ax,6` occurs once in the whole image, at file `0x1d509`, which is segment 42
+offset `0x1189`. Around it:
+
+    1159  mov dx,[bp-0x38]
+    115c  mov ax,[bp-0x30]
+    115f  add word [bp-0x30],byte +0x20   ; a maximum, +32
+    1165  mov [bx+0x16],ax                ; the unrounded value, kept
+    1168  mov ax,[bp-0x26]
+    116b  add word [bp-0x26],byte +0x1f   ; a minimum, +31
+    116f  mov [bx+0x12],ax
+    1172  mov ax,[bp-0x2e]
+    1175  add word [bp-0x2e],byte +0x20   ; the other maximum, +32
+    1179  mov [bx+0x18],ax
+    117c  mov ax,[bp-0x24]
+    117f  add word [bp-0x24],byte +0x1f   ; the other minimum, +31
+    1183  mov [bx+0x14],ax
+    1186  mov ax,[bp-0x30]
+    1189  sar ax,byte 0x6                 ; >> 6, arithmetic
+    118c  mov [bx+0xe],ax
+    118f  mov cx,[bp-0x26]
+    1192  sar cx,byte 0x6
+    1195  mov [bx+0xa],cx
+    1198  mov si,[bp-0x2e]
+    119b  sar si,byte 0x6
+    119e  mov [bx+0x10],si
+    11a1  mov di,[bp-0x24]
+    11a4  sar di,byte 0x6
+    11a7  mov [bx+0xc],di
+    11aa  sub si,di                       ; a height
+    11af  sub ax,cx                       ; a width
+    11b1  add ax,0x1f
+    11b4  and al,0xe0                     ; rounded to a multiple of 32 bits
+    11b6  mov [bx+0x20],ax                ; the row stride
+
+**`(min + 31) >> 6` and `(max + 32) >> 6`, on both axes.** That is the rule
+section 3 derived from 528 recorded boxes, and here it is as instructions. The
+shift is arithmetic, so a negative edge rounds toward minus infinity, which is
+what `Math.ceil(x - 0.5)` does and what the corpus needed. The structure keeps
+the unrounded sixty-fourths beside the rounded columns, at `+0x12` and `+0x16`,
+and ends with a bitmap row stride -- so this is a glyph bitmap's header, which is
+what the box always was.
+
+**And the four edges are a running minimum and maximum over the points.** The
+loop that feeds them, at `0x10e4`, takes each coordinate in turn and does a
+compare-and-keep against two locals apiece -- so the box is accumulated point by
+point as the outline is walked, and not taken from a stored bounding box. That is
+the other thing section 3 had to settle by counting records: building it from the
+corners cost five of the real corpus, and the minimum over points stood. It
+stands here for a better reason.
+
+What is left is one step, and it is now a sharp one. The rule is not in question
+and neither is its input's shape: for the cell that disagrees, the minimum this
+loop accumulated must have been 225 sixty-fourths or more, where the outline's
+own `xMin` of 48 and origin of -37 and a pen of 128 make 213. So the device
+coordinates the scan converter walks are not those three added, and what
+transforms them is the last thing unread. What the recordings have settled is the shape of it: the scaler
 produces a bounding box without a bearing, something outside it produces a box
 with one, the two stacks that could hold the join hold neither the sum nor the
 parts, and the segment doing the work is named by an immediate rather than a
