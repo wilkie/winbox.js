@@ -212,8 +212,47 @@ static void probeFrame(LPCSTR face, int height, char character)
     DeleteObject(font);
 
     wsprintf(probeArgs, "'%c'", character);
-    wsprintf(probeResult, "sp=%04x,depth=%d", (int)residueTop, DEPTH);
+    wsprintf(probeResult, "sp=%04x,ss=%04x,depth=%d", (int)residueTop,
+             (int)(WORD)((DWORD)(char far *)&font >> 16), DEPTH);
     probe("frame", probeArgs, probeResult);
+
+    /*
+     * And the head of every block, because one of them is the scaler's stack.
+     *
+     * The thunk saves the caller's `ss` and `sp` into its own segment at `0x16`
+     * and `0x18` before it switches, so the segment that holds this program's
+     * own stack pointer at those two offsets is the one the scan converter ran
+     * on. That is a signature no other block can accidentally carry, and it
+     * finds the segment without having to know which selector the loader gave
+     * it.
+     */
+    {
+        int index;
+
+        for (index = 0; index < found; index++) {
+            WORD selector = GlobalHandleToSel(blocks[index]);
+            LPSTR out;
+            int byte;
+
+            if (selector == 0 || MemoryRead(selector, 0x10L, buffer, 16L) == 0) {
+                continue;
+            }
+
+            out = probeResult;
+
+            for (byte = 0; byte < 16; byte++) {
+                unsigned char value = (unsigned char)buffer[byte];
+
+                *out++ = HEX[(value >> 4) & 0x0f];
+                *out++ = HEX[value & 0x0f];
+            }
+
+            *out = '\0';
+
+            wsprintf(probeArgs, "'%c',%d", character, index);
+            probe("head", probeArgs, probeResult);
+        }
+    }
 
     for (at = 0; at < DEPTH; at += 32) {
         LPSTR out = probeResult;
@@ -262,6 +301,51 @@ static void draw(LPCSTR face, int height, char character)
 
     SelectObject(memory, previous);
     DeleteObject(font);
+}
+
+/*
+ * Writes out a selector that belongs to no block, until it stops reading.
+ *
+ * The scaler does not run on the stack of whoever called it. Its thunk, at
+ * segment 36 offset `0xae`, sets `ss` to a fixed `0x00bc` and `sp` to a saved
+ * offset before it calls, and puts them back afterwards -- so every frame the
+ * scan converter builds is on a stack of its own, and the residue probe has
+ * been reading the wrong one all along. That is why no coordinate and no
+ * pointer to the outline is ever in it: nothing that matters happens there.
+ *
+ * A stack that is switched away from is abandoned rather than cleared, exactly
+ * as the caller's is, so it can be read afterwards the same way. `MemoryRead`
+ * takes a selector and does not care that no block of the heap owns it, and it
+ * returns nought rather than faulting where the segment ends -- which is also
+ * how far to go.
+ */
+static void dumpSelector(WORD selector, char character, DWORD to)
+{
+    DWORD at = 0;
+
+    while (at < to) {
+        DWORD got = MemoryRead(selector, at, buffer, 32L);
+        LPSTR out = probeResult;
+        int byte;
+
+        if (got == 0) {
+            break;
+        }
+
+        for (byte = 0; byte < (int)got; byte++) {
+            unsigned char value = (unsigned char)buffer[byte];
+
+            *out++ = HEX[(value >> 4) & 0x0f];
+            *out++ = HEX[value & 0x0f];
+        }
+
+        *out = '\0';
+
+        wsprintf(probeArgs, "'%c',+%04x", character, (int)at);
+        probe("scaler", probeArgs, probeResult);
+
+        at += got;
+    }
 }
 
 /* Writes part of a block out, thirty-two bytes to a record. */
@@ -431,9 +515,11 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
              * in the block as it stood at that moment. Drawing it again to read
              * the second of them would be reading a blit. */
             probeFrame("Symbol", 8, 'y');
+            dumpSelector(0x00bc, 'y', 0x4000L);
             dump(scaler, 'y');
 
             probeFrame("Symbol", 8, '1');
+            dumpSelector(0x00bc, '1', 0x4000L);
             dump(scaler, '1');
 
             /* And GDI's own data segment, once.

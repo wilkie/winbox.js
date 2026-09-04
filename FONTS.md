@@ -4193,11 +4193,53 @@ and `-0x26b`, and a byte that is `7 - boxLeft`. And:
 - the one far pointer the parameter block does carry is `0B97:0004`, into a 160
   byte block of GDI's, not the outline.
 
-So the link from the point array to the box is not a stored pointer at all. The
-element is reached through segment state that neither instrument records, and the
-box is computed and pushed without either end being written where both can be
-seen at once. Two searches of the frame and one of the data segment say so, which
-is worth more than the assumption it replaces.
+So the link from the point array to the box is not a stored pointer at all.
+
+### The scaler runs on a stack of its own
+
+The reason nothing was ever found is worth the whole chase. Descending the
+scaler's entry, which section 3 had already located at segment 36 offset `0xae`:
+
+    00ae  mov bx,0x12         ; which entry of the table
+    00b4  call 0xe1
+    00e5  mov ax,0xbc         ; relocated -- a segment, not a number
+    00e8  mov es,ax
+    00ea  mov dx,ss
+    00ec  mov [es:0x10],bp    ; save the caller's registers into it
+    00fb  mov [es:0x18],dx    ;   ... including ss
+    0104  mov [es:0x16],si    ;   ... and sp
+    010c  mov di,[es:0x1a]    ; the stack it keeps for itself
+    0111  mov ss,ax
+    0113  mov sp,di           ; and switch
+    0116  rep movsw           ; copy the arguments across
+    011e  call far [bx+0x1e]
+
+**It switches stacks.** Every frame the scan converter builds is on a stack of
+its own, and the residue probe -- which reads the memory below the _caller's_
+stack pointer -- has been reading the wrong one from the beginning. That is why
+no coordinate is ever in it, why no pointer to the outline is in it, and why
+`DGROUP` has none either. Nothing that computes a box happens where we were
+looking.
+
+Which segment it is falls out of the relocations rather than the constant: the
+`0xbc` at `0xe6` is patched at load time, and the chain for **segment 47** in
+segment 36's fixup table contains `0xe6`. Its selector at run time is found
+without the loader's help at all -- the thunk writes the caller's `ss` and `sp`
+into the segment at `0x18` and `0x16`, so the block whose head holds _this
+program's own stack pointer_ is the one, and that signature cannot be carried by
+accident. The probe reads the head of all 226 blocks and exactly one matches.
+
+**It is block `0857`** -- the same block the point array was found in, holding
+`ss=050f`, `sp=3844` from the caller and `0x14a8` for itself. So the earlier
+reading of that block needs correcting: it is not a glyph cache. It is the
+scaler's stack segment, with the stack proper running down from `0x14a8` and the
+element's arrays sitting in the static data above it. The character codes and the
+counter that steps eight bytes a glyph are stack residue of the scaler's own
+frames, not cache entries, and the differences at `+0x12d6` to `+0x14b1` -- just
+below its stack pointer -- are the frames the box was made in.
+
+So the instrument was pointed at the wrong stack for as long as there has been an
+instrument, and both stacks are now readable.
 
 ### And the last of `slope-sweep` is residue
 
