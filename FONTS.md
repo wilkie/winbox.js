@@ -2720,6 +2720,37 @@ it is worth **eight records of the corpus and sixteen cells**:
 One cell resists: Symbol's mu at twenty-four pixels, whose lone pixel in row 18
 does not smear though its edge is 14. Left unexplained.
 
+#### Eight pixels, and the stub contradiction in a fourth form
+
+Of what is left, the largest single group that is not the plotter faces is
+Symbol upright at eight pixels: eight records, and seven bold records that are
+the same cells emboldened. Their boxes agree with GDI's -- the real-face
+recording had no upright differences -- so the disagreement is inside the box.
+Three things were checked, and each closes a door:
+
+- **It is not hinting.** The interpreter runs Symbol's programs at six per em
+  (`hinted` is true for every glyph, with `SCANTYPE 1` and `SCANCTRL 0x1ff`),
+  and drawing the same cells from the _unhinted_ outline gives pixel-for-pixel
+  the same result: 4 of 12 agree either way, the same four.
+- **It is not the scan kind.** `SCANTYPE 1` is dropout control excluding stubs,
+  and turning the stub check off for every outline glyph -- which is what an
+  "including stubs" kind would mean -- costs **411 records** of the corpus and
+  takes `cour-stubs` from 258 of 258 to 176. The check is real, and on.
+- **It is the stub check refusing something Windows draws.** The period at
+  eight pixels is a single zero-length run on row 5, rescued to column 2 and
+  then refused because nothing continues above or below it; Windows draws
+  exactly that pixel. The reference's `DoHorizDropout` and `DoVertDropout`,
+  with their crossing counters read line by line, refuse it too -- the period's
+  two crossings round to the same column and so count as two, but only on one
+  side, and the other side is empty whichever pass is asked.
+
+So this is the contradiction section 3 already records from `cour-stubs` --
+Windows draws the tips of a bare post and refuses the free tip of an armed one
+-- in a fourth form, with a fourth shape. The `narrow` stand-in that carries the
+bare post does not carry the period, whose box has not collapsed. Whatever the
+shipped continuation test really is, it is not the reference's, and the eight
+records wait on reading it rather than on any measurement this file can make.
+
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
 changing the code outright and re-running the ratchet.)
