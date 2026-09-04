@@ -226,6 +226,23 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      */
     probeSweep("Courier New", 0, 'g');
 
+    /* Symbol has no italic file, so asking for one gets the upright slanted
+     * by GDI -- the one face on a stock installation whose slant is
+     * synthesised. Its string extents follow the design advances scaled and
+     * rounded at every size but one, and that one is a glyph a fraction of a
+     * sixty-fourth under the half. A letter at a time settles how the
+     * synthesised advance rounds, where a string can only say that it is off.
+     */
+    probeNote("the synthesised slant, a letter at a time");
+    {
+        static const char alphabet[] =
+            "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        const char *letter;
+        for (letter = alphabet; *letter; letter++) {
+            probeSweep("Symbol", 1, *letter);
+        }
+    }
+
     /* Times New Roman's `y`, whose descender tail is the other last pixel.
      * Unlike Courier's `g` this one is hinted at the size that fails, so a
      * readout can reach it.

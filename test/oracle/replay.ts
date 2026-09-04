@@ -143,20 +143,57 @@ export async function prepareFonts() {
 
   const manager: any = new FontManager();
 
-  for (const entry of await fileSystem.list(['WINDOWS', 'SYSTEM'])) {
-    if (/\.(FON|TTF)$/.test(entry.info.name.toUpperCase())) {
-      await manager.load(await fileSystem.open(['WINDOWS', 'SYSTEM', entry.info.name]));
+  /* Installed in the order Windows installs them, because the mapper's ties
+   * go to the first face in the font directory.
+   *
+   * GDI's directory is not the `SYSTEM` directory. It is the three boot fonts
+   * named in `SYSTEM.INI`, which GDI loads first, and then every line of
+   * `WIN.INI` `[fonts]` in the order written, which `USER` adds at start-up.
+   * A `.FOT` entry there is a stub that names the `.TTF` it stands for. The
+   * installer wrote `[fonts]` with the TrueType faces first and Arial at the
+   * top, and that is why a request no strike can answer falls to Arial rather
+   * than to Times New Roman, whose file the directory happens to list first.
+   */
+  const readText = async (path: string[]) => {
+    const file = await fileSystem.open(path);
+    if (!file) {
+      return null;
+    }
+    const text = new Uint8Array(await file.read(0, file.size));
+    return Array.from(text, (byte) => String.fromCharCode(byte)).join('');
+  };
+  const section = (text: string | null, name: string) => {
+    const match = new RegExp(
+      `^\\[${name}\\][ \\t]*\\r?\\n([\\s\\S]*?)(?=^\\[|$(?![\\r\\n]))`,
+      'mi'
+    ).exec(text ?? '');
+    return (match?.[1] ?? '')
+      .split(/\r?\n/)
+      .map((line) => line.split('=').map((part) => part.trim()))
+      .filter((parts) => parts.length === 2 && parts[1]);
+  };
+  windowsProfile = await readText(['WINDOWS', 'WIN.INI']);
+  const systemProfile = await readText(['WINDOWS', 'SYSTEM.INI']);
+  const boot = section(systemProfile, 'boot').filter(([key]) =>
+    ['fonts.fon', 'fixedfon.fon', 'oemfonts.fon'].includes(key.toLowerCase())
+  );
+  const installed: string[] = [];
+  for (const [, value] of [...boot, ...section(windowsProfile, 'fonts')]) {
+    let name = value.split(/[\\/]/).pop()!.toUpperCase();
+    if (name.endsWith('.FOT')) {
+      const stub = await readText(['WINDOWS', 'SYSTEM', name]);
+      name =
+        /[A-Z0-9_]+\.TTF/i.exec(stub ?? '')?.[0].toUpperCase() ?? name.replace(/\.FOT$/, '.TTF');
+    }
+    if (installed.includes(name)) {
+      continue;
+    }
+    installed.push(name);
+    const file = await fileSystem.open(['WINDOWS', 'SYSTEM', name]);
+    if (file) {
+      await manager.load(file);
     }
   }
-
-  const profile = await fileSystem.open(['WINDOWS', 'WIN.INI']);
-
-  if (profile) {
-    const text = new Uint8Array(await profile.read(0, profile.size));
-
-    windowsProfile = Array.from(text, (byte) => String.fromCharCode(byte)).join('');
-  }
-
   fonts = manager;
 
   return fonts;
@@ -1323,14 +1360,7 @@ export class Unimplemented extends Error {}
  *
  * All 2,574 records agree.
  */
-export const KNOWN_GAPS: Record<string, string> = {
-  'CreateFont heights':
-    'one: Symbol slanted at twelve pixels, which Windows answers a cell shorter',
-  'CreateFont extent':
-    'five: Symbol slanted, where the string measures a pixel or three from what Windows makes it',
-  'CreateFont quality':
-    'four of 72: a hundred pixels of a bitmap face at proof quality, where refusing every stretch leaves the nearest strike so far off that a scalable face wins instead, and we answer with the strike',
-};
+export const KNOWN_GAPS: Record<string, string> = {};
 
 /**
  * Functions a module declares but wires to a stub.

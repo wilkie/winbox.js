@@ -3688,6 +3688,104 @@ column before the pen, which is exactly where the two readings part.
 
 Every glyph Windows was recorded drawing, this draws.
 
+#### The font corpus: what a synthesised slant reports
+
+Ten `font` records were left, all of them about faces Windows has to make
+something up for, and they came apart into three rules.
+
+**Three were the slant's advances.** Symbol has no italic file, so an italic
+request gets the upright slanted by GDI -- drawn, as section 8 found, from the
+raw outline with no program run. It is measured the same way: the string extents
+Windows reports for it follow neither `hdmx` nor the interpreter, both of which
+belong to the hinted upright, but the scaled outline's own advance. Switching the
+slant's `measure` to that closed three of the five extents.
+
+**Two were its heights.** Symbol slanted at a twelve pixel cell is nine pixels
+per em, the size `VDMX` picks for the upright -- and it stays nine even though
+ten per em would fill the cell exactly, so the size is not reconsidered for the
+slant. What changes is what is reported: ascent 9 and descent 2 for a cell of 11,
+where the table's fitted values are 9 and 3. Those are the design values scaled
+and rounded -- 2059 and 450 font units at nine per em are 9.05 and 1.98 -- and
+they are unhinted for the same reason the glyphs are. `realiseOutline` now
+reports the scaled values for a slant it synthesises and keeps the table's size.
+
+**Four were a strike losing to the wrong name.** Fixedsys, System, Small Fonts
+and Courier at a hundred pixels, at proof quality, all come back as **Arial** --
+a hundred pixel cell, ascent 80, average width 39 -- where at default quality the
+same requests answer with their own strikes stretched. The mapper's penalty
+table, read in section 3, says exactly why. A strike of the face asked for pays
+nothing for its name and 150 a pixel of height it is short; an outline of some
+other face pays 10,000 flat for the name and nothing for height, because it can
+be realised at any. Fixedsys's tallest strike is fifteen rows, eighty-five short
+of a hundred: 12,750, and Arial's 10,000 wins. Stretched six times over at
+default quality the same strike costs under two thousand and keeps winning. The corpus
+has the threshold bracketed from the other side too, without having asked for
+it: MS Serif and MS Sans Serif at the same hundred pixels **keep** their strikes,
+thirty-five and thirty-seven rows tall -- sixty-five and sixty-three short, 9,750
+and 9,450, both under 10,000.
+
+Every outline that is not the face pays the same 10,000, and the candidate loop
+replaces its best only on a strictly lower score, so the tie goes to whichever
+outline the font directory lists first. GDI's directory is not the `SYSTEM`
+directory: it is the three boot fonts from `SYSTEM.INI`, then every line of
+`WIN.INI` `[fonts]` in the order written, each `.FOT` a stub naming its `.TTF`.
+The installer wrote `[fonts]` alphabetically with the TrueType faces first, so
+Arial heads it; the replay had been walking the directory, which happens to list
+`TIMESI.TTF` before anything else, and it now installs in the order Windows
+does. The first attempt at that lost the three boot fonts to a `[boot]` header
+with trailing spaces after the bracket -- a detail of one installer's `SYSTEM.INI`
+worth writing down, since anything parsing it will meet the same line.
+
+    glyphs   5,982 of 5,982    100.0%
+    font     5,056 of 5,057     99.9%
+
+#### The last pixel of the font corpus is the phantom's rounding
+
+The one record left was Symbol slanted at fifty pixels, where the specimen string
+`Wg jpq 128` measures 201 and its rounded advances add up to 200. Forty-one
+pixels per em puts the three digits at exactly 20.5 -- but those round up either
+way, and the sum was still one short. Across the ten sizes the extent records
+cover, the scaled advances agreed with Windows at nine, so whatever this was
+lived in a single glyph at a single size, and a string cannot say which. The
+advance probe can: it already measures one character's `GetTextExtent` at every
+cell height from 8 to 110, and it gained a pass over every letter and digit of
+Symbol slanted -- **6,014 advances**.
+
+Rounding the design advance misses 51 of them, every one a pixel short, every
+one with the scaled advance between .488 and .4995 of a pixel -- just under the
+half. But the outcome is not a function of that fraction. At sixty-three per em
+`A` and `C` (advance 1479, 45.497 pixels) stay at 45 while `H`, `K`, `N` and `O`
+(the same 1479) go to 46; at eighty-one per em `A`, `C`, `H` and `K` go up and
+`N` and `O` stay down. **Same advance, same size, different answer: the term is
+in the glyph.** Not its hinting -- in the `A` cases the interpreter's advance
+equals the scaled one. Not its bearing carried whole, which is far too large a
+move and misses fifteen hundred. What fits is smaller than either.
+
+The scaler places the origin phantom at `xMin - lsb`: the outline keeps its own
+coordinates and the origin moves to where the bearing says it should be. The
+advance phantom sits that far along plus the advance. Both are scaled to 26.6
+and **each rounded to a sixty-fourth**, and the device advance is their
+difference, rounded to a pixel. Where the bearing shift is nought the two
+phantoms round together and the result is the rounded advance. Where it is not,
+the origin's own rounding error -- up to half a sixty-fourth -- lands on the
+advance, and that is enough to decide a glyph a hair under the half. `A` at
+sixty-three: origin at -0.615 pixels rounds to -39 sixty-fourths, advance
+phantom at 44.882 rounds to 2872, the difference 2911 is 45. `H`, no shift: 2912, 46. Windows makes them 45 and 46.
+
+**6,014 of 6,014.** The sign and the rounding are both measured: the origin at
+`lsb - xMin` misses 28 and flooring the sixty-fourths misses 29, so this is the
+placement the reference scaler describes and not a fit to the misses.
+`TrueTypeFont.unhintedAdvance` is the rule; the slant's `measure` uses it; the
+fifty pixel string comes to 201, because `W` at 31.49 pixels has a shift of its
+own and rounds up.
+
+    glyphs    5,982 of 5,982    100.0%
+    font      5,057 of 5,057    100.0%
+    hinting   7,828 of 7,828    100.0%
+
+`KNOWN_GAPS` is empty. Every record in every fixture the oracle has recorded of
+fonts -- mapping, metrics, extents, advances and pixels -- this reproduces.
+
 #### Asking `IP` directly, and being wrong about the answer
 
 An observation of a real letter says where its program put a point and leaves

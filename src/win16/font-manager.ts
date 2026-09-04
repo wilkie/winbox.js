@@ -139,6 +139,14 @@ export class FontManager {
   static ASPECT_PENALTY = 30 * 1024;
   static RATIO_PENALTY = 4 * 1024;
 
+  /* What a candidate pays for not being the face that was asked for, from the
+   * same table: the mapper adds `AddAtom` on the candidate's name and charges
+   * this when it matches neither the name requested nor its alias. It dwarfs
+   * every other term, which is why a request that names a face gets that face
+   * -- until the height term outgrows it. See `map`.
+   */
+  static FACE_PENALTY = 10000 * 1024;
+
   /** A square device pixel, as the mapper counts aspect: hundredths. */
   static SQUARE = 100;
 
@@ -593,6 +601,46 @@ export class FontManager {
     /* The requested name survives only when it was redirected and the redirect
      * found something; anything else answers with the face that was opened.
      */
+    /* A family of strikes loses to some other face's outline once its best
+     * strike costs more than the wrong name does.
+     *
+     * The mapper scores every installed face against the request and keeps the
+     * cheapest. A strike of the name asked for pays nothing for its name and
+     * 150 a pixel for being the wrong height; an outline of another name pays
+     * 10,000 flat and nothing for height, because it can be realised at any.
+     * So Fixedsys at a hundred pixels, asked for at proof quality where a strike
+     * may not be stretched, is a fifteen row strike eighty-five pixels short --
+     * 12,750 in height -- and Arial answers, with a hundred pixel cell and
+     * Arial's own widths. Asked for at default quality the same strike is drawn
+     * six times over for under two thousand and keeps winning. The corpus
+     * brackets the threshold from both sides: four bitmap families at a hundred
+     * pixels answer with Arial at proof quality and their own strikes at
+     * default, and MS Serif and MS Sans Serif, whose tallest strikes are only
+     * sixty-five and sixty-three short, keep theirs at both.
+     *
+     * Every outline that is not the face pays the same 10,000, and the loop
+     * replaces its best only on a strictly lower score, so the tie goes to the
+     * first outline in the font directory. Windows builds that directory in
+     * `WIN.INI` `[fonts]` order, which the installer wrote alphabetically, and
+     * the drive image is loaded in the same order; Arial is first either way.
+     * A symbol outline is out for a request that did not ask for symbols, the
+     * same way it is everywhere else here.
+     */
+    if (found && chosen.cost > FontManager.FACE_PENALTY) {
+      const symbols = charset === FontManager.SYMBOL_CHARSET;
+      for (const installed of Object.keys(this._outlines)) {
+        const other = this.outline(installed, wantsBold, wantsItalic);
+        if (!other || Boolean(other.font.symbolic) !== symbols) {
+          continue;
+        }
+        const realised = FontManager.realiseOutline(other.font, request);
+        if (realised) {
+          return { ...realised, outline: other.font, face: other.name, exactStyle: other.exact };
+        }
+        break;
+      }
+    }
+
     const echo = found && substituted && request.face;
 
     return { ...chosen, face: echo ? String(request.face) : chosen.entry.name };
@@ -675,12 +723,27 @@ export class FontManager {
       return null;
     }
 
+    /* A slant Windows synthesises keeps the upright's size and loses its
+     * hinting.
+     *
+     * The size is still the one `VDMX` chooses -- Symbol slanted at twelve
+     * pixels is nine per em, though ten per em would have filled the cell
+     * exactly -- but the ascent and descent reported for it are the design
+     * values scaled and rounded, not the fitted ones the table holds: at nine
+     * per em the descender is 1.98 pixels, which hinting carries to 3 and
+     * Windows reports as 2. The glyphs said it first: the slant is drawn from
+     * the raw outline with no program run, so there is nothing fitted to report.
+     */
+    const synthetic = !!request.italic && !font.italicFace;
+
     return {
       entry: null,
       ppem: found.ppem,
       xPpem: horizontal || found.ppem,
-      ascent: found.ascent,
-      descent: found.descent,
+      ascent: synthetic ? Math.round((font.ascender * found.ppem) / font.unitsPerEm) : found.ascent,
+      descent: synthetic
+        ? Math.round((font.descender * found.ppem) / font.unitsPerEm)
+        : found.descent,
     };
   }
 
@@ -938,7 +1001,7 @@ export class FontManager {
       horizontal = Math.max(1, Math.round(width / (average || 1)));
     }
 
-    return { entry: best.entry, scale: best.scale, horizontal };
+    return { entry: best.entry, scale: best.scale, horizontal, cost: best.cost ?? 0 };
   }
 
   /**

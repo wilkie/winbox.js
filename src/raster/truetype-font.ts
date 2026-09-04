@@ -696,6 +696,42 @@ export class TrueTypeFont {
   }
 
   /**
+   * A glyph's advance at a size with no program run: what the scaler answers
+   * for a slant Windows synthesises.
+   *
+   * It is not the design advance scaled and rounded. The scaler places the
+   * origin phantom at `xMin - lsb` -- the outline keeps its own coordinates
+   * and the origin moves to where the bearing says it should be -- and the
+   * advance phantom that far again plus the advance, scales both to 26.6 and
+   * rounds each to a sixty-fourth, and the device advance is their difference
+   * rounded to a pixel. When the bearing shift is nought the two agree. When it
+   * is not, the origin's own rounding error moves the advance by up to half a
+   * sixty-fourth, which is enough to decide a glyph whose scaled advance sits a
+   * hair under the half: Symbol's `A` at sixty-three pixels per em is 45.497
+   * pixels and rounds up as a number, but its origin at -0.615 pixels rounds
+   * to -39 sixty-fourths and the advance to 2872, and 2911 sixty-fourths is 45.
+   * `H`, the same advance with no shift, is 2912 and 46. Windows makes them 45
+   * and 46.
+   *
+   * **Recorded.** Every letter and digit of Symbol slanted, at every cell height
+   * from 8 to 110: 6,014 advances. Rounding the design advance misses 51 of
+   * them, all one short, all with the fraction between .488 and .4995 of a
+   * pixel. This misses none. Placing the origin at `lsb - xMin` instead
+   * misses 28, and flooring the sixty-fourths instead of rounding them misses
+   * 29, so both the sign and the rounding are measured rather than chosen.
+   *
+   * @param {number} glyph - The glyph index.
+   * @param {number} ppem - The size in pixels per em.
+   */
+  unhintedAdvance(glyph, ppem) {
+    const scale = (ppem * 64) / this.unitsPerEm;
+    const shift = this.bearingShift(glyph);
+    const origin = Math.round(-shift * scale);
+    const advance = Math.round((this.advanceOf(glyph) - shift) * scale);
+    return (advance - origin + 32) >> 6;
+  }
+
+  /**
    * A glyph's outline, fitted to the pixel grid by the font's own program.
    *
    * The program is what decides where the ink goes at text sizes -- see

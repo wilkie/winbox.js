@@ -204,11 +204,21 @@ export class LogicalFont extends Font {
          * a shortcut to the same one. Then the program. Scaling is the last
          * resort, for a glyph that has none.
          */
+        /* A slant Windows synthesises is drawn from the raw outline with no
+         * program run, and it is measured that way too: each advance is the
+         * scaler's unhinted one -- the two phantom points scaled, rounded to
+         * sixty-fourths and differenced -- not the `hdmx` or hinted one the
+         * upright face would use, and not quite the design advance scaled and
+         * rounded either. See `TrueTypeFont.unhintedAdvance` for the record
+         * that separates the two.
+         */
         width +=
-          font.deviceAdvance(ppem, glyph) ??
-          font.linearAdvance(glyph, ppem) ??
-          font.hintedAdvance(glyph, ppem) ??
-          Math.round((font.advanceOf(glyph) * ppem) / font.unitsPerEm);
+          this._style?.italic && !this._style?.exactStyle
+            ? font.unhintedAdvance(glyph, ppem)
+            : (font.deviceAdvance(ppem, glyph) ??
+              font.linearAdvance(glyph, ppem) ??
+              font.hintedAdvance(glyph, ppem) ??
+              Math.round((font.advanceOf(glyph) * ppem) / font.unitsPerEm));
       }
 
       /* A bold that had to be synthesised costs a pixel a character, which is
