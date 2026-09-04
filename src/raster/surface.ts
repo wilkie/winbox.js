@@ -468,12 +468,40 @@ export class Surface {
 
       /* An upright glyph that has no program of its own comes back from
        * `hintedOutline` exactly as stored, and so has not been carried across
-       * its bearing either. GDI carries it to the sixty-fourth -- `dot-bearing`
-       * upright moves with its bearing at that resolution, at every size -- and
-       * a hinted outline already has, through its phantom points, so only the
-       * raw case needs it here.
+       * its bearing either. A hinted outline already has, through its phantom
+       * points, so only the raw case needs it here.
+       *
+       * **And below seven pixels per em the carry is a whole pixel.** GDI moves
+       * the box with the bearing to the sixty-fourth at seven per em and above,
+       * and by the bearing rounded to a pixel below that.
+       *
+       * The two readings are almost the same thing, which is why this took so
+       * long to see. At eight per em they part company by two font units of
+       * bearing and at twelve by less; only at six and seven are they far
+       * enough apart for a sweep to land between them. `dot-fine` is
+       * `dot-bearing`'s square with the bearing stepped four units at a time
+       * across that gap, and the two sizes answer opposite ways:
+       *
+       *     ppem 6:  the box steps at a shift of 172 -- sixty-fourths say 259,
+       *              whole pixels say 171
+       *     ppem 7:  the box steps at a shift of 188 -- sixty-fourths say 186,
+       *              whole pixels say 147
+       *
+       * **Recorded.** Against every upright box the stack probe has read off a
+       * rewritten glyph -- 704 of them, ten dot instruments and eighteen cell
+       * heights -- carrying in sixty-fourths throughout misses nine, all at six
+       * per em; carrying in whole pixels throughout misses far more; and the
+       * split at seven misses **none**. Putting the boundary at eight instead
+       * costs sixteen and at nine seventeen, so the seven is measured and not
+       * chosen.
        */
-      const carried = italic ? Math.round(shift / 64) : fitted.hinted ? 0 : shift / 64;
+      const carried = italic
+        ? Math.round(shift / 64)
+        : fitted.hinted
+          ? 0
+          : ppem < 7
+            ? Math.ceil((outline.bearingShift(glyph) * ppem) / outline.unitsPerEm - 0.5)
+            : shift / 64;
 
       /* An outline that reaches too far out of its cell is not drawn at all.
        *

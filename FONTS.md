@@ -4454,20 +4454,48 @@ at this size, it was **not the four points of the square**: it was something one
 pixel wide, placed a quarter of a pixel right of where the square's left edge
 falls, and moving with the bearing exactly as the square would.
 
-That is a much better question than the one before it, and it is a question about
-the transform rather than about the box. A glyph under a pixel wide is the case
-the whole dropout apparatus exists for, and a box exactly a pixel wide is what
-that apparatus would need. Whether the widening happens before the box is taken
--- which is what these two lines say -- or the walk is fed a rescued run instead
-of an outline, is the next thing to ask, and `dot-widen` already sweeps a square
-across the width where a glyph stops being sub-pixel. The one cell that disagrees
-needs a minimum of 225 sixty-fourths where the outline's `xMin` of 48, origin of
--37 and pen of 128 make 213, so whatever the transform does, it is not those
-three added -- and that is as far as reading memory can take it. What the recordings have settled is the shape of it: the scaler
-produces a bounding box without a bearing, something outside it produces a box
-with one, the two stacks that could hold the join hold neither the sum nor the
-parts, and the segment doing the work is named by an immediate rather than a
-pointer.
+#### And the answer is a threshold at seven pixels per em
+
+Reading `dot-fine` at every size, not just the one it was cut for, ends it. Our
+rule predicts each step exactly -- at seven per em, at eight, nine, eleven,
+twelve, fourteen, sixteen, twenty and twenty-six -- and fails only at **six**.
+
+Which says where to look, because the two readings of the carry are almost the
+same thing and only part company at the bottom:
+
+| size   | the box steps at a shift of | sixty-fourths say | whole pixels say |
+| ------ | --------------------------- | ----------------- | ---------------- |
+| 6 / em | 172                         | 259               | **171**          |
+| 7 / em | 188                         | **186**           | 147              |
+| 8 / em | --                          | 131               | 129              |
+
+At eight per em they are two font units apart and no sweep can separate them; at
+twelve, less. **Six and seven answer opposite ways, and they are the only sizes
+that can.**
+
+So the carry is in whole pixels below seven pixels per em and in sixty-fourths at
+seven and above. Scored against every upright box the stack probe has read off a
+rewritten glyph -- **704 of them**, ten dot instruments and eighteen cell heights:
+
+| the bearing is carried in                   | boxes wrong of 704 |
+| ------------------------------------------- | ------------------ |
+| sixty-fourths everywhere (as it was)        | 9                  |
+| **whole pixels below 7 per em, else 64ths** | **0**              |
+| whole pixels below 8                        | 16                 |
+| whole pixels below 9                        | 17                 |
+
+None. And the boundary is measured rather than picked: moving it to eight costs
+sixteen boxes and to nine seventeen.
+
+    dot-bearing   286 -> 288 of 288 cells
+    fabricated    26,055 -> 26,057 of 26,058,  9 -> 5 wrong pixels
+
+Every recorded fixture is unchanged at a hundred per cent. **The box that GDI put
+a column right of its own rule for eight sittings was its own rule all along, at
+a size where the rule is a different one.**
+
+What is left of the fabricated corpus is the single `slope-sweep` cell whose
+program reads scratch-buffer residue, and nothing else.
 
 ### And the last of `slope-sweep` is residue
 
