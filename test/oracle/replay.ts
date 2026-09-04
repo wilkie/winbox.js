@@ -1362,7 +1362,7 @@ export class Unimplemented extends Error {}
  */
 export const KNOWN_GAPS: Record<string, string> = {
   glyph:
-    "two of 6,046, and one glyph counted twice: Symbol slanted at a thirty-two pixel cell, twenty-six per em, where the `t`'s stem inks two columns for two of its rows and Windows inks one. Traced to a margin: the sheared stem's right edge passes the sample column by 1.40 sixty-fourths at one row and 0.28 at the other, and Windows counts neither as covered. The shear's rounding, the lean and the spline depth have each been swept and each alternative is refused by hundreds of records, so what is left is under a sixty-fourth of an edge and nothing in the walk accounts for it",
+    "two of 6,046, and one glyph counted twice: Symbol slanted at a thirty-two pixel cell, where the `t`'s stem inks two columns for two of its rows and Windows inks one. Traced to one spline -- the inner corner of the stem, under two pixels long -- whose flattened chords cross those rows two and three sixty-fourths right of where the spline itself crosses; the spline's own crossings are Windows's. Its second differences make `size` exactly 128, so the only threshold that would give it another level is an inclusive test, and that wins these two and loses three others whose splines are the same size. The weights and the turning point splits were swept too and cost hundreds. See FONTS.md",
 };
 
 /**

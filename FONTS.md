@@ -4007,10 +4007,59 @@ Three things it is not, each swept against the 6,046 recorded glyph cells:
 The last of those is worth keeping. **Refining the curve makes it worse by 290
 records**, which says the coarse chords are not an approximation this happens to
 share with Windows -- they are what Windows draws, and our reading of the depth
-is right. So the polyline is the same polyline, the crossings should be the same
-crossings, and what is left is under a sixty-fourth of an edge on a glyph the
-slant has widened. It is the same residue section 8 ends on, now with a margin
-attached to it.
+is right.
+
+#### One spline, and it is a chord and not a sixty-fourth
+
+Dumping the pieces the walk is handed, rather than the chords it makes of them,
+names the thing exactly. Both disputed rows are crossed by a single spline --
+`(616,-1406) (592,-1484) (611,-1520)`, the inner corner of the stem, less than
+two pixels of it -- and the chords it is flattened into do not follow it:
+
+| row | the chord crosses at | the spline crosses at | the sample is at |
+| --- | -------------------- | --------------------- | ---------------- |
+| 21  | 626.00               | 625.78                | 608              |
+| 22  | 609.40               | **607.16**            | 608              |
+| 23  | 608.28               | **605.14**            | 608              |
+
+**The spline reproduces Windows on all three rows and the chords do not.** So
+this is not a sixty-fourth of anything: it is two and three sixty-fourths of
+chord error at a tight corner, on the one piece of this glyph where it matters.
+
+The depth that corner gets is one, which is two chords. Its second differences
+are 43 and 42, so `2 * larger + smaller` comes to **exactly 128**, and
+`while (size > 0x80)` does not fire. That makes the arithmetic decisive rather
+than suggestive: **with the formula as read, the only threshold that can change
+this spline is one below 128**, which is the same thing as making the test
+inclusive. And that was tried:
+
+    size > 0x80    6,044 -- loses Symbol slanted `t` at thirty-two, twice
+    size >= 0x80   6,043 -- wins those two, loses Times New Roman's (C) and (R)
+                            at twenty-three and Symbol slanted `j` at fifteen
+
+The three it loses have splines of size exactly 128 as well, and their second
+differences -- (10, 59) and (52, 24) against this one's (43, 42) -- are the same
+size by any measure one might reach for. Their magnitudes are 59.8, 57.3 and
+60.1. **So `size` does not separate the spline that wants two chords from the two
+that want one**, and no threshold on it will.
+
+Which leaves the weights, and those were swept rather than reasoned about:
+halving the weight on the larger term costs between forty and three hundred and
+thirty records at every threshold from 64 to 512, the best of them 6,006. And the
+turning point splits, which `EvaluateSpline` really does have and which would cut
+this corner into two monotone halves that chords could follow, cost 227:
+
+| what was varied                     | best             | the alternatives                       |
+| ----------------------------------- | ---------------- | -------------------------------------- |
+| the subdivision threshold           | 6,044 (`> 0x80`) | 6,043 inclusive                        |
+| the weight on the larger difference | 6,044 (two)      | 6,006 -- 5,714 at one, every threshold |
+| the turning point splits            | 6,044 (none)     | 5,817 with them                        |
+
+So the shape of what is missing is known and its size is known -- a corner two
+pixels long, flattened one level too coarsely for these two rows, by a rule that
+is right about every other spline in six thousand cells. What is not known is
+what tells that corner apart from the two that want the coarse reading, and
+nothing in the second differences does.
 
 #### Asking `IP` directly, and being wrong about the answer
 
