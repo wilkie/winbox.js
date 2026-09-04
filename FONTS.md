@@ -4423,7 +4423,44 @@ much better-posed question than the one this section started with.
 That is also why the debugger was not built. A mechanism that stops the machine
 mid-call would have read one set of coordinates for one cell; the sweep bracketed
 the rule's failure to a single sixty-fourth at one size, for the cost of a
-fabrication and one recording. The one cell that disagrees
+fabrication and one recording.
+
+#### And the sweep is enough to solve for what GDI walked
+
+Eleven cells four units apart, with the rule that turns a minimum into a column
+already read out of the instruction stream, is enough to invert. If the box's
+left is `(min + 31) >> 6` and its right is `(max + 32) >> 6`, then each recorded
+column brackets its edge to sixty-four sixty-fourths, and eleven overlapping
+brackets leave one value:
+
+    GDI's minimum = 193 + carry
+    GDI's maximum = 256 + carry
+
+Both exactly, no range left. Checked against the coarse sweep as well -- the same
+size, eleven more bearings from -60 to 200 -- **the two lines fit all 22 recorded
+boxes at that cell height.**
+
+And they are not what this computes, which is `176 + carry` and `194 + carry`.
+The difference is not a rounding:
+
+- the minimum is **17 sixty-fourths further right** than the outline's own left
+  edge put through the pen
+- and the span between them is **63**, where the glyph is a square 100 font units
+  across, which at six pixels per em is 18.75 sixty-fourths -- so GDI is walking
+  something a whole pixel wide where the outline is under a third of one
+
+Sixty-three is one less than a pixel. So whatever the scan converter was handed
+at this size, it was **not the four points of the square**: it was something one
+pixel wide, placed a quarter of a pixel right of where the square's left edge
+falls, and moving with the bearing exactly as the square would.
+
+That is a much better question than the one before it, and it is a question about
+the transform rather than about the box. A glyph under a pixel wide is the case
+the whole dropout apparatus exists for, and a box exactly a pixel wide is what
+that apparatus would need. Whether the widening happens before the box is taken
+-- which is what these two lines say -- or the walk is fed a rescued run instead
+of an outline, is the next thing to ask, and `dot-widen` already sweeps a square
+across the width where a glyph stops being sub-pixel. The one cell that disagrees
 needs a minimum of 225 sixty-fourths where the outline's `xMin` of 48, origin of
 -37 and pen of 128 make 213, so whatever the transform does, it is not those
 three added -- and that is as far as reading memory can take it. What the recordings have settled is the shape of it: the scaler
