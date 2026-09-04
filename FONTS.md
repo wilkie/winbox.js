@@ -2789,7 +2789,8 @@ last point getting it from the last segment alone:
     lines    248 of 248, unchanged;  text  55 of 55, unchanged
 
 Twenty-seven records. The plotter group, which stood at forty-one when this
-file first counted it, is three.
+file first counted it, is **empty**: every one of the twenty-eight records the
+corpus still disagrees on is Symbol.
 
 (A first pass at this measured no difference at all, because the flag it was
 switched with reached only one of the two call sites. The number above is from
