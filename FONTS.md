@@ -4529,6 +4529,36 @@ detail of _which_ residue, not of whether there is any.
 That is one cell of a corpus of twenty-six thousand, in the one place where being
 right means reproducing the contents of a scratch buffer byte for byte.
 
+#### What the last five pixels actually are
+
+Reading the cell against its own geometry says it more exactly than "residue"
+does. The fitted outline has three loops: the cut base, a parallelogram running
+from the baseline to 11.86 pixels up; and two more at 13 to 19 and at 28 to 32,
+which are the ring component's outer and inner rings -- except that an annulus's
+two rings overlap, and these do not. **One of them has been moved**, and moved by
+the composite's own program reading past the four points the base now has.
+
+Ours moved it _upward_, to 28 to 32 pixels, which at a twenty-four row ascent is
+off the top of the cell and draws nothing. Calibrated against a row both agree on
+-- row 22, where the pen shows itself as a plain `+2` -- every row this draws is
+exactly what its own contours give:
+
+    row 13   the parallelogram spans 5.50 to 8.58   ours 5,6,7,8   Windows 5,6,9
+    row 14                           5.17 to 8.25   ours 5,6,7     Windows 5,6,8,9
+    row 22                           2.50 to 5.58   ours 2,3,4,5   Windows 2,3,4,5
+
+**And Windows's rows are not consistent with the parallelogram at all.** It is a
+convex quadrilateral: at any row it is one run. Windows draws two, with a gap at
+column 7 and ink out at 8 and 9. So GDI has a loop there that this does not --
+its moved ring landed in the middle of the letter where ours landed above it.
+
+That is the whole of the last cell. Both sides moved the same loop with the same
+instructions for the same reason; they read different numbers out of the buffer
+past the outline and put it in different places. Nothing about the interpreter,
+the scan converter or the box is in question here -- only what sixteen kilobytes
+of somebody else's scratch memory happened to contain, which is the one thing a
+recording cannot carry.
+
 ### And the last of `slope-sweep` is residue
 
 The one `slope-sweep` cell is `å` at thirty-one pixels, where Windows draws a
