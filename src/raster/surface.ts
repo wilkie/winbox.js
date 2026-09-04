@@ -574,6 +574,18 @@ export class Surface {
 
         const box = (inked as any).box ?? { left: 0, right: this.width };
 
+        /* The cell GDI lays the glyph out in: the box's left edge plus the
+         * device advance. Read out of GDI's memory beside the box, it is
+         * `boxLeft + advance` in all sixty-six plain cells of the real face,
+         * and one wider for bold. The bold overhang has to fit inside it.
+         */
+        const cell =
+          box.left +
+          (outline.deviceAdvance(ppem, glyph) ??
+            outline.linearAdvance(glyph, ppem) ??
+            outline.hintedAdvance(glyph, ppem) ??
+            Math.round(outline.advanceOf(glyph) * scale));
+
         const from = Math.max(0, cellTop);
         const to = Math.min(this.height, cellBottom);
 
@@ -582,31 +594,36 @@ export class Surface {
             if (inked[row * this.width + column]) {
               this.context.setPixel(column, row, colour);
 
-              /* Emboldening draws the glyph again a column across.
+              /* Emboldening draws the glyph again a column across, and the
+               * overhang has two things to fit inside.
                *
                * It is done here rather than inside the scan converter because
                * the stack probe says it is not the scan converter's business:
                * the box GDI hands it for a bold glyph is byte for byte the box
-               * it hands it for a plain one, at every size and bearing. So the
+               * it hands it for a plain one, at every size and bearing, so the
                * smear is not bounded by the box -- in 102 of 132 cells read
                * against their boxes the bold ink reaches the column just past
-               * the box's last, and clipping it to the box costs 786 cells.
+               * the box's last.
                *
-               * **What does bound it is a byte.** In every cell where the bold
-               * ink fails to reach that column, the box's right edge is 8 or
-               * 16: a multiple of eight in device columns, so the column past
-               * it is the first bit of a byte the glyph never touched. And in
-               * no cell where the edge is anything else does it fail. A smear
-               * that is ORed into the destination a byte at a time will do
-               * exactly that: the overhang lands when it falls inside a byte
-               * the glyph already wrote and is dropped when it would need one
-               * more. Worth eight records of the corpus and sixteen cells.
+               * What bounds it is the **cell** and a **byte**. Beside the box in
+               * GDI's memory sits the width it lays the glyph out in, and in
+               * all sixty-six plain cells of the real face it is
+               * `boxLeft + advance`, one wider for bold. The overhang column is
+               * drawn when it lies inside that cell and does not begin a new
+               * byte of the destination row -- a smear ORed in a byte at a time
+               * lands where the glyph already wrote and is dropped where it
+               * would need one byte more. The four bold cells at ten pixels and
+               * mu at twenty-four were the ones the cell caught: their boxes
+               * end a column past `boxLeft + advance`, so the overhang had
+               * nowhere to go. Together the two conditions account for every
+               * one of the 132 with no exception left, and the corpus with
+               * them.
                *
-               * One cell resists it -- Symbol's mu at twenty-four pixels, whose
-               * lone pixel in row 18 does not smear though its edge is 14 --
-               * and it is left unexplained rather than fitted.
+               * An earlier attempt measured the cell from the *pen* rather than
+               * the box's left and cost twenty-eight records; the two differ by
+               * whatever the hinted outline reaches left of its origin.
                */
-              if (bold && (column + 1 < box.right || box.right % 8 !== 0)) {
+              if (bold && (column + 1 < box.right || (box.right <= cell && box.right % 8 !== 0))) {
                 this.context.setPixel(column + 1, row, colour);
               }
             }

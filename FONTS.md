@@ -3663,6 +3663,31 @@ to be coming from: its bitmap face holds 13, 16, 19, 21, 27 and 35.
     glyphs   5,977 of 5,982    99.9%
     font     5,047 of 5,057    99.8%
 
+#### The last five, and the whole corpus
+
+The five bold cells that stopped one column short were never going to yield to
+the box, the byte or the pen, because what bounds them is a word that had been
+sitting beside the box in every dump and never asked: at `-0x230`, one wider for
+bold than for plain in every cell, and readable for all sixty-six plain cells of
+the real face. It is **`boxLeft + advance`** -- the cell GDI lays the glyph out
+in, measured from the box's left edge rather than from the pen -- and it fits the
+sixty-six without a miss.
+
+With it the smear's rule is complete: the overhang column is drawn when it lies
+inside the bold cell, `boxRight <= boxLeft + advance`, and does not begin a new
+byte of the destination row. The four at ten pixels and mu at twenty-four are
+the cells whose box ends a column past `boxLeft + advance`; the ten on byte
+boundaries were already known; the 102 that escape satisfy both. **132 of 132,
+no exception left.** The cell measured from the pen, tried and refused earlier at
+a cost of twenty-eight records, differs from this one by whatever the hinted
+outline reaches left of its origin -- at ten pixels Symbol's capitals start a
+column before the pen, which is exactly where the two readings part.
+
+    glyphs   5,982 of 5,982    100.0%
+    font     5,047 of 5,057     99.8%
+
+Every glyph Windows was recorded drawing, this draws.
+
 #### Asking `IP` directly, and being wrong about the answer
 
 An observation of a real letter says where its program put a point and leaves
