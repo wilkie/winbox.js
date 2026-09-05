@@ -4842,6 +4842,19 @@ Nothing else moves. The rule is in `glyph-hinting.ts` where the phantoms are
 built, and the probe now reads the scaler's block past the size the census gave
 it, on both draws, so the arrays are in the recording.
 
+**And one thing read at the same time that is not understood.** The second draw
+in that recording is the composite `à`, and its arrays sit at the same bases.
+Its eight outline points equal this implementation's exactly -- `0 253 450 197`
+for the cut base, `192 320 384 364` for the accent -- but every value carries a
+constant that a simple glyph's do not: 1823 in fitted `x`, 2903 in fitted `y`,
+257 in design `y`. The pen is at `(2, 0)`, so it is not a device translation, and
+the `ß` has no translated copy. With the constant removed the four slots read
+`0 768 0 62`: origin, advance, origin again, and 62 for the composite's own
+header `xMin` of 73 at this size. This holds `-64 704 -64 -2` there -- the same
+four quantities a pixel to the left, because the composite is placed with its
+bearing carried. No program in the corpus reads a composite's slots, so nothing
+turns on it yet. It is recorded because it will.
+
 ### And the last of `slope-sweep`
 
 The one `slope-sweep` cell is `å` at thirty-one pixels, where a contour its
@@ -5212,14 +5225,14 @@ without exception.
 Five times now a fault has presented as "this instruction is wrong" and turned
 out to be "this instruction is fed the wrong number":
 
-| Looked like                                      | Actually was                                                |
-| ------------------------------------------------ | ----------------------------------------------------------- |
-| `MIAP` rounding the cap height wrongly           | never settled; still open                                   |
-| `MIRP` moving a phantom point it should not      | `MDRP`/`MIRP` minimum-distance sign                         |
-| One pixel of internal leading, a rounding bug    | reading the wrong `VDMX` ratio group                        |
-| `ROUND` producing 128 where Windows has 64       | `DIV` rounding where it should truncate                     |
-| `IP` interpolating to the wrong place            | `IP` fed coordinates already quantised                      |
-| A `CALL` answering differently from the same arm | `DELTAP` four instructions earlier moving by the wrong rule |
+| Looked like                                      | Actually was                                                                 |
+| ------------------------------------------------ | ---------------------------------------------------------------------------- |
+| `MIAP` rounding the cap height wrongly           | closed by the standings; the cvt account was withdrawn, no instruction named |
+| `MIRP` moving a phantom point it should not      | `MDRP`/`MIRP` minimum-distance sign                                          |
+| One pixel of internal leading, a rounding bug    | reading the wrong `VDMX` ratio group                                         |
+| `ROUND` producing 128 where Windows has 64       | `DIV` rounding where it should truncate                                      |
+| `IP` interpolating to the wrong place            | `IP` fed coordinates already quantised                                       |
+| A `CALL` answering differently from the same arm | `DELTAP` four instructions earlier moving by the wrong rule                  |
 
 The last of those is the sharpest case of the pattern there is. `IP`'s own
 arithmetic was swept over five rounding conventions and not one of them moved
@@ -8930,6 +8943,65 @@ says only that no question is going unasked.
 
 ## 8. What is not known
 
+Every recorded fixture agrees and the fabricated corpus is whole, so this section
+is no longer a list of defects. What follows its head is the chase for the
+recorded corpus as it happened, sitting by sitting, and **the figures inside it
+are the figures at the time** -- it opens on a `W` a pixel of cap height out that
+has not been wrong for a long while. What is actually still not known is shorter,
+and it is here.
+
+### What is still not known, now
+
+Everything below draws the right pixels. What is missing in each is the _reason_,
+read out of GDI rather than measured into place.
+
+- **Two narrow-glyph rules are measured, not read.** A glyph whose box collapses
+  in `x` skips the stub check, and a glyph narrower than a sample gap is drawn as
+  one run per column. Both are exact on their instruments -- 258 of 258 and the
+  phase sweep -- and neither has been found in segments 42 or 43.
+- **The box shears the exact coordinate and the outline the gridded one.** Each
+  is the better reading where it is measured, so they are kept apart; why GDI
+  does it that way is open.
+- **The bearing is carried in whole pixels below seven per em** and in
+  sixty-fourths from seven. Read from a fine sweep against the box rule, 704 of
+  704, and the threshold is not yet found in the code that applies it.
+- **The `lines` tie exception.** A steep line in the opposite direction rounds
+  its tie upward where every other case rounds down. 248 of 248, recorded as
+  measured.
+- **A composite's four slots differ from GDI's by a pixel.** After `à`, GDI's
+  element holds `0 768 0 62` where this holds `-64 704 -64 -2`, with all eight
+  outline points equal; and GDI's arrays for a composite carry a constant per
+  array -- 1823 in fitted `x`, 2903 in `y`, 257 in design `y` -- that a simple
+  glyph's do not and that is not the pen. No program in 26,058 cells reads a
+  composite's slots, so it costs nothing; it is not understood.
+- **Outside the fixtures**: what GDI passes for `pixelDiameter` (the scale is
+  927 of 927 without it); `ISECT` on near-parallel lines, matched at ten of
+  fifty-nine readouts and declared irreducible; and `s45round`'s half case, two
+  of fifty-nine, a square root's rounding.
+
+### Closed by the standings without a named mechanism
+
+These were open here for a long time and are not wrong now, and nothing in this
+file names the step that fixed them. They closed as side effects of things read
+for other reasons, which is a weaker kind of closure and should be called that.
+
+- **Times New Roman's `W` and `g`, a pixel of cap height**, and the `W`'s
+  three-pixel serifs. The control-value account written below was withdrawn when
+  `IP` was found to extrapolate -- "whatever the `W` was, it was not this" -- and
+  the `W` has been in the never-wrong list since.
+- **Arial's `A`, two pixels on one row** where a diagonal crosses a sample.
+- **The thirty-seven fabricated sweep cells** within three sixty-fourths of a
+  crossing, which this section's last words below still describe as
+  unaccounted for. The heading that introduces them says they are one problem
+  with the letters, and the letters closed on a polyline walk rounded to
+  sixty-fourths and a device half that rounds upward; the sweeps went with them,
+  unattributed.
+- **`times-cvt0-fine`'s bar clipped below the baseline** and **`cour-no-instctrl`'s
+  `w`** at a size where instructions are off, parked as out of scope and later
+  found drawn.
+
+### As it happened
+
 **Times New Roman's `W` and `g` are one pixel of cap height out**, which is
 three recorded glyphs. `MIAP[round]` places the top point at 10 pixels above
 the baseline where Windows places it at 9, and everything else follows from
@@ -11508,6 +11580,14 @@ were already right and two were not.
 
 What is left after all of it is a difference of under a sixty-fourth, on every
 kind of edge, that no stage of the documented algorithm accounts for.
+
+That was true when written. It is not now: the fabricated corpus stands at
+26,058 of 26,058, and the sittings that closed the rest are in section 9 -- the
+point buffer, the implied midpoint on the scaled grid, the bearing carried in
+whole pixels below seven per em, and the fourth phantom read out of GDI's
+element as `xMin`. The sweep cells named just above went with the letters, and
+which of those readings took them is not attributed; see the head of this
+section.
 
 ## 9. Where the numbers stand
 
