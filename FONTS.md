@@ -8962,6 +8962,9 @@ read out of GDI rather than measured into place.
   `font` fixture.
 - **Wingdings' family.** `FF_DONTCARE` where Symbol, the same OS/2 class, is
   `FF_ROMAN`; which field decides it is not known.
+- **Storage and control values across glyphs.** A glyph program may write
+  both, and this keeps them from one glyph to the next at a size; whether
+  Windows restores them as it restores `SCANCTRL` is untested.
 - **Two narrow-glyph rules are measured, not read.** A glyph whose box collapses
   in `x` skips the stub check, and a glyph narrower than a sample gap is drawn as
   one run per column. Both are exact on their instruments -- 258 of 258 and the
@@ -11704,16 +11707,50 @@ three-component composites with no program of their own, and the twenty cells
 that had been chased as a placement fault -- offset rounding, the bearing
 carry, both refused -- were the same unhinted assembly. Fitted, they agree.
 
-What the net holds now is **eleven single pixels** among the bold italics and two
-Courier New Italic accents, the sixteen fallback records above, and one more
-metric: Wingdings answers `tmPitchAndFamily` with `FF_DONTCARE` where Symbol,
+What the net held then was eleven single pixels, and four of them were one rule
+-- see the next section. What it holds now is **seven single pixels**, each in a
+different glyph, among the bold italics and two Courier New Italic accents; the
+sixteen fallback records above; and one more metric: Wingdings answers `tmPitchAndFamily` with `FF_DONTCARE` where Symbol,
 also OS/2 class 12, answers `FF_ROMAN`. Two fonts cannot say which field
 decides that, so it is not decided here.
 
-    styles   9,145 of 9,178 records, 99.6%;  glyphs 9,083 of 9,094
+    styles   9,149 of 9,178 records, 99.7%;  glyphs 9,087 of 9,094
 
 The earlier reading here that Windows chose a seventeen pixel size for Wingdings
 at eighteen was of the fallback's metrics -- Arial's -- and is withdrawn.
+
+### Four of the eleven were one glyph's `SCANCTRL`, leaking
+
+Of the eleven single pixels, four were `ù ú û ü` in Arial Bold Italic at twelve
+pixels: the same base `u` under four accents, all one pixel out. One cause, then.
+And an odd one: **replayed alone, all four agree.** In the fixture's order they
+do not. So the cell depends on what was drawn before it, which is the shape of
+the point-buffer residue of section 9 -- and it is not that. In the fixture's
+order the four are wrong with the buffer kept per font and size, with one buffer
+shared by every face, and with the tail cleared to nought, identically.
+
+So something else in the hinter outlives a glyph. Bisected by replaying `ù` fresh
+after each of the forty records before it, exactly two predecessors flip it:
+`ð` and `ø`. Diffing the hinter's own fields between a fresh `ù` and a `ù` after
+`ø`, one differs that is not the point buffer: **`scanControl`, 281 after
+`prep` and nought after `ø`.** The `ø` program carries a `SCANCTRL` of its own,
+as glyph programs may, and this kept the value on the hinter rather than in the
+graphics state the next glyph starts from. So `ø` switched dropout control off
+for every glyph that followed it at that size, and the `u`'s thin stroke lost a
+pixel.
+
+Windows starts each glyph from what `prep` left. With `SCANCTRL` and `SCANTYPE`
+restored to that before every glyph, the four agree in order as they did alone,
+and nothing else moves: every recorded fixture holds, the fabricated corpus holds.
+
+    styles   9,145 -> 9,149 of 9,178;  glyph 9,083 -> 9,087 of 9,094
+
+Two notes for the record. The storage area and the control values are also kept
+on the hinter across glyphs, and a glyph program may write both; whether Windows
+restores those too was meant to be tested here and was not -- the switches for
+it turned out not to be in the file when the runs were made -- so it stands
+untested, not refuted. And the seven left are seven different glyphs, a pixel
+each, with no cluster among them.
 
 ## 9. Where the numbers stand
 
@@ -11727,7 +11764,7 @@ it stands:
 | `hinting`                                                    | 7,828   | **100%**  |
 | `lines`                                                      | 248     | **100%**  |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
-| `styles`                                                     | 9,178   | 99.6%     |
+| `styles`                                                     | 9,178   | 99.7%     |
 
 `KNOWN_GAPS` is empty. The `stack` fixture is not in the table because it is an
 instrument rather than an oracle: its 3,650 records are the scaler's own stack,

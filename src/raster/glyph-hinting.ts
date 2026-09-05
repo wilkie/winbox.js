@@ -460,6 +460,15 @@ export class Hinter {
 
       // Whatever `prep` left the state as is what each glyph starts from.
       this.defaults = { ...this.state };
+
+      /* What `prep` left for the scan converter. A glyph program may set
+       * `SCANCTRL` or `SCANTYPE` for its own glyph -- Arial Bold Italic's `ø`
+       * does -- and the next glyph at that size starts from these again, not
+       * from what the last one chose. Kept on the hinter rather than in the
+       * graphics state, they had leaked: `ø` switched dropout off for every
+       * glyph after it, and `ù ú û ü` at twelve pixels were a pixel out.
+       */
+      this._prepScan = { control: this.scanControl, type: this.scanType };
     }
   }
 
@@ -775,6 +784,11 @@ export class Hinter {
 
     this.zones[1] = zone;
     this.zones[0] = new Zone(this.font.maxTwilight ?? 16);
+
+    if (this._prepScan) {
+      this.scanControl = this._prepScan.control;
+      this.scanType = this._prepScan.type;
+    }
 
     this.state = this.glyphState();
     this.stack = [];

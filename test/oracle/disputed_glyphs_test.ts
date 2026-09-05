@@ -87,10 +87,10 @@ const PIXELS = 0;
 const BITMAP_RECORDS = 136;
 const BITMAP_PIXELS = 794;
 
-/* The `styles` fixture: eleven single pixels among the styled files, and
+/* The `styles` fixture: seven single pixels among the styled files, and
  * nothing of Wingdings. */
-const STYLES_OUTLINE_RECORDS = 11;
-const STYLES_OUTLINE_PIXELS = 11;
+const STYLES_OUTLINE_RECORDS = 7;
+const STYLES_OUTLINE_PIXELS = 7;
 const STYLES_OTHER_RECORDS = 0;
 const STYLES_OTHER_PIXELS = 0;
 

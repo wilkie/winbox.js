@@ -1366,10 +1366,10 @@ export class Unimplemented extends Error {}
  */
 export const KNOWN_GAPS: Record<string, string> = {
   /* The wide net over the styled files, Wingdings and the weight field. Of its
-   * 9,094 glyph cells eleven are left, each a single pixel, spread over the
-   * bold italics and two Courier New Italic accents.
+   * 9,094 glyph cells seven are left, each a single pixel in a different glyph,
+   * spread over the bold italics and two Courier New Italic accents.
    */
-  'styles:glyph': 'eleven single pixels among the styled files',
+  'styles:glyph': 'seven single pixels among the styled files',
 
   /* Asked for "Wingdings" in the ANSI set, Windows falls to Small Fonts at ten
    * pixels, Arial at 12, 14 and 18, and MS Sans Serif at 16, 20 and 24 -- an
