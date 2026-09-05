@@ -9000,6 +9000,15 @@ read out of GDI rather than measured into place.
   array -- 1823 in fitted `x`, 2903 in `y`, 257 in design `y` -- that a simple
   glyph's do not and that is not the pen. No program in 26,058 cells reads a
   composite's slots, so it costs nothing; it is not understood.
+- **A projection rounds its halves toward positive infinity.** The scaler's
+  `ShortFracMul` adds a half and shifts, which floors; `mulDiv` here takes the
+  sign out and rounds away from zero, and the two differ on an exact negative
+  half. Read off a readout of Arial's `X` under a width and Arial Italic's
+  `f`, and applied to the two projections with the reference's operand order
+  (section 8a). The same rule in the point move, in `IP`'s scaling and in the
+  freedom-projection dot product is refused or indifferent by count, so those
+  keep the symmetric rounding, and which the scaler's `LongMulDiv` and
+  `MulDiv26Dot6` actually do is not known.
 - **Four things about a width request are measured where the pseudocode is
   silent.** The reference scales the control values once, at a size it is
   handed, and reads them through 16.16 stretch factors; that the size is the
@@ -9011,7 +9020,7 @@ read out of GDI rather than measured into place.
   an arithmetic shift does and is measured on three descenders. And the
   stretched design coordinates `IP` and `MDRP` measure from keep a fraction of
   a unit, measured on an `S`; what the glue actually stores is not known.
-  Three stretched cells of 1,944 are still wrong, four pixels in all.
+  Three stretched cells of 1,944 are still wrong, three pixels in all.
 - **Outside the fixtures**: what GDI passes for `pixelDiameter` (the scale is
   927 of 927 without it); `ISECT` on near-parallel lines, matched at ten of
   fifty-nine readouts and declared irreducible; and `s45round`'s half case, two
@@ -12076,13 +12085,75 @@ the diagonals -- is refused at 1,898 cells and 94 pixels. How the reference
 holds the stretched originals is, again, outside the pseudocode; the
 precision that reproduces the recordings is a fraction of a unit.
 
+### The `X`s: a half that rounds up, and the order of the operands
+
+Two of the three cells left were `X`s, and the Arial one -- at twenty-four
+asked for sixteen, twenty-one pixels by thirty-seven -- was two pixels on the
+edges of its thick diagonal, one on each edge, seven rows apart. Both edges
+run within a fraction of a sixty-fourth of a sample centre where they cross
+those rows, so a one-unit difference anywhere in the four corner points
+decides both. The hinting probe sweeps the widths on one letter per face, so
+the `X` was copied into Arial's `n` slot -- record, metrics and all -- and
+its four corners read out along `x`, first at eight times and then, with a
+base subtracted so the answer fits a word, to the sixty-fourth. **Three of the
+four agree with this implementation at every width recorded. The fourth,
+point 3, is 368 in Windows and was 366 here**, at that one width and nowhere
+else.
+
+Point 3 is placed by `MDRP` from the opposite corner along a projection at
+right angles to the diagonal, so that it lands on the line through that corner
+-- which, from the corners as both sides have them, is 367 exactly. Each side
+is one rounding off it, in opposite directions, and the rounding is in the
+projection. A projection is two products of a sixty-fourth coordinate by a
+2.14 vector component, each rounded to a sixty-fourth, and here the `y`
+product is exactly -757.5. `mulDiv` takes the sign out and rounds the half
+away from zero, to -758; the scaler's `ShortFracMul` adds a half and shifts,
+and an arithmetic shift floors, so -757.5 goes _up_, to -757. That
+sixty-fourth turns the move from 11 to 13 and puts the point at 368.
+
+Applied to the projection alone, the rule fixed a pixel of the `X` and a cell
+of `sizes` and broke Arial Italic's `f` at twenty-four, which had been right
+since the `glyphs` fixture was recorded. The `f`'s cell is an `ALIGNRP` on a
+slanted projection whose `x` product is exactly 125.5 -- or -125.5, depending
+on which point is subtracted from which. This projected the reference point
+from the point; the reference projects the point from the reference point and
+negates the result. Under a symmetric rounding those are the same number, and
+under this one they differ by one exactly at a half. **With the half rounding
+up and the operands in the reference's order** -- in `ALIGNRP`, and in `IP`,
+which the reference arranges as a projection of the two references' span, a
+scaled design offset, and a projection of the point's current offset -- the
+`f` is back, and nothing recorded before moves the wrong way:
+
+    widths   1,941 of 1,944 stretched cells, 4 -> 3 wrong pixels
+    sizes    797 -> 798 of 800
+    styles   9,149 -> 9,150 of 9,178
+
+The same rounding was then tried, one at a time, in the three other places a
+half can fall: the point move's `LongMulDiv` costs a `styles` cell, `IP`'s
+`MulDiv26Dot6` a `glyphs` cell, and the freedom-projection dot product changes
+nothing. Those keep the symmetric rounding. `IP`'s design offset projected
+with the current vector, as the reference's general case has it, rather than
+the dual, also changes nothing recorded.
+
+Along the way the Courier New `o` at sixteen asked for three -- a horizontal
+size of four -- turned out to be drawn with grid-fitting switched off, by
+Courier New's own `prep`, at that horizontal size; so its one pixel is about
+how an unhinted outline is scaled under a width, not about any instruction.
+Scaling it at the fractional horizontal size instead of the whole one is
+refused outright: 1,939 of 2,043 and 431 pixels, most of Courier New's narrow
+requests going wrong.
+
 ### What is left of `lfWidth`
 
-Three stretched cells of 1,944, four pixels: Arial's `X` at twenty-four asked
-for sixteen (two pixels), Times New Roman's `X` at twenty-four asked for five
-(one) and Courier New's `o` at sixteen asked for three (one), each on the edge
-of a diagonal or a curve. The maximum width metric is still two of seventy,
-Times New Roman at twenty-four asked for ten and Courier New asked for five.
+Three stretched cells of 1,944, three pixels. Arial's `X` at twenty-four asked
+for sixteen still differs by one pixel on the left edge of its thick diagonal,
+in a row where that edge crosses 6.495 pixels and the sample centre is 6.5 --
+and the two corners that edge runs between now agree with the readouts to the
+sixty-fourth, so what is left there is the scan converter's own arithmetic at
+a crossing five thousandths of a pixel from a centre. Times New Roman's `X` at
+twenty-four asked for five is one pixel at the crossing of its two diagonals,
+and Courier New's `o` at sixteen asked for three is one pixel of an unhinted
+outline. The maximum width metric is still two of seventy.
 
 Nothing recorded before this moved: `font`, `glyphs` and `hinting` hold at every
 record, since at a stretch of one every new path is the old one.
@@ -12100,7 +12171,7 @@ it stands:
 | `lines`                                                      | 248     | **100%**  |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
 | `styles`                                                     | 9,178   | 99.7%     |
-| `sizes`                                                      | 800     | 99.6%     |
+| `sizes`                                                      | 800     | 99.8%     |
 | `widths`                                                     | 2,480   | 99.8%     |
 
 `KNOWN_GAPS` is empty. The `stack` fixture is not in the table because it is an

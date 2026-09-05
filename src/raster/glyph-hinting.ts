@@ -83,6 +83,43 @@ function fixDiv(a: number, b: number) {
 
 const ONEFIX = 65536;
 
+/**
+ * `a * b / c` to the nearest, a half going toward positive infinity.
+ *
+ * `mulDiv` below takes the sign out first, so its halves go away from zero.
+ * The scaler's `ShortFracMul` -- what a projection is made of -- adds a half
+ * and shifts, and an arithmetic shift floors, so a negative half goes *up*.
+ * The two agree everywhere but on an exact negative half, and a projection of
+ * whole sixty-fourths onto a 2.14 vector lands on one often enough to matter:
+ * the `y` term of Arial's `X` at twenty-one pixels asked for sixteen is
+ * exactly -757.5, and -757 puts the corner of its thick diagonal where a
+ * readout says Windows has it, at 368, where -758 put it at 366.
+ *
+ * It matters, too, which way round the operands go. The reference projects a
+ * point *from* its reference point and negates the result where an
+ * instruction wants the other sign; projecting the reference point from the
+ * point instead is the same number under the symmetric rounding and one off
+ * under this one, and Arial Italic's `f` at twenty-four is the cell that says
+ * so (`ALIGNRP`). **Measured**: with this rounding in the two projections
+ * and the reference's operand order, the recorded corpus gains a cell in
+ * `sizes`, one in `styles`, and a pixel in `widths`, and loses none. The same
+ * rounding in the point move's `LongMulDiv` costs a `styles` cell, in `IP`'s
+ * `MulDiv26Dot6` a `glyphs` cell, and in the freedom-projection dot product
+ * changes nothing; those three keep `mulDiv`.
+ */
+function mulDivUp(a: number, b: number, c: number) {
+  if (c === 0) {
+    return 0;
+  }
+
+  if (c < 0) {
+    a = -a;
+    c = -c;
+  }
+
+  return Math.floor((a * b) / c + 0.5);
+}
+
 function mulDiv(a: number, b: number, c: number) {
   let sign = 1;
 
@@ -1102,7 +1139,7 @@ export class Hinter {
 
   /** How far along the projection vector a point sits. */
   project(x, y) {
-    return mulDiv(x, this.state.projection.x, UNIT) + mulDiv(y, this.state.projection.y, UNIT);
+    return mulDivUp(x, this.state.projection.x, UNIT) + mulDivUp(y, this.state.projection.y, UNIT);
   }
 
   /** The same, against the vector the original outline is measured with. */
@@ -1124,6 +1161,11 @@ export class Hinter {
    * units, and leaving the x as it is, is refused at 46 cells and 94 pixels.
    * How the reference holds the stretched originals is not in the pseudocode;
    * this is the precision that reproduces the recordings.
+   *
+   * `IP` projects a point's design offset with this, the dual vector. The
+   * reference's general case uses the current vector there; the two differ
+   * only where a program interpolates along a line that has already been
+   * moved off its original direction, and no recorded cell separates them.
    */
   projectDesign(x, y) {
     if (this.stretch === 1) {
@@ -1134,7 +1176,7 @@ export class Hinter {
   }
 
   projectDual(x, y) {
-    return mulDiv(x, this.state.dual.x, UNIT) + mulDiv(y, this.state.dual.y, UNIT);
+    return mulDivUp(x, this.state.dual.x, UNIT) + mulDivUp(y, this.state.dual.y, UNIT);
   }
 
   /**
@@ -2306,9 +2348,10 @@ export class Hinter {
       while (count-- > 0) {
         const index = this.pop();
 
-        const distance = this.project(
-          zoneZero.x[state.rp0] - zoneOne.x[index],
-          zoneZero.y[state.rp0] - zoneOne.y[index]
+        // The point from the reference point, negated: the reference's order.
+        const distance = -this.project(
+          zoneOne.x[index] - zoneZero.x[state.rp0],
+          zoneOne.y[index] - zoneZero.y[state.rp0]
         );
 
         this.movePoint(zoneOne, index, distance);
@@ -2505,51 +2548,36 @@ export class Hinter {
       const originalOne = design(zoneZero, state.rp1);
       const originalTwo = design(zoneOne, state.rp2);
 
-      const currentOne = this.project(zoneZero.x[state.rp1], zoneZero.y[state.rp1]);
-      const currentTwo = this.project(zoneOne.x[state.rp2], zoneOne.y[state.rp2]);
-
-      // Design units into pixels, for a point that falls outside the two.
-      const scaled = (value) => this.toPixels(value);
+      /* Arranged as the reference arranges it, which matters once a half can
+       * round two ways. The two references' current span is one projection of
+       * their difference; each point's design offset from the first reference
+       * is scaled into that span by `MulDiv26Dot6`; and the move is that less
+       * the projection of the point's current offset from the first reference.
+       * A point outside the two is carried on the same line -- extrapolated,
+       * which a readout of Times New Roman's `8` settled. The reference
+       * projects the design offset with the *current* vector in this general
+       * case; this keeps the dual, see the note at `projectDesign`. */
+      const oldRange = originalTwo - originalOne;
+      const span = this.project(
+        zoneOne.x[state.rp2] - zoneZero.x[state.rp1],
+        zoneOne.y[state.rp2] - zoneZero.y[state.rp1]
+      );
 
       while (count-- > 0) {
         const index = this.pop();
         const zone = this.zone(state.zp2);
 
-        const original = design(zone, index);
+        const offset = this.projectDesign(
+          (zone.unscaledX[index] - zoneZero.unscaledX[state.rp1]) * this.stretch,
+          zone.unscaledY[index] - zoneZero.unscaledY[state.rp1]
+        );
 
-        const current = this.project(zone.x[index], zone.y[index]);
+        const wanted = oldRange === 0 ? this.toPixels(offset) : mulDiv(span, offset, oldRange);
 
-        /* Outside the two references the point is **extrapolated**, on the
-         * same line as one between them.
-         *
-         * This used to hold the point's distance from the nearer reference and
-         * carry it along rigidly, on the strength of `cvt[2]` in Times New
-         * Roman coming out a thirty-second of a pixel high when extrapolated,
-         * which was enough to round a `W`'s cap height the wrong way. That
-         * reading was of the ink, two roundings downstream of the decision, and
-         * it was wrong about the cause.
-         *
-         * **Recorded**, by making the `8` report where its own waist ended up.
-         * At fourteen pixels the two references are 13 design units apart and 6
-         * of a pixel apart, and point 26 sits 481 design units past the first:
-         * `135 + 481 * 6 / 13` is 357, which is what Windows reports to the
-         * sixty-fourth. Every readable size of both waist points agrees, where
-         * before none of them did, and the recorded letters go from
-         * thirty-three records and fifty-eight pixels to twenty-five and
-         * thirty-five.
-         *
-         * The degenerate case still shifts: two references at the same original
-         * position give no ratio to scale by.
-         */
-        let wanted;
-
-        if (originalTwo === originalOne) {
-          wanted = currentOne + scaled(original - originalOne);
-        } else {
-          wanted =
-            currentOne +
-            mulDiv(original - originalOne, currentTwo - currentOne, originalTwo - originalOne);
-        }
+        const current = this.project(
+          zone.x[index] - zoneZero.x[state.rp1],
+          zone.y[index] - zoneZero.y[state.rp1]
+        );
 
         this.movePoint(zone, index, wanted - current);
       }

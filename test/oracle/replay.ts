@@ -1377,15 +1377,15 @@ export class Unimplemented extends Error {}
  */
 export const KNOWN_GAPS: Record<string, string> = {
   /* The wide net over the styled files, Wingdings and the weight field. Of its
-   * 9,094 glyph cells seven are left, each a single pixel in a different glyph,
-   * spread over the bold italics and two Courier New Italic accents.
+   * 9,094 glyph cells six are left, each a single pixel in a different glyph,
+   * all italics: two bold-italic letters and four Courier New Italic accents.
    */
-  'styles:glyph': 'seven single pixels among the styled files',
+  'styles:glyph': 'six single pixels among the styled italics',
 
   /* The outline faces above thirty-one pixels, in a sixty-four pixel cell: 800
-   * records and three single pixels, all on the edge of a diagonal.
+   * records and two single pixels, both on Times New Roman's X.
    */
-  'sizes:glyph': 'three single pixels above thirty-one pixels',
+  'sizes:glyph': "two single pixels above thirty-one pixels, on Times New Roman's X",
 
   /* The width field, recorded for the first time. The strikes agree in full and
    * the metrics all but two. The outline faces are hinted anisotropically the
@@ -1397,7 +1397,7 @@ export const KNOWN_GAPS: Record<string, string> = {
    * is three cells of one or two pixels each -- 3 of 1,944 stretched cells.
    * See FONTS.md.
    */
-  'widths:glyph': 'stretched outlines: three cells of one or two pixels (3 of 1,944)',
+  'widths:glyph': 'stretched outlines: three cells of one pixel (3 of 1,944)',
   'widths:CreateFont widths':
     'the maximum width under a stretch, two of seventy within a half-unit of the rounding',
 

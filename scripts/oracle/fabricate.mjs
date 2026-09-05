@@ -702,6 +702,90 @@ export function setBearing(bytes, glyph, bearing) {
   return bytes;
 }
 
+/**
+ * Copies one glyph's record and horizontal metrics over another's.
+ *
+ * The hinting probe sweeps the widths on one letter per face, so a point of
+ * some other letter can only be read out under a width by putting that letter
+ * in the swept slot. The record is copied whole -- outline and program -- with
+ * `glyf` and `loca` rebuilt around it since it need not be the same length,
+ * and the metrics with it, so the origin phantom lands where it does for the
+ * letter itself.
+ */
+export function copyGlyph(bytes, fromCode, toCode) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const tables = tablesOf(view);
+  const from = glyphFor(bytes, fromCode);
+  const to = glyphFor(bytes, toCode);
+
+  const metrics = view.getUint16(tables.hhea.offset + 34, false);
+
+  if (from < metrics && to < metrics) {
+    view.setUint32(
+      tables.hmtx.offset + to * 4,
+      view.getUint32(tables.hmtx.offset + from * 4, false),
+      false
+    );
+  }
+
+  const long = view.getInt16(tables.head.offset + 50, false) !== 0;
+  const count = long ? tables.loca.length / 4 - 1 : tables.loca.length / 2 - 1;
+  const loca = [];
+
+  for (let index = 0; index <= count; index++) {
+    loca.push(
+      long
+        ? view.getUint32(tables.loca.offset + index * 4, false)
+        : view.getUint16(tables.loca.offset + index * 2, false) * 2
+    );
+  }
+
+  const record = [];
+
+  for (let at = loca[from]; at < loca[from + 1]; at++) {
+    record.push(view.getUint8(tables.glyf.offset + at));
+  }
+
+  const glyf = [];
+
+  for (let at = 0; at < loca[to]; at++) {
+    glyf.push(view.getUint8(tables.glyf.offset + at));
+  }
+
+  glyf.push(...record);
+
+  for (let at = loca[to + 1]; at < tables.glyf.length; at++) {
+    glyf.push(view.getUint8(tables.glyf.offset + at));
+  }
+
+  const moved = loca[to] + record.length - loca[to + 1];
+
+  for (let index = to + 1; index <= count; index++) {
+    loca[index] += moved;
+  }
+
+  if (!long && loca[count] > 0x1fffe) {
+    throw new Error(`glyf of ${loca[count]} bytes is too large for a short loca`);
+  }
+
+  const written = [];
+
+  for (const offset of loca) {
+    if (long) {
+      written.push(
+        (offset >>> 24) & 0xff,
+        (offset >>> 16) & 0xff,
+        (offset >>> 8) & 0xff,
+        offset & 0xff
+      );
+    } else {
+      written.push((offset >> 9) & 0xff, (offset >> 1) & 0xff);
+    }
+  }
+
+  return rebuild(bytes, view, tables, { glyf, loca: written });
+}
+
 export function glyphFor(bytes, code) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const base = tablesOf(view).cmap.offset;
@@ -1020,7 +1104,17 @@ export function dropTable(bytes, tag) {
  */
 function pointReporter(
   name,
-  { font = 'TIMES.TTF', character, point, axis = 'y', magnify = 64, drop, describe }
+  {
+    font = 'TIMES.TTF',
+    character,
+    copyFrom,
+    point,
+    axis = 'y',
+    magnify = 64,
+    base = 0,
+    drop,
+    describe,
+  }
 ) {
   return {
     name,
@@ -1029,6 +1123,11 @@ function pointReporter(
     describe,
 
     edit: (bytes) => {
+      // The letter to read may be one the probe never sweeps; see `copyGlyph`.
+      if (copyFrom) {
+        bytes = copyGlyph(bytes, copyFrom.charCodeAt(0), character.charCodeAt(0));
+      }
+
       const glyph = glyphFor(bytes, character.charCodeAt(0));
       const phantom = pointCount(bytes, glyph) + 1;
 
@@ -1038,6 +1137,10 @@ function pointReporter(
         ...ops.byte(phantom),
         ...ops.byte(point),
         0x46,
+        /* A base taken off first, so a coordinate past eight pixels can still be
+         * read to the sixty-fourth at sixty-four times: the answer has to fit a
+         * sixteen bit word. */
+        ...(base === 0 ? [] : [...ops.word(base), ...ops.subtract()]),
         ...(magnify === 1 ? [] : [...ops.word(magnify * 64), ...ops.multiply()]),
         // Back along x, so the coordinate set is the one the advance is made of.
         0x01,
@@ -1237,6 +1340,124 @@ export const FABRICATIONS = [
     ],
     drop: ['hdmx', 'LTSH'],
     describe: "Arial's control value 20 after prep, along y, as the n's advance at eight times",
+  }),
+  /* Arial's X under a width, in the n's slot so the hinting probe sweeps it:
+   * the four corners of its thick diagonal, along x at eight times. At
+   * twenty-one pixels asked for sixteen the stroke's two edges each land within
+   * a fraction of a sixty-fourth of a sample centre, and Windows draws the
+   * pixel on the other side of both. */
+  pointReporter('arial-X-p2x', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    copyFrom: 'X',
+    point: 2,
+    axis: 'x',
+    magnify: 8,
+    drop: ['hdmx', 'LTSH'],
+    describe:
+      "Arial's X, in the n's slot, reporting point 2 (top left of the thick diagonal) along x at eight times",
+  }),
+  /* Arial's X under a width, in the n's slot so the hinting probe sweeps it:
+   * the four corners of its thick diagonal, along x at eight times. At
+   * twenty-one pixels asked for sixteen the stroke's two edges each land within
+   * a fraction of a sixty-fourth of a sample centre, and Windows draws the
+   * pixel on the other side of both. */
+  pointReporter('arial-X-p3x', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    copyFrom: 'X',
+    point: 3,
+    axis: 'x',
+    magnify: 8,
+    drop: ['hdmx', 'LTSH'],
+    describe:
+      "Arial's X, in the n's slot, reporting point 3 (top right of the thick diagonal) along x at eight times",
+  }),
+  /* Arial's X under a width, in the n's slot so the hinting probe sweeps it:
+   * the four corners of its thick diagonal, along x at eight times. At
+   * twenty-one pixels asked for sixteen the stroke's two edges each land within
+   * a fraction of a sixty-fourth of a sample centre, and Windows draws the
+   * pixel on the other side of both. */
+  pointReporter('arial-X-p12x', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    copyFrom: 'X',
+    point: 12,
+    axis: 'x',
+    magnify: 8,
+    drop: ['hdmx', 'LTSH'],
+    describe:
+      "Arial's X, in the n's slot, reporting point 12 (bottom right of the thick diagonal) along x at eight times",
+  }),
+  /* Arial's X under a width, in the n's slot so the hinting probe sweeps it:
+   * the four corners of its thick diagonal, along x at eight times. At
+   * twenty-one pixels asked for sixteen the stroke's two edges each land within
+   * a fraction of a sixty-fourth of a sample centre, and Windows draws the
+   * pixel on the other side of both. */
+  pointReporter('arial-X-p13x', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    copyFrom: 'X',
+    point: 13,
+    axis: 'x',
+    magnify: 8,
+    drop: ['hdmx', 'LTSH'],
+    describe:
+      "Arial's X, in the n's slot, reporting point 13 (bottom left of the thick diagonal) along x at eight times",
+  }),
+  /* The same four corners to the sixty-fourth: sixty-four times, with a base
+   * taken off where the coordinate would not otherwise fit the word. */
+  pointReporter('arial-X-p2x64', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    copyFrom: 'X',
+    point: 2,
+    axis: 'x',
+    magnify: 64,
+    base: 0,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial's X, in the n's slot, reporting point 2 along x at sixty-four times",
+  }),
+  /* The same four corners to the sixty-fourth: sixty-four times, with a base
+   * taken off where the coordinate would not otherwise fit the word. */
+  pointReporter('arial-X-p3x64', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    copyFrom: 'X',
+    point: 3,
+    axis: 'x',
+    magnify: 64,
+    base: 0,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial's X, in the n's slot, reporting point 3 along x at sixty-four times",
+  }),
+  /* The same four corners to the sixty-fourth: sixty-four times, with a base
+   * taken off where the coordinate would not otherwise fit the word. */
+  pointReporter('arial-X-p12x64', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    copyFrom: 'X',
+    point: 12,
+    axis: 'x',
+    magnify: 64,
+    base: 1536,
+    drop: ['hdmx', 'LTSH'],
+    describe:
+      "Arial's X, in the n's slot, reporting point 12 along x at sixty-four times less 1536",
+  }),
+  /* The same four corners to the sixty-fourth: sixty-four times, with a base
+   * taken off where the coordinate would not otherwise fit the word. */
+  pointReporter('arial-X-p13x64', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    copyFrom: 'X',
+    point: 13,
+    axis: 'x',
+    magnify: 64,
+    base: 1216,
+    drop: ['hdmx', 'LTSH'],
+    describe:
+      "Arial's X, in the n's slot, reporting point 13 along x at sixty-four times less 1216",
   }),
   pointReporter('times-N-diag-p2x16', {
     character: 'N',
