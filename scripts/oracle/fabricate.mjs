@@ -1058,14 +1058,107 @@ export const FABRICATIONS = [
    * takes a branch no square recording ever ran, and the square run is no
    * reference for what these points do. The hinting probe's stretched pass
    * draws the readout at several widths. */
-  pointReporter('times-N-diag-p1x', { character: 'N', point: 1, axis: 'x', drop: ['hdmx', 'LTSH'], describe: "Times New Roman's N reporting the top of its diagonal's upper edge, along x" }),
-  pointReporter('times-N-diag-p2x', { character: 'N', point: 2, axis: 'x', drop: ['hdmx', 'LTSH'], describe: "Times New Roman's N reporting the bottom of its diagonal's upper edge, along x" }),
-  pointReporter('times-N-diag-p19x', { character: 'N', point: 19, axis: 'x', drop: ['hdmx', 'LTSH'], describe: "Times New Roman's N reporting the top of its diagonal's lower edge, along x" }),
+  pointReporter('times-N-diag-p1x', {
+    character: 'N',
+    point: 1,
+    axis: 'x',
+    drop: ['hdmx', 'LTSH'],
+    describe: "Times New Roman's N reporting the top of its diagonal's upper edge, along x",
+  }),
+  pointReporter('times-N-diag-p2x', {
+    character: 'N',
+    point: 2,
+    axis: 'x',
+    drop: ['hdmx', 'LTSH'],
+    describe: "Times New Roman's N reporting the bottom of its diagonal's upper edge, along x",
+  }),
+  pointReporter('times-N-diag-p19x', {
+    character: 'N',
+    point: 19,
+    axis: 'x',
+    drop: ['hdmx', 'LTSH'],
+    describe: "Times New Roman's N reporting the top of its diagonal's lower edge, along x",
+  }),
   /* The same two far corners at sixteen times, since a coordinate past eight
    * pixels at sixty-four times overflows the scaler's sixteen-bit word. */
-  pointReporter('times-N-diag-p2x16', { character: 'N', point: 2, axis: 'x', magnify: 16, drop: ['hdmx', 'LTSH'], describe: "Times New Roman's N reporting the bottom of its diagonal's upper edge, along x, at sixteen times" }),
-  pointReporter('times-N-diag-p18x16', { character: 'N', point: 18, axis: 'x', magnify: 16, drop: ['hdmx', 'LTSH'], describe: "Times New Roman's N reporting the bottom of its diagonal's lower edge, along x, at sixteen times" }),
-  pointReporter('times-N-diag-p18x', { character: 'N', point: 18, axis: 'x', drop: ['hdmx', 'LTSH'], describe: "Times New Roman's N reporting the bottom of its diagonal's lower edge, along x" }),
+  /* Arial's n under a width: the arch, which Windows leaves a row higher at
+   * widths 7 and 12 -- horizontal sizes 15 and 26 -- and nowhere else. */
+  pointReporter('arial-n-arch-y', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    point: 4,
+    axis: 'y',
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial's n reporting the height of its arch",
+  }),
+  /* MPPEM itself under a width, along each axis: a rectangle in place of
+   * Arial's n whose advance is the answer in whole pixels. The gate on the n's
+   * overshoot is `11 <= MPPEM <= 13` under y, and Windows opens it at widths
+   * whose horizontal size is 15 and 26. */
+  stackReporter('arial-mppem-y', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    points: [
+      [0, 0],
+      [0, 400],
+      [400, 400],
+      [400, 0],
+    ],
+    body: [0x00, 0x4b, ...ops.word(4096), ...ops.multiply(), 0x01],
+    describe: "MPPEM under the y projection, as Arial's n's advance",
+  }),
+  stackReporter('arial-mppem-x', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    points: [
+      [0, 0],
+      [0, 400],
+      [400, 400],
+      [400, 0],
+    ],
+    body: [0x01, 0x4b, ...ops.word(4096), ...ops.multiply()],
+    describe: "MPPEM under the x projection, as Arial's n's advance",
+  }),
+  /* Control value 6, Arial's x-height after prep, as the n's advance in whole
+   * pixels: seven here at every width, and Windows's arch says eight at
+   * horizontal sizes 15 and 26. */
+  stackReporter('arial-cvt6', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    points: [
+      [0, 0],
+      [0, 400],
+      [400, 400],
+      [400, 0],
+    ],
+    body: [...ops.byte(6), ...ops.readControlValue()],
+    describe: "Arial's x-height control value after prep, as the n's advance",
+  }),
+  pointReporter('times-N-diag-p2x16', {
+    character: 'N',
+    point: 2,
+    axis: 'x',
+    magnify: 16,
+    drop: ['hdmx', 'LTSH'],
+    describe:
+      "Times New Roman's N reporting the bottom of its diagonal's upper edge, along x, at sixteen times",
+  }),
+  pointReporter('times-N-diag-p18x16', {
+    character: 'N',
+    point: 18,
+    axis: 'x',
+    magnify: 16,
+    drop: ['hdmx', 'LTSH'],
+    describe:
+      "Times New Roman's N reporting the bottom of its diagonal's lower edge, along x, at sixteen times",
+  }),
+  pointReporter('times-N-diag-p18x', {
+    character: 'N',
+    point: 18,
+    axis: 'x',
+    drop: ['hdmx', 'LTSH'],
+    describe: "Times New Roman's N reporting the bottom of its diagonal's lower edge, along x",
+  }),
   pointReporter('times-y-tail-right', {
     character: 'y',
     point: 26,

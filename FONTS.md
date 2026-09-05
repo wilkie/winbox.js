@@ -11903,8 +11903,33 @@ proportions from the same design coordinates and gets the same treatment.
 
     stretched cells   1,482 -> 1,799 of 1,944;   wrong pixels 8,822 -> 2,217
 
-What is left is 145 cells: whole-glyph shifts of a column, which is the bearing
-carry under a stretch, and single pixels on curves and diagonals.
+What was left was 145 cells, and the readout method went on paying.
+
+### The readouts confirm the model, and catch a float
+
+Two more stack reporters replace Arial's `n` with a rectangle whose program
+pushes `MPPEM` under each projection and reports it as the advance. Their rows
+at width nought are `hdmx`'s device width -- the table should have been dropped
+-- but every stretched row reads `MPPEM` plus a bearing carry of one or two
+pixels, and with the carry taken off they are **13 along `y` and exactly this
+implementation's horizontal size along `x`, at every width.** So the reference's
+rule for `MPPEM` is Windows's, and three variants that had it otherwise --
+the horizontal size on both axes, the larger of the two, `prep` seeing the
+horizontal size on both -- were refused by count in any case.
+
+The horizontal size itself was wrong at one width by a float: `13 * (15 / 13)`
+floors to 14, so every exception keyed on 15 missed. The size is kept as the
+whole number it is.
+
+    stretched cells   1,799 -> 1,824 of 1,944;   wrong pixels 2,217 -> 1,761
+
+A third reporter reads the arch of the `n` along `y`: **6.750 at every width
+but 7 and 12, where it is 7.750** -- a whole pixel, so the x-height is eight
+there, not seven. The gate on the overshoot is `11 <= MPPEM <= 13` under `y`
+and closes in both. And `prep` sets the x-height as the rounding of a measured
+**463 + 16 = 479** sixty-fourths: 7.48 pixels, which rounds down. Windows's
+eight at horizontal sizes 15 and 26 means its 463 is at least 464 at exactly
+those two sizes, and the readout of control value 6 itself is recorded next.
 
 Nothing recorded before this moved: `font`, `glyphs` and `hinting` hold at every
 record, since at a stretch of one every new path is the old one.

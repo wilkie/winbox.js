@@ -1394,7 +1394,7 @@ export const KNOWN_GAPS: Record<string, string> = {
    * too thick under a stretch -- 462 of 1,944 stretched cells. See FONTS.md.
    */
   'widths:glyph':
-    'stretched outlines: a column of bearing carry and single pixels on curves (145 of 1,944)',
+    'stretched outlines: the x-height a sixty-fourth short of rounding up at two sizes, and single pixels (120 of 1,944)',
   'widths:CreateFont widths':
     'the maximum width under a stretch, two of seventy within a half-unit of the rounding',
 

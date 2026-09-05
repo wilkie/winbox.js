@@ -306,6 +306,7 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
 
     probeNote("an outline face under a width, for the readouts of its diagonal");
     probeStretchedSweep("Times New Roman", 'N');
+    probeStretchedSweep("Arial", 'n');
 
     probeFinish();
 

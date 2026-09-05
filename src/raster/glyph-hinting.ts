@@ -286,6 +286,11 @@ export class Hinter {
     this.stretch = stretch;
     this.xPixels = ppem * stretch * ONE;
 
+    /* The horizontal size as a whole number. `ppem * stretch` is that number
+     * only up to floating point -- thirteen times fifteen thirteenths floors to
+     * fourteen -- and `MPPEM` and the deltas want the integer. */
+    this.xSize = Math.round(ppem * stretch);
+
     /* The size in the units distances are kept in, so a scaling is one whole
      * multiply and divide rather than a float in the middle of it.
      */
@@ -369,6 +374,28 @@ export class Hinter {
     }
 
     return Math.sqrt(px * px * this.stretch * this.stretch + py * py);
+  }
+
+  /** The pixel size along the projection vector, as `MPPEM` answers it and as
+   * a delta is keyed on: the horizontal size along `x`, the vertical along `y`,
+   * and the stretched vertical size floored along a diagonal. */
+  sizeAlong() {
+    if (this.stretch === 1) {
+      return this.ppem;
+    }
+
+    const px = this.state.projection.x;
+    const py = this.state.projection.y;
+
+    if (py === 0) {
+      return this.xSize;
+    }
+
+    if (px === 0) {
+      return this.ppem;
+    }
+
+    return Math.floor(this.ppem * this.scaleAlong());
   }
 
   /** A control value as the program reads it: kept at the vertical scale,
@@ -1567,7 +1594,7 @@ export class Hinter {
       /* -- the size -- */
 
       case 0x4b:
-        this.push(Math.floor(this.ppem * this.scaleAlong()));
+        this.push(this.sizeAlong());
         return at;
 
       case 0x4c:
@@ -2818,7 +2845,7 @@ export class Hinter {
      * itrp_MPPEM ()" and scales the same way. Under a width request that is
      * the horizontal size for an `x` delta, and Windows's round letters gain
      * a row at exactly the widths where it lands on an exception. */
-    const size = Math.floor(this.ppem * this.scaleAlong()) - (state.deltaBase + band);
+    const size = this.sizeAlong() - (state.deltaBase + band);
 
     // Outside the sixteen sizes this band covers, nothing in the list can be
     // meant for us and the list is never looked at.
