@@ -11345,13 +11345,131 @@ instrument rather than an oracle: its 3,650 records are the scaler's own stack,
 which nothing on this side is meant to reproduce, and the conformance suite
 reports them as unsupported.
 
-What is not whole is the fabricated corpus -- the fonts rewritten to isolate one
-mechanism each, which ask questions no stock face does. It stands at **25,882 of
-26,058 cells and 4,320 wrong pixels**, and that is where the work is.
+The fabricated corpus -- the fonts rewritten to isolate one mechanism each, which
+ask questions no stock face does -- stands at **26,057 of 26,058 cells and 5
+wrong pixels**.
 
-The rest of this section is the chase that got the recorded fixtures here, in
-the order it happened. **The figures inside it are the figures at the time**, and
-the tables below were current when they were written rather than now.
+### The chase, end to end
+
+What follows in this section is the chase as it happened, sitting by sitting, and
+**the figures inside it are the figures at the time**. This is what it came to.
+
+**It began with ten records and a corpus that was already good.** `font` was
+5,047 of 5,057, `glyphs` 5,982 of 5,982, and the fabricated set 25,882 of 26,058.
+The ten were three separate rules, and each of them turned out to be about a face
+Windows has to invent something for.
+
+- **A slant Windows synthesises is measured the way it is drawn.** Symbol has no
+  italic file, so an italic request gets the upright sheared -- drawn from the
+  raw outline with no program run, as section 3 had established, and _measured_
+  the same way. Its heights are the design ascent and descent scaled and rounded
+  at the size `VDMX` picks for the upright, and its advances are the scaler's
+  unhinted ones: origin phantom at `xMin - lsb`, advance phantom that far again
+  plus the advance, each rounded to a sixty-fourth, differenced, rounded to a
+  pixel. Rounding the design advance instead misses 51 of 6,014 recorded
+  advances; this misses none.
+- **A strike loses to the wrong name at ten thousand.** Four bitmap families at a
+  hundred pixels answer with Arial at proof quality, and the mapper's own penalty
+  table says why: a strike of the face asked for pays 150 a pixel it is short, an
+  outline of another face pays 10,000 flat. Fixedsys is 12,750 away and loses; MS
+  Serif is 9,750 and keeps its own, which the corpus had recorded without being
+  asked.
+- **And GDI's font directory is not the `SYSTEM` directory.** It is the boot fonts
+  from `SYSTEM.INI` and then `WIN.INI` `[fonts]` in the order written, each `.FOT`
+  naming its `.TTF` -- which is why the tie among outlines goes to Arial.
+
+**Then a hole the corpus could not see.** With the metrics closed, `measure`
+stepped a synthesised slant by one advance and `Surface` stepped its pen by
+another, each with a comment saying they agreed. Nothing could catch it: every
+cell of the glyph corpus draws a single character, and a single character never
+steps. The stack probe could not answer it either -- a two character `TextOut`
+leaves a clip of the cell where the box should be, so a string is built by a path
+a single character does not take. Sixteen pairs of pixels did: **sixteen of
+sixteen slanted pairs wrong, all sixteen upright controls clean.**
+
+**The point buffer, in three parts.** The fabricated corpus's remaining error was
+almost all in one instrument, and every wrong cell in it was an accented letter --
+because `slope-sweep` cuts thirty-six base letters down to four points and leaves
+the composites built on them alone, so their programs name points that are no
+longer there. The reference does not stop them: every `CHECK_POINT` in it is
+inside `FSCFG_DEBUG`. What it does instead is write past the end of a buffer
+allocated from `maxp`. Arrays that _grow_ are not memory that overflows, and the
+difference was the whole of it -- the phantoms are read as `length - 3`, so one
+write past the last point moved the end and turned every such letter into a bar
+in column nought. Sealing the count, padding to `maxp`, and **carrying the
+previous glyph's tail forward** rather than clearing it took the corpus from
+25,882 to 26,055. GDI's own layout later confirmed the shape to the word: the
+dot's `x` array and its `y` array sit 107 apart, and `maxPoints` is 103.
+
+**Two glyph cells, and a rule read rather than fitted.** What was left of the
+recorded corpus was Symbol slanted at a thirty-two pixel cell. Six rounds refused
+the shear's rounding, the lean, the subdivision depth, the threshold, the turning
+point splits and the bitmap row shift -- each by hundreds of records -- and the
+answer was none of them. It was **the point between two off-curve controls**: a
+font expects their midpoint, and what nothing says is _which coordinates_ it is
+the midpoint of. Halving the scaled ones and rounding up, `(a + b + 1) >> 1` --
+the same halving `EvaluateSpline` uses for its own subdivision -- put the glyph
+corpus at **6,046 of 6,046** and emptied `KNOWN_GAPS`.
+
+**And then eight sittings on a single box.** One recorded box in 528 sat a column
+right of where the rule that fits the other 527 puts it. Refused in turn: the
+carry in whole pixels (38 wrong), scaled by the cell height (36), `MulDiv`
+rounding (2), a half up (2); the box's left edge from `xMax` (388); a stale
+recording (re-recorded, identical); a different pixel size (Windows's own metrics
+say six per em). The residue was opened on the whole frame and **twelve bytes of
+2,240 differ between the two cells, not one of them a coordinate** -- so the box
+arrives already made.
+
+**That is what the heap probe was built for.** `TOOLHELP` walks every block in the
+system, turns a handle into a selector and reads through it without the program
+holding a pointer it might not be allowed to hold. Aimed by hashing blocks before
+and after a draw, it found the scaler's memory -- and then the reason the stack
+had never held anything: **the scaler runs on a stack of its own.** Its thunk sets
+`ss` to a relocated segment and `sp` to a saved offset before it calls. Every
+frame the scan converter builds had been out of the residue probe's reach from the
+beginning. In that segment the point array reads straight off -- `48 48 66 66` for
+the dot's four corners -- and the word after it, swept across eleven bearings, is
+`-ceil(shift * ppem * 64 / upem - 0.5)` exactly, **eleven of eleven**, halves and
+all. The carry rule, until then fitted to pixels, read out of memory.
+
+**The answer came from a sweep, not a breakpoint.** With `(min + 31) >> 6` and
+`(max + 32) >> 6` read out of segment 42's instruction stream, eleven cells four
+units apart could be _inverted_ rather than merely scored: each recorded column
+brackets its edge to sixty-four sixty-fourths, and eleven overlapping brackets
+left `min = 193 + carry` and `max = 256 + carry`, fitting all 22 boxes at that
+size. Read at every other size, the sweep agreed with the implemented rule
+everywhere and failed only at six per em -- and six and seven are the only sizes
+where the two readings of the carry are far enough apart for any sweep to land
+between them.
+
+> **The bearing is carried in whole pixels below seven pixels per em and in
+> sixty-fourths at seven and above.** Nought wrong of 704 recorded boxes; the
+> boundary at eight costs sixteen and at nine seventeen.
+
+The box that had looked like GDI contradicting its own rule for eight sittings
+was its own rule all along, at a size where the rule is a different one.
+
+**What is left is one cell**, and it is named to the operand. The composite's
+twenty-three byte program shifts a contour with `SHC`, whose displacement the
+reference computes as `x[pt] - ox[pt]`; the trace gives `pt` as 62 and 68 in a
+glyph with thirty-two points. Both sides take the same difference of the same two
+words of a shared buffer, and the words are what the last glyph to have a
+sixty-third point left there. Four readings of the buffer's scope and history --
+per size, per font, one for everything, and every record replayed in the probe's
+own order -- leave the same values at those indices. What would differ is the
+history GDI had before the recording began, and that is not in the recording.
+
+**On method.** Three things are worth keeping from it. A sweep beats a
+breakpoint for a boundary: `dot-fine` cost one fabrication and one recording and
+bracketed a rule's failure to a single sixty-fourth, where a mechanism that
+stopped the machine mid-call would have read one set of numbers for one cell.
+Refusals are worth writing down with their cost, because the eight readings this
+chase refused are what made the ninth readable. And a rule fitted to a corpus and
+a rule read out of an instruction stream are not the same kind of thing --
+`(min + 31) >> 6` was both, and it was only useful as a lever once it was the
+second.
+
+The rest of this section is that chase in the order it happened.
 
 Of the glyph records, every bitmap and plotter one is pixel-identical -- all
 forty-two of them, across four faces and two stock handles. That is the control,
