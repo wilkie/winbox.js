@@ -2016,14 +2016,14 @@ export class Hinter {
          *
          * Five point numbers: the one to move, then the two ends of the line it
          * should land on, then the two ends of the line that crosses it. The
-         * point goes to the intersection by Cramer's rule, and is touched in
-         * both directions because it has been placed rather than shifted.
+         * point goes to the intersection, and is touched in both directions
+         * because it has been placed rather than shifted.
          *
-         * Where the two lines are nearly parallel the intersection runs off to
-         * somewhere useless, so a near-parallel pair falls back to the midpoint
-         * of the two midpoints. The test compares the cross product against the
-         * dot product, which stand in for the sine and cosine of the angle
-         * between them, and the factor of nineteen is the reference's.
+         * Parallel means parallel, not nearly. This once took the midpoint
+         * whenever the two lines were within about three degrees of each other,
+         * on an unexplained factor of nineteen; the reference divides unless its
+         * denominator is exactly nought and takes the midpoint only then, and
+         * no fixture separates the two.
          *
          * `X` and `4` use this in all three outline faces, and without it every
          * one of them fell back to an unhinted outline.
@@ -2038,42 +2038,72 @@ export class Hinter {
         const zoneB = this.zone(state.zp0);
         const zone = this.zone(state.zp2);
 
-        const bx = zoneB.x[secondB] - zoneB.x[firstB];
-        const by = zoneB.y[secondB] - zoneB.y[firstB];
-        const ax = zoneA.x[secondA] - zoneA.x[firstA];
-        const ay = zoneA.y[secondA] - zoneA.y[firstA];
-        const dx = zoneB.x[firstB] - zoneA.x[firstA];
-        const dy = zoneB.y[firstB] - zoneA.y[firstA];
+        /* Arranged as the reference arranges it, since a chain of rounded
+         * `MulDiv26Dot6`s does not land where one exact intersection rounded
+         * would. Line A is the pair on top of the stack, line B the pair
+         * beneath; both are divided through by the larger component of A's
+         * direction so nothing overflows, and the point is B's start plus B's
+         * direction scaled by the ratio that comes out.
+         *
+         * This used to be Cramer's rule on the exact cross products, rounded
+         * once at the end -- the same line, a sixty-fourth apart. **Recorded**:
+         * Arial's `X` at twenty-one pixels asked for sixteen has its left
+         * crossing read out at 681 along `x`, and the chain gives 681 where the
+         * exact rule gave 680; at thirteen asked for sixteen the readout is
+         * (620, 358) against (619, 357); and Times New Roman's `X` at
+         * twenty-one asked for five comes to 232 by the chain, 233 by the exact
+         * rule, and the pixel at its crossing follows Windows only at 232.
+         */
+        const ax = zoneB.x[firstB];
+        const ay = zoneB.y[firstB];
+        const dax = zoneB.x[secondB] - ax;
+        const day = zoneB.y[secondB] - ay;
+        const bx = zoneA.x[firstA];
+        const by = zoneA.y[firstA];
+        const dbx = zoneA.x[secondA] - bx;
+        const dby = zoneA.y[secondA] - by;
 
         zone.touchedX[index] = true;
         zone.touchedY[index] = true;
 
-        /* Parallel means parallel, not nearly.
-         *
-         * This used to take the midpoint whenever the two lines were within
-         * about three degrees of each other, on an unexplained factor of
-         * nineteen. The reference divides unless its denominator is exactly
-         * nought -- `if (D)` -- and takes the midpoint only then, so a pair of
-         * lines that nearly miss put the point a long way off and Windows lets
-         * them. Being faithful about that is the point of the exercise; being
-         * defensive about it is a different program.
-         *
-         * Nothing measurable moves either way: every fixture scores the same to
-         * the pixel, which is what a near-parallel `ISECT` not arising in any of
-         * them looks like.
-         */
-        const cross = mulDiv(ax, -by, ONE) + mulDiv(ay, bx, ONE);
+        let n: number;
+        let d: number;
 
-        if (cross !== 0) {
-          const reach = mulDiv(dx, -by, ONE) + mulDiv(dy, bx, ONE);
+        if (day === 0) {
+          if (dbx === 0) {
+            zone.x[index] = bx;
+            zone.y[index] = ay;
 
-          zone.x[index] = zoneA.x[firstA] + mulDiv(reach, ax, cross);
-          zone.y[index] = zoneA.y[firstA] + mulDiv(reach, ay, cross);
+            return at;
+          }
+
+          n = by - ay;
+          d = -dby;
+        } else if (dax === 0) {
+          if (dby === 0) {
+            zone.x[index] = ax;
+            zone.y[index] = by;
+
+            return at;
+          }
+
+          n = bx - ax;
+          d = -dbx;
+        } else if (Math.abs(dax) >= Math.abs(day)) {
+          n = by - ay - mulDiv(bx - ax, day, dax);
+          d = mulDiv(dbx, day, dax) - dby;
         } else {
-          zone.x[index] =
-            (zoneA.x[firstA] + zoneA.x[secondA] + zoneB.x[firstB] + zoneB.x[secondB]) / 4;
-          zone.y[index] =
-            (zoneA.y[firstA] + zoneA.y[secondA] + zoneB.y[firstB] + zoneB.y[secondB]) / 4;
+          n = mulDiv(by - ay, dax, day) - (bx - ax);
+          d = dbx - mulDiv(dby, dax, day);
+        }
+
+        if (d !== 0) {
+          zone.x[index] = bx + mulDiv(dbx, n, d);
+          zone.y[index] = by + mulDiv(dby, n, d);
+        } else {
+          // Parallel: the middle of the two midpoints, in the reference's shifts.
+          zone.x[index] = (bx + (dbx >> 1) + ax + (dax >> 1)) >> 1;
+          zone.y[index] = (by + (dby >> 1) + ay + (day >> 1)) >> 1;
         }
 
         return at;

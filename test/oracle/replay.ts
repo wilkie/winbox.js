@@ -1382,22 +1382,18 @@ export const KNOWN_GAPS: Record<string, string> = {
    */
   'styles:glyph': 'six single pixels among the styled italics',
 
-  /* The outline faces above thirty-one pixels, in a sixty-four pixel cell: 800
-   * records and two single pixels, both on Times New Roman's X.
-   */
-  'sizes:glyph': "two single pixels above thirty-one pixels, on Times New Roman's X",
-
   /* The width field, recorded for the first time. The strikes agree in full and
    * the metrics all but two. The outline faces are hinted anisotropically the
    * reference's way: at a whole horizontal pixel size that is the vertical one
    * times a 16.16 ratio, with the control values scaled at the larger of the
    * two sizes and read through the reference's stretch factors, and deltas
    * keyed on the size along the projection, in the reference's 16.16
-   * arithmetic, with the stretched design coordinates unrounded. What is left
-   * is three cells of one or two pixels each -- 3 of 1,944 stretched cells.
-   * See FONTS.md.
+   * arithmetic, with the stretched design coordinates unrounded and `ISECT`
+   * as the reference's chain of roundings. What is left is one pixel of an
+   * outline Courier New's `prep` draws unhinted at a horizontal size of four
+   * -- 1 of 1,944 stretched cells. See FONTS.md.
    */
-  'widths:glyph': 'stretched outlines: three cells of one pixel (3 of 1,944)',
+  'widths:glyph': 'stretched outlines: one pixel of an unhinted Courier New o (1 of 1,944)',
   'widths:CreateFont widths':
     'the maximum width under a stretch, two of seventy within a half-unit of the rounding',
 

@@ -1459,6 +1459,68 @@ export const FABRICATIONS = [
     describe:
       "Arial's X, in the n's slot, reporting point 13 along x at sixty-four times less 1216",
   }),
+  /* The thin diagonal's corners and the crossing point the two strokes
+   * share, to the sixty-fourth; the crossing is an `ISECT` of the two. */
+  pointReporter('arial-X-p0x64', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    copyFrom: 'X',
+    point: 0,
+    axis: 'x',
+    magnify: 64,
+    base: 0,
+    drop: ['hdmx', 'LTSH'],
+    describe:
+      "Arial's X, in the n's slot, reporting point 0 (bottom left of the thin diagonal) along x at sixty-four times",
+  }),
+  pointReporter('arial-X-p19x64', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    copyFrom: 'X',
+    point: 19,
+    axis: 'x',
+    magnify: 64,
+    base: 0,
+    drop: ['hdmx', 'LTSH'],
+    describe:
+      "Arial's X, in the n's slot, reporting point 19 (bottom right of the thin diagonal) along x at sixty-four times",
+  }),
+  pointReporter('arial-X-p9x64', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    copyFrom: 'X',
+    point: 9,
+    axis: 'x',
+    magnify: 64,
+    base: 1024,
+    drop: ['hdmx', 'LTSH'],
+    describe:
+      "Arial's X, in the n's slot, reporting point 9 (top right of the thin diagonal) along x at sixty-four times less 1024",
+  }),
+  pointReporter('arial-X-p1x64', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    copyFrom: 'X',
+    point: 1,
+    axis: 'x',
+    magnify: 64,
+    base: 512,
+    drop: ['hdmx', 'LTSH'],
+    describe:
+      "Arial's X, in the n's slot, reporting point 1 (the left crossing, set by ISECT) along x at sixty-four times less 512",
+  }),
+  pointReporter('arial-X-p1y64', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    copyFrom: 'X',
+    point: 1,
+    axis: 'y',
+    magnify: 64,
+    base: 512,
+    drop: ['hdmx', 'LTSH'],
+    describe:
+      "Arial's X, in the n's slot, reporting point 1 (the left crossing, set by ISECT, along y) along y at sixty-four times less 512",
+  }),
   pointReporter('times-N-diag-p2x16', {
     character: 'N',
     point: 2,

@@ -9020,7 +9020,8 @@ read out of GDI rather than measured into place.
   an arithmetic shift does and is measured on three descenders. And the
   stretched design coordinates `IP` and `MDRP` measure from keep a fraction of
   a unit, measured on an `S`; what the glue actually stores is not known.
-  Three stretched cells of 1,944 are still wrong, three pixels in all.
+  One stretched cell of 1,944 is still wrong, an unhinted `o` at a horizontal
+  size of four.
 - **Outside the fixtures**: what GDI passes for `pixelDiameter` (the scale is
   927 of 927 without it); `ISECT` on near-parallel lines, matched at ten of
   fifty-nine readouts and declared irreducible; and `s45round`'s half case, two
@@ -12143,17 +12144,43 @@ Scaling it at the fractional horizontal size instead of the whole one is
 refused outright: 1,939 of 2,043 and 431 pixels, most of Courier New's narrow
 requests going wrong.
 
+### `ISECT`, as a chain of roundings
+
+The pixel left on Arial's `X` was on the left edge of its thick diagonal
+above the crossing, and that edge runs from the top corner -- confirmed by
+readout -- down to the point `ISECT` puts at the crossing of the two strokes.
+Five more readouts: the thin diagonal's three corners, and the crossing point
+itself along `x` and along `y`. **The corners agree at every width. The
+crossing does not**: Windows has it at 681 along `x` where this had 680, at
+twenty-one pixels asked for sixteen; at thirteen asked for sixteen Windows
+has (620, 358) against (619, 357); at twenty-one asked for twenty its `y` is
+521 against 520.
+
+This computed the intersection by Cramer's rule on the exact cross products
+and rounded once. The reference divides both numerator and denominator
+through by the larger component of one line's direction, each division a
+rounded `MulDiv26Dot6`, and then scales the other line's direction by the
+ratio, rounding again. For the Arial crossing that chain is 1232 × 1060 /
+1919, which is 680.52 and rounds to 681 -- the exact intersection is 680.2.
+Rearranging `ISECT` as the reference has it puts the crossing at 681, and the
+edge above it crosses the sample row at 416.06 sixty-fourths instead of 415.5:
+the other side of the centre at 416, and the pixel goes. The same chain gives
+Times New Roman's `X` at twenty-one asked for five its crossing at 232 where
+the exact rule gave 233, and its pixel goes too. **And the two cells of
+`sizes` that had stood since it was recorded -- Times New Roman's `X` at
+thirty-six and forty pixels -- go with them**, which is the sort of thing a
+mechanism does and a fitted rule does not.
+
+    widths   1,943 of 1,944 stretched cells, 3 -> 1 wrong pixels
+    sizes    798 -> 800 of 800
+
 ### What is left of `lfWidth`
 
-Three stretched cells of 1,944, three pixels. Arial's `X` at twenty-four asked
-for sixteen still differs by one pixel on the left edge of its thick diagonal,
-in a row where that edge crosses 6.495 pixels and the sample centre is 6.5 --
-and the two corners that edge runs between now agree with the readouts to the
-sixty-fourth, so what is left there is the scan converter's own arithmetic at
-a crossing five thousandths of a pixel from a centre. Times New Roman's `X` at
-twenty-four asked for five is one pixel at the crossing of its two diagonals,
-and Courier New's `o` at sixteen asked for three is one pixel of an unhinted
-outline. The maximum width metric is still two of seventy.
+One stretched cell of 1,944, one pixel: Courier New's `o` at sixteen asked
+for three, which its own `prep` draws with grid-fitting off at that horizontal
+size, so the pixel is about how an unhinted outline is scaled or drawn under a
+width. Scaling it at the fractional horizontal size is refused, above. The
+maximum width metric is still two of seventy.
 
 Nothing recorded before this moved: `font`, `glyphs` and `hinting` hold at every
 record, since at a stretch of one every new path is the old one.
@@ -12171,8 +12198,8 @@ it stands:
 | `lines`                                                      | 248     | **100%**  |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
 | `styles`                                                     | 9,178   | 99.7%     |
-| `sizes`                                                      | 800     | 99.8%     |
-| `widths`                                                     | 2,480   | 99.8%     |
+| `sizes`                                                      | 800     | **100%**  |
+| `widths`                                                     | 2,480   | 99.9%     |
 
 `KNOWN_GAPS` is empty. The `stack` fixture is not in the table because it is an
 instrument rather than an oracle: its 3,650 records are the scaler's own stack,
