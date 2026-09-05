@@ -4729,9 +4729,40 @@ And row 17 is the same edge from the other side: the loop's bottom sits at `y`
 448, between that row's sample and the one above, and Windows inks a column there
 that the base alone does not reach.
 
-That is where the last cell now stands. It is not memory, it is not the shift,
-and it is not the flattening: it is where a circle's arc crosses a sample line
-within a sixth of a pixel, twice, at the two rows where the arc is turning.
+#### The value that closes it, by inversion
+
+The loop is shifted twice: once in `y`, by the movement at index 68, and once in
+`x`, by the movement at index 62. The first is right -- the history gives it -448
+and no other value does better. The second this reads as **nought**, and the
+winding says Windows's loop sits about four tenths of a pixel to its left.
+
+So invert it. Overriding the `x` movement at index 62 and sweeping:
+
+    62 ->   0    -8   -16   -24   **-28**  **-32**   -40   -48   -56   -64
+    wrong   5     5     2     2     **0**     **0**     2     2     5     5
+
+**Nought wrong pixels**, and the value that does it is **-32 sixty-fourths --
+exactly half a pixel.** The whole cell turns on one number, and the number is a
+round one.
+
+Where it should come from is visible in the history. Logging both indices through
+the records before it:
+
+    #de   count 62   62: x=576 ox=576     the glyph's own first phantom
+    #df   count 63   62: x=0   ox=0       its last phantom, a real point here
+    #e0   count 12   62: x=0   ox=0       padding from here on, carried forward
+    #e3   count 34   68: x=0   ox=448     a program moves 68, giving the -448
+    #e5   count 32   62: x=0   ox=0   68: x=0 ox=448
+
+Index 68 traces cleanly and matches. Index 62 is the fourth phantom of `#df` --
+the vertical advance origin, which this sets to `(0, 0)` and never moves -- and
+after that nothing touches it. In GDI something leaves it half a pixel from where
+it started, and that half pixel is the whole of the last cell.
+
+That is where it stands: not memory in the sense of unreproducible scratch, but
+one determined value, at a named index, of a named glyph's phantom, worth exactly
+half a pixel. It is not written into the implementation, because a value fitted
+by sweeping one cell is a value fitted by sweeping one cell.
 
 ### And the last of `slope-sweep`
 
