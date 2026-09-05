@@ -11929,7 +11929,19 @@ there, not seven. The gate on the overshoot is `11 <= MPPEM <= 13` under `y`
 and closes in both. And `prep` sets the x-height as the rounding of a measured
 **463 + 16 = 479** sixty-fourths: 7.48 pixels, which rounds down. Windows's
 eight at horizontal sizes 15 and 26 means its 463 is at least 464 at exactly
-those two sizes, and the readout of control value 6 itself is recorded next.
+those two sizes, and the readout of control value 6 itself says so directly:
+read along `x` through the reporter's rectangle, and with the stretch and the
+rectangle's bearing carry taken back off, **Windows's x-height is eight pixels at
+horizontal sizes 15 and 26 and seven at every other width recorded.**
+
+Where that eight is made is not yet found. Arial's `prep` reads both sizes and
+reasons about them -- `MPPEM_x * 3 / MPPEM_y` tested against 246 and 266 is a
+four-to-three aspect detector, and `MPPEM_x == MPPEM_y` the square flag Times New
+Roman also keeps -- but both come out the same here and in Windows, and the
+measurement itself, twilight points set to control values and interpolated, is
+identical in this interpreter at 15 and at 17. Whatever Windows does at 15 and 26
+that it does not at 17, 21 and 34 is a sixty-fourth's worth, and the next
+readouts to record are the control values that measurement is made from.
 
 Nothing recorded before this moved: `font`, `glyphs` and `hinting` hold at every
 record, since at a stretch of one every new path is the old one.
