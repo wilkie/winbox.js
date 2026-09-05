@@ -11856,9 +11856,24 @@ What is left is **the diagonals**. Times New Roman's `N` at ten and sixteen
 average width has its stems exactly where Windows has them and its diagonal
 three to seven pixels thick where Windows's is one or two; Arial's at sixteen
 breaks at the top. The projection along a diagonal under an anisotropic
-stretch is the reference's root of the weighted squares, which this has, so
-what differs is somewhere in how a point is moved along a freedom vector that
-is not the projection -- the next thing to trace.
+stretch is the reference's root of the weighted squares, which this has.
+
+Where the two runs part is not a move but a flag. The `N`'s square run executes
+239 instructions and its stretched run 476, and they diverge at an `IF` on
+storage 18 -- which the font's `prep` computes as
+
+    SVTCA[x] MPPEM  SVTCA[y] MPPEM  EQ  WS 18
+
+**"the size along x equals the size along y"**: the font's own test for a
+square stretch, and under a width it is nought, so the glyph programs take a
+branch that no square recording ever ran. Windows takes it too -- its round
+letters gaining a row at exactly the horizontal sizes 15 and 26 says its `MPPEM`
+along x is the horizontal size, so its flag is nought as well. So the diagonals
+are wrong _inside_ the non-square branch: instructions this interpreter has run
+correctly ten thousand times under a square scale, doing something under a
+stretch that Windows does differently. That branch is the next thing to read,
+and it needs the fabricated-readout method rather than another sweep, since the
+square run is no longer a reference for it.
 
 Nothing recorded before this moved: `font`, `glyphs` and `hinting` hold at every
 record, since at a stretch of one every new path is the old one.
