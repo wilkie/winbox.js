@@ -4627,6 +4627,29 @@ order all leave the same values at those two indices, because the chain from the
 component's zone to them is the same in all of them. What would differ is the
 history GDI had before the recording began, and that is not in the recording.
 
+#### And the reference says what `SHC` reads
+
+The instruction is worth quoting, because it settles that this is the mechanism
+and not a guess about one. `itrp_SH_Common`, which both `SHP` and `SHC` get their
+displacement from:
+
+    if (BIT0 (lOpCode)) { pt = LocalGS.Pt1; element = LocalGS.CE0; }
+    else                { pt = LocalGS.Pt2; element = LocalGS.CE1; }
+    proj = Project (element->x[pt] - element->ox[pt],
+                    element->y[pt] - element->oy[pt]);
+
+**The displacement is `x[pt] - ox[pt]`** -- where the point is now, less where it
+started -- and `CHECK_POINT` beside it is the compiled-out kind. `referenceShift`
+here is the same three lines: `zp0`'s zone and `rp1` for the odd opcode, `zp1`
+and `rp2` for the even one, projected the same way. So the transcription is right
+and the reading of the trace is right.
+
+Which makes the last cell exactly this: **`x[62] - ox[62]` of a glyph with
+thirty-two points**, in the glyph zone -- the trace gives `zp0 = zp1 = zp2 = 1`,
+and the twilight zone has only sixteen points, so there is no other reading. Both
+sides compute the same difference of the same two words. The words are what the
+last glyph to have a sixty-third point left there.
+
 That is the whole of the last cell. Both sides moved the same loop with the same
 instructions for the same reason; they read different numbers out of the buffer
 past the outline and put it in different places. Nothing about the interpreter,
