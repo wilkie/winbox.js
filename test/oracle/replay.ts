@@ -1388,13 +1388,12 @@ export const KNOWN_GAPS: Record<string, string> = {
   'sizes:glyph': 'three single pixels above thirty-one pixels',
 
   /* The width field, recorded for the first time. The strikes agree in full and
-   * the metrics all but two; the outline faces are drawn stretched now, hinted
-   * anisotropically the reference's way, and a distance moved along x still
-   * carries the stretch a second time somewhere -- 826 of 2,270 glyph cells
-   * agree, from 504 with no stretch at all. See FONTS.md, "lfWidth".
+   * the metrics all but two. The outline faces are hinted anisotropically the
+   * reference's way, at a whole horizontal pixel size, with deltas keyed on the
+   * size along the projection; what is left is the diagonals, which come out
+   * too thick under a stretch -- 462 of 1,944 stretched cells. See FONTS.md.
    */
-  'widths:glyph':
-    'stretched outlines: a distance moved along x carries the stretch twice (1444 of 2,270)',
+  'widths:glyph': 'stretched outlines: diagonals too thick under a stretch (462 of 1,944)',
   'widths:CreateFont widths':
     'the maximum width under a stretch, two of seventy within a half-unit of the rounding',
 

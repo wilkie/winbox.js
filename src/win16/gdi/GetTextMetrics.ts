@@ -79,7 +79,8 @@ export function GetTextMetrics(hdc, lptm) {
      * `widths` fixture -- not the design average re-scaled, which is a pixel
      * short at some of them. */
     lptm.tmAveCharWidth =
-      Math.round(scaled(outline.averageAdvance) * (font.stretch ?? 1)) + smeared;
+      Math.round(scaled(outline.averageAdvance) * (font.ppem ? font.xPpem / font.ppem : 1)) +
+      smeared;
 
     /* The font's bounding box, not its widest advance and not the grid-fitted
      * widths in `hdmx`.

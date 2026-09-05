@@ -90,8 +90,8 @@ const BITMAP_PIXELS = 794;
 /* The wide-net fixtures: seven single pixels among the styled files, three above
  * thirty-one pixels, and the stretched outlines of `widths`, which are a rule
  * still being read -- see FONTS.md. Each may only come down. */
-const STYLES_OUTLINE_RECORDS = 10 + 1444;
-const STYLES_OUTLINE_PIXELS = 10 + 53125;
+const STYLES_OUTLINE_RECORDS = 10 + 462;
+const STYLES_OUTLINE_PIXELS = 10 + 8822;
 const STYLES_OTHER_RECORDS = 0;
 const STYLES_OTHER_PIXELS = 0;
 

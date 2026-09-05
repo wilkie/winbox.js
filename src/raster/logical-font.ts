@@ -81,8 +81,15 @@ export class LogicalFont extends Font {
   }
 
   /** The horizontal size over the vertical: one unless a width was asked for. */
+  /**
+   * The horizontal size over the vertical, for hinting: one unless a width was
+   * asked for. The scaler hints at a whole horizontal pixel size -- the
+   * fractional one floored -- while the metrics keep the fraction: on the
+   * `widths` fixture the floor is 1,482 of 1,944 stretched cells, the fraction
+   * 1,117 and the rounded size 1,060.
+   */
   get stretch() {
-    return this.ppem ? this.xPpem / this.ppem : 1;
+    return this.ppem ? Math.floor(this.xPpem) / this.ppem : 1;
   }
 
   /** How many times over the strike is drawn, to reach the size asked for. */

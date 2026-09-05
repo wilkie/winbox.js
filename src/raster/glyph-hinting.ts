@@ -823,7 +823,11 @@ export class Hinter {
      * disagreeing. Thirteen of the bold and italic cells come right with this
      * and none goes wrong.
      */
-    zone.originalX[zone.x.length - 3] = origin + this.toPixels(advance);
+    /* The advance phantom's original sits at the horizontal scale like the
+     * phantom itself; at the vertical one, a stretched `MIRP` from it with an
+     * empty control value measured the wrong distance and put the right side
+     * of Arial's `E` three widths out instead of two. */
+    zone.originalX[zone.x.length - 3] = origin + this.toPixelsX(advance);
 
     /* A composite has no design coordinates, so its scaled ones stand in.
      *
@@ -2802,7 +2806,12 @@ export class Hinter {
   eachDelta(pairs, band, move) {
     const state = this.state;
 
-    const size = this.ppem - (state.deltaBase + band);
+    /* The size a delta is keyed on is the one along the projection vector,
+     * as `MPPEM` answers it -- the reference's delta engine says "same as
+     * itrp_MPPEM ()" and scales the same way. Under a width request that is
+     * the horizontal size for an `x` delta, and Windows's round letters gain
+     * a row at exactly the widths where it lands on an exception. */
+    const size = Math.floor(this.ppem * this.scaleAlong()) - (state.deltaBase + band);
 
     // Outside the sixteen sizes this band covers, nothing in the list can be
     // meant for us and the list is never looked at.

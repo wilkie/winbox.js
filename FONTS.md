@@ -11823,6 +11823,43 @@ instruction that does it is the next thing to trace.
     widths   1,034 of 2,480 records;  glyph 826 of 2,270;  average width 70 of 70
              with the fractional size, maximum 68 of 70
 
+### Three more readings, and the diagonals left
+
+The instruction that carried the stretch twice was found by tracing Arial's `E`
+at the square size and the stretched one side by side: at step 54 an `MIRP`
+places the right end of the bars from the **advance phantom**, with an empty
+control value, so it measures the outline's own distance between the two -- and
+the phantom's _original_ position had been set at the vertical scale, 8.67
+against an actual 17, so the distance came out -7 instead of +1. One line.
+
+Then the round letters, which sat a row lower than Windows's with the `E` now
+exact, and not at every width: Windows's `o a e s` at sixteen pixels gain a row
+at widths 7 and 12 only, not at 8, 10 or 16 -- the widths whose horizontal size
+is 15 and 26. That is a `DELTA` exception keyed on the size along the
+projection, which the reference's delta engine uses -- "same as `MPPEM`" -- and
+this had keyed on the vertical size whatever the projection.
+
+And the horizontal size the scaler _hints_ at is a whole number. At width 8 the
+fractional size is 17.33 and the advance phantom lands at 12 from 11.56, where
+Windows's right side says 11, which 11.56 cannot round to and 11.34 -- the
+advance at 17 -- can. Floored for hinting, fractional for the metrics:
+
+    hinting size    fractional 1,117   floored **1,482**   rounded 1,060   of 1,944
+
+Refused along the way, each by count: running `prep` unstretched (461 against
+632 at the time), and leaving the advance phantom unrounded under a stretch (765
+against 1,117).
+
+    widths   glyph 1,808 of 2,270;  stretched 1,482 of 1,944;  8,822 wrong pixels
+
+What is left is **the diagonals**. Times New Roman's `N` at ten and sixteen
+average width has its stems exactly where Windows has them and its diagonal
+three to seven pixels thick where Windows's is one or two; Arial's at sixteen
+breaks at the top. The projection along a diagonal under an anisotropic
+stretch is the reference's root of the weighted squares, which this has, so
+what differs is somewhere in how a point is moved along a freedom vector that
+is not the projection -- the next thing to trace.
+
 Nothing recorded before this moved: `font`, `glyphs` and `hinting` hold at every
 record, since at a stretch of one every new path is the old one.
 
