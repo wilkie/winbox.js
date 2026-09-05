@@ -29,7 +29,7 @@
 /* Scratch space for building the two variable fields of a record. Probes fill
  * these with wsprintf and hand them straight to probe(). */
 char probeArgs[512];
-char probeResult[512];
+char probeResult[2048];
 
 static HFILE probeHandle = HFILE_ERROR;
 
@@ -69,7 +69,7 @@ static LPSTR probeEscape(LPSTR out, LPCSTR in)
 /* Writes one record. */
 static void probe(LPCSTR function, LPCSTR args, LPCSTR result)
 {
-    char line[2400];
+    char line[4400];
     LPSTR at;
 
     if (probeHandle == HFILE_ERROR) {

@@ -477,32 +477,32 @@ class Context {
     return this.readCell(surface);
   }
 
-  drawGlyph(font: any, character: string) {
-    const surface: any = Surface.offscreen(32, 32);
+  drawGlyph(font: any, character: string, cell = 32) {
+    const surface: any = Surface.offscreen(cell, cell);
 
     surface.font = font;
 
     // White to start with, as `PatBlt(..., WHITENESS)` left it.
     surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
-    surface.fillRect(0, 0, 32, 32);
+    surface.fillRect(0, 0, cell, cell);
 
     surface.fillText(2, 0, character);
 
-    return this.readCell(surface);
+    return this.readCell(surface, cell);
   }
 
   /** The cell as the probes write it: one bit a pixel, white set. */
-  readCell(surface: any) {
+  readCell(surface: any, cell = 32) {
     const pixels = surface.context.pixels;
 
     let hex = '';
 
-    for (let row = 0; row < 32; row++) {
-      for (let group = 0; group < 4; group++) {
+    for (let row = 0; row < cell; row++) {
+      for (let group = 0; group < cell / 8; group++) {
         let byte = 0;
 
         for (let bit = 0; bit < 8; bit++) {
-          const at = (row * 32 + group * 8 + bit) * 4;
+          const at = (row * cell + group * 8 + bit) * 4;
 
           // A set bit is white, which is what the probe's background was.
           const inked = pixels[at] < 0x80 && pixels[at + 3] !== 0;
@@ -1320,7 +1320,17 @@ const ADAPTERS: Record<
       font = context.handles.resolve(handle);
     }
 
-    return context.drawGlyph(font, character);
+    /* The cell is thirty-two pixels square unless the record says otherwise;
+     * the sizes probe draws into sixty-four. */
+    const cell = Number(
+      args
+        .slice(1, -1)
+        .find((field) => String(field).startsWith('cell='))
+        ?.toString()
+        .slice(5) ?? 32
+    );
+
+    return context.drawGlyph(font, character, cell);
   },
 
   /* One line, from the middle of the cell to an offset given as two numbers. */
@@ -1370,6 +1380,11 @@ export const KNOWN_GAPS: Record<string, string> = {
    * spread over the bold italics and two Courier New Italic accents.
    */
   'styles:glyph': 'seven single pixels among the styled files',
+
+  /* The outline faces above thirty-one pixels, in a sixty-four pixel cell: 800
+   * records and three single pixels, all on the edge of a diagonal.
+   */
+  'sizes:glyph': 'three single pixels above thirty-one pixels',
 
   /* Asked for "Wingdings" in the ANSI set, Windows falls to Small Fonts at ten
    * pixels, Arial at 12, 14 and 18, and MS Sans Serif at 16, 20 and 24 -- an

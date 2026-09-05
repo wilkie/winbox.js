@@ -87,10 +87,10 @@ const PIXELS = 0;
 const BITMAP_RECORDS = 136;
 const BITMAP_PIXELS = 794;
 
-/* The `styles` fixture: seven single pixels among the styled files, and
- * nothing of Wingdings. */
-const STYLES_OUTLINE_RECORDS = 7;
-const STYLES_OUTLINE_PIXELS = 7;
+/* The wide-net fixtures, `styles` and `sizes`: seven single pixels among the
+ * styled files and three above thirty-one pixels, and nothing of Wingdings. */
+const STYLES_OUTLINE_RECORDS = 10;
+const STYLES_OUTLINE_PIXELS = 10;
 const STYLES_OTHER_RECORDS = 0;
 const STYLES_OTHER_PIXELS = 0;
 
@@ -159,8 +159,9 @@ if (fixtures.length === 0) {
       /* The `styles` fixture is the wide net over the styled files and
        * Wingdings, and it has its own ceilings below; the list the three
        * outline families are held at nought on is everything else. */
-      const styled = rows.filter((row) => row.fixture === 'styles');
-      const rest = rows.filter((row) => row.fixture !== 'styles');
+      const WIDE_NET = ['styles', 'sizes'];
+      const styled = rows.filter((row) => WIDE_NET.includes(row.fixture ?? ''));
+      const rest = rows.filter((row) => !WIDE_NET.includes(row.fixture ?? ''));
       const outline = rest.filter((row) => isOutline(row.args));
       const bitmap = rest.filter((row) => !isOutline(row.args));
       const count = (list: typeof rows) => list.reduce((sum, row) => sum + row.wrong, 0);

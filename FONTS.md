@@ -11752,6 +11752,30 @@ it turned out not to be in the file when the runs were made -- so it stands
 untested, not refuted. And the seven left are seven different glyphs, a pixel
 each, with no cluster among them.
 
+### Above thirty-one pixels, for the first time
+
+Every glyph recorded before this was drawn into a thirty-two pixel square, so no
+cell height above thirty-one had ever been compared: not the sizes where dropout
+control is meant to switch off, not the sizes where `prep` takes its large
+branches, not the scan converter on a glyph a hundred points across. The `sizes`
+probe draws into a sixty-four pixel cell and says so in the record -- `cell=64`
+-- and the replay draws into whatever the record names, thirty-two when it names
+nothing. The probe library's result buffer, sized for a thirty-two pixel cell,
+grew to take the thousand hex digits of a sixty-four.
+
+Three regular faces at 36, 40, 44, 48, 56 and 64 pixels over thirty-six letters,
+the three bold files at forty-eight, and Symbol at three sizes with its slant at
+one: 800 cells, and **797 agree on the first replay.** The three that do not are
+each a single pixel on the edge of a diagonal -- Times New Roman's `X` at 36 and
+40, Courier New's `4` at 48 -- the same kind of residue as the seven in the
+styled files.
+
+    sizes   797 of 800, 99.6%;  three single pixels
+
+Nothing had to change for it. The size chooser, the hinting, the scan converter
+and its dropout rules, all read or measured below thirty-one pixels, hold at
+twice that.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
@@ -11765,6 +11789,7 @@ it stands:
 | `lines`                                                      | 248     | **100%**  |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
 | `styles`                                                     | 9,178   | 99.7%     |
+| `sizes`                                                      | 800     | 99.6%     |
 
 `KNOWN_GAPS` is empty. The `stack` fixture is not in the table because it is an
 instrument rather than an oracle: its 3,650 records are the scaler's own stack,
