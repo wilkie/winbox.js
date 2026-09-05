@@ -8955,6 +8955,13 @@ and it is here.
 Everything below draws the right pixels. What is missing in each is the _reason_,
 read out of GDI rather than measured into place.
 
+- **The fallback for a name in the wrong character set.** Asked for a symbol
+  face in the ANSI set, Windows takes an exact strike from any bitmap family,
+  else the outline, never a scaled strike; this takes MS Sans Serif scaled. The
+  rule that scores that is not known, and the obvious one is refused by the
+  `font` fixture.
+- **Wingdings' family.** `FF_DONTCARE` where Symbol, the same OS/2 class, is
+  `FF_ROMAN`; which field decides it is not known.
 - **Two narrow-glyph rules are measured, not read.** A glyph whose box collapses
   in `x` skips the stub check, and a glyph narrower than a sample gap is drawn as
   one run per column. Both are exact on their instruments -- 258 of 258 and the
@@ -11639,22 +11646,74 @@ one at 650 gets the bold file drawn plainly, and the metrics follow the same
 gate. **The weight sweep is 720 of 720 at the hundreds and 336 of 336 at the
 tens**, and nothing else moves.
 
-### What the wide net still holds
+### What the wide net turned out to hold
 
-The other 408 are registered as a gap on the `styles` fixture alone, so the
-`glyphs` corpus's property -- no outline glyph disagrees -- is still asserted
-where it was earned:
+The other 408 were four things, and three of them were the probe's.
 
-- **Wingdings at 10, 12, 14 and 18 pixels draws smaller than this does**, at
-  nearly every character, and agrees at 16, 20 and 24. Its `VDMX` has two ratio
-  groups with identical records, so it is not the group; whether Windows picks
-  a smaller size or hints the same size differently is what the next recording
-  asks, with `GetTextMetrics`.
-- **Courier New Italic's ¼, ½ and ¾** at every height, twenty-odd pixels each.
-  They are three-component composites with plain offsets where the regular
-  file's are simple glyphs, so the composite path with a third component is
-  what is new.
-- Nine cells of the bold italics a pixel out.
+**Wingdings had never been drawn, by either side.** The probe asked for it with
+the ANSI character set, the way it asks for everything else, and _the character
+set outranks the name_ -- a rule this file already had. Windows fell to a bitmap
+face and so did this; the cells that "agreed" at 16, 20 and 24 were MS Sans
+Serif's strikes on both sides, and the ones that did not were Windows falling
+somewhere else. Recorded with `GetTextFace`, where it fell is exact:
+
+    asked for "Wingdings", ANSI    h=10   Small Fonts
+                                   h=12   Arial
+                                   h=14   Arial
+                                   h=16   MS Sans Serif
+                                   h=18   Arial
+                                   h=20   MS Sans Serif
+                                   h=24   MS Sans Serif
+
+An exact strike where one exists, from any bitmap family; otherwise the outline;
+never a scaled strike. This falls to MS Sans Serif at every height, scaled where
+it must. Making the outline beat every scaled strike is **refused**: it takes the
+`font` fixture from 5,057 to 2,842 of 5,057, so whatever scores the fallback is
+not that. The four heights and their metrics stand as a gap, 16 records, with the
+data above.
+
+Asked for with the symbol set, Windows answers with Wingdings at every height,
+and this answered with Symbol -- the mapper rewrote every symbol-set request to
+that one face. **A name that is itself a symbol face keeps its name**; the
+rewrite is only for a name that is not. With that, Wingdings proper was 609 of
+658 on the first replay, and the 49 were seven characters at every height.
+
+**Two of the seven were the record.** `'` and `,` went into the argument list as
+themselves, and a quote or a comma inside a comma-separated list is not something
+the replay can parse around; it drew an empty string. Punctuation now goes in as
+its code, as the accented range always had.
+
+**Five were composites with a transform.** Wingdings places mirrored copies:
+`D` is glyph 38 at a scale of -1, a point reflection; `@` is glyph 34 mirrored
+in `x`. This honoured a component's offset and nothing else, so the copy landed
+fourteen hundred units off the cell and drew blank. Two rules came out of
+putting the matrix in, and each was decided by counting:
+
+- **A composite with no program of its own still has its components fitted.**
+  Glyph 39 has no instructions; glyph 38, which it places, has three hundred
+  bytes of them. This had taken the design assembly for such a composite and
+  scaled it, unhinted. Running the assembly with nothing to execute afterwards
+  -- the components fitted by their own programs, the composite by none -- is
+  what Windows does.
+- **The transform applies to the fitted component, not before its program.**
+  Mirroring the design outline and then hinting it is 21 of 35; hinting and
+  then mirroring is **35 of 35**.
+
+**And the fractions fell with them.** Courier New Italic's ¼, ½ and ¾ are
+three-component composites with no program of their own, and the twenty cells
+that had been chased as a placement fault -- offset rounding, the bearing
+carry, both refused -- were the same unhinted assembly. Fitted, they agree.
+
+What the net holds now is **eleven single pixels** among the bold italics and two
+Courier New Italic accents, the sixteen fallback records above, and one more
+metric: Wingdings answers `tmPitchAndFamily` with `FF_DONTCARE` where Symbol,
+also OS/2 class 12, answers `FF_ROMAN`. Two fonts cannot say which field
+decides that, so it is not decided here.
+
+    styles   9,145 of 9,178 records, 99.6%;  glyphs 9,083 of 9,094
+
+The earlier reading here that Windows chose a seventeen pixel size for Wingdings
+at eighteen was of the fallback's metrics -- Arial's -- and is withdrawn.
 
 ## 9. Where the numbers stand
 
@@ -11668,7 +11727,7 @@ it stands:
 | `hinting`                                                    | 7,828   | **100%**  |
 | `lines`                                                      | 248     | **100%**  |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
-| `styles`                                                     | 9,094   | 95.5%     |
+| `styles`                                                     | 9,178   | 99.6%     |
 
 `KNOWN_GAPS` is empty. The `stack` fixture is not in the table because it is an
 instrument rather than an oracle: its 3,650 records are the scaler's own stack,

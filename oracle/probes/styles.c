@@ -70,7 +70,12 @@ static void probeGlyph(LPCSTR name, HFONT font, char character)
 
     *at = '\0';
 
-    if ((unsigned char)character < 0x80) {
+    /* Letters and digits go in as themselves; anything else as its code, since
+     * a quote or a comma inside the argument list is not something the replay
+     * can be asked to parse around. */
+    if (((unsigned char)character >= '0' && (unsigned char)character <= '9') ||
+        ((unsigned char)character >= 'A' && (unsigned char)character <= 'Z') ||
+        ((unsigned char)character >= 'a' && (unsigned char)character <= 'z')) {
         wsprintf(probeArgs, "%s,'%c'", (LPSTR)name, character);
     } else {
         char coded[3];
@@ -87,11 +92,16 @@ static void probeGlyph(LPCSTR name, HFONT font, char character)
     SelectObject(memory, previous);
 }
 
-static HFONT makeFont(LPCSTR face, int height, int weight, BYTE italic)
+static HFONT makeFontIn(LPCSTR face, int height, int weight, BYTE italic, BYTE charset)
 {
     return CreateFont(height, 0, 0, 0, weight, italic, 0, 0,
-                      ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
+                      charset, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
                       DEFAULT_QUALITY, DEFAULT_PITCH, face);
+}
+
+static HFONT makeFont(LPCSTR face, int height, int weight, BYTE italic)
+{
+    return makeFontIn(face, height, weight, italic, ANSI_CHARSET);
 }
 
 /* The thirty-six letters at the seven heights the regular faces had. */
@@ -144,8 +154,12 @@ static void probeAccented(LPCSTR face, int weight, BYTE italic)
     }
 }
 
-/* Wingdings over its lower half. Asked for with the ANSI charset like every
- * other face here, since the mapper finds it by name. */
+/* Wingdings over its lower half, asked for with the symbol charset.
+ *
+ * Asked for with the ANSI charset, as the first recording did, the name loses
+ * to the charset -- the mapper's rule -- and both Windows and this fall to a
+ * bitmap face; that recording measured the fallback, not the font. `symbol`
+ * in the record tells the replay which charset was asked for. */
 static void probeWingdings(void)
 {
     static const int SIZES[] = { 10, 12, 14, 16, 18, 20, 24 };
@@ -155,9 +169,9 @@ static void probeWingdings(void)
     char name[64];
 
     for (size = 0; size < sizeof(SIZES) / sizeof(SIZES[0]); size++) {
-        HFONT font = makeFont("Wingdings", SIZES[size], FW_NORMAL, 0);
+        HFONT font = makeFontIn("Wingdings", SIZES[size], FW_NORMAL, 0, SYMBOL_CHARSET);
 
-        wsprintf(name, "\"Wingdings\",h=%d,weight=400,italic=0", SIZES[size]);
+        wsprintf(name, "\"Wingdings\",h=%d,weight=400,italic=0,symbol", SIZES[size]);
 
         for (code = 0x21; code <= 0x7E; code++) {
             probeGlyph(name, font, (char)code);
@@ -217,6 +231,54 @@ static void probeWeightsFine(LPCSTR face)
     }
 }
 
+/* The metrics Windows reports for a face at each height, in the font probe's
+ * record, so the pixel size it chose is read rather than inferred from how
+ * tall its glyphs came out. */
+static void probeMetrics(LPCSTR face, BYTE charset)
+{
+    static const int SIZES[] = { 10, 12, 14, 16, 18, 20, 24 };
+
+    int size;
+
+    for (size = 0; size < sizeof(SIZES) / sizeof(SIZES[0]); size++) {
+        HFONT font = makeFontIn(face, SIZES[size], FW_NORMAL, 0, charset);
+        HFONT previous;
+        TEXTMETRIC tm;
+        char resolved[64];
+
+        if (font == NULL) {
+            continue;
+        }
+
+        previous = (HFONT)SelectObject(memory, font);
+        GetTextMetrics(memory, &tm);
+        GetTextFace(memory, sizeof(resolved), resolved);
+
+        wsprintf(probeArgs,
+                 "\"%s\",h=%d,w=0,weight=400,italic=0,under=0,strike=0,charset=%d,pitch=0",
+                 (LPSTR)face, SIZES[size], (int)charset);
+
+        wsprintf(probeResult, "\"%s\"", (LPSTR)resolved);
+        probe("CreateFont face", probeArgs, probeResult);
+
+        wsprintf(probeResult, "italic=%d,underlined=%d,struckout=%d,pitch=%d,charset=%d",
+                 (int)tm.tmItalic, (int)tm.tmUnderlined, (int)tm.tmStruckOut,
+                 (int)tm.tmPitchAndFamily, (int)tm.tmCharSet);
+        probe("CreateFont style", probeArgs, probeResult);
+        wsprintf(probeResult, "height=%d,ascent=%d,descent=%d,internal=%d,external=%d",
+                 tm.tmHeight, tm.tmAscent, tm.tmDescent,
+                 tm.tmInternalLeading, tm.tmExternalLeading);
+        probe("CreateFont heights", probeArgs, probeResult);
+
+        wsprintf(probeResult, "ave=%d,max=%d,weight=%d,overhang=%d",
+                 tm.tmAveCharWidth, tm.tmMaxCharWidth, tm.tmWeight, tm.tmOverhang);
+        probe("CreateFont widths", probeArgs, probeResult);
+
+        SelectObject(memory, previous);
+        DeleteObject(font);
+    }
+}
+
 static void probeStyle(LPCSTR face, int weight, BYTE italic)
 {
     probeWide(face, weight, italic);
@@ -255,6 +317,11 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
 
     probeNote("Wingdings, which had never been drawn");
     probeWingdings();
+
+    probeNote("and the size Windows says it gave Wingdings, and a control");
+    probeMetrics("Wingdings", SYMBOL_CHARSET);
+    probeMetrics("Wingdings", ANSI_CHARSET);
+    probeMetrics("Symbol", ANSI_CHARSET);
 
     probeNote("the weight field, every hundred, for where bold begins");
     probeWeights("Arial");

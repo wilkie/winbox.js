@@ -87,12 +87,12 @@ const PIXELS = 0;
 const BITMAP_RECORDS = 136;
 const BITMAP_PIXELS = 794;
 
-/* The `styles` fixture: Courier New Italic's three fractions at six heights and
- * nine single pixels among the bold italics, and Wingdings at four heights. */
-const STYLES_OUTLINE_RECORDS = 29;
-const STYLES_OUTLINE_PIXELS = 458;
-const STYLES_OTHER_RECORDS = 379;
-const STYLES_OTHER_PIXELS = 6959;
+/* The `styles` fixture: eleven single pixels among the styled files, and
+ * nothing of Wingdings. */
+const STYLES_OUTLINE_RECORDS = 11;
+const STYLES_OUTLINE_PIXELS = 11;
+const STYLES_OTHER_RECORDS = 0;
+const STYLES_OTHER_PIXELS = 0;
 
 /** Whether a recorded call named one of the three outline families. */
 function isOutline(args: string) {

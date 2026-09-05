@@ -406,7 +406,13 @@ export class FontManager {
     let face = request.face ? String(request.face) : '';
 
     if (charset === FontManager.SYMBOL_CHARSET) {
-      face = 'Symbol';
+      /* The set outranks the name, but a name that is itself a symbol face
+       * keeps it: asked for Wingdings in the symbol set, Windows answers with
+       * Wingdings at every height recorded, and with Symbol for a name that is
+       * not a symbol face. */
+      const named = this.outline(face);
+
+      face = named && named.font.symbolic ? named.name : 'Symbol';
     } else if (charset === FontManager.OEM_CHARSET && !this._isOEM(face)) {
       /* The OEM character set is answered by Roman unless something else OEM
        * was named, and being installed is not enough to count as something

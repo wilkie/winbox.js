@@ -1305,7 +1305,11 @@ const ADAPTERS: Record<
          * probe says so by writing `oem` among the fields rather than as a
          * number, since it is the only charset any of these records asks for.
          */
-        lfCharSet: args.slice(1, -1).includes('oem') ? 255 : 0,
+        lfCharSet: args.slice(1, -1).includes('oem')
+          ? 255
+          : args.slice(1, -1).includes('symbol')
+            ? 2
+            : 0,
         lfFaceName: String(args[0]),
       });
 
@@ -1361,15 +1365,29 @@ export class Unimplemented extends Error {}
  * All 2,574 records agree.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  /* The wide net over the styled files, Wingdings and the weight field. What is
-   * left of it: Wingdings at 10, 12, 14 and 18 pixels draws a smaller glyph
-   * than this at every character (379 cells), Courier New Italic's fractions
-   * are three-component composites this places wrongly (20), and nine cells of
-   * the bold italics are a pixel out. The weight sweep and the other eight
-   * styled files agree in full.
+  /* The wide net over the styled files, Wingdings and the weight field. Of its
+   * 9,094 glyph cells eleven are left, each a single pixel, spread over the
+   * bold italics and two Courier New Italic accents.
    */
-  'styles:glyph':
-    'Wingdings at four heights (379), Courier New Italic fractions (20), nine single pixels',
+  'styles:glyph': 'eleven single pixels among the styled files',
+
+  /* Asked for "Wingdings" in the ANSI set, Windows falls to Small Fonts at ten
+   * pixels, Arial at 12, 14 and 18, and MS Sans Serif at 16, 20 and 24 -- an
+   * exact strike where one exists, otherwise the outline, never a scaled
+   * strike. This falls to MS Sans Serif at every height. Making the outline
+   * win over every scaled strike is refused: it takes the `font` fixture from
+   * 5,057 to 2,842. The four heights that differ carry their metrics with them.
+   */
+  'styles:CreateFont face': 'the ANSI fallback for a symbol face name (4 of 21)',
+  'styles:CreateFont heights': 'the same four heights, whose metrics follow the face',
+  'styles:CreateFont widths': 'the same four heights, whose metrics follow the face',
+
+  /* Wingdings answers `tmPitchAndFamily` with FF_DONTCARE where Symbol, also
+   * OS/2 class 12, answers FF_ROMAN; what distinguishes them is not known and
+   * two fonts cannot say. Plus the three ANSI fallback heights above.
+   */
+  'styles:CreateFont style':
+    'Wingdings is FF_DONTCARE (7 of 21), and three of the fallback heights',
 };
 
 /**

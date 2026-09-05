@@ -757,7 +757,19 @@ export class TrueTypeFont {
       return { contours, hinted: false, scaled: false };
     }
 
-    const program = this.programOf(glyph);
+    let program = this.programOf(glyph);
+
+    /* A composite with no instructions of its own is still made of components
+     * that have theirs. Wingdings' `D` is a mirrored copy of a glyph with a
+     * three-hundred byte program and no program of its own; drawn from the
+     * design assembly it is a blur, drawn from the fitted components it is
+     * what Windows draws. So the assembly runs for it, with nothing to execute
+     * afterwards. */
+    const compositeWithout = !program && this._view.getInt16(range.start, false) < 0;
+
+    if (compositeWithout) {
+      program = { composite: true, at: range.start, length: 0 };
+    }
 
     if (!program) {
       return { contours, hinted: false, scaled: false };
@@ -1318,6 +1330,33 @@ export class TrueTypeFont {
   }
 
   /**
+   * A component's 2x2 transform, from the flags and the bytes after its
+   * offset: one F2Dot14 for a uniform scale, two for x and y, four for the
+   * full matrix, and the identity when there is none. Wingdings places a
+   * mirrored copy of another glyph this way -- `D` is glyph 38 at a scale of
+   * -1 -- and without it the copy lands off the cell.
+   */
+  _componentTransform(flags, at) {
+    const f2 = (offset) => this._view.getInt16(at + offset, false) / 16384;
+
+    if (flags & 0x0008) {
+      const scale = f2(0);
+
+      return [scale, 0, 0, scale];
+    }
+
+    if (flags & 0x0040) {
+      return [f2(0), 0, 0, f2(2)];
+    }
+
+    if (flags & 0x0080) {
+      return [f2(0), f2(2), f2(4), f2(6)];
+    }
+
+    return [1, 0, 0, 1];
+  }
+
+  /**
    * A composite's outline in pixels, assembled the way the scaler assembles it.
    *
    * A simple glyph is scaled after its program has run over design
@@ -1393,6 +1432,8 @@ export class TrueTypeFont {
         cursor += 2;
       }
 
+      const [a, b, c, d] = this._componentTransform(flags, cursor);
+
       if (flags & 0x0008) {
         cursor += 2;
       } else if (flags & 0x0040) {
@@ -1412,6 +1453,9 @@ export class TrueTypeFont {
 
         offsetX += carried - carry(this.bearingShift(index));
 
+        /* The component is fitted by its own program and *then* transformed:
+         * Wingdings' five mirrored composites are 35 of 35 this way and 21 of
+         * 35 with the mirror applied to the outline before its program runs. */
         const fitted = this.hintedOutline(index, ppem, roundPhantoms);
 
         if (flags & 0x0200) {
@@ -1420,15 +1464,12 @@ export class TrueTypeFont {
 
         for (const contour of fitted.contours) {
           shapes.push(
-            contour.map((point) => ({
-              ...point,
-              /* A fitted component comes back in whole pixels and everything
-               * here is in sixty-fourths, which is what the assembly and the
-               * offsets are both in.
-               */
-              x: (fitted.scaled ? point.x * ONE : toPixels(point.x)) + offsetX,
-              y: (fitted.scaled ? point.y * ONE : toPixels(point.y)) + offsetY,
-            }))
+            contour.map((point) => {
+              const px = fitted.scaled ? point.x * ONE : toPixels(point.x);
+              const py = fitted.scaled ? point.y * ONE : toPixels(point.y);
+
+              return { ...point, x: a * px + c * py + offsetX, y: b * px + d * py + offsetY };
+            })
           );
         }
       }
@@ -1473,6 +1514,8 @@ export class TrueTypeFont {
       /* Scaled components exist and none of the fonts here use them; skipping
        * the right number of bytes keeps the rest of the record readable.
        */
+      const [a, b, c, d] = this._componentTransform(flags, cursor);
+
       if (flags & 0x0008) {
         cursor += 2;
       } else if (flags & 0x0040) {
@@ -1484,7 +1527,13 @@ export class TrueTypeFont {
       // Only an offset placement is honoured, which is what these fonts use.
       if (flags & 0x0002) {
         for (const contour of this.outlineOf(index, depth + 1)) {
-          shapes.push(contour.map((point) => ({ ...point, x: point.x + dx, y: point.y + dy })));
+          shapes.push(
+            contour.map((point) => ({
+              ...point,
+              x: a * point.x + c * point.y + dx,
+              y: b * point.x + d * point.y + dy,
+            }))
+          );
         }
       }
 
