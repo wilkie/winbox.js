@@ -4700,6 +4700,39 @@ So the last cell is not what this section spent four sittings calling it. Nothin
 here depends on scratch memory that a recording cannot carry: the memory is
 reproduced, and what is left is five pixels of an inner contour's edge.
 
+#### Which edge, and by how much
+
+The loop is a circle -- four on-curve points at the compass and pairs of controls
+between them, so every arc carries an implied midpoint. Worked out exactly and
+put through the winding rule, **this implementation's ink is its own geometry to
+the pixel**:
+
+    row   the base       the loop        this predicts    Windows      ours
+     13   5.50 - 8.58    7.66 - 10.34    5,6,7,9          5,6,9        5,6,7,9
+     14   5.17 - 8.24    7.06 - 10.94    5,6,8,9,10       5,6,8,9      5,6,8,9,10
+     16   4.50 - 7.58    7.68 - 10.32    4,5,6,7,8,9      4,5,6,8,9    4,5,6,7,8,9
+     17   4.17 - 7.24    --              4,5,6            4,5,6,7      4,5,6
+
+So the disagreement is one number. At rows 14 and 15 the loop opens its hole at
+7.06, which is left of the sample at 7.5, and column 7 goes dark on both sides.
+At rows 13 and 16 it opens at 7.66 and 7.68, which is right of the sample, so
+column 7 stays lit here -- and Windows puts it out. **Windows's loop reaches the
+sample at 7.5 where this one reaches 7.66**, a difference of about ten
+sixty-fourths, at the two rows nearest the top and bottom of the circle and at no
+others.
+
+Flattening does not explain it. The arc's second differences are 17 and -37, so
+`size` is 91 and the walk gives it two chords; the chord crossing at row 13 is
+7.69 against the curve's own 7.66, which is the wrong way and far too small.
+
+And row 17 is the same edge from the other side: the loop's bottom sits at `y`
+448, between that row's sample and the one above, and Windows inks a column there
+that the base alone does not reach.
+
+That is where the last cell now stands. It is not memory, it is not the shift,
+and it is not the flattening: it is where a circle's arc crosses a sample line
+within a sixth of a pixel, twice, at the two rows where the arc is turning.
+
 ### And the last of `slope-sweep`
 
 The one `slope-sweep` cell is `å` at thirty-one pixels, where a contour its
