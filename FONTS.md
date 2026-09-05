@@ -4591,6 +4591,42 @@ replaying every record of the recording in the probe's own order rather than onl
 the face's, so the history matches; and both together. The capacity is not in
 question either, since GDI's own layout gives it to the word.
 
+#### The operand, named
+
+The program is twenty-three bytes and reads plainly:
+
+    40 0c  02 03 02 3e 1e 00 48 27 02 03 02 44   NPUSHB 12
+    b9     02ad 0029                             PUSHW  685, 41
+    00 2b                                        SVTCA[y]; CALL 41
+    01 2b                                        SVTCA[x]; CALL
+
+Traced through, that comes to 32 instructions, and the ones that move anything
+are four **`SHC`** -- shift contour -- with an `MIAP` against control value 685
+in front of them. The `cvt` has 855 entries, so that one is in range and not the
+problem.
+
+The `SHC`s are. A shift contour moves a whole loop by **the movement of the
+reference point**, and the trace gives the reference each time:
+
+    instruction 7    SHC   rp1 = 68
+    instruction 8    SHC   rp1 = 68
+    instruction 30   SHC   rp1 = 62
+    instruction 31   SHC   rp1 = 62
+
+**The glyph has 32 points.** Sixty-two and sixty-eight are not in it. They are in
+the padding, and what `SHC` wants of them is not a coordinate but a _movement_ --
+the difference between where the point is now and where it started -- so the
+shift is the difference between two words of somebody else's leftovers. Here that
+difference comes to 896 sixty-fourths, and fourteen pixels is what lifts the ring
+off the top of the cell.
+
+So the operand is named: **points 62 and 68 of a thirty-two point glyph**. That is
+also why every reading of the buffer's scope came back neutral -- one per size,
+one per font, one for everything, and the records replayed in the probe's own
+order all leave the same values at those two indices, because the chain from the
+component's zone to them is the same in all of them. What would differ is the
+history GDI had before the recording began, and that is not in the recording.
+
 That is the whole of the last cell. Both sides moved the same loop with the same
 instructions for the same reason; they read different numbers out of the buffer
 past the outline and put it in different places. Nothing about the interpreter,
