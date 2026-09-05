@@ -4764,6 +4764,25 @@ one determined value, at a named index, of a named glyph's phantom, worth exactl
 half a pixel. It is not written into the implementation, because a value fitted
 by sweeping one cell is a value fitted by sweeping one cell.
 
+#### And the phantoms are four, not two
+
+The obvious guess from there is the phantom count. `CHECK_POINT` in the reference
+bounds a point index at `elem->ep[elem->nc-1] + 2`, which reads like two phantoms
+appended rather than four -- and TrueType did start with two, the third and
+fourth arriving with vertical metrics. Two would shift every index a program
+reads past the outline by two, which is exactly the kind of thing that puts a
+half pixel in the wrong place.
+
+**The corpus refuses it.** Built with two phantoms instead of four, the recorded
+glyphs are unmoved -- 6,046 either way, since nothing recorded reads past its own
+outline -- and the fabricated corpus falls from **26,057 cells and 5 wrong pixels
+to 26,042 and 67**. So four is right, and that bound is not a statement about how
+many phantoms an element has.
+
+Which leaves the half pixel at index 62 where it was: a determined number with no
+determined provenance, and the best remaining lead being what GDI does with the
+third and fourth phantoms, which this sets to `(0, 0)`.
+
 ### And the last of `slope-sweep`
 
 The one `slope-sweep` cell is `å` at thirty-one pixels, where a contour its
