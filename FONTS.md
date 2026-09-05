@@ -4779,9 +4779,17 @@ outline -- and the fabricated corpus falls from **26,057 cells and 5 wrong pixel
 to 26,042 and 67**. So four is right, and that bound is not a statement about how
 many phantoms an element has.
 
-Which leaves the half pixel at index 62 where it was: a determined number with no
-determined provenance, and the best remaining lead being what GDI does with the
-third and fourth phantoms, which this sets to `(0, 0)`.
+The other reading of the same evidence is that the room is made and not filled: a
+scaler of this vintage has no vertical metrics to put in the third and fourth
+points, so it might leave them holding whatever the last glyph left at those
+indices, the way every index past the outline does. **That is refused too**, and
+by the same margin -- 26,042 cells and 67 wrong pixels, the same figure two
+phantoms gives, which is what one would expect since the two changes amount to
+much the same thing.
+
+So the vertical phantoms are made _and_ written, and written as nought. Both
+readings of that bounds check are gone, and the half pixel at index 62 stands
+where it was: a determined number with no determined provenance.
 
 ### And the last of `slope-sweep`
 
