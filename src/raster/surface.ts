@@ -441,7 +441,12 @@ export class Surface {
        */
       const fitted = italic
         ? { contours: outline.outlineOf(glyph), hinted: false, scaled: false }
-        : outline.hintedOutline(glyph, ppem);
+        : outline.hintedOutline(
+            glyph,
+            ppem,
+            true,
+            this._font instanceof LogicalFont ? this._font.stretch : 1
+          );
       const contours = fitted.contours;
 
       /* A slanted glyph is carried across its side bearing in whole pixels.

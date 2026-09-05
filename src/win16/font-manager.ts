@@ -712,10 +712,24 @@ export class FontManager {
      */
     const width = request.width ?? 0;
 
-    const horizontal =
-      width > 0 && font.averageAdvance
-        ? Math.floor((width * font.unitsPerEm) / font.averageAdvance)
-        : 0;
+    /* A width stretches the face: the horizontal size is the vertical one
+     * times `lfWidth` over the average character width the face has *at that
+     * vertical size*, and it is not rounded to whole pixels. Read off the
+     * `widths` fixture: the average width comes back as `lfWidth` itself, 60 of
+     * 60; the maximum width is the `head` box at that fractional size, 58 of
+     * 60; and Arial asked for its own average, six at sixteen pixels, draws
+     * exactly as it does unstretched, which an integer size one pixel off
+     * would not. Ratio and size as the scaler's transform has them.
+     */
+    const stretched = (ppem) => {
+      if (!(width > 0) || !font.averageAdvance) {
+        return ppem;
+      }
+
+      const average = Math.round((font.averageAdvance * ppem) / font.unitsPerEm);
+
+      return average > 0 ? (ppem * width) / average : ppem;
+    };
 
     /* A negative height asks for the em rather than the cell, which for an
      * outline is the pixel size directly.
@@ -741,7 +755,7 @@ export class FontManager {
         ? {
             entry: null,
             ppem: size,
-            xPpem: horizontal || size,
+            xPpem: stretched(size),
             ascent: extent.ascent,
             descent: extent.descent,
           }
@@ -770,7 +784,7 @@ export class FontManager {
     return {
       entry: null,
       ppem: found.ppem,
-      xPpem: horizontal || found.ppem,
+      xPpem: stretched(found.ppem),
       ascent: synthetic ? Math.round((font.ascender * found.ppem) / font.unitsPerEm) : found.ascent,
       descent: synthetic
         ? Math.round((font.descender * found.ppem) / font.unitsPerEm)

@@ -87,10 +87,11 @@ const PIXELS = 0;
 const BITMAP_RECORDS = 136;
 const BITMAP_PIXELS = 794;
 
-/* The wide-net fixtures, `styles` and `sizes`: seven single pixels among the
- * styled files and three above thirty-one pixels, and nothing of Wingdings. */
-const STYLES_OUTLINE_RECORDS = 10;
-const STYLES_OUTLINE_PIXELS = 10;
+/* The wide-net fixtures: seven single pixels among the styled files, three above
+ * thirty-one pixels, and the stretched outlines of `widths`, which are a rule
+ * still being read -- see FONTS.md. Each may only come down. */
+const STYLES_OUTLINE_RECORDS = 10 + 1444;
+const STYLES_OUTLINE_PIXELS = 10 + 53125;
 const STYLES_OTHER_RECORDS = 0;
 const STYLES_OTHER_PIXELS = 0;
 
@@ -159,7 +160,7 @@ if (fixtures.length === 0) {
       /* The `styles` fixture is the wide net over the styled files and
        * Wingdings, and it has its own ceilings below; the list the three
        * outline families are held at nought on is everything else. */
-      const WIDE_NET = ['styles', 'sizes'];
+      const WIDE_NET = ['styles', 'sizes', 'widths'];
       const styled = rows.filter((row) => WIDE_NET.includes(row.fixture ?? ''));
       const rest = rows.filter((row) => !WIDE_NET.includes(row.fixture ?? ''));
       const outline = rest.filter((row) => isOutline(row.args));

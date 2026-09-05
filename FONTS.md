@@ -11776,6 +11776,56 @@ Nothing had to change for it. The size chooser, the hinting, the scan converter
 and its dropout rules, all read or measured below thirty-one pixels, hold at
 twice that.
 
+### `lfWidth`, recorded for the first time
+
+A request may name an average character width as well as a height, and no
+recording had ever asked for one. The `widths` probe sweeps it: three regular
+outline faces at sixteen and twenty-four pixels, nine widths each from below the
+natural average to nearly three times it, thirty-six letters, the metrics Windows
+reports beside them, and MS Sans Serif as the strike control. 2,480 records.
+
+**The strikes were already right**, 110 of 110: a bitmap face under a width does
+what this already did. **The outline faces were not drawn stretched at all** --
+the only widths that agreed were each face's own natural average at that height,
+where the stretch is one -- and Windows stretches the outline itself, hinted, at
+a horizontal size distinct from the vertical: the `A` asked for twice its average
+is exactly twice as wide, with two-pixel stems.
+
+Two rules read straight off the metrics. **The horizontal size is fractional:**
+the vertical size times `lfWidth` over the average character width the face has
+at that vertical size, not rounded to whole pixels. It reproduces the average
+width Windows reports -- which is `lfWidth` itself -- at **60 of 60**, where the
+integer size this had used was five short, all Courier New; and it reproduces the
+maximum width, the `head` box at that fractional size, at **58 of 60**, the two
+misses within a half-unit of a rounding that is presumably the scaler's 16.16.
+Asked for six at sixteen pixels -- Arial's own average there -- it draws exactly
+as unstretched, which a size a pixel off would not.
+
+**And the hinting is anisotropic, in the reference's way.** `MPPEM` answers with
+the size along the current projection vector; control values are kept at the
+vertical scale and every read is multiplied by the stretch along that vector --
+whole for `x`, none for `y`, the root of the weighted squares for a diagonal --
+and every write divided by it. Three models were scored on the 1,944 stretched
+cells:
+
+    hint anisotropically, control values stretched along the projection   500 of 1,944
+    scale x before hinting, control values at the vertical scale           226
+    hint at the square size, then stretch the fitted x                     204
+
+So the kind is settled and the rest is detail, and the detail is already
+localised. For Arial's `E` at sixteen pixels and twice its width, the fitted
+points that a program places absolutely land exactly where the square ones
+doubled would -- the left stem at 2 and 4 -- while the points it places relative
+to a reference land at 23 and 24 where the doubled square has 16. **A distance
+moved along `x` carries the stretch a second time somewhere**, and the
+instruction that does it is the next thing to trace.
+
+    widths   1,034 of 2,480 records;  glyph 826 of 2,270;  average width 70 of 70
+             with the fractional size, maximum 68 of 70
+
+Nothing recorded before this moved: `font`, `glyphs` and `hinting` hold at every
+record, since at a stretch of one every new path is the old one.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
@@ -11790,6 +11840,7 @@ it stands:
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
 | `styles`                                                     | 9,178   | 99.7%     |
 | `sizes`                                                      | 800     | 99.6%     |
+| `widths`                                                     | 2,480   | 41.7%     |
 
 `KNOWN_GAPS` is empty. The `stack` fixture is not in the table because it is an
 instrument rather than an oracle: its 3,650 records are the scaler's own stack,

@@ -1298,6 +1298,7 @@ const ADAPTERS: Record<
 
       const handle = CreateFontIndirect.call(context, {
         lfHeight: fields.h ?? 0,
+        lfWidth: fields.w ?? 0,
         lfWeight: fields.weight ?? 0,
         lfItalic: fields.italic ?? 0,
 
@@ -1385,6 +1386,17 @@ export const KNOWN_GAPS: Record<string, string> = {
    * records and three single pixels, all on the edge of a diagonal.
    */
   'sizes:glyph': 'three single pixels above thirty-one pixels',
+
+  /* The width field, recorded for the first time. The strikes agree in full and
+   * the metrics all but two; the outline faces are drawn stretched now, hinted
+   * anisotropically the reference's way, and a distance moved along x still
+   * carries the stretch a second time somewhere -- 826 of 2,270 glyph cells
+   * agree, from 504 with no stretch at all. See FONTS.md, "lfWidth".
+   */
+  'widths:glyph':
+    'stretched outlines: a distance moved along x carries the stretch twice (1444 of 2,270)',
+  'widths:CreateFont widths':
+    'the maximum width under a stretch, two of seventy within a half-unit of the rounding',
 
   /* Asked for "Wingdings" in the ANSI set, Windows falls to Small Fonts at ten
    * pixels, Arial at 12, 14 and 18, and MS Sans Serif at 16, 20 and 24 -- an

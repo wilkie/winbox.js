@@ -80,6 +80,11 @@ export class LogicalFont extends Font {
     return this._style.xPpem ?? this.ppem;
   }
 
+  /** The horizontal size over the vertical: one unless a width was asked for. */
+  get stretch() {
+    return this.ppem ? this.xPpem / this.ppem : 1;
+  }
+
   /** How many times over the strike is drawn, to reach the size asked for. */
   get scale() {
     return this._style.scale ?? 1;

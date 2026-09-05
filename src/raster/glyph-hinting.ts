@@ -269,11 +269,22 @@ export class Hinter {
    *                                  not. Only the comparison against that
    *                                  table wants it off.
    */
-  constructor(font, ppem, roundPhantoms = true) {
+  constructor(font, ppem, roundPhantoms = true, stretch = 1) {
     this.font = font;
     this.ppem = ppem;
     this.roundPhantoms = roundPhantoms;
     this.scale = ppem / font.unitsPerEm;
+
+    /* A width request stretches the face: the horizontal size is the vertical
+     * one times this ratio, and it need not be whole. The reference keeps the
+     * control values at the vertical scale and multiplies every read by the
+     * stretch along the current projection vector -- `cvtStretchX` for `x`,
+     * one for `y`, the root of their weighted squares for a diagonal -- and
+     * divides every write by it; `MPPEM` answers with the size along that
+     * vector too. So does this. At a stretch of one nothing here changes.
+     */
+    this.stretch = stretch;
+    this.xPixels = ppem * stretch * ONE;
 
     /* The size in the units distances are kept in, so a scaling is one whole
      * multiply and divide rather than a float in the middle of it.
@@ -339,6 +350,35 @@ export class Hinter {
    * same way here because nothing has been measured that says otherwise, and
    * `scaleToPixels` above is a third rule again, for the control values.
    */
+  /** The stretch along the current projection vector: `x` carries it whole,
+   * `y` none of it, and a diagonal the root of their weighted squares. */
+  scaleAlong() {
+    if (this.stretch === 1) {
+      return 1;
+    }
+
+    const px = this.state.projection.x / UNIT;
+    const py = this.state.projection.y / UNIT;
+
+    if (py === 0) {
+      return this.stretch;
+    }
+
+    if (px === 0) {
+      return 1;
+    }
+
+    return Math.sqrt(px * px * this.stretch * this.stretch + py * py);
+  }
+
+  /** A control value as the program reads it: kept at the vertical scale,
+   * stretched along the projection on the way out. */
+  cvtAt(index) {
+    const value = this.cvt[index] ?? 0;
+
+    return this.stretch === 1 ? value : Math.round(value * this.scaleAlong());
+  }
+
   toPixels(units: number) {
     /* A half goes upward, not away from zero.
      *
@@ -357,6 +397,26 @@ export class Hinter {
      * downward instead costs seven or eight glyphs.
      */
     return Math.floor((units * this.pixels) / this.font.unitsPerEm + 0.5);
+  }
+  /** `toPixels` along `x`, at the stretched horizontal size. */
+  toPixelsX(units: number) {
+    /* A half goes upward, not away from zero.
+     *
+     * `mulDiv` takes the sign out and puts it back, so a half rounds outward --
+     * and a coordinate is not a distance: an outline has points either side of
+     * the baseline and of the origin, and rounding them outward makes which way
+     * a half goes depend on which side it is, so the same shape mirrored is not
+     * the same shape scaled.
+     *
+     * The device mapping in `glyph-raster.ts` wanted the same correction for the
+     * same reason, and this is the other half of it. **Measured**: it is the
+     * last of the 846 recorded glyphs, Courier New's `g` at ten pixels per em,
+     * whose descender tail begins at 346 design units -- exactly 86.5
+     * sixty-fourths at that size -- and whose glyph program does not run there,
+     * so nothing downstream can put the half back. Rounding it toward zero or
+     * downward instead costs seven or eight glyphs.
+     */
+    return Math.floor((units * this.xPixels) / this.font.unitsPerEm + 0.5);
   }
 
   /** The control value table, in pixels rather than in font units. */
@@ -426,7 +486,7 @@ export class Hinter {
    * the one whose bearing the composite took has the carry in it already.
    */
   bearingIn(shift) {
-    return Hinter.toward(shift * this.pixels, this.font.unitsPerEm) / this.font.unitsPerEm;
+    return Hinter.toward(shift * this.xPixels, this.font.unitsPerEm) / this.font.unitsPerEm;
   }
 
   /** The whole pixels of a side bearing, which sit outside the outline. */
@@ -625,7 +685,7 @@ export class Hinter {
          * pixels: its components were scaled and then put together, so there
          * is no design-unit outline of the whole to scale here.
          */
-        zone.x.push((composite ? point.x : this.toPixels(point.x)) + carried - whole);
+        zone.x.push((composite ? point.x : this.toPixelsX(point.x)) + carried - whole);
         zone.y.push(composite ? point.y : this.toPixels(point.y));
         zone.unscaledX.push(point.x + shift);
         zone.unscaledY.push(point.y);
@@ -684,8 +744,8 @@ export class Hinter {
       composite && assembly.advance !== null
         ? assembly.advance
         : this.roundPhantoms
-          ? grid(this.toPixels(advance))
-          : this.toPixels(advance);
+          ? grid(this.toPixelsX(advance))
+          : this.toPixelsX(advance);
 
     const width = origin + scaledAdvance;
 
@@ -713,7 +773,7 @@ export class Hinter {
       { x: origin, y: 0 },
       { x: width, y: 0 },
       { x: origin, y: 0 },
-      { x: this.toPixels(xMin), y: 0 },
+      { x: this.toPixelsX(xMin), y: 0 },
     ];
 
     /* The phantoms in design units, which is not the same list.
@@ -1334,7 +1394,7 @@ export class Hinter {
       }
 
       case 0x45:
-        this.push(this.cvt[this.pop()] ?? 0);
+        this.push(this.cvtAt(this.pop()));
         return at;
 
       case 0x44: {
@@ -1342,7 +1402,7 @@ export class Hinter {
         const value = this.pop();
         const index = this.pop();
 
-        this.cvt[index] = value;
+        this.cvt[index] = this.stretch === 1 || value === 0 ? value : value / this.scaleAlong();
 
         return at;
       }
@@ -1503,7 +1563,7 @@ export class Hinter {
       /* -- the size -- */
 
       case 0x4b:
-        this.push(this.ppem);
+        this.push(Math.floor(this.ppem * this.scaleAlong()));
         return at;
 
       case 0x4c:
@@ -2029,7 +2089,7 @@ export class Hinter {
       const index = this.pop();
       const zone = this.zone(state.zp0);
 
-      let distance = this.cvt[value] ?? 0;
+      let distance = this.cvtAt(value);
 
       /* A twilight point has no outline behind it, so this does not move it --
        * it puts it there, in both the position it is at and the position it is
@@ -2429,7 +2489,8 @@ export class Hinter {
       const band = { 0x73: 0, 0x74: 16, 0x75: 32 }[opcode];
 
       this.eachDelta(this.popPairs(), band, (amount, index) => {
-        this.cvt[index] = (this.cvt[index] ?? 0) + amount;
+        this.cvt[index] =
+          (this.cvt[index] ?? 0) + (this.stretch === 1 ? amount : amount / this.scaleAlong());
       });
 
       return at;
@@ -2533,7 +2594,7 @@ export class Hinter {
       const zoneOne = this.zone(state.zp1);
       const zoneZero = this.zone(state.zp0);
 
-      let distance = this.cvt[value] ?? 0;
+      let distance = this.cvtAt(value);
 
       /* A twilight point being measured to has no outline behind it either, so
        * it is placed at the control value from the reference point before

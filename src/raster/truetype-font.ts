@@ -744,7 +744,7 @@ export class TrueTypeFont {
    * @param {number} ppem - The size to fit to.
    * @returns {Object} The contours and whether they were fitted.
    */
-  hintedOutline(glyph, ppem, roundPhantoms = true) {
+  hintedOutline(glyph, ppem, roundPhantoms = true, stretch = 1) {
     const contours = this.outlineOf(glyph);
 
     if (!contours.length || !ppem) {
@@ -776,7 +776,7 @@ export class TrueTypeFont {
     }
 
     try {
-      const hinter = this.hinterAt(ppem, roundPhantoms);
+      const hinter = this.hinterAt(ppem, roundPhantoms, stretch);
 
       /* A composite is assembled in pixels rather than in design units, so it
        * is put together with the hinter's own scaling and handed over already
@@ -788,7 +788,9 @@ export class TrueTypeFont {
             ppem,
             roundPhantoms,
             (units) => hinter.toPixels(units),
-            (shift) => hinter.carry(shift)
+            (shift) => hinter.carry(shift),
+            stretch,
+            (units) => hinter.toPixelsX(units)
           )
         : null;
 
@@ -831,7 +833,7 @@ export class TrueTypeFont {
    * @returns {number|null} The advance in whole pixels, or null if the glyph
    *                        has no program to run.
    */
-  hintedAdvance(glyph, ppem, roundPhantoms = true) {
+  hintedAdvance(glyph, ppem, roundPhantoms = true, stretch = 1) {
     const range = this.glyphRange(glyph);
 
     if (!range || !ppem) {
@@ -845,7 +847,7 @@ export class TrueTypeFont {
     }
 
     try {
-      const hinter = this.hinterAt(ppem, roundPhantoms);
+      const hinter = this.hinterAt(ppem, roundPhantoms, stretch);
 
       const assembly = program.composite
         ? this.compositeInPixels(
@@ -853,7 +855,9 @@ export class TrueTypeFont {
             ppem,
             roundPhantoms,
             (units) => hinter.toPixels(units),
-            (shift) => hinter.carry(shift)
+            (shift) => hinter.carry(shift),
+            stretch,
+            (units) => hinter.toPixelsX(units)
           )
         : null;
 
@@ -875,13 +879,16 @@ export class TrueTypeFont {
   }
 
   /** The interpreter for a size, built once and kept. */
-  hinterAt(ppem, roundPhantoms = true) {
+  hinterAt(ppem, roundPhantoms = true, stretch = 1) {
     this._hinters = this._hinters ?? new Map();
 
-    const key = roundPhantoms ? ppem : `${ppem}-unrounded`;
+    /* The unstretched key is the number itself, which is what every other
+     * lookup by size uses; a stretched hinter is its own entry. */
+    const square = roundPhantoms ? ppem : `${ppem}-unrounded`;
+    const key = stretch === 1 ? square : `${square}*${stretch}`;
 
     if (!this._hinters.has(key)) {
-      this._hinters.set(key, new Hinter(this, ppem, roundPhantoms));
+      this._hinters.set(key, new Hinter(this, ppem, roundPhantoms, stretch));
     }
 
     return this._hinters.get(key);
@@ -1390,7 +1397,15 @@ export class TrueTypeFont {
    *                              components land where its own arithmetic
    *                              would have put them.
    */
-  compositeInPixels(glyph, ppem, roundPhantoms, toPixels, carry) {
+  compositeInPixels(
+    glyph,
+    ppem,
+    roundPhantoms,
+    toPixels,
+    carry,
+    stretch = 1,
+    toPixelsX = toPixels
+  ) {
     const range = this.glyphRange(glyph);
     const shapes: any[] = [];
 
@@ -1443,7 +1458,7 @@ export class TrueTypeFont {
       }
 
       if (flags & 0x0002) {
-        let offsetX = toPixels(dx);
+        let offsetX = toPixelsX(dx);
         let offsetY = toPixels(dy);
 
         if (flags & 0x0004) {
@@ -1456,7 +1471,7 @@ export class TrueTypeFont {
         /* The component is fitted by its own program and *then* transformed:
          * Wingdings' five mirrored composites are 35 of 35 this way and 21 of
          * 35 with the mirror applied to the outline before its program runs. */
-        const fitted = this.hintedOutline(index, ppem, roundPhantoms);
+        const fitted = this.hintedOutline(index, ppem, roundPhantoms, stretch);
 
         if (flags & 0x0200) {
           advance = fitted.advance ?? null;

@@ -74,7 +74,12 @@ export function GetTextMetrics(hdc, lptm) {
      */
     const smeared = (style.weight ?? 0) > 550 && !style.faceBold ? 1 : 0;
 
-    lptm.tmAveCharWidth = across(outline.averageAdvance) + smeared;
+    /* Under a width request the average comes back as the square size's
+     * average times the stretch -- which is `lfWidth` itself, 60 of 60 in the
+     * `widths` fixture -- not the design average re-scaled, which is a pixel
+     * short at some of them. */
+    lptm.tmAveCharWidth =
+      Math.round(scaled(outline.averageAdvance) * (font.stretch ?? 1)) + smeared;
 
     /* The font's bounding box, not its widest advance and not the grid-fitted
      * widths in `hdmx`.
