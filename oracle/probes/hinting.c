@@ -82,6 +82,53 @@ static void probeAdvance(LPCSTR face, int height, BYTE italic, char character)
  * weight goes in the record so the two sweeps cannot be mistaken for each
  * other; everything the plain sweep recorded still reads exactly as it did.
  */
+/* The advance under a width request, which stretches an outline face. The
+ * record carries `w=` so the replay asks for the same. */
+static void probeStretched(LPCSTR face, int height, int width, char character)
+{
+    HFONT font;
+    HFONT previous;
+    DWORD extent;
+    char text[2];
+
+    text[0] = character;
+    text[1] = '\0';
+
+    wsprintf(probeArgs, "\"%s\",h=%d,w=%d,italic=0,'%c'", (LPSTR)face, height, width,
+             character);
+
+    font = CreateFont(height, width, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET,
+                      OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+                      DEFAULT_PITCH, face);
+
+    if (font == NULL) {
+        probe("advance", probeArgs, "no font");
+        return;
+    }
+
+    previous = (HFONT)SelectObject(dc, font);
+    extent = GetTextExtent(dc, text, 1);
+    wsprintf(probeResult, "advance=%d", (int)LOWORD(extent));
+    probe("advance", probeArgs, probeResult);
+    SelectObject(dc, previous);
+    DeleteObject(font);
+}
+
+static void probeStretchedSweep(LPCSTR face, char character)
+{
+    static const int AT16[] = { 0, 7, 8, 10, 12, 16 };
+    static const int AT24[] = { 0, 9, 10, 12, 16, 20 };
+    int index;
+
+    for (index = 0; index < sizeof(AT16) / sizeof(AT16[0]); index++) {
+        probeStretched(face, 16, AT16[index], character);
+    }
+
+    for (index = 0; index < sizeof(AT24) / sizeof(AT24[0]); index++) {
+        probeStretched(face, 24, AT24[index], character);
+    }
+}
+
 static void probeWeighted(LPCSTR face, int height, int weight, BYTE italic,
                           char character)
 {
@@ -256,6 +303,9 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeWeightedSweep("Courier New", FW_BOLD, 0, 'K');
 
     ReleaseDC(NULL, dc);
+
+    probeNote("an outline face under a width, for the readouts of its diagonal");
+    probeStretchedSweep("Times New Roman", 'N');
 
     probeFinish();
 

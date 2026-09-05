@@ -11864,16 +11864,47 @@ storage 18 -- which the font's `prep` computes as
 
     SVTCA[x] MPPEM  SVTCA[y] MPPEM  EQ  WS 18
 
-**"the size along x equals the size along y"**: the font's own test for a
-square stretch, and under a width it is nought, so the glyph programs take a
-branch that no square recording ever ran. Windows takes it too -- its round
-letters gaining a row at exactly the horizontal sizes 15 and 26 says its `MPPEM`
-along x is the horizontal size, so its flag is nought as well. So the diagonals
-are wrong _inside_ the non-square branch: instructions this interpreter has run
-correctly ten thousand times under a square scale, doing something under a
-stretch that Windows does differently. That branch is the next thing to read,
-and it needs the fabricated-readout method rather than another sweep, since the
-square run is no longer a reference for it.
+So the diagonals are wrong _inside_ the non-square branch: instructions this
+interpreter has run correctly ten thousand times under a square scale, doing
+something under a stretch that Windows does differently.
+
+### A readout of the diagonal, and the design vector in the wrong domain
+
+So the readout method: Times New Roman's `N` with its whole program kept and a
+report appended that moves the advance phantom onto one point's `x`, sixty-four
+times over, and the `hinting` probe given a pass that asks for the face under a
+width so the advance it records _is_ that coordinate. Four fabrications, one per
+corner of the diagonal -- points 1 and 2 on its upper edge, 19 and 18 on its
+lower -- at six widths each of two heights. Two of them overflowed the scaler's
+sixteen-bit word past eight pixels at sixty-four times and were recorded again
+at sixteen.
+
+**Three corners agree with Windows at every width, to the readout's
+resolution. One does not:**
+
+    width   p1 Windows   p1 ours       (16 pixels; the top of the upper edge)
+      0        1.094      1.094
+      7        2.109      2.109
+      8        2.953      4.375
+     10        4.172      7.172
+     12        5.484      9.000
+     16        5.812     12.516
+
+Exactly one instruction moves that point: `MDRP[00100]` from point 2, along the
+`x` freedom vector, against a dual projection `SDPVTL` set along the diagonal.
+Its distance is the outline's own, and this measures that distance from the
+**design** coordinates -- a rule read in an earlier sitting, for the precision
+the rounded originals do not carry. Scaled with the vertical size alone, then
+projected onto a dual vector that lives in the stretched domain: an unstretched
+diagonal against a stretched direction. The design vector's `x` stretched before
+the projection is the same line at a stretch of one and puts the point at
+**4.172, 5.484, 5.813** where Windows has 4.172, 5.484, 5.812. `IP` measures its
+proportions from the same design coordinates and gets the same treatment.
+
+    stretched cells   1,482 -> 1,799 of 1,944;   wrong pixels 8,822 -> 2,217
+
+What is left is 145 cells: whole-glyph shifts of a column, which is the bearing
+carry under a stretch, and single pixels on curves and diagonals.
 
 Nothing recorded before this moved: `font`, `glyphs` and `hinting` hold at every
 record, since at a stretch of one every new path is the old one.

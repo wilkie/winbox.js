@@ -1052,6 +1052,20 @@ function pointReporter(
 }
 
 export const FABRICATIONS = [
+  /* Times New Roman's N under a width: the four corners of its diagonal, the
+   * stroke that comes out too thick under a stretch. `prep` computes storage 18
+   * as "MPPEM along x equals MPPEM along y", so under a width the glyph program
+   * takes a branch no square recording ever ran, and the square run is no
+   * reference for what these points do. The hinting probe's stretched pass
+   * draws the readout at several widths. */
+  pointReporter('times-N-diag-p1x', { character: 'N', point: 1, axis: 'x', drop: ['hdmx', 'LTSH'], describe: "Times New Roman's N reporting the top of its diagonal's upper edge, along x" }),
+  pointReporter('times-N-diag-p2x', { character: 'N', point: 2, axis: 'x', drop: ['hdmx', 'LTSH'], describe: "Times New Roman's N reporting the bottom of its diagonal's upper edge, along x" }),
+  pointReporter('times-N-diag-p19x', { character: 'N', point: 19, axis: 'x', drop: ['hdmx', 'LTSH'], describe: "Times New Roman's N reporting the top of its diagonal's lower edge, along x" }),
+  /* The same two far corners at sixteen times, since a coordinate past eight
+   * pixels at sixty-four times overflows the scaler's sixteen-bit word. */
+  pointReporter('times-N-diag-p2x16', { character: 'N', point: 2, axis: 'x', magnify: 16, drop: ['hdmx', 'LTSH'], describe: "Times New Roman's N reporting the bottom of its diagonal's upper edge, along x, at sixteen times" }),
+  pointReporter('times-N-diag-p18x16', { character: 'N', point: 18, axis: 'x', magnify: 16, drop: ['hdmx', 'LTSH'], describe: "Times New Roman's N reporting the bottom of its diagonal's lower edge, along x, at sixteen times" }),
+  pointReporter('times-N-diag-p18x', { character: 'N', point: 18, axis: 'x', drop: ['hdmx', 'LTSH'], describe: "Times New Roman's N reporting the bottom of its diagonal's lower edge, along x" }),
   pointReporter('times-y-tail-right', {
     character: 'y',
     point: 26,

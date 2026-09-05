@@ -2381,8 +2381,9 @@ export class Hinter {
        * quantised at all -- there are 2,048 of them to the em -- so the
        * proportion comes out right and only the result is rounded.
        */
+      // The design x stretched into the dual projection's domain; see `MDRP`.
       const design = (zone, index) =>
-        this.projectDual(zone.unscaledX[index], zone.unscaledY[index]);
+        this.projectDual(zone.unscaledX[index] * this.stretch, zone.unscaledY[index]);
 
       const originalOne = design(zoneZero, state.rp1);
       const originalTwo = design(zoneOne, state.rp2);
@@ -2526,8 +2527,14 @@ export class Hinter {
       const design =
         state.zp0 !== 0 && state.zp1 !== 0 && !this.composite
           ? scaleToPixels(
+              /* The design vector belongs to the square domain and the dual
+               * projection to the stretched one, so the design x is stretched
+               * before it is projected. At a stretch of one this is the line
+               * above it; under a width it is what put the top of Times New
+               * Roman's N diagonal three pixels out, read off a readout of
+               * that point at every width. */
               this.projectDual(
-                zoneOne.unscaledX[index] - zoneZero.unscaledX[state.rp0],
+                (zoneOne.unscaledX[index] - zoneZero.unscaledX[state.rp0]) * this.stretch,
                 zoneOne.unscaledY[index] - zoneZero.unscaledY[state.rp0]
               ),
               this.pixels,
