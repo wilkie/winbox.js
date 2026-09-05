@@ -4571,6 +4571,26 @@ That is also why the sequence matters and why it lines up: each composite record
 fits its ring component and then the composite -- 28 points and then 32 -- so the
 tail beyond 32 is whatever the record before it left, in both.
 
+#### The move itself, and what it is worth knowing
+
+Traced through the interpreter, the assembly is a clean annulus before the
+program runs: the ring's outer loop from 832 to 1216 sixty-fourths and its inner
+from 896 to 1152, which is rows 5 to 11 of the cell, and the cut base below it.
+Drawn unmoved, that is Windows's picture apart from the marks in dispute.
+
+Then the program touches indices 16 to 31 -- the inner loop and the phantoms --
+and **lifts the inner loop by exactly 896 sixty-fourths**, fourteen pixels, which
+puts it off the top of the cell where it draws nothing. Windows's copy of the
+same loop is at rows 13 to 16, a few pixels _below_ where it started. So the two
+are not one moved and one left alone: **both are moved, by the same instructions,
+in opposite directions**.
+
+Three more readings of the buffer were tried against that and none of them moves
+a pixel: one buffer shared by every font rather than one per font and size;
+replaying every record of the recording in the probe's own order rather than only
+the face's, so the history matches; and both together. The capacity is not in
+question either, since GDI's own layout gives it to the word.
+
 That is the whole of the last cell. Both sides moved the same loop with the same
 instructions for the same reason; they read different numbers out of the buffer
 past the outline and put it in different places. Nothing about the interpreter,
