@@ -401,7 +401,18 @@ export class Surface {
     /* Nothing to synthesise where the family had the style as a file of its
      * own -- the glyphs are already bold, or already slanted.
      */
-    const bold = (style.weight ?? 0) >= 700 && !style.exactStyle;
+    /* Bold is synthesised above 550, not at 700.
+     *
+     * Swept every ten from 500 to 700 on Arial, Times New Roman, MS Sans Serif
+     * and Symbol -- two faces with a bold file, a strike family, and an outline
+     * face with no bold file -- the cell first changes at 560 on all four, so
+     * 550 is drawn plainly and 560 is emboldened. What is emboldened is the
+     * file the mapper chose, which is the regular one until 700; so at 600 the
+     * regular outline is smeared, and at 700 the bold file is drawn as it is.
+     * The weight sweep in the `styles` fixture is 720 of 720 with this rule and
+     * 648 with the threshold at 700.
+     */
+    const bold = (style.weight ?? 0) > 550 && !style.faceBold;
     const italic = !!style.italic && !style.exactStyle;
 
     let pen = x;

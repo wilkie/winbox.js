@@ -87,6 +87,13 @@ const PIXELS = 0;
 const BITMAP_RECORDS = 136;
 const BITMAP_PIXELS = 794;
 
+/* The `styles` fixture: Courier New Italic's three fractions at six heights and
+ * nine single pixels among the bold italics, and Wingdings at four heights. */
+const STYLES_OUTLINE_RECORDS = 29;
+const STYLES_OUTLINE_PIXELS = 458;
+const STYLES_OTHER_RECORDS = 379;
+const STYLES_OTHER_PIXELS = 6959;
+
 /** Whether a recorded call named one of the three outline families. */
 function isOutline(args: string) {
   return OUTLINE.some((face) => args.startsWith(`"${face}",`));
@@ -131,7 +138,7 @@ if (fixtures.length === 0) {
   });
 } else {
   describe('the outline glyphs still in dispute', () => {
-    let rows: { args: string; wrong: number }[] = [];
+    let rows: { args: string; wrong: number; fixture?: string }[] = [];
 
     beforeAll(async () => {
       await prepareFonts();
@@ -139,13 +146,23 @@ if (fixtures.length === 0) {
       rows = [];
 
       for (const fixture of fixtures) {
-        rows.push(...disagreementsIn((await replayFixture(fixture)).replayed));
+        rows.push(
+          ...disagreementsIn((await replayFixture(fixture)).replayed).map((row) => ({
+            ...row,
+            fixture: fixture.probe,
+          }))
+        );
       }
     }, 120000);
 
     it('names them', () => {
-      const outline = rows.filter((row) => isOutline(row.args));
-      const bitmap = rows.filter((row) => !isOutline(row.args));
+      /* The `styles` fixture is the wide net over the styled files and
+       * Wingdings, and it has its own ceilings below; the list the three
+       * outline families are held at nought on is everything else. */
+      const styled = rows.filter((row) => row.fixture === 'styles');
+      const rest = rows.filter((row) => row.fixture !== 'styles');
+      const outline = rest.filter((row) => isOutline(row.args));
+      const bitmap = rest.filter((row) => !isOutline(row.args));
       const count = (list: typeof rows) => list.reduce((sum, row) => sum + row.wrong, 0);
 
       console.log(
@@ -160,6 +177,17 @@ if (fixtures.length === 0) {
       expect(count(outline)).toBeLessThanOrEqual(PIXELS);
       expect(bitmap.length).toBeLessThanOrEqual(BITMAP_RECORDS);
       expect(count(bitmap)).toBeLessThanOrEqual(BITMAP_PIXELS);
+
+      /* And the wide net, which may only come down. */
+      const styledOutline = styled.filter((row) => isOutline(row.args));
+      const styledOther = styled.filter((row) => !isOutline(row.args));
+      console.log(
+        `styles: outline ${styledOutline.length} records ${count(styledOutline)} px; other ${styledOther.length} records ${count(styledOther)} px`
+      );
+      expect(styledOutline.length).toBeLessThanOrEqual(STYLES_OUTLINE_RECORDS);
+      expect(count(styledOutline)).toBeLessThanOrEqual(STYLES_OUTLINE_PIXELS);
+      expect(styledOther.length).toBeLessThanOrEqual(STYLES_OTHER_RECORDS);
+      expect(count(styledOther)).toBeLessThanOrEqual(STYLES_OTHER_PIXELS);
     });
   });
 }

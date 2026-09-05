@@ -11589,6 +11589,73 @@ element as `xMin`. The sweep cells named just above went with the letters, and
 which of those readings took them is not attributed; see the head of this
 section.
 
+## 8a. Widening the corpus: the styled files, Wingdings and the weight field
+
+With every recorded fixture agreeing, the way to find what is still wrong is to
+record more. The `glyphs` probe had drawn each regular outline face at ten
+heights over a hundred and thirty-three characters, and each of the nine styled
+files -- bold, italic and bold italic of Arial, Courier New and Times New Roman,
+which are outlines of their own with programs of their own -- at three heights
+over thirty-six. It had never drawn Wingdings, and it had never asked for a
+weight other than 400 or 700.
+
+The `styles` probe gives the nine files the regular faces' net, adds Wingdings
+over its lower half at seven heights, and sweeps the weight field: every hundred
+from 100 to 900 on two faces, and then every ten from 500 to 700 on four. That is
+9,094 records, and on the first replay **8,278 of 8,758 agreed** -- 480 wrong,
+which broke into three mechanisms and a sprinkle before any of them was chased:
+
+    Wingdings                        379 of 658    heights 10, 12, 14, 18 wrong at nearly every character
+    weight 600, both faces            72 of 72     500 and 700 right on either side of it
+    Courier New Italic, accented      20 of 828    three characters at every height
+    bold italics, single pixels        9
+
+### Bold is synthesised above 550 and the bold file chosen above 600
+
+Windows's cells at weight 600 matched neither the regular file's nor the bold
+file's. For sixteen of the thirty-six Arial letters they were the regular cell
+with its ink smeared one pixel to the right, and for the other twenty they were
+not -- and the twenty were the round ones: `a b d e g o s` and the digits. Looked
+at, the round letters _were_ smeared, but not past their own right edge: the `o`
+had its left stem doubled and its right stem not. A smear clipped to the last
+column of ink fixes the twenty and breaks the sixteen, so the edge is not the
+ink's but the **bitmap's**, which can carry a blank column when the outline's
+extreme lies past a pixel edge without covering a sample -- the box rule of
+section 9. That is the rule this already applies to Symbol's synthesised bold,
+unchanged; what was wrong was only _when_ it applies.
+
+Two thresholds, read off the sweep of every ten:
+
+    weight     500..550    560..600           610..700
+    Arial      regular     regular, smeared   the bold file
+    Times      regular     regular, smeared   the bold file
+    MS Sans    regular     synthesised bold   synthesised bold
+    Symbol     regular     synthesised bold   synthesised bold
+
+So the smear begins above 550 on every kind of face -- strike family, outline
+with a bold file, outline without -- and the bold _file_ is chosen above 600.
+This had both at 700. A request at 600 now gets the regular outline smeared, and
+one at 650 gets the bold file drawn plainly, and the metrics follow the same
+gate. **The weight sweep is 720 of 720 at the hundreds and 336 of 336 at the
+tens**, and nothing else moves.
+
+### What the wide net still holds
+
+The other 408 are registered as a gap on the `styles` fixture alone, so the
+`glyphs` corpus's property -- no outline glyph disagrees -- is still asserted
+where it was earned:
+
+- **Wingdings at 10, 12, 14 and 18 pixels draws smaller than this does**, at
+  nearly every character, and agrees at 16, 20 and 24. Its `VDMX` has two ratio
+  groups with identical records, so it is not the group; whether Windows picks
+  a smaller size or hints the same size differently is what the next recording
+  asks, with `GetTextMetrics`.
+- **Courier New Italic's ¼, ½ and ¾** at every height, twenty-odd pixels each.
+  They are three-component composites with plain offsets where the regular
+  file's are simple glyphs, so the composite path with a third component is
+  what is new.
+- Nine cells of the bold italics a pixel out.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
@@ -11601,6 +11668,7 @@ it stands:
 | `hinting`                                                    | 7,828   | **100%**  |
 | `lines`                                                      | 248     | **100%**  |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
+| `styles`                                                     | 9,094   | 95.5%     |
 
 `KNOWN_GAPS` is empty. The `stack` fixture is not in the table because it is an
 instrument rather than an oracle: its 3,650 records are the scaler's own stack,

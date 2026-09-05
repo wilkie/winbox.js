@@ -74,7 +74,11 @@ if (fixtures.length === 0) {
          * replay, so that the list exists before anything has been run.
          */
         for (const name of [...new Set(fixture.records.map((record) => record.function))].sort()) {
-          if (KNOWN_GAPS[name]) {
+          /* A gap may be named for one fixture's use of a function -- `styles:glyph`
+           * -- so that the same function agreeing in another fixture still counts. */
+          const gap = KNOWN_GAPS[`${fixture.probe}:${name}`] ?? KNOWN_GAPS[name];
+
+          if (gap) {
             it.failing(`${name} matches Windows`, function () {
               const entry = summary.byFunction.get(name);
 
@@ -83,7 +87,7 @@ if (fixtures.length === 0) {
                 return;
               }
 
-              throw new Error(`${name}: ${KNOWN_GAPS[name]}`);
+              throw new Error(`${name}: ${gap}`);
             });
 
             continue;

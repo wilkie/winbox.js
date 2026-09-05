@@ -263,6 +263,9 @@ export class FontManager {
             name: installed,
             font: family[key],
             exact: key === FontManager.styleKey(bold, italic),
+            faceBold:
+              key === FontManager.styleKey(true, italic) ||
+              key === FontManager.styleKey(true, false),
           };
         }
       }
@@ -438,7 +441,17 @@ export class FontManager {
      * A name with strikes and no outline still finds no outline here, and must
      * not fall back to Times New Roman: Courier is not Courier New.
      */
-    const wantsBold = (request.weight ?? 0) >= 700;
+    /* The bold file is chosen above 600, and bold is synthesised above 550.
+     *
+     * Two thresholds, read off a sweep of every ten of weight from 500 to 700
+     * at sixteen pixels. On Arial and Times New Roman, which have a bold file,
+     * 500 to 550 draw the regular file plainly, 560 to 600 draw the regular
+     * file emboldened, and 610 upward draw the bold file. On MS Sans Serif and
+     * Symbol, which have none, 560 upward is the synthesised bold. So the file
+     * switches at 600 and the smear at 550, and a request between them gets
+     * the regular outline smeared rather than the bold one drawn.
+     */
+    const wantsBold = (request.weight ?? 0) > 600;
     const wantsItalic = !!request.italic;
 
     const named = this.outline(face, wantsBold, wantsItalic);
@@ -513,7 +526,13 @@ export class FontManager {
       const chosen = FontManager.realiseOutline(outline.font, request);
 
       if (chosen) {
-        return { ...chosen, outline: outline.font, face: outline.name, exactStyle: outline.exact };
+        return {
+          ...chosen,
+          outline: outline.font,
+          face: outline.name,
+          exactStyle: outline.exact,
+          faceBold: outline.faceBold,
+        };
       }
     }
 
@@ -635,7 +654,13 @@ export class FontManager {
         }
         const realised = FontManager.realiseOutline(other.font, request);
         if (realised) {
-          return { ...realised, outline: other.font, face: other.name, exactStyle: other.exact };
+          return {
+            ...realised,
+            outline: other.font,
+            face: other.name,
+            exactStyle: other.exact,
+            faceBold: other.faceBold,
+          };
         }
         break;
       }

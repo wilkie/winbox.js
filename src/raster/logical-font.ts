@@ -147,7 +147,7 @@ export class LogicalFont extends Font {
    * the moment a short strike is asked for by its own name.
    */
   get emboldens() {
-    if ((this._style.weight ?? 0) < 700 || this._entry.header.dfWeight >= 700) {
+    if ((this._style.weight ?? 0) <= 550 || this._entry.header.dfWeight >= 700) {
       return false;
     }
 
@@ -225,7 +225,7 @@ export class LogicalFont extends Font {
        * what makes the string longer as well as each letter wider. Only Symbol
        * reaches this; the other outline families have a bold file of their own.
        */
-      if ((this._style.weight ?? 0) >= 700 && !this._style.exactStyle) {
+      if ((this._style.weight ?? 0) > 550 && !this._style.faceBold) {
         width += String(text).length;
       }
 

@@ -87,6 +87,7 @@ export function CreateFontIndirect(lplf) {
      * slanted, and emboldening them again would be drawing them twice.
      */
     exactStyle: found.exactStyle,
+    faceBold: found.faceBold,
 
     /* Whether the family the mapper settled on was an outline one, even where
      * a strike ended up being drawn. Only `tmItalic` reads it; see

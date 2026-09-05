@@ -1360,7 +1360,17 @@ export class Unimplemented extends Error {}
  *
  * All 2,574 records agree.
  */
-export const KNOWN_GAPS: Record<string, string> = {};
+export const KNOWN_GAPS: Record<string, string> = {
+  /* The wide net over the styled files, Wingdings and the weight field. What is
+   * left of it: Wingdings at 10, 12, 14 and 18 pixels draws a smaller glyph
+   * than this at every character (379 cells), Courier New Italic's fractions
+   * are three-component composites this places wrongly (20), and nine cells of
+   * the bold italics are a pixel out. The weight sweep and the other eight
+   * styled files agree in full.
+   */
+  'styles:glyph':
+    'Wingdings at four heights (379), Courier New Italic fractions (20), nine single pixels',
+};
 
 /**
  * Functions a module declares but wires to a stub.

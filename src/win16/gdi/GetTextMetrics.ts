@@ -72,7 +72,7 @@ export function GetTextMetrics(hdc, lptm) {
      * average and the maximum both come back one greater than the plain face's
      * and a five character string measures five wider.
      */
-    const smeared = (style.weight ?? 0) >= 700 && !style.exactStyle ? 1 : 0;
+    const smeared = (style.weight ?? 0) > 550 && !style.faceBold ? 1 : 0;
 
     lptm.tmAveCharWidth = across(outline.averageAdvance) + smeared;
 
