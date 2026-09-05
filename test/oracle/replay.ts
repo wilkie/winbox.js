@@ -1393,10 +1393,11 @@ export const KNOWN_GAPS: Record<string, string> = {
    * times a 16.16 ratio, with the control values scaled at the larger of the
    * two sizes and read through the reference's stretch factors, and deltas
    * keyed on the size along the projection, in the reference's 16.16
-   * arithmetic. What is left is one `S` of Times New Roman and single pixels
-   * -- 21 of 1,944 stretched cells. See FONTS.md.
+   * arithmetic, with the stretched design coordinates unrounded. What is left
+   * is three cells of one or two pixels each -- 3 of 1,944 stretched cells.
+   * See FONTS.md.
    */
-  'widths:glyph': 'stretched outlines: a Times New Roman S and single pixels (21 of 1,944)',
+  'widths:glyph': 'stretched outlines: three cells of one or two pixels (3 of 1,944)',
   'widths:CreateFont widths':
     'the maximum width under a stretch, two of seventy within a half-unit of the rounding',
 

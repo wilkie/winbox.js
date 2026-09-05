@@ -1106,6 +1106,33 @@ export class Hinter {
   }
 
   /** The same, against the vector the original outline is measured with. */
+  /**
+   * A design coordinate under the dual projection, as `IP` and `MDRP` measure
+   * their proportions and distances.
+   *
+   * At a stretch of one the design coordinates are whole units and this is
+   * `projectDual`. Under a width the design x has been multiplied by the
+   * stretch and is no longer whole, and **the fraction is kept**: rounding it
+   * to a unit, as the dual projection does to its sixty-fourths, was a
+   * sixty-fourth's error in the proportion `IP` takes -- Times New Roman's `S`
+   * at twenty-one pixels asked for five has its top terminal interpolated at
+   * 939 between 1029 and 851 design units, which is 352 sixty-fourths and
+   * rounds up to six pixels; with the three stretched to 581, 637 and 527 it
+   * is 351, and rounds down to five. **Measured**: the width sweep goes from
+   * 21 wrong cells and 35 wrong pixels to 3 and 4, and the `S` is among the
+   * ones that go. Dividing the design y by the stretch instead, to whole
+   * units, and leaving the x as it is, is refused at 46 cells and 94 pixels.
+   * How the reference holds the stretched originals is not in the pseudocode;
+   * this is the precision that reproduces the recordings.
+   */
+  projectDesign(x, y) {
+    if (this.stretch === 1) {
+      return this.projectDual(x, y);
+    }
+
+    return (x * this.state.dual.x + y * this.state.dual.y) / UNIT;
+  }
+
   projectDual(x, y) {
     return mulDiv(x, this.state.dual.x, UNIT) + mulDiv(y, this.state.dual.y, UNIT);
   }
@@ -2470,9 +2497,10 @@ export class Hinter {
        * quantised at all -- there are 2,048 of them to the em -- so the
        * proportion comes out right and only the result is rounded.
        */
-      // The design x stretched into the dual projection's domain; see `MDRP`.
+      /* The design x stretched into the dual projection's domain, and the
+       * projection left unrounded; see `MDRP` and `projectDesign`. */
       const design = (zone, index) =>
-        this.projectDual(zone.unscaledX[index] * this.stretch, zone.unscaledY[index]);
+        this.projectDesign(zone.unscaledX[index] * this.stretch, zone.unscaledY[index]);
 
       const originalOne = design(zoneZero, state.rp1);
       const originalTwo = design(zoneOne, state.rp2);
@@ -2622,7 +2650,7 @@ export class Hinter {
                * above it; under a width it is what put the top of Times New
                * Roman's N diagonal three pixels out, read off a readout of
                * that point at every width. */
-              this.projectDual(
+              this.projectDesign(
                 (zoneOne.unscaledX[index] - zoneZero.unscaledX[state.rp0]) * this.stretch,
                 zoneOne.unscaledY[index] - zoneZero.unscaledY[state.rp0]
               ),

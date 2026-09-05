@@ -9000,16 +9000,18 @@ read out of GDI rather than measured into place.
   array -- 1823 in fitted `x`, 2903 in `y`, 257 in design `y` -- that a simple
   glyph's do not and that is not the pen. No program in 26,058 cells reads a
   composite's slots, so it costs nothing; it is not understood.
-- **Three things about a width request are measured where the pseudocode is
+- **Four things about a width request are measured where the pseudocode is
   silent.** The reference scales the control values once, at a size it is
   handed, and reads them through 16.16 stretch factors; that the size is the
   _larger_ of the two is read off Arial asked for less than its average (section
   8a), not out of any code. The horizontal size is the vertical one times a
   fixed-point ratio rounded to the nearest, and 16.16 is assumed for its
   precision because it is the scaler's own; no request in the corpus separates
-  the precisions. And `FixMul` takes a half toward positive infinity, which is
-  what an arithmetic shift does and is measured on three descenders. Twenty-one
-  stretched cells of 1,944 are still wrong, one `S` and twenty single pixels.
+  the precisions. `FixMul` takes a half toward positive infinity, which is what
+  an arithmetic shift does and is measured on three descenders. And the
+  stretched design coordinates `IP` and `MDRP` measure from keep a fraction of
+  a unit, measured on an `S`; what the glue actually stores is not known.
+  Three stretched cells of 1,944 are still wrong, four pixels in all.
 - **Outside the fixtures**: what GDI passes for `pixelDiameter` (the scale is
   927 of 927 without it); `ISECT` on near-parallel lines, matched at ten of
   fifty-nine readouts and declared irreducible; and `s45round`'s half case, two
@@ -12050,12 +12052,35 @@ reading with both, and the ratio's rounding is now the rule in section 3.
     and with the multiply's half upward, above:
     stretched cells   1,920 -> 1,923 of 1,944;   wrong pixels 111 -> 35
 
+### The stretched design coordinates keep their fraction
+
+The one cell that was more than a pixel or two was Times New Roman's `S` at
+twenty-four asked for five -- twenty-one pixels by thirteen -- whose top
+terminal Windows draws a column further right. The terminal hangs off one
+point, and that point is placed by `IP` between two others along `x` and then
+rounded to the grid: the proportion is taken in design units, 939 between 1029
+and 851, which is 352 sixty-fourths from the reference and rounds up to six
+pixels. This took the proportion from the design x _stretched_ -- multiplied by
+thirteen twenty-firsts, as the readout of the `N`'s diagonal had shown it must
+be for a diagonal projection -- and then, because the dual projection rounds
+its result to a unit, from 581, 637 and 527: which is 351, and rounds down to
+five. The stretch itself cancels in a proportion along `x`; its rounding did
+not. **The stretched design coordinates keep their fraction**, in `IP` and in
+`MDRP`'s design distance alike, and the count says so on every face:
+
+    stretched cells   1,923 -> 1,941 of 1,944;   wrong pixels 35 -> 4
+
+Dividing the design y by the stretch instead, to whole units, and leaving the
+x alone -- the same proportion along `x`, a different rounding along `y` and
+the diagonals -- is refused at 1,898 cells and 94 pixels. How the reference
+holds the stretched originals is, again, outside the pseudocode; the
+precision that reproduces the recordings is a fraction of a unit.
+
 ### What is left of `lfWidth`
 
-Twenty-one stretched cells of 1,944, 35 pixels. One is Times New Roman's `S` at
-twenty-four asked for five, a horizontal size of thirteen under twenty-one,
-whose top bowl is eleven pixels heavier in Windows. The other twenty are single
-pixels, or two, spread over all three faces and both heights, each on the edge
+Three stretched cells of 1,944, four pixels: Arial's `X` at twenty-four asked
+for sixteen (two pixels), Times New Roman's `X` at twenty-four asked for five
+(one) and Courier New's `o` at sixteen asked for three (one), each on the edge
 of a diagonal or a curve. The maximum width metric is still two of seventy,
 Times New Roman at twenty-four asked for ten and Courier New asked for five.
 
@@ -12076,7 +12101,7 @@ it stands:
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
 | `styles`                                                     | 9,178   | 99.7%     |
 | `sizes`                                                      | 800     | 99.6%     |
-| `widths`                                                     | 2,480   | 99.1%     |
+| `widths`                                                     | 2,480   | 99.8%     |
 
 `KNOWN_GAPS` is empty. The `stack` fixture is not in the table because it is an
 instrument rather than an oracle: its 3,650 records are the scaler's own stack,
