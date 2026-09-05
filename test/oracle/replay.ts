@@ -1389,12 +1389,14 @@ export const KNOWN_GAPS: Record<string, string> = {
 
   /* The width field, recorded for the first time. The strikes agree in full and
    * the metrics all but two. The outline faces are hinted anisotropically the
-   * reference's way, at a whole horizontal pixel size, with deltas keyed on the
-   * size along the projection; what is left is the diagonals, which come out
-   * too thick under a stretch -- 462 of 1,944 stretched cells. See FONTS.md.
+   * reference's way: at a whole horizontal pixel size that is the vertical one
+   * times a 16.16 ratio, with the control values scaled at the larger of the
+   * two sizes and read through the reference's stretch factors, and deltas
+   * keyed on the size along the projection, in the reference's 16.16
+   * arithmetic. What is left is one `S` of Times New Roman and single pixels
+   * -- 21 of 1,944 stretched cells. See FONTS.md.
    */
-  'widths:glyph':
-    'stretched outlines: the x-height a sixty-fourth short of rounding up at two sizes, and single pixels (120 of 1,944)',
+  'widths:glyph': 'stretched outlines: a Times New Roman S and single pixels (21 of 1,944)',
   'widths:CreateFont widths':
     'the maximum width under a stretch, two of seventy within a half-unit of the rounding',
 

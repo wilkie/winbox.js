@@ -55,6 +55,34 @@ const UNIT = 16384;
  * at every size and not one of the two thousand odd control values changes.
  * The precision that matters here is in the arithmetic, not the conversion.
  */
+/**
+ * Multiply a 16.16 fixed number by another -- or an integer by one -- to the
+ * nearest, as the reference's `FixMul` does.
+ *
+ * A half goes toward positive infinity whatever the sign: the product has a
+ * half added and is shifted down, and an arithmetic shift floors. It matters
+ * for a negative control value at an exact half, which is what a descender is
+ * under a stretch of two -- Times New Roman at twenty-one pixels asked for
+ * sixteen halves a table scaled at forty-two, and its `g`, `j` and `y` came out
+ * a row too deep with the half going away from zero. **Measured**: the width
+ * sweep goes from 24 wrong cells and 111 wrong pixels to 21 and 35 with the
+ * half going up, and the three descenders are among the ones that go.
+ */
+function fixMul(a: number, b: number) {
+  return Math.floor((a * b + 32768) / 65536);
+}
+
+/** Divide, the result a 16.16 fixed number to the nearest, as `FixDiv`.
+ * Truncating instead is refused by count: 1,984 stretched cells of 2,043 and
+ * 163 wrong pixels against 2,022 and 35. */
+function fixDiv(a: number, b: number) {
+  const quotient = (a * 65536) / b;
+
+  return quotient < 0 ? -Math.floor(-quotient + 0.5) : Math.floor(quotient + 0.5);
+}
+
+const ONEFIX = 65536;
+
 function mulDiv(a: number, b: number, c: number) {
   let sign = 1;
 
@@ -276,12 +304,13 @@ export class Hinter {
     this.scale = ppem / font.unitsPerEm;
 
     /* A width request stretches the face: the horizontal size is the vertical
-     * one times this ratio, and it need not be whole. The reference keeps the
-     * control values at the vertical scale and multiplies every read by the
-     * stretch along the current projection vector -- `cvtStretchX` for `x`,
-     * one for `y`, the root of their weighted squares for a diagonal -- and
-     * divides every write by it; `MPPEM` answers with the size along that
-     * vector too. So does this. At a stretch of one nothing here changes.
+     * one times this ratio. The reference scales the control values once, at
+     * one size, and multiplies every read by a 16.16 factor that depends on
+     * the projection vector -- `cvtStretchX` for `x`, `cvtStretchY` for `y`,
+     * the root of their weighted squares for a diagonal -- and divides every
+     * write by it; `MPPEM` answers with that size times the same factor. So
+     * does this; which size, see `cvtScale`. At a stretch of one nothing here
+     * changes.
      */
     this.stretch = stretch;
     this.xPixels = ppem * stretch * ONE;
@@ -295,6 +324,11 @@ export class Hinter {
      * multiply and divide rather than a float in the middle of it.
      */
     this.pixels = ppem * ONE;
+
+    /* The size the control values are scaled at, which is the horizontal one
+     * when the face is stretched; see `cvtScale`. */
+    this.cvtSize = Math.max(this.xSize, ppem);
+    this.cvtPixels = this.cvtSize * ONE;
 
     this.stack = [];
     this.storage = new Array(Math.max(64, font.maxStorage ?? 64)).fill(0);
@@ -355,55 +389,82 @@ export class Hinter {
    * same way here because nothing has been measured that says otherwise, and
    * `scaleToPixels` above is a third rule again, for the control values.
    */
-  /** The stretch along the current projection vector: `x` carries it whole,
-   * `y` none of it, and a diagonal the root of their weighted squares. */
-  scaleAlong() {
+  /**
+   * The scale a control value is read through, as a 16.16 fixed number.
+   *
+   * When a width request stretches the face the reference scales the control
+   * values once, at one size, and multiplies every read by a factor that
+   * depends on the projection vector: `cvtStretchX` along `x`, `cvtStretchY`
+   * along `y`, the root of their squares weighted by the vector's components
+   * along a diagonal; writes are divided by the same factor, and `MPPEM` and
+   * the deltas' size are that one size times it. Which size the table is
+   * scaled at is not in the pseudocode.
+   *
+   * **Measured**, through Arial's `prep`, which derives its x-height by
+   * placing a twilight point at the unrounded control value and interpolating
+   * it between the baseline and the rounded cap height. Read at the vertical
+   * scale, with `y` unstretched, the x-height at sixteen points comes to 7.48
+   * pixels at every width and rounds to seven; Windows draws eight at the
+   * widths whose horizontal size is fifteen and twenty-six, and seven at
+   * thirteen, seventeen, twenty-one and thirty-four. Scaling the table at the
+   * horizontal size and reading it back along `y` through `FixDiv(13, 15)`
+   * moves the unrounded x-height from 431 to 432 sixty-fourths at fifteen and
+   * twenty-six and leaves it at the others, and 432 interpolated is 465 and
+   * 464 -- which, sixteen added and rounded, are eight pixels. Readouts of
+   * control values 2, 16, 4 and 20 along `y` agree with this to the eighth of
+   * a pixel they resolve, and `MPPEM` read along `x` and `y` is the horizontal
+   * size times the same factor. No recording has a face narrowed below its
+   * natural width, so whether the size is the horizontal one or the larger of
+   * the two is not settled.
+   */
+  cvtScale() {
     if (this.stretch === 1) {
-      return 1;
-    }
-
-    const px = this.state.projection.x / UNIT;
-    const py = this.state.projection.y / UNIT;
-
-    if (py === 0) {
-      return this.stretch;
-    }
-
-    if (px === 0) {
-      return 1;
-    }
-
-    return Math.sqrt(px * px * this.stretch * this.stretch + py * py);
-  }
-
-  /** The pixel size along the projection vector, as `MPPEM` answers it and as
-   * a delta is keyed on: the horizontal size along `x`, the vertical along `y`,
-   * and the stretched vertical size floored along a diagonal. */
-  sizeAlong() {
-    if (this.stretch === 1) {
-      return this.ppem;
+      return ONEFIX;
     }
 
     const px = this.state.projection.x;
     const py = this.state.projection.y;
 
+    const stretchX = fixDiv(this.xSize, this.cvtSize);
+    const stretchY = fixDiv(this.ppem, this.cvtSize);
+
     if (py === 0) {
-      return this.xSize;
+      return stretchX;
     }
 
     if (px === 0) {
+      return stretchY;
+    }
+
+    // Components squared, in 2.14, then widened to 16.16 and weighted.
+    const dot = (a) => Math.floor((a * a + 8192) / 16384);
+    const squares =
+      fixMul(dot(px) << 2, fixMul(stretchX, stretchX)) +
+      fixMul(dot(py) << 2, fixMul(stretchY, stretchY));
+
+    if (squares > ONEFIX) {
+      return ONEFIX;
+    }
+
+    // A 2.30 square root, rounded to 16.16.
+    return (Math.floor(Math.sqrt(squares) * 4194304) + 8192) >> 14;
+  }
+
+  /** The pixel size along the projection vector, as `MPPEM` answers it and as
+   * a delta is keyed on: the control values' size through `cvtScale`. */
+  sizeAlong() {
+    if (this.stretch === 1) {
       return this.ppem;
     }
 
-    return Math.floor(this.ppem * this.scaleAlong());
+    return fixMul(this.cvtSize, this.cvtScale());
   }
 
-  /** A control value as the program reads it: kept at the vertical scale,
-   * stretched along the projection on the way out. */
+  /** A control value as the program reads it. */
   cvtAt(index) {
     const value = this.cvt[index] ?? 0;
 
-    return this.stretch === 1 ? value : Math.round(value * this.scaleAlong());
+    return this.stretch === 1 ? value : fixMul(value, this.cvtScale());
   }
 
   toPixels(units: number) {
@@ -459,7 +520,7 @@ export class Hinter {
     for (let at = 0; at + 1 < table.length; at += 2) {
       const units = this.font._view.getInt16(table.offset + at, false);
 
-      values.push(scaleToPixels(units, this.pixels, this.font.unitsPerEm));
+      values.push(scaleToPixels(units, this.cvtPixels, this.font.unitsPerEm));
     }
 
     return values;
@@ -1433,7 +1494,8 @@ export class Hinter {
         const value = this.pop();
         const index = this.pop();
 
-        this.cvt[index] = this.stretch === 1 || value === 0 ? value : value / this.scaleAlong();
+        this.cvt[index] =
+          this.stretch === 1 || value === 0 ? value : fixDiv(value, this.cvtScale());
 
         return at;
       }
@@ -2522,7 +2584,7 @@ export class Hinter {
 
       this.eachDelta(this.popPairs(), band, (amount, index) => {
         this.cvt[index] =
-          (this.cvt[index] ?? 0) + (this.stretch === 1 ? amount : amount / this.scaleAlong());
+          (this.cvt[index] ?? 0) + (this.stretch === 1 ? amount : fixDiv(amount, this.cvtScale()));
       });
 
       return at;

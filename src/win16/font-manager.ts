@@ -698,17 +698,10 @@ export class FontManager {
      *
      * `lfWidth` is a request for the average character to come out that wide,
      * and Windows answers it by scaling the outline horizontally to a second
-     * pixel size rather than by stretching what the height chose. The size is
-     * the one that makes the font's own stated average land on the number
-     * asked for, rounded down:
-     *
-     *     floor(lfWidth * unitsPerEm / xAvgCharWidth)
-     *
-     * **Measured**, on all six recorded requests across three families: Arial
-     * asked for eight comes out at eighteen pixels per em and asked for twenty
-     * at forty-five, and every average and maximum follows from that one
-     * number. Rounding rather than flooring is wrong for Times New Roman and
-     * right for Arial, which is the sort of thing one font cannot settle.
+     * pixel size rather than by stretching what the height chose. This once
+     * read that size as `floor(lfWidth * unitsPerEm / xAvgCharWidth)`, from
+     * the six requests the `font` fixture makes; the `widths` sweep refused it
+     * for the rule below, which has the same six right.
      */
     const width = request.width ?? 0;
 
@@ -728,7 +721,31 @@ export class FontManager {
 
       const average = Math.round((font.averageAdvance * ppem) / font.unitsPerEm);
 
-      return average > 0 ? (ppem * width) / average : ppem;
+      if (!(average > 0)) {
+        return ppem;
+      }
+
+      /* The ratio is a 16.16 fixed number, rounded to the nearest, and the
+       * size is the vertical one times it -- not the one division
+       * `ppem * width / average` would be. The two differ only where the ratio
+       * is not representable and the product is whole. Arial at twenty-one
+       * pixels asked for twelve has an average of nine: twelve ninths is four
+       * thirds, which rounds down to 87381 sixty-fourths of a thousand and
+       * twenty-fourths (16.16), and times twenty-one is 27.99975 -- twenty-seven
+       * pixels, not twenty-eight. Arial at twenty-seven asked for eight has an
+       * average of twelve: two thirds rounds up to 43691, and times
+       * twenty-seven is 18.0001 -- eighteen, as the one division says.
+       * **Recorded**, both: Windows draws all thirty-six glyphs of the first
+       * request one column narrower than twenty-eight gives and every one
+       * agrees at twenty-seven; the second request's text extents are the
+       * eighteen pixel ones. Truncating the ratio instead gets the first right
+       * and the second wrong (five records of the `font` fixture); the one
+       * division gets the second right and the first wrong (twenty-one
+       * glyphs). Nearest is the only reading that has both.
+       */
+      const ratio = Math.round((width * 65536) / average);
+
+      return (ppem * ratio) / 65536;
     };
 
     /* A negative height asks for the em rather than the cell, which for an

@@ -886,7 +886,7 @@ function experiment(name, { font, character, points, body, report, magnify = 8, 
  * Anything in `after` runs once the answer is already on the phantom, which is
  * how a question about what happens to work already done gets asked.
  */
-function stackReporter(name, { font, character, points, body, after = [], describe }) {
+function stackReporter(name, { font, character, points, body, after = [], drop = [], describe }) {
   return {
     name,
     from: font,
@@ -895,6 +895,10 @@ function stackReporter(name, { font, character, points, body, after = [], descri
 
     edit: (bytes) => {
       const glyph = glyphFor(bytes, character.charCodeAt(0));
+
+      for (const tag of drop) {
+        dropTable(bytes, tag);
+      }
 
       return setGlyph(bytes, null, glyph, {
         width: Math.max(...points.map((point) => point[0])),
@@ -1133,6 +1137,106 @@ export const FABRICATIONS = [
     ],
     body: [...ops.byte(6), ...ops.readControlValue()],
     describe: "Arial's x-height control value after prep, as the n's advance",
+  }),
+  /* Control value 2 as prep leaves it, one of the four the x-height is
+   * measured from, read along y so it comes back unstretched and magnified by
+   * eight; the device-width tables are dropped so the square rows report the
+   * reader and not hdmx, and the rectangle sits at the n's own bearing so no
+   * carry lands in the answer. */
+  stackReporter('arial-cvt2-y', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    points: [
+      [135, 0],
+      [135, 400],
+      [535, 400],
+      [535, 0],
+    ],
+    body: [
+      0x00,
+      ...ops.byte(2),
+      ...ops.readControlValue(),
+      ...ops.word(512),
+      ...ops.multiply(),
+      0x01,
+    ],
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial's control value 2 after prep, along y, as the n's advance at eight times",
+  }),
+  /* Control value 16 as prep leaves it, one of the four the x-height is
+   * measured from, read along y so it comes back unstretched and magnified by
+   * eight; the device-width tables are dropped so the square rows report the
+   * reader and not hdmx, and the rectangle sits at the n's own bearing so no
+   * carry lands in the answer. */
+  stackReporter('arial-cvt16-y', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    points: [
+      [135, 0],
+      [135, 400],
+      [535, 400],
+      [535, 0],
+    ],
+    body: [
+      0x00,
+      ...ops.byte(16),
+      ...ops.readControlValue(),
+      ...ops.word(512),
+      ...ops.multiply(),
+      0x01,
+    ],
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial's control value 16 after prep, along y, as the n's advance at eight times",
+  }),
+  /* Control value 4 as prep leaves it, one of the four the x-height is
+   * measured from, read along y so it comes back unstretched and magnified by
+   * eight; the device-width tables are dropped so the square rows report the
+   * reader and not hdmx, and the rectangle sits at the n's own bearing so no
+   * carry lands in the answer. */
+  stackReporter('arial-cvt4-y', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    points: [
+      [135, 0],
+      [135, 400],
+      [535, 400],
+      [535, 0],
+    ],
+    body: [
+      0x00,
+      ...ops.byte(4),
+      ...ops.readControlValue(),
+      ...ops.word(512),
+      ...ops.multiply(),
+      0x01,
+    ],
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial's control value 4 after prep, along y, as the n's advance at eight times",
+  }),
+  /* Control value 20 as prep leaves it, one of the four the x-height is
+   * measured from, read along y so it comes back unstretched and magnified by
+   * eight; the device-width tables are dropped so the square rows report the
+   * reader and not hdmx, and the rectangle sits at the n's own bearing so no
+   * carry lands in the answer. */
+  stackReporter('arial-cvt20-y', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    points: [
+      [135, 0],
+      [135, 400],
+      [535, 400],
+      [535, 0],
+    ],
+    body: [
+      0x00,
+      ...ops.byte(20),
+      ...ops.readControlValue(),
+      ...ops.word(512),
+      ...ops.multiply(),
+      0x01,
+    ],
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial's control value 20 after prep, along y, as the n's advance at eight times",
   }),
   pointReporter('times-N-diag-p2x16', {
     character: 'N',

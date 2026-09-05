@@ -3375,18 +3375,34 @@ of eighteen takes the size below it and reports a pixel less of everything.
 **A requested `lfWidth` gives the glyphs a horizontal pixel size of their own.**
 It asks for the average character to come out that wide, and Windows answers by
 scaling the outline to a second size rather than by stretching what the height
-chose:
+chose. The size is the vertical one times a ratio, and the ratio is `lfWidth`
+over the average character width the face has _at that vertical size_, as a
+16.16 fixed number rounded to the nearest:
 
 ```
-xPpem = floor(lfWidth * unitsPerEm / OS/2.xAvgCharWidth)
+average = round(OS/2.xAvgCharWidth * ppem / unitsPerEm)
+ratio   = round(lfWidth * 65536 / average)          -- 16.16
+xPpem   = ppem * ratio / 65536                      -- fractional
 ```
 
-Every horizontal metric then follows from `xPpem` and every vertical one from
-`ppem`. **Measured**, on all six recorded requests across three families: Arial
-asked for eight comes out at eighteen pixels per em and asked for twenty at
-forty-five, and both the average and the maximum follow. Rounding instead of
-flooring is right for Arial and wrong for Times New Roman, which is the sort of
-thing one font on its own cannot settle.
+Every horizontal metric follows from the fractional `xPpem`; the glyphs are
+hinted at its whole part (section 8a). **Measured** three times over. The
+`widths` fixture reads the average Windows reports back as `lfWidth` itself, 60
+of 60, which only the fractional size does. The `font` fixture has Arial at
+twenty-seven pixels asked for eight and twenty come out at eighteen and
+forty-five, which is `27 * 8 / 12` and `27 * 20 / 12` exactly -- and Arial at
+twenty-one asked for twelve comes out at **twenty-seven, not the twenty-eight
+that `21 * 12 / 9` is**: all thirty-six glyphs are drawn a column narrower than
+twenty-eight gives, and every one agrees at twenty-seven. Four thirds is not
+representable in 16.16 and rounds down, to 87381, and twenty-one times that is
+27.99975; two thirds rounds up, to 43691, and twenty-seven times that is
+18.0001. Truncating the ratio instead gets the first right and the second wrong -- two
+extents of the `font` fixture -- one division with no fixed ratio gets the
+second right and the first wrong -- twenty-one glyphs -- and
+the design-space form this once carried -- `floor(lfWidth * unitsPerEm /
+xAvgCharWidth)`, independent of the vertical size -- was refused when the
+`widths` sweep was recorded. The precision beyond "fixed, rounded" is not pinned:
+no other request in the corpus has a whole product from an unrepresentable ratio.
 
 **`tmMaxCharWidth` is the font's bounding box scaled to the size.** Not the
 widest advance, and not the grid-fitted widths in `hdmx`:
@@ -8984,6 +9000,16 @@ read out of GDI rather than measured into place.
   array -- 1823 in fitted `x`, 2903 in `y`, 257 in design `y` -- that a simple
   glyph's do not and that is not the pen. No program in 26,058 cells reads a
   composite's slots, so it costs nothing; it is not understood.
+- **Three things about a width request are measured where the pseudocode is
+  silent.** The reference scales the control values once, at a size it is
+  handed, and reads them through 16.16 stretch factors; that the size is the
+  _larger_ of the two is read off Arial asked for less than its average (section
+  8a), not out of any code. The horizontal size is the vertical one times a
+  fixed-point ratio rounded to the nearest, and 16.16 is assumed for its
+  precision because it is the scaler's own; no request in the corpus separates
+  the precisions. And `FixMul` takes a half toward positive infinity, which is
+  what an arithmetic shift does and is measured on three descenders. Twenty-one
+  stretched cells of 1,944 are still wrong, one `S` and twenty single pixels.
 - **Outside the fixtures**: what GDI passes for `pixelDiameter` (the scale is
   927 of 927 without it); `ISECT` on near-parallel lines, matched at ten of
   fifty-nine readouts and declared irreducible; and `s45round`'s half case, two
@@ -11934,14 +11960,104 @@ read along `x` through the reporter's rectangle, and with the stretch and the
 rectangle's bearing carry taken back off, **Windows's x-height is eight pixels at
 horizontal sizes 15 and 26 and seven at every other width recorded.**
 
-Where that eight is made is not yet found. Arial's `prep` reads both sizes and
-reasons about them -- `MPPEM_x * 3 / MPPEM_y` tested against 246 and 266 is a
-four-to-three aspect detector, and `MPPEM_x == MPPEM_y` the square flag Times New
-Roman also keeps -- but both come out the same here and in Windows, and the
-measurement itself, twilight points set to control values and interpolated, is
-identical in this interpreter at 15 and at 17. Whatever Windows does at 15 and 26
-that it does not at 17, 21 and 34 is a sixty-fourth's worth, and the next
-readouts to record are the control values that measurement is made from.
+Where that eight was made took four more readouts and a reading of the
+reference, and it turned out to be the one thing the reference leaves open.
+
+### The control values are scaled at the larger size
+
+Arial's `prep` makes its x-height by a ladder: it puts a twilight point at the
+_unrounded_ cap height, 596 sixty-fourths at thirteen pixels, rounds another to
+the grid at 640, and then for each control value it cares about sets a point at
+the unrounded value and interpolates it between the baseline and that rounded
+cap -- so every value is re-proportioned by 640/596. The x-height is 431 that
+way, which interpolates to 463, plus 16 is 479, which rounds to seven pixels.
+Four stack reporters read control values 2, 16, 4 and 20 along `y` as `prep`
+leaves them, to the eighth of a pixel they resolve, and **all four agree with
+this implementation at every width.** So the inputs to the ladder are right and
+the difference is inside it -- which leaves only the arithmetic of a control
+value read.
+
+The reference has that arithmetic. When the two sizes differ it does not read the
+table directly: it scales the table once, at one size, and every read is
+`FixMul(value, scale)` where `scale` is `cvtStretchX` along `x`, `cvtStretchY`
+along `y` and the root of their weighted squares along a diagonal; every write
+is `FixDiv(value, scale)`; and `MPPEM` and the deltas' size are `pixelsPerEm`
+times the same `scale`. **Which size the table is scaled at, and so what the two
+stretches are, is set outside the interpreter and is not in the pseudocode.**
+This implementation had the table at the vertical size, so a read along `y` was
+exact and could never differ from Windows by a sixty-fourth. Scale it at the
+horizontal size instead and read it back through `FixDiv(13, 15)`: the x-height
+is `1062 * 15 / 32` rounded, 498, times thirteen fifteenths, 431.6, which is
+**432**; at seventeen it is 564 times thirteen seventeenths, 431.3, which is 431;
+at twenty-six it is 863 halved, 431.5, which rounds to 432. And 432
+interpolated is 465 and 464 -- 481 and 480 with the sixteen added, both eight
+pixels -- exactly at fifteen and twenty-six and nowhere else. It is the
+sixty-fourth the arch had been asking for, and it was in the inputs after all,
+one rounding upstream of where the readouts could see.
+
+    stretched cells   1,824 -> 1,878 of 1,944;   wrong pixels 1,761 -> 807
+
+The remaining large cluster was Arial at sixteen asked for five, which is
+narrower than its natural average -- a horizontal size of ten under a vertical
+of thirteen -- and the first such request in the corpus, which is what settles
+the question the x-height could not. With the table at the horizontal size those
+fifteen glyphs are wrong; with the table at **the larger of the two sizes**, and
+the stretches the ratios of each size to it, they are right, and so are Arial at
+twenty-four asked for five and Times New Roman's descenders at the same request.
+Section 9's table and the counts below are with the larger size.
+
+    stretched cells   1,878 -> 1,899 of 1,944;   wrong pixels 807 -> 609
+
+The direction `FixMul` rounds a half -- toward positive infinity or away from
+zero -- and whether `FixDiv` rounds or truncates were scored as well:
+a half going toward positive infinity, which is what adding a half and
+shifting down does, is **21 cells and 35 pixels** against 24 and 111 with the
+half going away from zero, and the three that go are Times New Roman's `g`,
+`j` and `y` at twenty-one pixels asked for sixteen, where a descender control
+value scaled at forty-two is halved and lands on an exact negative half;
+`FixDiv` truncating is 1,984 cells and 163 pixels. Nearest for both, the half
+upward, is the rule -- and the x-height case itself needs the half at
+twenty-six to go up. (The multiply's half is the last step in the count below,
+after the ratio.)
+
+### A ratio the scaler cannot hold
+
+The cluster after that was twenty-one glyphs of Arial at twenty-four asked for
+twelve, at a horizontal size of twenty-eight -- `21 * 12 / 9` exactly -- and
+at that request the font's `prep` also sets the four-to-three flag, since
+28 × 3 / 21 is 256. The flag was a coincidence: nothing the `n` runs reads it,
+and its trace at twenty-eight differs from twenty-three only in the two `MPPEM`
+values. The cells themselves said what was wrong. Windows's `n` is eleven
+columns to this implementation's twelve, its `m` eighteen to twenty, its `X`
+shifted a column: everything about them is a size narrower. **Forced to
+twenty-seven, all thirty-six glyphs at that request agree.**
+
+Twenty-eight is what one division says. Twenty-seven is what a fixed-point ratio
+says: `lfWidth` over the average as a 16.16 number, rounded to the nearest, then
+times the vertical size. Twelve ninths is four thirds, which is not
+representable and rounds down, to 87381 of 65536, and twenty-one times that is
+27.99975. The `font` fixture holds the other half of the rule: Arial at
+twenty-seven pixels asked for eight has an average of twelve, and two thirds
+rounds _up_, to 43691, so the size is 18.0001 and stays eighteen, where Windows
+has it. Truncating the ratio instead gets the first right and loses the second
+(the two extents of the `font` fixture); the one division gets the second and
+loses the first (1,998 of 2,043 stretched cells and 609 pixels against 2,019
+and 111); the average left unrounded before the ratio is taken is 1,142 and
+21,886 pixels. Nearest is the only
+reading with both, and the ratio's rounding is now the rule in section 3.
+
+    stretched cells   1,899 -> 1,920 of 1,944;   wrong pixels 609 -> 111
+    and with the multiply's half upward, above:
+    stretched cells   1,920 -> 1,923 of 1,944;   wrong pixels 111 -> 35
+
+### What is left of `lfWidth`
+
+Twenty-one stretched cells of 1,944, 35 pixels. One is Times New Roman's `S` at
+twenty-four asked for five, a horizontal size of thirteen under twenty-one,
+whose top bowl is eleven pixels heavier in Windows. The other twenty are single
+pixels, or two, spread over all three faces and both heights, each on the edge
+of a diagonal or a curve. The maximum width metric is still two of seventy,
+Times New Roman at twenty-four asked for ten and Courier New asked for five.
 
 Nothing recorded before this moved: `font`, `glyphs` and `hinting` hold at every
 record, since at a stretch of one every new path is the old one.
@@ -11960,7 +12076,7 @@ it stands:
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
 | `styles`                                                     | 9,178   | 99.7%     |
 | `sizes`                                                      | 800     | 99.6%     |
-| `widths`                                                     | 2,480   | 41.7%     |
+| `widths`                                                     | 2,480   | 99.1%     |
 
 `KNOWN_GAPS` is empty. The `stack` fixture is not in the table because it is an
 instrument rather than an oracle: its 3,650 records are the scaler's own stack,
