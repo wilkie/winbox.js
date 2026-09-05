@@ -36,8 +36,8 @@
  * cells and does not care what they were called. */
 #define PROBE_FACE   "Times New Roman"
 #define PROBE_HEIGHT 31
-#define PROBE_ONE    ((char)0xe4)
-#define PROBE_TWO    ((char)0xe5)
+#define PROBE_ONE    ((char)0xdf)
+#define PROBE_TWO    ((char)0xe0)
 
 /* The same cell every other probe draws into. */
 #define CELL_WIDTH  32
@@ -55,6 +55,8 @@ static HBITMAP canvas;
 static HGLOBAL blocks[MAX_BLOCKS];
 static DWORD sizes[MAX_BLOCKS];
 static HGLOBAL owners[MAX_BLOCKS];
+static DWORD addresses[MAX_BLOCKS];
+static WORD types[MAX_BLOCKS];
 static int scalerBlock = -1;
 static HMODULE gdiModule;
 static int found;
@@ -136,6 +138,8 @@ static void census(void)
             blocks[found] = entry.hBlock;
             sizes[found] = entry.dwBlockSize;
             owners[found] = entry.hOwner;
+            addresses[found] = entry.dwAddress;
+            types[found] = entry.wType;
 
             wsprintf(probeArgs, "%d", found);
             wsprintf(probeResult, "sel=%04x,size=%lx,flags=%04x,type=%u,owner=%04x",
@@ -365,6 +369,93 @@ static void dumpSelector(WORD selector, char character, DWORD to)
     }
 }
 
+
+#ifdef HEAP_EVERYTHING
+/* Reads a block by its linear address, through a selector made for it.
+ *
+ * A free block has no handle a selector can be had for, so `dump` cannot
+ * reach it -- and a buffer the scaler allocated for a call and freed at the end
+ * of it is exactly a free block, holding what it held. `AllocSelector`,
+ * `SetSelectorBase` and `SetSelectorLimit` are KERNEL's, and give a selector
+ * over any linear address; a block over sixty-four kilobytes is read a
+ * selector's worth at a time.
+ */
+static void dumpLinear(int index, char character)
+{
+    static WORD selector = 0;
+    DWORD size = sizes[index];
+    DWORD address = addresses[index];
+    DWORD base = 0;
+    DWORD first;
+
+    if (selector == 0) {
+        selector = AllocSelector(0);
+    }
+
+    if (selector == 0) {
+        return;
+    }
+
+    SetSelectorBase(selector, address);
+    SetSelectorLimit(selector, (size > 0x10000L ? 0x10000L : size) - 1);
+    first = MemoryRead(selector, 0L, buffer, 32L);
+
+    wsprintf(probeArgs, "%d", index);
+    wsprintf(probeResult, "address=%lx,size=%lx,selector=%04x,first=%lu",
+             address, size, (int)selector, first);
+    probe("linear", probeArgs, probeResult);
+
+    while (base < size) {
+        DWORD chunk = size - base;
+        DWORD in = 0;
+
+        if (chunk > 0x10000L) {
+            chunk = 0x10000L;
+        }
+
+        SetSelectorBase(selector, address + base);
+        SetSelectorLimit(selector, chunk - 1);
+
+        while (in < chunk) {
+            DWORD want = chunk - in;
+            DWORD got;
+            DWORD at;
+            LPSTR out = probeResult;
+            int byte;
+
+            if (want > 32) {
+                want = 32;
+            }
+
+            got = MemoryRead(selector, in, buffer, want);
+
+            if (got == 0) {
+                break;
+            }
+
+            for (byte = 0; byte < (int)got; byte++) {
+                unsigned char value = (unsigned char)buffer[byte];
+
+                *out++ = HEX[(value >> 4) & 0x0f];
+                *out++ = HEX[value & 0x0f];
+            }
+
+            *out = '\0';
+            at = base + in;
+
+        wsprintf(probeArgs, "'%c',%d,+%04x", character, index, (int)at);
+        probe("bytes", probeArgs, probeResult);
+
+
+            in += got;
+        }
+
+        base += chunk;
+    }
+}
+
+#endif
+
 /* Writes part of a block out, thirty-two bytes to a record. */
 static void dumpRange(int index, char character, DWORD from, DWORD to)
 {
@@ -547,10 +638,60 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
                 dump(scalerBlock, 'y');
             }
 
+            /* The same block again, past the size the census gave it.
+             *
+             * The census is taken before the draw and the block is the same
+             * one whichever face is current -- selector 0857, owner 06cf -- but
+             * it is sixteen kilobytes after Symbol and twelve after Times New
+             * Roman, so realising a face resizes it, and a dump bounded by the
+             * size it had before the draw stops short of what the draw put in
+             * it. Reading through the selector until the read fails gets the
+             * block as it stands now.
+             */
+            if (scalerBlock >= 0) {
+                dumpSelector(GlobalHandleToSel(blocks[scalerBlock]), 'Y', 0x10000L);
+            }
+
+#ifdef HEAP_EVERYTHING
+            /* And every free block, by address, from the same draw. */
+            for (index = 0; index < found; index++) {
+                if (types[index] == GT_FREE && sizes[index] > 0) {
+                    dumpLinear(index, 'f');
+                }
+            }
+#endif
+
+            /* Every block there is, owned or free, is behind `HEAP_EVERYTHING`.
+             *
+             * It was how the point arrays were shown to be nowhere but the
+             * scaler's own block: 192 owned blocks and 27 free ones, a megabyte,
+             * with nothing of the fitted outline in any of them. That settled,
+             * a recording wants the scaler block alone, read past the size the
+             * census gave it, and the rest would be eight megabytes of nothing.
+             */
+#ifdef HEAP_EVERYTHING
+            /* And every other block GDI owns, from the same draw.
+             *
+             * For Symbol the point arrays sat in the scaler's own block. For
+             * Times New Roman they do not -- nothing of the fitted outline is in
+             * it -- so they are in some other allocation of GDI's, and the only
+             * way to find which is to read them all while the draw is fresh.
+             */
+            for (index = 0; index < found; index++) {
+                if (index != scalerBlock && sizes[index] <= 0x10000L) {
+                    dump(index, 'g');
+                }
+            }
+#endif
+
             probeFrame(PROBE_FACE, PROBE_HEIGHT, PROBE_TWO);
 
             if (scalerBlock >= 0) {
                 dump(scalerBlock, '1');
+            }
+
+            if (scalerBlock >= 0) {
+                dumpSelector(GlobalHandleToSel(blocks[scalerBlock]), '2', 0x10000L);
             }
 
             /* And GDI's own data segment, once.

@@ -4787,9 +4787,60 @@ by the same margin -- 26,042 cells and 67 wrong pixels, the same figure two
 phantoms gives, which is what one would expect since the two changes amount to
 much the same thing.
 
-So the vertical phantoms are made _and_ written, and written as nought. Both
-readings of that bounds check are gone, and the half pixel at index 62 stands
-where it was: a determined number with no determined provenance.
+So the slots are made and written -- but "written as nought" was only what
+this implementation did, and the corpus had refused _leftovers_, not nought
+against anything else. What they hold was then read rather than guessed, below.
+
+#### Read out of the element: the fourth phantom is `xMin`
+
+The heap probe had failed on the composite because the arrays it looked for were
+the moved ones. Pointed at the `ß` instead -- a plain fifty-nine point glyph this
+draws identically -- it failed again, in every one of 192 owned blocks and 27
+free ones, a megabyte, literal and by differences, sixteen and thirty-two bit.
+Two things were wrong with the search and neither was the memory.
+
+**The block grows during the draw.** The scaler's block is the same one whichever
+face is current -- selector `0857`, owner `06cf` -- but the census that sizes the
+dump runs before the draw, and the block is twelve kilobytes then and twenty
+after. Read through its selector until the read fails, it is `0x5000` long, and
+the last eight kilobytes had never been looked at.
+
+**And the arrays sit at an odd byte.** Every search had turned the block into
+words from offset nought. The dot's arrays happened to be even; these are at
+`+0x253b`, and a word-aligned search cannot see them at any tolerance. Searched
+as bytes, six arrays fall out at once, each **`0x104` = 260 bytes = 130 words**
+apart, which is this font's `maxPoints` of 126 plus four -- the buffer model, a
+second time, in a second font's layout:
+
+    +0x253b   design x    59 of 59 match          slots 59..62:  0  1024  0  35
+    +0x263f   design y    59 of 59
+    +0x2743   scaled x    62 of 63                                0   864  0  30
+    +0x2847   scaled y
+    +0x294b   fitted x    62 of 63                                0   896  0  30
+    +0x2a4f   fitted y    63 of 63
+
+**This implementation's fitted `ß` is GDI's, to the sixty-fourth, in every
+outline point.** The one word that differs in `x` is index 62, and it differs in
+all three arrays the same way: GDI has 35, 30 and 30 where this had nought. Thirty
+is 35 at twenty-seven per em, and 35 is the glyph's `xMin` -- which is also its
+bearing, so the `ß` alone cannot say which. The dot can. Its four slots at
+`+0x227c` read `-30 233 -30 48` for one character and `-37 155 -37 48` for the
+other: the origin, the advance, the origin again, and 48 for both, where the
+square starts at 254 and 254 at six per em is 47.6. The bearings of those two
+characters are a hundred and sixty units and more away. **The third slot is the
+origin again and the fourth is `xMin`, scaled**, and both are nought in `y`.
+
+That is the half pixel. A program in one of the composites between the `ß` and
+the `å` rounds point 62, and finds a scaled `xMin` of 30 there where this had
+nought; 30 rounds to nought and the movement is -30, inside the window the
+inversion had bracketed at -28 to -32. With the slots written as read:
+
+    fabricated   26,057 -> 26,058 of 26,058 cells,   5 -> 0 wrong pixels
+    recorded     font 5,057   glyphs 6,046   hinting 7,828   unchanged
+
+Nothing else moves. The rule is in `glyph-hinting.ts` where the phantoms are
+built, and the probe now reads the scaler's block past the size the census gave
+it, on both draws, so the arrays are in the recording.
 
 ### And the last of `slope-sweep`
 
@@ -11477,7 +11528,7 @@ which nothing on this side is meant to reproduce, and the conformance suite
 reports them as unsupported.
 
 The fabricated corpus -- the fonts rewritten to isolate one mechanism each, which
-ask questions no stock face does -- stands at **26,057 of 26,058 cells and 5
+ask questions no stock face does -- stands at **26,058 of 26,058 cells and no
 wrong pixels**.
 
 ### The chase, end to end
@@ -11580,21 +11631,18 @@ between them.
 The box that had looked like GDI contradicting its own rule for eight sittings
 was its own rule all along, at a size where the rule is a different one.
 
-**What is left is one cell**, and four sittings called it the wrong thing. The
-composite's twenty-three byte program shifts a contour with `SHC`, whose
-displacement the reference computes as `x[pt] - ox[pt]`, and the trace gives `pt`
-as 62 and 68 in a glyph with thirty-two points -- so it reads past its own
-outline, and the account was that the two sides read different leftovers. They do
-not. Measured inside the corpus replay rather than in a diagnostic that hints the
-glyph alone, the movements are 0 at 62 and **-448** at 68, and overriding either
-and sweeping it only makes the cell worse. **The buffer model reproduces GDI's
-shift exactly**, and the moved contour lands in the rows Windows draws it in.
-
-What the five pixels are is an overlap. The moved loop is the ring's inner one,
-wound against the base, so the two cancel where they cover the same ground; ours
-opens that hole one column late and closes it one column late. It is a curve
-crossing a sample near its extremum -- a question about the walk, and the same
-kind of question the `t` at thirty-two pixels turned out to be.
+**And the last cell was a phantom point.** The composite's twenty-three byte
+program shifts a contour with `SHC`, whose displacement is `x[pt] - ox[pt]`, and
+the trace gives `pt` as 62 and 68 in a glyph with thirty-two points -- it reads
+past its own outline into what the last glyph left. Four sittings called that
+unreproducible. Inverted, it came to one number, half a pixel at index 62; and
+index 62 was the fourth phantom of the `ß` six records earlier, which this wrote
+as nought. GDI's element, read out of its own block after the draw -- six arrays
+`maxPoints + 4` words apart, the fitted `ß` matching this one 63 of 63 in `y` --
+holds `0 896 0 30` in those four slots: the origin, the advance, the origin
+again, and **`xMin`**, which for the Symbol dot reads `-30 233 -30 48` and settles
+it. A slot holding a scaled `xMin` rounds by up to half a pixel where nought
+rounds to nought. Written that way, the corpus is whole.
 
 **On method.** Three things are worth keeping from it. A sweep beats a
 breakpoint for a boundary: `dot-fine` cost one fabrication and one recording and

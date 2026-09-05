@@ -680,11 +680,31 @@ export class Hinter {
 
     const width = origin + scaledAdvance;
 
+    /* Four phantom points, and the last two are not the vertical ones.
+     *
+     * The spec's third and fourth phantoms carry vertical metrics; this
+     * scaler predates them. Read out of GDI's element after a draw -- six
+     * arrays, `maxPoints + 4` words apart -- the four slots after the outline
+     * hold, in x: the origin, the origin plus the advance, the origin again,
+     * and `xMin`. Times New Roman's `ß` at twenty-seven per em gives
+     * `0 896 0 30`, where 30 is its `xMin` of 35 scaled; the fabricated
+     * Symbol dot at six gives `-30 .. -30 48`, where 48 is a square starting
+     * at 254 scaled and its bearing is somewhere else entirely, which is what
+     * settles that the slot is `xMin` and not the bearing. All four are nought
+     * in y.
+     *
+     * It matters because a program that names a point past its outline finds
+     * the last glyph's slots there, and rounds what it finds. A fourth phantom
+     * of nought rounds to nought; one holding a scaled `xMin` moves by up to
+     * half a pixel, and that half pixel was the last wrong cell in the
+     * fabricated corpus -- 26,057 of 26,058 with these at nought, all of them
+     * with these read.
+     */
     const phantom = [
       { x: origin, y: 0 },
       { x: width, y: 0 },
-      { x: 0, y: 0 },
-      { x: 0, y: 0 },
+      { x: origin, y: 0 },
+      { x: this.toPixels(xMin), y: 0 },
     ];
 
     /* The phantoms in design units, which is not the same list.
@@ -700,8 +720,8 @@ export class Hinter {
     const design = [
       { x: originUnits, y: 0 },
       { x: originUnits + advance, y: 0 },
-      { x: 0, y: 0 },
-      { x: 0, y: 0 },
+      { x: originUnits, y: 0 },
+      { x: xMin, y: 0 },
     ];
 
     for (const [index, point] of phantom.entries()) {
