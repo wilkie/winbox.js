@@ -4650,23 +4650,63 @@ and the twilight zone has only sixteen points, so there is no other reading. Bot
 sides compute the same difference of the same two words. The words are what the
 last glyph to have a sixty-third point left there.
 
-That is the whole of the last cell. Both sides moved the same loop with the same
-instructions for the same reason; they read different numbers out of the buffer
-past the outline and put it in different places. Nothing about the interpreter,
-the scan converter or the box is in question here -- only what sixteen kilobytes
-of somebody else's scratch memory happened to contain, which is the one thing a
-recording cannot carry.
+#### And the residue is right, which corrects everything above it
 
-### And the last of `slope-sweep` is residue
+Every reading of the last cell up to this point said the two sides read different
+numbers out of the buffer, and **that is wrong.** It was wrong because the
+geometry was taken from a diagnostic that hinted the one glyph in isolation, where
+the buffer is empty and the shift comes to +896. Measured inside the corpus
+replay, with the history the recording actually builds, the movements at the two
+indices are:
 
-The one `slope-sweep` cell is `å` at thirty-one pixels, where Windows draws a
-mark two columns wide beside the stem that this merges into it. It is a contour
-its program moved to somewhere it read past its own outline, so what it comes to
-depends on what the point buffer held -- and the corpus already says how much:
-clearing the buffer instead of keeping it costs 26 cells and 109 pixels, of which
-this is one that keeping it does not recover. Reproducing it exactly means
-reproducing the order and the contents of a scratch buffer in a scaler nobody
-has the placement code for. It is left as the last of that, at five pixels.
+    62:  dx = 0     dy = 0
+    68:  dx = -448  dy = -448
+
+Overridden and swept, neither can do better. Index 62 is worse at every value
+either side of nought; index 68 is worse at every value either side of -448, and
+-448 is exactly what the history gives it:
+
+    68 ->  -576  -512  **-448**  -384  -320  -256
+    wrong    13     8      **5**     8    14    20
+
+**So the buffer model reproduces GDI's shift exactly.** Contour 2 lands at `y`
+448 to 704, which is rows 13 to 17 -- the very rows Windows's marks are in -- and
+the residue account of this cell was an artefact of testing it without its
+history.
+
+#### What the five pixels really are
+
+With the shift right, the disputed rows are an _overlap_. Contour 2 is the ring's
+inner loop, wound against the base, so where the two cover the same ground the
+winding cancels and where only one does it inks. At row 13 the base spans 5.50 to
+8.58 and Windows draws `5,6` and then `9`: a hole at 7 and 8, and ink beyond the
+base at 9.
+
+    row   the base spans     Windows       ours
+     13   5.50 to 8.58       5,6,9         5,6,7,9
+     14   5.17 to 8.24       5,6,8,9       5,6,8,9,10
+     15   4.83 to 7.91       5,6,8,9       5,6,8,9,10
+     16   4.50 to 7.58       4,5,6,8,9     4,5,6,7,8,9
+     17   4.17 to 7.24       4,5,6,7       4,5,6
+
+The base is identical on both sides and so is the shift. What differs is where
+the inner loop's own edge falls: **ours sits about a column to the right of
+Windows's**, so it opens its hole one column late and closes it one column late.
+That is a curve crossing a sample near its extremum, which is the same question
+the `t` at thirty-two pixels turned out to be -- and it is a question about the
+walk, not about memory.
+
+So the last cell is not what this section spent four sittings calling it. Nothing
+here depends on scratch memory that a recording cannot carry: the memory is
+reproduced, and what is left is five pixels of an inner contour's edge.
+
+### And the last of `slope-sweep`
+
+The one `slope-sweep` cell is `å` at thirty-one pixels, where a contour its
+program moved lands across the base of the letter. Read at the time as a matter
+of what the point buffer held; **it is not** -- see the correction below, which
+measures the movement inside the corpus and finds it exactly right. What is left
+is where an inner contour's edge crosses a sample.
 
     fabricated   26,055 of 26,058 cells,  9 wrong pixels
 
@@ -11449,15 +11489,21 @@ between them.
 The box that had looked like GDI contradicting its own rule for eight sittings
 was its own rule all along, at a size where the rule is a different one.
 
-**What is left is one cell**, and it is named to the operand. The composite's
-twenty-three byte program shifts a contour with `SHC`, whose displacement the
-reference computes as `x[pt] - ox[pt]`; the trace gives `pt` as 62 and 68 in a
-glyph with thirty-two points. Both sides take the same difference of the same two
-words of a shared buffer, and the words are what the last glyph to have a
-sixty-third point left there. Four readings of the buffer's scope and history --
-per size, per font, one for everything, and every record replayed in the probe's
-own order -- leave the same values at those indices. What would differ is the
-history GDI had before the recording began, and that is not in the recording.
+**What is left is one cell**, and four sittings called it the wrong thing. The
+composite's twenty-three byte program shifts a contour with `SHC`, whose
+displacement the reference computes as `x[pt] - ox[pt]`, and the trace gives `pt`
+as 62 and 68 in a glyph with thirty-two points -- so it reads past its own
+outline, and the account was that the two sides read different leftovers. They do
+not. Measured inside the corpus replay rather than in a diagnostic that hints the
+glyph alone, the movements are 0 at 62 and **-448** at 68, and overriding either
+and sweeping it only makes the cell worse. **The buffer model reproduces GDI's
+shift exactly**, and the moved contour lands in the rows Windows draws it in.
+
+What the five pixels are is an overlap. The moved loop is the ring's inner one,
+wound against the base, so the two cancel where they cover the same ground; ours
+opens that hole one column late and closes it one column late. It is a curve
+crossing a sample near its extremum -- a question about the walk, and the same
+kind of question the `t` at thirty-two pixels turned out to be.
 
 **On method.** Three things are worth keeping from it. A sweep beats a
 breakpoint for a boundary: `dot-fine` cost one fabrication and one recording and
