@@ -12962,6 +12962,48 @@ which it cannot be: the flattening is the same code as `spline.c`, the walk is
 the same code, the box is measured, and 242,389 cells with no such vertex agree
 without exception. The contradiction is recorded here rather than resolved.
 
+#### The configuration, counted over the recorded corpus as well
+
+The same count was run over every top-level fixture -- the recordings made from
+the fonts Windows actually ships, 32,600 records of them. 175 carry a doubly
+degenerate vertex and 22 carry one beside a rescue whose stub test needed a
+vertical term.
+
+**Exactly one carries the vertex and a marginal rescue at the same row and the
+same column**, and it is the original disputed cell: Courier New's `o` at
+height sixteen under a width of three. Its five marginal rescues are the
+instrument's five, four rows apart and otherwise identical -- rows 7, 9, 9, 10
+and 11 against rows 15, 17, 17, 18 and 19, the same `on` columns, the same
+horizontal and vertical terms. So the instrument reproduces the original in its
+stub arithmetic and not merely in its pixels.
+
+Across both corpora the configuration occurs nine times and disagrees nine
+times, and no cell that agrees carries it. That is the sharpest description
+there is of what goes wrong, and it is a description rather than a rule: the
+nine are one glyph at two sizes, so the separation has no more evidence behind
+it than the single shape does, and inventing a rule from it would be fitting one
+sample.
+
+The coinciding rescue is the one at the vertex's own row, and it is refused on
+both readings -- its lower side has nothing below it, one crossing where two are
+wanted -- so it is not itself the pixel in dispute. It is four rows below that
+one, which is where this started.
+
+Four more mutations were scored and refused with it, all of the vertical terms'
+row offsets, since the binary reads them one row apart from the horizontal term
+and this carries that offset in the values instead:
+
+| mutation                              | cells  | wrong pixels |
+| ------------------------------------- | ------ | ------------ |
+| base                                  | 31,682 | 8            |
+| the two sides' vertical rows swapped  | 29,200 | 5,510        |
+| both sides read the rescue's own row  | 29,498 | 3,470        |
+| both sides read the row below         | 29,790 | 2,795        |
+| the two sides reach a row further out | 28,468 | 7,019        |
+
+The offsets as they stand are right by a wide margin, so the encoding is not
+where the difference hides either.
+
 The reading has to explain how a doubly degenerate vertex at the bottom of a
 glyph reaches a dropout four rows above it **without passing through the
 crossing lists**, since two shapes that differ only in that vertex share their
