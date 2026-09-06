@@ -140,8 +140,13 @@ describe('the fabricated glyph recordings', () => {
    * -- see the closing sections of `FONTS.md` 9, which read over a thousand of
    * their boxes out of GDI's own working memory.
    */
-  const EXACT = 28170;
-  const WRONG = 0;
+  /* Every cell but the two the `courier-o-plain` instrument was built to
+   * reproduce: Courier New's `o` under a width, drawn at Symbol's size in
+   * Symbol's slot, where Windows refuses one dropout rescue that this makes.
+   * Its nudged twin, a sixty-fourth to the right on the inner contour, agrees
+   * in full. See FONTS.md section 8a. */
+  const EXACT = 28872;
+  const WRONG = 2;
 
   /* The one place an unhinted outline is drawn differently.
    *

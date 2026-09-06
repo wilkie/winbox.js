@@ -12689,6 +12689,34 @@ against lists sorted the way this implementation sorts them, and the binary's
 are in the order the walk appended them. The two are not the same experiment,
 and the refusal should be read as refusing the search _on sorted lists_ only.
 
+### The `o` on an instrument, and the one thing that moves it
+
+The cell is now on the same instrument the other two scan converter cells were:
+`courier-o-plain` is Courier New's `o` exactly as it is scaled at thirteen
+pixels by four, written into Symbol's `A` slot as an unhinted shape at twenty
+pixels. **It reproduces the disagreement**, row for row, in another font at
+another size with no hinting: Windows draws the rescued pixel on three of the
+four pinched rows and this draws it on all four.
+
+`courier-o-nudged` is the same with the inner contour a single sixty-fourth to
+the right, and it **agrees in full**. That one sixty-fourth is what the whole
+thing turns on, and instrumenting both says exactly what it changes. In the
+plain shape a chord endpoint lands at 224, the centre of column three, so the
+walk steps past that column and the endpoint topology emits the crossing
+instead; nudged, the endpoint is at 225, the outline genuinely crosses the
+column, and the walk emits it. **The two shapes' `on` lists for that column are
+identical either way** -- the entry is at the same row with the same value, and
+the counter finds it in both -- and yet Windows honours the rescue only when
+the walk put it there.
+
+So the distinction Windows draws is not between the presence of the crossing
+and its absence, which is the only thing this implementation records. Making
+the endpoint topology emit no vertical entries at all is refused outright,
+24,583 of 25,400 fabricated cells against 25,398, so the entries are needed.
+What separates a walk-emitted entry from a topology-emitted one, when both
+carry the same column and the same row, is the question the next reading has to
+answer.
+
 A refusal to record with it: pairing the horizontal rescue's vertical terms one
 row earlier, which is what the pseudocode's `DoHorizDropout` says literally --
 `VertCrossings(x - 1, y)` and `VertCrossings(x, y)` against the horizontal

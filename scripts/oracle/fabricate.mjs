@@ -1586,12 +1586,63 @@ const POUND_BOLD_ITALIC_14 = [
   ],
 ];
 
+/** Courier New's `o` as it is scaled at thirteen pixels by four, in sixty-fourths. */
+const COURIER_O_13x4 = [
+  [
+    [136, 175, true],
+    [136, 97, false],
+    [101, -13, false],
+    [77, -13, true],
+    [52, -13, false],
+    [18, 98, false],
+    [18, 175, true],
+    [18, 253, false],
+    [52, 364, false],
+    [77, 364, true],
+    [101, 364, false],
+    [136, 254, false],
+  ],
+  [
+    [125, 175, true],
+    [125, 239, false],
+    [97, 329, false],
+    [77, 329, true],
+    [57, 329, false],
+    [29, 239, false],
+    [29, 175, true],
+    [29, 112, false],
+    [57, 21, false],
+    [77, 21, true],
+    [97, 21, false],
+    [125, 111, false],
+  ],
+];
+
 export const FABRICATIONS = [
   /* The two styled cells that are the scan converter's. The cent sign's
    * vertex 40 sits exactly on a sample row's centre, and this rescues a pixel
    * there that Windows does not; the pound sign's stroke tip, points 39 to 41,
    * sits on a pixel boundary. Each is recorded as it is and with the point
    * moved a sixty-fourth either way. */
+  /* Courier New's `o` under a width, the last cell of the recorded corpus, put
+   * on the same instrument the other two scan converter cells were. Its right
+   * side pinches below a pixel over four rows and every row is rescued here;
+   * Windows rescues three of them and not the fourth, and that fourth is the
+   * only rescue in the corpus whose stub test has to reach two by adding a
+   * vertical crossing to a horizontal one. */
+  outlineInstrument('courier-o-plain', {
+    contours: COURIER_O_13x4,
+    describe: "Courier New's o as scaled at thirteen pixels by four",
+  }),
+  outlineInstrument('courier-o-nudged', {
+    contours: COURIER_O_13x4,
+    edit: (shaped) => {
+      for (const point of shaped[1]) {
+        point[0] += 1;
+      }
+    },
+    describe: 'the same with its inner contour a sixty-fourth to the right',
+  }),
   outlineInstrument('cent-minimum-0', {
     contours: CENT_ITALIC_12,
     describe: "Courier New Italic's cent sign outline, its minimum exactly on a sample row",
