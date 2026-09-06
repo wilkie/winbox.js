@@ -12666,8 +12666,28 @@ cell are geometric mirror images and have identical crossing lists here, and
 rescues need a vertical crossing at column three that the endpoint topology
 emits, one an `on` where the outline crosses the column leftward and one an
 `off` where it crosses rightward, and both are monotone crossings that no
-reading can refuse. Windows honours one and not the other. Nothing in the
-scan converter read so far distinguishes them.
+reading can refuse. Windows honours one and not the other.
+
+What distinguishes them is not the crossing but the neighbour. A rescue's stub
+test wants two continuations on each side, and at rows eight, nine and ten the
+row above supplies both on its own -- each of those rows carries a coincident
+`on` and `off` at the same column, which is two. **Row seven is the only one
+whose count has to reach two by adding a vertical crossing to a horizontal
+one**, because the row above it carries only an `off` there. So the question is
+sharper than "does Windows have the vertical entry": it is whether a horizontal
+term and a vertical term add together at all.
+
+One earlier refusal needs correcting in the light of the storage. The dropout
+loop at `0x0a2f` does not walk the two lists in step: for each `on` it resets
+the `off` pointer to the base and takes the first entry at or past it. On lists
+that are well formed -- each run's `off` at or before the next run's `on` --
+that is the same pairing, and it differs only where one run's `off` equals the
+next run's `on`, where the search pairs the `on` with the _earlier_ `off` and
+calls it a zero-length run. Implementing it cost 3,273 fabricated cells, which
+says Windows does not produce that extra rescue; but the experiment was run
+against lists sorted the way this implementation sorts them, and the binary's
+are in the order the walk appended them. The two are not the same experiment,
+and the refusal should be read as refusing the search _on sorted lists_ only.
 
 A refusal to record with it: pairing the horizontal rescue's vertical terms one
 row earlier, which is what the pseudocode's `DoHorizDropout` says literally --
