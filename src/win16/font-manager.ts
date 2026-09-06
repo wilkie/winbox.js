@@ -16,6 +16,10 @@ export class FontManager {
     this._fonts = {};
     this._outlines = {};
     this._resources = {};
+    /* Where each strike stands in GDI's font directory, which is the order the
+     * files were loaded and, within a file, the order of its resources. The
+     * mapper's ties go to the earliest. */
+    this._order = 0;
     this._loading = 0;
 
     this._waitPromise = new Promise<void>((resolve, reject) => {
@@ -43,6 +47,8 @@ export class FontManager {
        */
       bitmapFont.entries.forEach((entry) => {
         const face = entry.name;
+
+        entry.order = this._order++;
 
         if (!this._fonts[face]) {
           this._fonts[face] = [];
@@ -371,6 +377,46 @@ export class FontManager {
    * @param {number} charset - The character set the request asked for.
    * @returns {Object|null} `{name, entries}`, or null if the outline should win.
    */
+  /**
+   * The earliest strike in the directory installed at exactly the height
+   * asked for, in the character set asked for; see `map`. A positive height
+   * is a cell and a negative one the characters within it.
+   */
+  _exactStrike(height, charset, weight) {
+    const wantCharset =
+      charset === FontManager.DEFAULT_CHARSET ? FontManager.ANSI_CHARSET : charset;
+
+    /* The weight is the one other term that separates exact strikes here:
+     * System's sixteen row strike is bold and comes first in the directory,
+     * and Windows passes it over for MS Sans Serif's at a request of four
+     * hundred. Nearest weight, then the earliest. */
+    let best: any = null;
+    const distance = (entry) => Math.abs((entry.header.dfWeight || 400) - weight);
+
+    for (const name of Object.keys(this._fonts)) {
+      for (const entry of this._fonts[name]) {
+        if (entry.isVector || entry.header.dfCharSet !== wantCharset) {
+          continue;
+        }
+
+        const cell = entry.header.dfPixHeight;
+        const exact =
+          height > 0 ? cell === height : cell - entry.header.dfInternalLeading === -height;
+
+        if (
+          exact &&
+          (!best ||
+            distance(entry) < distance(best.entry) ||
+            (distance(entry) === distance(best.entry) && entry.order < best.entry.order))
+        ) {
+          best = { name, entry };
+        }
+      }
+    }
+
+    return best ? { name: best.name, entries: [best.entry] } : null;
+  }
+
   _strikeAt(height, charset, fixedPitch, only = null, ownName = false) {
     if (height <= 0 || (!ownName && height >= FontManager.OUTLINE_FLOOR)) {
       return null;
@@ -570,6 +616,59 @@ export class FontManager {
           exactStyle: outline.exact,
           faceBold: outline.faceBold,
         };
+      }
+    }
+
+    /* A name the directory holds but cannot answer in this character set --
+     * Wingdings asked for in the ANSI set -- is scored like any other: every
+     * candidate carries the same name mismatch, so the height term decides,
+     * and a strike installed at exactly the height asked for beats an outline,
+     * which beats a strike that would have to be stretched. Ties go to the
+     * earliest in the directory. **Recorded**: at ten Windows answers Small
+     * Fonts, at sixteen, twenty and twenty-four MS Sans Serif -- the exact
+     * strikes, and where two are exact the earlier: MS Serif's ten row strike
+     * lives in `SMALLE.FON` after Small Fonts' own -- and at twelve, fourteen
+     * and eighteen, where no strike is exact, Arial, the first outline. Never
+     * MS Sans Serif stretched, which the family default would have been. An
+     * italic request goes to the italic file below, as it did.
+     */
+    if (
+      outline &&
+      !usable &&
+      !wantsItalic &&
+      !this.lookup(face) &&
+      charset !== FontManager.OEM_CHARSET
+    ) {
+      const exact = this._exactStrike(request.height ?? 0, charset, request.weight || 400);
+
+      if (exact) {
+        return {
+          ...FontManager.choose(exact.entries, request),
+          face: exact.name,
+          outlineFamily: true,
+        };
+      }
+
+      for (const installed of Object.keys(this._outlines)) {
+        const first = this.outline(installed, wantsBold, wantsItalic);
+
+        if (!first || first.font.symbolic) {
+          continue;
+        }
+
+        const realised = FontManager.realiseOutline(first.font, request);
+
+        if (realised) {
+          return {
+            ...realised,
+            outline: first.font,
+            face: first.name,
+            exactStyle: first.exact,
+            faceBold: first.faceBold,
+          };
+        }
+
+        break;
       }
     }
 

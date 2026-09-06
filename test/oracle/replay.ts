@@ -1402,23 +1402,6 @@ export const KNOWN_GAPS: Record<string, string> = {
   'widths:glyph': 'stretched outlines: one pixel of an unhinted Courier New o (1 of 1,944)',
   'widths:CreateFont widths':
     'the maximum width under a stretch, one of seventy: Courier New at twenty-two pixels asked for five',
-
-  /* Asked for "Wingdings" in the ANSI set, Windows falls to Small Fonts at ten
-   * pixels, Arial at 12, 14 and 18, and MS Sans Serif at 16, 20 and 24 -- an
-   * exact strike where one exists, otherwise the outline, never a scaled
-   * strike. This falls to MS Sans Serif at every height. Making the outline
-   * win over every scaled strike is refused: it takes the `font` fixture from
-   * 5,057 to 2,842. The four heights that differ carry their metrics with them.
-   */
-  'styles:CreateFont face': 'the ANSI fallback for a symbol face name (4 of 21)',
-  'styles:CreateFont heights': 'the same four heights, whose metrics follow the face',
-  'styles:CreateFont widths': 'the same four heights, whose metrics follow the face',
-
-  /* The pitch and family of an outline face are read from the installer's
-   * `.FOT` now -- see `font-resource.ts` -- which is where Wingdings'
-   * FF_DONTCARE comes from. What is left is the ANSI fallback heights above.
-   */
-  'styles:CreateFont style': 'three of the fallback heights, whose style follows the face',
 };
 
 /**

@@ -8980,11 +8980,6 @@ and it is here.
 Everything below draws the right pixels. What is missing in each is the _reason_,
 read out of GDI rather than measured into place.
 
-- **The fallback for a name in the wrong character set.** Asked for a symbol
-  face in the ANSI set, Windows takes an exact strike from any bitmap family,
-  else the outline, never a scaled strike; this takes MS Sans Serif scaled. The
-  rule that scores that is not known, and the obvious one is refused by the
-  `font` fixture.
 - **How the installer chose Wingdings' family.** The pitch and family GDI
   reports for an outline face are the `FONTDIR` entry of the `.FOT` the
   installer wrote, read now (section 8a), and Wingdings' says `FF_DONTCARE`
@@ -12250,6 +12245,32 @@ fabricated face.
 
     styles   9,150 -> 9,157 of 9,178
 
+### A name the directory holds but cannot answer
+
+The last fifteen metric records of `styles` were one request: "Wingdings" in
+the ANSI character set. Windows answers Small Fonts at ten pixels, Arial at
+twelve, fourteen and eighteen, and MS Sans Serif at sixteen, twenty and
+twenty-four; this answered MS Sans Serif at every height, stretched where it
+had to be, because a name that could not be used fell to the family default.
+The rule that scores it is the mapper's own, read in section 3, with nothing
+added. Wingdings itself carries the character set mismatch, 65,000, and is
+out. Every other candidate carries the same name mismatch, 10,000, so what
+separates them is the height term: a strike installed at exactly the height
+asked for costs nothing there, an outline realised at that height costs
+nothing there but a little elsewhere, and a strike that would have to be
+stretched costs 150 a pixel and more -- so **an exact strike beats an outline,
+which beats a stretched strike**, and Arial, first in the directory, is the
+outline. Where two strikes are exact the weight separates them or the
+directory order does: at sixteen System's strike is exact too, and bold, and
+loses to MS Sans Serif's; at ten Small Fonts' ten row strike and MS Serif's
+are both exact and both regular, and Small Fonts wins because MS Serif's ten
+and eleven row strikes are not in `SERIFE.FON` at all but at the end of
+`SMALLE.FON`, after Small Fonts' own -- the directory order is the order of
+the files' resources, and this now stamps each strike with its place in it.
+An italic request keeps going to the italic file, as recorded before.
+
+    styles   9,157 -> 9,172 of 9,178;   the six glyph pixels are all that is left
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
@@ -12262,7 +12283,7 @@ it stands:
 | `hinting`                                                    | 7,828   | **100%**  |
 | `lines`                                                      | 248     | **100%**  |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
-| `styles`                                                     | 9,178   | 99.8%     |
+| `styles`                                                     | 9,178   | 99.9%     |
 | `sizes`                                                      | 800     | **100%**  |
 | `widths`                                                     | 2,480   | 99.9%     |
 
