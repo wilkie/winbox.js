@@ -1,0 +1,2127 @@
+{
+  "probe": "glyphs",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": "pound-tip-below",
+  "records": [
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffcfffffffcfffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffc7ffffffd7ffffffc7ffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=0,'K'",
+      "result": "ffffffffffffffffc7ffffffcfffffffcfffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=0,'M'",
+      "result": "ffffffffffffffffddffffffe9ffffffc5ffffffd1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffc3ffffffdbffffffdbffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffe7ffffffd7ffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffdfffffffcfffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffd7ffffffc7ffffffc7ffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffdfffffffcfffffffcfffffffd7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffdbffffffc7ffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=0,'1'",
+      "result": "ffffffffffffffffefffffffefffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffcfffffffdfffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffff87ffffffdbffffffc7ffffffdbffffff87ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=0,'K'",
+      "result": "ffffffffffffffff83ffffffcfffffffcfffffffd7ffffff83ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=0,'M'",
+      "result": "ffffffffffffffff88ffffffc9ffffffc9ffffffd1ffffff80ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffe3ffffffddffffffddffffffdbffffffc9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffebffffffd7ffffffd7ffffffe1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffd7ffffffe7ffffffefffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffebffffffd5ffffffd5ffffffe3fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffebffffffebffffffebffffffe0ffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffd5ffffffd5ffffffd5ffffffe3fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=0,'1'",
+      "result": "fffffffffffffffff7ffffffe7fffffff7fffffff7ffffffe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffefffffffcfffffffdfffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffc1ffffffeeffffffe1ffffffeeffffffeeffffffc1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=0,'K'",
+      "result": "ffffffffffffffffffffffffc4ffffffe9ffffffe7ffffffebffffffedffffffc47fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=0,'M'",
+      "result": "ffffffffffffffffffffffffc63fffffe67fffffe67fffffe97fffffe97fffffc43fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffe1ffffffdeffffffdeffffffdeffffffccffffffccffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffe5ffffffdbffffffdaffffffe4ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffcbffffffe7ffffffe7fffffff7ffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffebffffffd5ffffffd5ffffffe3fffffff7fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffedffffffedffffffed7fffffe0ffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffca7fffffeaffffffeafffffff1fffffffbfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=0,'1'",
+      "result": "fffffffffffffffffffffffff7ffffffe7fffffff7fffffff7fffffff7ffffffe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=0,'A'",
+      "result": "fffffffffffffffffdfffffffdfffffffafffffffafffffffafffffff77ffffff07ffffff77fffffe23fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffe1fffffff6fffffff6fffffff6fffffff1fffffff6fffffff6fffffff6ffffffe1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=0,'K'",
+      "result": "ffffffffffffffffe27ffffff6fffffff5fffffff3fffffff3fffffff5fffffff6fffffff77fffffe33fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=0,'M'",
+      "result": "ffffffffffffffffe7cffffff7dffffff39ffffff39ffffff55ffffff55ffffff6dffffff6dfffffe38fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=0,'W'",
+      "result": "fffffffffffffffff8fffffff77ffffff77ffffff77ffffff77ffffff77ffffffaffffffeabfffffe23fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=0,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffafffffff4ffffffedffffffedffffffedffffffe2ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=0,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff6ffffffeafffffff9fffffff9fffffffbfffffffbfffffff7fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=0,'j'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff9ffffffeaffffffeaffffffeaffffffeafffffff1fffffff7fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=0,'m'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff6fffffff6fffffff6ffffffedffffffedffffffe1ffffffdeffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=0,'y'",
+      "result": "fffffffffffffffffffffffffdfffffffdffffffeaffffffeaffffffeaffffffeaffffffeafffffff1fffffff7fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=0,'1'",
+      "result": "fffffffffffffffffbfffffff3fffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=0,'A'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff3fffffff7ffffffe7ffffffefffffffcfffffffd7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffc0ffffffef7fffffef7fffffe0ffffffef7fffffef7fffffef7fffffc0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=0,'K'",
+      "result": "ffffffffffffffffffffffffffffffffc47fffffedffffffebffffffe7ffffffe7ffffffebffffffedffffffc43fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=0,'M'",
+      "result": "ffffffffffffffffffffffffffffffffc78fffffe79fffffe79fffffeb5fffffeb5fffffed5fffffecdfffffc68fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=0,'W'",
+      "result": "fffffffffffffffffffffffffffffffff87ffffff7bfffffefdfffffefdfffffefdffffff7bfffffeb5fffffe31fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffe2ffffffdaffffffddffffffddffffffd9bfffffe27fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffcdffffffd5fffffff3fffffffbfffffff7fffffff7fffffff7fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffe4ffffffcb7fffffdb7fffffdb7fffffca7fffffe0fffffffbfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffeeffffffeeffffffeeffffffeeffffffeebfffffe07fffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffcd9fffffedbfffffedbfffffedbfffffe53ffffff07ffffffdfffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=0,'1'",
+      "result": "fffffffffffffffffffffffffffffffff7ffffffe7fffffff7fffffff7fffffff7fffffff7fffffff7ffffffe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,'A'",
+      "result": "fffffffffffffffffffffffffdfffffffdfffffffafffffffafffffff77ffffff77ffffff07fffffefbfffffefbfffffc71fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffe07ffffff7bffffff7bffffff7bffffff07ffffff7bffffff7bffffff7bffffff7bfffffe07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,'K'",
+      "result": "ffffffffffffffffffffffffe23ffffff77ffffff6fffffff5fffffff3fffffff5fffffff6fffffff77ffffff7bfffffe31fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,'M'",
+      "result": "ffffffffffffffffffffffffe7cffffff39ffffff39ffffff39ffffff55ffffff55ffffff55ffffff6dffffff6dfffffe28fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,'W'",
+      "result": "fffffffffffffffffffffffff87ffffff7bfffffefdfffffefdfffffefdfffffefdffffff7bffffffb7fffffeb5fffffe31fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff9fffffff6bfffffeebfffffef7fffffef7fffffeebffffff1bfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff77fffffeb7ffffffb7ffffffcfffffffcfffffffcfffffffdfffffffdfffffffbfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,'j'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff67ffffff5bfffffedbfffffedbfffffebbfffffeb7ffffff0fffffff7fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,'m'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff6fffffff6fffffff6ffffffedffffffedffffffed7fffffe2ffffffdfffffffdfffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,'y'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffefffffffeffffffe6bffffff6bffffff5bfffffed7fffffed7ffffff0fffffffbfffffffbfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,'1'",
+      "result": "fffffffffffffffffffffffffbfffffff3fffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=0,'A'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9fffffff3fffffff7ffffffe3fffffff7fffffff7ffffffc5ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffc07ffffff7bffffff7dffffff7dffffff7bffffff07ffffff79ffffff7effffff7effffff7dfffffc03fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=0,'K'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffc107fffff79ffffff77ffffff6fffffff5fffffff3fffffff5fffffff6fffffff77ffffff7bfffffc187ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=0,'M'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffc7fc7ffff3f9fffff3f9fffff5f5fffff5f5fffff6edfffff6edfffff76dfffff75dfffff79dffffc1b07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=0,'W'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffc1ffffffbeffffff7f7ffffeffbffffeffbffffeffbffffeffbfffff7f7fffff3e7ffffeddbffffe1c3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=0,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8effffff75fffffef5fffffef9fffffefbfffffefbffffff737fffff8cfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc77fffffd6fffffff6fffffffafffffff9fffffffdfffffffdfffffffbfffffffbfffffffbfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=0,'j'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff33ffffff6dfffffeeefffffeeefffffeeefffffeeeffffff6dffffff83ffffffefffffffefffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffef7fffffef7fffffef7fffffef7fffffef7fffffef7fffffee5fffffe13fffffefffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe773fffff777fffff777fffff777fffff777fffff777fffffb6ffffffc1fffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=0,'1'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffbffffffe3fffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffffbfffffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,'A'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc7ffffff97ffffff3fffffff3ffffffe1fffffff3fffffff7ffffffe7ffffffd2ffffffc9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffc01ffffff3cffffff3e7fffff3e7fffff3e7fffff3cffffff01ffffff3c7fffff3e3fffff3f3fffff3f3fffff3f3fffff3e7ffffc00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,'K'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffc0c3fffff3effffff3dffffff3bffffff37ffffff2fffffff0fffffff0fffffff27ffffff33ffffff39ffffff3cffffff3e3ffffc0c0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,'M'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffc3fe1ffff1fc7ffff1fc7ffff1fc7ffff4fa7ffff4fa7ffff6767ffff6767ffff6767ffff72e7ffff72e7ffff79e7ffff79e7fffc1981fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,'W'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffe07fffff8f1fffff3fcfffff3fcffffe7fe7fffe7fe7fffe7fe7fffe7fe7ffff7fefffff3fcfffffcf3ffffef6f7fffe0607fffe0607fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8e7fffff367ffffe78fffffe7cfffffe7cfffffe79fffffe79fffffe79ffffff32dfffff863ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe73fffffd77fffffda7ffffffa7ffffffafffffffafffffff9fffffffdfffffffdfffffffdfffffffbfffffffbfffffff3fffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,'j'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff98ffffff333ffffe73bffffe739ffffe739ffffe739ffffe739fffff333fffff123fffffc0fffffff3fffffff3fffffff3fffffff3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe79fffffe79fffffe79fffffe79fffffe79fffffe79fffffe79fffffe79fffffe71bffffe0c7ffffefffffffcfffffffcfffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe79e7ffff39cfffff39cfffff39cfffff39cfffff39cfffff39cfffff999fffffc93fffffe07ffffff9fffffff9fffffff9fffffff9fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,'1'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffefffffff8fffffff0fffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffffcfffffff03fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=700,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffc7ffffffc7ffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=700,italic=0,'B'",
+      "result": "ffffffffffffffffc3ffffffc3ffffffc3ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=700,italic=0,'K'",
+      "result": "ffffffffffffffffc3ffffffc7ffffffc7ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=700,italic=0,'M'",
+      "result": "ffffffffffffffffccffffffe0ffffffc0ffffffc0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=700,italic=0,'W'",
+      "result": "ffffffffffffffffc1ffffffc9ffffffc9ffffffc1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=700,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffe3ffffffc3ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=700,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffcfffffffc7ffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=700,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffc3ffffffc3ffffffc3ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=700,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffcfffffffc7ffffffc7ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=700,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffc9ffffffc3ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=700,italic=0,'1'",
+      "result": "ffffffffffffffffe7ffffffe7ffffffe7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=700,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=700,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffc7ffffffcfffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=700,italic=0,'B'",
+      "result": "ffffffffffffffff83ffffffcbffffffc3ffffffcbffffff83ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=700,italic=0,'K'",
+      "result": "ffffffffffffffff83ffffffc7ffffffc7ffffffc3ffffff83ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=700,italic=0,'M'",
+      "result": "ffffffffffffffff80ffffffc0ffffffc0ffffffc0ffffff80ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=700,italic=0,'W'",
+      "result": "ffffffffffffffffe1ffffffccffffffccffffffc9ffffffc0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=700,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffe1ffffffc3ffffffc3ffffffe0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=700,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffc3ffffffe3ffffffe7ffffffe7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=700,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffe1ffffffc1ffffffc1ffffffe1fffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=700,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffe1ffffffe1ffffffe1ffffffe0ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=700,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffc0ffffffc0ffffffc0ffffffe1fffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=700,italic=0,'1'",
+      "result": "fffffffffffffffff3ffffffe3fffffff3fffffff3ffffffe1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=700,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=700,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffe7ffffffc7ffffffcfffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=700,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffc0ffffffe6ffffffe0ffffffe6ffffffe6ffffffc0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=700,italic=0,'K'",
+      "result": "ffffffffffffffffffffffffc07fffffe0ffffffe3ffffffe1ffffffe4ffffffc03fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=700,italic=0,'M'",
+      "result": "ffffffffffffffffffffffffc21fffffe23fffffe23fffffe03fffffe03fffffc01fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=700,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffe0ffffffceffffffceffffffceffffffc4ffffffc4ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=700,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffe0ffffffc9ffffffc8ffffffe0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=700,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffc1ffffffe3ffffffe3fffffff3ffffffe7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=700,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffe1ffffffc0ffffffc0ffffffe1fffffff3fffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=700,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffe4ffffffe4ffffffe43fffffe07fffffe7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=700,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffc03fffffe07fffffe07ffffff0fffffff9fffffff9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=700,italic=0,'1'",
+      "result": "fffffffffffffffffffffffff3ffffffe3fffffff3fffffff3fffffff3ffffffe1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=700,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=700,italic=0,'A'",
+      "result": "fffffffffffffffffcfffffffcfffffff87ffffff87ffffff87ffffff33ffffff03ffffff33fffffe01fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=700,italic=0,'B'",
+      "result": "ffffffffffffffffe0fffffff27ffffff27ffffff27ffffff0fffffff27ffffff27ffffff27fffffe0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=700,italic=0,'K'",
+      "result": "ffffffffffffffffe03ffffff27ffffff0fffffff1fffffff1fffffff0fffffff27ffffff33fffffe11fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=700,italic=0,'M'",
+      "result": "ffffffffffffffffe3c7fffff3cffffff18ffffff18ffffff00ffffff00ffffff24ffffff24fffffe187ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=700,italic=0,'W'",
+      "result": "fffffffffffffffff87ffffff33ffffff33ffffff33ffffff33ffffff33ffffff87fffffe01fffffe01fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=700,italic=0,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff87ffffff07fffffe4ffffffe4ffffffe4ffffffe07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=700,italic=0,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff27fffffe07ffffff8fffffff8fffffff9fffffff9fffffff3fffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=700,italic=0,'j'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff8ffffffe07fffffe07fffffe07fffffe07ffffff0fffffff3fffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=700,italic=0,'m'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff27ffffff27ffffff27fffffe4ffffffe4ffffffe0ffffffce7fffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=700,italic=0,'y'",
+      "result": "fffffffffffffffffffffffffcfffffffcffffffe07fffffe07fffffe07fffffe07fffffe07ffffff0fffffff3fffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=700,italic=0,'1'",
+      "result": "fffffffffffffffff9fffffff1fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=700,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=700,italic=0,'A'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff1fffffff3ffffffe3ffffffe7ffffffc7ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=700,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffc07fffffe73fffffe73fffffe07fffffe73fffffe73fffffe73fffffc07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=700,italic=0,'K'",
+      "result": "ffffffffffffffffffffffffffffffffc03fffffe4ffffffe1ffffffe3ffffffe3ffffffe1ffffffe4ffffffc01fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=700,italic=0,'M'",
+      "result": "ffffffffffffffffffffffffffffffffc387ffffe38fffffe38fffffe10fffffe10fffffe40fffffe44fffffc207ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=700,italic=0,'W'",
+      "result": "fffffffffffffffffffffffffffffffff83ffffff39fffffe7cfffffe7cfffffe7cffffff39fffffe10fffffe10fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=700,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffe07fffffc87fffffccffffffccffffffc89fffffe03fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=700,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffc4ffffffc0fffffff1fffffff9fffffff3fffffff3fffffff3fffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=700,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffe07fffffc13fffffc93fffffc93fffffc03fffffe07ffffff9fffffff9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=700,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffe67fffffe67fffffe67fffffe67fffffe61fffffe03fffffe7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=700,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffc48fffffe49fffffe49fffffe49fffffe01ffffff03ffffffcfffffffcffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=700,italic=0,'1'",
+      "result": "fffffffffffffffffffffffffffffffff3ffffffe3fffffff3fffffff3fffffff3fffffff3fffffff3ffffffe1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=700,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,'A'",
+      "result": "fffffffffffffffffffffffffcfffffffcfffffff87ffffff87ffffff33ffffff33ffffff03fffffe79fffffe79fffffc30fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffe03ffffff39ffffff39ffffff39ffffff03ffffff39ffffff39ffffff39ffffff39fffffe03fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,'K'",
+      "result": "ffffffffffffffffffffffffe01ffffff33ffffff27ffffff0fffffff1fffffff0fffffff27ffffff33ffffff39fffffe10fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,'M'",
+      "result": "ffffffffffffffffffffffffe3c7fffff18ffffff18ffffff18ffffff00ffffff00ffffff00ffffff24ffffff24fffffe007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,'W'",
+      "result": "fffffffffffffffffffffffff83ffffff39fffffe7cfffffe7cfffffe7cfffffe7cffffff39ffffff93fffffe10fffffe10fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff8fffffff21fffffe61fffffe73fffffe73fffffe61ffffff09fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff33fffffe13ffffff93ffffffc7ffffffc7ffffffc7ffffffcfffffffcfffffff9fffffff9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,'j'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff23ffffff09fffffe49fffffe49fffffe19fffffe13ffffff07ffffff3fffffff3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,'m'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff27ffffff27ffffff27fffffe4ffffffe4ffffffe43fffffe07fffffcfffffffcfffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,'y'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffe7ffffffe7fffffe21ffffff21ffffff09fffffe43fffffe43ffffff07ffffff9fffffff9fffffff9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,'1'",
+      "result": "fffffffffffffffffffffffff9fffffff1fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=700,italic=0,'A'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8fffffff1fffffff3ffffffe1fffffff3fffffff3ffffffc0ffffffc1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=700,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffc03ffffff39ffffff3cffffff3cffffff39ffffff03ffffff38ffffff3e7fffff3e7fffff3cfffffc01fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=700,italic=0,'K'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffc003fffff38ffffff33ffffff27ffffff0fffffff1fffffff0fffffff27ffffff33ffffff39fffffc083ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=700,italic=0,'M'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffc3fc3ffff1f8fffff1f8fffff0f0fffff0f0fffff264fffff264fffff324fffff30cfffff38cffffc0903fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=700,italic=0,'W'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffc0ffffff9e7fffff3f3ffffe7f9ffffe7f9ffffe7f9ffffe7f9fffff3f3fffff1e3ffffe4c9ffffe0c1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=700,italic=0,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff867fffff30fffffe70fffffe78fffffe79fffffe79ffffff313fffff847ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=700,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc33fffffc27ffffff27ffffff87ffffff8fffffffcfffffffcfffffff9fffffff9fffffff9fffffff9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=700,italic=0,'j'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff11ffffff24fffffe667ffffe667ffffe667ffffe667fffff24ffffff81ffffffe7ffffffe7ffffffe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=700,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe73fffffe73fffffe73fffffe73fffffe73fffffe73fffffe60fffffe01fffffe7ffffffe7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=700,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe331fffff333fffff333fffff333fffff333fffff333fffff927fffffc0fffffff3fffffff3fffffff3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=700,italic=0,'1'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff9ffffffe1fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff9fffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=700,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,'A'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc3ffffff83ffffff1fffffff1ffffffe0fffffff1fffffff3ffffffe3ffffffc07fffffc0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffc00ffffff1c7fffff1e3fffff1e3fffff1e3fffff1c7fffff00ffffff1c3fffff1e1fffff1f1fffff1f1fffff1f1fffff1e3ffffc007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,'K'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffc041fffff1e7fffff1cffffff19ffffff13ffffff07ffffff07ffffff07ffffff03ffffff11ffffff18ffffff1c7fffff1e1ffffc040ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,'M'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffc1fe0ffff0fc3ffff0fc3ffff0fc3ffff0783ffff0783ffff2323ffff2323ffff2323ffff3063ffff3063ffff38e3ffff38e3fffc0880fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,'W'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffe03fffff870fffff1fc7ffff1fc7fffe3fe3fffe3fe3fffe3fe3fffe3fe3ffff3fe7ffff1fc7ffffc71ffffe7273fffe0203fffe0203fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff863fffff123ffffe387ffffe3c7ffffe3c7ffffe38fffffe38fffffe38ffffff104fffff821ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe31fffffc33fffffc83ffffff83ffffff87ffffff87ffffff8fffffffcfffffffcfffffffcfffffff9fffffff9fffffff1fffffff1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,'j'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff887fffff111ffffe319ffffe318ffffe318ffffe318ffffe318fffff111fffff001fffffc07ffffff1fffffff1fffffff1fffffff1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe38fffffe38fffffe38fffffe38fffffe38fffffe38fffffe38fffffe38fffffe30bffffe043ffffe7ffffffc7ffffffc7ffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe38e3ffff18c7ffff18c7ffff18c7ffff18c7ffff18c7ffff18c7ffff888fffffc01fffffe03ffffff8fffffff8fffffff8fffffff8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,'1'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffe7ffffff87ffffff07ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffff01fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe3ffffffe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=1,'A'",
+      "result": "ffffffffffffffffffffffffe7ffffffefffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=1,'B'",
+      "result": "ffffffffffffffffe3ffffffebffffffe3ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=1,'K'",
+      "result": "ffffffffffffffffe1ffffffe7ffffffe7ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=1,'M'",
+      "result": "ffffffffffffffffe6ffffffe1ffffffd1ffffffd1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=1,'W'",
+      "result": "ffffffffffffffffe1ffffffedffffffdbffffffc1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=1,'a'",
+      "result": "ffffffffffffffffffffffffe3ffffffd7ffffffcbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=1,'g'",
+      "result": "ffffffffffffffffffffffffe7ffffffefffffffefffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=1,'j'",
+      "result": "ffffffffffffffffffffffffe3ffffffcbffffffc7ffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=1,'m'",
+      "result": "ffffffffffffffffffffffffe7ffffffd7ffffffd7ffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=1,'y'",
+      "result": "ffffffffffffffffffffffffe1ffffffe3ffffffe7ffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=1,'1'",
+      "result": "ffffffffffffffffe7fffffff7fffffff7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=8,weight=400,italic=1,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=1,'A'",
+      "result": "fffffffffffffffffffffffff7ffffffefffffffefffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=1,'B'",
+      "result": "ffffffffffffffffe3ffffffedffffffe3ffffffedffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=1,'K'",
+      "result": "ffffffffffffffffe4ffffffebffffffe7ffffffe7ffffffc9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=1,'M'",
+      "result": "ffffffffffffffffe77ffffff4ffffffe4ffffffd2ffffffc4ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=1,'W'",
+      "result": "fffffffffffffffff9ffffffe6ffffffeeffffffedffffffc9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=1,'a'",
+      "result": "ffffffffffffffffffffffffffffffffe3ffffffd7ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=1,'g'",
+      "result": "ffffffffffffffffffffffffffffffffe3fffffff7ffffffefffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=1,'j'",
+      "result": "ffffffffffffffffffffffffffffffffc3ffffffcbffffffc7ffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=1,'m'",
+      "result": "ffffffffffffffffffffffffffffffffcbffffffd7ffffffd3ffffffcfffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=1,'y'",
+      "result": "ffffffffffffffffffffffffffffffffe5ffffffe3ffffffe3ffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=1,'1'",
+      "result": "fffffffffffffffffbfffffff7fffffff7fffffff7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=10,weight=400,italic=1,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=1,'A'",
+      "result": "fffffffffffffffffffffffffffffffffbfffffff5ffffffe7ffffffefffffffc7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=1,'B'",
+      "result": "fffffffffffffffffffffffff0fffffff77ffffff6fffffff0ffffffeeffffffc1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=1,'K'",
+      "result": "fffffffffffffffffffffffff03ffffff4fffffff3fffffff3ffffffedffffffc4ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=1,'M'",
+      "result": "fffffffffffffffffffffffff3cffffff3bfffffea3fffffeabfffffe97fffffca3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=1,'W'",
+      "result": "fffffffffffffffffffffffff87ffffff7bfffffef7fffffef7fffffeeffffffc47fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=1,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffe0ffffffedffffffdbffffffc1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=1,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffe5ffffffebffffffe7ffffffefffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=1,'j'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffe0ffffffe6ffffffe5ffffffe3ffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=1,'m'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff6fffffff5fffffff5ffffffe0ffffffdfffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=1,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffe27fffffeaffffffe9ffffffe5fffffff3fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=1,'1'",
+      "result": "fffffffffffffffffffffffff9fffffffbfffffffbfffffff7fffffff7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=1,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=1,'A'",
+      "result": "ffffffffffffffffffefffffffefffffffafffffffafffffff5ffffffeeffffffc1ffffffddffffff11fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=1,'B'",
+      "result": "ffffffffffffffffff0fffffffb7ffffff6fffffff6ffffffe3ffffffedffffffdbffffffdbffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=1,'K'",
+      "result": "ffffffffffffffffff13ffffffb7ffffff5fffffff3ffffffe7ffffffebffffffdbffffffddffffff19fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=1,'M'",
+      "result": "ffffffffffffffffff3e7fffffbeffffff39ffffff39fffffeabfffffeabfffffdb7fffffdb7fffff1c7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=1,'W'",
+      "result": "ffffffffffffffffffc7ffffffbbffffff77ffffff77fffffeeffffffeeffffffebffffffaaffffff11fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=1,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffaffffffe9ffffffdbffffffb7ffffffb7ffffff17fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=1,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffff6ffffffd5fffffff3ffffffe7ffffffefffffffdfffffffbfffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=1,'j'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffff9ffffffd5ffffffd5ffffffabffffffabffffff8fffffffbfffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=1,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffff6ffffffedffffffedffffffb7ffffffb7ffffff0ffffffef7fffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=1,'y'",
+      "result": "ffffffffffffffffffffffffffefffffffdffffffeaffffffd5ffffffd5ffffffabffffffabffffff8fffffffbfffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=1,'1'",
+      "result": "ffffffffffffffffffdfffffff9fffffffbfffffffbfffffff7fffffff7ffffffefffffffefffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=13,weight=400,italic=1,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=1,'A'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffcfffffffbfffffff3fffffff7ffffffefffffffd3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=1,'B'",
+      "result": "fffffffffffffffffffffffffffffffff83ffffffbdffffffb9ffffffb3ffffff43ffffff7bffffff73fffffc0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=1,'K'",
+      "result": "fffffffffffffffffffffffffffffffff88ffffffbbffffffa7ffffff9fffffff5fffffff6fffffff67fffffc61fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=1,'M'",
+      "result": "fffffffffffffffffffffffffffffffff9f1fffff9e7fffff5d7fffff5a7fffff5afffffec6fffffeecfffffc58fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=1,'W'",
+      "result": "fffffffffffffffffffffffffffffffffc1ffffffbeffffff3effffff7cffffff7dffffff7bfffffdb5fffffc61fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=1,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffbfffffff43fffffee7fffffeeffffffecffffffe27fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=1,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffe67ffffff5fffffff3fffffffbfffffff7fffffff7ffffffefffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=1,'j'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffafffffff57fffffed3fffffeb7fffffeb7fffffeafffffff5fffffff7fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=1,'m'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffb3ffffff77ffffff77ffffff6fffffff07fffffefffffffdfffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=1,'y'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff7dffffff6bffffff5bffffff53ffffff57ffffff2fffffff9fffffffbfffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=1,'1'",
+      "result": "fffffffffffffffffffffffffffffffffcfffffff9fffffffdfffffffdfffffffbfffffffbfffffffbffffffe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=1,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,'A'",
+      "result": "fffffffffffffffffffffffffff7ffffffefffffffd7ffffffafffffff77fffffeeffffffe0ffffffbeffffffbefffffe38fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,'B'",
+      "result": "ffffffffffffffffffffffffff81ffffffbdffffffbdffffff7bffffff07fffffef7fffffef7fffffdeffffffdeffffff03fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,'K'",
+      "result": "ffffffffffffffffffffffffff88ffffffbbffffffb7ffffff5fffffff3ffffffebffffffedffffffddffffffdeffffff18fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,'M'",
+      "result": "ffffffffffffffffffffffffff9f3fffff9cffffff9cffffff39ffffff55fffffeabfffffeabfffffdb7fffffdb7fffff147ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,'W'",
+      "result": "ffffffffffffffffffffffffffe1ffffffbdffffff7efffffefdfffffefdfffffdfbfffffef7fffffedffffffad7fffff18fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffff9fffffff6bfffffdd7fffffdeffffffbdffffffbaffffff8dfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffff77fffffeb7ffffff6fffffff9fffffff3fffffff3ffffffefffffffefffffffbfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,'j'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffff67ffffff5bfffffdb7fffffdb7fffffaeffffffadffffff87ffffffbfffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffff6fffffff6ffffffedffffffdbffffffb7ffffffb5ffffff17fffffefffffffdfffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,'y'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffff7ffffffeffffffe6bfffffed7fffffeb7fffffb5ffffffb5ffffff87ffffffdfffffffbfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,'1'",
+      "result": "ffffffffffffffffffffffffffefffffff9fffffffdfffffffbfffffffbfffffff7fffffff7ffffffefffffffefffffff8ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=1,'A'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe3ffffffc7ffffffdfffffff0fffffffbfffffff7ffffffc5ffffffc3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=1,'B'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff81ffffffce7fffffcf3fffffdf7fffffde7fffff81ffffffbcffffffbe7fffff3cffffff7cfffffc03fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=1,'K'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff821fffffcf7fffffceffffffd9ffffffd7ffffff87ffffffa7ffffffb3ffffff39ffffff79fffffc103ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=1,'M'",
+      "result": "fffffffffffffffffffffffffffffffffffffffff8ff1ffffcfe7ffffc7c7ffffc7afffffa7afffffa74fffffb6cfffff75dfffff739fffff739ffffc360ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=1,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffff87fffffe79fffffdf9fffff9f9fffff3f9fffff3f9fffff3fbfffff3f7fffffbcfffffddbbffffc183ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=1,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc37fffff9affffffbcffffff3dffffff7bffffff727fffff0cfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=1,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff39fffffeb3ffffffb7ffffffafffffffdfffffffbfffffffbfffffff7fffffff7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=1,'j'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc07fffffb67fffff377fffff367fffff6effffff2dffffffabffffffc7ffffffdfffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=1,'m'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9cffffffbdffffffbdffffffb9ffffff3bffffff71ffffff09fffffefffffffefffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=1,'y'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b1fffffb67fffffb6ffffff36ffffff2cffffff2dffffffa3ffffffdfffffffdfffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=1,'1'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffbffffffe3fffffff7fffffff7fffffff7ffffffe7ffffffefffffffefffffffcfffffffdfffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=1,'.'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff8fffffff5ffffffe7ffffffcfffffff87ffffff1fffffffbffffffe3ffffffd27fffffc9ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,'B'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffc01fffffe7cfffffe7cfffffe7cfffffcf8fffffcf3fffffc03fffffdf1fffff9f9fffff9f9fffff9f3fffff3e3ffffc00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,'K'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffc0c1ffffe7dfffffe7bfffffe67fffffcdffffffcbffffffc3ffffffd9ffffff98ffffff9c7fffff9e7fffff3e3ffffc0c0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,'M'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffc3fe1fffe3fc7fffe3f8ffffe3f4ffffd3f4ffffd9edffffd9d9ffffb9b9ffffb9b9ffffb973ffff78f3ffff7df3fffc1d81fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,'W'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffdffffffc23fffff3f9ffffe7f9ffffc7f9ffffcff8ffffcff9ffff8ff9ffff9ff3ffffcfe7ffffcfcffffef7bbfffe0703fffe0707fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,'a'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0cfffffce9fffff9ebfffff9f3fffff3e7fffff3effffff3cffffff38dfffff833ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,'g'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9e7fffff5cfffffeddffffffdbffffffd7ffffffd7ffffffcfffffffdfffffffdfffffffbfffffffbfffffff3fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,'j'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe23fffffcd9fffff9ddfffff9bdfffff3b9fffff3b9fffff33bfffffb77fffff94ffffffe3ffffffefffffffefffffffcffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,'m'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffcf3fffffdf7fffffde7fffff9e7fffff9effffffbcffffff3cffffff383fffff047ffffefffffffefffffffcfffffffcfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,'y'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9ce3ffff9dcfffff9ddfffff9d9fffff9b9fffff9b3fffff9b7fffff967fffffd5ffffffe3ffffffefffffffefffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,'1'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffefffffff9fffffff1fffffff9fffffffbfffffff3fffffff3fffffff3fffffff7ffffffe7ffffffe7ffffffefffffffcfffffff07fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,'.'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffe7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the bitmap faces, which are strikes rather than outlines"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=9,weight=400,italic=1,'N'",
+      "result": "ffffffffffffffffe6fffffff5ffffffe9ffffffe9ffffffcdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=9,weight=400,italic=1,'NN'",
+      "result": "ffffffffffffffffe637fffff5afffffe94fffffe94fffffcc6fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=9,weight=400,italic=0,'N'",
+      "result": "ffffffffffffffffcc7fffffe6ffffffeaffffffecffffffc6ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=9,weight=400,italic=0,'NN'",
+      "result": "ffffffffffffffffcc18ffffe6cdffffead5ffffecd9ffffc68dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=11,weight=400,italic=1,'y'",
+      "result": "ffffffffffffffffffffffffffffffffeaffffffe5ffffffe5ffffffe3fffffff7ffffffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=11,weight=400,italic=1,'yy'",
+      "result": "ffffffffffffffffffffffffffffffffeaabffffe597ffffe597ffffe38ffffff7dfffffefbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=11,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffd5ffffffd5ffffffd5ffffffe3fffffff7fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=11,weight=400,italic=0,'yy'",
+      "result": "ffffffffffffffffffffffffffffffffd4afffffd4afffffd4afffffe31ffffff7bffffff7bfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=1,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffe27fffffeaffffffe9ffffffe5fffffff3fffffff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=1,'yy'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffe209ffffeaabffffe9a7ffffe597fffff3cffffff7dfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffca7fffffeaffffffeafffffff1fffffffbfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=12,weight=400,italic=0,'yy'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffca14ffffead5ffffead5fffff1e3fffffbf7fffffbf7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=14,weight=400,italic=1,'T'",
+      "result": "ffffffffffffffffffffffffffffffffe03ffffffdfffffffdfffffffbfffffffbfffffffbffffffe1ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=14,weight=400,italic=1,'TT'",
+      "result": "ffffffffffffffffffffffffffffffffe0007ffffdfbfffffdfbfffffbf7fffffbf7fffffbf7ffffe1c3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=14,weight=400,italic=0,'T'",
+      "result": "ffffffffffffffffffffffffc1ffffffd5fffffff7fffffff7fffffff7fffffff7fffffff7ffffffe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=14,weight=400,italic=0,'TT'",
+      "result": "ffffffffffffffffffffffffc00fffffd4affffff7bffffff7bffffff7bffffff7bffffff7bfffffe31fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=1,'F'",
+      "result": "fffffffffffffffffffffffffffffffffe1ffffffc1ffffff26ffffff6efffffeedfffffecdffffff03ffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=1,'FF'",
+      "result": "fffffffffffffffffffffffffffffffffe1f0ffffc1e0ffff26937fff6eb77ffeed76fffecd66ffff0381ffff0f87fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=0,'F'",
+      "result": "fffffffffffffffffffffffffffffffffc7ffffffefffffff01fffffeeefffffeeeffffff01ffffffefffffffc7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=15,weight=400,italic=0,'FF'",
+      "result": "fffffffffffffffffffffffffffffffffc7f8ffffeffdffff01e03ffeeedddffeeedddfff01e03fffeffdffffc7f8fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=17,weight=400,italic=1,'p'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01fffffeafffffff6fffffff6fffffff57fffffee7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=17,weight=400,italic=1,'pp'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0101fffeaeafffff6f6fffff6f6fffff5757fffee6e7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=17,weight=400,italic=0,'p'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffe0ffffffd5fffffff5fffffff5fffffff5ffffffe4ffffffecffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=17,weight=400,italic=0,'pp'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffe083ffffd557fffff5d7fffff5d7fffff5d7ffffe493ffffecb3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=1,'y'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b1fffffb67fffffb6ffffff36ffffff2cffffff2dffffffa3ffffffdfffffffdfffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=1,'yy'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b0763ffb676cfffb6f6dfff36e6dfff2ce59fff2de5bfffa3f47fffdffbffffdffbffffdffbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe773fffff777fffff777fffff777fffff777fffff777fffffb6ffffffc1fffffff7fffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=20,weight=400,italic=0,'yy'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe772773ff777777ff777777ff777777ff777777ff777777ffb6fb6fffc1fc1ffff7ff7ffff7ff7ffff7ff7ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=22,weight=400,italic=1,'z'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffb3ffffff47ffffffbffffffe7ffffffdfffffffbfffffffbfffffff7fffffff7fffffff7fffffff7fffffff03fffffff9fffffffbfffffff7ffffffcffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=22,weight=400,italic=1,'zz'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffb3d9ffff47a3ffffbfdffffe7f3ffffdfefffffbfdfffffbfdfffff7fbfffff7fbfffff7fbfffff7fbfffff0381fffff9fcfffffbfdfffff7fbffffcfe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=22,weight=400,italic=0,'z'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffdfffffffb9ffffffc3ffffffdfffffffbfffffff7ffffffe7ffffffefffffffefffffffeffffffff7fffffff81fffffffefffffffefffffffefffffff1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=22,weight=400,italic=0,'zz'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffdffbffffb9f73fffc3f87fffdffbffffbff7ffff7feffffe7fcffffeffdffffeffdffffeffdfffff7fefffff81f03ffffeffdffffeffdffffeffdffff1fe3ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=23,weight=400,italic=1,'y'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9de7ffff9dcfffff9d9fffff9b9fffff9b3fffffbb3fffffb67fffffb6ffffffd1ffffffefffffffefffffffefffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=23,weight=400,italic=1,'yy'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9de4ef3f9dccee7f9d9cecff9b9cdcff9b3cd9ffbb3dd9ffb67db3ffb6fdb7ffd1fe8fffefff7fffefff7fffefff7fffdffefffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=23,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe79e7ffff39cfffff39cfffff39cfffff39cfffff39cfffff199fffff999fffffe07ffffff9fffffff9fffffff9fffffff9fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=23,weight=400,italic=0,'yy'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe79e4f3cf39ce739f39ce739f39ce739f39ce739f39ce739f199e333f999f333fe07fc0fff9fff3fff9fff3fff9fff3fff9fff3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,'y'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9ce3ffff9dcfffff9ddfffff9d9fffff9b9fffff9b3fffff9b7fffff967fffffd5ffffffe3ffffffefffffffefffffffeffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,'yy'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9ce2738f9dce773f9dde777f9d9e767f9b9e6e7f9b3e6cff9b7e6dff967e59ffd5ff57ffe3ff8fffefffbfffefffbfffefffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe79e7ffff39cfffff39cfffff39cfffff39cfffff39cfffff39cfffff999fffffc93fffffe07ffffff9fffffff9fffffff9fffffff9fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,'yy'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe79e679ef39cf39cf39cf39cf39cf39cf39cf39cf39cf39cf39cf39cf999f999fc93fc93fe07fe07ff9fff9fff9fff9fff9fff9fff9fff9fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=28,weight=400,italic=1,'z'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffdc7fffffb1ffffffcfffffffbfffffff7ffffffefffffffdfffffffdfffffffbfffffffbfffffff7fffffff7fffffff7fffffff00ffffff007ffffffe7ffffffefffffffeffffffedffffffc3fffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=28,weight=400,italic=1,'zz'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeffdffffdc7b8fffb1f63fffcff9ffffbff7ffff7feffffeffdffffdffbffffdffbffffbff7ffffbff7ffff7fefffff7fefffff7fefffff00e01fff00600ffffe7fcffffeffdffffeffdfffedfdbfffc3f87ffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=28,weight=400,italic=0,'z'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffbcffffffb1ffffffc3ffffffdfffffffbfffffff7fffffff7fffffff7ffffffefffffffefffffffefffffffefffffffe7fffffff00ffffff807fffffff7fffffff7fffffff7ffffffefffffff1fffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=28,weight=400,italic=0,'zz'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffdffdffffbcfbcfffb1fb1fffc3fc3fffdffdffffbffbffff7ff7ffff7ff7ffff7ff7fffeffeffffeffeffffeffeffffeffeffffe7fe7ffff00f00fff807807ffff7ff7ffff7ff7ffff7ff7fffeffeffff1ff1ffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=30,weight=400,italic=1,'z'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffef3fffffd87fffffc1ffffffdfffffffbfffffff7ffffffefffffffdfffffffdfffffffbfffffffbfffffff7fffffff7fffffff3fffffff00ffffff807ffffffe7fffffff7ffffffeffffffedffffffe3fffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=30,weight=400,italic=1,'zz'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ff7fffef3ef3ffd87d87ffc1fc1fffdffdffffbffbffff7ff7fffeffeffffdffdffffdffdffffbffbffffbffbffff7ff7ffff7ff7ffff3ff3ffff00f00fff807807fffe7fe7ffff7ff7fffeffefffedfedfffe3fe3ffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=30,weight=400,italic=0,'z'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffbe7fffffb8ffffffc1ffffffcfffffff9fffffff3fffffff7fffffff7ffffffefffffffefffffffefffffffefffffffe7fffffff007fffff803fffffffbfffffffbfffffffbfffffff7ffffff8fffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=30,weight=400,italic=0,'zz'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdffeffffbe7df3ffb8fdc7ffc1fe0fffcffe7fff9ffcffff3ff9ffff7ffbffff7ffbfffefff7fffefff7fffefff7fffefff7fffe7ff3ffff007803ff803c01ffffbffdffffbffdffffbffdffff7ffbfff8ffc7fffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=32,weight=400,italic=1,'t'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff80fffffe00fffffecffffff9dfffffffdfffffff9fffffffbfffffff3fffffff7fffffff77ffffff0fffffff1fffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=32,weight=400,italic=1,'tt'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff80f01ffe00c01ffecfd9fff9df3bffffdffbffff9ff3ffffbff7ffff3fe7ffff7fefffff77eeffff0fe1ffff1fe3ffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=32,weight=400,italic=0,'t'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff807fffff007fffff67fffffee7ffffffe7ffffffe7ffffffe7ffffffe7ffffffe77fffffe27fffffe0fffffff1fffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=32,weight=400,italic=0,'tt'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff807807ff007007ff67f67ffee7ee7fffe7fe7fffe7fe7fffe7fe7fffe7fe7fffe77e77ffe27e27ffe0fe0ffff1ff1ffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=34,weight=400,italic=1,'z'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffff78fffffee1fffffe07ffffff7ffffffefffffff9fffffff3fffffff7ffffffefffffffdfffffffdfffffffbfffffffbfffffffbfffffff3fffffff3fffffff003fffff803fffffef3fffffffbfffffff7fffffff7fffffe0fffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=34,weight=400,italic=1,'zz'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbffdffff78fbcffee1f70ffe07f03fff7ffbfffefff7fff9ffcffff3ff9ffff7ffbfffefff7fffdffeffffdffeffffbffdffffbffdffffbffdffff3ff9ffff3ff9ffff003801ff803c01ffef3f79ffffbffdffff7ffbffff7ffbffe0ff07f",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=34,weight=400,italic=0,'z'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffcf9fffffde1fffffdc3fffffe0ffffffe7ffffffdfffffffbfffffff3fffffff7ffffffe7ffffffefffffffefffffffefffffffeffffffff7fffffff001fffffc00fffffffcfffffffefffffffefffffffcffffffc1ffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=34,weight=400,italic=0,'zz'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffefffcf9f9f3fde1fbc3fdc3fb87fe0ffc1ffe7ffcfffdfffbfffbfff7fff3ffe7fff7ffefffe7ffcfffefffdfffefffdfffefffdfffefffdffff7ffeffff001e003fc00f801fffcfff9fffefffdfffefffdfffcfff9ffc1ff83",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=36,weight=400,italic=1,'z'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9fffffff78fffffe61fffffe07ffffff7ffffffefffffffdfffffffbfffffff7ffffffefffffffefffffffdfffffff9fffffffbfffffffbfffffff3fffffff3fffffff1fffffff001fffff801ffffff79fffffffdfffffffbffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=36,weight=400,italic=1,'zz'",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff9ffe7fff78fdeffe61f98ffe07f81fff7ffdfffefffbfffdfff7fffbffeffff7ffdfffefffbfffefffbfffdfff7fff9ffe7fffbffeffffbffeffff3ffcffff3ffcffff1ffc7fff001c007f801e007ff79fde7fffdfff7fffbffef",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=36,weight=400,italic=0,'z'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffcf1fffffde1fffffd87fffffe1ffffffefffffffdfffffffbfffffff3fffffff7fffffff7ffffffefffffffefffffffefffffffefffffffefffffffeffffffff7fffffff001fffffc00fffffffcfffffffeffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=36,weight=400,italic=0,'zz'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffefffcf1f9e3fde1fbc3fd87fb0ffe1ffc3ffefffdfffdfffbfffbfff7fff3ffe7fff7ffeffff7ffefffefffdfffefffdfffefffdfffefffdfffefffdfffefffdffff7ffeffff001e003fc00f801fffcfff9fffefffd",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=38,weight=400,italic=1,'I'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc03fffffb0fffffff1fffffff1ffffffe3ffffffe3ffffffe3ffffffc7ffffffc7ffffffc7ffffff8fffffff8fffffff8fffffff1fffffff1fffffff1ffffffe3ffffffe3ffffffe3ffffffc3fffffe00fffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=38,weight=400,italic=1,'II'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc0300fffb0ec3ffff1fc7ffff1fc7fffe3f8ffffe3f8ffffe3f8ffffc7f1ffffc7f1ffffc7f1ffff8fe3ffff8fe3ffff8fe3ffff1fc7ffff1fc7ffff1fc7fffe3f8ffffe3f8ffffe3f8ffffc3f0fffe00803ffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=38,weight=400,italic=0,'I'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe00ffffff83ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffffc7ffffff83fffffe00fffffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    },
+    {
+      "function": "glyph",
+      "args": "\"Symbol\",h=38,weight=400,italic=0,'II'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe00c01fff83f07fffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffffc7f8ffff83f07ffe00c01ffffffffff",
+      "section": "two characters, for the step the pen takes between them"
+    }
+  ],
+  "trimmed": "the Symbol rows only; a fabrication of one Symbol glyph leaves the other faces' rows unchanged"
+}

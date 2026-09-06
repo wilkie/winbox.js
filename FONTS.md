@@ -9018,6 +9018,13 @@ read out of GDI rather than measured into place.
   freedom-projection dot product is refused or indifferent by count, so those
   keep the symmetric rounding, and which the scaler's `LongMulDiv` and
   `MulDiv26Dot6` actually do is not known.
+- **Two dropout rescues Windows does not make.** A vertical dropout whose
+  continuation on one side is only a zero-width pair from a vertex on a sample
+  line is rescued by this and by the reference's `scanlist.c`, and not by
+  Windows 3.1; reproduced on an instrument in another font at another size
+  (section 8a), and the three single rules that would refuse it are each
+  refused by hundreds of cells. The line that decides it is in the binary's
+  dropout code, not read.
 - **`IUP` with two anchors at one original coordinate.** Windows shifts the
   run by the first anchor's move; the pseudocode sends an equal pair to the
   second (section 8a). Three cells measure it and nothing contradicts it; the
@@ -12391,6 +12398,49 @@ sample line. Times New Roman Bold Italic's pound sign has a stroke tip on a
 pixel boundary that this rescues as a dropout and Windows does not. Both are
 questions for an instrument, not a readout.
 
+### An instrument for the two scan converter cells, and where it stops
+
+The two styled pixels left were both the scan converter's, and both were put on
+an instrument. `outlineInstrument` writes a real letter's hinted outline, taken
+in sixty-fourths from the rasteriser's own input, into Symbol's `A` slot as an
+unhinted shape in design units exact at twenty pixels -- where the glyphs probe
+draws Symbol at twenty-four points -- with no program, under Symbol's `prep`,
+which leaves dropout control on in the same mode Courier New and Times New
+Roman run under. Six fabrications: Courier New Italic's cent sign with its
+minimum vertex exactly on a sample row, and a sixty-fourth below and above it;
+Times New Roman Bold Italic's pound sign with its stroke tip on a pixel
+boundary, and a sixty-fourth either way.
+
+**Both cells reproduce exactly in the instrument**, in a different font, at a
+different size, with no hinting at all: the pixel is the scan converter's and
+nothing else's. The cent sign's variants place it to the sixty-fourth: a
+minimum a sixty-fourth below the row centre dips through it and both draw the
+pixel; a sixty-fourth above, neither does; exactly on it, this draws and
+Windows does not. The pound sign's three variants all disagree alike, so its
+pixel is not about the tip's boundary.
+
+Tracing the walk showed what the pixel is in both cases: a **vertical dropout
+rescue**. Two chords cross a column's centre line within one row without
+covering its centre, which is a vertical dropout candidate, and the stub test
+that decides whether to rescue it -- crossings on the row and its neighbour at
+the columns either side, two or more each way -- is satisfied on one side
+only by a zero-width on/off pair the endpoint topology emits for a vertex
+lying exactly on a sample line. Take that pair away and there is no rescue.
+The reference's `scanlist.c`, read for exactly this -- `LookForDropouts`,
+`DoVertDropout`, `HorizCrossings` -- counts an on and an off at the same pixel
+as two crossings and would rescue, as this does. **Windows 3.1 does not.**
+
+Three single rules were tried and are refused, each by hundreds of cells across
+the fabricated corpus that measured the endpoint topology and the dropout
+pass in the first place: a vertex at an extremum on a sample line emitting
+nothing (in the horizontal topology alone, or both), and a zero-width pair
+counting nothing or once toward continuation. So the rule that separates
+Windows from this `scanlist.c` is narrower than any of those, and it lives in
+the binary's own dropout code -- segment 42's `0x059b` and `0x0978`, which the
+reading in section 6 stopped short of -- rather than in anything the
+instruments can sweep from outside. The two cells stay, with the instrument
+that reproduces them in hand.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
@@ -12413,8 +12463,9 @@ which nothing on this side is meant to reproduce, and the conformance suite
 reports them as unsupported.
 
 The fabricated corpus -- the fonts rewritten to isolate one mechanism each, which
-ask questions no stock face does -- stands at **26,058 of 26,058 cells and no
-wrong pixels**.
+ask questions no stock face does -- stands at **28,163 of 28,170 cells and ten
+wrong pixels**, every one of them on the two instruments built to reproduce the
+scan converter's two remaining cells (section 8a), which they do.
 
 ### The chase, end to end
 

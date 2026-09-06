@@ -688,6 +688,106 @@ export function setGlyph(bytes, font, glyph, { width, height, program, points, c
  * @param {number} glyph - The glyph index.
  * @param {number} bearing - The bearing to write, in font units.
  */
+/**
+ * `setGlyph` for a shape larger than the slot it goes into: the record is
+ * built the same way and `glyf` and `loca` are rebuilt around it, as
+ * `copyGlyph` does. A slot's room is a fraction of a real letter's, and an
+ * instrument that reproduces a real letter's outline needs the letter's room.
+ */
+export function setGlyphGrown(bytes, glyph, { program, contours, box }) {
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const tables = tablesOf(view);
+  const corners = contours.flat();
+  const body = [];
+  const put16 = (value) => body.push((value >> 8) & 0xff, value & 0xff);
+  const xs = corners.map((point) => point[0]);
+  const ys = corners.map((point) => point[1]);
+
+  put16(contours.length);
+  put16(box ? box[0] : Math.min(...xs));
+  put16(box ? box[1] : Math.min(...ys));
+  put16(box ? box[2] : Math.max(...xs));
+  put16(box ? box[3] : Math.max(...ys));
+
+  let ended = -1;
+
+  for (const loop of contours) {
+    ended += loop.length;
+    put16(ended);
+  }
+
+  put16(program.length);
+  body.push(...program);
+
+  for (const point of corners) {
+    body.push(point[2] === false ? 0x00 : 0x01);
+  }
+
+  for (const axis of [0, 1]) {
+    let previous = 0;
+
+    for (const point of corners) {
+      put16(point[axis] - previous);
+      previous = point[axis];
+    }
+  }
+
+  while (body.length % 2 !== 0) {
+    body.push(0);
+  }
+
+  const long = view.getInt16(tables.head.offset + 50, false) !== 0;
+  const count = long ? tables.loca.length / 4 - 1 : tables.loca.length / 2 - 1;
+  const loca = [];
+
+  for (let index = 0; index <= count; index++) {
+    loca.push(
+      long
+        ? view.getUint32(tables.loca.offset + index * 4, false)
+        : view.getUint16(tables.loca.offset + index * 2, false) * 2
+    );
+  }
+
+  const glyf = [];
+
+  for (let at = 0; at < loca[glyph]; at++) {
+    glyf.push(view.getUint8(tables.glyf.offset + at));
+  }
+
+  glyf.push(...body);
+
+  for (let at = loca[glyph + 1]; at < tables.glyf.length; at++) {
+    glyf.push(view.getUint8(tables.glyf.offset + at));
+  }
+
+  const moved = loca[glyph] + body.length - loca[glyph + 1];
+
+  for (let index = glyph + 1; index <= count; index++) {
+    loca[index] += moved;
+  }
+
+  if (!long && loca[count] > 0x1fffe) {
+    throw new Error(`glyf of ${loca[count]} bytes is too large for a short loca`);
+  }
+
+  const written = [];
+
+  for (const offset of loca) {
+    if (long) {
+      written.push(
+        (offset >>> 24) & 0xff,
+        (offset >>> 16) & 0xff,
+        (offset >>> 8) & 0xff,
+        offset & 0xff
+      );
+    } else {
+      written.push((offset >> 9) & 0xff, (offset >> 1) & 0xff);
+    }
+  }
+
+  return rebuild(bytes, view, tables, { glyf, loca: written });
+}
+
 export function setBearing(bytes, glyph, bearing) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const tables = tablesOf(view);
@@ -1285,7 +1385,246 @@ function shiftReporter(name, { font, character, point, axis = 'x', base = 0, dro
   };
 }
 
+/**
+ * An instrument that reproduces a real letter's hinted outline, in
+ * sixty-fourths, as an unhinted shape in Symbol's `A` slot at twenty pixels.
+ *
+ * The glyphs probe draws Symbol's `A` at twenty-four points, which is twenty
+ * pixels, where a design unit is five eighths of a sixty-fourth; the outline
+ * is written in units so that its sixty-fourths come back exactly where a
+ * multiple of five was asked for and within half a unit elsewhere. There is no
+ * program, so the shape is drawn as scaled, under Symbol's own `prep`, which
+ * leaves dropout control on in the same mode Courier New and Times New Roman
+ * run under. `edit` moves one point before the shape is written, so the cell
+ * can be recorded with a vertex a sixty-fourth either side of a sample line.
+ */
+function outlineInstrument(name, { contours, edit = null, describe }) {
+  const PPEM = 20;
+  const units = (value) => Math.round((value * 2048) / (PPEM * 64));
+
+  return {
+    name,
+    from: 'SYMBOL.TTF',
+    as: 'SYMBOL.TTF',
+    describe,
+
+    edit: (bytes) => {
+      const shaped = contours.map((contour) => contour.map((point) => [...point]));
+
+      if (edit) {
+        edit(shaped);
+      }
+
+      const glyph = glyphFor(bytes, 0xf041);
+      const designed = shaped.map((contour) =>
+        contour.map(([x, y, on]) => [units(x), units(y), on])
+      );
+      const xMin = Math.min(...designed.flat().map((point) => point[0]));
+
+      setBearing(bytes, glyph, xMin);
+
+      return setGlyphGrown(bytes, glyph, { program: [], contours: designed });
+    },
+  };
+}
+
+/** Courier New Italic's cent sign as hinted at twelve pixels, in sixty-fourths. */
+const CENT_ITALIC_12 = [
+  [
+    [294, 387, true],
+    [320, 489, true],
+    [325, 501, false],
+    [347, 512, false],
+    [361, 512, true],
+    [371, 512, false],
+    [384, 502, false],
+    [384, 495, true],
+    [384, 489, false],
+    [383, 480, true],
+    [357, 384, true],
+    [335, 384, false],
+    [320, 384, true],
+    [334, 384, false],
+    [359, 384, true],
+    [371, 384, false],
+    [385, 374, false],
+    [385, 365, true],
+    [385, 361, false],
+    [384, 356, true],
+    [384, 287, true],
+    [379, 270, false],
+    [357, 256, false],
+    [343, 256, true],
+    [333, 256, false],
+    [319, 262, false],
+    [319, 266, true],
+    [320, 278, true],
+    [320, 294, false],
+    [310, 305, true],
+    [298, 320, false],
+    [276, 320, true],
+    [241, 354, false],
+    [192, 272, false],
+    [192, 222, true],
+    [192, 188, false],
+    [210, 151, false],
+    [254, 192, true],
+    [278, 192, false],
+    [335, 209, false],
+    [357, 160, true],
+    [366, 231, false],
+    [372, 167, true],
+    [378, 167, false],
+    [384, 224, false],
+    [384, 219, true],
+    [384, 204, false],
+    [358, 183, true],
+    [321, 134, false],
+    [285, 128, true],
+    [255, 21, true],
+    [250, 10, false],
+    [228, 0, false],
+    [214, 0, true],
+    [204, 0, false],
+    [191, 7, false],
+    [191, 12, true],
+    [191, 15, false],
+    [192, 21, true],
+    [222, 128, true],
+    [179, 133, false],
+    [128, 189, false],
+    [128, 230, true],
+    [128, 264, false],
+    [171, 335, false],
+    [243, 378, false],
+  ],
+];
+
+/** Times New Roman Bold Italic's pound sign as hinted at fourteen pixels. */
+const POUND_BOLD_ITALIC_14 = [
+  [
+    [256, 384, true],
+    [320, 384, true],
+    [320, 320, true],
+    [256, 320, true],
+    [223, 242, false],
+    [192, 181, true],
+    [207, 164, false],
+    [275, 64, false],
+    [293, 64, true],
+    [307, 64, false],
+    [320, 128, true],
+    [384, 128, true],
+    [361, 60, false],
+    [294, 0, false],
+    [250, 0, true],
+    [226, 0, false],
+    [181, 32, false],
+    [143, 79, true],
+    [129, 40, false],
+    [93, 0, false],
+    [72, 0, true],
+    [42, 0, false],
+    [0, 47, false],
+    [0, 82, true],
+    [0, 130, false],
+    [65, 192, false],
+    [128, 192, true],
+    [128, 231, false],
+    [128, 320, true],
+    [64, 320, true],
+    [64, 384, true],
+    [133, 384, true],
+    [160, 520, false],
+    [269, 640, false],
+    [353, 640, true],
+    [399, 640, false],
+    [448, 596, false],
+    [448, 568, true],
+    [448, 545, false],
+    [408, 512, false],
+    [382, 512, true],
+    [356, 552, false],
+    [384, 570, true],
+    [320, 530, false],
+    [384, 543, true],
+    [320, 550, false],
+    [344, 555, true],
+    [384, 564, false],
+    [384, 566, true],
+    [384, 569, false],
+    [377, 573, true],
+    [371, 576, false],
+    [359, 576, true],
+    [334, 576, false],
+    [319, 560, true],
+    [310, 549, false],
+    [275, 487, true],
+    [265, 407, false],
+  ],
+  [
+    [116, 108, true],
+    [96, 128, false],
+    [84, 128, true],
+    [76, 128, false],
+    [64, 110, false],
+    [64, 97, true],
+    [64, 82, false],
+    [76, 64, false],
+    [85, 64, true],
+    [94, 64, false],
+    [106, 77, false],
+  ],
+];
+
 export const FABRICATIONS = [
+  /* The two styled cells that are the scan converter's. The cent sign's
+   * vertex 40 sits exactly on a sample row's centre, and this rescues a pixel
+   * there that Windows does not; the pound sign's stroke tip, points 39 to 41,
+   * sits on a pixel boundary. Each is recorded as it is and with the point
+   * moved a sixty-fourth either way. */
+  outlineInstrument('cent-minimum-0', {
+    contours: CENT_ITALIC_12,
+    describe: "Courier New Italic's cent sign outline, its minimum exactly on a sample row",
+  }),
+  outlineInstrument('cent-minimum-below', {
+    contours: CENT_ITALIC_12,
+    edit: (shaped) => {
+      shaped[0][40][1] -= 1;
+    },
+    describe: 'the same, its minimum a sixty-fourth below the sample row',
+  }),
+  outlineInstrument('cent-minimum-above', {
+    contours: CENT_ITALIC_12,
+    edit: (shaped) => {
+      shaped[0][40][1] += 1;
+    },
+    describe: 'the same, its minimum a sixty-fourth above the sample row',
+  }),
+  outlineInstrument('pound-tip-0', {
+    contours: POUND_BOLD_ITALIC_14,
+    describe:
+      "Times New Roman Bold Italic's pound sign outline, its stroke tip on a pixel boundary",
+  }),
+  outlineInstrument('pound-tip-below', {
+    contours: POUND_BOLD_ITALIC_14,
+    edit: (shaped) => {
+      for (const index of [39, 40, 41]) {
+        shaped[0][index][1] -= 1;
+      }
+    },
+    describe: 'the same, its tip a sixty-fourth lower',
+  }),
+  outlineInstrument('pound-tip-above', {
+    contours: POUND_BOLD_ITALIC_14,
+    edit: (shaped) => {
+      for (const index of [39, 40, 41]) {
+        shaped[0][index][1] += 1;
+      }
+    },
+    describe: 'the same, its tip a sixty-fourth higher',
+  }),
+
   /* The four Courier New Italic cells still in dispute, read through the
    * bitmap: see `shiftReporter`. Each base is our own value less three, so a
    * Windows that agrees lands three pixels to the right. */
