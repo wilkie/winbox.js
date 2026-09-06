@@ -639,9 +639,24 @@ export function fillWalked(contours, options) {
     }
   }
 
+  /* How much of the outline continues past a dropout candidate, which is what
+   * the stub test weighs.
+   *
+   * A **presence** test, not a tally: at most one from the `on` list and one
+   * from the `off` list, so the answer is nought, one or two and never more.
+   * **Read** out of the routine at `seg42:0db4`, which the whole stub test
+   * goes through: it walks the `on` list to the first entry at or past the
+   * target and, on a hit, *assigns* one -- `mov word [bp-0x4],0x1`, a flag,
+   * where a tally would increment -- then walks the `off` list backwards the
+   * same way and adds one. The pseudocode's `HorizCrossings` counts every
+   * occurrence instead. The two part only where one list holds the same
+   * coordinate twice, which nothing recorded does: adopting this changes no
+   * cell of the recorded corpus and none of the 24,696 fabricated ones. It is
+   * here because it is what the binary does, not because anything measured it.
+   */
   const countHoriz = (x, row) =>
-    (lists.horizOn.get(-row - 1) ?? []).filter((at) => at === x).length +
-    (lists.horizOff.get(-row - 1) ?? []).filter((at) => at === x).length;
+    ((lists.horizOn.get(-row - 1) ?? []).some((at) => at === x) ? 1 : 0) +
+    ((lists.horizOff.get(-row - 1) ?? []).some((at) => at === x) ? 1 : 0);
   /* A vertical entry is recorded as `y + yOffset`, which already carries the
    * step the horizontal entries take from their key, so it converts back as
    * `-value` where a horizontal row converts as `-key - 1`. Checked against a
@@ -649,8 +664,8 @@ export function fillWalked(contours, options) {
    * other, the difference being a systematic row.
    */
   const countVert = (x, row) =>
-    (lists.vertOn.get(x) ?? []).filter((at) => -at === row).length +
-    (lists.vertOff.get(x) ?? []).filter((at) => -at === row).length;
+    ((lists.vertOn.get(x) ?? []).some((at) => -at === row) ? 1 : 0) +
+    ((lists.vertOff.get(x) ?? []).some((at) => -at === row) ? 1 : 0);
 
   /* `FindDropouts` goes down the rows from the top of the band, and each
    * rescue asks whether its neighbours are already lit, so a rescue made on one

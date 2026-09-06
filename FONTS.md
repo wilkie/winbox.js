@@ -1222,7 +1222,8 @@ them, and it is that sign which says whether a vertex contributes an `on`, an
 
 `0x0042` is the contour driver. It calls `0x0d6a` twice to set up, walks the
 elements calling `CalcLine` at four sites and `0x19a4` -- the spline subdivision
--- at two, and finishes with `0x059b` and then `0x0978`, the dropouts. The last
+-- at two, and finishes with `0x059b`, which fills the runs, and then `0x0978`,
+which is the dropouts (section 8a reads both). The last
 two `CalcLine` sites are adjacent and are the close: one for the final segment,
 then one from the last point back to the contour's first, which the driver keeps
 in a buffer at `+0x202` and `+0x204`. That is `Endpoints.begin` saving the first
@@ -9021,10 +9022,11 @@ read out of GDI rather than measured into place.
 - **Two dropout rescues Windows does not make.** A vertical dropout whose
   continuation on one side is only a zero-width pair from a vertex on a sample
   line is rescued by this and by the reference's `scanlist.c`, and not by
-  Windows 3.1; reproduced on an instrument in another font at another size
-  (section 8a), and the three single rules that would refuse it are each
-  refused by hundreds of cells. The line that decides it is in the binary's
-  dropout code, not read.
+  Windows 3.1; reproduced on an instrument in another font at another size,
+  and the rules that would refuse it are each refused by hundreds of cells.
+  The dropout code itself is now read end to end and is this implementation's
+  (section 8a), so the difference is in the crossing lists it reads, and the
+  endpoint topology at `0x1342` is where to look next.
 - **`IUP` with two anchors at one original coordinate.** Windows shifts the
   run by the first anchor's move; the pseudocode sends an equal pair to the
   second (section 8a). Three cells measure it and nothing contradicts it; the
@@ -12440,6 +12442,65 @@ the binary's own dropout code -- segment 42's `0x059b` and `0x0978`, which the
 reading in section 6 stopped short of -- rather than in anything the
 instruments can sweep from outside. The two cells stay, with the instrument
 that reproduces them in hand.
+
+### Reading the dropout code, and what it rules out
+
+The two cells the instruments reproduce are a vertical dropout rescue Windows
+does not make, so the next place to look was the code that makes it. Segment
+42's contour driver ends with two calls, and the first is not a dropout pass at
+all: **`0x059b` is the span filler.** It walks each scanline's `on` and `off`
+lists in step, keeps a winding count, and where the count leaves nought it
+`or`s a mask from the table at `0x254` into the row and where it returns to
+nought it `and`s the complement back out. `0x0978` is the whole of the
+dropouts, horizontal half then vertical, mirroring the pseudocode's
+`LookForDropouts`.
+
+Three things in it were read rather than guessed, and they narrow the question
+sharply.
+
+**The stub test is the pseudocode's, argument for argument.** Each half calls
+`0xe28` and then `0xeaa` and refuses the rescue unless both answer two or more.
+Each of those makes three calls to the counter, short-circuiting once the sum
+passes one, and their operands decode to exactly the six the pseudocode names:
+for a vertical dropout at column `c` and scanline `y`, the vertical crossings
+at `c+1` and the horizontal ones at `(c+1, y)` and `(c+1, y-1)` on one side,
+and the mirror at `c-1` on the other. That is what this implementation already
+consults.
+
+**The placement is the pseudocode's too, fused.** `0xc8a` and `0xcf3` take the
+candidate, test the bit one pixel along -- the same single neighbour this
+tests, not the pseudocode's two -- and return without drawing if it is set,
+otherwise setting the bit at the candidate. And the scan kind is masked to its
+low bit on entry (`and word [bp-0x36],byte +0x1`), so **the binary has no
+smart-dropout path at all**: no averaging of the two crossings, only the simple
+placement, which is what this does.
+
+**The crossing counter is a presence test, not a tally.** `0x0db4`, which the
+whole stub test goes through, walks the `on` list to the first entry at or past
+the target and on a hit _assigns_ one -- `mov word [bp-0x4],0x1`, a flag where
+a tally would increment -- then walks the `off` list backwards the same way and
+adds one. It returns nought, one or two and never more; `HorizCrossings` in the
+pseudocode counts every occurrence. The two part only where one list holds a
+coordinate twice, which nothing recorded does: adopting the binary's form
+changes no cell of the recorded corpus and none of the 24,696 fabricated ones.
+It is in `glyph-raster.ts` now because it is what the binary does.
+
+One reading was **refused by measurement**. The per-candidate loop looks like a
+search rather than a walk in step -- for each `on` it appears to reset the
+`off` pointer and take the first entry at or past it -- and pairing that way
+costs 3,273 of 24,696 fabricated cells and hundreds of recorded ones. So the
+lists are paired by index, as they were, and that reading of the loop is wrong
+somewhere.
+
+What is left is a narrowing rather than an answer. The stub test consults the
+same six neighbours as this does, the placement is the same, and the counter's
+one difference is measurably inert -- **so the two cells are not a difference
+in the dropout code at all.** They are a difference in the crossing lists it
+reads: in the cent sign's case the rescue turns on a zero-length `on`/`off`
+pair that the endpoint topology emits at `(8, -18)` for a vertex lying exactly
+on that sample line, and with the vertex a sixty-fourth higher the pair is
+absent and both agree. Where that pair comes from is `0x1342`, the endpoint
+topology, which section 6 read for its turn logic and not for what it writes.
 
 ## 9. Where the numbers stand
 
