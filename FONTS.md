@@ -12542,6 +12542,61 @@ the fabricated corpus with them. What is left in the whole recorded corpus is
 two records of `widths`: Courier New's `o` at a horizontal size of four, drawn
 unhinted, and Courier New's maximum width at twenty-two pixels asked for five.
 
+### The last two records, and what is proved about them
+
+Two records of `widths` are what the whole recorded corpus now comes to, and
+neither yields to the rules that fit the rest. What follows is what has been
+ruled out, with the arithmetic, so that the next reading starts where this one
+stopped.
+
+**The maximum width of Courier New at twenty-two pixels asked for five.**
+Windows reports 5; the box scaled end by end gives 355 sixty-fourths, 5.55
+pixels, which rounds to 6. That is the only miss of sixty. The rule cannot be
+patched, and the reason is an interval: for Windows's 5, the horizontal size
+`x` must satisfy `1345x / 2048 < 5.5`, so `x < 8.373`; for the same face at
+twenty-two asked for fourteen, Windows reports 16, which needs
+`1345x / 2048 >= 15.5`, so `x >= 23.596`. Writing both as `22w/a` for a common
+average `a` gives `a > 13.137` from the first and `a <= 13.053` from the second.
+**There is no such average**, and by the same argument no constant box works
+either: the first row needs a box below 1331 and the second one at or above 1340. So `tmMaxCharWidth` under a width is not the font's box scaled by any one
+size, and the two rows are not both explicable by one formula of that shape.
+
+Refused with counts, each fitting every row but one: the box at the whole
+horizontal size (41 of 60), the widest drawn glyph of the realised face (14),
+its span in whole columns (15), and `tmAveCharWidth` scaled by the ratio of the
+box to `OS/2`'s average, which fits everything except the row asking for
+fourteen. That last is the mirror image of the rule in section 3 -- one misses
+the narrow row, the other the wide one -- which is the clearest sign that the
+quantity is not what either of them computes.
+
+**Courier New's `o` at a horizontal size of four**, one pixel, in a glyph
+Courier's own `prep` draws unhinted. Scaling the unhinted outline at the
+fractional horizontal size rather than the whole one is refused again now that
+the topology is right: 2,377 of 2,480 against 2,478. The pixel itself is a
+**horizontal dropout rescue**. The letter's right side pinches below a pixel
+there, so the `on` and the `off` land on the same column and the run fills
+nothing, and the rescue puts ink one column to the left.
+
+What is proved about it is where it is not. Rows seven and eight of the cell
+have **the same crossing lists** in this implementation -- `on` at 2 and 4,
+`off` at 3 and 4 -- and both rescue. Windows draws the rescued pixel at row
+eight and not at row seven. Identical lists cannot produce different pictures
+from the same code, so **Windows's own lists differ from these at one of those
+two rows**, and the difference is in where a crossing falls, not in what the
+dropout does with it. The two rescues are also supported differently: row
+eight's stub test is carried by a coincident pair on the row below, and row
+seven's by one horizontal crossing on the row above and one vertical crossing
+in the column beside it. The next reading is of the walk that places them.
+
+One asymmetry was found beside it and deliberately left alone. The side bearing
+an unhinted glyph is carried across is scaled by the **vertical** size, where a
+bearing is a horizontal quantity and a width request makes the two different.
+Scaling it by the horizontal size instead changes nothing anywhere: every face
+whose `prep` refuses to hint under a width is fixed-pitch, and its glyphs have
+their left bearing exactly at the box, so the quantity is nought either way.
+Nothing measures it and nothing reads it, so it stays as it is and is written
+down here instead.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
