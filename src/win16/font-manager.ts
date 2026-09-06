@@ -1,3 +1,4 @@
+import { readFontResource, type FontResource } from '../raster/font-resource';
 import { BitmapFont } from '../raster/bitmap-font.js';
 import { Stream } from '../stream.js';
 import { LogicalFont } from '../raster/logical-font.js';
@@ -7,11 +8,14 @@ export class FontManager {
   declare _callback: any;
   declare _fonts: any;
   declare _outlines: any;
+  /** What the installer's `.FOT` files say about each `.TTF`, by file name. */
+  declare _resources: Record<string, FontResource>;
   declare _loading: any;
   declare _waitPromise: any;
   constructor() {
     this._fonts = {};
     this._outlines = {};
+    this._resources = {};
     this._loading = 0;
 
     this._waitPromise = new Promise<void>((resolve, reject) => {
@@ -49,6 +53,30 @@ export class FontManager {
       return;
     }
 
+    /* The installer's resource for a TrueType face, which is where the pitch
+     * and family GDI reports come from; see `font-resource.ts`. The `.FOT`
+     * may arrive before or after its `.TTF`, so it is kept by file name and
+     * applied whichever comes second. */
+    if (file.name.toLowerCase().endsWith('.fot')) {
+      const resource = readFontResource(new Uint8Array(await file.read(0, file.size)));
+
+      if (!resource) {
+        return;
+      }
+
+      this._resources[resource.file] = resource;
+
+      for (const family of Object.values(this._outlines) as any[]) {
+        for (const font of Object.values(family) as any[]) {
+          if (font.fileName === resource.file) {
+            font.resource = resource;
+          }
+        }
+      }
+
+      return;
+    }
+
     if (file.name.toLowerCase().endsWith('.ttf')) {
       const bytes = new Uint8Array(await file.read(0, file.size));
       const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
@@ -63,6 +91,9 @@ export class FontManager {
       if (!face) {
         return;
       }
+
+      font.fileName = file.name.toUpperCase();
+      font.resource = this._resources[font.fileName] ?? null;
 
       /* An outline face has no strikes to collect, so it stands alone under
        * its name rather than joining a list. A family's bold and italic files

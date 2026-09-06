@@ -1158,7 +1158,63 @@ function pointReporter(
   };
 }
 
+/**
+ * Overwrites bytes of one table in place, for a field a probe can read back:
+ * the family Windows reports for a face comes from somewhere in `OS/2`, and
+ * swapping one field at a time between two faces says which.
+ */
+function tableBytes(name, { font, tag, offset, values, describe }) {
+  return {
+    name,
+    from: font,
+    as: font,
+    describe,
+
+    edit: (bytes) => {
+      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      const table = tablesOf(view)[tag];
+
+      values.forEach((value, index) => view.setUint8(table.offset + offset + index, value & 0xff));
+
+      return bytes;
+    },
+  };
+}
+
 export const FABRICATIONS = [
+  /* Which `OS/2` field decides the family Windows reports. Symbol, class 12.3
+   * with a full PANOSE, comes back `FF_ROMAN`; Wingdings, class 12.0 with a
+   * PANOSE of "pictorial, anything", comes back `FF_DONTCARE`. Each face gets
+   * the other's field, one at a time. */
+  tableBytes('symbol-panose-any', {
+    font: 'SYMBOL.TTF',
+    tag: 'OS/2',
+    offset: 32,
+    values: [5, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    describe: "Symbol with Wingdings' PANOSE, pictorial and otherwise anything",
+  }),
+  tableBytes('symbol-class-12-0', {
+    font: 'SYMBOL.TTF',
+    tag: 'OS/2',
+    offset: 30,
+    values: [12, 0],
+    describe: 'Symbol with an IBM class of 12.0, no subclass',
+  }),
+  tableBytes('wingding-class-12-3', {
+    font: 'WINGDING.TTF',
+    tag: 'OS/2',
+    offset: 30,
+    values: [12, 3],
+    describe: "Wingdings with Symbol's IBM class, 12.3",
+  }),
+  tableBytes('wingding-panose-symbol', {
+    font: 'WINGDING.TTF',
+    tag: 'OS/2',
+    offset: 32,
+    values: [5, 5, 1, 2, 1, 7, 6, 2, 5, 7],
+    describe: "Wingdings with Symbol's PANOSE",
+  }),
+
   /* Times New Roman's N under a width: the four corners of its diagonal, the
    * stroke that comes out too thick under a stretch. `prep` computes storage 18
    * as "MPPEM along x equals MPPEM along y", so under a width the glyph program

@@ -147,7 +147,9 @@ export function GetTextMetrics(hdc, lptm) {
      * say how it is drawn -- `TMPF_VECTOR` and `TMPF_TRUETYPE` -- plus the
      * family the font puts itself in.
      */
-    lptm.tmPitchAndFamily = (outline.fixedPitch ? 0x00 : 0x01) | 0x06 | outline.family;
+    lptm.tmPitchAndFamily =
+      outline.resource?.pitchAndFamily ??
+      (outline.fixedPitch ? 0x00 : 0x01) | 0x06 | outline.family;
 
     /* The font's own character set, which for these is only ever ANSI or
      * symbol: Symbol answers 2 where Arial, Times New Roman and Courier New

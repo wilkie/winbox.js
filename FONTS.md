@@ -350,7 +350,10 @@ Two things Symbol reports were wrong for want of ever being asked. `OS/2` class
 12, the symbol classes, answered `FF_DONTCARE` on no evidence -- the only two
 fonts carrying it are Symbol and WingDings, and neither had been asked for at a
 size that reaches an outline. Symbol answers `FF_ROMAN`. And an outline reported
-character set 0 always; Symbol answers 2.
+character set 0 always; Symbol answers 2. **The pitch and family of an outline
+face are not derived from the `.TTF` at all**: they are the `dfPitchAndFamily`
+byte of the `FONTDIR` entry in the `.FOT` the installer wrote beside it, which
+is `0x17` for Symbol and `0x07`, `FF_DONTCARE`, for Wingdings (section 8a).
 
 **A bold synthesised onto an outline widens every character by one**, the same
 way it does on a strike, and the string by its own length. Only Symbol reaches
@@ -8982,8 +8985,13 @@ read out of GDI rather than measured into place.
   else the outline, never a scaled strike; this takes MS Sans Serif scaled. The
   rule that scores that is not known, and the obvious one is refused by the
   `font` fixture.
-- **Wingdings' family.** `FF_DONTCARE` where Symbol, the same OS/2 class, is
-  `FF_ROMAN`; which field decides it is not known.
+- **How the installer chose Wingdings' family.** The pitch and family GDI
+  reports for an outline face are the `FONTDIR` entry of the `.FOT` the
+  installer wrote, read now (section 8a), and Wingdings' says `FF_DONTCARE`
+  where Symbol's says `FF_ROMAN`. What `CreateScalableFontResource` read that
+  from is not known: swapping the `OS/2` class and the PANOSE between the two
+  `.TTF`s changes nothing Windows reports, as it would not if the answer is in
+  the `.FOT`, and no probe has yet made a `.FOT` from a fabricated face.
 - **Storage and control values across glyphs.** A glyph program may write
   both, and this keeps them from one glyph to the next at a size; whether
   Windows restores them as it restores `SCANCTRL` is untested.
@@ -12215,6 +12223,33 @@ the shoulder is not a chord matter either.
 Nothing recorded before this moved: `font`, `glyphs` and `hinting` hold at every
 record, since at a stretch of one every new path is the old one.
 
+### The family comes from the `.FOT`
+
+The `styles` sweep had left twenty-two metric records of Wingdings: asked in its
+own character set, Windows reports its pitch and family as `0x07`,
+`FF_DONTCARE` with the vector and TrueType bits, where this said `0x17`,
+`FF_ROMAN`, as it does for Symbol -- and Symbol is right. Both faces are `OS/2`
+class 12; Wingdings is subclass 0 with a PANOSE of "pictorial, otherwise
+anything", Symbol subclass 3 with a full PANOSE. Four fabrications gave each
+face the other's field, one at a time, and the `styles` probe was recorded
+against each: **nothing Windows reports changed**, for either face, under any of
+the four. So the answer is not read from the `.TTF` when the font is used.
+
+It is read from the `.FOT`. `CreateScalableFontResource` writes one beside
+every TrueType file the installer puts in: a stub executable whose resources
+are the path of the `.TTF` and a `FONTDIR` entry -- the same `FONTINFO`
+header a bitmap strike carries, filled in for the outline -- and GDI
+enumerates the face from that. Decoding the fourteen installed stubs, the
+`dfPitchAndFamily` byte is `0x27` for the four Arials, `0x36` for the four
+Courier News, `0x17` for the four Times New Romans and for Symbol, and `0x07`
+for Wingdings: exactly what `GetTextMetrics` reports for each, pitch bits and
+all. The manager now loads each `.FOT` with its `.TTF` and answers from it,
+and the twenty-two records go. What the installer read that byte from is the
+question that remains, and it needs a probe that makes a `.FOT` from a
+fabricated face.
+
+    styles   9,150 -> 9,157 of 9,178
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
@@ -12227,7 +12262,7 @@ it stands:
 | `hinting`                                                    | 7,828   | **100%**  |
 | `lines`                                                      | 248     | **100%**  |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
-| `styles`                                                     | 9,178   | 99.7%     |
+| `styles`                                                     | 9,178   | 99.8%     |
 | `sizes`                                                      | 800     | **100%**  |
 | `widths`                                                     | 2,480   | 99.9%     |
 

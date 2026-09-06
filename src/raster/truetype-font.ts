@@ -46,6 +46,11 @@ export class TrueTypeFont {
     this._cmap = null;
     this._name = null;
 
+    /* The file this came from and the installer's resource for it, when the
+     * loader knows them; see `font-resource.ts`. */
+    this.fileName = null;
+    this.resource = null;
+
     this.readDirectory();
   }
 
@@ -290,6 +295,11 @@ export class TrueTypeFont {
    * twenty-nine, thirty-seven, fifty and a hundred pixels.
    */
   get family() {
+    // The installer's word first; see `font-resource.ts`.
+    if (this.resource) {
+      return this.resource.pitchAndFamily & 0xf0;
+    }
+
     if (!this.has('OS/2')) {
       return 0x00;
     }

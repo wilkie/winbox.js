@@ -181,6 +181,12 @@ export async function prepareFonts() {
   for (const [, value] of [...boot, ...section(windowsProfile, 'fonts')]) {
     let name = value.split(/[\\/]/).pop()!.toUpperCase();
     if (name.endsWith('.FOT')) {
+      /* The stub itself goes to the manager too: its `FONTDIR` entry is where
+       * the face's pitch and family come from. See `font-resource.ts`. */
+      const stubFile = await fileSystem.open(['WINDOWS', 'SYSTEM', name]);
+      if (stubFile) {
+        await manager.load(stubFile);
+      }
       const stub = await readText(['WINDOWS', 'SYSTEM', name]);
       name =
         /[A-Z0-9_]+\.TTF/i.exec(stub ?? '')?.[0].toUpperCase() ?? name.replace(/\.FOT$/, '.TTF');
@@ -1408,12 +1414,11 @@ export const KNOWN_GAPS: Record<string, string> = {
   'styles:CreateFont heights': 'the same four heights, whose metrics follow the face',
   'styles:CreateFont widths': 'the same four heights, whose metrics follow the face',
 
-  /* Wingdings answers `tmPitchAndFamily` with FF_DONTCARE where Symbol, also
-   * OS/2 class 12, answers FF_ROMAN; what distinguishes them is not known and
-   * two fonts cannot say. Plus the three ANSI fallback heights above.
+  /* The pitch and family of an outline face are read from the installer's
+   * `.FOT` now -- see `font-resource.ts` -- which is where Wingdings'
+   * FF_DONTCARE comes from. What is left is the ANSI fallback heights above.
    */
-  'styles:CreateFont style':
-    'Wingdings is FF_DONTCARE (7 of 21), and three of the fallback heights',
+  'styles:CreateFont style': 'three of the fallback heights, whose style follows the face',
 };
 
 /**
