@@ -12569,6 +12569,34 @@ fourteen. That last is the mirror image of the rule in section 3 -- one misses
 the narrow row, the other the wide one -- which is the clearest sign that the
 quantity is not what either of them computes.
 
+A search over the whole family that rule belongs to says it is at its ceiling.
+Every combination of a horizontal size -- the fractional one, rounded, floored,
+ceilinged, truncated to sixty-fourths, and either size paired with the vertical
+one -- with a working unit of pixels, sixty-fourths or 16.16, and each of five
+roundings at both the ends and the final division, is 480 formulas. **Not one
+reaches 60 of 60**, and twelve reach 59, all of them the rule as it stands with
+its rounding written differently. Adding a constant offset in sixty-fourths does
+not help either: the window that would fix the row is 3.65 to 3.81 sixty-fourths
+wide and holds no whole number.
+
+`hhea`'s own extent is refused with counts beside it. Courier New's
+`xMaxExtent` less its `minLeftSideBearing` is 1321 where `head`'s box is 1345,
+and 1321 is below the 1331 the failing row needs -- so it fixes that row and
+breaks five others, including both natural sizes, for **55 of 60** against 59.
+`head` is the table, and the box is the whole box.
+
+What the intervals say is sharper than "no constant box". Writing each row as
+the range of horizontal sizes that would produce Windows's answer, the ranges
+tile the line in steps of one box-pixel, and the two Courier New rows at
+twenty-two pixels want sizes of at most 8.374 and at least 23.602 for requests
+of five and fourteen. Their ratio is 2.818 where the requests' is 2.800, so
+**the size per unit of requested width has to rise by two thirds of a percent
+between them**. A stretch computed as a 16.16 ratio cannot: its rounding moves
+the size by at most a part in fifty thousand. Only a size quantised much more
+coarsely could, and the whole horizontal size -- which does exactly that, and
+fits all ten of Courier New's rows at twenty-four -- misses Courier New at
+sixteen asked for six, and eleven rows of Arial and Times New Roman besides.
+
 **Courier New's `o` at a horizontal size of four**, one pixel, in a glyph
 Courier's own `prep` draws unhinted. Scaling the unhinted outline at the
 fractional horizontal size rather than the whole one is refused again now that
