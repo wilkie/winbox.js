@@ -3408,8 +3408,14 @@ no other request in the corpus has a whole product from an unrepresentable ratio
 widest advance, and not the grid-fitted widths in `hdmx`:
 
 ```
-tmMaxCharWidth = round((head.xMax - head.xMin) * ppem / unitsPerEm)
+tmMaxCharWidth = round((round(head.xMax * xPpem * 64 / unitsPerEm)
+                      - round(head.xMin * xPpem * 64 / unitsPerEm)) / 64)
 ```
+
+Each end to a sixty-fourth at the horizontal size, then the difference to a
+pixel. At a square size that is the width scaled and rounded once, at every one
+of the 927 maxima recorded; under a width the two part where the difference
+lands on a half (section 8a).
 
 **Measured**, against every size the probe asks for across three families and
 all three styles of each. Arial at thirty-two pixels per em: 2142 × 32 / 2048 =
@@ -12176,6 +12182,21 @@ mechanism does and a fitted rule does not.
 
 ### What is left of `lfWidth`
 
+**The maximum width metric** was two of seventy: Times New Roman at
+twenty-one pixels asked for ten, 28.49 pixels by the box scaled and rounded
+once, where Windows says 29; and Courier New at twenty-two asked for five, 5.56
+where Windows says 5. Every other record's fraction is at or below .47 and
+rounds down or at or above .52 and rounds up, so no rounding of the exact
+product fits both. Scaling each end of the box to a sixty-fourth first, as the
+scaler hands coordinates over, and rounding the difference to a pixel makes the
+Times case exactly 28.50 -- **59 of 60**, and the same 927 of 927 at the square
+sizes -- and is the rule now. Refused by count: the ends rounded to whole
+pixels separately, 47; the square maximum times the stretch, 43; the box at the
+whole horizontal size, 41. Courier New's case stays: 355 sixty-fourths, and a
+horizontal size under 8.37 pixels per em would give 5, which its glyphs (drawn
+at eight) and its average (five) both allow; what Windows measures it from is
+not known.
+
 One stretched cell of 1,944, one pixel: Courier New's `o` at sixteen asked
 for three, which its own `prep` draws with grid-fitting off at that horizontal
 size -- four pixels by thirteen -- so the pixel is about how an unhinted
@@ -12189,8 +12210,7 @@ condition set). Scaling the unhinted outline at the fractional horizontal size
 is refused, above. Drawing a curve whose second-difference norm is small as a
 single chord -- which would put that shoulder past the centre -- leaves the
 pixel where it is and breaks another glyph of the same request, 34 of 36; so
-the shoulder is not a chord matter either. The maximum width metric is still
-two of seventy.
+the shoulder is not a chord matter either.
 
 Nothing recorded before this moved: `font`, `glyphs` and `hinting` hold at every
 record, since at a stretch of one every new path is the old one.

@@ -1395,7 +1395,7 @@ export const KNOWN_GAPS: Record<string, string> = {
    */
   'widths:glyph': 'stretched outlines: one pixel of an unhinted Courier New o (1 of 1,944)',
   'widths:CreateFont widths':
-    'the maximum width under a stretch, two of seventy within a half-unit of the rounding',
+    'the maximum width under a stretch, one of seventy: Courier New at twenty-two pixels asked for five',
 
   /* Asked for "Wingdings" in the ANSI set, Windows falls to Small Fonts at ten
    * pixels, Arial at 12, 14 and 18, and MS Sans Serif at 16, 20 and 24 -- an

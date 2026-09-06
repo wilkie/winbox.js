@@ -90,8 +90,27 @@ export function GetTextMetrics(hdc, lptm) {
      * hangs outside the advance that carries it, so it is the wider number,
      * and for an italic face it is wider again -- which is why the gap against
      * the advance grows with the size rather than sitting at a pixel or two.
+     *
+     * Each end of the box is scaled to a sixty-fourth at the horizontal size
+     * and the difference rounded to a pixel, rather than the width scaled and
+     * rounded once. The two agree on every square size recorded (927 maxima
+     * in the `font` fixture) and differ under a width where the difference
+     * lands on a half: Times New Roman at twenty-one pixels asked for ten is
+     * 28.49 pixels scaled whole and exactly 28.50 end by end, and Windows
+     * says 29. **Measured**: 59 of the 60 maxima in the `widths` sweep, where
+     * the width scaled once is 58; the ends rounded to whole pixels
+     * separately is 47, the square maximum times the stretch 43, and the box
+     * at the whole horizontal size 41. The one left is Courier New at
+     * twenty-two asked for five: 355 sixty-fourths, 5.55 pixels, and Windows
+     * says 5 -- a horizontal size under 8.37 pixels per em would, and its
+     * glyphs draw at eight and its average reports five, which allow anything
+     * from eight to 9.3; what Windows measures it from is not known.
      */
-    lptm.tmMaxCharWidth = across(outline.boundingWidth) + smeared;
+    const end = (units) => Math.round((units * font.xPpem * 64) / outline.unitsPerEm);
+
+    lptm.tmMaxCharWidth =
+      Math.round((end(outline.signed('head', 40)) - end(outline.signed('head', 36))) / 64) +
+      smeared;
 
     // Only a style that had to be made shows up as an overhang.
     const bold = smeared === 1;
