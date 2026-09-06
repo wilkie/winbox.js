@@ -12941,6 +12941,27 @@ produced by the top of the glyph, four rows above the vertex, and no rule keyed
 on that vertex can reach them. A mutation that helps here has to be one that
 changes what the _walk_ records, not what the endpoint check adds to it.
 
+#### Every input to the decision, checked
+
+`seg42:0978` makes six kinds of call and no others: the crossing counter, the
+two side routines that wrap it, the plain set, and the two test-and-sets. So the
+decision's inputs are the crossing lists, the box, and whatever ink is already
+down. All three were compared between `courier-o-plain` and `courier-o-yup2`:
+
+- **the lists** are identical, every list, key, value and order;
+- **the box** is identical, left 2, right 4, top 14, bottom 20, and not narrow;
+- **the ink** is identical, because the lists are, and the rows are rescued from
+  the bottom up so nothing from a lower row reaches row fifteen's own column.
+
+The stub gate is identical too. It is `dx & 1` from the scan kind or a local
+that the routine sets to nought once and never writes again, in both halves.
+
+That is every input, and the two shapes agree on all of them while Windows draws
+them differently. One of the readings above must be wrong, and the geometry says
+which it cannot be: the flattening is the same code as `spline.c`, the walk is
+the same code, the box is measured, and 242,389 cells with no such vertex agree
+without exception. The contradiction is recorded here rather than resolved.
+
 The reading has to explain how a doubly degenerate vertex at the bottom of a
 glyph reaches a dropout four rows above it **without passing through the
 crossing lists**, since two shapes that differ only in that vertex share their
