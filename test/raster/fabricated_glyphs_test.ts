@@ -143,10 +143,10 @@ describe('the fabricated glyph recordings', () => {
   /* Every cell but the two the `courier-o-plain` instrument was built to
    * reproduce: Courier New's `o` under a width, drawn at Symbol's size in
    * Symbol's slot, where Windows refuses one dropout rescue that this makes.
-   * `courier-o-upper` carries the same two, and the two variants that move the
-   * inner contour's lower arc agree in full. See FONTS.md section 8a. */
-  const EXACT = 29574;
-  const WRONG = 4;
+   * Four of its six variants carry the same two cells and the two that move the
+   * inner contour's whole lower arc agree in full. See FONTS.md section 8a. */
+  const EXACT = 30274;
+  const WRONG = 8;
 
   /* The one place an unhinted outline is drawn differently.
    *

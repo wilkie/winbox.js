@@ -12733,13 +12733,39 @@ lower arc has them at different columns. The rescue in dispute is at row
 fifteen, and nothing in any rule read so far -- the stub test's six neighbours,
 the covered test, the placement -- reaches four rows away.
 
-**So the effect is not local, and that rules out every per-row rule.** What is
-left is the storage: the scan converter sizes each scanline's block from an
-estimate of how many crossings it can hold, counted from the outline's
-reversals, and a change in the turning points four rows away is exactly the
-kind of thing that resizes those blocks. That is where the next reading goes --
-`fsc_GetHIxEstimate` and the reversal counting in `scanlist.c`, and the block
-layout the dropout walks with a stride.
+**So the effect is not local, and that rules out every per-row rule.**
+
+Two more variants narrow what "the lower arc" means, and both still disagree:
+moving the single control point nearest the vertex, and moving the other four
+points of that arc while leaving it alone. Only the whole arc together moves
+the thing that matters, which is one flattened vertex at the bottom of the
+counter. In the plain shape it lands at 224 in `x` and -1248 in `y`, **exactly
+on a sample column and exactly on a sample line at once**, and both topologies
+fire at it: the horizontal one puts an `on` at column three, duplicating what
+the walk already emitted there, and the vertical one puts an `off` in column
+three at row nineteen. Move the arc and the vertex is at 225, the horizontal
+`on` lands at column four instead, and the vertical emission does not happen.
+
+Those two entries are the whole difference, and neither is anywhere near the
+row in dispute. Row fifteen's own crossings are identical in every variant,
+the entry its stub test reads -- the vertical `on` at column three, row fifteen
+-- is emitted by the topology from an untouched vertex in every variant, and
+the counts per list are the same on both sides, so it is not an overflow of a
+block either.
+
+    variant                     what moves            Windows draws row fifteen
+    plain                       --                    no
+    upper arc                   nothing in the lists  no
+    one control point           nothing in the lists  no
+    the arc but that point      nothing in the lists  no
+    the whole lower arc         two entries, rows 19-20   yes
+    the whole inner contour     the same two          yes
+
+The reading has to explain how a doubly degenerate vertex at the bottom of a
+glyph reaches a dropout four rows above it. Nothing in the scan converter as
+read does, and the counts rule out the block sizing that `fsc_GetHIxEstimate`
+computes from the outline's reversals. The instruments are committed so the
+comparison can be picked up exactly where it stands.
 
 A refusal to record with it: pairing the horizontal rescue's vertical terms one
 row earlier, which is what the pseudocode's `DoHorizDropout` says literally --

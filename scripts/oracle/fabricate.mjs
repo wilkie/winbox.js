@@ -1667,6 +1667,25 @@ export const FABRICATIONS = [
     },
     describe: "the o with only the inner contour's lower arc a sixty-fourth to the right",
   }),
+  /* Narrowing the lower arc to the one control point that puts the counter's
+   * bottom vertex on a sample column and a sample line at once. */
+  outlineInstrument('courier-o-q10', {
+    contours: COURIER_O_13x4,
+    edit: (shaped) => {
+      shaped[1][10][0] += 1;
+    },
+    describe: "the o with one control point of the inner contour's lower arc moved",
+  }),
+  /* And its complement: the rest of the lower arc, leaving that one alone. */
+  outlineInstrument('courier-o-rest', {
+    contours: COURIER_O_13x4,
+    edit: (shaped) => {
+      for (const index of [7, 8, 9, 11]) {
+        shaped[1][index][0] += 1;
+      }
+    },
+    describe: 'the o with the lower arc moved except that one control point',
+  }),
   outlineInstrument('cent-minimum-0', {
     contours: CENT_ITALIC_12,
     describe: "Courier New Italic's cent sign outline, its minimum exactly on a sample row",
