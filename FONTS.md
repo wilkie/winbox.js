@@ -12886,6 +12886,29 @@ overflow in one and not another.
 So the allocation is ruled out for a reason rather than by a count, and with it
 the only non-local mechanism the scan converter has.
 
+#### Counted across the whole corpus
+
+The condition is necessary and nowhere near sufficient, and the corpus says so
+in numbers. Every fabricated glyph recording was replayed with the walk counting
+vertices as it went:
+
+| cells                                                  | agreed  | disagreed |
+| ------------------------------------------------------ | ------- | --------- |
+| no doubly degenerate vertex anywhere                   | 242,389 | 0         |
+| a vertex on a sample line and column at once           | 1,087   | 8         |
+| ...where both topologies emit at that vertex           | 858     | 8         |
+| ...and a rescue whose stub test needed a vertical term | 168     | 8         |
+
+The eight are the same eight throughout: `courier-o-plain`, `-upper`, `-q10` and
+`-rest`, at both weights. Not one cell without such a vertex disagrees, so
+nothing is being missed elsewhere; and 168 cells carry the whole configuration
+-- the vertex, both emissions, and a marginal rescue -- and are drawn exactly.
+They span 53 fixtures, so it is not one instrument's quirk either.
+
+Whatever separates the eight from the 168 is therefore finer than "a doubly
+degenerate vertex near a marginal rescue", and the search for it cannot be a
+search through the crossing lists, which the two shapes share.
+
 The reading has to explain how a doubly degenerate vertex at the bottom of a
 glyph reaches a dropout four rows above it **without passing through the
 crossing lists**, since two shapes that differ only in that vertex share their
