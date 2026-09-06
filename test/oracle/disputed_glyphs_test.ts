@@ -87,11 +87,11 @@ const PIXELS = 0;
 const BITMAP_RECORDS = 136;
 const BITMAP_PIXELS = 794;
 
-/* The wide-net fixtures: two single pixels among the styled files, none above
- * thirty-one pixels, and one stretched outline of `widths`, an unhinted `o`
+/* The wide-net fixtures: nothing among the styled files, nothing above
+ * thirty-one pixels, and one stretched outline of `widths` -- an unhinted `o`
  * a pixel off; see FONTS.md. Each may only come down. */
-const STYLES_OUTLINE_RECORDS = 2 + 1;
-const STYLES_OUTLINE_PIXELS = 2 + 1;
+const STYLES_OUTLINE_RECORDS = 1;
+const STYLES_OUTLINE_PIXELS = 1;
 const STYLES_OTHER_RECORDS = 0;
 const STYLES_OTHER_PIXELS = 0;
 

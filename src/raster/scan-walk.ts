@@ -175,75 +175,147 @@ export class Endpoints {
     put(this.lists.vertOff, this.x1 >> SHIFT, (this.y1 + HALF) >> SHIFT);
   }
 
+  /**
+   * Which way the outline turns at a vertex, as the binary decides it.
+   *
+   * `seg42:1342` classifies the turn by the **sign of the cross product** of
+   * the direction into the vertex with the direction out of it, and by which
+   * quadrant the outgoing direction lies in -- not by comparing the three
+   * points, which is what this did. The two agree on a monotone crossing and
+   * part at an extremum lying exactly on a sample line: a comparison says
+   * "minimum, emit an `on` and an `off`", and the binary emits those only when
+   * the turn is the other way about, and otherwise nothing.
+   *
+   * For a fill the two are the same picture, since an `on` and an `off` at one
+   * pixel fill nothing between them. For the dropout's stub test they are not:
+   * a coincident pair counts as a continuation and an absence does not. That
+   * is the whole of the difference the two scan converter cells were, and it
+   * is why nothing else in the corpus moves.
+   */
+  private flags(x: number, y: number) {
+    const outX = x - this.x1;
+    const outY = y - this.y1;
+
+    /* The outgoing quadrant, as the binary shifts a bit for each test: right
+     * and up, left and up, left and down, right and down. */
+    const quadrant =
+      outX > 0 && outY >= 0 ? 1 : outX <= 0 && outY > 0 ? 2 : outX < 0 && outY <= 0 ? 4 : 8;
+
+    return {
+      quadrant,
+      cross: (this.x1 - this.x0) * outY - (this.y1 - this.y0) * outX < 0,
+      // A horizontal run continuing horizontally, and a vertical one likewise.
+      flat: outY === 0 && this.y0 === this.y1,
+      upright: outX === 0 && this.x0 === this.x1,
+    };
+  }
+
   private horizTopology(x: number, y: number) {
-    if (y > this.y1) {
-      if (this.y1 > this.y0) {
-        this.addHorizOn();
-      } else if (this.y1 < this.y0) {
+    const { quadrant, cross, flat, upright } = this.flags(x, y);
+    const up = (quadrant & 0x3) !== 0;
+    const down = (quadrant & 0xc) !== 0;
+
+    if (cross || upright) {
+      if (up ? this.y0 > this.y1 : this.y0 < this.y1) {
         this.addHorizOn();
         this.addHorizOff();
-      } else if (this.x1 < this.x0) {
-        this.addHorizOn();
+
+        return;
       }
-    } else if (y < this.y1) {
-      if (this.y1 > this.y0) {
+    }
+
+    if (up) {
+      if (cross) {
         this.addHorizOn();
-        this.addHorizOff();
-      } else if (this.y1 < this.y0) {
-        this.addHorizOff();
-      } else if (this.x1 > this.x0) {
-        this.addHorizOff();
+
+        return;
       }
-    } else if (this.y1 > this.y0) {
-      if (x > this.x1) {
+
+      if (flat && (quadrant & 0x1) !== 0 && this.x0 > this.x1) {
         this.addHorizOn();
+
+        return;
       }
-    } else if (this.y1 < this.y0) {
-      if (x < this.x1) {
-        this.addHorizOff();
-      }
-    } else if (this.x1 > this.x0 && x < this.x1) {
-      this.addHorizOff();
-    } else if (this.x1 < this.x0 && x > this.x1) {
+    }
+
+    if (this.y0 < this.y1 && this.y1 < y) {
       this.addHorizOn();
+
+      return;
+    }
+
+    if (down) {
+      if (cross) {
+        this.addHorizOff();
+
+        return;
+      }
+
+      if (flat && (quadrant & 0x4) !== 0 && this.x0 < this.x1) {
+        this.addHorizOff();
+
+        return;
+      }
+    }
+
+    if (this.y0 > this.y1 && this.y1 > y) {
+      this.addHorizOff();
     }
   }
 
   private vertTopology(x: number, y: number) {
-    if (x < this.x1) {
-      if (this.x1 < this.x0) {
-        this.addVertOn();
-      } else if (this.x1 > this.x0) {
+    const { quadrant, cross, flat, upright } = this.flags(x, y);
+    const right = (quadrant & 0x9) !== 0;
+    const left = (quadrant & 0x6) !== 0;
+
+    if (cross || flat) {
+      if (right ? this.x0 > this.x1 : this.x0 < this.x1) {
         this.addVertOn();
         this.addVertOff();
-      } else if (this.y1 < this.y0) {
-        this.addVertOn();
+
+        return;
       }
-    } else if (x > this.x1) {
-      if (this.x1 < this.x0) {
+    }
+
+    if (left) {
+      if (cross) {
         this.addVertOn();
-        this.addVertOff();
-      } else if (this.x1 > this.x0) {
-        this.addVertOff();
-      } else if (this.y1 > this.y0) {
-        this.addVertOff();
+
+        return;
       }
-    } else if (this.x1 < this.x0) {
-      if (y > this.y1) {
+
+      if (flat && (quadrant & 0x2) !== 0 && this.y0 > this.y1) {
         this.addVertOn();
+
+        return;
       }
-    } else if (this.x1 > this.x0) {
-      if (y < this.y1) {
-        this.addVertOff();
-      }
-    } else if (this.y1 > this.y0 && y < this.y1) {
-      this.addVertOff();
-    } else if (this.y1 < this.y0 && y > this.y1) {
+    }
+
+    if (this.x0 > this.x1 && this.x1 > x) {
       this.addVertOn();
+
+      return;
+    }
+
+    if (right) {
+      if (cross) {
+        this.addVertOff();
+
+        return;
+      }
+
+      if (upright && (quadrant & 0x8) !== 0 && this.y1 > this.y0) {
+        this.addVertOff();
+
+        return;
+      }
+    }
+
+    if (this.x0 < this.x1 && this.x1 < x) {
+      this.addVertOff();
     }
   }
 
-  /** The next point along the contour. */
   check(x: number, y: number, dropout = true) {
     /* A step that goes nowhere leaves the running vertex alone.
      *

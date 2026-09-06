@@ -140,13 +140,8 @@ describe('the fabricated glyph recordings', () => {
    * -- see the closing sections of `FONTS.md` 9, which read over a thousand of
    * their boxes out of GDI's own working memory.
    */
-  /* Every cell but seven, and ten pixels: the six `cent-minimum` and
-   * `pound-tip` instruments reproduce the two styled cells the scan converter
-   * still draws differently from Windows -- a vertical dropout Windows does
-   * not rescue -- and the pound sign's tip does so at all three of its
-   * settings. See FONTS.md section 8a. Nothing else in the corpus differs. */
-  const EXACT = 28163;
-  const WRONG = 10;
+  const EXACT = 28170;
+  const WRONG = 0;
 
   /* The one place an unhinted outline is drawn differently.
    *

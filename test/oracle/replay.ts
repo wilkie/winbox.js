@@ -1386,14 +1386,6 @@ export class Unimplemented extends Error {}
  * All 2,574 records agree.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  /* The wide net over the styled files, Wingdings and the weight field. Of its
-   * 9,094 glyph cells two are left, a single pixel each: a stroke tip on a
-   * pixel boundary in Times New Roman Bold Italic's pound sign, and a curve's
-   * minimum on a sample row in Courier New Italic's cent sign. Both are the
-   * scan converter's, with every point read out equal to ours.
-   */
-  'styles:glyph': 'two single pixels among the styled italics, both at the scan converter',
-
   /* The width field, recorded for the first time. The strikes agree in full and
    * the metrics all but two. The outline faces are hinted anisotropically the
    * reference's way: at a whole horizontal pixel size that is the vertical one

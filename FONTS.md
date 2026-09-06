@@ -9019,14 +9019,6 @@ read out of GDI rather than measured into place.
   freedom-projection dot product is refused or indifferent by count, so those
   keep the symmetric rounding, and which the scaler's `LongMulDiv` and
   `MulDiv26Dot6` actually do is not known.
-- **Two dropout rescues Windows does not make.** A vertical dropout whose
-  continuation on one side is only a zero-width pair from a vertex on a sample
-  line is rescued by this and by the reference's `scanlist.c`, and not by
-  Windows 3.1; reproduced on an instrument in another font at another size,
-  and the rules that would refuse it are each refused by hundreds of cells.
-  The dropout code itself is now read end to end and is this implementation's
-  (section 8a), so the difference is in the crossing lists it reads, and the
-  endpoint topology at `0x1342` is where to look next.
 - **`IUP` with two anchors at one original coordinate.** Windows shifts the
   run by the first anchor's move; the pseudocode sends an equal pair to the
   second (section 8a). Three cells measure it and nothing contradicts it; the
@@ -12502,6 +12494,54 @@ on that sample line, and with the vertex a sixty-fourth higher the pair is
 absent and both agree. Where that pair comes from is `0x1342`, the endpoint
 topology, which section 6 read for its turn logic and not for what it writes.
 
+### The turn is a cross product, and that was the last of it
+
+The dropout code being ruled out, what was left was the lists it reads, and the
+pair the cent sign's rescue turned on came from the endpoint topology. So
+`0x1342` was read for what it writes, which section 6 never took from it.
+
+Two things are there. The first is a detail this already had by another route:
+the `off` an endpoint contributes is emitted one pixel further along than the
+`on` when the other coordinate lies exactly on a sample line -- `inc ax` guarded
+by the bit for it -- which is what taking `(x + 31) >> 6` for the one and
+`(x + 32) >> 6` for the other already does, since those part exactly there.
+
+The second is the answer. **The binary classifies the turn by the sign of the
+cross product** of the direction into the vertex with the direction out of it,
+together with the quadrant the outgoing direction lies in:
+
+```
+cross = (x1 - x0) * (y2 - y1) - (y1 - y0) * (x2 - x1) < 0
+```
+
+and emits an `on` and an `off` together only when that sign says so, an `on` or
+an `off` alone on a monotone crossing, and otherwise nothing. This decided the
+same question by comparing the three points, which section 6 called "the same
+rule factored differently". It is not. The two agree on every monotone
+crossing, and they part at an extremum lying exactly on a sample line: the
+comparison says "a minimum, emit both", and the cross product, for the cent
+sign's vertex -- 761, positive, with the outgoing direction up and to the right
+-- says emit nothing.
+
+For a fill the two are the same picture, because an `on` and an `off` at one
+pixel fill nothing between them. For the dropout's stub test they are not: a
+coincident pair counts as a continuation and an absence does not. That is the
+whole of what the two scan converter cells were, and it is why nothing else in
+either corpus ever showed it.
+
+Transcribed -- both topologies, branch for branch, including the degenerate
+guards for a horizontal run continuing horizontally and a vertical one
+likewise:
+
+    fabricated glyphs   24,689 -> 24,696 of 24,696;  the six instruments exact
+    styles              9,176 -> 9,178 of 9,178
+    font, glyphs, hinting, sizes, widths: unchanged
+
+Both instrument cells go, both styled cells go, and the seven wrong cells of
+the fabricated corpus with them. What is left in the whole recorded corpus is
+two records of `widths`: Courier New's `o` at a horizontal size of four, drawn
+unhinted, and Courier New's maximum width at twenty-two pixels asked for five.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
@@ -12514,7 +12554,7 @@ it stands:
 | `hinting`                                                    | 8,470   | **100%**  |
 | `lines`                                                      | 248     | **100%**  |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
-| `styles`                                                     | 9,178   | 99.98%    |
+| `styles`                                                     | 9,178   | **100%**  |
 | `sizes`                                                      | 800     | **100%**  |
 | `widths`                                                     | 2,480   | 99.9%     |
 
@@ -12524,9 +12564,8 @@ which nothing on this side is meant to reproduce, and the conformance suite
 reports them as unsupported.
 
 The fabricated corpus -- the fonts rewritten to isolate one mechanism each, which
-ask questions no stock face does -- stands at **28,163 of 28,170 cells and ten
-wrong pixels**, every one of them on the two instruments built to reproduce the
-scan converter's two remaining cells (section 8a), which they do.
+ask questions no stock face does -- stands at **28,170 of 28,170 cells and no
+wrong pixels**.
 
 ### The chase, end to end
 
