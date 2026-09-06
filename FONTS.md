@@ -12628,9 +12628,28 @@ Which leaves the endpoint itself. It is a stepped point of the flattening,
 rounded to a sixty-fourth, and it lands exactly on a sample column; a
 sixty-fourth either way and the topology never fires, the continuation is one
 short, and the rescue does not happen. **The whole of the disagreement is
-whether that one chord endpoint is 224.** What feeds it is the unhinted
-outline's own scaling, which is where to look next -- and the only part of this
-path not yet read against the binary.
+whether that one chord endpoint is 224.**
+
+It is. The curve is the one from the implied midpoint (239, -484) through the
+control (225, -439) to (205, -439), at a depth of one, and the point in dispute
+is its midpoint: a quarter of 239 plus half of 225 plus a quarter of 205, which
+is **exactly 223.5**. The accumulator holds 894 against a shift of two, and
+adding the half and shifting arithmetically -- which is what `add eax,ebx` and
+`sar eax,cl` do at `0x0222` -- gives 224 in either reading. The design
+coordinates behind it are 999 and 774 units, which scale to 124.875 and 96.750
+sixty-fourths, neither near a rounding boundary, so the scaling does not decide
+it either. And the scan control words of all three faces carry none of the
+stretched-text bits, so dropout control is on for a stretched glyph exactly as
+it is for a square one.
+
+So Windows has the same chord endpoint, on the same sample column, with the
+same turn through it, and a stub test that this implementation now matches
+neighbour for neighbour. Five stages of the pipeline have been read against the
+binary and all five are this code. The pixel remains, and what is left to
+suspect is no longer any rule in the scan converter but the outline that goes
+into it -- the one stage still unread, where a design coordinate becomes a
+sixty-fourth. Three of that glyph's outer points scale to exactly 135.5, and
+which way a half goes there is measured only from an upright face.
 
 A refusal to record with it: pairing the horizontal rescue's vertical terms one
 row earlier, which is what the pseudocode's `DoHorizDropout` says literally --
