@@ -12601,10 +12601,36 @@ rounding of the near coordinate, less one on a descending walk, is exactly what
 descending chord from (205, -404) to (228, -418) starts at row -7 and puts its
 first vertical entry at -6 in either reading.
 
-So the difference is not in the dropout, not in the endpoint topology, and not
-in the walk's emission or its offsets. What is left between the outline and the
-lists is the flattening: which chords the curve becomes, and where their
-rounded endpoints fall. That is what to read next.
+The flattening was read after it, at segment 44's `0x42`, and it is this
+implementation too: the octagonal norm and the count of divisions by four with
+its start at one and its clamp at eight; the halving past a depth of five, with
+the new control at `(p1 + p2 + 1) >> 1` and the new end at
+`(p1 + 2p2 + p3 + 2) >> 2`; the accumulator scaled by the square of the step
+count, seeded with the second difference less the first shifted by `depth + 1`,
+the second difference doubling as it goes, and each point taken as
+`(accumulator + half) >> shift`. All of it line for line. One thing in it is
+not implemented here and has never been reached: the routine keeps a running
+total of steps for the glyph and abandons the curve outright once that total
+passes 257.
+
+So the two rows differ in none of it -- not the dropout, not the endpoint
+topology, not the walk's emission or offsets, not the flattening. Instrumenting
+the last term settles where they do differ. The vertical crossing at column
+three that carries row seven's stub test is not from the walk at all: the walk
+emits only two entries in that column, at rows twelve and six. The one at row
+seven comes from the **endpoint topology**, at a flattened chord endpoint whose
+`x` is 224 -- exactly the centre of column three -- with the outline turning
+left and up through it. Worked through the binary's own tree that vertex emits
+an `on` there, and its value rounds to the same row, so Windows has the entry
+too and should rescue as this does.
+
+Which leaves the endpoint itself. It is a stepped point of the flattening,
+rounded to a sixty-fourth, and it lands exactly on a sample column; a
+sixty-fourth either way and the topology never fires, the continuation is one
+short, and the rescue does not happen. **The whole of the disagreement is
+whether that one chord endpoint is 224.** What feeds it is the unhinted
+outline's own scaling, which is where to look next -- and the only part of this
+path not yet read against the binary.
 
 A refusal to record with it: pairing the horizontal rescue's vertical terms one
 row earlier, which is what the pseudocode's `DoHorizDropout` says literally --
