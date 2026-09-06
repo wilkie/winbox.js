@@ -12178,9 +12178,19 @@ mechanism does and a fitted rule does not.
 
 One stretched cell of 1,944, one pixel: Courier New's `o` at sixteen asked
 for three, which its own `prep` draws with grid-fitting off at that horizontal
-size, so the pixel is about how an unhinted outline is scaled or drawn under a
-width. Scaling it at the fractional horizontal size is refused, above. The
-maximum width metric is still two of seventy.
+size -- four pixels by thirteen -- so the pixel is about how an unhinted
+outline is scaled or drawn under a width. What is known about it: the pixel is
+the left half of the top row but one, where the outer shoulder crosses the
+sample row at 29.5 sixty-fourths and the inner at about 44, a sliver fourteen
+wide across a centre at 32 -- filled here, and neither filled nor rescued by
+Windows, though dropout control is on in both by the same `SCANCTRL` word
+(0x12c, on below forty-four pixels, with neither the rotated nor the stretched
+condition set). Scaling the unhinted outline at the fractional horizontal size
+is refused, above. Drawing a curve whose second-difference norm is small as a
+single chord -- which would put that shoulder past the centre -- leaves the
+pixel where it is and breaks another glyph of the same request, 34 of 36; so
+the shoulder is not a chord matter either. The maximum width metric is still
+two of seventy.
 
 Nothing recorded before this moved: `font`, `glyphs` and `hinting` hold at every
 record, since at a stretch of one every new path is the old one.
