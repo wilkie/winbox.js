@@ -12969,6 +12969,34 @@ produced by the top of the glyph, four rows above the vertex, and no rule keyed
 on that vertex can reach them. A mutation that helps here has to be one that
 changes what the _walk_ records, not what the endpoint check adds to it.
 
+#### Three checks that leave the conclusion where it is
+
+The measurement was confirmed without replaying anything. Comparing the
+recorded cells for the two weights straight out of the fixtures, Windows draws
+`plain`, `upper`, `q10` and `rest` identically and the other six differently,
+at both weights. So the difference is genuinely in what Windows drew.
+
+The outline was confirmed too. Only four segments move under the shift, all in
+the inner contour, spanning `y` from -1105 to -1259, which is rows seventeen to
+twenty. The outer contour is identical segment for segment. The disputed
+rescue's three terms are read at rows fourteen, fifteen and sixteen, so nothing
+the shift touches is inside them.
+
+And the routine was confirmed to be the only one. A linear pass over segment 42
+finds one call to the span filler at `0x059b` and one to the dropouts at
+`0x0978`, both from a single driver that fills first and then drops out only
+when its flag is set; the two side routines are called twice each from inside
+`0x0978` and nowhere else; and the crossing counter at `0x0db4` is called six
+times, all of them from the two sides. There is no second dropout pass to have
+read instead.
+
+So the conclusion is not a contradiction after all, only a very tight
+statement: **the crossing lists the binary builds differ between two outlines
+that give this one identical lists**, and the difference must be visible from
+row fifteen's stub test, which reads rows fourteen to sixteen and columns three
+and four. What the shift moves is four rows away in every direction that has
+been measured.
+
 #### And the subdivision depth, refused four ways
 
 One place is left where two shapes a sixty-fourth apart could get different
