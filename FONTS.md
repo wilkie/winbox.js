@@ -12761,11 +12761,67 @@ block either.
     the whole lower arc         two entries, rows 19-20   yes
     the whole inner contour     the same two          yes
 
+#### The crossing lists are not the channel
+
+Four more variants close this off. The lower arc was moved in `y` rather than
+`x`, a sixty-fourth and two sixty-fourths in each direction, which leaves the
+counter's bottom vertex on the sample column and takes it off the sample line.
+**All four agree in full**, 352 of 352 cells each, and so does every earlier
+variant that moved the vertex off the column. The refusal happens only when the
+vertex is on both at once.
+
+That much was expected. What was not is where two of them land in this
+implementation:
+
+| variant      | vertex       | our `on` list at row 19 | Windows draws row fifteen |
+| ------------ | ------------ | ----------------------- | ------------------------- |
+| plain        | (224, -1248) | `[3,3]`                 | no                        |
+| `yshift`, +1 | (224, -1247) | `[3,3]`                 | yes                       |
+| `yup2`, +2   | (224, -1246) | `[3,3]`                 | yes                       |
+| `ydown`, -1  | (224, -1249) | `[3,4]`                 | yes                       |
+| `ydown2`, -2 | (224, -1250) | `[3,4]`                 | yes                       |
+| `lower`      | (225, -1248) | `[3,4]`                 | yes                       |
+
+`yshift` and `yup2` produce **byte-identical crossing lists to the plain
+shape** -- all four lists, every row, every column, every value and every
+order -- and Windows draws them differently. The lists were dumped from
+`fillWalked` after the sort and compared entry for entry; nothing differs.
+
+**So the crossing lists are not the whole input to the dropout decision.**
+Either the lists the binary builds differ from these somewhere invisible here,
+or what decides the rescue reads something else about the outline. Every
+per-row rule, every rule about counts, presence, pairing or order in these four
+lists is ruled out by construction: two shapes with the same lists cannot be
+told apart by any function of them.
+
+The sub-pixel channel is not it either. `spline.c`'s `CalcHorizSpSubpix` and
+`CalcVertSpSubpix` serve smart dropout control, and every installed face was
+read for what it asks: Arial, Courier New, Times New Roman, Symbol and
+Wingdings, in all fourteen installed styles, set `SCANTYPE` to 1. The
+sub-pixel routines never run for any of them, so no face here carries a channel
+this implementation is missing on that account.
+
+Where the `on` list's second entry comes from is worth recording, since it
+explains the table's middle column without explaining the disagreement. The
+walk's chords for the arc come out of `EvaluateSpline` at depth one, so the arc
+from (205, -1259) to (239, -1214) is two chords through (224, -1248). Plain,
+that midpoint sits exactly on the row's sample line, the walk emits nothing for
+it, and `CheckHorizTopology` supplies the crossing at `(224 + 31) >> 6`, which
+is column three. Shifted up, the chord crosses the line before reaching the
+vertex, at about x=222, which is column three again. Shifted down, the chord
+misses the line entirely and the next one crosses it at about x=224.4, which is
+column four. The `[3,3]` and `[3,4]` columns above are that, and the two
+mechanisms that produce a three are indistinguishable once the entry is in the
+list.
+
 The reading has to explain how a doubly degenerate vertex at the bottom of a
-glyph reaches a dropout four rows above it. Nothing in the scan converter as
-read does, and the counts rule out the block sizing that `fsc_GetHIxEstimate`
-computes from the outline's reversals. The instruments are committed so the
-comparison can be picked up exactly where it stands.
+glyph reaches a dropout four rows above it **without passing through the
+crossing lists**, since two shapes that differ only in that vertex share their
+lists exactly and are drawn differently. Nothing in the scan converter as read
+does, the counts rule out the block sizing that `fsc_GetHIxEstimate` computes
+from the outline's reversals, and the sub-pixel lists are switched off by every
+face's `SCANTYPE`. Ten instruments are committed so the comparison can be
+picked up exactly where it stands.
 
 A refusal to record with it: pairing the horizontal rescue's vertical terms one
 row earlier, which is what the pseudocode's `DoHorizDropout` says literally --

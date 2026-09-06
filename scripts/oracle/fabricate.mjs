@@ -1686,6 +1686,52 @@ export const FABRICATIONS = [
     },
     describe: 'the o with the lower arc moved except that one control point',
   }),
+  /* The vertex is on a sample column and a sample line at once, and each
+   * topology fires for one of those. Moving the arc in `y` instead of `x`
+   * leaves it on the column and takes it off the line, so only the vertical
+   * emission survives; `courier-o-lower` is the other half of the pair. */
+  outlineInstrument('courier-o-yshift', {
+    contours: COURIER_O_13x4,
+    edit: (shaped) => {
+      for (const index of [7, 8, 9, 10, 11]) {
+        shaped[1][index][1] += 1;
+      }
+    },
+    describe: "the o with the inner contour's lower arc a sixty-fourth higher",
+  }),
+  /* A sweep in `y` around the sample line, to say whether Windows keys on the
+   * vertex landing exactly on it or on where the crossing drifts to. The
+   * lists this implementation computes are identical for every one of these
+   * and for the plain shape, so whichever way they come back the answer is
+   * about a channel that is not the crossing lists.
+   */
+  outlineInstrument('courier-o-ydown', {
+    contours: COURIER_O_13x4,
+    edit: (shaped) => {
+      for (const index of [7, 8, 9, 10, 11]) {
+        shaped[1][index][1] += -1;
+      }
+    },
+    describe: "the o with the inner contour's lower arc a sixty-fourth lower",
+  }),
+  outlineInstrument('courier-o-yup2', {
+    contours: COURIER_O_13x4,
+    edit: (shaped) => {
+      for (const index of [7, 8, 9, 10, 11]) {
+        shaped[1][index][1] += 2;
+      }
+    },
+    describe: "the o with the inner contour's lower arc two sixty-fourths higher",
+  }),
+  outlineInstrument('courier-o-ydown2', {
+    contours: COURIER_O_13x4,
+    edit: (shaped) => {
+      for (const index of [7, 8, 9, 10, 11]) {
+        shaped[1][index][1] += -2;
+      }
+    },
+    describe: "the o with the inner contour's lower arc two sixty-fourths lower",
+  }),
   outlineInstrument('cent-minimum-0', {
     contours: CENT_ITALIC_12,
     describe: "Courier New Italic's cent sign outline, its minimum exactly on a sample row",
