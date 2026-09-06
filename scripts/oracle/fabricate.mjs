@@ -1070,7 +1070,10 @@ function experiment(name, { font, character, points, body, report, magnify = 8, 
  * Anything in `after` runs once the answer is already on the phantom, which is
  * how a question about what happens to work already done gets asked.
  */
-function stackReporter(name, { font, character, points, body, after = [], drop = [], describe }) {
+function stackReporter(
+  name,
+  { font, character, points, body, after = [], drop = [], bearing = null, describe }
+) {
   return {
     name,
     from: font,
@@ -1082,6 +1085,12 @@ function stackReporter(name, { font, character, points, body, after = [], drop =
 
       for (const tag of drop) {
         dropTable(bytes, tag);
+      }
+
+      /* A bearing equal to the shape's own `xMin` leaves nothing to carry, so
+       * the coordinate read is the scaled one and not the scaled one shifted. */
+      if (bearing !== null) {
+        setBearing(bytes, glyph, bearing);
       }
 
       return setGlyph(bytes, null, glyph, {
@@ -2287,6 +2296,30 @@ export const FABRICATIONS = [
     base: 448,
     drop: ['hdmx', 'LTSH'],
     describe: "Arial Bold Italic's M, point 5 along y",
+  }),
+  /* How a design coordinate rounds when it scales to exactly a half.
+   *
+   * 400 units at 2,048 to the em is 12.5 sixty-fourths for each pixel of
+   * horizontal size, so at thirteen, fifteen, seventeen, twenty-one,
+   * twenty-three, twenty-seven and thirty-seven pixels across the product lands
+   * exactly on a half, and at twenty-six, thirty-four and forty-six it does
+   * not. The glyph is a rectangle with its left edge there and its bearing set
+   * to match, so nothing is carried, and its whole program is the reading:
+   * `GC` on the corner, times sixty-four, onto the advance phantom. */
+  stackReporter('arial-half-400', {
+    font: 'ARIAL.TTF',
+    character: 'n',
+    bearing: 400,
+    points: [
+      [400, 0],
+      [400, 400],
+      [800, 400],
+      [800, 0],
+    ],
+    body: [...ops.byte(0), 0x46, ...ops.word(4096), ...ops.multiply()],
+    drop: ['hdmx', 'LTSH'],
+    describe:
+      'a corner at 400 units read along x, which scales to a half at most of the swept widths',
   }),
   pointReporter('times-N-diag-p2x16', {
     character: 'N',

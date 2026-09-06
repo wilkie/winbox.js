@@ -12644,12 +12644,30 @@ it is for a square one.
 
 So Windows has the same chord endpoint, on the same sample column, with the
 same turn through it, and a stub test that this implementation now matches
-neighbour for neighbour. Five stages of the pipeline have been read against the
-binary and all five are this code. The pixel remains, and what is left to
-suspect is no longer any rule in the scan converter but the outline that goes
-into it -- the one stage still unread, where a design coordinate becomes a
-sixty-fourth. Three of that glyph's outer points scale to exactly 135.5, and
-which way a half goes there is measured only from an upright face.
+neighbour for neighbour.
+
+The outline's own scaling was the one stage left, and it is measured now rather
+than read. `arial-half-400` is a rectangle whose left edge is at 400 units and
+whose bearing is set to match, so nothing is carried, and whose whole program
+reads that corner along `x` and puts it on the advance phantom at sixty-four
+times. Four hundred units at 2,048 to the em is 12.5 sixty-fourths for each
+pixel of horizontal size, so the product lands exactly on a half at seven of
+the swept widths and not at the others. **Windows rounds every one of those
+halves up**, at thirteen, fifteen, seventeen, twenty-one, twenty-three,
+twenty-seven and thirty-seven pixels across, and agrees at the rest -- which is
+what `toPixels` does. The `o`'s three outer points at exactly 135.5 are 136 in
+Windows too. The side bearing is nought for every glyph of all three faces, so
+nothing is carried across it either.
+
+That is six stages read or measured against Windows, and the pixel survives all
+six. What it now rests on is sharper than a stage. Rows seven and ten of that
+cell are geometric mirror images and have identical crossing lists here, and
+**Windows draws the rescued pixel at row ten and not at row seven**. Both
+rescues need a vertical crossing at column three that the endpoint topology
+emits, one an `on` where the outline crosses the column leftward and one an
+`off` where it crosses rightward, and both are monotone crossings that no
+reading can refuse. Windows honours one and not the other. Nothing in the
+scan converter read so far distinguishes them.
 
 A refusal to record with it: pairing the horizontal rescue's vertical terms one
 row earlier, which is what the pseudocode's `DoHorizDropout` says literally --
