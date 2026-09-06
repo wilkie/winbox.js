@@ -1208,7 +1208,214 @@ function tableBytes(name, { font, tag, offset, values, describe }) {
   };
 }
 
+/**
+ * A fabrication that makes a letter carry one of its own coordinates in the
+ * position of its bitmap.
+ *
+ * The extent channel `pointReporter` uses is shut for a fixed-pitch face: GDI
+ * answers its extents from the average width and never asks the glyph. So this
+ * one reads the coordinate the same way -- `GC` on the point, along the axis
+ * asked for, less a base -- and then shifts every contour point of the glyph
+ * along `x` by that many *pixels*, sixty-four sixty-fourths of shift for each
+ * sixty-fourth of coordinate. The phantoms stay, so the advance is untouched;
+ * what moves is where the letter lands in the `styles` probe's cell, and the
+ * displacement of Windows's cell against its unfabricated one is the answer:
+ * `base + displacement`. The base is chosen so the expected displacement is a
+ * few pixels to the right, with room in the thirty-two pixel cell either way.
+ */
+function shiftReporter(name, { font, character, point, axis = 'x', base = 0, drop, describe }) {
+  return {
+    name,
+    from: font,
+    as: font,
+    describe,
+
+    edit: (bytes) => {
+      const glyph = glyphFor(bytes, character.charCodeAt(0));
+      const count = pointCount(bytes, glyph);
+      const indices = Array.from({ length: count }, (_, index) => index);
+
+      const ending = [
+        ...(axis === 'y' ? ops.yAxis() : [0x01]),
+        ...ops.byte(point),
+        0x46,
+        ...ops.word(base),
+        ...ops.subtract(),
+        ...ops.word(4096),
+        ...ops.multiply(),
+        // Along x, whatever axis was read.
+        0x01,
+        ...ops.byte(count),
+        0x17,
+        0x40,
+        count,
+        ...indices,
+        ...ops.byte(count + 1),
+        0x26,
+        0x38,
+      ];
+
+      const grown = growGlyphProgram(bytes, glyph, [...glyphProgram(bytes, glyph), ...ending]);
+      const view = new DataView(grown.buffer, grown.byteOffset, grown.byteLength);
+      const maxp = tablesOf(view).maxp;
+
+      if (maxp && maxp.length >= 32) {
+        view.setUint16(
+          maxp.offset + 24,
+          Math.max(view.getUint16(maxp.offset + 24, false), 512),
+          false
+        );
+        view.setUint16(
+          maxp.offset + 26,
+          Math.max(view.getUint16(maxp.offset + 26, false), 4096),
+          false
+        );
+      }
+
+      const present = tablesOf(view);
+
+      for (const tag of drop ?? []) {
+        if (present[tag]) {
+          dropTable(grown, tag);
+        }
+      }
+
+      return grown;
+    },
+  };
+}
+
 export const FABRICATIONS = [
+  /* The four Courier New Italic cells still in dispute, read through the
+   * bitmap: see `shiftReporter`. Each base is our own value less three, so a
+   * Windows that agrees lands three pixels to the right. */
+  shiftReporter('couri-cedilla-p9y', {
+    font: 'COURI.TTF',
+    character: String.fromCharCode(0xb8),
+    point: 9,
+    axis: 'y',
+    base: -12,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Courier New Italic's cedilla, point 9 along y, as a displacement",
+  }),
+  shiftReporter('couri-cedilla-p0x', {
+    font: 'COURI.TTF',
+    character: String.fromCharCode(0xb8),
+    point: 0,
+    axis: 'x',
+    base: 448,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Courier New Italic's cedilla, point 0 along x, as a displacement",
+  }),
+  shiftReporter('couri-cedilla-p2y', {
+    font: 'COURI.TTF',
+    character: String.fromCharCode(0xb8),
+    point: 2,
+    axis: 'y',
+    base: 8,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Courier New Italic's cedilla, point 2 along y, as a displacement",
+  }),
+  shiftReporter('courbi-cent18-p9y', {
+    font: 'COURBI.TTF',
+    character: String.fromCharCode(0xa2),
+    point: 9,
+    axis: 'y',
+    base: 31,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Courier New Bold Italic's cent sign, point 9 along y, as a displacement",
+  }),
+  shiftReporter('courbi-pilcrow-p53y', {
+    font: 'COURBI.TTF',
+    character: String.fromCharCode(0xb6),
+    point: 53,
+    axis: 'y',
+    base: -3,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Courier New Bold Italic's pilcrow, point 53 along y, as a displacement",
+  }),
+  shiftReporter('courbi-pilcrow-p48y', {
+    font: 'COURBI.TTF',
+    character: String.fromCharCode(0xb6),
+    point: 48,
+    axis: 'y',
+    base: -27,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Courier New Bold Italic's pilcrow, point 48 along y, as a displacement",
+  }),
+  shiftReporter('couri-cent16-p40x', {
+    font: 'COURI.TTF',
+    character: String.fromCharCode(0xa2),
+    point: 40,
+    axis: 'x',
+    base: 354,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Courier New Italic's cent sign, point 40 along x, as a displacement",
+  }),
+  shiftReporter('couri-cent16-p40y', {
+    font: 'COURI.TTF',
+    character: String.fromCharCode(0xa2),
+    point: 40,
+    axis: 'y',
+    base: 157,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Courier New Italic's cent sign, point 40 along y, as a displacement",
+  }),
+  shiftReporter('couri-cedilla-p3y', {
+    font: 'COURI.TTF',
+    character: String.fromCharCode(0xb8),
+    point: 3,
+    axis: 'y',
+    base: 23,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Courier New Italic's cedilla, point 3 along y, as a displacement",
+  }),
+  shiftReporter('couri-cedilla-p4y', {
+    font: 'COURI.TTF',
+    character: String.fromCharCode(0xb8),
+    point: 4,
+    axis: 'y',
+    base: 23,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Courier New Italic's cedilla, point 4 along y, as a displacement",
+  }),
+  shiftReporter('courbi-cent18-p4y', {
+    font: 'COURBI.TTF',
+    character: String.fromCharCode(0xa2),
+    point: 4,
+    axis: 'y',
+    base: -49,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Courier New Bold Italic's cent sign, point 4 along y, as a displacement",
+  }),
+  shiftReporter('courbi-cent18-p3y', {
+    font: 'COURBI.TTF',
+    character: String.fromCharCode(0xa2),
+    point: 3,
+    axis: 'y',
+    base: -33,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Courier New Bold Italic's cent sign, point 3 along y, as a displacement",
+  }),
+  shiftReporter('courbi-pilcrow-p51y', {
+    font: 'COURBI.TTF',
+    character: String.fromCharCode(0xb6),
+    point: 51,
+    axis: 'y',
+    base: -47,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Courier New Bold Italic's pilcrow, point 51 along y, as a displacement",
+  }),
+  shiftReporter('courbi-pilcrow-p51x', {
+    font: 'COURBI.TTF',
+    character: String.fromCharCode(0xb6),
+    point: 51,
+    axis: 'x',
+    base: 637,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Courier New Bold Italic's pilcrow, point 51 along x, as a displacement",
+  }),
+
   /* Which `OS/2` field decides the family Windows reports. Symbol, class 12.3
    * with a full PANOSE, comes back `FF_ROMAN`; Wingdings, class 12.0 with a
    * PANOSE of "pictorial, anything", comes back `FF_DONTCARE`. Each face gets

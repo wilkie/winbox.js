@@ -9018,6 +9018,10 @@ read out of GDI rather than measured into place.
   freedom-projection dot product is refused or indifferent by count, so those
   keep the symmetric rounding, and which the scaler's `LongMulDiv` and
   `MulDiv26Dot6` actually do is not known.
+- **`IUP` with two anchors at one original coordinate.** Windows shifts the
+  run by the first anchor's move; the pseudocode sends an equal pair to the
+  second (section 8a). Three cells measure it and nothing contradicts it; the
+  line in the scaler that decides it is not known.
 - **The whole pixels an outline is carried back by.** A program that moves its
   origin phantom off a whole pixel -- Arial Bold Italic's `M`, to -66 -- has
   its outline carried by the phantom's whole pixels only (section 8a); whether
@@ -12334,6 +12338,59 @@ that comes back through the bitmap itself.
 
     styles   9,172 -> 9,173 of 9,178
 
+### A readout through the bitmap, and an `IUP` that is not the pseudocode's
+
+A fixed-pitch face cannot be read through its extent, so the Courier cells got a
+channel of their own. `shiftReporter` in the fabricator appends to a glyph's
+program the same reading as the point reporter -- `GC` on the point, along the
+axis asked for, less a base -- and then shifts every contour point of the glyph
+along `x` by that many _pixels_, a pixel of displacement for each sixty-fourth of
+coordinate. The phantoms stay where they were, so the advance is untouched; what
+moves is where the letter lands in the `styles` probe's cell, and Windows's
+fabricated cell laid over its plain one gives the displacement, and so the
+coordinate. The base is chosen so agreement lands three pixels to the right;
+a value too far off leaves the cell and reads as no overlap, which is itself an
+answer.
+
+| glyph, size                     | point, axis | ours     | Windows         |
+| ------------------------------- | ----------- | -------- | --------------- |
+| Courier New Italic `¢`, 12      | 40 x        | 357      | 357             |
+| Courier New Italic `¢`, 12      | 40 y        | 160      | 160             |
+| Courier New Italic `¸`, 28      | 3 y, 4 y    | 26       | **35**          |
+| Courier New Italic `¸`, 28      | 2 y         | 11       | **20**          |
+| Courier New Italic `¸`, 28      | 9 y         | -9       | -9              |
+| Courier New Italic `¸`, 28      | 0 x         | 451      | 451             |
+| Courier New Bold Italic `¢`, 15 | 3 y, 4 y    | -30, -46 | **-25, -41**    |
+| Courier New Bold Italic `¢`, 15 | 9 y         | 34       | 34              |
+| Courier New Bold Italic `¶`, 27 | 48 y, 53 y  | -24, 0   | -24, 0          |
+| Courier New Bold Italic `¶`, 27 | 51 x        | 640      | 640             |
+| Courier New Bold Italic `¶`, 27 | 51 y        | -44      | out of the cell |
+
+The cedilla says it all. Its stem top, points 2 to 8, is never touched in `y`
+and sits between two anchors: the baseline point 1, hinted up nine, and point
+9, which a near-horizontal move touched in `y` without moving it. Both anchors
+are at the same design height, -10. **Windows lifts the run by nine -- the
+first anchor's move -- with both anchors exactly where this has them.** The
+pseudocode's `IUP` sorts an anchor pair by original coordinate, sends an equal
+pair to the _second_, and shifts the run by that one's move, which is nought
+here and what this did. Windows 3.1 takes the first. The bold cent sign is the
+same shape -- its run between a point hinted up five and one at the same
+design height that did not move -- and so is the pilcrow's counter, whose
+first anchor did not move and whose second rose 24: Windows leaves the run
+where it was, which is why its point 51 left the readout's cell. **With an
+equal pair shifting by the first anchor's move, all three cells go and nothing
+else in the corpus moves.** A `<=` where the pseudocode has `<` would do it;
+which the scaler actually has is not known.
+
+    styles   9,173 -> 9,176 of 9,178
+
+Two styled cells are left. Courier New Italic's cent sign at twelve pixels has
+its vertex at (357, 160) in both -- read out -- and 160 is exactly a sample row's
+centre, so the pixel is the scan converter's, at a curve's minimum lying on a
+sample line. Times New Roman Bold Italic's pound sign has a stroke tip on a
+pixel boundary that this rescues as a dropout and Windows does not. Both are
+questions for an instrument, not a readout.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
@@ -12346,7 +12403,7 @@ it stands:
 | `hinting`                                                    | 8,470   | **100%**  |
 | `lines`                                                      | 248     | **100%**  |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
-| `styles`                                                     | 9,178   | 99.9%     |
+| `styles`                                                     | 9,178   | 99.98%    |
 | `sizes`                                                      | 800     | **100%**  |
 | `widths`                                                     | 2,480   | 99.9%     |
 

@@ -3281,8 +3281,23 @@ export class Hinter {
 
     const movedLow = current[low] - scaled[low];
 
+    /* Two anchors at the same original coordinate carry the run between them
+     * by **the first anchor's** move, in contour order.
+     *
+     * The pseudocode reads the other way: it sorts the pair by original, sends
+     * an equal pair to the second, and shifts by that one's move. Windows 3.1
+     * does not. Courier New Italic's cedilla at twenty-eight pixels has its
+     * stem top between the baseline point, hinted up nine, and a point nine
+     * further along that a near-horizontal move touched in `y` without moving
+     * it; both sit at the same design height. Readouts through the bitmap put
+     * Windows's stem top nine up and both anchors where this has them, so the
+     * run took the first anchor's nine. Courier New Bold Italic's cent sign
+     * and pilcrow are the same shape, and **all three go together** with this
+     * and nothing else in the corpus moves. A `<=` where the pseudocode has
+     * `<` would do it, and which the scaler actually has is not known.
+     */
     if (designSpan === 0) {
-      current[index] += movedLow;
+      current[index] += current[left] - scaled[left];
 
       return;
     }
