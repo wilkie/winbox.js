@@ -12969,6 +12969,26 @@ produced by the top of the glyph, four rows above the vertex, and no rule keyed
 on that vertex can reach them. A mutation that helps here has to be one that
 changes what the _walk_ records, not what the endpoint check adds to it.
 
+#### And the subdivision depth, refused four ways
+
+One place is left where two shapes a sixty-fourth apart could get different
+lists out of the binary and the same ones out of this: the number of chords the
+spline is cut into. Our arc is cut in two, and its midpoint is what lands on the
+sample line and the sample column at once. Cut it differently and the vertex
+moves, so the depth is worth scoring rather than arguing.
+
+| mutation                              | cells  | wrong pixels |
+| ------------------------------------- | ------ | ------------ |
+| base                                  | 31,682 | 8            |
+| one more halving everywhere           | 30,020 | 2,771        |
+| one fewer halving everywhere          | 29,603 | 4,749        |
+| the octagonal norm's threshold halved | 30,580 | 1,673        |
+| the same threshold doubled            | 30,044 | 3,184        |
+
+The depth as read costs between 1,665 and 4,741 wrong pixels to change in any
+direction, so the chords are the binary's chords and the vertex is where this
+puts it.
+
 #### Every input to the decision, checked
 
 `seg42:0978` makes six kinds of call and no others: the crossing counter, the
