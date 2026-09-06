@@ -12713,9 +12713,33 @@ So the distinction Windows draws is not between the presence of the crossing
 and its absence, which is the only thing this implementation records. Making
 the endpoint topology emit no vertical entries at all is refused outright,
 24,583 of 25,400 fabricated cells against 25,398, so the entries are needed.
-What separates a walk-emitted entry from a topology-emitted one, when both
-carry the same column and the same row, is the question the next reading has to
-answer.
+Two controls then moved one arc of the inner contour at a time, and they turn
+the question over. `courier-o-upper` moves only the upper arc -- the one that
+puts the endpoint on column three -- and **the lists it produces here are
+identical to the plain shape's, entry for entry**, and Windows still refuses the
+rescue. `courier-o-lower` moves only the lower arc, a third of the glyph away
+from the disputed row, and Windows allows it.
+
+| variant | our lists differ from plain          | Windows draws the row |
+| ------- | ------------------------------------ | --------------------- |
+| plain   | --                                   | no                    |
+| upper   | not at all                           | no                    |
+| lower   | row nineteen, and one vertical entry | yes                   |
+| nudged  | the same two                         | yes                   |
+
+The change that decides it is at **row nineteen**, four rows below the pixel:
+the plain shape has two `on` entries at the same column there, and the moved
+lower arc has them at different columns. The rescue in dispute is at row
+fifteen, and nothing in any rule read so far -- the stub test's six neighbours,
+the covered test, the placement -- reaches four rows away.
+
+**So the effect is not local, and that rules out every per-row rule.** What is
+left is the storage: the scan converter sizes each scanline's block from an
+estimate of how many crossings it can hold, counted from the outline's
+reversals, and a change in the turning points four rows away is exactly the
+kind of thing that resizes those blocks. That is where the next reading goes --
+`fsc_GetHIxEstimate` and the reversal counting in `scanlist.c`, and the block
+layout the dropout walks with a stride.
 
 A refusal to record with it: pairing the horizontal rescue's vertical terms one
 row earlier, which is what the pseudocode's `DoHorizDropout` says literally --

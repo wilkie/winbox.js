@@ -1643,6 +1643,30 @@ export const FABRICATIONS = [
     },
     describe: 'the same with its inner contour a sixty-fourth to the right',
   }),
+  /* The control for it: only the inner contour's upper arc moves, which is
+   * where the chord endpoint on column three comes from, and the lower half --
+   * whose own vertex moved in `courier-o-nudged` -- is left alone. If the pixel
+   * follows the endpoint, this agrees; if it follows the other change, it does
+   * not. */
+  outlineInstrument('courier-o-upper', {
+    contours: COURIER_O_13x4,
+    edit: (shaped) => {
+      for (const index of [1, 2, 3, 4, 5]) {
+        shaped[1][index][0] += 1;
+      }
+    },
+    describe: "the o with only the inner contour's upper arc a sixty-fourth to the right",
+  }),
+  /* And the mirror of it: only the lower arc moves. */
+  outlineInstrument('courier-o-lower', {
+    contours: COURIER_O_13x4,
+    edit: (shaped) => {
+      for (const index of [7, 8, 9, 10, 11]) {
+        shaped[1][index][0] += 1;
+      }
+    },
+    describe: "the o with only the inner contour's lower arc a sixty-fourth to the right",
+  }),
   outlineInstrument('cent-minimum-0', {
     contours: CENT_ITALIC_12,
     describe: "Courier New Italic's cent sign outline, its minimum exactly on a sample row",
