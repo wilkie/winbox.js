@@ -1057,7 +1057,18 @@ export class Hinter {
      * rule about glyphs in general. Splitting it puts the corpus at **26,029 of
      * 26,058 and 118 wrong pixels** with every recorded cell still standing.
      */
-    const pen = composite ? origin : zone.x[zone.length - 4];
+    /* Onto the whole pixels of it, not the sixty-fourths. A bitmap is placed
+     * at a whole pixel, so the fraction of wherever the origin phantom finished
+     * cannot move the outline against the sample grid; the scaler samples the
+     * outline where the program left it and GDI places what comes out. Arial
+     * Bold Italic's `M` at eleven pixels is the cell that says so: its program
+     * leaves the origin at -66, nine readouts put every point where this has
+     * them, and carrying the fraction -- two sixty-fourths -- put a diagonal's
+     * edge 0.56 sixty-fourths past a sample centre that Windows has it inside.
+     * **Measured**: the cell goes and nothing else in the corpus moves; whether
+     * the whole pixels are the nearest or those toward zero no recording says,
+     * since -66 comes to -64 either way. */
+    const pen = composite ? origin : Math.round(zone.x[zone.length - 4] / ONE) * ONE;
 
     let index = 0;
 

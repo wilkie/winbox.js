@@ -1235,7 +1235,11 @@ const ADAPTERS: Record<
   advance(context, args) {
     const { hdc, metrics } = context.mappedFont(args.slice(0, -1));
 
-    const character = String(args[args.length - 1] ?? '').replace(/'/g, '');
+    // A byte above 127 is named `#xx`, as the `glyph` adapter has it.
+    const asked = String(args[args.length - 1] ?? '');
+    const character = asked.startsWith('#')
+      ? String.fromCharCode(parseInt(asked.slice(1), 16))
+      : asked.replace(/'/g, '');
     const extent = GetTextExtent.call(context, hdc, context.lpcstr(character), character.length);
 
     return `advance=${extent & 0xffff},ppem=${metrics.tmHeight - metrics.tmInternalLeading}`;
@@ -1383,10 +1387,11 @@ export class Unimplemented extends Error {}
  */
 export const KNOWN_GAPS: Record<string, string> = {
   /* The wide net over the styled files, Wingdings and the weight field. Of its
-   * 9,094 glyph cells six are left, each a single pixel in a different glyph,
-   * all italics: two bold-italic letters and four Courier New Italic accents.
+   * 9,094 glyph cells five are left, each a single pixel in a different glyph,
+   * all italics: Times New Roman Bold Italic's pound sign and four Courier New
+   * Italic accents.
    */
-  'styles:glyph': 'six single pixels among the styled italics',
+  'styles:glyph': 'five single pixels among the styled italics',
 
   /* The width field, recorded for the first time. The strikes agree in full and
    * the metrics all but two. The outline faces are hinted anisotropically the

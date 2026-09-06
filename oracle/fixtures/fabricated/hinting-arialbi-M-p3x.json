@@ -8,7 +8,7 @@
     "display": "vga",
     "displayDescription": "VGA, 640x480, 16 colours"
   },
-  "font": null,
+  "font": "arialbi-M-p3x",
   "records": [
     {
       "function": "advance",
@@ -47005,595 +47005,595 @@
     {
       "function": "advance",
       "args": "\"Arial\",h=12,weight=700,italic=1,'M'",
-      "result": "advance=6,ppem=10",
+      "result": "advance=64,ppem=10",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=13,weight=700,italic=1,'M'",
-      "result": "advance=11,ppem=11",
+      "result": "advance=65,ppem=11",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=14,weight=700,italic=1,'M'",
-      "result": "advance=11,ppem=11",
+      "result": "advance=65,ppem=11",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=15,weight=700,italic=1,'M'",
-      "result": "advance=11,ppem=12",
+      "result": "advance=128,ppem=12",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=16,weight=700,italic=1,'M'",
-      "result": "advance=12,ppem=13",
+      "result": "advance=128,ppem=13",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=17,weight=700,italic=1,'M'",
-      "result": "advance=13,ppem=15",
+      "result": "advance=192,ppem=15",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=18,weight=700,italic=1,'M'",
-      "result": "advance=14,ppem=16",
+      "result": "advance=192,ppem=16",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=19,weight=700,italic=1,'M'",
-      "result": "advance=15,ppem=17",
+      "result": "advance=192,ppem=17",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=20,weight=700,italic=1,'M'",
-      "result": "advance=15,ppem=17",
+      "result": "advance=192,ppem=17",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=21,weight=700,italic=1,'M'",
-      "result": "advance=15,ppem=18",
+      "result": "advance=256,ppem=18",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=22,weight=700,italic=1,'M'",
-      "result": "advance=15,ppem=18",
+      "result": "advance=256,ppem=18",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=23,weight=700,italic=1,'M'",
-      "result": "advance=18,ppem=19",
+      "result": "advance=256,ppem=19",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=24,weight=700,italic=1,'M'",
-      "result": "advance=18,ppem=20",
+      "result": "advance=256,ppem=20",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=25,weight=700,italic=1,'M'",
-      "result": "advance=18,ppem=22",
+      "result": "advance=256,ppem=22",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=26,weight=700,italic=1,'M'",
-      "result": "advance=19,ppem=23",
+      "result": "advance=256,ppem=23",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=27,weight=700,italic=1,'M'",
-      "result": "advance=19,ppem=23",
+      "result": "advance=256,ppem=23",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=28,weight=700,italic=1,'M'",
-      "result": "advance=20,ppem=24",
+      "result": "advance=256,ppem=24",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=29,weight=700,italic=1,'M'",
-      "result": "advance=21,ppem=25",
+      "result": "advance=256,ppem=25",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=30,weight=700,italic=1,'M'",
-      "result": "advance=22,ppem=26",
+      "result": "advance=256,ppem=26",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=31,weight=700,italic=1,'M'",
-      "result": "advance=22,ppem=26",
+      "result": "advance=256,ppem=26",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=32,weight=700,italic=1,'M'",
-      "result": "advance=24,ppem=27",
+      "result": "advance=320,ppem=27",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=33,weight=700,italic=1,'M'",
-      "result": "advance=24,ppem=28",
+      "result": "advance=320,ppem=28",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=34,weight=700,italic=1,'M'",
-      "result": "advance=24,ppem=29",
+      "result": "advance=296,ppem=29",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=35,weight=700,italic=1,'M'",
-      "result": "advance=25,ppem=31",
+      "result": "advance=320,ppem=31",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=36,weight=700,italic=1,'M'",
-      "result": "advance=27,ppem=32",
+      "result": "advance=320,ppem=32",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=37,weight=700,italic=1,'M'",
-      "result": "advance=27,ppem=32",
+      "result": "advance=320,ppem=32",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=38,weight=700,italic=1,'M'",
-      "result": "advance=29,ppem=33",
+      "result": "advance=384,ppem=33",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=39,weight=700,italic=1,'M'",
-      "result": "advance=30,ppem=34",
+      "result": "advance=384,ppem=34",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=40,weight=700,italic=1,'M'",
-      "result": "advance=30,ppem=35",
+      "result": "advance=384,ppem=35",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=41,weight=700,italic=1,'M'",
-      "result": "advance=31,ppem=36",
+      "result": "advance=448,ppem=36",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=42,weight=700,italic=1,'M'",
-      "result": "advance=30,ppem=37",
+      "result": "advance=384,ppem=37",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=43,weight=700,italic=1,'M'",
-      "result": "advance=31,ppem=38",
+      "result": "advance=448,ppem=38",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=44,weight=700,italic=1,'M'",
-      "result": "advance=31,ppem=39",
+      "result": "advance=448,ppem=39",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=45,weight=700,italic=1,'M'",
-      "result": "advance=31,ppem=39",
+      "result": "advance=448,ppem=39",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=46,weight=700,italic=1,'M'",
-      "result": "advance=33,ppem=40",
+      "result": "advance=-512,ppem=40",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=47,weight=700,italic=1,'M'",
-      "result": "advance=34,ppem=41",
+      "result": "advance=448,ppem=41",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=48,weight=700,italic=1,'M'",
-      "result": "advance=36,ppem=42",
+      "result": "advance=-512,ppem=42",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=49,weight=700,italic=1,'M'",
-      "result": "advance=36,ppem=43",
+      "result": "advance=-512,ppem=43",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=50,weight=700,italic=1,'M'",
-      "result": "advance=36,ppem=44",
+      "result": "advance=448,ppem=44",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=51,weight=700,italic=1,'M'",
-      "result": "advance=36,ppem=45",
+      "result": "advance=-512,ppem=45",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=52,weight=700,italic=1,'M'",
-      "result": "advance=39,ppem=46",
+      "result": "advance=-512,ppem=46",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=53,weight=700,italic=1,'M'",
-      "result": "advance=39,ppem=46",
+      "result": "advance=-512,ppem=46",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=54,weight=700,italic=1,'M'",
-      "result": "advance=37,ppem=47",
+      "result": "advance=-512,ppem=47",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=55,weight=700,italic=1,'M'",
-      "result": "advance=40,ppem=48",
+      "result": "advance=-512,ppem=48",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=56,weight=700,italic=1,'M'",
-      "result": "advance=42,ppem=49",
+      "result": "advance=-448,ppem=49",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=57,weight=700,italic=1,'M'",
-      "result": "advance=42,ppem=50",
+      "result": "advance=-448,ppem=50",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=58,weight=700,italic=1,'M'",
-      "result": "advance=42,ppem=50",
+      "result": "advance=-448,ppem=50",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=59,weight=700,italic=1,'M'",
-      "result": "advance=43,ppem=51",
+      "result": "advance=-448,ppem=51",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=60,weight=700,italic=1,'M'",
-      "result": "advance=43,ppem=53",
+      "result": "advance=-448,ppem=53",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=61,weight=700,italic=1,'M'",
-      "result": "advance=44,ppem=54",
+      "result": "advance=-448,ppem=54",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=62,weight=700,italic=1,'M'",
-      "result": "advance=44,ppem=54",
+      "result": "advance=-448,ppem=54",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=63,weight=700,italic=1,'M'",
-      "result": "advance=46,ppem=55",
+      "result": "advance=-448,ppem=55",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=64,weight=700,italic=1,'M'",
-      "result": "advance=46,ppem=55",
+      "result": "advance=-448,ppem=55",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=65,weight=700,italic=1,'M'",
-      "result": "advance=46,ppem=56",
+      "result": "advance=-448,ppem=56",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=66,weight=700,italic=1,'M'",
-      "result": "advance=49,ppem=58",
+      "result": "advance=-320,ppem=58",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=67,weight=700,italic=1,'M'",
-      "result": "advance=49,ppem=59",
+      "result": "advance=-320,ppem=59",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=68,weight=700,italic=1,'M'",
-      "result": "advance=49,ppem=60",
+      "result": "advance=-320,ppem=60",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=69,weight=700,italic=1,'M'",
-      "result": "advance=49,ppem=61",
+      "result": "advance=-320,ppem=61",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=70,weight=700,italic=1,'M'",
-      "result": "advance=49,ppem=61",
+      "result": "advance=-320,ppem=61",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=71,weight=700,italic=1,'M'",
-      "result": "advance=49,ppem=62",
+      "result": "advance=-320,ppem=62",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=72,weight=700,italic=1,'M'",
-      "result": "advance=52,ppem=63",
+      "result": "advance=-384,ppem=63",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=73,weight=700,italic=1,'M'",
-      "result": "advance=52,ppem=63",
+      "result": "advance=-384,ppem=63",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=74,weight=700,italic=1,'M'",
-      "result": "advance=54,ppem=64",
+      "result": "advance=-320,ppem=64",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=75,weight=700,italic=1,'M'",
-      "result": "advance=55,ppem=65",
+      "result": "advance=-256,ppem=65",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=76,weight=700,italic=1,'M'",
-      "result": "advance=55,ppem=67",
+      "result": "advance=-256,ppem=67",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=77,weight=700,italic=1,'M'",
-      "result": "advance=55,ppem=68",
+      "result": "advance=-256,ppem=68",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=78,weight=700,italic=1,'M'",
-      "result": "advance=55,ppem=68",
+      "result": "advance=-256,ppem=68",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=79,weight=700,italic=1,'M'",
-      "result": "advance=55,ppem=69",
+      "result": "advance=-256,ppem=69",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=80,weight=700,italic=1,'M'",
-      "result": "advance=58,ppem=70",
+      "result": "advance=-256,ppem=70",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=81,weight=700,italic=1,'M'",
-      "result": "advance=58,ppem=71",
+      "result": "advance=-256,ppem=71",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=82,weight=700,italic=1,'M'",
-      "result": "advance=61,ppem=72",
+      "result": "advance=-192,ppem=72",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=83,weight=700,italic=1,'M'",
-      "result": "advance=61,ppem=73",
+      "result": "advance=-192,ppem=73",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=84,weight=700,italic=1,'M'",
-      "result": "advance=61,ppem=73",
+      "result": "advance=-192,ppem=73",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=85,weight=700,italic=1,'M'",
-      "result": "advance=61,ppem=74",
+      "result": "advance=-192,ppem=74",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=86,weight=700,italic=1,'M'",
-      "result": "advance=61,ppem=75",
+      "result": "advance=-192,ppem=75",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=87,weight=700,italic=1,'M'",
-      "result": "advance=61,ppem=76",
+      "result": "advance=-192,ppem=76",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=88,weight=700,italic=1,'M'",
-      "result": "advance=64,ppem=77",
+      "result": "advance=-192,ppem=77",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=89,weight=700,italic=1,'M'",
-      "result": "advance=64,ppem=78",
+      "result": "advance=-192,ppem=78",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=90,weight=700,italic=1,'M'",
-      "result": "advance=67,ppem=79",
+      "result": "advance=-128,ppem=79",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=91,weight=700,italic=1,'M'",
-      "result": "advance=67,ppem=80",
+      "result": "advance=-128,ppem=80",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=92,weight=700,italic=1,'M'",
-      "result": "advance=67,ppem=81",
+      "result": "advance=-64,ppem=81",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=93,weight=700,italic=1,'M'",
-      "result": "advance=67,ppem=82",
+      "result": "advance=-64,ppem=82",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=94,weight=700,italic=1,'M'",
-      "result": "advance=67,ppem=83",
+      "result": "advance=-128,ppem=83",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=95,weight=700,italic=1,'M'",
-      "result": "advance=67,ppem=83",
+      "result": "advance=-128,ppem=83",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=96,weight=700,italic=1,'M'",
-      "result": "advance=67,ppem=84",
+      "result": "advance=-128,ppem=84",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=97,weight=700,italic=1,'M'",
-      "result": "advance=70,ppem=85",
+      "result": "advance=-128,ppem=85",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=98,weight=700,italic=1,'M'",
-      "result": "advance=71,ppem=86",
+      "result": "advance=-64,ppem=86",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=99,weight=700,italic=1,'M'",
-      "result": "advance=71,ppem=86",
+      "result": "advance=-64,ppem=86",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=100,weight=700,italic=1,'M'",
-      "result": "advance=73,ppem=87",
+      "result": "advance=0,ppem=87",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=101,weight=700,italic=1,'M'",
-      "result": "advance=73,ppem=89",
+      "result": "advance=0,ppem=89",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=102,weight=700,italic=1,'M'",
-      "result": "advance=73,ppem=90",
+      "result": "advance=0,ppem=90",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=103,weight=700,italic=1,'M'",
-      "result": "advance=73,ppem=90",
+      "result": "advance=0,ppem=90",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=104,weight=700,italic=1,'M'",
-      "result": "advance=73,ppem=91",
+      "result": "advance=0,ppem=91",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=105,weight=700,italic=1,'M'",
-      "result": "advance=77,ppem=92",
+      "result": "advance=0,ppem=92",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=106,weight=700,italic=1,'M'",
-      "result": "advance=77,ppem=93",
+      "result": "advance=0,ppem=93",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=107,weight=700,italic=1,'M'",
-      "result": "advance=77,ppem=94",
+      "result": "advance=0,ppem=94",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=108,weight=700,italic=1,'M'",
-      "result": "advance=79,ppem=95",
+      "result": "advance=64,ppem=95",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=109,weight=700,italic=1,'M'",
-      "result": "advance=79,ppem=95",
+      "result": "advance=64,ppem=95",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=110,weight=700,italic=1,'M'",
-      "result": "advance=79,ppem=96",
+      "result": "advance=64,ppem=96",
       "section": "the italic files, a letter at a time"
     },
     {

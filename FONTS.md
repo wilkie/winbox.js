@@ -9018,6 +9018,10 @@ read out of GDI rather than measured into place.
   freedom-projection dot product is refused or indifferent by count, so those
   keep the symmetric rounding, and which the scaler's `LongMulDiv` and
   `MulDiv26Dot6` actually do is not known.
+- **The whole pixels an outline is carried back by.** A program that moves its
+  origin phantom off a whole pixel -- Arial Bold Italic's `M`, to -66 -- has
+  its outline carried by the phantom's whole pixels only (section 8a); whether
+  those are the nearest or the ones toward zero, no recording separates.
 - **Four things about a width request are measured where the pseudocode is
   silent.** The reference scales the control values once, at a size it is
   handed, and reads them through 16.16 stretch factors; that the size is the
@@ -12218,6 +12222,22 @@ the shoulder is not a chord matter either.
 Nothing recorded before this moved: `font`, `glyphs` and `hinting` hold at every
 record, since at a stretch of one every new path is the old one.
 
+### The advance under a width is the hinted one
+
+Re-recording the `hinting` probe -- extended to sweep the italic files, for the
+readouts below -- brought its stretched rows into the main fixture for the
+first time: Times New Roman's `N` and Arial's `n` at every width the widths
+sweep uses. Twenty-three of twenty-four agreed and one did not: **the `N` at
+twenty-one pixels asked for twelve advances 22 in Windows and 23 here.** The
+horizontal size there is 31.5, and this scaled the design advance by it --
+1479 units at 31.5 is 22.75, which rounds to 23. Windows draws the glyph at
+the whole size, 31, with its program run, and the advance is what the program
+leaves the advance phantom at: 1479 units at 31 is 22.39, and the phantom
+rounds to 22. **The advance under a width is the hinted one at the whole
+horizontal size**, as the glyph is drawn, and every stretched row agrees; the
+two stretched extents of the `font` fixture, Arial at twenty-seven asked for
+eight and twenty, hold.
+
 ### The family comes from the `.FOT`
 
 The `styles` sweep had left twenty-two metric records of Wingdings: asked in its
@@ -12271,6 +12291,49 @@ An italic request keeps going to the italic file, as recorded before.
 
     styles   9,157 -> 9,172 of 9,178;   the six glyph pixels are all that is left
 
+### The styled italics, and what a readout can and cannot reach
+
+Six cells of `styles` were left, all single pixels, all in italic files: Arial
+Bold Italic's `M` at fourteen, Times New Roman Bold Italic's pound sign at
+seventeen, and four Courier New Italic and Bold Italic accents. Each was placed
+against the outline it came from. The `M`'s pixel sits where a diagonal's edge
+crosses a sample row 0.56 sixty-fourths past the centre; the pound sign's is on a
+curve the control polygon does not reach; the Courier cases are several units of
+hinting apart from Windows, where a cedilla's stem top, a cent sign's foot and a
+pilcrow's counter fall differently.
+
+None of those files was swept by the hinting probe, so it now is: the bold
+italic `M`, and the accents by code, `#a3`, `#a2`, `#b8`, `#b6`, in the same
+form the `styles` probe uses. Re-recording it brought the stretched rows in
+too (above). Then the points the disputed edges run between were read out.
+
+**The pound sign's four agree exactly.** Its pixel is not in the points.
+
+**The `M`'s nine all come back one more than this has them -- x and y alike,
+the baseline points included** -- at eleven pixels, and exactly equal at ten
+and twelve. A hinted baseline cannot sit a sixty-fourth up, and shifting the
+whole outline by one in both directions would move the disputed edge the wrong
+way, so the offset is the channel's at that one size and the points are ours.
+What is not ours is where the outline sits against the grid. The `M`'s program
+leaves its origin phantom at -66, a pixel and two sixty-fourths left of where
+it started, and the outline was carried back onto the phantom whole, as the
+guillemets had taught (section 3) -- which for them was a whole pixel and here
+is not. A bitmap is placed at a whole pixel; the fraction cannot move the
+outline against the samples. **Carried back by the phantom's whole pixels
+only**, the edge crosses at 350.56 instead of 352.56, the pixel is inside, and
+nothing else in the corpus moves. Whether the whole pixels are the nearest or
+those toward zero, -66 does not say.
+
+**The Courier readouts read nothing.** Every one came back as the plain scaled
+advance of the face, whatever point was asked for and whatever the program
+did, and raising the file's `maxp` limits changed nothing. The reason is the
+channel: GDI answers a fixed-pitch face's extent from its average character
+width and never asks the glyph, so an advance phantom moved by the program is
+never seen. The four Courier cells, and the pound sign's curve, need a readout
+that comes back through the bitmap itself.
+
+    styles   9,172 -> 9,173 of 9,178
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
@@ -12280,7 +12343,7 @@ it stands:
 | ------------------------------------------------------------ | ------- | --------- |
 | `font`                                                       | 5,057   | **100%**  |
 | `glyphs`                                                     | 6,046   | **100%**  |
-| `hinting`                                                    | 7,828   | **100%**  |
+| `hinting`                                                    | 8,470   | **100%**  |
 | `lines`                                                      | 248     | **100%**  |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
 | `styles`                                                     | 9,178   | 99.9%     |

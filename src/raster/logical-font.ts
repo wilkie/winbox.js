@@ -205,6 +205,25 @@ export class LogicalFont extends Font {
       for (const character of String(text)) {
         const glyph = font.glyphFor(character.charCodeAt(0));
 
+        /* Under a width the advance is the hinted one at the whole horizontal
+         * size, as the glyph is drawn: the program runs anisotropically and the
+         * advance phantom lands where it lands. Scaling the design advance by
+         * the fractional size instead rounds Times New Roman's `N` at
+         * twenty-one pixels asked for twelve -- 31.5 across -- to 23, where
+         * Windows says 22, which is 1479 units at 31 pixels rounded. See the
+         * `hinting` fixture's stretched rows. */
+        if (
+          this.ppem &&
+          this.xPpem !== this.ppem &&
+          !(this._style?.italic && !this._style?.exactStyle)
+        ) {
+          width +=
+            font.hintedAdvance(glyph, this.ppem, true, this.stretch) ??
+            Math.round((font.advanceOf(glyph) * Math.floor(this.xPpem)) / font.unitsPerEm);
+
+          continue;
+        }
+
         /* Three tables and a program, asked in the order Windows can answer
          * them.
          *

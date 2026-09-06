@@ -1149,8 +1149,35 @@ function pointReporter(
 
       const grown = growGlyphProgram(bytes, glyph, [...glyphProgram(bytes, glyph), ...ending]);
 
+      /* The scaler holds a glyph to `maxp`'s limits, and a program that has
+       * grown past `maxSizeOfInstructions` -- or pushes past
+       * `maxStackElements` -- is not run at all: the glyph comes out unhinted
+       * and its advance is the plain scaled one, which reads as a readout and
+       * is not one. Courier New Italic's limits are tight enough for a readout
+       * to cross them; Arial's are not. Both are raised. */
+      const view = new DataView(grown.buffer, grown.byteOffset, grown.byteLength);
+      const maxp = tablesOf(view).maxp;
+
+      if (maxp && maxp.length >= 32) {
+        view.setUint16(
+          maxp.offset + 24,
+          Math.max(view.getUint16(maxp.offset + 24, false), 512),
+          false
+        );
+        view.setUint16(
+          maxp.offset + 26,
+          Math.max(view.getUint16(maxp.offset + 26, false), 4096),
+          false
+        );
+      }
+
+      // A table the file never had -- the italic files carry no `hdmx` -- is nothing to drop.
+      const present = tablesOf(view);
+
       for (const tag of drop ?? []) {
-        dropTable(grown, tag);
+        if (present[tag]) {
+          dropTable(grown, tag);
+        }
       }
 
       return grown;
@@ -1576,6 +1603,144 @@ export const FABRICATIONS = [
     drop: ['hdmx', 'LTSH'],
     describe:
       "Arial's X, in the n's slot, reporting point 1 (the left crossing, set by ISECT, along y) along y at sixty-four times less 512",
+  }),
+  /* The styled cells still in dispute, each a single pixel on an edge a
+   * diagonal projection placed in an italic file. The hinting probe now sweeps
+   * these files; the points read are the ones the disputed edge runs between.
+   * Sixty-four times with a base taken off, so the answer fits a word at the
+   * size in question; the other sizes wrap and are not read. Only the
+   * variable-pitch files can be read this way: GDI answers a fixed-pitch face's
+   * extent from its average width and never asks the glyph, so a Courier New
+   * readout comes back as the plain advance whatever the program did. */
+  pointReporter('arialbi-M-p1x', {
+    font: 'ARIALBI.TTF',
+    character: 'M',
+    point: 1,
+    axis: 'x',
+    magnify: 64,
+    base: 128,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial Bold Italic's M, point 1 (the diagonal's foot) along x",
+  }),
+  pointReporter('arialbi-M-p2x', {
+    font: 'ARIALBI.TTF',
+    character: 'M',
+    point: 2,
+    axis: 'x',
+    magnify: 64,
+    base: 96,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial Bold Italic's M, point 2 (the diagonal's top) along x",
+  }),
+  pointReporter('arialbi-M-p2y', {
+    font: 'ARIALBI.TTF',
+    character: 'M',
+    point: 2,
+    axis: 'y',
+    magnify: 64,
+    base: 384,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial Bold Italic's M, point 2 along y",
+  }),
+  pointReporter('timesbi-pound-p41y', {
+    font: 'TIMESBI.TTF',
+    character: String.fromCharCode(0xa3),
+    point: 41,
+    axis: 'y',
+    magnify: 64,
+    base: 512,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Times New Roman Bold Italic's pound sign, point 41 along y",
+  }),
+  pointReporter('timesbi-pound-p42y', {
+    font: 'TIMESBI.TTF',
+    character: String.fromCharCode(0xa3),
+    point: 42,
+    axis: 'y',
+    magnify: 64,
+    base: 512,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Times New Roman Bold Italic's pound sign, point 42 along y",
+  }),
+  pointReporter('timesbi-pound-p43y', {
+    font: 'TIMESBI.TTF',
+    character: String.fromCharCode(0xa3),
+    point: 43,
+    axis: 'y',
+    magnify: 64,
+    base: 480,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Times New Roman Bold Italic's pound sign, point 43 along y",
+  }),
+  pointReporter('timesbi-pound-p44y', {
+    font: 'TIMESBI.TTF',
+    character: String.fromCharCode(0xa3),
+    point: 44,
+    axis: 'y',
+    magnify: 64,
+    base: 480,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Times New Roman Bold Italic's pound sign, point 44 along y",
+  }),
+  pointReporter('arialbi-M-p0x', {
+    font: 'ARIALBI.TTF',
+    character: 'M',
+    point: 0,
+    axis: 'x',
+    magnify: 64,
+    base: 256,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial Bold Italic's M, point 0 along x",
+  }),
+  pointReporter('arialbi-M-p0y', {
+    font: 'ARIALBI.TTF',
+    character: 'M',
+    point: 0,
+    axis: 'y',
+    magnify: 64,
+    base: -64,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial Bold Italic's M, point 0 along y",
+  }),
+  pointReporter('arialbi-M-p3x', {
+    font: 'ARIALBI.TTF',
+    character: 'M',
+    point: 3,
+    axis: 'x',
+    magnify: 64,
+    base: 0,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial Bold Italic's M, point 3 along x",
+  }),
+  pointReporter('arialbi-M-p1y', {
+    font: 'ARIALBI.TTF',
+    character: 'M',
+    point: 1,
+    axis: 'y',
+    magnify: 64,
+    base: -64,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial Bold Italic's M, point 1 along y",
+  }),
+  pointReporter('arialbi-M-p5x', {
+    font: 'ARIALBI.TTF',
+    character: 'M',
+    point: 5,
+    axis: 'x',
+    magnify: 64,
+    base: 0,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial Bold Italic's M, point 5 along x",
+  }),
+  pointReporter('arialbi-M-p5y', {
+    font: 'ARIALBI.TTF',
+    character: 'M',
+    point: 5,
+    axis: 'y',
+    magnify: 64,
+    base: 448,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial Bold Italic's M, point 5 along y",
   }),
   pointReporter('times-N-diag-p2x16', {
     character: 'N',

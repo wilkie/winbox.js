@@ -8,7 +8,7 @@
     "display": "vga",
     "displayDescription": "VGA, 640x480, 16 colours"
   },
-  "font": null,
+  "font": "timesbi-pound-p42y",
   "records": [
     {
       "function": "advance",
@@ -47605,7 +47605,7 @@
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=9,weight=700,italic=1,#a3",
-      "result": "advance=4,ppem=7",
+      "result": "advance=-256,ppem=7",
       "section": "the italic files, a letter at a time"
     },
     {
@@ -47623,595 +47623,595 @@
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=12,weight=700,italic=1,#a3",
-      "result": "advance=5,ppem=10",
+      "result": "advance=-128,ppem=10",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=13,weight=700,italic=1,#a3",
-      "result": "advance=5,ppem=10",
+      "result": "advance=-128,ppem=10",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=14,weight=700,italic=1,#a3",
-      "result": "advance=6,ppem=11",
+      "result": "advance=-118,ppem=11",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=15,weight=700,italic=1,#a3",
-      "result": "advance=6,ppem=12",
+      "result": "advance=-54,ppem=12",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=16,weight=700,italic=1,#a3",
-      "result": "advance=7,ppem=13",
+      "result": "advance=-54,ppem=13",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=17,weight=700,italic=1,#a3",
-      "result": "advance=7,ppem=14",
+      "result": "advance=58,ppem=14",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=18,weight=700,italic=1,#a3",
-      "result": "advance=8,ppem=15",
+      "result": "advance=10,ppem=15",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=19,weight=700,italic=1,#a3",
-      "result": "advance=8,ppem=16",
+      "result": "advance=74,ppem=16",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=20,weight=700,italic=1,#a3",
-      "result": "advance=9,ppem=17",
+      "result": "advance=74,ppem=17",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=21,weight=700,italic=1,#a3",
-      "result": "advance=9,ppem=18",
+      "result": "advance=84,ppem=18",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=22,weight=700,italic=1,#a3",
-      "result": "advance=10,ppem=19",
+      "result": "advance=84,ppem=19",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=23,weight=700,italic=1,#a3",
-      "result": "advance=10,ppem=20",
+      "result": "advance=148,ppem=20",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=24,weight=700,italic=1,#a3",
-      "result": "advance=11,ppem=21",
+      "result": "advance=212,ppem=21",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=25,weight=700,italic=1,#a3",
-      "result": "advance=11,ppem=22",
+      "result": "advance=276,ppem=22",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=26,weight=700,italic=1,#a3",
-      "result": "advance=12,ppem=23",
+      "result": "advance=276,ppem=23",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=27,weight=700,italic=1,#a3",
-      "result": "advance=12,ppem=23",
+      "result": "advance=276,ppem=23",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=28,weight=700,italic=1,#a3",
-      "result": "advance=12,ppem=24",
+      "result": "advance=340,ppem=24",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=29,weight=700,italic=1,#a3",
-      "result": "advance=12,ppem=24",
+      "result": "advance=340,ppem=24",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=30,weight=700,italic=1,#a3",
-      "result": "advance=13,ppem=25",
+      "result": "advance=404,ppem=25",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=31,weight=700,italic=1,#a3",
-      "result": "advance=14,ppem=27",
+      "result": "advance=468,ppem=27",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=32,weight=700,italic=1,#a3",
-      "result": "advance=14,ppem=28",
+      "result": "advance=-492,ppem=28",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=33,weight=700,italic=1,#a3",
-      "result": "advance=15,ppem=29",
+      "result": "advance=-492,ppem=29",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=34,weight=700,italic=1,#a3",
-      "result": "advance=15,ppem=30",
+      "result": "advance=-482,ppem=30",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=35,weight=700,italic=1,#a3",
-      "result": "advance=15,ppem=30",
+      "result": "advance=-482,ppem=30",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=36,weight=700,italic=1,#a3",
-      "result": "advance=16,ppem=31",
+      "result": "advance=-418,ppem=31",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=37,weight=700,italic=1,#a3",
-      "result": "advance=16,ppem=32",
+      "result": "advance=-418,ppem=32",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=38,weight=700,italic=1,#a3",
-      "result": "advance=17,ppem=33",
+      "result": "advance=-354,ppem=33",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=39,weight=700,italic=1,#a3",
-      "result": "advance=17,ppem=34",
+      "result": "advance=-290,ppem=34",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=40,weight=700,italic=1,#a3",
-      "result": "advance=17,ppem=34",
+      "result": "advance=-290,ppem=34",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=41,weight=700,italic=1,#a3",
-      "result": "advance=18,ppem=35",
+      "result": "advance=-226,ppem=35",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=42,weight=700,italic=1,#a3",
-      "result": "advance=18,ppem=36",
+      "result": "advance=-226,ppem=36",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=43,weight=700,italic=1,#a3",
-      "result": "advance=19,ppem=37",
+      "result": "advance=-162,ppem=37",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=44,weight=700,italic=1,#a3",
-      "result": "advance=19,ppem=38",
+      "result": "advance=-153,ppem=38",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=45,weight=700,italic=1,#a3",
-      "result": "advance=20,ppem=39",
+      "result": "advance=-207,ppem=39",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=46,weight=700,italic=1,#a3",
-      "result": "advance=20,ppem=40",
+      "result": "advance=-143,ppem=40",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=47,weight=700,italic=1,#a3",
-      "result": "advance=21,ppem=41",
+      "result": "advance=-79,ppem=41",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=48,weight=700,italic=1,#a3",
-      "result": "advance=21,ppem=42",
+      "result": "advance=-79,ppem=42",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=49,weight=700,italic=1,#a3",
-      "result": "advance=22,ppem=43",
+      "result": "advance=-15,ppem=43",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=50,weight=700,italic=1,#a3",
-      "result": "advance=22,ppem=43",
+      "result": "advance=-15,ppem=43",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=51,weight=700,italic=1,#a3",
-      "result": "advance=22,ppem=44",
+      "result": "advance=49,ppem=44",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=52,weight=700,italic=1,#a3",
-      "result": "advance=23,ppem=45",
+      "result": "advance=113,ppem=45",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=53,weight=700,italic=1,#a3",
-      "result": "advance=24,ppem=47",
+      "result": "advance=59,ppem=47",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=54,weight=700,italic=1,#a3",
-      "result": "advance=24,ppem=48",
+      "result": "advance=123,ppem=48",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=55,weight=700,italic=1,#a3",
-      "result": "advance=25,ppem=49",
+      "result": "advance=123,ppem=49",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=56,weight=700,italic=1,#a3",
-      "result": "advance=25,ppem=49",
+      "result": "advance=123,ppem=49",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=57,weight=700,italic=1,#a3",
-      "result": "advance=25,ppem=50",
+      "result": "advance=187,ppem=50",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=58,weight=700,italic=1,#a3",
-      "result": "advance=26,ppem=51",
+      "result": "advance=251,ppem=51",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=59,weight=700,italic=1,#a3",
-      "result": "advance=26,ppem=52",
+      "result": "advance=251,ppem=52",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=60,weight=700,italic=1,#a3",
-      "result": "advance=26,ppem=52",
+      "result": "advance=251,ppem=52",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=61,weight=700,italic=1,#a3",
-      "result": "advance=27,ppem=53",
+      "result": "advance=261,ppem=53",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=62,weight=700,italic=1,#a3",
-      "result": "advance=28,ppem=55",
+      "result": "advance=389,ppem=55",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=63,weight=700,italic=1,#a3",
-      "result": "advance=28,ppem=56",
+      "result": "advance=453,ppem=56",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=64,weight=700,italic=1,#a3",
-      "result": "advance=28,ppem=56",
+      "result": "advance=453,ppem=56",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=65,weight=700,italic=1,#a3",
-      "result": "advance=29,ppem=57",
+      "result": "advance=-507,ppem=57",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=66,weight=700,italic=1,#a3",
-      "result": "advance=30,ppem=59",
+      "result": "advance=-453,ppem=59",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=67,weight=700,italic=1,#a3",
-      "result": "advance=30,ppem=60",
+      "result": "advance=-443,ppem=60",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=68,weight=700,italic=1,#a3",
-      "result": "advance=31,ppem=61",
+      "result": "advance=-379,ppem=61",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=69,weight=700,italic=1,#a3",
-      "result": "advance=31,ppem=62",
+      "result": "advance=-379,ppem=62",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=70,weight=700,italic=1,#a3",
-      "result": "advance=31,ppem=62",
+      "result": "advance=-379,ppem=62",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=71,weight=700,italic=1,#a3",
-      "result": "advance=32,ppem=63",
+      "result": "advance=-315,ppem=63",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=72,weight=700,italic=1,#a3",
-      "result": "advance=32,ppem=64",
+      "result": "advance=-251,ppem=64",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=73,weight=700,italic=1,#a3",
-      "result": "advance=33,ppem=66",
+      "result": "advance=-187,ppem=66",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=74,weight=700,italic=1,#a3",
-      "result": "advance=33,ppem=66",
+      "result": "advance=-187,ppem=66",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=75,weight=700,italic=1,#a3",
-      "result": "advance=34,ppem=67",
+      "result": "advance=-123,ppem=67",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=76,weight=700,italic=1,#a3",
-      "result": "advance=34,ppem=67",
+      "result": "advance=-123,ppem=67",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=77,weight=700,italic=1,#a3",
-      "result": "advance=34,ppem=68",
+      "result": "advance=-177,ppem=68",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=78,weight=700,italic=1,#a3",
-      "result": "advance=35,ppem=70",
+      "result": "advance=-49,ppem=70",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=79,weight=700,italic=1,#a3",
-      "result": "advance=36,ppem=71",
+      "result": "advance=15,ppem=71",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=80,weight=700,italic=1,#a3",
-      "result": "advance=36,ppem=71",
+      "result": "advance=15,ppem=71",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=81,weight=700,italic=1,#a3",
-      "result": "advance=36,ppem=72",
+      "result": "advance=15,ppem=72",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=82,weight=700,italic=1,#a3",
-      "result": "advance=37,ppem=73",
+      "result": "advance=79,ppem=73",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=83,weight=700,italic=1,#a3",
-      "result": "advance=37,ppem=74",
+      "result": "advance=143,ppem=74",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=84,weight=700,italic=1,#a3",
-      "result": "advance=38,ppem=75",
+      "result": "advance=89,ppem=75",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=85,weight=700,italic=1,#a3",
-      "result": "advance=38,ppem=76",
+      "result": "advance=153,ppem=76",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=86,weight=700,italic=1,#a3",
-      "result": "advance=39,ppem=77",
+      "result": "advance=153,ppem=77",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=87,weight=700,italic=1,#a3",
-      "result": "advance=39,ppem=78",
+      "result": "advance=153,ppem=78",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=88,weight=700,italic=1,#a3",
-      "result": "advance=39,ppem=78",
+      "result": "advance=153,ppem=78",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=89,weight=700,italic=1,#a3",
-      "result": "advance=40,ppem=79",
+      "result": "advance=217,ppem=79",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=90,weight=700,italic=1,#a3",
-      "result": "advance=41,ppem=81",
+      "result": "advance=281,ppem=81",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=91,weight=700,italic=1,#a3",
-      "result": "advance=41,ppem=81",
+      "result": "advance=281,ppem=81",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=92,weight=700,italic=1,#a3",
-      "result": "advance=41,ppem=81",
+      "result": "advance=281,ppem=81",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=93,weight=700,italic=1,#a3",
-      "result": "advance=41,ppem=82",
+      "result": "advance=291,ppem=82",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=94,weight=700,italic=1,#a3",
-      "result": "advance=42,ppem=84",
+      "result": "advance=419,ppem=84",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=95,weight=700,italic=1,#a3",
-      "result": "advance=42,ppem=84",
+      "result": "advance=419,ppem=84",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=96,weight=700,italic=1,#a3",
-      "result": "advance=43,ppem=85",
+      "result": "advance=419,ppem=85",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=97,weight=700,italic=1,#a3",
-      "result": "advance=43,ppem=86",
+      "result": "advance=483,ppem=86",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=98,weight=700,italic=1,#a3",
-      "result": "advance=44,ppem=87",
+      "result": "advance=-477,ppem=87",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=99,weight=700,italic=1,#a3",
-      "result": "advance=44,ppem=88",
+      "result": "advance=-477,ppem=88",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=100,weight=700,italic=1,#a3",
-      "result": "advance=45,ppem=89",
+      "result": "advance=-468,ppem=89",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=101,weight=700,italic=1,#a3",
-      "result": "advance=45,ppem=90",
+      "result": "advance=-404,ppem=90",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=102,weight=700,italic=1,#a3",
-      "result": "advance=46,ppem=91",
+      "result": "advance=-404,ppem=91",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=103,weight=700,italic=1,#a3",
-      "result": "advance=46,ppem=92",
+      "result": "advance=-340,ppem=92",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=104,weight=700,italic=1,#a3",
-      "result": "advance=47,ppem=93",
+      "result": "advance=-276,ppem=93",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=105,weight=700,italic=1,#a3",
-      "result": "advance=47,ppem=94",
+      "result": "advance=-212,ppem=94",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=106,weight=700,italic=1,#a3",
-      "result": "advance=48,ppem=95",
+      "result": "advance=-212,ppem=95",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=107,weight=700,italic=1,#a3",
-      "result": "advance=48,ppem=95",
+      "result": "advance=-212,ppem=95",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=108,weight=700,italic=1,#a3",
-      "result": "advance=48,ppem=96",
+      "result": "advance=-202,ppem=96",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=109,weight=700,italic=1,#a3",
-      "result": "advance=49,ppem=97",
+      "result": "advance=-148,ppem=97",
       "section": "the italic files, a letter at a time"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=110,weight=700,italic=1,#a3",
-      "result": "advance=50,ppem=99",
+      "result": "advance=-84,ppem=99",
       "section": "the italic files, a letter at a time"
     },
     {
@@ -50689,145 +50689,145 @@
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=16,w=0,italic=0,'N'",
-      "result": "advance=10,ppem=14",
+      "result": "advance=10",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=16,w=7,italic=0,'N'",
-      "result": "advance=12,ppem=14",
+      "result": "advance=12",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=16,w=8,italic=0,'N'",
-      "result": "advance=13,ppem=14",
+      "result": "advance=13",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=16,w=10,italic=0,'N'",
-      "result": "advance=16,ppem=14",
+      "result": "advance=16",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=16,w=12,italic=0,'N'",
-      "result": "advance=20,ppem=14",
+      "result": "advance=20",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=16,w=16,italic=0,'N'",
-      "result": "advance=27,ppem=14",
+      "result": "advance=27",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=24,w=0,italic=0,'N'",
-      "result": "advance=15,ppem=21",
+      "result": "advance=15",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=24,w=9,italic=0,'N'",
-      "result": "advance=16,ppem=21",
+      "result": "advance=16",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=24,w=10,italic=0,'N'",
-      "result": "advance=19,ppem=21",
+      "result": "advance=19",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=24,w=12,italic=0,'N'",
-      "result": "advance=22,ppem=21",
+      "result": "advance=22",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=24,w=16,italic=0,'N'",
-      "result": "advance=30,ppem=21",
+      "result": "advance=30",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Times New Roman\",h=24,w=20,italic=0,'N'",
-      "result": "advance=38,ppem=21",
+      "result": "advance=38",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=16,w=0,italic=0,'n'",
-      "result": "advance=7,ppem=13",
+      "result": "advance=7",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=16,w=7,italic=0,'n'",
-      "result": "advance=8,ppem=13",
+      "result": "advance=8",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=16,w=8,italic=0,'n'",
-      "result": "advance=9,ppem=13",
+      "result": "advance=9",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=16,w=10,italic=0,'n'",
-      "result": "advance=11,ppem=13",
+      "result": "advance=11",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=16,w=12,italic=0,'n'",
-      "result": "advance=14,ppem=13",
+      "result": "advance=14",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=16,w=16,italic=0,'n'",
-      "result": "advance=19,ppem=13",
+      "result": "advance=19",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=24,w=0,italic=0,'n'",
-      "result": "advance=11,ppem=21",
+      "result": "advance=11",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=24,w=9,italic=0,'n'",
-      "result": "advance=11,ppem=21",
+      "result": "advance=11",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=24,w=10,italic=0,'n'",
-      "result": "advance=12,ppem=21",
+      "result": "advance=12",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=24,w=12,italic=0,'n'",
-      "result": "advance=15,ppem=21",
+      "result": "advance=15",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=24,w=16,italic=0,'n'",
-      "result": "advance=21,ppem=21",
+      "result": "advance=21",
       "section": "an outline face under a width, for the readouts of its diagonal"
     },
     {
       "function": "advance",
       "args": "\"Arial\",h=24,w=20,italic=0,'n'",
-      "result": "advance=26,ppem=21",
+      "result": "advance=26",
       "section": "an outline face under a width, for the readouts of its diagonal"
     }
   ]

@@ -88,6 +88,7 @@ static void probeStretched(LPCSTR face, int height, int width, char character)
 {
     HFONT font;
     HFONT previous;
+    TEXTMETRIC tm;
     DWORD extent;
     char text[2];
 
@@ -108,7 +109,9 @@ static void probeStretched(LPCSTR face, int height, int width, char character)
 
     previous = (HFONT)SelectObject(dc, font);
     extent = GetTextExtent(dc, text, 1);
-    wsprintf(probeResult, "advance=%d", (int)LOWORD(extent));
+    GetTextMetrics(dc, &tm);
+    wsprintf(probeResult, "advance=%d,ppem=%d", (int)LOWORD(extent),
+             tm.tmHeight - tm.tmInternalLeading);
     probe("advance", probeArgs, probeResult);
     SelectObject(dc, previous);
     DeleteObject(font);
@@ -172,6 +175,50 @@ static void probeWeightedSweep(LPCSTR face, int weight, BYTE italic, char charac
 
     for (height = 8; height <= 110; height++) {
         probeWeighted(face, height, weight, italic, character);
+    }
+}
+
+/*
+ * The same, for a character outside the printable range, which the record
+ * names as `#xx` the way the `styles` probe does: an apostrophe-quoted byte
+ * above 127 would not survive the log.
+ */
+static void probeWeightedCode(LPCSTR face, int height, int weight, BYTE italic,
+                              unsigned char code)
+{
+    HFONT font;
+    HFONT previous;
+    TEXTMETRIC tm;
+    DWORD extent;
+    char text[2];
+
+    text[0] = (char)code;
+    text[1] = '\0';
+    wsprintf(probeArgs, "\"%s\",h=%d,weight=%d,italic=%d,#%02x", (LPSTR)face,
+             height, weight, (int)italic, (int)code);
+    font = CreateFont(height, 0, 0, 0, weight, italic, 0, 0, ANSI_CHARSET,
+                      OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+                      DEFAULT_PITCH, face);
+    if (font == NULL) {
+        probe("advance", probeArgs, "no font");
+        return;
+    }
+    previous = (HFONT)SelectObject(dc, font);
+    GetTextMetrics(dc, &tm);
+    extent = GetTextExtent(dc, text, 1);
+    wsprintf(probeResult, "advance=%d,ppem=%d", LOWORD(extent),
+             tm.tmHeight - tm.tmInternalLeading);
+    probe("advance", probeArgs, probeResult);
+    SelectObject(dc, previous);
+    DeleteObject(font);
+}
+
+static void probeWeightedCodeSweep(LPCSTR face, int weight, BYTE italic, unsigned char code)
+{
+    int height;
+
+    for (height = 8; height <= 110; height++) {
+        probeWeightedCode(face, height, weight, italic, code);
     }
 }
 
@@ -301,6 +348,16 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      * file, which until now it never has.
      */
     probeWeightedSweep("Courier New", FW_BOLD, 0, 'K');
+    /* The italic files, for the six styled cells still in dispute: each is a
+     * single pixel on an edge a diagonal projection placed, and reading its
+     * points needs the probe to ask for these files. */
+    probeNote("the italic files, a letter at a time");
+    probeWeightedSweep("Arial", FW_BOLD, 1, 'M');
+    probeWeightedCodeSweep("Times New Roman", FW_BOLD, 1, 0xa3);
+    probeWeightedCodeSweep("Courier New", FW_NORMAL, 1, 0xa2);
+    probeWeightedCodeSweep("Courier New", FW_NORMAL, 1, 0xb8);
+    probeWeightedCodeSweep("Courier New", FW_BOLD, 1, 0xa2);
+    probeWeightedCodeSweep("Courier New", FW_BOLD, 1, 0xb6);
 
     ReleaseDC(NULL, dc);
 
