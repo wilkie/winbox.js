@@ -12909,6 +12909,38 @@ Whatever separates the eight from the 168 is therefore finer than "a doubly
 degenerate vertex near a marginal rescue", and the search for it cannot be a
 search through the crossing lists, which the two shapes share.
 
+#### Eleven mutations, all refused
+
+Reading having run out, the walk was mutated instead and every variant scored
+against the fabricated corpus. The base is 31,682 cells of 31,690 exact with 8
+wrong pixels:
+
+| mutation                                                 | cells  | wrong pixels |
+| -------------------------------------------------------- | ------ | ------------ |
+| base                                                     | 31,682 | 8            |
+| the vertical `on` emission rounds like the `off` one     | 31,682 | 8            |
+| the vertical `off` emission rounds like the `on` one     | 31,682 | 16           |
+| the horizontal `on` emission rounds like the `off` one   | 31,661 | 41           |
+| the horizontal `off` emission rounds like the `on` one   | 31,576 | 116          |
+| a doubly degenerate vertex skips the horizontal topology | 31,560 | 404          |
+| a doubly degenerate vertex skips the vertical topology   | 31,679 | 22           |
+| a doubly degenerate vertex emits neither                 | 31,560 | 425          |
+| it emits a horizontal `on` and `off` both                | 31,607 | 223          |
+| it emits a vertical `on` and `off` both                  | 31,679 | 14           |
+| its horizontal emission is keyed a row further on        | 31,559 | 611          |
+| the vertical `on` list is read a row either way          | 31,643 | 65           |
+
+Not one is better and only one is neutral -- rounding the vertical `on` emission
+the other way changes nothing anywhere, so no vertical `on` from a vertex ever
+lands exactly on a sample line in the whole corpus.
+
+That is what the geometry already said it would say. The three terms the
+disputed rescue weighs -- the `off` entry at row fourteen and the vertical
+entries at column three and column four, all read at row fifteen -- are
+produced by the top of the glyph, four rows above the vertex, and no rule keyed
+on that vertex can reach them. A mutation that helps here has to be one that
+changes what the _walk_ records, not what the endpoint check adds to it.
+
 The reading has to explain how a doubly degenerate vertex at the bottom of a
 glyph reaches a dropout four rows above it **without passing through the
 crossing lists**, since two shapes that differ only in that vertex share their
