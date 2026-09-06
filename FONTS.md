@@ -12857,6 +12857,35 @@ the `off` entry at row fourteen and the vertical `on` at column three, and both
 come from the top of the glyph, which no variant touches. Whatever the binary
 records that this does not, it is not one of those two emissions.
 
+#### The one non-local mechanism there is, and why it is not this either
+
+There is exactly one way a change at the bottom of a glyph could reach a row
+above it, and `scanlist.c` spells it out. The crossing lists are not
+independently allocated. One flat array holds them all, and the setup walks the
+scanlines from the bottom of the band upward handing each row two consecutive
+regions -- `on` then `off` -- each as long as the number of crossings the
+**reversal list** predicts for that scanline. A row that produces more
+crossings than were predicted for it therefore runs into the region belonging
+to the row above.
+
+That is the shape of the answer this needs: rows are laid out from the bottom
+up, so a spill travels upward, and the row this disagrees about is four rows
+above the vertex that decides it.
+
+It is still not the answer. The prediction comes from the reversals, and a
+reversal's scanline is its coordinate plus half a pixel, less one when it is a
+descending turn, shifted down six. The inner contour's two turns in `y` sit at
+-1259 and -951, and the whole point of the four `y` variants is that they move
+the lower one: to -1257, -1255, -1261 and -1263. **Every one of those lands on
+the same scanline as the original, in both directions**, because none of them
+is within a sixty-fourth of a sample line -- their remainders are 17 through 25
+where a sample line wants 32. The estimate, the per-row capacity and the layout
+of the whole array are therefore identical for all five shapes, and no list can
+overflow in one and not another.
+
+So the allocation is ruled out for a reason rather than by a count, and with it
+the only non-local mechanism the scan converter has.
+
 The reading has to explain how a doubly degenerate vertex at the bottom of a
 glyph reaches a dropout four rows above it **without passing through the
 crossing lists**, since two shapes that differ only in that vertex share their
