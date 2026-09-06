@@ -12586,7 +12586,32 @@ two rows**, and the difference is in where a crossing falls, not in what the
 dropout does with it. The two rescues are also supported differently: row
 eight's stub test is carried by a coincident pair on the row below, and row
 seven's by one horizontal crossing on the row above and one vertical crossing
-in the column beside it. The next reading is of the walk that places them.
+in the column beside it.
+
+The walk that places them has now been read too, and it is this one. The four
+quadrant steppers the table at `ds:0x4ae` selects when dropout control is on --
+`0x16d3`, `0x173a`, `0x179c`, `0x1802` -- each store a vertical crossing as the
+current scan row and a horizontal one as the current column, and the two parts
+of the reflection agree with this implementation to the index: an ascending
+quadrant stores the horizontal entry before stepping its row, and a descending
+one steps first, which is the same one-row offset this carries on the _vertical_
+value instead. Their starting indices agree too -- the binary's inclusive
+rounding of the near coordinate, less one on a descending walk, is exactly what
+`below(y1) >> 6` gives here. Working an actual chord through both, the `o`'s
+descending chord from (205, -404) to (228, -418) starts at row -7 and puts its
+first vertical entry at -6 in either reading.
+
+So the difference is not in the dropout, not in the endpoint topology, and not
+in the walk's emission or its offsets. What is left between the outline and the
+lists is the flattening: which chords the curve becomes, and where their
+rounded endpoints fall. That is what to read next.
+
+A refusal to record with it: pairing the horizontal rescue's vertical terms one
+row earlier, which is what the pseudocode's `DoHorizDropout` says literally --
+`VertCrossings(x - 1, y)` and `VertCrossings(x, y)` against the horizontal
+term's `y - 1` -- costs 305 cells of `glyphs` and 665 of `styles`. The vertical
+values here already carry the step the horizontal keys take from theirs, so the
+pseudocode's pairing is this one written in the other convention.
 
 One asymmetry was found beside it and deliberately left alone. The side bearing
 an unhinted glyph is carried across is scaled by the **vertical** size, where a
