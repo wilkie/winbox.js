@@ -12814,6 +12814,49 @@ column four. The `[3,3]` and `[3,4]` columns above are that, and the two
 mechanisms that produce a three are indistinguishable once the entry is in the
 list.
 
+#### And the decision half is a pure function of them
+
+`seg42:0978` is the horizontal dropout pass, and reading it end to end says
+what the decision is allowed to depend on.
+
+Each row's crossings live in one block of a fixed stride. The `on` list grows
+up from the base with its count in the first word; the `off` list grows **down**
+from the end of the same block with its count in the last. That is why the
+counter at `0db4` walks one forward and the other backward, and why both stop
+early once past the target -- the lists are sorted ascending read that way.
+
+The pass takes each `on` value in turn, resets the `off` pointer to the base
+and takes the first entry at or past it, and calls it a dropout when the two
+are equal. Then, when the stub bit is set, it asks the two sides and requires
+**two from each**. Each side is the same three terms with an early exit as soon
+as the running total passes one:
+
+    below (0x0e28)   horiz(x, row + 1) + vert(x - 1, row + 1) + vert(x, row + 1)
+    above (0x0eaa)   horiz(x, row - 1) + vert(x - 1, row)     + vert(x, row)
+
+which is the offset this implementation already carries, and the two vertical
+terms are guarded by the box rather than skipping the decision. Placement then
+clamps to the box, and where it does not clamp it goes through `0x0c8a`, which
+is a **test-and-set**: it sets the pixel at `x - 1` only if the pixel at `x` is
+clear. All of that is in `glyph-raster.ts` as it stands.
+
+Nothing in any of it reads the outline. The loop, the pairing, the stub test,
+the placement and the test-and-set take the four crossing lists and the box and
+nothing else. **So the whole decision half is a pure function of the lists**,
+and since `courier-o-plain` and `courier-o-yup2` share their lists exactly and
+Windows draws them differently, the remaining error is in the _construction_ of
+the lists rather than anywhere downstream of them.
+
+That narrows it hard, and it also refuses the obvious repairs. The one
+structural difference between the two shapes is which emission supplies the
+`on` entry at row nineteen: plain's doubly degenerate vertex fires the
+horizontal endpoint topology, and the shifted shape's walk crosses the line and
+emits the same value itself. Dropping either emission was traced through the
+stub test by hand and neither reaches row fifteen: the terms that decide it are
+the `off` entry at row fourteen and the vertical `on` at column three, and both
+come from the top of the glyph, which no variant touches. Whatever the binary
+records that this does not, it is not one of those two emissions.
+
 The reading has to explain how a doubly degenerate vertex at the bottom of a
 glyph reaches a dropout four rows above it **without passing through the
 crossing lists**, since two shapes that differ only in that vertex share their
