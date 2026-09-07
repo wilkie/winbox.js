@@ -1178,6 +1178,27 @@ const ADAPTERS: Record<
     );
   },
 
+  /* The dense maximum width sweep. The arguments name only a face, a height
+   * and a width, so the rest of the request is the probe's own defaults.
+   */
+  metrics(context, args) {
+    const mapped = context.mappedFont([
+      ...args,
+      'weight=400',
+      'italic=0',
+      'under=0',
+      'strike=0',
+      'charset=0',
+      'pitch=0',
+    ]);
+    const tm = mapped.metrics;
+
+    return (
+      `face=${quoted(mapped.face)},height=${tm.tmHeight},` +
+      `ave=${tm.tmAveCharWidth},max=${tm.tmMaxCharWidth}`
+    );
+  },
+
   'CreateFont widths'(context, args) {
     const tm = context.mappedFont(args).metrics;
 
@@ -1386,6 +1407,23 @@ export class Unimplemented extends Error {}
  * All 2,574 records agree.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* The dense maximum width sweep, recorded after everything else and short in
+   * two separate ways.
+   *
+   * At eight and ten pixels Arial and Times New Roman are mapped here to a
+   * strike -- `Small Fonts` -- where Windows takes the outline as soon as a
+   * width is asked for, and reports an average of exactly the width requested
+   * at every one of the 32. That is 127 of the misses and it is a mapper rule
+   * rather than a metric one: at those heights and a width of nought Windows
+   * takes the strike too.
+   *
+   * The other 42 have the average right and the maximum a pixel out, spread
+   * over every face and height. They are the same question section 8a leaves
+   * open, with 42 constraints on it now instead of one.
+   */
+  'maxwidth:metrics':
+    'the maximum width sweep: a strike where Windows takes an outline under a width at eight and ten pixels (127), and the maximum a pixel out (42)',
+
   'widths:CreateFont widths':
     'the maximum width under a stretch, one of seventy: Courier New at twenty-two pixels asked for five',
 };

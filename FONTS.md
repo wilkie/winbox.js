@@ -13238,6 +13238,38 @@ their left bearing exactly at the box, so the quantity is nought either way.
 Nothing measures it and nothing reads it, so it stays as it is and is written
 down here instead.
 
+### A denser sweep, and two gaps it opens
+
+The maximum width was the last record standing, and the arithmetic in this
+section proves only what it is not. Sixty rows is thin evidence for a rule with
+a rounding in it, so a probe was written to record the metrics alone -- no
+glyphs, so the fixture stays small -- for every width from one to thirty-two at
+nine heights on the three regular outline faces. 891 records, of which 720
+agree.
+
+The 171 that do not split cleanly in two, and only one of them is the question
+this section was chasing.
+
+**A mapper rule, 127 of them.** At eight and ten pixels, asked for Arial or
+Times New Roman with a width, Windows answers with the outline and reports an
+average of exactly the width requested at every one of the thirty-two. Asked
+with no width at all it answers `Small Fonts`, a strike. This implementation
+takes the strike either way, and a strike stretched by whole steps reports an
+average that climbs in fours rather than in ones. So a width request changes
+which face is chosen, and it does so at sizes the old sweep never asked about --
+`widths` only ever recorded sixteen and twenty-four.
+
+**The maximum width, 42 of them.** The average is right and the maximum is a
+pixel out, across every face and every height. That is the same question as
+before with forty-two constraints on it instead of one, which is the point of
+the sweep: where the staircase steps is now recorded densely enough to be read
+off. Courier New at twenty-four pixels, for instance, steps from an excess of
+nought to one at a requested width of six, to two at fourteen, and to three at
+twenty-four -- gaps of eight, ten and eight, which no single rounding of a
+linear function produces.
+
+Both are in `KNOWN_GAPS` with their counts.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
