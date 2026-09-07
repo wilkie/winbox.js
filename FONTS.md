@@ -13384,6 +13384,25 @@ constant is kept in and wherever the square size's own value comes from -- which
 together with the proof above rules out scaling one number by one factor in
 either parameterisation, the horizontal size or the stretch.
 
+**The correction is not a constant, and it points both ways.** Sorting the 49 by
+the remainder of the end-to-end difference in sixty-fourths, 45 of them sit at
+32 or above -- where this rounds up and Windows rounds down, so Windows's
+quantity is _below_ this one -- and four sit at 29, 30 or 31, where the reverse
+holds and Windows's is _above_. Those four are Arial at seven pixels asked for
+twenty-six, at eight asked for twenty-seven, at nine asked for twenty-four, and
+Times New Roman at twenty-one asked for thirty. No single offset, and no single
+scale factor, can be below in forty-five rows and above in four.
+
+The magnitude reaches seventeen sixty-fourths of a pixel, about a quarter of a
+percent of the value, and the stretches involved run from a ninth to eight and
+two thirds, so it is not tied to any particular stretch either.
+
+Three more formulas were scored on the way and are much worse, at 295 of 891
+against 842: the ends taken at the horizontal size that would make the average
+come out exactly, that size used to scale the box once, and the average
+multiplied by the ratio of the box to the design average. The size at which the
+average is exact is not the size the box is scaled by.
+
 Three more roundings of the scaling were scored with the others and tie it
 rather than beat it: the ends through a 16.16 multiply with the interpreter's own
 half-toward-plus-infinity rule, the same taken back to sixty-fourths first, and
