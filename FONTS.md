@@ -13374,6 +13374,22 @@ it is the _widest character's_ answer rather than the metric's -- it reproduces
 what `GetCharWidth` reports on 23 of that column's 32 widths, the nine it misses
 being the ones where Windows's widest is the per mille sign rather than `@`.
 
+**And not a constant times the stretch either.** The two rows have stretches of
+exactly six and three quarters and exactly seven, since the square average is
+four and the widths are twenty-seven and twenty-eight. For a rule of the form
+"some fixed quantity times the stretch, rounded", Windows's 57 needs that
+quantity in [8.3704, 8.5185) and its 58 needs it in [8.2143, 8.3571). Those do
+not meet. So the maximum is not a constant times the stretch, whatever unit the
+constant is kept in and wherever the square size's own value comes from -- which
+together with the proof above rules out scaling one number by one factor in
+either parameterisation, the horizontal size or the stretch.
+
+Three more roundings of the scaling were scored with the others and tie it
+rather than beat it: the ends through a 16.16 multiply with the interpreter's own
+half-toward-plus-infinity rule, the same taken back to sixty-fourths first, and
+the ends through `MulDiv` at a whole sixty-fourth horizontal size. Nineteen
+variants now, and the count has not moved off 842 of 891 in any of them.
+
 Solving instead for the horizontal size that would make the union box right,
 under the average's own constraint, the two rows want sizes in [54.02, 54.98)
 and [55, 55.93). The stretch gives exactly 54 and 56. **Both are about half a
