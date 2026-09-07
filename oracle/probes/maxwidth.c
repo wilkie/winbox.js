@@ -46,6 +46,34 @@ static void probeOne(LPCSTR face, int height, int width)
              (LPSTR)resolved, tm.tmHeight, tm.tmAveCharWidth, tm.tmMaxCharWidth);
     probe("metrics", probeArgs, probeResult);
 
+    /* And the widest character GDI will actually report, which is what
+     * `tmMaxCharWidth` is documented to be. `GetCharWidth` answers per
+     * character in device units, so the maximum over the set is a maximum of
+     * rounded numbers rather than a rounded maximum, and the two part company
+     * wherever the scaling lands near a half. */
+    {
+        int widths[224];
+        int index;
+        int widest = 0;
+        int at = 0;
+
+        previous = (HFONT)SelectObject(memory, font);
+
+        if (GetCharWidth(memory, 32, 255, widths)) {
+            for (index = 0; index <= 255 - 32; index++) {
+                if (widths[index] > widest) {
+                    widest = widths[index];
+                    at = index + 32;
+                }
+            }
+        }
+
+        SelectObject(memory, previous);
+
+        wsprintf(probeResult, "widest=%d,at=%d", widest, at);
+        probe("charwidths", probeArgs, probeResult);
+    }
+
     DeleteObject(font);
 }
 

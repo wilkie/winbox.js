@@ -13338,6 +13338,26 @@ So the quantity is not a length scaled by the horizontal size at all, however
 the scaling is rounded and whatever the length is. Sixteen formulas of that
 shape are now refused by count, and this refuses the shape.
 
+**And it is not the widest character either.** The probe now records, beside the
+metric, the largest number `GetCharWidth` reports over the whole ANSI set --
+Windows's own answer to the question `tmMaxCharWidth` is documented to answer.
+The two agree on 105 of 891 and part everywhere else, with the metric one or two
+larger. At Arial, ten pixels, the widths twenty-four through thirty-two:
+
+    requested width   24  25  26  27  28  29  30  31  32
+    tmMaxCharWidth    50  52  54  57  58  61  63  65  67
+    widest character  50  51  53  55  57  59  61  64  65
+
+The widest character climbs smoothly and the metric does not, so whatever the
+metric measures, it is not the set of advances -- which also means the
+non-monotone step is in the metric alone. The widest character is `@` at almost
+every size, and `‰` at a few.
+
+Those 891 records are recorded and kept but not yet replayed: reading them back
+through this implementation needs a per-character width for a stretched outline,
+and the obvious path gives four of 891, which is an adapter to write rather than
+a gap to declare.
+
 The grid-fitted extent was measured for six of the Courier New rows and is not
 it either: the box over all hinted glyphs comes out at 11.06 where Windows wants
 11 and this gives 12, which is right, but at 17.0 where Windows wants 16, and at
