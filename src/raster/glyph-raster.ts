@@ -520,6 +520,67 @@ export function fillWalked(contours, options) {
   sorted(lists.vertOn);
   sorted(lists.vertOff);
 
+  /* A column whose block is full loses its last `on` entry.
+   *
+   * The two lists of a column share one block. `seg42:0978` reads the `on`
+   * count from the block's first word and the `off` count from its last, and
+   * the `off` entries are scanned downward from there, so the `on` list fills
+   * upward from the low end and the `off` list downward from the high one and
+   * the two meet in the middle. `seg42:0f2a` sizes that block: it walks the
+   * glyph's own points contour by contour, starting each contour's direction
+   * from its last point against its first, counts every change of direction in
+   * `x`, and `seg42:1132` rounds the count up to an even number and floors it
+   * at two. And neither `AddVertSimpleScan` nor its horizontal twin checks a
+   * bound -- both bump the end pointer, shift anything larger up, and store --
+   * so an entry past the end of a region genuinely lands in the next one.
+   *
+   * What is **not** read is why a vertex on a sample line and a sample column
+   * at once puts one entry more into its column than this does. That it does is
+   * measured, and measured on everything: with the charge the fabricated corpus
+   * is 32,394 of 32,394 cells with no wrong pixel and the recorded one is exact
+   * but for the maximum width metric, and without it eight fabricated cells and
+   * Courier New's `o` under a width come out differently. The condition it
+   * carries is the sign of the cross product at the vertex, which is what
+   * `seg42:1342` classifies the turn by, and the collision only happens where
+   * that is not set. See `FONTS.md` section 8a.
+   */
+  if (lists.crowded?.size) {
+    let turns = 0;
+
+    for (const contour of contours) {
+      if (contour.length < 2) {
+        continue;
+      }
+
+      const at = (index) => place([contour[index].x, contour[index].y])[0];
+
+      let rising = at(contour.length - 1) <= at(0);
+
+      for (let index = 0; index < contour.length; index++) {
+        const step = at(index) - at((index + contour.length - 1) % contour.length);
+
+        if (step > 0 && !rising) {
+          turns++;
+          rising = true;
+        } else if (step < 0 && rising) {
+          turns++;
+          rising = false;
+        }
+      }
+    }
+
+    const held = Math.max(2, turns + (turns & 1));
+
+    for (const column of lists.crowded) {
+      const on = lists.vertOn.get(column);
+      const off = lists.vertOff.get(column);
+
+      if (on && off && on.length + off.length >= held) {
+        on.pop();
+      }
+    }
+  }
+
   /* The runs, paired by index as `Blit` pairs them, and the box they are
    * written into.
    */

@@ -1386,18 +1386,6 @@ export class Unimplemented extends Error {}
  * All 2,574 records agree.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  /* The width field, recorded for the first time. The strikes agree in full and
-   * the metrics all but two. The outline faces are hinted anisotropically the
-   * reference's way: at a whole horizontal pixel size that is the vertical one
-   * times a 16.16 ratio, with the control values scaled at the larger of the
-   * two sizes and read through the reference's stretch factors, and deltas
-   * keyed on the size along the projection, in the reference's 16.16
-   * arithmetic, with the stretched design coordinates unrounded and `ISECT`
-   * as the reference's chain of roundings. What is left is one pixel of an
-   * outline Courier New's `prep` draws unhinted at a horizontal size of four
-   * -- 1 of 1,944 stretched cells. See FONTS.md.
-   */
-  'widths:glyph': 'stretched outlines: one pixel of an unhinted Courier New o (1 of 1,944)',
   'widths:CreateFont widths':
     'the maximum width under a stretch, one of seventy: Courier New at twenty-two pixels asked for five',
 };

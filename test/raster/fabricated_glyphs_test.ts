@@ -140,16 +140,17 @@ describe('the fabricated glyph recordings', () => {
    * -- see the closing sections of `FONTS.md` 9, which read over a thousand of
    * their boxes out of GDI's own working memory.
    */
-  /* Every cell but the two the `courier-o-plain` instrument was built to
-   * reproduce: Courier New's `o` under a width, drawn at Symbol's size in
-   * Symbol's slot, where Windows refuses one dropout rescue that this makes.
-   * Four of its twelve variants carry the same two cells. The six that take
-   * the doubly degenerate vertex off the sample column or off the sample line
-   * agree in full, including two whose crossing lists are byte-identical to the
-   * plain shape's, and so do the two that leave it doubly degenerate but move
-   * it into another column. See FONTS.md section 8a. */
-  const EXACT = 32386;
-  const WRONG = 8;
+  /* Every cell of every recording, with nothing wrong anywhere.
+   *
+   * The last two were the `courier-o` instruments' -- Courier New's `o` under a
+   * width, drawn at Symbol's size in Symbol's slot, where Windows refuses one
+   * dropout rescue that this used to make. Twelve variants of it settled where
+   * the refusal comes from: only a vertex on a sample line and a sample column
+   * at once, only in the column the rescue reads, and only where the turn's
+   * cross product is not set. It is a column's block overflowing and losing its
+   * last `on` entry; see `fillWalked` and FONTS.md section 8a. */
+  const EXACT = 32394;
+  const WRONG = 0;
 
   /* The one place an unhinted outline is drawn differently.
    *

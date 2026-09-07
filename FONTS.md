@@ -13059,45 +13059,48 @@ both are worse, 32,378 cells and 25 wrong pixels each: putting the vertex's own
 vertical `on` value into the slot it takes, and putting its `off` value there.
 So the slot is lost rather than overwritten with anything this can name.
 
-One of the three fitted things is now read instead, and it was in the setup all
-along. At `seg42:1132` both capacities are **rounded up to an even number** --
-`test byte, 1` then `inc` on each -- and a few instructions later each is forced
-to two if it came out nought. So a glyph whose widest column carries three
-crossings gets a block sized for four, and has a slot of slack; a glyph whose
-widest carries two gets exactly two, and has none.
+#### The rule, and what of it is read
 
-That is precisely the difference between the `o` and the ten fixtures the first
-model broke. The `o`'s widest column holds two crossings each way, so its blocks
-are full and the extra entry collides. `pound-tip`'s and `courbd-k`'s hold three,
-so theirs are sized for four and the extra fits. **With the capacity rounded the
-way the binary rounds it, the exemption for a coincident top pair is not needed
-at all** and the corpus is exact without it:
+Everything but one step of it is now read, and the last cells are closed.
 
-| corpus                             | present                          | with the overflow                |
-| ---------------------------------- | -------------------------------- | -------------------------------- |
-| fabricated glyph cells             | 32,386 of 32,394, 8 wrong pixels | **32,394 of 32,394, none wrong** |
-| recorded `glyphs`, `sizes`, `font` | all exact                        | all exact                        |
-| recorded `styles`                  | 9,178 of 9,178                   | 9,178 of 9,178                   |
-| recorded `widths`                  | 2,478 of 2,480                   | 2,479 of 2,480                   |
+**The block.** `seg42:0978` reads a column's `on` count from the first word of
+its block and its `off` count from the last, and scans the `off` entries
+downward from there. So the `on` list fills upward from the low end and the
+`off` list downward from the high one, and the two meet in the middle.
 
-`scanlist.c` supplies the last piece of the mechanism: **neither insertion
-routine checks a bound**. `AddHorizSimpleScan` and `AddVertSimpleScan` bump the
-end pointer, walk backwards shifting anything larger up, and store, with asserts
-on the coordinates and none on the count. So an entry past the end of a region
-genuinely lands in the next one.
+**Its size.** `seg42:0f2a` walks the glyph's own points, contour by contour,
+starting each contour's direction by comparing its last point with its first,
+and counts every change of direction in `x`. `seg42:1132` rounds that count up
+to an even number, and a few instructions later floors it at two. That count is
+the column block's capacity. Courier New's `o` has four such changes -- two per
+contour -- so its columns hold four entries and the disputed one holds exactly
+four. A `g` or a `9` has six, so theirs hold six and a column carrying six has
+none to spare either; a glyph with seven gets eight and has a slot in hand.
 
-What is read now: the block layout and its uniform stride, from the dropout
-routine; the capacity rounded up to even with a floor of two, from the setup;
-the absence of any bounds check, from the source; and which vertices the outline
-passes through rather than turns back at, from the walk. **What is still
-fitted**: that a doubly degenerate vertex the outline passes through contributes
-one entry more to its column than this emits, and that the capacity's basis is
-the widest list any column reaches. The binary computes that basis by counting
-reversals rather than by measuring columns, and reading exactly which reversals
-it counts is the one thing left.
+**The overflow.** Neither `AddVertSimpleScan` nor its horizontal twin checks a
+bound. Both bump the end pointer, walk backwards shifting anything larger up,
+and store. So an entry past the end of a region lands in the next one, and in a
+full block the `off` list's growth takes the `on` list's last slot.
 
-So the question has come down from "how does a vertex reach four rows away" to a
-single count.
+**What is not read** is why a vertex on a sample line and a sample column at
+once puts one entry more into its column than this walk does. That it does is
+measured, and the condition it carries is measured too: it happens only where
+the cross product of the turn is not set, which is the quantity `seg42:1342`
+classifies by. A vertex where it is set -- Courier New Italic's `m`, the `g`,
+the `9`, the pound sign's tip -- charges nothing.
+
+**Adopted**, because it is right about everything:
+
+| corpus                                       | before                           | after                            |
+| -------------------------------------------- | -------------------------------- | -------------------------------- |
+| fabricated glyph cells                       | 32,386 of 32,394, 8 wrong pixels | **32,394 of 32,394, none wrong** |
+| recorded `glyphs`, `sizes`, `font`, `styles` | exact                            | exact                            |
+| recorded `widths`                            | 2,478 of 2,480                   | 2,479 of 2,480                   |
+
+`widths:glyph` is struck from the known gaps. **Every glyph cell Windows has
+been recorded drawing, in either corpus, is now drawn the same way here**, and
+the single record left anywhere is the maximum width metric, which is not a
+glyph.
 
 #### Three checks that leave the conclusion where it is
 

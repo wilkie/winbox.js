@@ -66,6 +66,7 @@ const Z_SHIFT = [
 ];
 
 export interface Lists {
+  crowded?: Set<number>;
   horizOn: Map<number, number[]>;
   horizOff: Map<number, number[]>;
   vertOn: Map<number, number[]>;
@@ -317,6 +318,19 @@ export class Endpoints {
   }
 
   check(x: number, y: number, dropout = true) {
+    /* A vertex sitting on a sample line and a sample column at once, kept for
+     * the fill to charge against its column's block. See `fillWalked`.
+     */
+    if (
+      this.onScanline(this.y1) &&
+      this.onScanline(this.x1) &&
+      !(this.x1 === x && this.y1 === y) &&
+      this.x0 !== Infinity &&
+      !this.flags(x, y).cross
+    ) {
+      (this.lists.crowded ??= new Set()).add(this.x1 >> SHIFT);
+    }
+
     /* A step that goes nowhere leaves the running vertex alone.
      *
      * `EvaluateEndPoint` returns before it shifts, so the vertex before this
