@@ -13252,15 +13252,18 @@ it stands:
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
 | `styles`                                                     | 9,178   | **100%**  |
 | `sizes`                                                      | 800     | **100%**  |
-| `widths`                                                     | 2,480   | 99.9%     |
+| `widths`                                                     | 2,480   | 99.96%    |
 
-`KNOWN_GAPS` is empty. The `stack` fixture is not in the table because it is an
+`widths` is short of one record and it is not a glyph: the maximum width metric
+for Courier New at twenty-two pixels asked for five, which section 8a proves is
+not the font's box scaled by any one size. **Every glyph cell in the table is
+exact.** `KNOWN_GAPS` holds that one metric and nothing else. The `stack` fixture is not in the table because it is an
 instrument rather than an oracle: its 3,650 records are the scaler's own stack,
 which nothing on this side is meant to reproduce, and the conformance suite
 reports them as unsupported.
 
 The fabricated corpus -- the fonts rewritten to isolate one mechanism each, which
-ask questions no stock face does -- stands at **28,170 of 28,170 cells and no
+ask questions no stock face does -- stands at **32,394 of 32,394 cells and no
 wrong pixels**.
 
 ### The chase, end to end
