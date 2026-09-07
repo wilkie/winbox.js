@@ -13353,6 +13353,33 @@ metric measures, it is not the set of advances -- which also means the
 non-monotone step is in the metric alone. The widest character is `@` at almost
 every size, and `‰` at a few.
 
+**Nor is it a maximum over the glyphs.** The widest character is one, and it
+behaves like one -- its winner alternates between `@` and the per mille sign as
+the size grows, which is what a maximum of separately rounded numbers does. So
+five per-glyph quantities were computed from `glyf`'s own boxes and `hmtx`'s
+advances, scaled and rounded per glyph and then maximised, at the four
+horizontal sizes around the anomaly:
+
+| quantity                                      | at 52, 54, 56, 58  |
+| --------------------------------------------- | ------------------ |
+| the glyph's box, `xMax - xMin`                | 52, 54, 56, 58     |
+| the same with the ends rounded apart          | 52, 54, 56, 58     |
+| its cell, `max(advance, xMax) - min(0, xMin)` | 53, 55, 57, 59     |
+| the same with the ends rounded apart          | 53, 55, 57, 59     |
+| its advance plus what hangs off either side   | 53, 55, 57, 59     |
+| **Windows**                                   | **54, 57, 58, 61** |
+
+None of them, and none of them has the step of one. The cell is the closest and
+it is the _widest character's_ answer rather than the metric's -- it reproduces
+what `GetCharWidth` reports on 23 of that column's 32 widths, the nine it misses
+being the ones where Windows's widest is the per mille sign rather than `@`.
+
+Solving instead for the horizontal size that would make the union box right,
+under the average's own constraint, the two rows want sizes in [54.02, 54.98)
+and [55, 55.93). The stretch gives exactly 54 and 56. **Both are about half a
+pixel away, and in opposite directions**, which is another way of saying the
+same impossibility: no stretch proportional to the width reaches both.
+
 Those 891 records are recorded and kept but not yet replayed: reading them back
 through this implementation needs a per-character width for a stretched outline,
 and the obvious path gives four of 891, which is an adapter to write rather than
