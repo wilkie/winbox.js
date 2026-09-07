@@ -13059,23 +13059,45 @@ both are worse, 32,378 cells and 25 wrong pixels each: putting the vertex's own
 vertical `on` value into the slot it takes, and putting its `off` value there.
 So the slot is lost rather than overwritten with anything this can name.
 
-It is still not adopted, and the reason is what is read against what is fitted.
-Read from `scanlist.c`: that a column's two lists share one block, that the `on`
-list grows up from its base and the `off` list down from its top, that the block
-is sized from the reversal estimate, and that the stride is one value shared
-across columns rather than sized per column -- which `col4` and `col5` confirm,
-since a per-column size takes both of them down. Read from the walk: which
-vertices pass through and which turn back. **Fitted, and only because they
-score**: that a doubly degenerate vertex contributes one entry more than this
-emits, that the capacity is the widest list any column reaches, and that a
-column whose topmost `on` and `off` hold the same row is spared.
+One of the three fitted things is now read instead, and it was in the setup all
+along. At `seg42:1132` both capacities are **rounded up to an even number** --
+`test byte, 1` then `inc` on each -- and a few instructions later each is forced
+to two if it came out nought. So a glyph whose widest column carries three
+crossings gets a block sized for four, and has a slot of slack; a glyph whose
+widest carries two gets exactly two, and has none.
 
-Three fitted things is two too many to call this the rule. What it is instead is
-a shape that fits 275,000 records without exception, and a much smaller question
-than the one this section started with: not "how does a vertex reach four rows
-away" but "how many entries does the binary put in a column's list at a vertex
-that sits on a sample line and a sample column at once, and where does the
-overflow land".
+That is precisely the difference between the `o` and the ten fixtures the first
+model broke. The `o`'s widest column holds two crossings each way, so its blocks
+are full and the extra entry collides. `pound-tip`'s and `courbd-k`'s hold three,
+so theirs are sized for four and the extra fits. **With the capacity rounded the
+way the binary rounds it, the exemption for a coincident top pair is not needed
+at all** and the corpus is exact without it:
+
+| corpus                             | present                          | with the overflow                |
+| ---------------------------------- | -------------------------------- | -------------------------------- |
+| fabricated glyph cells             | 32,386 of 32,394, 8 wrong pixels | **32,394 of 32,394, none wrong** |
+| recorded `glyphs`, `sizes`, `font` | all exact                        | all exact                        |
+| recorded `styles`                  | 9,178 of 9,178                   | 9,178 of 9,178                   |
+| recorded `widths`                  | 2,478 of 2,480                   | 2,479 of 2,480                   |
+
+`scanlist.c` supplies the last piece of the mechanism: **neither insertion
+routine checks a bound**. `AddHorizSimpleScan` and `AddVertSimpleScan` bump the
+end pointer, walk backwards shifting anything larger up, and store, with asserts
+on the coordinates and none on the count. So an entry past the end of a region
+genuinely lands in the next one.
+
+What is read now: the block layout and its uniform stride, from the dropout
+routine; the capacity rounded up to even with a floor of two, from the setup;
+the absence of any bounds check, from the source; and which vertices the outline
+passes through rather than turns back at, from the walk. **What is still
+fitted**: that a doubly degenerate vertex the outline passes through contributes
+one entry more to its column than this emits, and that the capacity's basis is
+the widest list any column reaches. The binary computes that basis by counting
+reversals rather than by measuring columns, and reading exactly which reversals
+it counts is the one thing left.
+
+So the question has come down from "how does a vertex reach four rows away" to a
+single count.
 
 #### Three checks that leave the conclusion where it is
 
