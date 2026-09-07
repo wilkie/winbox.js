@@ -13034,26 +13034,48 @@ New's `o` at sixteen pixels asked for three, the last glyph disagreement in the
 recorded corpus -- and so are all eight fabricated wrong pixels and all twelve
 `o` instruments. What is left of `widths` is the maximum width metric alone.
 
-It is not adopted, and the reason is the one cell it breaks. Courier New Italic's
-`m` at ten pixels loses a pixel at row three, and its column is structurally
-identical to the `o`'s: two entries in each list, the widest any column reaches,
-the topmost `on` and `off` a row apart rather than coincident. The two part on
-something else entirely -- **in the `m` the doubly degenerate vertex is itself
-the topmost crossing of its column, and in the `o` it is the bottom-most** -- and
-a fourth condition to separate them would be a fourth thing fitted.
+The one cell it broke has a second condition behind it, and that one is read
+rather than fitted. Courier New Italic's `m` at ten pixels turns back at its
+doubly degenerate vertex -- incoming (259,-167), outgoing (302,-162), the cross
+product negative and the quadrant down and right, which is `CheckHorizTopology`'s
+first branch and emits an `on` and an `off` together. The `o`'s vertex passes
+straight through -- (205,-1259) to (224,-1248) to (239,-1214), no reversal --
+and emits a single `on`. **Restricting the collision to a vertex the outline
+passes through leaves the `m` alone**, and with both conditions the corpus is
+exact:
 
-What is read and what is fitted should be kept apart here. Read from
-`scanlist.c`: that the two lists of a column share one block, that the `on` list
-grows up from its base and the `off` list down from its top, that the block is
-sized from the reversal estimate, and that the stride is one value shared across
-columns rather than sized per column -- which the instruments confirm, since a
-per-column size takes `col4` and `col5` down with it. Fitted, and each of them
-only because it scores: that a doubly degenerate vertex contributes one entry
-more than this emits, that the capacity is the widest list any column reaches,
-and that a coincident top pair spares the collision.
+| corpus                             | present                          | with the overflow                |
+| ---------------------------------- | -------------------------------- | -------------------------------- |
+| fabricated glyph cells             | 32,386 of 32,394, 8 wrong pixels | **32,394 of 32,394, none wrong** |
+| recorded `glyphs`, `sizes`, `font` | all exact                        | all exact                        |
+| recorded `styles`                  | 9,178 of 9,178                   | 9,178 of 9,178                   |
+| recorded `widths`                  | 2,478 of 2,480                   | 2,479 of 2,480                   |
 
-So the shape of the answer is settled and its arithmetic is not. The next
-reading has one cell to explain rather than a corpus.
+**Every glyph cell in both corpora agrees**, and the one record left anywhere is
+the maximum width metric, which is not a glyph at all.
+
+Two ways of writing the collision rather than dropping the entry were tried and
+both are worse, 32,378 cells and 25 wrong pixels each: putting the vertex's own
+vertical `on` value into the slot it takes, and putting its `off` value there.
+So the slot is lost rather than overwritten with anything this can name.
+
+It is still not adopted, and the reason is what is read against what is fitted.
+Read from `scanlist.c`: that a column's two lists share one block, that the `on`
+list grows up from its base and the `off` list down from its top, that the block
+is sized from the reversal estimate, and that the stride is one value shared
+across columns rather than sized per column -- which `col4` and `col5` confirm,
+since a per-column size takes both of them down. Read from the walk: which
+vertices pass through and which turn back. **Fitted, and only because they
+score**: that a doubly degenerate vertex contributes one entry more than this
+emits, that the capacity is the widest list any column reaches, and that a
+column whose topmost `on` and `off` hold the same row is spared.
+
+Three fitted things is two too many to call this the rule. What it is instead is
+a shape that fits 275,000 records without exception, and a much smaller question
+than the one this section started with: not "how does a vertex reach four rows
+away" but "how many entries does the binary put in a column's list at a vertex
+that sits on a sample line and a sample column at once, and where does the
+overflow land".
 
 #### Three checks that leave the conclusion where it is
 
