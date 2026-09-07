@@ -13277,7 +13277,51 @@ nought to one at a requested width of six, to two at fourteen, and to three at
 twenty-four -- gaps of eight, ten and eight, which no single rounding of a
 linear function produces.
 
-Both are in `KNOWN_GAPS` with their counts.
+#### What the 49 rule out
+
+The sweep was recorded to pin a rounding, and what it does instead is kill the
+whole family the rule belongs to.
+
+**The misses are a pixel out in both directions**, which a bias cannot be. Sorted
+by the remainder of the end-to-end difference in sixty-fourths, they fall into
+two bands: at 29, 30 and 31 -- just under the half -- Windows is a pixel _higher_
+than this, and from 32 up to 49 it is a pixel _lower_. A rounding threshold
+cannot produce both. Windows's own value must be up to eighteen sixty-fourths
+below this one in some rows and a little above it in others, which is a
+difference of about six parts in a thousand and far too large to be a rounding.
+
+**And no constant box survives, even holding the face and the vertical size
+still.** Writing each row as the interval of box widths that would produce
+Windows's answer at that row's horizontal size, and intersecting the intervals
+within each face and vertical size:
+
+| face            | vertical sizes recorded         | groups with no possible box |
+| --------------- | ------------------------------- | --------------------------- |
+| Arial           | 7, 8, 9, 11, 13, 16, 17, 21, 27 | 5 of 9                      |
+| Courier New     | 8, 9, 11, 13, 16, 17, 22, 29    | 4 of 8                      |
+| Times New Roman | 7, 8, 9, 11, 14, 15, 18, 21, 27 | 6 of 9                      |
+
+Fifteen of the twenty-six groups admit no single box at all. The surviving
+intervals all sit within a few units of `head`'s own box -- 2142, 1345, 2223 --
+so the box is the right neighbourhood and the wrong quantity. That rules out
+every formula of the shape "a fixed width scaled by the horizontal size", which
+is what the whole family this section has been searching is.
+
+Thirteen variants were scored against the sweep and every one is worse than the
+842 of 891 the present rule reaches: the ends taken at a floored, rounded,
+ceilinged or sixty-fourth-truncated horizontal size; the box scaled once instead
+of end by end; the maximum built the way `tmAveCharWidth` is built, from the
+square size's value times the stretch, with each of round and floor; and all
+eight roundings of a chain that scales to sixty-fourths at the square size,
+stretches, and divides. The best of them reaches 841 and costs a record of
+`widths` and one of `font` besides.
+
+What is left pointing anywhere is that a quantity six parts in a thousand from
+the header box, varying with both sizes, is what a **grid-fitted** extent looks
+like -- the widest ink the realised face actually reaches, rather than the box
+the file declares.
+
+Both gaps are in `KNOWN_GAPS` with their counts.
 
 ## 9. Where the numbers stand
 
