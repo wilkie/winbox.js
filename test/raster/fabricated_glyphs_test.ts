@@ -143,11 +143,12 @@ describe('the fabricated glyph recordings', () => {
   /* Every cell but the two the `courier-o-plain` instrument was built to
    * reproduce: Courier New's `o` under a width, drawn at Symbol's size in
    * Symbol's slot, where Windows refuses one dropout rescue that this makes.
-   * Four of its ten variants carry the same two cells, and the six that take
+   * Four of its twelve variants carry the same two cells. The six that take
    * the doubly degenerate vertex off the sample column or off the sample line
-   * agree in full -- including two whose crossing lists are byte-identical to
-   * the plain shape's. See FONTS.md section 8a. */
-  const EXACT = 31682;
+   * agree in full, including two whose crossing lists are byte-identical to the
+   * plain shape's, and so do the two that leave it doubly degenerate but move
+   * it into another column. See FONTS.md section 8a. */
+  const EXACT = 32386;
   const WRONG = 8;
 
   /* The one place an unhinted outline is drawn differently.

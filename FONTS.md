@@ -12969,6 +12969,52 @@ produced by the top of the glyph, four rows above the vertex, and no rule keyed
 on that vertex can reach them. A mutation that helps here has to be one that
 changes what the _walk_ records, not what the endpoint check adds to it.
 
+#### The column decides it, and what that points at
+
+Two more instruments move the whole lower arc sideways by a pixel and by two,
+which keeps the counter's bottom vertex exactly on a sample line and exactly on
+a sample column -- it lands on column four's sample and then column five's --
+while leaving rows fourteen to sixteen untouched. **Both agree in full.**
+
+That is the first thing to separate the eight bad cells from the rest by
+something other than the vertex's existence. Compare the disputed rescue's own
+terms:
+
+| variant | vertex | row 14 lists  | column 3 vertical         | Windows draws row 15 |
+| ------- | ------ | ------------- | ------------------------- | -------------------- |
+| plain   | col 3  | `[3]` / `[4]` | `[-20,-15]` / `[-19,-14]` | no                   |
+| col4    | col 4  | `[3]` / `[4]` | `[-20,-15]` / `[-19,-14]` | yes                  |
+
+Every term the stub test reads is identical, and Windows differs. **So the
+effect is not in the terms at all; it is in which column the vertex sits in.**
+In the plain shape that column is the one the rescue writes into and the one
+whose vertical list carries the term the rescue needs.
+
+`scanlist.c` has a mechanism of exactly that shape, and it is the one ruled out
+earlier for the wrong reason. Each column's two vertical lists share one block:
+the `on` list grows up from the base and the `off` list grows down from the top,
+and the block is sized from the reversals. Column three's block holds two
+crossings each way and has **no slack at all**. So one extra entry from the
+doubly degenerate vertex would push the `off` list down into the last `on` slot,
+and the entry it would take is the counter's top crossing at row fifteen --
+exactly the term the rescue needs.
+
+Modelled that way and scored, it fixes the cell. Dropping the last `on` entry of
+a doubly degenerate vertex's column, when that column's lists are full to the
+widest any column reaches, makes **all twelve `o` variants agree in full**,
+`plain`, `upper`, `q10` and `rest` included, which nothing else has done. It
+costs ten other fixtures: `pound-tip` in all three phases at five wrong pixels
+each, `courbd-k` in three at two, and `cour-tall`, `cour-w-cut` twice and
+`cour-no-instctrl` at one. Twenty-five wrong pixels against eight, and 32,378
+exact cells against 32,386.
+
+So it is not adopted. What it establishes is that the shape of the answer is an
+overflow in the vertex's own column, that the slack has to come from a stride
+shared across columns rather than one sized per column -- a per-column size
+takes `col4` and `col5` down with it -- and that the ten fixtures it breaks are
+where the next reading should start, since in them either the extra entry is not
+emitted or it does not land where this puts it.
+
 #### Three checks that leave the conclusion where it is
 
 The measurement was confirmed without replaying anything. Comparing the

@@ -1732,6 +1732,34 @@ export const FABRICATIONS = [
     },
     describe: "the o with the inner contour's lower arc two sixty-fourths lower",
   }),
+  /* Which column the doubly degenerate vertex has to be in.
+   *
+   * The disputed rescue's stub test reads the vertical lists of columns three
+   * and four and nothing else, and the vertex sits in column three. Moving the
+   * whole lower arc a pixel to the right puts it on column four's sample, and
+   * two pixels puts it on column five's, which the test never looks at. Rows
+   * fourteen to sixteen are untouched either way, so whatever Windows does
+   * with the rescue says whether the effect travels through a column the test
+   * reads.
+   */
+  outlineInstrument('courier-o-col4', {
+    contours: COURIER_O_13x4,
+    edit: (shaped) => {
+      for (const index of [7, 8, 9, 10, 11]) {
+        shaped[1][index][0] += 64;
+      }
+    },
+    describe: "the o with the inner contour's lower arc a pixel to the right",
+  }),
+  outlineInstrument('courier-o-col5', {
+    contours: COURIER_O_13x4,
+    edit: (shaped) => {
+      for (const index of [7, 8, 9, 10, 11]) {
+        shaped[1][index][0] += 128;
+      }
+    },
+    describe: "the o with the inner contour's lower arc two pixels to the right",
+  }),
   outlineInstrument('cent-minimum-0', {
     contours: CENT_ITALIC_12,
     describe: "Courier New Italic's cent sign outline, its minimum exactly on a sample row",
