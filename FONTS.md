@@ -13384,6 +13384,32 @@ constant is kept in and wherever the square size's own value comes from -- which
 together with the proof above rules out scaling one number by one factor in
 either parameterisation, the horizontal size or the stretch.
 
+#### The binary agrees: the header box is never formed
+
+The formula this uses takes `head`'s `xMin` and `xMax` and subtracts them, and
+`GDI.EXE` never does. All 48 code segments were dumped and searched for reads at
+those two offsets, 36 and 40 within the table. There are 44 of them across the
+whole file, in every addressing mode a word read has, and **exactly one place
+where the two appear together**: the font-load routine in segment 36 at
+`0x1c3b`. It byte-swaps each, negates the minimum, takes whichever is larger,
+and stores that. Twelve instructions later it does the same for `yMin` and
+`yMax`.
+
+    dx = max(-xMin, xMax)    stored at +0x1b4
+    dx = max(-yMin, yMax)    stored at +0x1b6
+
+That is the largest excursion in each axis, which is what a workspace is sized
+by. **The difference `xMax - xMin` is never computed anywhere in GDI.** So the
+header box is not merely a formula that fits 838 of 891 rows by luck; it is a
+quantity the code does not form at all, and the 49 it misses are not a rounding
+away from it but a different measurement entirely.
+
+Which table the tags come from is settled beside it: segment 47 carries them,
+split into halves -- `he hh lo ma cv pr gl hm cm fp po hd LT na OS VD` against
+`ad ea ca xp t␠ ep yf tx ap gm st mx SH me /2 MX` -- with a jump table of
+sixteen offsets in front. No segment holds a tag as four contiguous bytes, which
+is why the first search for one found nothing.
+
 **The correction is not a constant, and it points both ways.** Sorting the 49 by
 the remainder of the end-to-end difference in sixty-fourths, 45 of them sit at
 32 or above -- where this rounds up and Windows rounds down, so Windows's
