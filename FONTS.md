@@ -13250,17 +13250,26 @@ agree.
 The 171 that do not split cleanly in two, and only one of them is the question
 this section was chasing.
 
-**A mapper rule, 127 of them.** At eight and ten pixels, asked for Arial or
-Times New Roman with a width, Windows answers with the outline and reports an
-average of exactly the width requested at every one of the thirty-two. Asked
-with no width at all it answers `Small Fonts`, a strike. This implementation
-takes the strike either way, and a strike stretched by whole steps reports an
-average that climbs in fours rather than in ones. So a width request changes
-which face is chosen, and it does so at sizes the old sweep never asked about --
-`widths` only ever recorded sixteen and twenty-four.
+**A mapper rule, 127 of them, and it is closed.** At eight and ten pixels, asked
+for Arial or Times New Roman with a width, Windows answers with the outline and
+reports an average of exactly the width requested at every one of the
+thirty-two. Asked with no width at all it answers `Small Fonts`, a strike. This
+implementation took the strike either way, and a strike stretched by whole steps
+reports an average that climbs in fours rather than in ones.
 
-**The maximum width, 42 of them.** The average is right and the maximum is a
-pixel out, across every face and every height. That is the same question as
+`OUTLINE_FLOOR` is about falling back to some _other_ face's strike below the
+size at which outlines win outright, and **a width request takes that fallback
+away**. A strike of the face's own name is not a fallback and keeps its
+exception, the same one the floor already carries. That single condition moves
+122 records and nothing else: `font` holds at 5,057 of 5,057 and `widths` at
+2,479 of 2,480. The sizes it lives at are ones the old sweep never asked about,
+since `widths` only ever recorded sixteen and twenty-four.
+
+**The maximum width, 49 of them once the mapper is right.** The face and the
+average are right and the maximum is a pixel out, **in both directions**, across
+every face and every height. Both directions matters: it is not a bias but a
+rounding, and 49 constraints will pin one where sixty rows with a single miss
+could not. That is the same question as
 before with forty-two constraints on it instead of one, which is the point of
 the sweep: where the staircase steps is now recorded densely enough to be read
 off. Courier New at twenty-four pixels, for instance, steps from an excess of

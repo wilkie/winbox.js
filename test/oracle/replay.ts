@@ -1407,22 +1407,13 @@ export class Unimplemented extends Error {}
  * All 2,574 records agree.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  /* The dense maximum width sweep, recorded after everything else and short in
-   * two separate ways.
-   *
-   * At eight and ten pixels Arial and Times New Roman are mapped here to a
-   * strike -- `Small Fonts` -- where Windows takes the outline as soon as a
-   * width is asked for, and reports an average of exactly the width requested
-   * at every one of the 32. That is 127 of the misses and it is a mapper rule
-   * rather than a metric one: at those heights and a width of nought Windows
-   * takes the strike too.
-   *
-   * The other 42 have the average right and the maximum a pixel out, spread
-   * over every face and height. They are the same question section 8a leaves
-   * open, with 42 constraints on it now instead of one.
+  /* The dense maximum width sweep. The mapper half of it is closed -- a width
+   * request no longer falls back to another face's strike -- and what is left
+   * is 49 records with the face and the average right and the maximum a pixel
+   * out, in both directions, over every face and height. That is the question
+   * section 8a leaves open, with 49 constraints on it now instead of one.
    */
-  'maxwidth:metrics':
-    'the maximum width sweep: a strike where Windows takes an outline under a width at eight and ten pixels (127), and the maximum a pixel out (42)',
+  'maxwidth:metrics': 'the maximum width, a pixel out either way on 49 of 891',
 
   'widths:CreateFont widths':
     'the maximum width under a stretch, one of seventy: Courier New at twenty-two pixels asked for five',
