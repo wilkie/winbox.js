@@ -13316,10 +13316,34 @@ eight roundings of a chain that scales to sixty-fourths at the square size,
 stretches, and divides. The best of them reaches 841 and costs a record of
 `widths` and one of `font` besides.
 
-What is left pointing anywhere is that a quantity six parts in a thousand from
-the header box, varying with both sizes, is what a **grid-fitted** extent looks
-like -- the widest ink the realised face actually reaches, rather than the box
-the file declares.
+**Two adjacent widths settle it.** Arial at a requested height of ten is drawn
+at eight pixels with a square average of four, so the stretch is exactly a
+quarter of the width requested and the horizontal size is exactly twice it.
+Windows's maxima at twenty-six, twenty-seven, twenty-eight and twenty-nine are
+54, 57, 58 and 61 -- increments of three, **one** and three -- where the
+horizontal size steps by two each time.
+
+A rounding of any linear function of the horizontal size cannot do that. Two
+pixels of horizontal size are 2.09 pixels of box, so consecutive answers must
+differ by two or by three, never by one. Allowing the horizontal size itself to
+be anything the average permits does not save it either: the average of
+twenty-seven pins it below 55 and the maximum of 57 pins it at or above 54.28,
+while the average of twenty-eight pins it at or above 55 and the maximum of 58
+pins it below 55.95. Those want a size per unit of width of at least 2.0104 and
+below 1.9982 at once. **There is no such stretch**, and the stretch is
+proportional to the width by construction -- a 16.16 ratio times the vertical
+size.
+
+So the quantity is not a length scaled by the horizontal size at all, however
+the scaling is rounded and whatever the length is. Sixteen formulas of that
+shape are now refused by count, and this refuses the shape.
+
+The grid-fitted extent was measured for six of the Courier New rows and is not
+it either: the box over all hinted glyphs comes out at 11.06 where Windows wants
+11 and this gives 12, which is right, but at 17.0 where Windows wants 16, and at
+43 where Windows wants 33. That reading is not trustworthy -- passing the
+stretch to `hintedOutline` may double-count it -- but nothing about it looks
+like the answer.
 
 Both gaps are in `KNOWN_GAPS` with their counts.
 
