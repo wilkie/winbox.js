@@ -13015,6 +13015,46 @@ takes `col4` and `col5` down with it -- and that the ten fixtures it breaks are
 where the next reading should start, since in them either the extra entry is not
 emitted or it does not land where this puts it.
 
+#### The overflow model, scored to one cell
+
+Refined once, the overflow closes almost everything. Skipping the collision
+where the column's topmost `on` and topmost `off` hold the same row -- which is
+a touch rather than a run, so the two lists' last slots are one crossing rather
+than two -- gives:
+
+| corpus                             | present                          | with the overflow                |
+| ---------------------------------- | -------------------------------- | -------------------------------- |
+| fabricated glyph cells             | 32,386 of 32,394, 8 wrong pixels | **32,394 of 32,394, none wrong** |
+| recorded `widths`                  | 2,478 of 2,480                   | 2,479 of 2,480                   |
+| recorded `styles`                  | 9,178 of 9,178                   | 9,177 of 9,178                   |
+| recorded `glyphs`, `sizes`, `font` | all exact                        | all exact                        |
+
+**The cell this whole section is about is one of the ones it fixes** -- Courier
+New's `o` at sixteen pixels asked for three, the last glyph disagreement in the
+recorded corpus -- and so are all eight fabricated wrong pixels and all twelve
+`o` instruments. What is left of `widths` is the maximum width metric alone.
+
+It is not adopted, and the reason is the one cell it breaks. Courier New Italic's
+`m` at ten pixels loses a pixel at row three, and its column is structurally
+identical to the `o`'s: two entries in each list, the widest any column reaches,
+the topmost `on` and `off` a row apart rather than coincident. The two part on
+something else entirely -- **in the `m` the doubly degenerate vertex is itself
+the topmost crossing of its column, and in the `o` it is the bottom-most** -- and
+a fourth condition to separate them would be a fourth thing fitted.
+
+What is read and what is fitted should be kept apart here. Read from
+`scanlist.c`: that the two lists of a column share one block, that the `on` list
+grows up from its base and the `off` list down from its top, that the block is
+sized from the reversal estimate, and that the stride is one value shared across
+columns rather than sized per column -- which the instruments confirm, since a
+per-column size takes `col4` and `col5` down with it. Fitted, and each of them
+only because it scores: that a doubly degenerate vertex contributes one entry
+more than this emits, that the capacity is the widest list any column reaches,
+and that a coincident top pair spares the collision.
+
+So the shape of the answer is settled and its arithmetic is not. The next
+reading has one cell to explain rather than a corpus.
+
 #### Three checks that leave the conclusion where it is
 
 The measurement was confirmed without replaying anything. Comparing the
