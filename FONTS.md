@@ -13404,6 +13404,16 @@ header box is not merely a formula that fits 838 of 891 rows by luck; it is a
 quantity the code does not form at all, and the 49 it misses are not a rounding
 away from it but a different measurement entirely.
 
+What that routine does cache is worth writing down, since it is the whole of
+what GDI keeps from `head` and `hhea`. It checks the magic number -- `head+0x0c`
+against `0x0f5f` and `head+0x0e` against `0xf53c`, which is `0x5F0F3CF5`
+byte-swapped -- and then stores the em size from `head+0x12`, the flags from
+`head+0x10`, `indexToLocFormat` from `head+0x32`, and `numberOfHMetrics` from
+`hhea+0x22`, each byte-swapped the same way. Then the two excursions. **The
+excursion at `+0x1b4` is written there and read nowhere**, in any segment, by
+any base-plus-displacement word access. So it is not the maximum width either,
+and the two box fields leave no other trace.
+
 Which table the tags come from is settled beside it: segment 47 carries them,
 split into halves -- `he hh lo ma cv pr gl hm cm fp po hd LT na OS VD` against
 `ad ea ca xp t␠ ep yf tx ap gm st mx SH me /2 MX` -- with a jump table of
