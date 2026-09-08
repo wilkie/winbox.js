@@ -1493,11 +1493,16 @@ export const KNOWN_GAPS: Record<string, string> = {
    * What is left is the maximum width, 49 of 891 on the VGA and 83 on the EGA,
    * a pixel out either way with the face and the average right. That is the
    * question section 8a leaves open, with 132 constraints on it now rather than
-   * the one it started with. Four faces and four averages on the EGA are short
-   * beside them, all of them rows asking for no width where Windows answers
-   * with a strike -- `MS Serif` at eight and ten pixels -- and this answers
-   * with the outline, or takes `ARIALB.FON`'s own strike where Windows does
-   * not.
+   * the one it started with.
+   *
+   * Four rows of the EGA are short beside them, each for its own reason and
+   * none of them about a width. Arial and Times New Roman at ten pixels answer
+   * `MS Sans Serif` here and `MS Serif` in Windows, where both families carry a
+   * ten row strike and the tie is broken by something this does not model.
+   * Times New Roman at fourteen answers with an average of seven against a
+   * maximum of thirteen, a pair no size of its outline produces. And Courier
+   * New at twelve comes back eight pixels tall in Windows and twelve here,
+   * which is a cell mapping rather than a metric.
    */
   'maxwidth:metrics':
     'the maximum width, a pixel out either way: 49 of 891 on the VGA and 83 on the EGA, plus four strike averages and two faces there',

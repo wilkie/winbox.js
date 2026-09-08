@@ -13467,11 +13467,27 @@ outline. Dropping the exception under a width takes the EGA to **800 of 891**
 and moves nothing on the VGA, where no outline family has a strike of its own
 name to be tempted by.
 
-What is left on the EGA is 83 maxima, four averages and four faces. The eight
-are all rows asking for no width where Windows answers with `MS Serif` at eight
-and ten pixels and this answers with the outline, or where this takes Arial's
-own strike and Windows does not. The 83 maxima are the same question as the
-VGA's 49, which makes **132 constraints** on it.
+Half of the eight go with one more reading of the same exception. A strike of
+the face's own name escapes `OUTLINE_FLOOR`, and that was measured on Symbol,
+which is the only face on a VGA that has one. An EGA installs two more --
+`ARIALB.FON` is "Arial 8,10 (EGA res)" and `TIMESB.FON` its Times equivalent --
+and Windows passes both over: Arial at twelve or fourteen pixels comes back as
+the outline, and at ten as `MS Serif` rather than as Arial's own ten row strike.
+**Only a symbol face keeps its own strike**, which takes the EGA to 804 of 891
+and moves nothing else.
+
+The four that are left are four different corners, none of them about a width.
+Arial and Times New Roman at ten pixels answer `MS Sans Serif` here and
+`MS Serif` in Windows, where both families carry a ten row strike and the tie
+goes somewhere this does not model -- and not to installation order either,
+since the EGA's `WIN.INI` lists MS Sans Serif first. Times New Roman at fourteen
+answers with an average of seven against a maximum of thirteen, a pair no size
+of its outline produces in either direction, with or without the aspect. And
+Courier New at twelve comes back eight pixels tall in Windows against twelve
+here, which is a cell mapping rather than a metric.
+
+The 83 maxima are the same question as the VGA's 49, which makes **132
+constraints** on it.
 
 #### The binary agrees: the header box is never formed
 

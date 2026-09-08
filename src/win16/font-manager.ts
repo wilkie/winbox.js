@@ -572,7 +572,19 @@ export class FontManager {
        * sixteen answers with its outline because the only sixteen row strikes
        * belong to other faces.
        */
-      const own = this.lookup(outline.name) ? outline.name : null;
+      /* And only a *symbol* face keeps its own strike.
+       *
+       * Symbol at sixteen pixels answers with the sixteen row strike out of
+       * `SYMBOLE.FON`, which is what the exception was measured on. Nothing on
+       * a VGA could say whether it held for the rest, because no other outline
+       * family installed there has a strike of its own name. An EGA does
+       * install them -- `ARIALB.FON` is "Arial 8,10 (EGA res)" and `TIMESB.FON`
+       * its Times equivalent -- and Windows passes both over: Arial asked for
+       * at twelve or fourteen pixels comes back as the outline, and at ten it
+       * comes back as `MS Serif` rather than as Arial's own ten row strike.
+       * **Recorded**, four rows of the EGA sweep.
+       */
+      const own = outline.font.symbolic && this.lookup(outline.name) ? outline.name : null;
 
       /* And a request that names a width does not go to a strike at all.
        *
