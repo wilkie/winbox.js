@@ -13407,6 +13407,44 @@ and 25 averages and two faces on the EGA besides -- the first sign that the size
 mapping there is short of anything, since every glyph the corpus holds was
 recorded on a VGA.
 
+#### What the EGA was really saying: the horizontal size is not the vertical one
+
+The 510 extra maxima are not a harder case of the same puzzle. They are a rule
+this never had, and the 23 averages beside them are the same rule showing
+through a second channel.
+
+**On an EGA a font is realised wider than it is tall.** Its logical resolution
+is 96 dots per inch across and 72 down, so a face asked for at a cell height
+that comes out at `n` pixels vertically is scaled to `4n/3` horizontally --
+before any width is requested at all. This implementation uses the vertical size
+for both, which is right on a VGA, whose pixel is square, and wrong everywhere
+else.
+
+Checked against every row of the sweep that asks for no width, where there is no
+stretch to confuse it:
+
+| face            | rows | average right at `4n/3` | maximum right at `4n/3` |
+| --------------- | ---- | ----------------------- | ----------------------- |
+| Arial           | 7    | 7                       | 7                       |
+| Times New Roman | 7    | 6                       | 6                       |
+| Courier New     | 9    | 8                       | 8                       |
+
+**21 of 23, on both metrics at once**, from a rule with no free parameter in it.
+The two it misses are sizing rather than aspect: Courier New asked for twelve
+comes back at a cell of eight, where this realises nine pixels for a cell of
+twelve, and Times New Roman asked for fourteen reports an average of seven
+against a maximum of thirteen, a ratio the box cannot give at any size.
+
+That also explains why the maxima looked so wild. Reading each EGA row for the
+box it implies gives 2,142 at some vertical sizes and 2,281 or 2,377 at others,
+which is not a font property and never could be; it is the missing four thirds,
+appearing wherever the rounding lets it through.
+
+**So the VGA's 49 and the EGA's 510 are two different questions.** The EGA's are
+a size this computes wrongly. The VGA's are the one this section is about, and
+they stay exactly as they were, since on a square pixel the missing factor is
+one.
+
 #### The binary agrees: the header box is never formed
 
 The formula this uses takes `head`'s `xMin` and `xMax` and subtracts them, and
