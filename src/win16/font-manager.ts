@@ -209,22 +209,29 @@ export class FontManager {
   static OUTLINE_FLOOR = 12;
 
   /**
-   * The order `WIN.INI` installs the raster faces in.
+   * The order the mapper's ties resolve in, measured rather than derived.
    *
    * Two faces can both have a strike at the height asked for -- MS Serif and
    * Small Fonts both have a 10 and an 11 -- and the recording says MS Serif
    * wins both, for a request for Arial and for a request for Times New Roman
    * alike. It is not the family that decides it, since those two requests are
-   * FF_SWISS and FF_ROMAN and get the same answer; it is the order the fonts
-   * appear in `[fonts]`, where MS Serif is listed four lines above Small Fonts.
+   * FF_SWISS and FF_ROMAN and get the same answer.
    *
-   * Kept as a list rather than read from `WIN.INI` because the loader takes
-   * fonts in directory order, which is not installation order.
+   * It is **not installation order** either, which is what this list was once
+   * read as. `WIN.INI` lists MS Sans Serif first on both displays, and on an
+   * EGA -- where MS Sans Serif and MS Serif both carry a ten pixel strike, with
+   * the same average of five and maximum of eleven, so nothing about the
+   * metrics separates them -- Windows answers with MS Serif. A rule that
+   * followed the file would answer with MS Sans Serif. Putting MS Serif first
+   * takes those two rows and costs nothing anywhere: `font`, `glyphs`, `sizes`,
+   * `styles` and `widths` do not move, and neither does the VGA sweep.
+   *
+   * So this stays a list, and what orders it is not yet known.
    */
   static INSTALLED_ORDER = [
+    'MS Serif',
     'MS Sans Serif',
     'Courier',
-    'MS Serif',
     'Symbol',
     'Roman',
     'Script',

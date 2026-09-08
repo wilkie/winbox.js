@@ -13476,15 +13476,21 @@ the outline, and at ten as `MS Serif` rather than as Arial's own ten row strike.
 **Only a symbol face keeps its own strike**, which takes the EGA to 804 of 891
 and moves nothing else.
 
-The four that are left are four different corners, none of them about a width.
-Arial and Times New Roman at ten pixels answer `MS Sans Serif` here and
-`MS Serif` in Windows, where both families carry a ten row strike and the tie
-goes somewhere this does not model -- and not to installation order either,
-since the EGA's `WIN.INI` lists MS Sans Serif first. Times New Roman at fourteen
-answers with an average of seven against a maximum of thirteen, a pair no size
-of its outline produces in either direction, with or without the aspect. And
-Courier New at twelve comes back eight pixels tall in Windows against twelve
-here, which is a cell mapping rather than a metric.
+Two more go with a correction to what `INSTALLED_ORDER` is. That list was read
+as the order `WIN.INI` installs the raster faces in, and the EGA refuses it:
+MS Sans Serif and MS Serif both carry a ten pixel strike there, with the same
+average of five and the same maximum of eleven, so nothing in the metrics
+separates them, and `WIN.INI` lists MS Sans Serif first -- and Windows answers
+with **MS Serif**, for a request for Arial and for Times New Roman alike. Putting
+MS Serif at the head of the list takes both rows and costs nothing: `font`,
+`glyphs`, `sizes`, `styles`, `widths` and the VGA sweep all stand still. So the
+list stays a list, and what orders it is not known.
+
+The two that are left are two different corners, neither about a width. Times
+New Roman at fourteen answers with an average of seven against a maximum of
+thirteen, a pair no size of its outline produces in either direction, with or
+without the aspect. And Courier New at twelve comes back eight pixels tall in
+Windows against twelve here, which is a cell mapping rather than a metric.
 
 The 83 maxima are the same question as the VGA's 49, which makes **132
 constraints** on it.
