@@ -78,9 +78,18 @@ export function GetTextMetrics(hdc, lptm) {
      * average times the stretch -- which is `lfWidth` itself, 60 of 60 in the
      * `widths` fixture -- not the design average re-scaled, which is a pixel
      * short at some of them. */
+    /* The average is taken at the *horizontal* size the face is realised at
+     * before any width is asked for, and then stretched. Where the pixel is
+     * square that size is the vertical one and this is what it always was;
+     * where it is not -- an EGA is ninety-six dots across to seventy-two down --
+     * taking it at the vertical size and multiplying by the whole of the
+     * horizontal ratio counts the aspect twice and comes back a pixel wide.
+     */
+    const xBase = (font as any).xBase || font.ppem;
+    const acrossScaled = (units) => Math.round((units * xBase) / outline.unitsPerEm);
+
     lptm.tmAveCharWidth =
-      Math.round(scaled(outline.averageAdvance) * (font.ppem ? font.xPpem / font.ppem : 1)) +
-      smeared;
+      Math.round(acrossScaled(outline.averageAdvance) * (xBase ? font.xPpem / xBase : 1)) + smeared;
 
     /* The font's bounding box, not its widest advance and not the grid-fitted
      * widths in `hdmx`.

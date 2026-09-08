@@ -57,6 +57,12 @@ export function CreateFontIndirect(lplf) {
      * `FontManager.choose`.
      */
     quality: lplf.lfQuality ?? 0,
+
+    /* The device's own aspect, because an outline is realised wider than it is
+     * tall wherever the pixel is not square. See `FontManager.map`.
+     */
+    aspectX: this.display?.logicalPixelsX ?? 0,
+    aspectY: this.display?.logicalPixelsY ?? 0,
   };
 
   const found = this.fonts.map(request);
@@ -100,6 +106,11 @@ export function CreateFontIndirect(lplf) {
      * request asked for an average character width of its own.
      */
     xPpem: found.xPpem,
+
+    /* And the horizontal size before the width was applied, which the metrics
+     * take the average and the maximum at. See `LogicalFont.xBase`.
+     */
+    xBase: found.xBase,
     ascent: found.ascent,
     descent: found.descent,
   });

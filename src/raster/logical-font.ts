@@ -80,6 +80,18 @@ export class LogicalFont extends Font {
     return this._style.xPpem ?? this.ppem;
   }
 
+  /**
+   * The horizontal size before any width was asked for.
+   *
+   * The vertical size where the pixel is square, and the vertical size times
+   * the device's own aspect where it is not. The metrics take the average and
+   * the maximum at this size and then stretch, so it has to be carried
+   * separately from both the vertical size and the stretched one.
+   */
+  get xBase() {
+    return this._style.xBase ?? this.ppem;
+  }
+
   /** The horizontal size over the vertical: one unless a width was asked for. */
   /**
    * The horizontal size over the vertical, for hinting: one unless a width was

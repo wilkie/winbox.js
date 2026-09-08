@@ -13445,6 +13445,19 @@ a size this computes wrongly. The VGA's are the one this section is about, and
 they stay exactly as they were, since on a square pixel the missing factor is
 one.
 
+The aspect is now in `FontManager.map` as `across`, and the average is taken at
+that horizontal base before the stretch rather than at the vertical size after
+it -- taking it the old way counts the aspect twice and reports a pixel too
+wide. It moved the EGA from 328 of 891 to **802**, 474 records, and moved
+nothing on the VGA: `font`, `glyphs`, `sizes`, `styles` and `widths` are all
+exactly where they were, which is what a rule that is the identity on a square
+pixel should do.
+
+What is left on the EGA is 83 maxima, four averages and two faces. The four
+averages and both faces are rows a strike answers, so the aspect has reached the
+outline path and not yet that one. The 83 maxima are the same question as the
+VGA's 49, which makes **132 constraints** on it.
+
 #### The binary agrees: the header box is never formed
 
 The formula this uses takes `head`'s `xMin` and `xMax` and subtracts them, and

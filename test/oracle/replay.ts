@@ -1412,15 +1412,20 @@ export const KNOWN_GAPS: Record<string, string> = {
    * different pixel size than on a VGA, so the two are different sets of sizes
    * rather than one repeated.
    *
-   * On the VGA 49 of 891 are short and all of them are the maximum, with the
-   * face and the average right. On the EGA 563 are short: two faces, 25
-   * averages, and **510 more of the same maximum**. The EGA exercises it far
-   * harder because its pixel is not square, so the two sizes differ even at a
-   * width of nought. That is the question section 8a leaves open, with 559
-   * constraints on it now rather than the one it started with.
+   * The EGA said something this had never been told: an outline is realised
+   * wider than it is tall wherever the pixel is not square. That is now in
+   * `FontManager.map` and it moved 474 of the EGA's records, taking it from 328
+   * to 802 of 891 without touching anything recorded on the VGA.
+   *
+   * What is left is the maximum width, 49 of 891 on the VGA and 83 on the EGA,
+   * a pixel out either way with the face and the average right. That is the
+   * question section 8a leaves open, with 132 constraints on it now rather than
+   * the one it started with. Four averages and two faces on the EGA are short
+   * beside them, all of them rows where a strike answers: the aspect reaches
+   * the outline path and not yet that one.
    */
   'maxwidth:metrics':
-    'the maximum width, a pixel out either way: 49 of 891 on the VGA and 510 of 891 on the EGA, plus 25 averages and two faces there',
+    'the maximum width, a pixel out either way: 49 of 891 on the VGA and 83 on the EGA, plus four strike averages and two faces there',
 
   'widths:CreateFont widths':
     'the maximum width under a stretch, one of seventy: Courier New at twenty-two pixels asked for five',

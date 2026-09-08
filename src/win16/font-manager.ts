@@ -861,7 +861,29 @@ export class FontManager {
      * exactly as it does unstretched, which an integer size one pixel off
      * would not. Ratio and size as the scaler's transform has them.
      */
-    const stretched = (ppem) => {
+    /* The horizontal size before any width is asked for, which is the vertical
+     * one only where the pixel is square.
+     *
+     * A display reports a logical resolution each way, and an EGA's is ninety-six
+     * dots to the inch across and seventy-two down. An outline realised at `n`
+     * pixels vertically there is realised at `4n/3` horizontally, before
+     * `lfWidth` enters at all: Arial asked for sixteen pixels comes back with an
+     * average of eight and a maximum of eighteen, where the vertical size alone
+     * gives six and fifteen. **Recorded** by the `maxwidth` sweep on both
+     * displays -- of the 23 rows that ask for no width, 21 come out right on the
+     * average and the maximum at once with this and nothing else, and the two
+     * that do not are a cell height realised differently rather than an aspect.
+     * A VGA's two resolutions are equal, so this is the identity there and the
+     * whole recorded corpus, which was taken on one, does not move.
+     */
+    const across = (ppem) =>
+      request.aspectX && request.aspectY && request.aspectX !== request.aspectY
+        ? (ppem * request.aspectX) / request.aspectY
+        : ppem;
+
+    const stretched = (vertical) => {
+      const ppem = across(vertical);
+
       if (!(width > 0) || !font.averageAdvance) {
         return ppem;
       }
@@ -919,6 +941,7 @@ export class FontManager {
         ? {
             entry: null,
             ppem: size,
+            xBase: across(size),
             xPpem: stretched(size),
             ascent: extent.ascent,
             descent: extent.descent,
@@ -948,6 +971,7 @@ export class FontManager {
     return {
       entry: null,
       ppem: found.ppem,
+      xBase: across(found.ppem),
       xPpem: stretched(found.ppem),
       ascent: synthetic ? Math.round((font.ascender * found.ppem) / font.unitsPerEm) : found.ascent,
       descent: synthetic
