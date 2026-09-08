@@ -574,30 +574,35 @@ export class FontManager {
        */
       const own = this.lookup(outline.name) ? outline.name : null;
 
-      /* And a request that names a width does not fall back to a strike at all.
+      /* And a request that names a width does not go to a strike at all.
        *
-       * `OUTLINE_FLOOR` is about falling back to some other face's strike below
-       * the size at which outlines win outright, and a width request takes that
-       * away: Arial asked for at eight or ten pixels with any width from one to
-       * thirty-two comes back as Arial, at seven or ten pixels tall, reporting
-       * an average of exactly the width asked for. With no width it comes back
-       * as Small Fonts, as it always did. **Recorded**, by the `maxwidth`
-       * sweep: 122 of its records turn on this and nothing else moves -- `font`
-       * stays at 5,057 of 5,057 and `widths` at 2,479 of 2,480.
+       * `OUTLINE_FLOOR` is about answering with a strike below the size at
+       * which outlines win outright, and a width request takes that away
+       * entirely: Arial asked for at eight or ten pixels with any width from
+       * one to thirty-two comes back as Arial, reporting an average of exactly
+       * the width asked for. With no width it comes back as `Small Fonts`, as
+       * it always did.
        *
-       * A strike of the face's own name is not a fallback and is not subject to
-       * it, the same exception the floor itself carries.
+       * Not even a strike of the face's own name survives it, which is the one
+       * exception the floor itself carries. An EGA installs `ARIALB.FON`, so
+       * Arial has a strike of its own there, and Windows still answers a width
+       * request with the outline: keeping the exception costs 119 records of
+       * the EGA sweep and nothing on the VGA, where no outline family has a
+       * strike of its own name to be tempted by.
+       *
+       * **Recorded** by `maxwidth` on both displays: 122 of the VGA's records
+       * and 119 more of the EGA's turn on this, and nothing else moves --
+       * `font` stays at 5,057 of 5,057 and `widths` at 2,479 of 2,480.
        */
-      const strike =
-        request.width && !own
-          ? null
-          : this._strikeAt(
-              request.height ?? 0,
-              charset,
-              outline.font.fixedPitch,
-              outline.font.symbolic ? (own ?? outline.name) : own,
-              Boolean(own)
-            );
+      const strike = request.width
+        ? null
+        : this._strikeAt(
+            request.height ?? 0,
+            charset,
+            outline.font.fixedPitch,
+            outline.font.symbolic ? (own ?? outline.name) : own,
+            Boolean(own)
+          );
 
       if (strike) {
         /* Which family the mapper had settled on before the size sent it to a

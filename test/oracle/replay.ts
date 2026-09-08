@@ -84,6 +84,9 @@ export const DRIVE_IMAGE = join(__dirname, '..', '..', 'oracle', 'build', 'win31
  */
 let fonts: any = null;
 
+/** One manager per display, because each installs its own raster fonts. */
+const byDisplay: Record<string, any> = {};
+
 /**
  * `WIN.INI` as the installer left it.
  *
@@ -124,23 +127,14 @@ const SUBJECT_PROFILE = [
 ].join('\r\n');
 
 /** Loads the installed fonts off the drive image, if it has been built. */
-export async function prepareFonts() {
-  if (fonts) {
-    return fonts;
-  }
-
-  if (!existsSync(DRIVE_IMAGE)) {
-    return null;
-  }
-
-  const bytes = new Uint8Array(readFileSync(DRIVE_IMAGE));
-  const disk = new Disk(bytes.byteLength, 512, 32768);
-
-  disk.load(bytes);
-
-  const fileSystem: any = new FAT16(disk);
-  await fileSystem.mount();
-
+/**
+ * Installs the fonts a Windows directory lists, in the order it lists them.
+ *
+ * Takes anything that can open a path, so the same code serves the FAT image
+ * the VGA recording was made from and the host directory another display's
+ * installation was left in.
+ */
+async function install(fileSystem: { open: (path: string[]) => Promise<any> }) {
   const manager: any = new FontManager();
 
   /* Installed in the order Windows installs them, because the mapper's ties
@@ -200,7 +194,84 @@ export async function prepareFonts() {
       await manager.load(file);
     }
   }
-  fonts = manager;
+  return manager;
+}
+
+export async function prepareFonts(display = 'vga') {
+  if (byDisplay[display]) {
+    return byDisplay[display];
+  }
+
+  /* Every display but the VGA installs its own raster fonts -- an EGA gets
+   * `COURB.FON` and `SSERIFB.FON` where a VGA gets the `E` variants -- so
+   * replaying an EGA recording against the VGA's strikes compares two
+   * different questions. The image only holds one installation, and the
+   * directories the installer leaves behind hold the rest, so a display other
+   * than the VGA is read from `oracle/build/drive-c-<display>` on the host.
+   */
+  if (display !== 'vga') {
+    const root = join(__dirname, '..', '..', 'oracle', 'build', `drive-c-${display}`);
+
+    if (!existsSync(root)) {
+      return null;
+    }
+
+    byDisplay[display] = await install({
+      open: async (path: string[]) => {
+        const at = join(root, ...path);
+
+        if (!existsSync(at)) {
+          return null;
+        }
+
+        const bytes = Uint8Array.from(readFileSync(at));
+
+        /* Plain arithmetic rather than a `DataView`: the buffer a Node read
+         * hands back belongs to another realm than the one the tests run in,
+         * and a view of it is refused. */
+        const at16 = (offset: number, little: boolean) =>
+          little
+            ? bytes[offset] | (bytes[offset + 1] << 8)
+            : (bytes[offset] << 8) | bytes[offset + 1];
+
+        return {
+          name: path[path.length - 1],
+          size: bytes.byteLength,
+          /* An `ArrayBuffer`, which is what a stream read returns and what the
+           * executable reader builds a view over. */
+          read: async (offset: number, length: number) =>
+            Uint8Array.from(bytes.subarray(offset, Math.min(offset + length, bytes.length))).buffer,
+          read8: async (offset: number) => bytes[offset],
+          read16: async (offset: number, littleEndian = true) => at16(offset, littleEndian),
+          read32: async (offset: number, littleEndian = true) =>
+            (littleEndian
+              ? at16(offset, true) | (at16(offset + 2, true) << 16)
+              : (at16(offset, false) << 16) | at16(offset + 2, false)) >>> 0,
+        };
+      },
+    });
+
+    return byDisplay[display];
+  }
+
+  if (fonts) {
+    return fonts;
+  }
+
+  if (!existsSync(DRIVE_IMAGE)) {
+    return null;
+  }
+
+  const bytes = new Uint8Array(readFileSync(DRIVE_IMAGE));
+  const disk = new Disk(bytes.byteLength, 512, 32768);
+
+  disk.load(bytes);
+
+  const fileSystem: any = new FAT16(disk);
+  await fileSystem.mount();
+
+  byDisplay.vga = await install(fileSystem);
+  fonts = byDisplay.vga;
 
   return fonts;
 }
@@ -270,7 +341,9 @@ class Context {
     this.allocator = new Allocator(this.machine.memory, this.globalAllocator);
 
     this.handles = new HandleManager();
-    this.fonts = fonts;
+    /* The display's own installation, because the raster fonts differ between
+     * them. See `prepareFonts`. */
+    this.fonts = byDisplay[display] ?? fonts;
   }
 
   /**
@@ -1420,9 +1493,11 @@ export const KNOWN_GAPS: Record<string, string> = {
    * What is left is the maximum width, 49 of 891 on the VGA and 83 on the EGA,
    * a pixel out either way with the face and the average right. That is the
    * question section 8a leaves open, with 132 constraints on it now rather than
-   * the one it started with. Four averages and two faces on the EGA are short
-   * beside them, all of them rows where a strike answers: the aspect reaches
-   * the outline path and not yet that one.
+   * the one it started with. Four faces and four averages on the EGA are short
+   * beside them, all of them rows asking for no width where Windows answers
+   * with a strike -- `MS Serif` at eight and ten pixels -- and this answers
+   * with the outline, or takes `ARIALB.FON`'s own strike where Windows does
+   * not.
    */
   'maxwidth:metrics':
     'the maximum width, a pixel out either way: 49 of 891 on the VGA and 83 on the EGA, plus four strike averages and two faces there',
@@ -1452,6 +1527,8 @@ export async function replayRecord(
   display = 'vga'
 ): Promise<Replayed> {
   const base = { function: record.function, args: record.args, expected: record.result };
+
+  await prepareFonts(display);
 
   if (STUBBED.has(record.function)) {
     return { ...base, actual: null, outcome: 'unimplemented' };

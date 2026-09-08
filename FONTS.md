@@ -13453,9 +13453,24 @@ nothing on the VGA: `font`, `glyphs`, `sizes`, `styles` and `widths` are all
 exactly where they were, which is what a rule that is the identity on a square
 pixel should do.
 
-What is left on the EGA is 83 maxima, four averages and two faces. The four
-averages and both faces are rows a strike answers, so the aspect has reached the
-outline path and not yet that one. The 83 maxima are the same question as the
+Two things follow from it. The harness was replaying the EGA recording against
+the **VGA's** raster fonts, which is comparing two different questions: every
+display installs its own, and an EGA gets `COURB.FON` and `ARIALB.FON` where a
+VGA gets the `E` variants. It now installs from that display's own directory,
+which dropped the EGA from a flattering 802 to a truthful 681 and made the rest
+of the reading worth doing.
+
+And the width rule needed widening. `OUTLINE_FLOOR`'s one exception is a strike
+of the face's own name, and on an EGA Arial has one -- `ARIALB.FON` -- so a
+width request was still being answered with it. Windows answers with the
+outline. Dropping the exception under a width takes the EGA to **800 of 891**
+and moves nothing on the VGA, where no outline family has a strike of its own
+name to be tempted by.
+
+What is left on the EGA is 83 maxima, four averages and four faces. The eight
+are all rows asking for no width where Windows answers with `MS Serif` at eight
+and ten pixels and this answers with the outline, or where this takes Arial's
+own strike and Windows does not. The 83 maxima are the same question as the
 VGA's 49, which makes **132 constraints** on it.
 
 #### The binary agrees: the header box is never formed
