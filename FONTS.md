@@ -13384,6 +13384,29 @@ constant is kept in and wherever the square size's own value comes from -- which
 together with the proof above rules out scaling one number by one factor in
 either parameterisation, the horizontal size or the stretch.
 
+#### Recorded again on an EGA, where it is ten times as visible
+
+The anomaly is not a recording artefact and it is not about the width asked for.
+Run on an EGA, whose logical pixel is not square, the same sweep answers 58, 60,
+62 and 65 at the four widths where the VGA answers 54, 57, 58 and 61 -- steps of
+two, two and three, with no step of one anywhere near. A height asked for on an
+EGA is realised at a different pixel size, so what moved is the size and the
+anomaly moved with it.
+
+That makes the EGA a far better probe of this metric than the VGA, because its
+two sizes differ even at a width of nought rather than only under a stretch. The
+sweep is now recorded on both and kept as two fixtures:
+
+| display | records | short | what is short                               |
+| ------- | ------- | ----- | ------------------------------------------- |
+| VGA     | 891     | 49    | the maximum, every time                     |
+| EGA     | 891     | 563   | two faces, 25 averages, **510 more maxima** |
+
+**559 constraints on the maximum**, against the one this section started with,
+and 25 averages and two faces on the EGA besides -- the first sign that the size
+mapping there is short of anything, since every glyph the corpus holds was
+recorded on a VGA.
+
 #### The binary agrees: the header box is never formed
 
 The formula this uses takes `head`'s `xMin` and `xMax` and subtracts them, and

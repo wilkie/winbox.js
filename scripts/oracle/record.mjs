@@ -44,8 +44,14 @@ const FIXTURES = join(ROOT, 'oracle', 'fixtures');
  * `GetDeviceCaps` obviously, but the text metrics too: which stock fonts get
  * installed depends on the resolution, so a VGA reading of them says nothing
  * about an EGA. These get one fixture per display; everything else gets one.
+ *
+ * `maxwidth` is here because the sizes are the point of it. A height asked for
+ * on an EGA is realised at a different pixel size than on a VGA, so the same
+ * sweep run on both is two sets of sizes rather than one repeated -- 572 of its
+ * 891 metric records differ between them -- and the maximum width is the one
+ * thing left that no rule explains.
  */
-const PER_DISPLAY = new Set(['devcaps']);
+const PER_DISPLAY = new Set(['devcaps', 'maxwidth']);
 
 /** Where a probe writes, on the guest and on the host. */
 const OUTPUT_DIR = 'ORACLE';

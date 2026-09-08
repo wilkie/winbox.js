@@ -1407,13 +1407,20 @@ export class Unimplemented extends Error {}
  * All 2,574 records agree.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  /* The dense maximum width sweep. The mapper half of it is closed -- a width
-   * request no longer falls back to another face's strike -- and what is left
-   * is 49 records with the face and the average right and the maximum a pixel
-   * out, in both directions, over every face and height. That is the question
-   * section 8a leaves open, with 49 constraints on it now instead of one.
+  /* The dense maximum width sweep, recorded on two displays because the sizes
+   * are the point of it: a height asked for on an EGA is realised at a
+   * different pixel size than on a VGA, so the two are different sets of sizes
+   * rather than one repeated.
+   *
+   * On the VGA 49 of 891 are short and all of them are the maximum, with the
+   * face and the average right. On the EGA 563 are short: two faces, 25
+   * averages, and **510 more of the same maximum**. The EGA exercises it far
+   * harder because its pixel is not square, so the two sizes differ even at a
+   * width of nought. That is the question section 8a leaves open, with 559
+   * constraints on it now rather than the one it started with.
    */
-  'maxwidth:metrics': 'the maximum width, a pixel out either way on 49 of 891',
+  'maxwidth:metrics':
+    'the maximum width, a pixel out either way: 49 of 891 on the VGA and 510 of 891 on the EGA, plus 25 averages and two faces there',
 
   'widths:CreateFont widths':
     'the maximum width under a stretch, one of seventy: Courier New at twenty-two pixels asked for five',
