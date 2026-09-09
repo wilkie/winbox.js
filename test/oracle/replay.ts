@@ -1495,12 +1495,13 @@ export const KNOWN_GAPS: Record<string, string> = {
    * question section 8a leaves open, with 132 constraints on it now rather than
    * the one it started with.
    *
-   * Two rows of the EGA are short beside them, each for its own reason and
-   * neither about a width. Times New Roman at fourteen answers with an average
-   * of seven against a maximum of thirteen, a pair no size of its outline
-   * produces in either direction. And Courier New at twelve comes back eight
-   * pixels tall in Windows and twelve here, which is a cell mapping rather than
-   * a metric.
+   * Two rows of the EGA are short beside them, neither about a width. Courier
+   * New comes back eight pixels tall for a request of eight, ten or twelve --
+   * it has no cell between eight and fourteen there -- and this puts a twelve
+   * where Windows has none. And Times New Roman at fourteen contradicts
+   * itself: its average wants a horizontal size between 16.21 and 18.71 and its
+   * maximum one between 11.52 and 12.44, where the rows on either side are
+   * consistent to a tenth of a pixel.
    */
   'maxwidth:metrics':
     'the maximum width, a pixel out either way: 49 of 891 on the VGA and 83 on the EGA, plus four strike averages and two faces there',

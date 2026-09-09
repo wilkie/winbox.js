@@ -13486,11 +13486,33 @@ MS Serif at the head of the list takes both rows and costs nothing: `font`,
 `glyphs`, `sizes`, `styles`, `widths` and the VGA sweep all stand still. So the
 list stays a list, and what orders it is not known.
 
-The two that are left are two different corners, neither about a width. Times
-New Roman at fourteen answers with an average of seven against a maximum of
-thirteen, a pair no size of its outline produces in either direction, with or
-without the aspect. And Courier New at twelve comes back eight pixels tall in
-Windows against twelve here, which is a cell mapping rather than a metric.
+The two that are left are two different corners, neither about a width, and one
+of them says something about the maximum that nothing else has.
+
+**Courier New has no cell between eight and fourteen on an EGA.** Asked for
+eight, ten or twelve pixels it comes back eight pixels tall every time, with the
+same average of six and maximum of seven, and asked for fourteen it comes back
+fourteen. This gets the eight and the ten and puts a twelve where Windows has
+none, so what is missing is which cells that face can be realised at, not a
+metric.
+
+**And Times New Roman at fourteen contradicts itself.** Its average of seven
+wants a horizontal size between 16.21 and 18.71; its maximum of thirteen wants
+one between 11.52 and 12.44. **No single size gives both**, and its neighbours
+are not like that at all -- twelve wants 11.52 and sixteen wants 17.96, each
+consistent to a tenth of a pixel:
+
+| request | average | wants          | maximum | wants          | consistent      |
+| ------- | ------- | -------------- | ------- | -------------- | --------------- |
+| 12      | 5       | 11.23 to 13.72 | 13      | 11.52 to 12.44 | yes, about 11.5 |
+| 14      | 7       | 16.21 to 18.71 | 13      | 11.52 to 12.44 | **no**          |
+| 16      | 7       | 16.21 to 18.71 | 20      | 17.96 to 18.89 | yes, about 18.0 |
+
+Its maximum at fourteen is the same thirteen the twelve row reports, while its
+average has moved on. That is a recorded row where Windows's own two metrics
+cannot both come from one size, which is the sharpest evidence yet that the
+maximum is not computed the way the average is -- the thing the whole of this
+section has been circling.
 
 The 83 maxima are the same question as the VGA's 49, which makes **132
 constraints** on it.
