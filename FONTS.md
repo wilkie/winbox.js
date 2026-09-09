@@ -13552,6 +13552,34 @@ section has been circling.
 The 83 maxima are the same question as the VGA's 49, which makes **132
 constraints** on it.
 
+#### The grid-fitting this has does not produce it
+
+If the answer is a width measured on the grid, the obvious next move is to
+measure one. Nine candidates were computed from the hinted outlines at the four
+horizontal sizes around the anomaly -- the ink extent rounded three ways, the
+cell rounded three ways, the advance plus what hangs off its right, and the
+union across all glyphs rounded two ways:
+
+| candidate                   | at 52, 54, 56, 58  |
+| --------------------------- | ------------------ |
+| ink extent (any rounding)   | 51, 53, 55, 57     |
+| cell (any rounding)         | 53, 55, 57, 59     |
+| advance plus right overhang | 53, 55, 57, 59     |
+| union across the glyphs     | 56, 58, 60, 62     |
+| **Windows**                 | **54, 57, 58, 61** |
+
+Every one of them steps by two, evenly. **The grid-fitting this implementation
+performs does not bend under a horizontal stretch at all**, which is consistent
+with what the `prep` programs do -- Courier New's refuses to hint under a width,
+and Arial's evidently leaves `x` alone as well -- and it means the non-linearity
+Windows shows comes from somewhere this does not yet model.
+
+Two of the candidates bracket the answer and neither matches it: Windows runs
+one or two above the per-glyph cell and one or two below the union, alternating
+between the two as the width goes odd and even. That alternation is the same
+interleaving the whole column shows, two smooth sequences a phase apart, and it
+is a description of the anomaly rather than a mechanism for it.
+
 #### And not a maximum over the glyphs of anything scaled, either
 
 Five per-glyph quantities were tried above and refused one at a time. Two rows
