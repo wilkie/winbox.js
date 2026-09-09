@@ -13672,6 +13672,48 @@ sharpens what the Times New Roman row was saying: its average and its maximum
 are not one value taken at two sizes, they are **two different quantities**, and
 only one of them is the advance scaled by the horizontal size.
 
+#### How GDI reads an `sfnt`, as far as it has been traced
+
+For the archive, since none of this is written down anywhere and all of it was
+read out of the shipped binary.
+
+**The tags live in segment 47, which is pure data.** They are stored as two
+arrays of half-tags rather than as strings: sixteen first halves at `0x00c9`
+and sixteen second halves at `0x00e9`, so `head` is an `he` in one and an `ad`
+in the other. No segment of `GDI.EXE` holds a tag as four contiguous bytes,
+which is why searching for one finds nothing. Paired up they are, in this
+order:
+
+    head  hhea  loca  maxp  cvt   prep  glyf  hmtx
+    cmap  fpgm  post  hdmx  LTSH  name  OS/2  VDMX
+
+**Sixteen offsets sit in front of them**, at `0x00a9`, and they point into
+segment 36: `0x338c`, `0x33a8`, `0x33c6`, `0x33e6`, `0x3408`, `0x342c`,
+`0x3452`, `0x347a`, `0x34a4`, `0x34c0`, `0x34e0`, `0x3504`, `0x352c`, `0x3558`,
+`0x3588`, `0x35bc`. They are not one handler per table. Each is a short routine
+that takes a fixed number of bytes from a running source pointer and stores that
+many words to a running destination, the first taking one, the second two, and
+so on -- a field-widening table for a structure reader, driven by two globals at
+`0x0266` and `0x0268`.
+
+**The font-load routine is at segment 36.** It checks `head`'s magic number as
+two halves, `0x0f5f` against `head+0x0c` and `0xf53c` against `head+0x0e`, and
+then keeps four fields and two derived ones, each byte-swapped by the same
+four-instruction dance:
+
+| taken from       | kept as  | what it is                      |
+| ---------------- | -------- | ------------------------------- |
+| `head+0x12`      | `+0x8c`  | units per em                    |
+| `head+0x10`      | `+0xf8`  | the flags                       |
+| `head+0x32`      | `+0xf6`  | the index-to-loc format         |
+| `hhea+0x22`      | `+0x198` | the count of horizontal metrics |
+| `head+0x24,0x28` | `+0x1b4` | `max(-xMin, xMax)`              |
+| `head+0x26,0x2a` | `+0x1b6` | `max(-yMin, yMax)`              |
+
+That is the whole of what survives from those two tables. The bounding box is
+never kept as a box, and the horizontal excursion at `+0x1b4` is written there
+and read nowhere.
+
 #### The binary agrees: the header box is never formed
 
 The formula this uses takes `head`'s `xMin` and `xMax` and subtracts them, and
