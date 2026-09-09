@@ -13517,6 +13517,38 @@ section has been circling.
 The 83 maxima are the same question as the VGA's 49, which makes **132
 constraints** on it.
 
+#### And not a maximum over the glyphs of anything scaled, either
+
+Five per-glyph quantities were tried above and refused one at a time. Two rows
+refuse the whole family at once, and the argument needs no candidate at all.
+
+Arial at ten pixels is realised at a horizontal size of exactly twice the width
+asked for, so twenty-seven gives 54 and twenty-eight gives 56. Suppose the
+maximum were the largest, over the glyphs, of some fixed per-glyph width scaled
+to the size and rounded. Windows answers 57 at 54, so **some** glyph's width `c`
+satisfies
+
+    round(c × 54 / 2048) = 57      so    c is in [2142.81, 2180.74)
+
+and that same glyph, at 56, gives between 58.593 and 59.630 pixels -- **59 at
+the least**. A maximum is at least any of its members, so the answer at 56
+cannot be below 59. Windows reports 58.
+
+So no assignment of fixed widths to glyphs produces both rows, whatever the
+widths are and whichever glyph wins each. That closes the natural reading of
+`tmMaxCharWidth` -- the widest character, measured once per glyph and scaled --
+along with every variant of it, and it does so from two recorded numbers rather
+than from a search.
+
+**What survives is a width that is not linear in the size**, which is what a
+grid-fitted one is: a glyph hinted at 54 pixels across is not a glyph hinted at
+56 pixels across multiplied by 56/54. Every other property recorded fits that.
+The metric runs one or two pixels above the widest advance, which is what ink
+outside the advance does. It is deterministic. It never touches `head`'s box,
+which GDI does not form. And its average, taken at the same moment from the
+scaled advance, can disagree with it about the size -- because only one of the
+two is a scaled length.
+
 #### It is not carried from anywhere: the maximum is a function of the request
 
 A metric that belongs to a different size than the average beside it is what a
