@@ -13710,6 +13710,22 @@ a realised font's own `dfMaxWidth`, and a raster face's comes straight out of it
 `.FON`: `MS Serif`'s ten pixel strike carries an average of five and a maximum of
 eleven, and Windows reports exactly those.
 
+**The formula checks out on recorded numbers, not just in the disassembly.**
+`MS Sans Serif`'s thirteen pixel strike carries an average of seven and a maximum
+of fourteen. Asked for at sixteen pixels with every width from nought to sixteen,
+Windows answers with a maximum of exactly twice the average at every one of the
+ten -- fourteen against seven where the strike is drawn once across, and
+twenty-eight against fourteen where it is drawn twice:
+
+    MulDiv(14,  7, 7) = 14      Windows 14
+    MulDiv(14, 14, 7) = 28      Windows 28
+
+A ratio held to four decimal places across a doubling is what
+`MulDiv(dfMaxWidth, ave, dfAvgWidth)` does and what scaling a length by the
+horizontal size does not. This implementation already answers all ten, and every
+other strike record, because scaling a strike's own stored metrics is what it
+does; the outline path is the one that guesses.
+
 Two things follow, and the first is the important one. **The maximum is a stored
 number, not a measurement.** Nothing in `GetTextMetrics` touches an outline, a
 glyph, a bounding box or a size; it scales one stored field by the ratio of two
