@@ -13517,6 +13517,26 @@ section has been circling.
 The 83 maxima are the same question as the VGA's 49, which makes **132
 constraints** on it.
 
+#### It is not carried from anywhere: the maximum is a function of the request
+
+A metric that belongs to a different size than the average beside it is what a
+stale one looks like, so the next thing to rule out was that Windows carries the
+maximum rather than computing it. The `maxorder` probe asks five of the short
+rows five ways each: on its own, after a taller size of the same face, after a
+wider one, after a symbol face, and after a strike.
+
+**All twenty-five answers are identical within each row.** Arial at ten pixels
+asked for twenty-seven is 57 every time; asked for twenty-eight it is 58 every
+time; Arial at sixteen asked for two is 4, Times New Roman at thirty-two asked
+for thirteen is 34, and Courier New at twenty-four asked for five is 5. Nothing
+that came before moves any of them, and `tmOverhang` is nought throughout.
+
+So the maximum is a deterministic function of the request and nothing else.
+That closes caching, carrying and order of realisation together, and it
+sharpens what the Times New Roman row was saying: its average and its maximum
+are not one value taken at two sizes, they are **two different quantities**, and
+only one of them is the advance scaled by the horizontal size.
+
 #### The binary agrees: the header box is never formed
 
 The formula this uses takes `head`'s `xMin` and `xMax` and subtracts them, and

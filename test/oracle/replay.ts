@@ -1272,6 +1272,24 @@ const ADAPTERS: Record<
     );
   },
 
+  /* The same request measured after different things, to say whether the
+   * metrics depend on anything but the request. `after` names what preceded it
+   * and is not part of the question.
+   */
+  ordered(context, args) {
+    const tm = context.mappedFont([
+      ...args.filter((field) => !String(field).startsWith('after=')),
+      'weight=400',
+      'italic=0',
+      'under=0',
+      'strike=0',
+      'charset=0',
+      'pitch=0',
+    ]).metrics;
+
+    return `ave=${tm.tmAveCharWidth},max=${tm.tmMaxCharWidth},overhang=${tm.tmOverhang}`;
+  },
+
   'CreateFont widths'(context, args) {
     const tm = context.mappedFont(args).metrics;
 
@@ -1503,6 +1521,14 @@ export const KNOWN_GAPS: Record<string, string> = {
    * maximum one between 11.52 and 12.44, where the rows on either side are
    * consistent to a tenth of a pixel.
    */
+  /* The ordering probe asks five of the anomalous rows five ways each, and
+   * every one of the twenty-five is short of the same pixel of maximum width.
+   * They are here because the rows were *chosen* for being short; what the
+   * probe establishes is on the Windows side and needs no agreement to be
+   * true. See FONTS.md section 8a.
+   */
+  'maxorder:ordered': 'the maximum width again, on five rows chosen for being short (25 of 25)',
+
   'maxwidth:metrics':
     'the maximum width, a pixel out either way: 49 of 891 on the VGA and 83 on the EGA, plus four strike averages and two faces there',
 

@@ -1,0 +1,164 @@
+{
+  "probe": "maxorder",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "ordered",
+      "args": "\"Arial\",h=10,w=27,after=nothing",
+      "result": "ave=27,max=57,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Arial\",h=10,w=27,after=itself-taller",
+      "result": "ave=27,max=57,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Arial\",h=10,w=27,after=itself-wider",
+      "result": "ave=27,max=57,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Arial\",h=10,w=27,after=symbol",
+      "result": "ave=27,max=57,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Arial\",h=10,w=27,after=a-strike",
+      "result": "ave=27,max=57,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Arial\",h=10,w=28,after=nothing",
+      "result": "ave=28,max=58,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Arial\",h=10,w=28,after=itself-taller",
+      "result": "ave=28,max=58,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Arial\",h=10,w=28,after=itself-wider",
+      "result": "ave=28,max=58,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Arial\",h=10,w=28,after=symbol",
+      "result": "ave=28,max=58,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Arial\",h=10,w=28,after=a-strike",
+      "result": "ave=28,max=58,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Arial\",h=16,w=2,after=nothing",
+      "result": "ave=2,max=4,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Arial\",h=16,w=2,after=itself-taller",
+      "result": "ave=2,max=4,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Arial\",h=16,w=2,after=itself-wider",
+      "result": "ave=2,max=4,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Arial\",h=16,w=2,after=symbol",
+      "result": "ave=2,max=4,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Arial\",h=16,w=2,after=a-strike",
+      "result": "ave=2,max=4,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Times New Roman\",h=32,w=13,after=nothing",
+      "result": "ave=13,max=34,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Times New Roman\",h=32,w=13,after=itself-taller",
+      "result": "ave=13,max=34,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Times New Roman\",h=32,w=13,after=itself-wider",
+      "result": "ave=13,max=34,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Times New Roman\",h=32,w=13,after=symbol",
+      "result": "ave=13,max=34,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Times New Roman\",h=32,w=13,after=a-strike",
+      "result": "ave=13,max=34,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Courier New\",h=24,w=5,after=nothing",
+      "result": "ave=5,max=5,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Courier New\",h=24,w=5,after=itself-taller",
+      "result": "ave=5,max=5,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Courier New\",h=24,w=5,after=itself-wider",
+      "result": "ave=5,max=5,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Courier New\",h=24,w=5,after=symbol",
+      "result": "ave=5,max=5,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    },
+    {
+      "function": "ordered",
+      "args": "\"Courier New\",h=24,w=5,after=a-strike",
+      "result": "ave=5,max=5,overhang=0",
+      "section": "each request measured alone, after a sibling size, and after another face"
+    }
+  ]
+}
