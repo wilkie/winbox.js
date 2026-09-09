@@ -13672,6 +13672,51 @@ sharpens what the Times New Roman row was saying: its average and its maximum
 are not one value taken at two sizes, they are **two different quantities**, and
 only one of them is the advance scaled by the horizontal size.
 
+#### `GetTextMetrics` does not compute the maximum: it reports a stored one
+
+`GDI.EXE` exports `GetTextMetrics` as ordinal 93, and the entry table puts it at
+segment 3, offset `0x169a`. The routine that fills the caller's structure begins
+at `0x0222` of that segment, and it is a copier with arithmetic rather than a
+calculator: it points `es:di` at the caller's `TEXTMETRIC` and walks it with
+`stosw`, taking each field from the physical font selected into the device
+context and putting most of them through the `MulDiv` at `seg1:41b0`, which is
+the usual one -- signs stripped, half the divisor added, divided.
+
+There are two branches, chosen on a bit of the font's flags. In the one an
+outline takes:
+
+    tmAveCharWidth = F.ave + smear
+    tmMaxCharWidth = MulDiv(F.max, tmAveCharWidth, F.ave) + smear
+
+where `F.ave` and `F.max` are two adjacent fields of the physical font, at
+`+0x19` and `+0x1b` of the structure `GetTextMetrics` is handed, and `smear` is
+the extra pixel a synthesised bold adds. The same pair drives the other branch,
+where the smear itself is scaled by `F.ave` before being added.
+
+Two things follow, and the first is the important one. **The maximum is a stored
+number, not a measurement.** Nothing in `GetTextMetrics` touches an outline, a
+glyph, a bounding box or a size; it scales one stored field by the ratio of two
+others. Every formula this section refused was refused because it was looking in
+the wrong place: the quantity is whatever the font driver wrote into `F.max`
+when it realised the face, and `GetTextMetrics` only rescales it if the stored
+average and the reported one differ.
+
+Second, it explains the shape the recordings insisted on. The average is a whole
+number of pixels, and under a width request it is exactly the width asked for.
+A maximum computed from it inherits its steps, which is why the metric is not a
+length scaled by the horizontal size, why it can move by one where the size
+moves by two, and why it can disagree with the average about what size the face
+was realised at. It is not a length scaled by anything -- it is a stored number
+scaled by a ratio of integers.
+
+Taking the pair to be the face's own square-size average and maximum gets eight
+of Courier New's ten rows at twenty-two pixels, **including the one `widths` is
+short of**: with 13 and 14, a width of five gives `MulDiv(14, 5, 13)` = 5, which
+is what Windows answers and one less than the box gives. It misses fourteen and
+sixteen, and no single pair fits all ten, so what the driver stores is not that
+pair and is not constant across the widths of one vertical size. Finding what it
+is means reading the realisation, not `GetTextMetrics`.
+
 #### How GDI reads an `sfnt`, as far as it has been traced
 
 For the archive, since none of this is written down anywhere and all of it was
