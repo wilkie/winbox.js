@@ -13552,6 +13552,36 @@ section has been circling.
 The 83 maxima are the same question as the VGA's 49, which makes **132
 constraints** on it.
 
+#### The one `widths` row, settled on its own face's evidence
+
+The single record `widths` is short of is Courier New at twenty-two pixels asked
+for five, and the dense sweep now settles what it is not without borrowing a
+thing from Arial.
+
+Taking all 297 Courier New rows of the VGA sweep and asking, for each, what
+width of box would produce Windows's answer at that row's horizontal size, the
+bounds cross:
+
+| row                        | horizontal size | Windows | needs a box in   |
+| -------------------------- | --------------- | ------- | ---------------- |
+| eight pixels asked for ten | 16.00000        | 11      | [1344.0, 1472.0) |
+| twenty-two asked for five  | 8.46149         | 5       | [1089.2, 1331.2) |
+
+**1344.0 is above 1331.2, so there is no such box** -- not `head`'s 1345, not
+`hhea`'s extent of 1321, not any number at all. One face's own recordings, at
+two of its own sizes, refuse the whole idea that this metric is a width scaled
+to the horizontal size.
+
+`hhea`'s extent was scored anyway, since 1321 sits inside the second interval
+and looked promising: taking `xMaxExtent` against `minLeftSideBearing` costs 57
+records of `font`, four of `widths`, 81 of the VGA sweep and 59 of the EGA's. It
+is refused like the rest.
+
+So the last `widths` record is not a rounding away from a box that is nearly
+right. It is the same quantity the whole of this section is about, seen at one
+size of one face, and the reason it is a pixel out here is the reason 132 others
+are.
+
 #### The grid-fitting this has does not produce it
 
 If the answer is a width measured on the grid, the obvious next move is to
