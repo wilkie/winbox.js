@@ -13693,6 +13693,23 @@ where `F.ave` and `F.max` are two adjacent fields of the physical font, at
 the extra pixel a synthesised bold adds. The same pair drives the other branch,
 where the smear itself is scaled by `F.ave` before being added.
 
+**Those two are `dfAvgWidth` and `dfMaxWidth`.** The pointer is to the `FONTINFO`
+header's `dfType`, at `0x42` of a `.FNT`, and every offset the routine uses lands
+on a named field once that is granted:
+
+| the routine reads | which is                           | and it becomes                               |
+| ----------------- | ---------------------------------- | -------------------------------------------- |
+| `+0x08`           | `dfAscent` at `0x4a`               | `tmAscent`, and `tmDescent` from it          |
+| `+0x0a`, `+0x0c`  | the two leadings at `0x4c`, `0x4e` | `tmInternalLeading`, `tmExternalLeading`     |
+| `+0x16`           | `dfPixHeight` at `0x58`            | the divisor a strike's metrics are scaled by |
+| `+0x19`           | `dfAvgWidth` at `0x5b`             | the divisor above                            |
+| `+0x1b`           | `dfMaxWidth` at `0x5d`             | the number that becomes `tmMaxCharWidth`     |
+
+Six offsets, six fields, in the order the header declares them. So the metric is
+a realised font's own `dfMaxWidth`, and a raster face's comes straight out of its
+`.FON`: `MS Serif`'s ten pixel strike carries an average of five and a maximum of
+eleven, and Windows reports exactly those.
+
 Two things follow, and the first is the important one. **The maximum is a stored
 number, not a measurement.** Nothing in `GetTextMetrics` touches an outline, a
 glyph, a bounding box or a size; it scales one stored field by the ratio of two
