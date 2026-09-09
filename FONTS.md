@@ -12542,6 +12542,41 @@ the fabricated corpus with them. What is left in the whole recorded corpus is
 two records of `widths`: Courier New's `o` at a horizontal size of four, drawn
 unhinted, and Courier New's maximum width at twenty-two pixels asked for five.
 
+### `tmMaxCharWidth`: what is known, in one place
+
+The rest of this section is the chase. This is where it has got to, for anyone
+reading it as a description of Windows rather than as a diary.
+
+**What it is not.** Nine families are closed, each by measurement or by
+arithmetic on recorded numbers rather than by preference:
+
+| reading                                        | how it is closed                                                                                                                        |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `head`'s box scaled to the horizontal size     | GDI never forms that difference; the two fields are read once, together, and turned into `max(-xMin, xMax)`, which is then read nowhere |
+| any fixed length scaled to the horizontal size | two rows want a length below 2139.43 and at or above 2142.81 at once                                                                    |
+| any fixed length times the stretch             | the same two want it in [8.2143, 8.3571) and [8.3704, 8.5185)                                                                           |
+| a maximum over glyphs of fixed widths scaled   | the glyph that gives 57 at a size of 54 gives at least 59 at 56, where Windows gives 58                                                 |
+| the widest character `GetCharWidth` reports    | agrees on 105 of 891 and runs one or two below elsewhere                                                                                |
+| the widest hinted advance                      | that is what `GetCharWidth` returns, and it is not this                                                                                 |
+| a value carried from an earlier realisation    | 25 records, five rows measured five ways, all identical                                                                                 |
+| the size at which the average comes out exact  | 295 of 891 against 842                                                                                                                  |
+| nineteen roundings of the scaling              | none better than 842, most far worse                                                                                                    |
+
+**What it is.** A width measured on the grid rather than scaled to it. Between
+horizontal sizes of 54 and 56 it grows by at most a factor of 1.0354 where the
+size grows by 1.0370, so it is **sub-linear in the size**. It runs one or two
+pixels above the widest character, which is what ink outside the advance does.
+It is deterministic in the request alone. And it can disagree with the average
+reported beside it about what size the face was realised at -- Times New Roman
+at fourteen pixels on an EGA reports an average wanting a size near 17 and a
+maximum wanting one near 12 -- because only the average is a scaled length.
+
+**Where this stands.** The rule this implements, `head`'s box taken end by end
+at the horizontal size, is right on 842 of the VGA sweep's 891 and 806 of the
+EGA's, and on every one of the 2,480 `widths` records but one. It is a good
+approximation to a quantity GDI does not compute, and the 132 rows it misses are
+all a single pixel.
+
 ### The last two records, and what is proved about them
 
 Two records of `widths` are what the whole recorded corpus now comes to, and
