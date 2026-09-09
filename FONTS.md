@@ -13734,6 +13734,19 @@ sixteen, and no single pair fits all ten, so what the driver stores is not that
 pair and is not constant across the widths of one vertical size. Finding what it
 is means reading the realisation, not `GetTextMetrics`.
 
+Three things about that realisation are established. `ENGINEREALIZEFONT` is
+ordinal 300, at segment 5 offset `0x093c`, and it is a thunk: it saves a flag
+word, pushes its six arguments through to `seg5:0x697`, and restores the flag
+afterwards. The routine that path reaches builds its header **on the stack** --
+`enter 0x156`, then a destination pointer walked with `movsw` and `stosw` rather
+than a base with displacements -- which is why searching every segment for a
+write to `dfAvgWidth` or `dfMaxWidth` finds none. And the helper the metrics call
+scales by is GDI's own exported `MulDiv`, ordinal 128 at `seg1:0x41b0`, so the
+rounding in the formula is the documented one.
+
+Following the walking pointer to the two width fields is the next step, and it
+is a counting exercise on one routine rather than a search.
+
 #### How GDI reads an `sfnt`, as far as it has been traced
 
 For the archive, since none of this is written down anywhere and all of it was
