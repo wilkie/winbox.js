@@ -13542,7 +13542,17 @@ than from a search.
 
 **What survives is a width that is not linear in the size**, which is what a
 grid-fitted one is: a glyph hinted at 54 pixels across is not a glyph hinted at
-56 pixels across multiplied by 56/54. Every other property recorded fits that.
+56 pixels across multiplied by 56/54.
+
+The same two rows say which way it bends. Whatever the quantity is before
+rounding, it lies in [56.5, 57.5) at a size of 54 and in [57.5, 58.5) at 56, so
+the most it can grow between them is a factor of 58.5/56.5, which is 1.0354. The
+size grew by 56/54, which is 1.0370. **It grows strictly more slowly than the
+size it is measured at**, which rules out any quantity proportional to the size
+and is what a width quantised to the grid does between two sizes that round the
+same way.
+
+Every other property recorded fits that.
 The metric runs one or two pixels above the widest advance, which is what ink
 outside the advance does. It is deterministic. It never touches `head`'s box,
 which GDI does not form. And its average, taken at the same moment from the
