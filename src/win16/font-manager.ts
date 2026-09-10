@@ -900,10 +900,64 @@ export class FontManager {
      * A VGA's two resolutions are equal, so this is the identity there and the
      * whole recorded corpus, which was taken on one, does not move.
      */
-    const across = (ppem) =>
-      request.aspectX && request.aspectY && request.aspectX !== request.aspectY
-        ? (ppem * request.aspectX) / request.aspectY
-        : ppem;
+    /* The horizontal size is not a size GDI carries: it is a *denominator*.
+     *
+     * **Read out of the binary.** The realiser at `seg3:0x21fb` builds the
+     * physical header from the design one, and the em it divides a horizontal
+     * quantity by is
+     *
+     *     hDenom = MulDiv(dfPoints, logPixelsY, (logPixelsX * ratio) >> 8)
+     *
+     * with `ratio` the width stretch in 8.8, so that a design width becomes
+     * `MulDiv(width, ppem, hDenom)`. With no width asked for the ratio is 256
+     * and this is `MulDiv(dfPoints, logPixelsY, logPixelsX)` -- 2048 on a square
+     * pixel and 1536 on an EGA, which is the whole of the aspect. Expressed as
+     * a size, which is what the rest of this wants, that is
+     * `ppem * unitsPerEm / hDenom`.
+     *
+     * The `>> 8` is where the bits go. `logPixelsX * ratio` is truncated to a
+     * whole number before it becomes a denominator, so the horizontal size lands
+     * on one of a coarse set of values -- and that is why the plain
+     * `ppem * lfWidth / average` is right exactly where the average divides and
+     * low everywhere else. **Scored**: 0 of 3,861 records wrong across thirteen
+     * recordings of the `maxwidth` sweep, against 158 without the cap below,
+     * 981 for the 8.8 ratio applied as a size and 1,024 for the exact ratio.
+     * See `FONTS.md`.
+     */
+    const mulDiv = (a, b, c) => Math.floor((a * b + Math.floor(c / 2)) / c);
+
+    /* Ninety-six each way is what every display this has been recorded on
+     * reports across, and the standard VGA driver reports down; a caller that
+     * does not name a display gets the square pixel that implies, which is what
+     * this did before the aspect was known about at all. */
+    const logX = request.aspectX || 96;
+    const logY = request.aspectY || 96;
+
+    /* `dfPoints` for all three outline faces is the em, and the stub carries
+     * both, so the em stands in for it. */
+    /* The denominator stops at what a sixteen bit word holds.
+     *
+     * `MulDiv` is a sixteen bit function, and a small enough stretch sends this
+     * past its range: Courier New at thirty-two pixels asked for one on a VGA
+     * wants 39,322, and a stub with `dfAvgWidth` at four ems wants 65,536.
+     * **Measured**, three ways -- the ruler stub reads Courier New's maximum
+     * there as 18 where the unclamped denominator gives 15, the four-em stub
+     * answers 5 for a width of one where it gives 3, and the sixteen-em stub
+     * answers a flat 7 for widths one through nine where it gives 0 and 1 and
+     * climbs. All three land on a denominator of 32,768, and the EGA's own
+     * over-range row lands there too, where flooring the *ratio* instead gets
+     * the VGA right and the EGA wrong.
+     *
+     * 32,767 fits the recorded corpus exactly as well as 32,768 does; nothing
+     * here separates them.
+     */
+    const emDenom = (ratio) => {
+      const shifted = (logX * ratio) >> 8;
+
+      return shifted > 0 ? Math.min(0x8000, mulDiv(font.unitsPerEm, logY, shifted)) : 0x8000;
+    };
+
+    const across = (ppem) => (ppem * font.unitsPerEm) / emDenom(256);
 
     const stretched = (vertical) => {
       const ppem = across(vertical);
@@ -912,7 +966,7 @@ export class FontManager {
         return ppem;
       }
 
-      const average = Math.round((font.averageAdvance * ppem) / font.unitsPerEm);
+      const average = mulDiv(font.averageAdvance, vertical, emDenom(256));
 
       if (!(average > 0)) {
         return ppem;
@@ -936,9 +990,38 @@ export class FontManager {
        * division gets the second right and the first wrong (twenty-one
        * glyphs). Nearest is the only reading that has both.
        */
-      const ratio = Math.round((width * 65536) / average);
+      /* The mapper's own arithmetic, at `seg3:0x2a9c`: 256 times the width,
+       * plus half the average, divided by the average.
+       */
+      const ratio = Math.floor((256 * width + (average >> 1)) / average);
 
-      return (ppem * ratio) / 65536;
+      return (vertical * font.unitsPerEm) / emDenom(ratio);
+    };
+
+    /* The whole horizontal size the scaler runs the hint program at.
+     *
+     * It is the 8.8 stretch applied to the size and truncated -- the same
+     * multiply-and-shift the denominator is built from -- and **not** the floor
+     * of the fractional size the metrics use. The two differ by a pixel wherever
+     * the fractional size lands a hair under a whole one: Arial at
+     * thirty-two pixels asked for twenty is 44.993 pixels across and runs at 45,
+     * Times New Roman at the same request 48.935 and runs at 49, and Windows's
+     * text extents for both are the ones those whole sizes give.
+     */
+    const whole = (vertical) => {
+      if (!(width > 0) || !font.averageAdvance) {
+        return Math.floor(across(vertical));
+      }
+
+      const average = mulDiv(font.averageAdvance, vertical, emDenom(256));
+
+      if (!(average > 0)) {
+        return Math.floor(across(vertical));
+      }
+
+      const ratio = Math.floor((256 * width + (average >> 1)) / average);
+
+      return (vertical * ratio) >> 8;
     };
 
     /* A negative height asks for the em rather than the cell, which for an
@@ -967,6 +1050,7 @@ export class FontManager {
             ppem: size,
             xBase: across(size),
             xPpem: stretched(size),
+            xWhole: whole(size),
             ascent: extent.ascent,
             descent: extent.descent,
           }
@@ -997,6 +1081,7 @@ export class FontManager {
       ppem: found.ppem,
       xBase: across(found.ppem),
       xPpem: stretched(found.ppem),
+      xWhole: whole(found.ppem),
       ascent: synthetic ? Math.round((font.ascender * found.ppem) / font.unitsPerEm) : found.ascent,
       descent: synthetic
         ? Math.round((font.descender * found.ppem) / font.unitsPerEm)

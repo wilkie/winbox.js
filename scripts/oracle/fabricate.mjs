@@ -2197,6 +2197,13 @@ export const FABRICATIONS = [
     describe: 'Courier New with both stub widths made rulers, 32767 average and 30011 maximum',
   }),
 
+  directoryField('cour-stub-coarse', {
+    font: 'COUR.FOT',
+    offset: 0x5b,
+    values: [0x00, 0x20, 0x00, 0x50],
+    describe: "Courier New with the stub's dfAvgWidth at four ems, to drive the width ratio below a whole pixel",
+  }),
+
   directoryField('cour-stub-ave', {
     font: 'COUR.FOT',
     offset: 0x5b,

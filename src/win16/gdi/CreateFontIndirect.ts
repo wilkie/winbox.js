@@ -107,6 +107,11 @@ export function CreateFontIndirect(lplf) {
      */
     xPpem: found.xPpem,
 
+    /* The whole size the hint program runs at, which is the 8.8 stretch
+     * truncated rather than the floor of the fractional one. See
+     * `LogicalFont.xWhole`. */
+    xWhole: found.xWhole,
+
     /* And the horizontal size before the width was applied, which the metrics
      * take the average and the maximum at. See `LogicalFont.xBase`.
      */

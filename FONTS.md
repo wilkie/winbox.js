@@ -14259,6 +14259,106 @@ for the linear branch, and forming that branch in sixty-fourths. Both land on
 124,135, which is the same set -- the unhinted advance and the sixty-fourths
 form agree wherever they differ from the plain one.
 
+
+### 8b. The horizontal size is a denominator
+
+The realiser resolves the question the ruler could only measure. `seg5:0x081f`
+is a far call whose relocation names segment 3, so the target is `seg3:0x21fb`,
+and that routine is where the physical font's header is built from the design
+one. It writes `dfPoints` as `72 * size / logPixelsY`, then `dfVertRes` and
+`dfHorizRes`, then scales each vertical field by `MulDiv(field, size, dfPoints)`
+-- and for the horizontal direction it first builds a denominator of its own:
+
+    2230  mul word [bp+0x8]     ; dx:ax = logPixelsX * ratio
+    2233  mov al,ah
+    2235  mov ah,dl             ; ax = (logPixelsX * ratio) >> 8
+    2237  push bx               ; dfPoints
+    2238  push word [bp+0xc]    ; logPixelsY
+    223b  push ax
+    223c  call MulDiv
+
+So a horizontal design quantity becomes
+
+    hDenom = MulDiv(dfPoints, logPixelsY, (logPixelsX * ratio) >> 8)
+    pixels = MulDiv(quantity, ppem, hDenom)
+
+with `ratio` the width stretch in 8.8 that the mapper computed at
+`seg3:0x2a9c`. **The horizontal size is never formed.** What GDI carries is an
+em that has been made narrower, and the "size" this implementation talks about
+is `ppem * unitsPerEm / hDenom`, a derived quantity.
+
+That immediately explains the shape of the error. With no width asked for the
+ratio is 256 and `hDenom` is `MulDiv(dfPoints, logPixelsY, logPixelsX)` --
+2048 on a square pixel, 1536 on an EGA, which is the whole of the aspect, and
+which is why the EGA looked like a four-thirds stretch. With a width, the
+`>> 8` throws away the low bits of `logPixelsX * ratio` **before** the division,
+so the denominator lands on a coarse ladder: at ninety-six dots to the inch
+there are only as many reachable denominators as there are values of
+`(96 * ratio) >> 8`. `ppem * lfWidth / average` is right exactly where the
+average divides -- where the ratio is a whole multiple of 256 and nothing is
+thrown away -- and low everywhere else, by up to half a pixel, which is what
+sections 8a's rulers measured and could not name.
+
+#### The denominator stops at a sixteen bit word
+
+`MulDiv` is a sixteen bit function and a small enough stretch sends the
+denominator past its range. Three fabrications say what happens then, and they
+agree:
+
+  * Courier New at thirty-two pixels asked for one on a VGA has an average of
+    17 and a ratio of 15, so `(96 * 15) >> 8` is 5 and the denominator would be
+    39,322. The ruler stub reads the maximum as 18, which is the denominator
+    32,768, not the 15 that 39,322 gives.
+  * A stub with `dfAvgWidth` at four ems -- `cour-stub-coarse` -- puts Courier
+    New's average at 32 pixels, so a width of one is a ratio of 8, `(96*8)>>8`
+    is 3 and the denominator would be 65,536. Windows answers 5, which is again
+    32,768; 65,536 gives 3. It answers the same 5 for a width of two, where the
+    denominator is exactly 32,768 and nothing is clamped.
+  * The sixteen-em stub -- `cour-stub-both`, `dfAvgWidth` 32767 and `dfMaxWidth`
+    30011 -- gives an average of 128 and ratios of 2, 4, 6 … for widths one, two,
+    three. Windows answers a flat 7 for widths one through nine and then climbs,
+    which is 32,768 for every one of them and the ladder taking over at ten.
+
+Flooring the *ratio* at 16 fits the VGA rows just as well and gets the EGA
+wrong: Courier New at thirty-two asked for one there has an average of 23 and a
+ratio of 11, a denominator of 36,864, and Windows's answer is the one 32,768
+gives. **Scored over thirteen recordings of the `maxwidth` sweep, 3,861 records:
+the capped denominator is wrong on none of them, the uncapped one on 158.**
+
+32,767 fits everything 32,768 does; nothing recorded separates them.
+
+#### What the whole thing is, and what it moved
+
+    denom0  = MulDiv(dfPoints, logPixelsY, logPixelsX)
+    average = MulDiv(dfAvgWidth, ppem, denom0)
+    ratio   = lfWidth ? (256 * lfWidth + average / 2) / average : 256
+    hDenom  = min(0x8000, MulDiv(dfPoints, logPixelsY, (logPixelsX * ratio) >> 8))
+
+    tmAveCharWidth = the width asked for, or MulDiv(dfAvgWidth, ppem, hDenom)
+    tmMaxCharWidth = MulDiv(dfMaxWidth, ppem, hDenom)
+
+all of it from the `.FOT` stub's `FONTDIR`. The `maxwidth` sweep goes from 842
+of 891 to **890** on the VGA and from 811 to **856** on the EGA; the `widths`
+sweep, which had one row short since it was recorded, goes to **2,480 of
+2,480**; and `maxorder` -- twenty-five records of the five rows chosen for being
+short -- goes from none agreeing to **all twenty-five**. Both of those were
+declared gaps and are now closed.
+
+The whole horizontal size the hint program runs at is a separate number, and it
+is **not** the floor of `ppem * unitsPerEm / hDenom`: it is the same 8.8
+multiply truncated, `(ppem * ratio) >> 8`. The two differ by a pixel where the
+derived size lands a hair under a whole one -- Arial at thirty-two pixels asked
+for twenty is 44.993 across and runs at 45, Times New Roman at the same request
+48.935 and runs at 49 -- and the `font` fixture's text extents for both are the
+ones those whole sizes give.
+
+**What is left of `maxwidth` is not a width.** The one VGA row short is Courier
+New at twelve pixels asked for ten, which Windows makes thirteen pixels tall and
+this makes twelve, with the width right; 33 of the EGA's 35 are Courier New at
+twelve, which has no cell between eight and fourteen there and comes back eight
+in Windows; the last two are Times New Roman at fourteen on an EGA, whose
+average and maximum want horizontal sizes that do not overlap.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as

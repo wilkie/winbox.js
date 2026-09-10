@@ -65,6 +65,17 @@ export class LogicalFont extends Font {
     return this._style.outline ?? null;
   }
 
+  /**
+   * The whole horizontal size the scaler runs the hint program at.
+   *
+   * The 8.8 stretch applied to the size and truncated, which is not always the
+   * floor of the fractional size the metrics are taken at. See
+   * `FontManager.map`.
+   */
+  get xWhole() {
+    return this._style.xWhole ?? Math.floor(this.xPpem);
+  }
+
   /** The pixel size an outline face was settled at. */
   get ppem() {
     return this._style.ppem ?? 0;
@@ -101,7 +112,7 @@ export class LogicalFont extends Font {
    * 1,117 and the rounded size 1,060.
    */
   get stretch() {
-    return this.ppem ? Math.floor(this.xPpem) / this.ppem : 1;
+    return this.ppem ? this.xWhole / this.ppem : 1;
   }
 
   /** How many times over the strike is drawn, to reach the size asked for. */
@@ -242,7 +253,7 @@ export class LogicalFont extends Font {
        * unhinted advance 110,756. `hdmx` is the one that must not be asked:
        * its entries are for square sizes and a stretched request is not one.
        */
-      const across = Math.floor(this.xPpem);
+      const across = this.xWhole;
 
       return (
         font.linearAdvance(glyph, across) ??

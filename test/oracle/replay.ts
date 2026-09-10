@@ -1539,32 +1539,22 @@ export const KNOWN_GAPS: Record<string, string> = {
    * `FontManager.map` and it moved 474 of the EGA's records, taking it from 328
    * to 802 of 891 without touching anything recorded on the VGA.
    *
-   * What is left is the maximum width, 49 of 891 on the VGA and 83 on the EGA,
-   * a pixel out either way with the face and the average right. That is the
-   * question section 8a leaves open, with 132 constraints on it now rather than
-   * the one it started with.
+   * The maximum width itself is settled: the horizontal size is a denominator
+   * built by `MulDiv(dfPoints, logPixelsY, (logPixelsX * ratio) >> 8)`, read out
+   * of the realiser at `seg3:0x21fb`, and it takes the VGA to 890 of 891 and the
+   * EGA to 856. See FONTS.md section 8a.
    *
-   * Two rows of the EGA are short beside them, neither about a width. Courier
-   * New comes back eight pixels tall for a request of eight, ten or twelve --
-   * it has no cell between eight and fourteen there -- and this puts a twelve
-   * where Windows has none. And Times New Roman at fourteen contradicts
-   * itself: its average wants a horizontal size between 16.21 and 18.71 and its
-   * maximum one between 11.52 and 12.44, where the rows on either side are
-   * consistent to a tenth of a pixel.
+   * **What is left is not a width at all: it is a cell height.** Courier New
+   * comes back eight pixels tall on an EGA for a request of eight, ten or
+   * twelve -- it has no cell between eight and fourteen there -- and this puts a
+   * twelve where Windows has none, which is 33 of the 35 EGA rows; the other two
+   * are Times New Roman at fourteen, whose average and maximum want horizontal
+   * sizes that do not overlap. The single VGA row is the same kind of thing:
+   * Courier New at twelve pixels asked for ten comes back thirteen pixels tall
+   * in Windows and twelve here, with the width right.
    */
-  /* The ordering probe asks five of the anomalous rows five ways each, and
-   * every one of the twenty-five is short of the same pixel of maximum width.
-   * They are here because the rows were *chosen* for being short; what the
-   * probe establishes is on the Windows side and needs no agreement to be
-   * true. See FONTS.md section 8a.
-   */
-  'maxorder:ordered': 'the maximum width again, on five rows chosen for being short (25 of 25)',
-
   'maxwidth:metrics':
-    'the maximum width, a pixel out either way: 49 of 891 on the VGA and 80 on the EGA, plus four strike averages and two faces there',
-
-  'widths:CreateFont widths':
-    'the maximum width under a stretch, two of seventy: Courier New at twenty-two pixels asked for five, and Times New Roman at twenty-one asked for ten',
+    'a cell height under a width: one row of 891 on the VGA and 35 on the EGA, none of them a width',
 
   /* Every character's advance at every width, on the two proportional faces.
    *
