@@ -327,7 +327,12 @@ async function main() {
     let fixture = PER_DISPLAY.has(name) ? `${name}-${display}` : name;
 
     if (fabrication) {
-      fixture = `fabricated/${name}-${fabrication}`;
+      /* A fabricated recording carries the display too, or a run on one would
+       * overwrite the same fabrication's recording on another. The default
+       * keeps its plain name, so nothing already recorded moves. */
+      const suffix = PER_DISPLAY.has(name) && display !== 'vga' ? `-${display}` : '';
+
+      fixture = `fabricated/${name}-${fabrication}${suffix}`;
 
       await mkdir(join(FIXTURES, 'fabricated'), { recursive: true });
     }

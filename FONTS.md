@@ -14085,6 +14085,66 @@ below about half a pixel however small a width is asked for.
 What that division is remains open, and `ENGINEREALIZEFONT` -- ordinal 300, at
 `seg5:0x093c` by way of `0x0697`, `0x070f` and `0x07f5` -- is where it is.
 
+
+#### The ruler on an EGA: the horizontal size is an exact rational
+
+The same ruler recorded on an EGA settles what the aspect does. There the two
+logical resolutions differ -- ninety-six dots to the inch across, seventy-two
+down -- and the horizontal size at a square request comes out as the vertical
+one times four thirds, *unrounded*. At the nine heights, Courier New is realised
+vertically at 8, 8, 8, 11, 13, 16, 17, 22 and 29 pixels, and the sixteen-em
+ruler reads
+
+    height     8    10    12    14    16    18    20    24    32
+    reported 171   171   171   235   277   341   363   469   619
+    4n/3      32/3  32/3  32/3  44/3  52/3  64/3  68/3  88/3 116/3
+
+and `round(32767 * 4n/3 / 2048)` is 171, 171, 171, 235, 277, 341, 363, 469, 619.
+**Nine of nine, to a sixteenth of a pixel.** Snapping that size to whole pixels
+first misses all nine, and so does snapping it to halves, to quarters and to
+eighths -- 9 of 9 wrong in each. Sixteenths and sixty-fourths still reproduce
+all nine, so the reading does not separate an exact ratio from a fine grid; what
+it does settle is that the size is fractional, and that the ratio of the two
+logical resolutions goes into it whole.
+
+#### Where the width goes wrong, and where it does not
+
+With the size known to a sixteenth of a pixel on all 297 rows of each display,
+the formula `ppem * lfWidth / average` can be scored directly rather than
+inferred. Against the sixteen-em ruler, taking `ppem` and `average` from each
+height's own square request:
+
+    VGA  h=16  ppem 13  average 8    31 of 32 widths exact
+    VGA  h=8   ppem  8  average 5    13 of 32
+    VGA  h=18  ppem 16  average 10   14 of 32
+    VGA  h=32  ppem 29  average 17    7 of 32
+    EGA  h=32  ppem 116/3 average 23  3 of 32
+
+The row that works is the row whose average is a power of two, and it is the
+only one. Everywhere else the reported maximum is **below** what the ratio gives
+-- by one sixteenth of a pixel at eight pixels of height, by up to seven
+sixteenths at thirty-two -- and it returns to exact wherever `lfWidth` is a
+whole multiple of the average. That is a division losing bits, not a rounding of
+the result: the error is zero when the divisor divides.
+
+Which bits are lost is not yet known. Quantising the ratio `lfWidth / average`
+to a power-of-two fraction before multiplying was scored at every denominator
+from 1 to 4096 and in all three roundings, over all eight rulers and all 288
+stretched rows -- 2304 records. The best is truncation to a hundred and
+twenty-eighth, wrong on 777 of 2304; truncation to a sixty-fourth is wrong on
+961, to a five-hundred-and-twelfth on 927, and the exact ratio itself on 1024.
+**Nothing fits.** Nor does quantising the product instead: for every height
+there is no denominator from 1 to 512, in any of the three roundings, that puts
+all thirty-two of that height's sizes inside their measured intervals.
+
+Two further readings are ruled out by the same measurements. The size is not on
+any common sub-pixel grid -- no denominator from 1 to 256 has all thirty-two of
+a height's sizes on it, on either display. And it is not a straight line in
+`lfWidth`: at eight
+pixels the sizes at widths four and five are 6.34 and 8.01, and no `Cw + D`
+passes through both and through width one at 1.57.
+
+What remains is to read the division out of the realiser rather than fit it.
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
