@@ -13750,6 +13750,22 @@ sixteen, and no single pair fits all ten, so what the driver stores is not that
 pair and is not constant across the widths of one vertical size. Finding what it
 is means reading the realisation, not `GetTextMetrics`.
 
+**And the pair is not the unstretched one.** The obvious guess, once the formula
+is known, is that the driver stores the face's metrics at the size the height
+chose and lets the `MulDiv` carry the stretch -- which would make the maximum
+`MulDiv(maxSquare, lfWidth, aveSquare)`. Scored, that is far worse than what
+this already does: `widths` falls from 2,479 of 2,480 to 2,464, the VGA sweep
+from 842 to 391 and the EGA's from 806 to 541. `font` and `glyphs` do not move,
+because at a square size the formula reduces to the same thing.
+
+Two rows had already said as much without the scoring. No constant pair produces
+all ten of Courier New's widths at twenty-two pixels: five wants a ratio in
+[0.9, 1.1) and fourteen wants one in [1.1071, 1.1786). So `dfAvgWidth` and
+`dfMaxWidth` are recomputed for each realisation, stretch included, which makes
+`dfAvgWidth` the realised average and the `MulDiv` an identity. **The metric is
+simply the realised font's `dfMaxWidth`**, and the whole question is what the
+driver puts there.
+
 Three things about that realisation are established. `ENGINEREALIZEFONT` is
 ordinal 300, at segment 5 offset `0x093c`, and it is a thunk: it saves a flag
 word, pushes its six arguments through to `seg5:0x697`, and restores the flag
