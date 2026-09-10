@@ -13582,6 +13582,36 @@ right. It is the same quantity the whole of this section is about, seen at one
 size of one face, and the reason it is a pixel out here is the reason 132 others
 are.
 
+#### What the hinted glyphs do give, exactly
+
+The hinting here does run under a stretch and does fit to the grid: Arial's `H`
+at eight pixels stretched six and three quarters comes out spanning exactly 4 to
+35, whole pixels, where the design scaled gives 30.322 wide. So the earlier
+reading -- that nothing bends -- was wrong about the glyphs, and right only about
+the maximum over them.
+
+Scanning all 220 of Arial's glyphs at the four horizontal sizes around the
+anomaly, one glyph wins at every one of them, and what it gives is worth setting
+beside both recorded quantities:
+
+| horizontal size                | 52     | 54     | 56     | 58     |
+| ------------------------------ | ------ | ------ | ------ | ------ |
+| widest hinted ink              | 52     | 54     | 56     | 58     |
+| widest hinted advance          | 53     | 55     | 57     | 59     |
+| **Windows's widest character** | **53** | **55** | **57** | **59** |
+| **Windows's maximum width**    | **54** | **57** | **58** | **61** |
+
+**The widest hinted advance is Windows's widest character, exactly, at all
+four.** That is a real result: `GetCharWidth` is reproduced from the hinted
+advances with nothing left over, which pins the hinting, the stretch and the
+rounding all at once.
+
+And the metric sits one or two pixels above it. Whatever `dfMaxWidth` is, it is
+the widest character plus something small that this does not yet produce -- ink
+reaching past its own advance is the obvious candidate, and no glyph's does here.
+The target is now that difference alone, on a quantity whose neighbour is
+reproduced perfectly.
+
 #### The grid-fitting this has does not produce it
 
 If the answer is a width measured on the grid, the obvious next move is to
