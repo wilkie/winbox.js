@@ -202,66 +202,71 @@ export class LogicalFont extends Font {
     return this._style.horizontal ?? 1;
   }
 
+  /**
+   * One character's advance, the way this font would lay it out.
+   *
+   * Split out of `measure` so `GetCharWidth` can ask for the same number
+   * without going through a string: what that call reports is exactly what a
+   * one character string measures, less the pixel a synthesised bold adds to
+   * the *string* rather than to each letter.
+   */
+  outlineAdvance(code) {
+    const font = this.outline;
+    const glyph = font.glyphFor(code);
+
+    /* Under a width the advance is the hinted one at the whole horizontal
+     * size, as the glyph is drawn: the program runs anisotropically and the
+     * advance phantom lands where it lands. Scaling the design advance by
+     * the fractional size instead rounds Times New Roman's `N` at
+     * twenty-one pixels asked for twelve -- 31.5 across -- to 23, where
+     * Windows says 22, which is 1479 units at 31 pixels rounded. See the
+     * `hinting` fixture's stretched rows. */
+    if (
+      this.ppem &&
+      this.xPpem !== this.ppem &&
+      !(this._style?.italic && !this._style?.exactStyle)
+    ) {
+      return (
+        font.hintedAdvance(glyph, this.ppem, true, this.stretch) ??
+        Math.round((font.advanceOf(glyph) * Math.floor(this.xPpem)) / font.unitsPerEm)
+      );
+    }
+
+    /* Three tables and a program, asked in the order Windows can answer
+     * them.
+     *
+     * `hdmx` tabulates the hinted advance at the sizes the font was built
+     * for, and this agrees with it on every one: 3,864 of 3,864 glyphs for
+     * Arial and 3,816 of 3,816 for Times New Roman. `LTSH` says where
+     * hinting stops moving the advance at all, and above that the answer is
+     * the scaled one rather than the hinted one -- a different number, not
+     * a shortcut to the same one. Then the program. Scaling is the last
+     * resort, for a glyph that has none.
+     */
+    /* A slant Windows synthesises is drawn from the raw outline with no
+     * program run, and it is measured that way too: each advance is the
+     * scaler's unhinted one -- the two phantom points scaled, rounded to
+     * sixty-fourths and differenced -- not the `hdmx` or hinted one the
+     * upright face would use, and not quite the design advance scaled and
+     * rounded either. See `TrueTypeFont.unhintedAdvance` for the record
+     * that separates the two.
+     */
+    const ppem = this.xPpem;
+
+    return this._style?.italic && !this._style?.exactStyle
+      ? font.unhintedAdvance(glyph, ppem)
+      : (font.deviceAdvance(ppem, glyph) ??
+          font.linearAdvance(glyph, ppem) ??
+          font.hintedAdvance(glyph, ppem) ??
+          Math.round((font.advanceOf(glyph) * ppem) / font.unitsPerEm));
+  }
+
   measure(text, options: any = {}) {
     if (this.outline) {
-      /* Every advance is the grid-fitted one the font tabulates for this pixel
-       * size. Where the table does not cover the size -- it holds a couple of
-       * dozen rather than all of them -- the outline's own advance is scaled,
-       * which is what it would have been hinted from.
-       */
-      const font = this.outline;
-      const ppem = this.xPpem;
-
       let width = 0;
 
       for (const character of String(text)) {
-        const glyph = font.glyphFor(character.charCodeAt(0));
-
-        /* Under a width the advance is the hinted one at the whole horizontal
-         * size, as the glyph is drawn: the program runs anisotropically and the
-         * advance phantom lands where it lands. Scaling the design advance by
-         * the fractional size instead rounds Times New Roman's `N` at
-         * twenty-one pixels asked for twelve -- 31.5 across -- to 23, where
-         * Windows says 22, which is 1479 units at 31 pixels rounded. See the
-         * `hinting` fixture's stretched rows. */
-        if (
-          this.ppem &&
-          this.xPpem !== this.ppem &&
-          !(this._style?.italic && !this._style?.exactStyle)
-        ) {
-          width +=
-            font.hintedAdvance(glyph, this.ppem, true, this.stretch) ??
-            Math.round((font.advanceOf(glyph) * Math.floor(this.xPpem)) / font.unitsPerEm);
-
-          continue;
-        }
-
-        /* Three tables and a program, asked in the order Windows can answer
-         * them.
-         *
-         * `hdmx` tabulates the hinted advance at the sizes the font was built
-         * for, and this agrees with it on every one: 3,864 of 3,864 glyphs for
-         * Arial and 3,816 of 3,816 for Times New Roman. `LTSH` says where
-         * hinting stops moving the advance at all, and above that the answer is
-         * the scaled one rather than the hinted one -- a different number, not
-         * a shortcut to the same one. Then the program. Scaling is the last
-         * resort, for a glyph that has none.
-         */
-        /* A slant Windows synthesises is drawn from the raw outline with no
-         * program run, and it is measured that way too: each advance is the
-         * scaler's unhinted one -- the two phantom points scaled, rounded to
-         * sixty-fourths and differenced -- not the `hdmx` or hinted one the
-         * upright face would use, and not quite the design advance scaled and
-         * rounded either. See `TrueTypeFont.unhintedAdvance` for the record
-         * that separates the two.
-         */
-        width +=
-          this._style?.italic && !this._style?.exactStyle
-            ? font.unhintedAdvance(glyph, ppem)
-            : (font.deviceAdvance(ppem, glyph) ??
-              font.linearAdvance(glyph, ppem) ??
-              font.hintedAdvance(glyph, ppem) ??
-              Math.round((font.advanceOf(glyph) * ppem) / font.unitsPerEm));
+        width += this.outlineAdvance(character.charCodeAt(0));
       }
 
       /* A bold that had to be synthesised costs a pixel a character, which is

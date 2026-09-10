@@ -1290,6 +1290,37 @@ const ADAPTERS: Record<
     return `ave=${tm.tmAveCharWidth},max=${tm.tmMaxCharWidth},overhang=${tm.tmOverhang}`;
   },
 
+  /* Every character's advance, at every width. The probe records the whole
+   * array because a proportional face has a couple of hundred different
+   * advances and each one is a separate constraint on the horizontal size.
+   */
+  widths(context, args) {
+    const { hdc } = context.mappedFont([
+      ...args,
+      'weight=400',
+      'italic=0',
+      'under=0',
+      'strike=0',
+      'charset=0',
+      'pitch=0',
+    ]);
+
+    const buffer = context.place('', 2 * 224 + 2);
+
+    if (!GetCharWidth.call(context, hdc, 32, 255, buffer.far)) {
+      return 'failed';
+    }
+
+    const core = context.machine.cpu.core;
+    const widths = [];
+
+    for (let index = 0; index < 224; index++) {
+      widths.push(core.read16(buffer.segment, buffer.offset + index * 2));
+    }
+
+    return widths.join(',');
+  },
+
   'CreateFont widths'(context, args) {
     const tm = context.mappedFont(args).metrics;
 
@@ -1530,10 +1561,27 @@ export const KNOWN_GAPS: Record<string, string> = {
   'maxorder:ordered': 'the maximum width again, on five rows chosen for being short (25 of 25)',
 
   'maxwidth:metrics':
-    'the maximum width, a pixel out either way: 49 of 891 on the VGA and 83 on the EGA, plus four strike averages and two faces there',
+    'the maximum width, a pixel out either way: 49 of 891 on the VGA and 80 on the EGA, plus four strike averages and two faces there',
 
   'widths:CreateFont widths':
-    'the maximum width under a stretch, one of seventy: Courier New at twenty-two pixels asked for five',
+    'the maximum width under a stretch, two of seventy: Courier New at twenty-two pixels asked for five, and Times New Roman at twenty-one asked for ten',
+
+  /* Every character's advance at every width, on the two proportional faces.
+   *
+   * Two things are short of it, and they are different sizes. Thirty of the
+   * two hundred and twenty-four characters -- 128 through 159, the block the
+   * ANSI charset fills with quotation marks and daggers -- come back as the
+   * missing glyph here, because `TrueTypeFont.ANSI` has one entry in it and
+   * that block needs thirty. Which codepoint each of them is meant to reach is
+   * a question this fixture can answer, since it holds the advance Windows
+   * gives for every one of them at eighteen sizes.
+   *
+   * The rest is the horizontal size under a stretch, the same gap as
+   * `maxwidth`: 81 advances of the 590 rows' 56,640 in the range that does
+   * map, all of them where a width was asked for.
+   */
+  'charscal:widths':
+    "every character's advance under a stretch: the ANSI block from 128 to 159 is unmapped, and 81 of 56,640 advances elsewhere are a pixel out",
 };
 
 /**

@@ -91,6 +91,23 @@ export function GetTextMetrics(hdc, lptm) {
     lptm.tmAveCharWidth =
       Math.round(acrossScaled(outline.averageAdvance) * (xBase ? font.xPpem / xBase : 1)) + smeared;
 
+    /* The stored design maximum, scaled once.
+     *
+     * **Read out of the binary.** `GetTextMetrics`'s filler at `seg3:0x0222`
+     * answers `MulDiv(dfMaxWidth, cx, dfAvgWidth)` from the *physical* font's
+     * header, where `cx` is the realised average width; for an outline face the
+     * ratio is the identity, so what comes back is the physical maximum. That
+     * number is the stub's `dfMaxWidth` scaled to the size -- one multiply and
+     * one rounding -- and the stub is where the two design widths live: nine
+     * fabrications say patching `head`, `hhea`, `hmtx`, `glyf` or `OS/2` moves
+     * nothing and patching the `.FOT` moves all 297 rows. See `FONTS.md`.
+     *
+     * The stub's number is `xMax - xMin`, which the installer computed once, so
+     * reading it from `head` here gives the same value; what changes is that it
+     * is scaled as one quantity rather than end by end in sixty-fourths. GDI
+     * never forms the difference itself -- all 48 segments were searched -- so
+     * the end-by-end reading was a formula the code does not have.
+     */
     /* The font's bounding box, not its widest advance and not the grid-fitted
      * widths in `hdmx`.
      *
@@ -115,11 +132,11 @@ export function GetTextMetrics(hdc, lptm) {
      * glyphs draw at eight and its average reports five, which allow anything
      * from eight to 9.3; what Windows measures it from is not known.
      */
-    const end = (units) => Math.round((units * font.xPpem * 64) / outline.unitsPerEm);
-
     lptm.tmMaxCharWidth =
-      Math.round((end(outline.signed('head', 40)) - end(outline.signed('head', 36))) / 64) +
-      smeared;
+      Math.round(
+        ((outline.signed('head', 40) - outline.signed('head', 36)) * font.xPpem) /
+          outline.unitsPerEm
+      ) + smeared;
 
     // Only a style that had to be made shows up as an overhang.
     const bold = smeared === 1;

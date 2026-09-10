@@ -40,14 +40,26 @@ export function GetCharWidth(hdc, wFirstChar, wLastChar, lpBuffer) {
     return FALSE;
   }
 
-  const entry = font instanceof LogicalFont ? font.entry : font.fontFor(12);
+  /* An outline face has no strike to read a width out of: each advance is the
+   * grid-fitted one the scaler would lay the character out with, which is the
+   * same number a one character string measures. */
+  const outline = font instanceof LogicalFont && font.outline ? font : null;
+  const entry = outline ? null : font instanceof LogicalFont ? font.entry : font.fontFor(12);
+
+  if (!outline && !entry) {
+    return FALSE;
+  }
 
   const cpu = this.machine.cpu.core;
   const segment = (lpBuffer >> 16) & 0xffff;
   let offset = lpBuffer & 0xffff;
 
   for (let code = wFirstChar; code <= wLastChar; code++) {
-    cpu.write16(segment, offset, entry.characterEntryFor(code).width);
+    cpu.write16(
+      segment,
+      offset,
+      outline ? outline.outlineAdvance(code) : entry.characterEntryFor(code).width
+    );
     offset += 2;
   }
 
