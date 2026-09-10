@@ -14186,6 +14186,35 @@ to twelfths rather than truncating gives 1073. **None of them fit**, and the
 sixteenth-of-a-point reading breaks where the exact ratio is perfect: at sixteen
 pixels of height, where the average is eight, truncating to twelfths puts the
 first width at 1.583 pixels where the machine says 1.625.
+
+#### The advances say the stretched size is whole, and that it is ours
+
+`charscal` is a much finer instrument than the maximum width. Where the metric
+constrains the horizontal size through one number, this constrains it through
+two hundred and twenty-four -- every character's advance, hinted, at 594
+(face, height, width) requests.
+
+Every request that asks for no width agrees character for character, and so does
+every request whose width is the face's own average, where the stretch is the
+identity: 91 rows of 594. The 503 that remain disagree somewhere, on 7,063
+advances of their 112,672 -- six per cent, about fourteen characters a row.
+
+Sweeping the whole horizontal size says the size itself is not the error. For
+each of the 558 stretched rows the advances were recomputed at every whole
+horizontal size within three pixels of the one this implementation uses, and
+
+  * **55 rows** are reproduced exactly by some whole size, and in **all 55** the
+    size that works is the one already used -- `floor` of the sixteen-sixteen
+    stretched size;
+  * **503 rows** are reproduced by *no* whole size in that range.
+
+So the fourteen advances a row that move are not a size a pixel out. And the
+size is not fractional either: running the hint program at the unrounded
+horizontal size instead takes `charscal` from 91 rows to 47, the `widths` sweep
+from 2,478 records to 1,771, and `hinting` from 8,470 to 8,465 -- worse
+everywhere. The whole size is right; what the program does at it, for a seventh
+of the characters, is not yet.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
