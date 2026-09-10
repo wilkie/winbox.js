@@ -13582,6 +13582,33 @@ right. It is the same quantity the whole of this section is about, seen at one
 size of one face, and the reason it is a pixel out here is the reason 132 others
 are.
 
+#### The metric can be smaller than the widest character
+
+The sweep records both quantities on the same request, so they can be
+differenced without modelling anything. Over the VGA's 891 rows the maximum runs
+from one below the widest character to eight above:
+
+| maximum minus widest character | -1  | 0   | 1   | 2   | 3   | 4   | 5   | 6   | 7   | 8   |
+| ------------------------------ | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| rows                           | 21  | 105 | 250 | 226 | 118 | 52  | 43  | 45  | 23  | 8   |
+
+**The 21 negative rows settle a structural question.** Arial at twelve pixels
+with no width reports a maximum of 9 against a widest character of 10; at ten
+pixels asked for twelve it reports 25 against 26. A quantity that is the largest
+of anything measured per character cannot come out below the largest character,
+so `dfMaxWidth` is **not a maximum over the glyphs** -- not of advances, not of
+cells, not of ink. It is an independent number that happens to sit near them.
+
+Which way it leans is visible in the rest of the table. The gap grows with the
+size and with the face's own overhang -- Times New Roman, whose box exceeds its
+widest advance by 175 units, reaches eight, while Courier New, at 116, reaches
+four -- which is the box's shape. So the metric is box-like and the widest
+character is advance-like, and they cross wherever the roundings disagree.
+
+That is consistent with everything else and it closes the last plausible family:
+the quantity is neither a scaled length nor a maximum over glyphs, and no
+combination of the two the sweep can distinguish.
+
 #### What the hinted glyphs do give, exactly
 
 The hinting here does run under a stretch and does fit to the grid: Arial's `H`
