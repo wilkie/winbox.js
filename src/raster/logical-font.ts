@@ -226,9 +226,28 @@ export class LogicalFont extends Font {
       this.xPpem !== this.ppem &&
       !(this._style?.italic && !this._style?.exactStyle)
     ) {
+      /* `LTSH` is asked first, and at the *horizontal* size. The table says,
+       * per glyph, the size above which the program stops moving the advance
+       * at all, and above it the answer is the design advance scaled -- which
+       * is the same shortcut the unstretched path takes, at the size the
+       * advance is actually measured in.
+       *
+       * **Measured.** Over the `charscal` sweep's 124,992 stretched advances,
+       * asking `LTSH` at the whole horizontal size and falling back on the
+       * anisotropic run gets 124,533 of them where the run alone gets 117,929.
+       * Five other readings are worse: the whole unstretched chain at the
+       * horizontal size -- `hdmx`, then `LTSH`, then the program -- is 120,475,
+       * `hdmx` first then the run 117,353, the run with unrounded phantoms
+       * 117,755, a square run at the horizontal size 115,841, and the scaler's
+       * unhinted advance 110,756. `hdmx` is the one that must not be asked:
+       * its entries are for square sizes and a stretched request is not one.
+       */
+      const across = Math.floor(this.xPpem);
+
       return (
+        font.linearAdvance(glyph, across) ??
         font.hintedAdvance(glyph, this.ppem, true, this.stretch) ??
-        Math.round((font.advanceOf(glyph) * Math.floor(this.xPpem)) / font.unitsPerEm)
+        Math.round((font.advanceOf(glyph) * across) / font.unitsPerEm)
       );
     }
 

@@ -14215,6 +14215,50 @@ from 2,478 records to 1,771, and `hinting` from 8,470 to 8,465 -- worse
 everywhere. The whole size is right; what the program does at it, for a seventh
 of the characters, is not yet.
 
+
+#### `LTSH` is asked at the horizontal size, and that is most of it
+
+The 503 rows that disagreed asked one question: what the program does at the
+stretched size. It turns out the program is not always run at all.
+
+`LTSH` tabulates, per glyph, the size above which hinting stops moving the
+advance -- above it the answer is the design advance scaled, and the unstretched
+path already takes that shortcut. Under a stretch this implementation skipped
+it and ran the program every time. Asking `LTSH` first, **at the whole
+horizontal size rather than the vertical one**, and falling back on the
+anisotropic run:
+
+    linear(X) then run(P, X/P)          124,533 of 124,992   99.6%
+    hdmx, linear, run, all at X         120,475              96.4%
+    run(P, X/P) alone                   117,929              94.3%   (what this was)
+    run(P, X/P), phantoms unrounded     117,755              94.2%
+    hdmx(X) then run(P, X/P)            117,353              93.9%
+    a square run at X                   115,841              92.7%
+    the scaler's unhinted advance at X   110,756              88.6%
+
+with `X` the whole horizontal size and `P` the vertical one. `hdmx` is the one
+that must *not* be asked: its rows are keyed by a square size and a stretched
+request is not one, which is why putting it first loses ground the run alone
+holds. The `charscal` fixture goes from 91 rows to 445 of 594 and nothing else
+in the corpus moves.
+
+**What is left is 459 advances of 33,376, and it is four things rather than
+one.** 197 are glyphs `LTSH` calls linear where Windows agrees with neither the
+scaled advance nor the same scaled in sixty-fourths. 101 are glyphs where the
+sixty-fourths form *is* Windows's answer -- Arial's `C` at sixty-three pixels
+across is 45.497 pixels, which rounds to 45 as a number and to 2912
+sixty-fourths and so to 46, and Windows says 46 -- but taking sixty-fourths
+everywhere scores 124,135, four hundred worse than plain rounding, so the two
+groups are separated by something not yet found. 68 are glyphs `LTSH` does not
+cover, where a square run at the horizontal size agrees and the anisotropic run
+does not. 93 are neither.
+
+Two more whole readings were scored against the same 124,992 and are worse than
+plain rounding by the same four hundred: taking the scaler's unhinted advance
+for the linear branch, and forming that branch in sixty-fourths. Both land on
+124,135, which is the same set -- the unhinted advance and the sixty-fourths
+form agree wherever they differ from the plain one.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
