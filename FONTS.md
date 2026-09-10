@@ -14145,6 +14145,47 @@ pixels the sizes at widths four and five are 6.34 and 8.01, and no `Cw + D`
 passes through both and through width one at 1.57.
 
 What remains is to read the division out of the realiser rather than fit it.
+
+#### The same two numbers drive every horizontal measurement
+
+The metrics filler is not a special case. `seg34:0x0a82`, which sets up the text
+extent and drawing walk, opens by loading exactly the pair `GetTextMetrics`
+uses:
+
+    bx = the DC;  si = [bx];  es:bx = [si+0x3a] (the physical font's header)
+    di = [si+0x38]                      ; the realised font's record
+    [bp-0x30] = [di+0x2]                ; the realised average width
+    [bp-0x84] = [es:bx+0x19]            ; the physical font's dfAvgWidth
+    [bp-0x3a] = [di+0x0]                ; the realised height
+    [bp-0x88] = [es:bx+0x16]            ; the physical font's dfPixHeight
+
+and then every character advance it takes -- `[es:bx+0x35 + 4c]` from the
+physical font's width table for a proportional face, `[es:bx+0x19]` for a fixed
+one -- goes through `MulDiv(advance, [bp-0x30], [bp-0x84])` at `0x0d2d` and
+`0x0dfe`, and the same pair is handed to the driver's output call at `0x0e8d`.
+The vertical pair is used the same way. So **`realisedAverage / dfAvgWidth` is
+the horizontal ratio of the whole text engine**, not something `GetTextMetrics`
+does on its own, and `tmMaxCharWidth` is the physical maximum through that one
+ratio.
+
+For an outline face the two are equal -- the realisation is done at the
+stretched size and the ratio is the identity -- which is why the ruler reads the
+maximum as the design maximum scaled once. The ratio is there for a strike being
+stretched, and it is the same arithmetic either way.
+
+#### Three more stretches, scored and refused
+
+Reading the size as a whole number of sixteenths of a point is very nearly
+right and is not right. At eight pixels of height and ninety-six dots to the
+inch a sixteenth of a point is a twelfth of a pixel, and `floor(12 * ppem *
+lfWidth / average) / 12` reproduces the measured size exactly on widths one
+through eleven, where the exact ratio manages five. Over the whole corpus --
+eight rulers, nine heights, thirty-two widths, 2304 records -- it is wrong on
+787 against the exact ratio's 1024. Sixteenths of a pixel give 844 and rounding
+to twelfths rather than truncating gives 1073. **None of them fit**, and the
+sixteenth-of-a-point reading breaks where the exact ratio is perfect: at sixteen
+pixels of height, where the average is eight, truncating to twelfths puts the
+first width at 1.583 pixels where the machine says 1.625.
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
