@@ -940,7 +940,48 @@ export class TrueTypeFont {
    * a hundred and sixty are where a codepage would have more to say, and
    * nothing has drawn them.
    */
-  static ANSI: Record<number, number> = { 0xb7: 0x2219 };
+  /**
+   * Where a byte of the ANSI charset lands in a font's `cmap`.
+   *
+   * The block from 128 to 159 is the one that needs saying: the byte's own
+   * codepoint is a C1 control there, and what Windows draws is the punctuation
+   * the code page puts in its place. **Measured**, not assumed: the `charscal`
+   * fixture holds `GetCharWidth` for all 224 characters at nine sizes on two
+   * proportional faces, and searching every codepoint each face has a glyph for
+   * against those eighteen advances leaves one candidate for seventeen of these
+   * and a handful for the rest -- U+2018, U+2019 and U+201A are the same width
+   * as each other, as are U+2039, U+203A and U+02C6 -- with the code page
+   * naming exactly one of each handful. The eight codes with no match at all
+   * (128, 129, 141 to 144, 157, 158) already agree without an entry: they reach
+   * the missing glyph on both sides.
+   */
+  static ANSI: Record<number, number> = {
+    0x82: 0x201a,
+    0x83: 0x0192,
+    0x84: 0x201e,
+    0x85: 0x2026,
+    0x86: 0x2020,
+    0x87: 0x2021,
+    0x88: 0x02c6,
+    0x89: 0x2030,
+    0x8a: 0x0160,
+    0x8b: 0x2039,
+    0x8c: 0x0152,
+    0x91: 0x2018,
+    0x92: 0x2019,
+    0x93: 0x201c,
+    0x94: 0x201d,
+    0x95: 0x2022,
+    0x96: 0x2013,
+    0x97: 0x2014,
+    0x98: 0x02dc,
+    0x99: 0x2122,
+    0x9a: 0x0161,
+    0x9b: 0x203a,
+    0x9c: 0x0153,
+    0x9f: 0x0178,
+    0xb7: 0x2219,
+  };
 
   glyphFor(code) {
     const cmap = this.cmap;

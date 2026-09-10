@@ -314,7 +314,7 @@ export interface Fixture {
  * The functions that take pointers reach memory through `this.machine`, which
  * is the same road the real thunk layer sends them down.
  */
-class Context {
+export class Context {
   machine: any;
   allocator: any;
   globalAllocator: any;
@@ -1568,20 +1568,18 @@ export const KNOWN_GAPS: Record<string, string> = {
 
   /* Every character's advance at every width, on the two proportional faces.
    *
-   * Two things are short of it, and they are different sizes. Thirty of the
-   * two hundred and twenty-four characters -- 128 through 159, the block the
-   * ANSI charset fills with quotation marks and daggers -- come back as the
-   * missing glyph here, because `TrueTypeFont.ANSI` has one entry in it and
-   * that block needs thirty. Which codepoint each of them is meant to reach is
-   * a question this fixture can answer, since it holds the advance Windows
-   * gives for every one of them at eighteen sizes.
+   * All 91 rows that ask for no width agree, character for character, and so do
+   * the rows whose width is the face's own average -- where the stretch is the
+   * identity. Every one of the 503 that remain disagrees somewhere: 7,063
+   * advances of their 112,672, six per cent, and not one of them outside a
+   * stretch.
    *
-   * The rest is the horizontal size under a stretch, the same gap as
-   * `maxwidth`: 81 advances of the 590 rows' 56,640 in the range that does
-   * map, all of them where a width was asked for.
+   * It is the same gap as `maxwidth` and a far denser statement of it. The
+   * maximum width constrains the horizontal size through one number; this
+   * constrains it through two hundred and twenty-four, at 503 sizes.
    */
   'charscal:widths':
-    "every character's advance under a stretch: the ANSI block from 128 to 159 is unmapped, and 81 of 56,640 advances elsewhere are a pixel out",
+    "every character's advance under a stretch: 7,063 of 112,672 across the 503 stretched rows, none of them where no width is asked for",
 };
 
 /**
