@@ -45,6 +45,9 @@ function log(...args) {
 
 /* ---- reading a font ---- */
 
+/** The versions that open a table directory: TrueType, `ttcf`, and `OTTO`. */
+const SFNT = [0x00010000, 0x74727565, 0x74746366, 0x4f54544f];
+
 /**
  * The table directory, as offsets into the file.
  *
@@ -107,9 +110,17 @@ function checksum(view, offset, length) {
  * twenty lines and removes the question, which is worth more than the twenty
  * lines: a fabricated font that fails to load would otherwise have two
  * possible explanations.
+ *
+ * Not every fabricated file is an `sfnt`. A `.FOT` stub is a tiny NE module,
+ * and has no table directory to reseal; it is left alone.
  */
 export function reseal(bytes) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+
+  if (!SFNT.includes(view.getUint32(0, false) >>> 0)) {
+    return bytes;
+  }
+
   const tables = tablesOf(view);
 
   for (const tag of Object.keys(tables)) {
@@ -1295,6 +1306,71 @@ function pointReporter(
 }
 
 /**
+ * Finds the `FONTINFO` a `.FOT` stub carries, by offset into the stub.
+ *
+ * A `.FOT` is a whole NE module whose only cargo is a `FONTDIR` resource --
+ * type `0x8007` -- holding one `FONTDIR` entry: an ordinal, then the same
+ * `FONTINFO` header a real `.FNT` begins with, then two strings. The resource
+ * table's first word is the shift that turns its stored positions into bytes.
+ *
+ * The four bytes at the front of the resource are the entry's ordinal and the
+ * first field of the header, so the header itself starts four in.
+ */
+function directoryOf(view) {
+  const ne = view.getUint16(0x3c, true);
+  const table = ne + view.getUint16(ne + 0x24, true);
+  const shift = view.getUint16(table, true);
+
+  let at = table + 2;
+
+  for (;;) {
+    const type = view.getUint16(at, true);
+
+    if (type === 0) {
+      throw new Error('no FONTDIR resource in this stub');
+    }
+
+    const count = view.getUint16(at + 2, true);
+
+    at += 8;
+
+    if (type === 0x8007) {
+      return (view.getUint16(at, true) << shift) + 4;
+    }
+
+    at += count * 12;
+  }
+}
+
+/**
+ * Replaces bytes of the `FONTINFO` in a `.FOT` stub's `FONTDIR`.
+ *
+ * Which is where GDI finds the design widths of a TrueType face: patching the
+ * `.TTF` moves nothing, because the pair it reports was written into the stub
+ * when the font was installed. See `FONTS.md`.
+ *
+ * The offset is into the `FONTINFO` header, so it is the same number the
+ * documented field takes -- `dfAvgWidth` at `0x5b`, `dfMaxWidth` at `0x5d`.
+ */
+function directoryField(name, { font, offset, values, describe }) {
+  return {
+    name,
+    from: font,
+    as: font,
+    describe,
+
+    edit: (bytes) => {
+      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      const info = directoryOf(view);
+
+      values.forEach((value, index) => view.setUint8(info + offset + index, value & 0xff));
+
+      return bytes;
+    },
+  };
+}
+
+/**
  * Overwrites bytes of one table in place, for a field a probe can read back:
  * the family Windows reports for a face comes from somewhere in `OS/2`, and
  * swapping one field at a time between two faces says which.
@@ -1936,6 +2012,198 @@ export const FABRICATIONS = [
    * with a full PANOSE, comes back `FF_ROMAN`; Wingdings, class 12.0 with a
    * PANOSE of "pictorial, anything", comes back `FF_DONTCARE`. Each face gets
    * the other's field, one at a time. */
+  /* Does `tmMaxCharWidth` depend on `head`'s bounding box at all?
+   *
+   * Section 8a proves the metric is a realised font's own `dfMaxWidth`, and
+   * that GDI's cached font structure never keeps `head`'s box as a box -- it
+   * keeps `max(-xMin, xMax)` and reads even that nowhere. But the TrueType
+   * driver could read the table itself when it realises a face, and nothing
+   * recorded so far separates the two.
+   *
+   * These widen Courier New's box, one end at a time, by 320 units -- a quarter
+   * of an em, far more than any rounding could hide -- and change nothing else.
+   * If the metric moves, the box is read at realisation; if it does not, the
+   * quantity comes from somewhere else entirely.
+   */
+  tableBytes('cour-box-right', {
+    font: 'COUR.TTF',
+    tag: 'head',
+    offset: 40,
+    values: [0x06, 0x40],
+    describe: "Courier New with head's xMax raised from 1280 to 1600",
+  }),
+
+  tableBytes('cour-box-left', {
+    font: 'COUR.TTF',
+    tag: 'head',
+    offset: 36,
+    values: [0xfe, 0xbf],
+    describe: "Courier New with head's xMin lowered from -65 to -321",
+  }),
+
+  /* Which per-face number the maximum width is, asked one field at a time.
+   *
+   * `head`'s box is not it: widening either end by 320 units moves not one of
+   * Courier New's 297 rows. `hhea` carries four numbers of the right size, so
+   * each is raised by 320 in turn and the sweep re-recorded. Whichever moves
+   * the metric is the one the driver reads.
+   */
+  tableBytes('cour-hhea-adv', {
+    font: 'COUR.TTF',
+    tag: 'hhea',
+    offset: 10,
+    values: [0x06, 0x0d],
+    describe: "Courier New with hhea's advanceWidthMax raised from 1229 to 1549",
+  }),
+
+  tableBytes('cour-hhea-lsb', {
+    font: 'COUR.TTF',
+    tag: 'hhea',
+    offset: 12,
+    values: [0xfe, 0xbf],
+    describe: "Courier New with hhea's minLeftSideBearing lowered from -65 to -321",
+  }),
+
+  tableBytes('cour-hhea-rsb', {
+    font: 'COUR.TTF',
+    tag: 'hhea',
+    offset: 14,
+    values: [0xfe, 0xdd],
+    describe: "Courier New with hhea's minRightSideBearing lowered from -27 to -291",
+  }),
+
+  tableBytes('cour-hhea-ext', {
+    font: 'COUR.TTF',
+    tag: 'hhea',
+    offset: 16,
+    values: [0x06, 0x28],
+    describe: "Courier New with hhea's xMaxExtent raised from 1256 to 1576",
+  }),
+
+  /* And whether it comes from the glyphs' own advances.
+   *
+   * Neither `head`'s box nor any of `hhea`'s four numbers moves the metric, so
+   * what is left is the glyph data. Courier New is fixed pitch and every glyph
+   * advances 1229, so raising one of them to 2000 makes that glyph the widest
+   * in the face by a third of an em. If the maximum follows, it is measured
+   * over the glyphs after all.
+   */
+  tableBytes('cour-one-wide', {
+    font: 'COUR.TTF',
+    tag: 'hmtx',
+    offset: 12,
+    values: [0x07, 0xd0],
+    describe: "Courier New with the fourth glyph's advance raised from 1229 to 2000",
+  }),
+
+  /* And whether it comes from the glyphs' own bounding boxes.
+   *
+   * Neither `head`, nor any of `hhea`'s four numbers, nor a glyph's advance in
+   * `hmtx` moves the metric -- the last of those moves what `GetCharWidth`
+   * reports on 288 of 297 rows and leaves the maximum untouched on all of them.
+   * `glyf` carries a box per glyph, and Courier New's widest is glyph 140 at
+   * 1298 units. Raising its `xMax` from 1233 to 1873 makes it half an em wider
+   * than anything else in the face.
+   */
+  tableBytes('cour-glyph-box', {
+    font: 'COUR.TTF',
+    tag: 'glyf',
+    offset: 40574,
+    values: [0x07, 0x51],
+    describe: "Courier New with its widest glyph's own xMax raised by 640 units",
+  }),
+
+  /* And whether it follows the average.
+   *
+   * `OS/2`'s `xAvgCharWidth` is what `tmAveCharWidth` is built from. If the
+   * maximum moves with it, the two are one quantity and a ratio; if only the
+   * average moves, they are measured separately.
+   */
+  tableBytes('cour-os2-ave', {
+    font: 'COUR.TTF',
+    tag: 'OS/2',
+    offset: 2,
+    values: [0x06, 0x40],
+    describe: "Courier New with OS/2's xAvgCharWidth raised from 1229 to 1600",
+  }),
+
+  directoryField('cour-stub-max', {
+    font: 'COUR.FOT',
+    offset: 0x5d,
+    values: [0x82, 0x0a],
+    describe: "Courier New with the stub's dfMaxWidth doubled, 1345 to 2690",
+  }),
+
+  directoryField('cour-stub-ruler', {
+    font: 'COUR.FOT',
+    offset: 0x5d,
+    values: [0x00, 0x50],
+    describe: "Courier New with the stub's dfMaxWidth at ten ems, to read the scale off",
+  }),
+
+  directoryField('cour-stub-fine', {
+    font: 'COUR.FOT',
+    offset: 0x5d,
+    values: [0xff, 0x7f],
+    describe: "Courier New with the stub's dfMaxWidth at sixteen ems less one",
+  }),
+
+  directoryField('cour-stub-finer', {
+    font: 'COUR.FOT',
+    offset: 0x5d,
+    values: [0xff, 0xff],
+    describe: "Courier New with the stub's dfMaxWidth at every bit set, which also asks whether it is signed",
+  }),
+
+  directoryField('cour-stub-r1', {
+    font: 'COUR.FOT',
+    offset: 0x5d,
+    values: [0xed, 0x7f],
+    describe: "Courier New with the stub's dfMaxWidth at 32749, a prime just under sixteen ems",
+  }),
+
+  directoryField('cour-stub-r2', {
+    font: 'COUR.FOT',
+    offset: 0x5d,
+    values: [0x3b, 0x75],
+    describe: "Courier New with the stub's dfMaxWidth at 30011, a prime near fourteen and a half ems",
+  }),
+
+  directoryField('cour-stub-r3', {
+    font: 'COUR.FOT',
+    offset: 0x5d,
+    values: [0x87, 0x6a],
+    describe: "Courier New with the stub's dfMaxWidth at 27271, a prime near thirteen and a third ems",
+  }),
+
+  directoryField('cour-stub-r4', {
+    font: 'COUR.FOT',
+    offset: 0x5d,
+    values: [0xa3, 0x5b],
+    describe: "Courier New with the stub's dfMaxWidth at 23459, a prime near eleven and a half ems",
+  }),
+
+  directoryField('cour-stub-pair', {
+    font: 'COUR.FOT',
+    offset: 0x5b,
+    values: [0x00, 0x04, 0xff, 0x7f],
+    describe: "Courier New with the stub's dfAvgWidth at 1024 and its dfMaxWidth at sixteen ems",
+  }),
+
+  directoryField('cour-stub-both', {
+    font: 'COUR.FOT',
+    offset: 0x5b,
+    values: [0xff, 0x7f, 0x3b, 0x75],
+    describe: 'Courier New with both stub widths made rulers, 32767 average and 30011 maximum',
+  }),
+
+  directoryField('cour-stub-ave', {
+    font: 'COUR.FOT',
+    offset: 0x5b,
+    values: [0x00, 0x04],
+    describe: "Courier New with the stub's dfAvgWidth lowered, 1229 to 1024",
+  }),
+
   tableBytes('symbol-panose-any', {
     font: 'SYMBOL.TTF',
     tag: 'OS/2',

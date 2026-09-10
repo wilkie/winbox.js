@@ -13959,6 +13959,132 @@ like the answer.
 
 Both gaps are in `KNOWN_GAPS` with their counts.
 
+#### Where the two design widths actually live: the `.FOT` stub
+
+Nine fabrications settled where the number comes from, and every one of the
+first eight moved nothing. Courier New was rebuilt with `head`'s `xMax` raised
+from 1024 to 1600, with its `xMin` moved from -321, with each of `hhea`'s four
+width fields -- `advanceWidthMax`, `minLeftSideBearing`, `minRightSideBearing`
+and `xMaxExtent` -- rewritten, with one `hmtx` advance raised to 2000, with a
+`glyf` glyph's own box widened, and with `OS/2`'s `xAvgCharWidth` raised from
+1229 to 1600. **All 297 metric rows came back byte for byte identical in all
+eight.** The `hmtx` patch is the control that says the fabrications work at all:
+it moved `GetCharWidth`'s widest character on 288 of those 297 rows while
+leaving `tmMaxCharWidth` untouched, so the file really was installed and really
+was read.
+
+The ninth found it. A TrueType face installs as a pair -- a `.TTF` with the
+outlines and a `.FOT` stub that `WIN.INI` actually names -- and the stub is a
+whole NE module whose only cargo is a `FONTDIR` resource, type `0x8007`, holding
+one entry: an ordinal, then the same `FONTINFO` header a `.FNT` begins with,
+then two strings. Reading the three stubs on the drive gives, in design units:
+
+    COUR.FOT   dfPoints 2048   dfAvgWidth 1229   dfMaxWidth 1345
+    ARIAL.FOT  dfPoints 2048   dfAvgWidth  904   dfMaxWidth 2142
+    TIMES.FOT  dfPoints 2048   dfAvgWidth  821   dfMaxWidth 2223
+
+Those are exactly the numbers this implementation was already using, which is
+why the box formula fit 842 of 891 rows: the installer computed the stub's
+`dfMaxWidth` as `xMax - xMin` once, at install time, and wrote it down. GDI
+reads the answer rather than forming it -- which is the same thing the segment
+search said, from the other side, when it found that `xMax - xMin` is never
+computed anywhere in GDI.
+
+Patching that one word in the stub moves all 297 Courier New rows and nothing
+else. The `directoryField` fabrication in `scripts/oracle/fabricate.mjs` walks
+the stub's resource table to the `FONTDIR` and writes at the documented
+`FONTINFO` offsets, `dfAvgWidth` at `0x5b` and `dfMaxWidth` at `0x5d`.
+
+#### The formula, read out of the binary
+
+`GetTextMetrics`'s filler is at `seg3:0x0222`. It loads the physical font's
+header into `ds:si` -- the base is the header's `dfType`, so `+0x08` is
+`dfAscent`, `+0x16` is `dfPixHeight`, `+0x19` is `dfAvgWidth` and `+0x1b` is
+`dfMaxWidth` -- and the realised font's own record into `[bp-0x6]`, whose first
+word is the cell height and whose word at `+0x2` is the realised average width.
+Call that `cx`. Every vertical field is `MulDiv(field, height, dfPixHeight)`.
+The two width fields are, at `0x02e4` and again in the other branch at `0x0327`:
+
+    smear             = MulDiv(bold ? 1 : 0, cx, dfAvgWidth)
+    tmAveCharWidth    = cx + smear
+    tmMaxCharWidth    = MulDiv(dfMaxWidth, cx, dfAvgWidth) + smear
+
+with `MulDiv` the exported one at `seg1:0x41b0`. So the maximum is not measured
+at metrics time at all: it is the physical font's own stored maximum, carried
+across by the ratio of the realised average to the physical average. Where the
+realised average *is* the physical average -- which is every request that asks
+for no width -- the `MulDiv` is the identity and **`tmMaxCharWidth` is the
+physical font's `dfMaxWidth`, unaltered**.
+
+#### A ruler in the stub, and what it measures
+
+Because the stub's `dfMaxWidth` is scaled and reported, replacing it with a
+large round number turns the metric into a ruler: set it to ten ems -- 20480 at
+`dfPoints` 2048 -- and `tmMaxCharWidth` reads back ten times the horizontal size
+in pixels. Eight of these were recorded (1345 unpatched, 2690, 20480, 32767,
+and the primes 32749, 30011, 27271 and 23459), and intersecting the eight
+rounding intervals pins the realised horizontal size to about a fiftieth of a
+pixel on all 297 rows.
+
+A ninth, every bit set, reads 0 on all 297 rows: **`dfMaxWidth` is read as a
+signed sixteen-bit quantity**, and `0xffff` is -1, which scales to nothing.
+
+The recordings are deterministic -- the ruler was recorded twice and the two
+fixtures are byte for byte identical -- so the numbers below are the machine's,
+not noise.
+
+#### The law for a request that asks for no width
+
+At `lfWidth` zero the horizontal size is the vertical one (on a square pixel),
+and it is a whole number of pixels. Read off the ruler at the nine heights the
+sweep uses, Courier New is realised at
+
+    height   8  10  12  14  16  18  20  24  32
+    ppem     8   8   9  11  13  16  17  22  29
+
+and at every one of them, for all eight rulers at once,
+
+    tmAveCharWidth = round(dfAvgWidth * ppem / 2048)
+    tmMaxCharWidth = round(dfMaxWidth * ppem / 2048)
+
+The maximum is **one stored number scaled once and rounded once** -- not two
+ends of a box scaled separately, not a maximum over glyphs, and not a
+grid-fitted extent. That the end-to-end box agreed on every square size in the
+`font` fixture is a consequence of the installer having formed the box from the
+same two numbers, not of GDI forming it.
+
+#### And what is left: the horizontal size under a width
+
+Every remaining disagreement is now in one place. Under a width request the
+realised average `cx` comes back as `lfWidth` itself, so the `MulDiv` is again
+the identity and the maximum is again the design maximum scaled by the realised
+horizontal size. **The only unknown left is what that size is.**
+
+It is not `ppem * lfWidth / average`. Measured against the eight rulers, that
+formula is right exactly where `lfWidth` is a whole multiple of the average and
+too large everywhere else, by up to 0.29 of a pixel at 32 pixels of height. Nor
+is the size on any sub-pixel grid: no denominator from 1 to 256 has all
+thirty-two of a height's sizes on it, and the deviations are not periodic in
+`lfWidth` modulo the average either.
+
+Two more fabrications say the average in the denominator is the stub's own. With
+`dfAvgWidth` moved from 1229 to 1024, Courier New's average at eight pixels
+falls from five to four and the horizontal size doubles per unit of width to
+match, exactly as `ppem * lfWidth / average` predicts, and with a power of two
+in the denominator the prediction becomes right on essentially every row -- at
+sixteen pixels, where the average is eight, it is inside the measured interval
+on 26 of 32 widths and within 0.02 of a pixel on the rest. **The deviation is in
+the division, and it appears only when the average does not divide.**
+
+A third says the same thing from further away: with both stub widths made
+rulers -- 32767 average, 30011 maximum -- the reported average is `lfWidth`
+itself on every row while the reported maximum is flat at 7 for widths one
+through nine and then climbs, which is a horizontal size that does not fall
+below about half a pixel however small a width is asked for.
+
+What that division is remains open, and `ENGINEREALIZEFONT` -- ordinal 300, at
+`seg5:0x093c` by way of `0x0697`, `0x070f` and `0x07f5` -- is where it is.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
