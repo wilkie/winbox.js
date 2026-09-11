@@ -14650,6 +14650,35 @@ It is recorded as a gap with its counts, and the disputed-glyph ceiling now
 keeps a separate figure per display: the square ones stay at nought, and this
 one is held where it was measured so it can only fall.
 
+#### Where in the outline path it is, narrowed
+
+The 768 fall into three groups, and the split is clean enough to say which
+mechanism each belongs to.
+
+**249 are upright, plain and accented, and every one of them is a composite.**
+Not one simple glyph of an upright plain outline face is wrong -- the scan
+converter and the hint program are exact under the stretch for those. Taking
+Arial's `È` at twelve pixels apart: the base `E` is identical to Windows, the
+accent is one column right, the component offset scales to 2.25 pixels and
+grid-rounds to 2, the accent's own fitted outline spans 1 to 3, and **the
+assembly before the composite's own program runs puts it at 3 to 5, which is
+exactly where Windows has it**. The program then moves it to 4 to 6. So the
+placement arithmetic is right and it is the composite's program, run
+anisotropically, that differs.
+
+**413 are the italic face and 77 the bold**, both of which are real files rather
+than synthesised styles -- an EGA installs `ARIALI.FOT` and the rest -- so these
+are ordinary simple glyphs of a differently hinted face. The synthesised slant
+is not implicated: leaning by whole pixels counted across rather than down
+changes not one cell of the 890, which is what it should do when nothing is
+being synthesised, and the change is not kept.
+
+That leaves one mechanism to find rather than three: what the interpreter does
+differently when the two sizes are not the same. The control values are already
+scaled at the larger of the two and read back through stretch factors, and an
+EGA does not separate that from scaling at the horizontal size, because its
+horizontal size is always the larger.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
