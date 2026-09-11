@@ -959,44 +959,21 @@ export class FontManager {
 
     const across = (ppem) => (ppem * font.unitsPerEm) / emDenom(256);
 
-    const stretched = (vertical) => {
-      const ppem = across(vertical);
-
+    /* The mapper's own arithmetic, at `seg3:0x2a9c`: 256 times the width, plus
+     * half the average, divided by the average. 256 -- the identity -- when no
+     * width is asked for.
+     */
+    const ratioFor = (vertical) => {
       if (!(width > 0) || !font.averageAdvance) {
-        return ppem;
+        return 256;
       }
 
       const average = mulDiv(font.averageAdvance, vertical, emDenom(256));
 
-      if (!(average > 0)) {
-        return ppem;
-      }
-
-      /* The ratio is a 16.16 fixed number, rounded to the nearest, and the
-       * size is the vertical one times it -- not the one division
-       * `ppem * width / average` would be. The two differ only where the ratio
-       * is not representable and the product is whole. Arial at twenty-one
-       * pixels asked for twelve has an average of nine: twelve ninths is four
-       * thirds, which rounds down to 87381 sixty-fourths of a thousand and
-       * twenty-fourths (16.16), and times twenty-one is 27.99975 -- twenty-seven
-       * pixels, not twenty-eight. Arial at twenty-seven asked for eight has an
-       * average of twelve: two thirds rounds up to 43691, and times
-       * twenty-seven is 18.0001 -- eighteen, as the one division says.
-       * **Recorded**, both: Windows draws all thirty-six glyphs of the first
-       * request one column narrower than twenty-eight gives and every one
-       * agrees at twenty-seven; the second request's text extents are the
-       * eighteen pixel ones. Truncating the ratio instead gets the first right
-       * and the second wrong (five records of the `font` fixture); the one
-       * division gets the second right and the first wrong (twenty-one
-       * glyphs). Nearest is the only reading that has both.
-       */
-      /* The mapper's own arithmetic, at `seg3:0x2a9c`: 256 times the width,
-       * plus half the average, divided by the average.
-       */
-      const ratio = Math.floor((256 * width + (average >> 1)) / average);
-
-      return (vertical * font.unitsPerEm) / emDenom(ratio);
+      return average > 0 ? Math.floor((256 * width + (average >> 1)) / average) : 256;
     };
+
+    const stretched = (vertical) => (vertical * font.unitsPerEm) / emDenom(ratioFor(vertical));
 
     /* The whole horizontal size the scaler runs the hint program at.
      *
@@ -1009,20 +986,30 @@ export class FontManager {
      * text extents for both are the ones those whole sizes give.
      */
     const whole = (vertical) => {
-      if (!(width > 0) || !font.averageAdvance) {
-        return Math.floor(across(vertical));
-      }
+      const ratio = ratioFor(vertical);
 
-      const average = mulDiv(font.averageAdvance, vertical, emDenom(256));
-
-      if (!(average > 0)) {
-        return Math.floor(across(vertical));
-      }
-
-      const ratio = Math.floor((256 * width + (average >> 1)) / average);
-
-      return (vertical * ratio) >> 8;
+      return ratio === 256 ? Math.floor(across(vertical)) : (vertical * ratio) >> 8;
     };
+
+    /* Which of `VDMX`'s ratio groups the realisation falls in.
+     *
+     * The table holds one set of fitted extents per aspect ratio -- 4:3, 5:3,
+     * 2:1 and a catch-all -- and the ratio to look it up by is the em against
+     * the horizontal denominator, which is exact and whole where the size
+     * derived from it is not. With no width on a square pixel that is 1:1 and
+     * only the catch-all matches; an EGA is 4:3; and a width that makes the em
+     * exactly twice as wide as it is tall is 2:1.
+     *
+     * **Measured.** Courier New's four groups differ at nine and ten pixels per
+     * em and nowhere else: the catch-all fits nine per em into a cell of twelve
+     * and the other three into thirteen. Windows answers a request for twelve
+     * pixels on a VGA with twelve at every width but ten, and with thirteen at
+     * ten -- which is exactly the width that makes the denominator half the em.
+     * On an EGA the same face answers eight for requests of eight, ten and
+     * twelve, because in the 4:3 group there is no cell between eight and
+     * thirteen.
+     */
+    const ratioOf = (vertical) => [font.unitsPerEm, emDenom(ratioFor(vertical))];
 
     /* A negative height asks for the em rather than the cell, which for an
      * outline is the pixel size directly.
@@ -1042,7 +1029,7 @@ export class FontManager {
      */
     if (height <= 0) {
       const size = height < 0 ? -height : Math.round((FontManager.DEFAULT_POINTS * 96) / 72);
-      const extent = font.extentAt(size);
+      const extent = font.extentAt(size, ...ratioOf(size));
 
       return extent
         ? {
@@ -1057,11 +1044,18 @@ export class FontManager {
         : null;
     }
 
-    const found = font.sizeForHeight(height);
+    /* The size is searched for at the aspect the request has before a width
+     * enters -- the mapper settles the height first, at `seg3:0x29e5`, and only
+     * then works out the stretch -- and the extent reported for it is read again
+     * at the aspect the realisation ends up with. That is how a width can move
+     * the cell height without moving the size. */
+    const found = font.sizeForHeight(height, font.unitsPerEm, emDenom(256));
 
     if (!found) {
       return null;
     }
+
+    const fitted = font.extentAt(found.ppem, ...ratioOf(found.ppem)) ?? found;
 
     /* A slant Windows synthesises keeps the upright's size and loses its
      * hinting.
@@ -1082,10 +1076,12 @@ export class FontManager {
       xBase: across(found.ppem),
       xPpem: stretched(found.ppem),
       xWhole: whole(found.ppem),
-      ascent: synthetic ? Math.round((font.ascender * found.ppem) / font.unitsPerEm) : found.ascent,
+      ascent: synthetic
+        ? Math.round((font.ascender * found.ppem) / font.unitsPerEm)
+        : fitted.ascent,
       descent: synthetic
         ? Math.round((font.descender * found.ppem) / font.unitsPerEm)
-        : found.descent,
+        : fitted.descent,
     };
   }
 

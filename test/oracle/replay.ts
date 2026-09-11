@@ -1544,17 +1544,18 @@ export const KNOWN_GAPS: Record<string, string> = {
    * of the realiser at `seg3:0x21fb`, and it takes the VGA to 890 of 891 and the
    * EGA to 856. See FONTS.md section 8a.
    *
-   * **What is left is not a width at all: it is a cell height.** Courier New
-   * comes back eight pixels tall on an EGA for a request of eight, ten or
-   * twelve -- it has no cell between eight and fourteen there -- and this puts a
-   * twelve where Windows has none, which is 33 of the 35 EGA rows; the other two
-   * are Times New Roman at fourteen, whose average and maximum want horizontal
-   * sizes that do not overlap. The single VGA row is the same kind of thing:
-   * Courier New at twelve pixels asked for ten comes back thirteen pixels tall
-   * in Windows and twelve here, with the width right.
+   * The cell height went the same way. `VDMX` holds one set of fitted extents
+   * per aspect ratio and the ratio to read it by is the em against the
+   * horizontal denominator, so a stretch can move the cell without moving the
+   * size: that is the whole of the VGA, 891 of 891, and all but two of the EGA.
+   *
+   * The two left are Times New Roman at fourteen pixels on an EGA, which
+   * contradicts itself -- its average wants a horizontal size between 16.21 and
+   * 18.71 and its maximum one between 11.52 and 12.44, where the rows on either
+   * side are consistent to a tenth of a pixel.
    */
-  'maxwidth:metrics':
-    'a cell height under a width: one row of 891 on the VGA and 35 on the EGA, none of them a width',
+  'maxwidth-ega:metrics':
+    'Times New Roman at fourteen pixels on an EGA, two rows of 891: its average and its maximum want horizontal sizes that do not overlap',
 
   /* Every character's advance at every width, on the two proportional faces.
    *

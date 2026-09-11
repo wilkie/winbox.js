@@ -405,7 +405,7 @@ export class TrueTypeFont {
    *
    * @returns {number|null} The offset of the group, or null if there is none.
    */
-  vdmxGroup() {
+  vdmxGroup(x = 1, y = 1) {
     if (!this.has('VDMX')) {
       return null;
     }
@@ -413,9 +413,18 @@ export class TrueTypeFont {
     const base = this._tables['VDMX'].offset;
     const ratios = this._view.getUint16(base + 4, false);
 
-    if (ratios === 0) {
+    if (ratios === 0 || !(x > 0) || !(y > 0)) {
       return null;
     }
+
+    /* In lowest terms, which is how the table names a ratio: 4:3 is written
+     * `xRatio` 4 over `yStart`..`yEnd` 3..3, and it has to be matched as 4:3
+     * rather than as 8:6. */
+    const divisor = (a, b) => (b ? divisor(b, a % b) : a);
+    const common = divisor(x, y);
+
+    x /= common;
+    y /= common;
 
     for (let index = 0; index < ratios; index++) {
       const at = base + 6 + index * 4;
@@ -424,11 +433,12 @@ export class TrueTypeFont {
       const yStart = this._view.getUint8(at + 2);
       const yEnd = this._view.getUint8(at + 3);
 
-      /* An `xRatio` of zero matches any device. Otherwise the record covers the
-       * aspect ratios between `yStart:xRatio` and `yEnd:xRatio`, and the pixels
-       * here are square.
+      /* An `xRatio` of zero matches any ratio at all, which is what a square
+       * pixel with no stretch on it ends up taking -- none of the three named
+       * ones is 1:1. Otherwise the record covers `xRatio` across against
+       * `yStart` to `yEnd` down.
        */
-      if (xRatio === 0 || (yStart <= xRatio && xRatio <= yEnd)) {
+      if (xRatio === 0 || (xRatio === x && yStart <= y && y <= yEnd)) {
         return base + this._view.getUint16(base + 6 + ratios * 4 + index * 2, false);
       }
     }
@@ -453,8 +463,8 @@ export class TrueTypeFont {
    * @returns {Object|null} The extent above and below the line, or null if the
    *                        table does not cover this size.
    */
-  extentAt(ppem) {
-    const group = this.vdmxGroup();
+  extentAt(ppem, x = 1, y = 1) {
+    const group = this.vdmxGroup(x, y);
 
     if (group === null) {
       return null;
@@ -493,8 +503,8 @@ export class TrueTypeFont {
    *
    * @param {number} height - The cell height asked for, in pixels.
    */
-  sizeForHeight(height) {
-    const group = this.vdmxGroup();
+  sizeForHeight(height, x = 1, y = 1) {
+    const group = this.vdmxGroup(x, y);
 
     if (group === null) {
       return null;

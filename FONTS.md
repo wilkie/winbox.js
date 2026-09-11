@@ -14359,6 +14359,58 @@ twelve, which has no cell between eight and fourteen there and comes back eight
 in Windows; the last two are Times New Roman at fourteen on an EGA, whose
 average and maximum want horizontal sizes that do not overlap.
 
+
+#### And the cell height: `VDMX` is read by the same ratio
+
+One row of the VGA sweep stayed short after the denominator went in, and it was
+not a width at all. Courier New asked for twelve pixels comes back twelve pixels
+tall at every width but ten, and at ten Windows says **thirteen** -- the same
+face, the same size, the same maximum, a different cell.
+
+`VDMX` explains it. The table holds the grid-fitted extent of a face at each
+pixel size, and it holds one set of them *per aspect ratio*: Courier New, Arial
+and Times New Roman each carry four ratio records -- 4:3, 5:3, 2:1, and a
+catch-all with `xRatio` zero. Three of the four faces' groups are identical
+across all four ratios. Courier New's are not:
+
+    ppem                8      9     10     11     12
+    4:3, 5:3, 2:1    6/-2  10/-3  10/-3  11/-3  12/-3      cells 8 13 13 14 15
+    catch-all        6/-2   9/-3   9/-3  11/-3  12/-3      cells 8 12 12 14 15
+
+Nine and ten pixels per em, and nowhere else in the table.
+
+**The ratio to read it by is the em against the horizontal denominator** --
+`unitsPerEm : hDenom` -- which is exact and whole where the size derived from it
+is not. With no width on a square pixel that is 2048:2048, one to one, and none
+of the three named ratios matches, so the catch-all is taken. On an EGA it is
+2048:1536, four to three, and the first record matches. And Courier New at
+twelve pixels asked for ten has an average of 5, a ratio of 512, a denominator
+of exactly 1024 -- so 2048:1024, **two to one**, and the third record matches,
+which is the group that fits nine pixels per em into a cell of thirteen. Ten is
+the only width of the thirty-two that lands on a whole ratio at that size; every
+other one falls through to the catch-all, and Windows answers twelve for every
+other one.
+
+The same reading closes the EGA's 33 remaining rows from the other side. In the
+4:3 group there is no cell between eight and thirteen, so a request for nine,
+ten, eleven or twelve pixels cannot be met and the mapper settles on eight --
+which is exactly what Windows answers for eight, ten and twelve there, and what
+this answered only for eight and ten.
+
+The size is searched for at the *unstretched* ratio -- the mapper settles the
+height first, at `seg3:0x29e5`, and only then works out the stretch -- and the
+extent is read again at the ratio the realisation ends up with. That is how a
+width moves the cell height without moving the size.
+
+    maxwidth, VGA   842 -> 890 -> 891 of 891
+    maxwidth, EGA   811 -> 856 -> 889 of 891
+
+**Two rows are left in the whole sweep**, both Times New Roman at fourteen
+pixels on an EGA, and they contradict themselves rather than this: an average of
+7 wants a horizontal size between 16.21 and 18.71 pixels and a maximum of 13
+wants one between 11.52 and 12.44, where the rows on either side are consistent
+to a tenth of a pixel. No single scale produces both from 821 and 2223.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as

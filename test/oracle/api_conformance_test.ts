@@ -75,8 +75,14 @@ if (fixtures.length === 0) {
          */
         for (const name of [...new Set(fixture.records.map((record) => record.function))].sort()) {
           /* A gap may be named for one fixture's use of a function -- `styles:glyph`
-           * -- so that the same function agreeing in another fixture still counts. */
-          const gap = KNOWN_GAPS[`${fixture.probe}:${name}`] ?? KNOWN_GAPS[name];
+           * -- so that the same function agreeing in another fixture still counts,
+           * and for one display of a probe recorded on several --
+           * `maxwidth-ega:metrics` -- so that agreeing on the other still counts
+           * too. */
+          const gap =
+            KNOWN_GAPS[`${fixture.probe}-${fixture.display}:${name}`] ??
+            KNOWN_GAPS[`${fixture.probe}:${name}`] ??
+            KNOWN_GAPS[name];
 
           if (gap) {
             it.failing(`${name} matches Windows`, function () {
