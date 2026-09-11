@@ -1585,7 +1585,19 @@ export class Hinter {
         const value = this.pop();
         const index = this.pop();
 
-        this.cvt[index] = this.toPixels(value);
+        /* Scaled the way the table's own values were, which is at `cvtSize`
+         * and not at the vertical size: `cvtAt` reads every entry back through
+         * the stretch factors, and one written at a different scale would be
+         * read through them twice. On a square pixel the two sizes are the same
+         * number and this is what it always was.
+         *
+         * **Measured.** Arial's `È` at twelve pixels on an EGA writes -517 font
+         * units into a control value and reads it straight back to place the
+         * accent: at the vertical size that is -145 sixty-fourths, which an
+         * `MDAP` afterwards rounds to five pixels, and at `cvtSize` it is -194,
+         * which rounds to four -- where Windows puts it.
+         */
+        this.cvt[index] = scaleToPixels(value, this.cvtPixels, this.font.unitsPerEm);
 
         return at;
       }

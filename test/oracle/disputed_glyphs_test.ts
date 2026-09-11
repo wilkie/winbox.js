@@ -93,8 +93,8 @@ const RECORDS = 0;
 const PIXELS = 0;
 const BITMAP_RECORDS = 136;
 const BITMAP_PIXELS = 794;
-const WIDE_RECORDS = 895;
-const WIDE_PIXELS = 22959;
+const WIDE_RECORDS = 614;
+const WIDE_PIXELS = 19241;
 
 /* The wide-net fixtures: nothing among the styled files, nothing above
  * thirty-one pixels, and one stretched outline of `widths` -- an unhinted `o`

@@ -14679,6 +14679,46 @@ scaled at the larger of the two and read back through stretch factors, and an
 EGA does not separate that from scaling at the horizontal size, because its
 horizontal size is always the larger.
 
+
+#### Tracing one cell to one instruction
+
+Counting says which group a cell belongs to; it does not say which line is
+wrong. For that the program has to be watched, and one cell is enough to watch.
+
+Arial's `È` at twelve pixels on an EGA is realised at nine per em down and
+twelve across. Its composite program is
+
+    SVTCA[y] CALL SVTCA[x] CALL DELTAP1 DELTAP2 DELTAP2 SHC[1]
+
+and wrapping the interpreter's dispatch to log every instruction that moves a
+point gives the whole story in two lines: the second `CALL` moves point 13 from
+256 sixty-fourths to 320, and `SHC[1]` then carries the accent's contour along
+with it. Inside that call are an `MSIRP` -- which puts point 13 at 302 -- and an
+`MDAP[1]`, which rounds 302 to 320, five pixels. Windows has it at 256, four.
+
+Logging the operands, `MSIRP` is handed a distance of -146 sixty-fourths. Three
+instructions earlier the program does `WCVTF` with -517 font units and reads the
+same control value straight back with `RCVT`, which answers -145. **-517 font
+units at the vertical size of nine is -145.4 sixty-fourths; at twelve it is
+-194.** With -194 the `MSIRP` lands at 254 and the `MDAP` rounds it to 256,
+which is Windows's answer exactly.
+
+So `WCVTF` was scaling at the vertical size where the table's own values are
+scaled at `cvtSize`. Every entry is read back through `cvtAt`'s stretch factors,
+so one written at a different scale is stretched twice. Scaling it the way the
+table is scaled is 281 more cells, and on a square pixel the two sizes are the
+same number, which is why nothing before could see it.
+
+Two suspects were cleared on the way, and clearing them is what left one place
+to look. The control values themselves are right: recording `arial-cvt6` -- a
+fabrication that reports a scaled control value through the advance phantom --
+on an EGA and replaying it gives 12 of 12. And the composite's placement
+arithmetic is right, since the assembly before the program runs already has the
+accent where Windows leaves it.
+
+That is the method for the 614 that remain: run the program, watch which
+instruction moves the point, and ask what it read.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as

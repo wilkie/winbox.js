@@ -1611,16 +1611,18 @@ export const KNOWN_GAPS: Record<string, string> = {
    * faces' average width left the device's aspect out of the floor it is
    * settled by, which cost 298 more.
    *
-   * What is left is 768 cells of the four outline faces -- Symbol 213, Times
-   * New Roman 210, Courier New 176, Arial 169 -- 116 of the three plotter fonts
-   * and 6 of `ANSI_VAR_FONT`. The outline ones are the scan converter run
-   * anisotropically, which no VGA recording exercises: the base of a letter
-   * comes out right and an accent lands a column over, or a stem leans a column
-   * the other way. The plotter ones are a horizontal scale that is close and
-   * not exact.
+   * A third was found by tracing rather than by counting: `WCVTF` writes a
+   * control value given in font units, and it was scaling it at the vertical
+   * size where the table's own values are scaled at `cvtSize`, so a value
+   * written and read straight back came out through the stretch factors twice.
+   * That is 281 more cells and it is the first thing the EGA has said about the
+   * interpreter rather than about the mapper.
+   *
+   * What is left is 614, and the same method reaches them: run the program,
+   * watch which instruction moves the point, and ask what it read.
    */
   'glyphs-ega:glyph':
-    'the glyph sweep on an EGA, 895 cells of 6,046: the scan converter run anisotropically (768 of the outline faces), the plotter fonts a column out (116), and six of ANSI_VAR_FONT',
+    'the glyph sweep on an EGA, 614 cells of 6,046: the hint program run anisotropically, narrowed one instruction at a time',
 };
 
 /**

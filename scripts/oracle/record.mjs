@@ -328,9 +328,11 @@ async function main() {
 
     if (fabrication) {
       /* A fabricated recording carries the display too, or a run on one would
-       * overwrite the same fabrication's recording on another. The default
-       * keeps its plain name, so nothing already recorded moves. */
-      const suffix = PER_DISPLAY.has(name) && display !== 'vga' ? `-${display}` : '';
+       * overwrite the same fabrication's recording on another -- and that holds
+       * for every probe, not only the ones recorded per display unfabricated,
+       * since a fabrication may be staged on any of them. The default keeps its
+       * plain name, so nothing already recorded moves. */
+      const suffix = display !== 'vga' ? `-${display}` : '';
 
       fixture = `fabricated/${name}-${fabrication}${suffix}`;
 
