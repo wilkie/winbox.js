@@ -762,6 +762,37 @@ function sign(value: number) {
  * skipped, so that adding probe coverage without adding replay coverage cannot
  * look like success.
  */
+/**
+ * Every character's advance from 32 to 255, for a request the probes describe
+ * by face, height and width alone.
+ */
+function charWidths(context: any, args: (string | number)[]): number[] | string {
+  const { hdc } = context.mappedFont([
+    ...args,
+    'weight=400',
+    'italic=0',
+    'under=0',
+    'strike=0',
+    'charset=0',
+    'pitch=0',
+  ]);
+
+  const buffer = context.place('', 2 * 224 + 2);
+
+  if (!GetCharWidth.call(context, hdc, 32, 255, buffer.far)) {
+    return 'failed';
+  }
+
+  const core = context.machine.cpu.core;
+  const widths: number[] = [];
+
+  for (let index = 0; index < 224; index++) {
+    widths.push(core.read16(buffer.segment, buffer.offset + index * 2));
+  }
+
+  return widths;
+}
+
 const ADAPTERS: Record<
   string,
   (context: Context, args: (string | number)[]) => string | Promise<string>
@@ -1290,35 +1321,40 @@ const ADAPTERS: Record<
     return `ave=${tm.tmAveCharWidth},max=${tm.tmMaxCharWidth},overhang=${tm.tmOverhang}`;
   },
 
+  /* The widest character `GetCharWidth` reports, and which one it is.
+   *
+   * `tmMaxCharWidth` is documented as this and is not: the metric is a stored
+   * design number scaled, and this is a maximum over rounded advances. The
+   * `maxwidth` probe records both so the two can be told apart.
+   */
+  charwidths(context, args) {
+    const widths = charWidths(context, args);
+
+    if (typeof widths === 'string') {
+      return widths;
+    }
+
+    let widest = 0;
+    let at = 0;
+
+    for (let index = 0; index < widths.length; index++) {
+      if (widths[index] > widest) {
+        widest = widths[index];
+        at = index + 32;
+      }
+    }
+
+    return `widest=${widest},at=${at}`;
+  },
+
   /* Every character's advance, at every width. The probe records the whole
    * array because a proportional face has a couple of hundred different
    * advances and each one is a separate constraint on the horizontal size.
    */
   widths(context, args) {
-    const { hdc } = context.mappedFont([
-      ...args,
-      'weight=400',
-      'italic=0',
-      'under=0',
-      'strike=0',
-      'charset=0',
-      'pitch=0',
-    ]);
+    const widths = charWidths(context, args);
 
-    const buffer = context.place('', 2 * 224 + 2);
-
-    if (!GetCharWidth.call(context, hdc, 32, 255, buffer.far)) {
-      return 'failed';
-    }
-
-    const core = context.machine.cpu.core;
-    const widths = [];
-
-    for (let index = 0; index < 224; index++) {
-      widths.push(core.read16(buffer.segment, buffer.offset + index * 2));
-    }
-
-    return widths.join(',');
+    return typeof widths === 'string' ? widths : widths.join(',');
   },
 
   'CreateFont widths'(context, args) {
@@ -1528,35 +1564,32 @@ export class Unimplemented extends Error {}
  *
  * All 2,574 records agree.
  */
+/**
+ * Recorded behaviour this implementation is known not to reproduce.
+ *
+ * Empty, and the aim is to keep it that way: all 40,434 records of the twenty
+ * replayed fixtures -- seventeen probes across three displays -- agree with
+ * what Windows 3.1 answered. A key here is `probe:function`, or
+ * `probe-display:function` for a probe recorded on more than one display, and
+ * its value says what is short and by how many records.
+ *
+ * A gap is a statement about a measurement, not a licence: it belongs here only
+ * with a count, and it comes out again the moment the count reaches zero.
+ */
 export const KNOWN_GAPS: Record<string, string> = {
-  /* The dense maximum width sweep, recorded on two displays because the sizes
-   * are the point of it: a height asked for on an EGA is realised at a
-   * different pixel size than on a VGA, so the two are different sets of sizes
-   * rather than one repeated.
+  /* The widest character on an EGA, 259 rows of 891.
    *
-   * The EGA said something this had never been told: an outline is realised
-   * wider than it is tall wherever the pixel is not square. That is now in
-   * `FontManager.map` and it moved 474 of the EGA's records, taking it from 328
-   * to 802 of 891 without touching anything recorded on the VGA.
-   *
-   * The maximum width itself is settled: the horizontal size is a denominator
-   * built by `MulDiv(dfPoints, logPixelsY, (logPixelsX * ratio) >> 8)`, read out
-   * of the realiser at `seg3:0x21fb`, and it takes the VGA to 890 of 891 and the
-   * EGA to 856. See FONTS.md section 8a.
-   *
-   * The cell height went the same way. `VDMX` holds one set of fitted extents
-   * per aspect ratio and the ratio to read it by is the em against the
-   * horizontal denominator, so a stretch can move the cell without moving the
-   * size: that is the whole of the VGA, 891 of 891, and all but two of the EGA.
-   *
-   * The two left are Times New Roman at fourteen pixels on an EGA, which
-   * contradicts itself -- its average wants a horizontal size between 16.21 and
-   * 18.71 and its maximum one between 11.52 and 12.44, where the rows on either
-   * side are consistent to a tenth of a pixel.
+   * The VGA's are exact, and so is every advance of the `charscal` sweep, which
+   * is recorded on a VGA only. What the EGA adds is a horizontal size that is
+   * fractional before any width is asked for -- four thirds of the vertical one
+   * -- and the whole size the hint program runs at is then a rounding of a
+   * rounding. Taking the stretch against the horizontal base rather than the
+   * vertical size carried 569 of these rows; what is left is which whole number
+   * the rest of them land on, and half of the 259 differ only in *which*
+   * character is widest among several of equal width.
    */
-  'maxwidth-ega:metrics':
-    'Times New Roman at fourteen pixels on an EGA, two rows of 891: its average and its maximum want horizontal sizes that do not overlap',
-
+  'maxwidth-ega:charwidths':
+    'the widest character on an EGA, 259 rows of 891: the whole size the hint program runs at where the horizontal base is not itself whole',
 };
 
 /**

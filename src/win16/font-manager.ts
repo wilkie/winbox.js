@@ -424,7 +424,7 @@ export class FontManager {
     return best ? { name: best.name, entries: [best.entry] } : null;
   }
 
-  _strikeAt(height, charset, fixedPitch, only = null, ownName = false) {
+  _strikeAt(height, charset, fixedPitch, only = null, ownName = false, weight = 400, width = 0) {
     if (height <= 0 || (!ownName && height >= FontManager.OUTLINE_FLOOR)) {
       return null;
     }
@@ -452,11 +452,30 @@ export class FontManager {
           entry.header.dfPixHeight === height &&
           !!(entry.header.dfPitchAndFamily & FontManager.FIXED_PITCH) !== fixedPitch &&
           (charset === FontManager.OEM_CHARSET ||
-            entry.header.dfCharSet !== FontManager.OEM_CHARSET)
+            entry.header.dfCharSet !== FontManager.OEM_CHARSET) &&
+          /* A width asked for is answered exactly or not at all: a strike is
+           * not stretched sideways to meet one. */
+          (!width || entry.header.dfAvgWidth === width)
       );
 
       if (matching.length > 0) {
-        return { name, entries: matching };
+        /* Nearest weight, the same rule `_exactStrike` was measured on. It
+         * matters only where a face carries two strikes of one cell, which on a
+         * VGA nothing does: an EGA installs `ARIALB.FON` and `TIMESB.FON`, whose
+         * ten point strikes come in four hundred and seven hundred, and without
+         * this a plain request takes whichever the file lists first. */
+        const light = ownName
+          ? matching.filter((entry) => (entry.header.dfWeight || 400) <= weight)
+          : matching;
+
+        if (light.length === 0) {
+          continue;
+        }
+
+        const distance = (entry) => weight - (entry.header.dfWeight || 400);
+        const nearest = Math.min(...light.map(distance));
+
+        return { name, entries: light.filter((entry) => distance(entry) === nearest) };
       }
     }
 
@@ -591,7 +610,7 @@ export class FontManager {
        * comes back as `MS Serif` rather than as Arial's own ten row strike.
        * **Recorded**, four rows of the EGA sweep.
        */
-      const own = outline.font.symbolic && this.lookup(outline.name) ? outline.name : null;
+      const own = this.lookup(outline.name) ? outline.name : null;
 
       /* And a request that names a width does not go to a strike at all.
        *
@@ -613,15 +632,38 @@ export class FontManager {
        * and 119 more of the EGA's turn on this, and nothing else moves --
        * `font` stays at 5,057 of 5,057 and `widths` at 2,479 of 2,480.
        */
-      const strike = request.width
-        ? null
-        : this._strikeAt(
-            request.height ?? 0,
-            charset,
-            outline.font.fixedPitch,
-            outline.font.symbolic ? (own ?? outline.name) : own,
-            Boolean(own)
-          );
+      const symbolic = outline.font.symbolic;
+      /* Zero is `lfWeight`'s "no preference", not a weight of nothing. */
+      const wanted = request.weight || 400;
+
+      /* A face's own strike is tried first and on its own terms -- it is not a
+       * fallback, so `OUTLINE_FLOOR` does not apply to it -- and where it has
+       * none at the height asked for, the ordinary search runs as it always
+       * did. Restricting the search to the face's own name instead of trying it
+       * first is what made Arial at eight pixels stop being `MS Serif`.
+       */
+      const strike =
+        (own && !symbolic
+          ? this._strikeAt(
+              request.height ?? 0,
+              charset,
+              outline.font.fixedPitch,
+              own,
+              true,
+              wanted,
+              request.width || 0
+            )
+          : null) ??
+        (request.width
+          ? null
+          : this._strikeAt(
+              request.height ?? 0,
+              charset,
+              outline.font.fixedPitch,
+              symbolic ? (own ?? outline.name) : null,
+              symbolic && Boolean(own),
+              wanted
+            ));
 
       if (strike) {
         /* Which family the mapper had settled on before the size sent it to a
@@ -986,9 +1028,12 @@ export class FontManager {
      * text extents for both are the ones those whole sizes give.
      */
     const whole = (vertical) => {
-      const ratio = ratioFor(vertical);
-
-      return ratio === 256 ? Math.floor(across(vertical)) : (vertical * ratio) >> 8;
+      /* The stretch is applied to the *horizontal base* -- the size the face is
+       * realised at before any width is asked for, which is the vertical one
+       * only where the pixel is square. On a VGA the two readings are the same
+       * number; on an EGA they are four thirds apart, and the advances say
+       * which it is. */
+      return Math.floor((across(vertical) * ratioFor(vertical)) / 256);
     };
 
     /* Which of `VDMX`'s ratio groups the realisation falls in.

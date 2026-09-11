@@ -14442,6 +14442,69 @@ pixels on an EGA, and they contradict themselves rather than this: an average of
 wants one between 11.52 and 12.44, where the rows on either side are consistent
 to a tenth of a pixel. No single scale produces both from 821 and 2223.
 
+
+#### The last two rows were a strike, not a contradiction
+
+Times New Roman asked for fourteen pixels on an EGA answers with an average of 7
+and a maximum of 13, and no horizontal size produces both from 821 and 2223.
+That is because neither number came from the outline. **An EGA installs bitmap
+companions for the TrueType faces that a VGA does not**: `WIN.INI` there reads
+
+    Arial 8,10 (EGA res)=ARIALB.FON
+    Times New Roman 8,10 (EGA res)=TIMESB.FON
+
+and `TIMESB.FON` holds a ten point strike whose cell is 14, whose average is 7
+and whose maximum is 13 -- exactly what Windows reported. The face name comes
+back as Times New Roman because a strike that answers a request for an outline
+family is reported under the family's name, which this already did for Symbol.
+
+Three rules had to be separated to let it through, and each is measured:
+
+  * **A face's own strike is not a fallback.** It was being kept for symbol
+    faces only, on the evidence that Arial at twelve and fourteen pixels comes
+    back as the outline -- but Arial's own EGA strikes are eleven and thirteen
+    rows, so it never had one at those heights to pass over. Times New Roman
+    does, and takes it.
+  * **The own strike is tried first, and the ordinary search still runs behind
+    it.** Restricting the search to the face's own name instead is what made
+    Arial at eight pixels stop being `MS Serif`.
+  * **A strike heavier than the request is no answer.** `ARIALB.FON` and
+    `TIMESB.FON` each carry their ten point size in four hundred *and* seven
+    hundred, and without this a plain request takes whichever the file lists
+    first -- which is how Arial at twelve pixels became a bold twelve row strike
+    where Windows gives the outline. Zero is `lfWeight`'s "no preference" and
+    has to be read as four hundred rather than as a weight of nothing; reading
+    it literally costs 372 records of the `hinting` sweep, all of them Symbol.
+
+And one more, which turns on a single record: **a width asked for is answered
+exactly or not at all.** A strike is never stretched sideways to meet a width,
+so Times New Roman at fourteen pixels asked for *seven* -- the strike's own
+average -- is the strike, and at every other width it is the outline. The same
+request at ten pixels asked for five is the outline even though `MS Serif`'s ten
+row strike averages five, because that one is not the face's own.
+
+**`maxwidth` is 891 of 891 on both displays, and `KNOWN_GAPS` is empty of it.**
+
+#### What the widest character says about an EGA
+
+`GetCharWidth`'s widest character is recorded beside every one of those metrics
+and had never been replayed -- the adapter did not exist, so 1,782 records of
+the corpus were being carried without being checked. With the advances exact it
+can be: **the VGA's 891 are all right.**
+
+The EGA's are not, and they say something the metrics could not. The hint
+program runs at a whole horizontal size, which the VGA settled as the 8.8
+stretch applied to the size and truncated. On an EGA the size that stretch
+applies to is itself fractional -- four thirds of the vertical one -- and the
+question is which of the two it multiplies. Applying it to the **horizontal
+base** rather than to the vertical size carries 569 of the 891 rows, from 63 to
+632; rounding the derived size instead of truncating a product is much worse
+still, taking the VGA's own advances from 594 rows to 374.
+
+What is left is 259 rows, and about half of them agree on the widest width and
+differ only on *which* character carries it. That is recorded as a gap with its
+count.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
