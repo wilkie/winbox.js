@@ -14299,6 +14299,37 @@ average divides -- where the ratio is a whole multiple of 256 and nothing is
 thrown away -- and low everywhere else, by up to half a pixel, which is what
 sections 8a's rulers measured and could not name.
 
+
+#### And the gate is on the other axis
+
+Asking `LTSH` at the horizontal size took the advances from 91 rows to 445 of
+594 and left 459 of 124,992 in four groups that no single reading fixed
+together. The reason is that the table's two uses had been collapsed into one.
+
+`LTSH` is a threshold and a scaling at once: it says, per glyph, the size above
+which the hint program stops moving the advance, and above it the advance is the
+design one scaled. Under a stretch those are two different sizes. **The
+threshold is compared against the vertical size; the advance is scaled by the
+horizontal one.**
+
+    gate on the vertical size, scale by the horizontal   124,992 of 124,992
+    gate on the smaller of the two                       124,831
+    gate on the larger of the two                        124,694
+    gate on the horizontal size, scale by it             124,533
+    gate on the vertical, scale in sixty-fourths         124,470
+    gate on the horizontal, scale in sixty-fourths       124,135
+
+It is not the smaller or the larger: it is the vertical one, whichever that
+happens to be. Which is what the table means -- the program's decisions are
+taken against the size it was tuned at, and the advance it would have moved is a
+horizontal length.
+
+**`charscal` is 594 of 594.** Every character of Arial and Times New Roman, at
+every width from none to thirty-two, at nine heights: 133,056 advances, all of
+them. The four groups the earlier reading left -- 197 glyphs called linear that
+wanted the program run, 101 that wanted sixty-fourths, 68 that wanted a square
+run, 93 neither -- were all the same mistake seen from four sides.
+
 #### The denominator stops at a sixteen bit word
 
 `MulDiv` is a sixteen bit function and a small enough stretch sends the

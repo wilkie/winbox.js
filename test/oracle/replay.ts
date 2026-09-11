@@ -1557,23 +1557,6 @@ export const KNOWN_GAPS: Record<string, string> = {
   'maxwidth-ega:metrics':
     'Times New Roman at fourteen pixels on an EGA, two rows of 891: its average and its maximum want horizontal sizes that do not overlap',
 
-  /* Every character's advance at every width, on the two proportional faces.
-   *
-   * Asking `LTSH` at the whole horizontal size before running the program took
-   * this from 91 rows to 445 of 594; what is left is 459 advances of 33,376
-   * across the 149 rows still short, about a tenth of a per cent, and not one
-   * of them outside a stretch.
-   *
-   * Those 459 are four different things, and no one reading fixes them
-   * together. 197 are glyphs `LTSH` calls linear where neither the scaled
-   * advance nor its sixty-fourths agree; 101 would come right if the scaled
-   * advance were formed in sixty-fourths, which costs more elsewhere than it
-   * gains; 68 are glyphs `LTSH` does not cover, where a *square* run at the
-   * horizontal size agrees and the anisotropic one does not; and 93 are
-   * neither. See `FONTS.md`.
-   */
-  'charscal:widths':
-    "every character's advance under a stretch: 459 of 33,376 across the 149 rows still short, none where no width is asked for",
 };
 
 /**

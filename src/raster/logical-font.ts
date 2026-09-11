@@ -256,7 +256,7 @@ export class LogicalFont extends Font {
       const across = this.xWhole;
 
       return (
-        font.linearAdvance(glyph, across) ??
+        font.linearAdvance(glyph, this.ppem, across) ??
         font.hintedAdvance(glyph, this.ppem, true, this.stretch) ??
         Math.round((font.advanceOf(glyph) * across) / font.unitsPerEm)
       );

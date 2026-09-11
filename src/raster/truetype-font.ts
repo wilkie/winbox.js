@@ -692,10 +692,21 @@ export class TrueTypeFont {
    * tabulated value where there is one, then this, then the program. Courier
    * New carries neither table and runs the program at every size.
    *
+   * Under a width the two sizes part company: the threshold is compared
+   * against the *vertical* size and the advance is scaled by the horizontal
+   * one. **Measured**, and it is the whole of the difference: over the
+   * `charscal` sweep's 124,992 stretched advances, gating on the vertical size
+   * is right on all 124,992, and gating on the horizontal one on 124,533.
+   * Gating on the smaller of the two gives 124,831 and on the larger 124,694,
+   * so it is the vertical size rather than either extreme.
+   *
    * @param {number} glyph - The glyph index.
-   * @param {number} ppem - The size in pixels per em.
+   * @param {number} ppem - The size in pixels per em, which the threshold is
+   *                        compared against.
+   * @param {number} [across] - The horizontal size to scale by, where it
+   *                            differs from the size asked about.
    */
-  linearAdvance(glyph, ppem) {
+  linearAdvance(glyph, ppem, across = ppem) {
     if (!this.has('LTSH')) {
       return null;
     }
@@ -712,7 +723,7 @@ export class TrueTypeFont {
       return null;
     }
 
-    return Math.round((this.advanceOf(glyph) * ppem) / this.unitsPerEm);
+    return Math.round((this.advanceOf(glyph) * across) / this.unitsPerEm);
   }
 
   /**
