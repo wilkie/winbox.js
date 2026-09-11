@@ -232,9 +232,15 @@ export class LogicalFont extends Font {
      * twenty-one pixels asked for twelve -- 31.5 across -- to 23, where
      * Windows says 22, which is 1479 units at 31 pixels rounded. See the
      * `hinting` fixture's stretched rows. */
+    /* Whether the program runs anisotropically is decided by the *whole*
+     * horizontal size, not by the fractional one the metrics are taken at. The
+     * two part company where the stretch rounds back onto the vertical size:
+     * Arial at sixteen pixels on an EGA asked for a width of six derives
+     * exactly thirteen, its own size, and still runs the program at twelve.
+     */
     if (
       this.ppem &&
-      this.xPpem !== this.ppem &&
+      this.xWhole !== this.ppem &&
       !(this._style?.italic && !this._style?.exactStyle)
     ) {
       /* `LTSH` is asked first, and at the *horizontal* size. The table says,
@@ -281,9 +287,14 @@ export class LogicalFont extends Font {
      * rounded either. See `TrueTypeFont.unhintedAdvance` for the record
      * that separates the two.
      */
-    const ppem = this.xPpem;
+    /* A slant is measured at the size the scaler has, fraction and all, since
+     * nothing is run on a grid for it. Everything else is a whole size, and
+     * reaching here means the horizontal whole size is the vertical one.
+     */
+    const slant = this._style?.italic && !this._style?.exactStyle;
+    const ppem = slant ? this.xPpem : this.xWhole;
 
-    return this._style?.italic && !this._style?.exactStyle
+    return slant
       ? font.unhintedAdvance(glyph, ppem)
       : (font.deviceAdvance(ppem, glyph) ??
           font.linearAdvance(glyph, ppem) ??

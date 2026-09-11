@@ -14505,6 +14505,44 @@ What is left is 259 rows, and about half of them agree on the widest width and
 differ only on *which* character carries it. That is recorded as a gap with its
 count.
 
+
+#### Recording the dense sweep on an EGA, and the two sizes it separates
+
+The 259 rows left of the widest character were a question about a horizontal
+size, and the way to answer it was to record the dense sweep on the display that
+asks it. `charscal` joins `devcaps` and `maxwidth` as a per-display probe, and
+594 more rows of 224 advances each came back from the EGA.
+
+Solving each row for the whole size that reproduces all 224 of its advances --
+every candidate within three pixels -- gives one for 584 of the 588 rows that
+realise an outline, and those 584 say the rule exactly:
+
+    whole horizontal size = MulDiv((ppem * ratio) >> 8, logPixelsX, logPixelsY)
+
+**The stretch is applied to the vertical size and truncated, and only then is
+the whole number carried across the aspect.** The two steps do not commute, and
+on a square pixel the second is the identity, which is why the VGA could not
+tell them apart. Scored over those 584: this reproduces all of them; stretching
+the horizontal base instead gets 385, crossing the aspect before stretching 270,
+and rounding rather than truncating anywhere between 269 and 293.
+
+Two more things came out of the same rows.
+
+**Whether the program runs anisotropically is decided by the whole size, not by
+the fractional one.** Arial at sixteen pixels on an EGA asked for a width of six
+derives a horizontal size of exactly thirteen -- its own vertical size -- and
+still runs the program at twelve. Gating on the derived size skips the stretch
+there and misses 93 of that row's 224 advances; gating on the whole size gets
+them all. The square branch behind that gate then has to use the whole size
+too, since reaching it means the two are equal.
+
+**And `GetCharWidth` returns a signed advance.** A stretch small enough takes a
+glyph below zero -- Arial's `k` at seven pixels per em asked for a width of one
+is -1 -- and reading the word back unsigned turned that into 65,535 in nine rows
+of the EGA sweep. The probe prints an `int`; the harness now reads one.
+
+**Both `charscal` fixtures are 594 of 594 and both `charwidths` 891 of 891.**
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as

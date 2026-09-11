@@ -51,7 +51,7 @@ const FIXTURES = join(ROOT, 'oracle', 'fixtures');
  * 891 metric records differ between them -- and the maximum width is the one
  * thing left that no rule explains.
  */
-const PER_DISPLAY = new Set(['devcaps', 'maxwidth']);
+const PER_DISPLAY = new Set(['devcaps', 'maxwidth', 'charscal']);
 
 /** Where a probe writes, on the guest and on the host. */
 const OUTPUT_DIR = 'ORACLE';

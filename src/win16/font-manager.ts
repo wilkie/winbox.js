@@ -1028,12 +1028,20 @@ export class FontManager {
      * text extents for both are the ones those whole sizes give.
      */
     const whole = (vertical) => {
-      /* The stretch is applied to the *horizontal base* -- the size the face is
-       * realised at before any width is asked for, which is the vertical one
-       * only where the pixel is square. On a VGA the two readings are the same
-       * number; on an EGA they are four thirds apart, and the advances say
-       * which it is. */
-      return Math.floor((across(vertical) * ratioFor(vertical)) / 256);
+      /* Two steps, in this order: the 8.8 stretch is applied to the *vertical*
+       * size and truncated, and that whole number is then carried across the
+       * aspect with `MulDiv`. On a square pixel the second step is the identity
+       * and this is the rule the VGA measured; on an EGA the two steps do not
+       * commute, and the advances say which way round they go.
+       *
+       * **Measured** against the `charscal` sweep recorded on an EGA: for each
+       * of its 594 rows the whole size was solved for by recomputing all 224
+       * advances at every candidate within three pixels, and 584 of them have
+       * one. This reproduces all 584. Stretching the horizontal base instead
+       * gets 385, taking the whole size across the aspect before the stretch
+       * 270, and rounding rather than truncating anywhere between 269 and 293.
+       */
+      return mulDiv((vertical * ratioFor(vertical)) >> 8, logX, logY);
     };
 
     /* Which of `VDMX`'s ratio groups the realisation falls in.

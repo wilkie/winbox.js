@@ -787,7 +787,13 @@ function charWidths(context: any, args: (string | number)[]): number[] | string 
   const widths: number[] = [];
 
   for (let index = 0; index < 224; index++) {
-    widths.push(core.read16(buffer.segment, buffer.offset + index * 2));
+    /* Signed, because `GetCharWidth` fills an array of `int` and the probe
+     * prints it with `%d`. A stretch small enough takes a glyph's advance below
+     * zero -- Arial's `k` at seven pixels per em asked for a width of one is
+     * -1 -- and reading the word back unsigned turns that into 65,535. */
+    const word = core.read16(buffer.segment, buffer.offset + index * 2);
+
+    widths.push(word >= 0x8000 ? word - 0x10000 : word);
   }
 
   return widths;
@@ -1576,21 +1582,22 @@ export class Unimplemented extends Error {}
  * A gap is a statement about a measurement, not a licence: it belongs here only
  * with a count, and it comes out again the moment the count reaches zero.
  */
-export const KNOWN_GAPS: Record<string, string> = {
-  /* The widest character on an EGA, 259 rows of 891.
-   *
-   * The VGA's are exact, and so is every advance of the `charscal` sweep, which
-   * is recorded on a VGA only. What the EGA adds is a horizontal size that is
-   * fractional before any width is asked for -- four thirds of the vertical one
-   * -- and the whole size the hint program runs at is then a rounding of a
-   * rounding. Taking the stretch against the horizontal base rather than the
-   * vertical size carried 569 of these rows; what is left is which whole number
-   * the rest of them land on, and half of the 259 differ only in *which*
-   * character is widest among several of equal width.
-   */
-  'maxwidth-ega:charwidths':
-    'the widest character on an EGA, 259 rows of 891: the whole size the hint program runs at where the horizontal base is not itself whole',
-};
+/**
+ * Recorded behaviour this implementation is known not to reproduce.
+ *
+ * Empty, and the aim is to keep it that way: every record the harness knows how
+ * to replay agrees with what Windows 3.1 answered. A key here is
+ * `probe:function`, or `probe-display:function` for a probe recorded on more
+ * than one display, and its value says what is short and by how many records.
+ *
+ * Being empty is not the same as everything being checked. A probe function
+ * with no adapter is reported as unimplemented rather than as a disagreement --
+ * `stack`'s 3,650 records are carried that way -- so an adapter written is a
+ * question asked for the first time, and `charwidths` had 1,782 records waiting
+ * on one. A gap belongs here only with a count, and comes out again the moment
+ * the count reaches zero.
+ */
+export const KNOWN_GAPS: Record<string, string> = {};
 
 /**
  * Functions a module declares but wires to a stub.
