@@ -1,0 +1,1292 @@
+{
+  "probe": "fotmake",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "made",
+      "args": "\"Symbol\",SYMBOL.TTF",
+      "result": "size=1308",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0000",
+      "result": "4d5a01000200000004000f00ffff0000b8000000000000004000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0020",
+      "result": "0000000000000000000000000000000000000000000000000000000080000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0040",
+      "result": "0e1fba0e00b409cd21b8014ccd21546869732069732061205472756554797065",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0060",
+      "result": "20666f6e742c206e6f7420612070726f6772616d2e0d0d0a24004b6965736100",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0080",
+      "result": "4e4505108c000200000000000080000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+00a0",
+      "result": "1200400040007400800080001001000000000400020002000000000000000003",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+00c0",
+      "result": "0400078001000000000048000900500c2c0000000000cc800100000000004000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+00e0",
+      "result": "0800500c018000000000000007464f4e544449520653594d424f4c0000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0100",
+      "result": "0b53594d424f4c2e545446000000000012464f4e545245533a53796d626f6c00",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0120",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0140",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0160",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0180",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+01a0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+01c0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+01e0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0200",
+      "result": "c300000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0220",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0240",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0260",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0280",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+02a0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+02c0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+02e0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0300",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0320",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0340",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0360",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0380",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+03a0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+03c0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+03e0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0400",
+      "result": "433a5c57494e444f57535c53595354454d5c53594d424f4c2e54544600000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0420",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0440",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0460",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0480",
+      "result": "0100000000029500000057696e646f7773212057696e646f7773212057696e64",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+04a0",
+      "result": "6f77732100100301010000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+04c0",
+      "result": "00000000000083400008480048000b08cd0100000000009001020000cd0917a7",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+04e0",
+      "result": "04e8081eff0102000000000000760000000b0000f00053796d626f6c0053796d",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Symbol\",SYMBOL.TTF,+0500",
+      "result": "626f6c00526567756c61720000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "made",
+      "args": "\"Wingdings\",WINGDING.TTF",
+      "result": "size=1314",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0000",
+      "result": "4d5a01000200000004000f00ffff0000b8000000000000004000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0020",
+      "result": "0000000000000000000000000000000000000000000000000000000080000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0040",
+      "result": "0e1fba0e00b409cd21b8014ccd21546869732069732061205472756554797065",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0060",
+      "result": "20666f6e742c206e6f7420612070726f6772616d2e0d0d0a24004b6965736100",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0080",
+      "result": "4e45051090000200000000000080000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+00a0",
+      "result": "1500400040007400820082001401000000000400020002000000000000000003",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+00c0",
+      "result": "0400078001000000000048000a00500c2c0000000000cc800100000000004000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+00e0",
+      "result": "0800500c018000000000000007464f4e544449520857494e4744494e47000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0100",
+      "result": "00000d57494e4744494e472e545446000000000015464f4e545245533a57696e",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0120",
+      "result": "6764696e67730000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0140",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0160",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0180",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+01a0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+01c0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+01e0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0200",
+      "result": "c300000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0220",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0240",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0260",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0280",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+02a0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+02c0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+02e0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0300",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0320",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0340",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0360",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0380",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+03a0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+03c0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+03e0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0400",
+      "result": "433a5c57494e444f57535c53595354454d5c57494e4744494e472e5454460000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0420",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0440",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0460",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0480",
+      "result": "0100000000029500000057696e646f7773212057696e646f7773212057696e64",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+04a0",
+      "result": "6f77732100100301010000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+04c0",
+      "result": "00000000000083400008480048003107e10000000000009001020000e108071e",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+04e0",
+      "result": "07df0a1eff0102000000000000760000000c0000f00057696e6764696e677300",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0500",
+      "result": "57696e6764696e677300526567756c6172000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Wingdings\",WINGDING.TTF,+0520",
+      "result": "0000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "made",
+      "args": "\"Arial\",ARIAL.TTF",
+      "result": "size=1306",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0000",
+      "result": "4d5a01000200000004000f00ffff0000b8000000000000004000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0020",
+      "result": "0000000000000000000000000000000000000000000000000000000080000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0040",
+      "result": "0e1fba0e00b409cd21b8014ccd21546869732069732061205472756554797065",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0060",
+      "result": "20666f6e742c206e6f7420612070726f6772616d2e0d0d0a24004b6965736100",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0080",
+      "result": "4e4505108a000200000000000080000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+00a0",
+      "result": "11004000400074007f007f000e01000000000400020002000000000000000003",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+00c0",
+      "result": "0400078001000000000048000900500c2c0000000000cc800100000000004000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+00e0",
+      "result": "0800500c018000000000000007464f4e5444495205415249414c00000000000a",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0100",
+      "result": "415249414c2e545446000000000011464f4e545245533a417269616c00000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0120",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0140",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0160",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0180",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+01a0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+01c0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+01e0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0200",
+      "result": "c300000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0220",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0240",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0260",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0280",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+02a0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+02c0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+02e0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0300",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0320",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0340",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0360",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0380",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+03a0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+03c0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+03e0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0400",
+      "result": "433a5c57494e444f57535c53595354454d5c415249414c2e5454460000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0420",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0440",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0460",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0480",
+      "result": "0100000000029500000057696e646f7773212057696e646f7773212057696e64",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+04a0",
+      "result": "6f77732100100301010000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+04c0",
+      "result": "00000000000083400008480048003e07f00043000000009001000000f0082788",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+04e0",
+      "result": "035e081eff0102000000000000760000000b00000000417269616c0041726961",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Arial\",ARIAL.TTF,+0500",
+      "result": "6c00526567756c61720000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "made",
+      "args": "\"Courier New\",COUR.TTF",
+      "result": "size=1318",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0000",
+      "result": "4d5a01000200000004000f00ffff0000b8000000000000004000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0020",
+      "result": "0000000000000000000000000000000000000000000000000000000080000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0040",
+      "result": "0e1fba0e00b409cd21b8014ccd21546869732069732061205472756554797065",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0060",
+      "result": "20666f6e742c206e6f7420612070726f6772616d2e0d0d0a24004b6965736100",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0080",
+      "result": "4e45051088000200000000000080000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+00a0",
+      "result": "17004000400074007e007e000c01000000000400020002000000000000000003",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+00c0",
+      "result": "0400078001000000000048000a00500c2c0000000000cc800100000000004000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+00e0",
+      "result": "0800500c018000000000000007464f4e5444495204434f555200000000000943",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0100",
+      "result": "4f55522e545446000000000017464f4e545245533a436f7572696572204e6577",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0120",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0140",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0160",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0180",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+01a0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+01c0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+01e0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0200",
+      "result": "c300000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0220",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0240",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0260",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0280",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+02a0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+02c0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+02e0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0300",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0320",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0340",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0360",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0380",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+03a0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+03c0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+03e0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0400",
+      "result": "433a5c57494e444f57535c53595354454d5c434f55522e545446000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0420",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0440",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0460",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0480",
+      "result": "0100000000029500000057696e646f7773212057696e646f7773212057696e64",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+04a0",
+      "result": "6f77732100100301010000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+04c0",
+      "result": "0000000000008340000848004800a906100100000000009001000000100936cd",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+04e0",
+      "result": "0441051eff0102000000000000760000000b00000000436f7572696572204e65",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0500",
+      "result": "7700436f7572696572204e657700526567756c61720000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Courier New\",COUR.TTF,+0520",
+      "result": "000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "made",
+      "args": "\"Times New Roman\",TIMES.TTF",
+      "result": "size=1326",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0000",
+      "result": "4d5a01000200000004000f00ffff0000b8000000000000004000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0020",
+      "result": "0000000000000000000000000000000000000000000000000000000080000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0040",
+      "result": "0e1fba0e00b409cd21b8014ccd21546869732069732061205472756554797065",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0060",
+      "result": "20666f6e742c206e6f7420612070726f6772616d2e0d0d0a24004b6965736100",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0080",
+      "result": "4e4505108a000200000000000080000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+00a0",
+      "result": "1b004000400074007f007f000e01000000000400020002000000000000000003",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+00c0",
+      "result": "0400078001000000000048000a00500c2c0000000000cc800100000000004000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+00e0",
+      "result": "0800500c018000000000000007464f4e544449520554494d455300000000000a",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0100",
+      "result": "54494d45532e54544600000000001b464f4e545245533a54696d6573204e6577",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0120",
+      "result": "20526f6d616e0000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0140",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0160",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0180",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+01a0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+01c0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+01e0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0200",
+      "result": "c300000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0220",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0240",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0260",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0280",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+02a0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+02c0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+02e0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0300",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0320",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0340",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0360",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0380",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+03a0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+03c0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+03e0",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0400",
+      "result": "433a5c57494e444f57535c53595354454d5c54494d45532e5454460000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0420",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0440",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0460",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0480",
+      "result": "0100000000029500000057696e646f7773212057696e646f7773212057696e64",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+04a0",
+      "result": "6f77732100100301010000000000000000000000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+04c0",
+      "result": "00000000000083400008480048002107dc0057000000009001000000dc081735",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+04e0",
+      "result": "03af081eff0102000000000000760000000b0000000054696d6573204e657720",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0500",
+      "result": "526f6d616e0054696d6573204e657720526f6d616e00526567756c6172000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    },
+    {
+      "function": "stub",
+      "args": "\"Times New Roman\",TIMES.TTF,+0520",
+      "result": "0000000000000000000000000000",
+      "section": "the stub the installer writes, for the faces whose families differ"
+    }
+  ]
+}

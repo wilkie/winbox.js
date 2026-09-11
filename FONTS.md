@@ -8981,13 +8981,10 @@ and it is here.
 Everything below draws the right pixels. What is missing in each is the _reason_,
 read out of GDI rather than measured into place.
 
-- **How the installer chose Wingdings' family.** The pitch and family GDI
-  reports for an outline face are the `FONTDIR` entry of the `.FOT` the
-  installer wrote, read now (section 8a), and Wingdings' says `FF_DONTCARE`
-  where Symbol's says `FF_ROMAN`. What `CreateScalableFontResource` read that
-  from is not known: swapping the `OS/2` class and the PANOSE between the two
-  `.TTF`s changes nothing Windows reports, as it would not if the answer is in
-  the `.FOT`, and no probe has yet made a `.FOT` from a fabricated face.
+- ~~**How the installer chose Wingdings' family.**~~ Settled in section 8c: a
+  probe makes the stub rather than reading one already made, and the family
+  comes from PANOSE -- family kind first, then proportion, then serif style --
+  with monospaced proportion also being what clears the variable-pitch bit.
 - **Storage and control values across glyphs.** A glyph program may write
   both, and this keeps them from one glyph to the next at a size; whether
   Windows restores them as it restores `SCANCTRL` is untested.
@@ -9031,10 +9028,10 @@ read out of GDI rather than measured into place.
   silent.** The reference scales the control values once, at a size it is
   handed, and reads them through 16.16 stretch factors; that the size is the
   _larger_ of the two is read off Arial asked for less than its average (section
-  8a), not out of any code. The horizontal size is the vertical one times a
-  fixed-point ratio rounded to the nearest, and 16.16 is assumed for its
-  precision because it is the scaler's own; no request in the corpus separates
-  the precisions. `FixMul` takes a half toward positive infinity, which is what
+  8a), not out of any code. The horizontal size is settled since: it is not a
+  size at all but a denominator, `MulDiv(dfPoints, logPixelsY, (logPixelsX *
+  ratio) >> 8)`, with the ratio in 8.8 -- read out of the realiser and the
+  mapper in section 8b, and the 16.16 that was assumed here is gone. `FixMul` takes a half toward positive infinity, which is what
   an arithmetic shift does and is measured on three descenders. And the
   stretched design coordinates `IP` and `MDRP` measure from keep a fraction of
   a unit, measured on an `S`; what the glue actually stores is not known.
@@ -14542,6 +14539,63 @@ is -1 -- and reading the word back unsigned turned that into 65,535 in nine rows
 of the EGA sweep. The probe prints an `int`; the harness now reads one.
 
 **Both `charscal` fixtures are 594 of 594 and both `charwidths` 891 of 891.**
+
+
+### 8c. What the installer reads, asked by making one
+
+Two things the `.FOT` stub carries had been read out of it and never traced back:
+the two design widths GDI scales, and the pitch and family it reports. Nine
+fabrications of a `.TTF` moved neither, because by then the stub already
+existed. The question is what `CreateScalableFontResource` reads *while it is
+making one*, and it can simply be asked: the call takes a `.TTF` and writes the
+stub, and the stub is a small NE file a probe can read straight back.
+
+`oracle/probes/fotmake.c` does that, and the stubs it makes are the stubs on the
+drive -- Arial 904 and 2142, Courier New 1229 and 1345, Times New Roman 821 and
+2223, byte for byte. So whatever the installer reads, this reads it too.
+
+#### The family comes from PANOSE
+
+Symbol's stub says `FF_ROMAN` and Wingdings' `FF_DONTCARE`, and nothing else
+about the two faces had explained it. Rebuilding Symbol's stub with Wingdings'
+PANOSE and nothing else changed moves it to `FF_DONTCARE`. Sweeping PANOSE
+through the installer, ten recordings of one face:
+
+    PANOSE                                   dfPitchAndFamily
+    5,5,1,2,1,7,6,2,5,7  (Symbol's own)      0x17  variable  FF_ROMAN
+    5,0,0,0,...          (Wingdings')        0x07  variable  FF_DONTCARE
+    5,2,0,0,...                              0x17  variable  FF_ROMAN
+    5,10,0,0,...                             0x17  variable  FF_ROMAN
+    5,11,0,0,...                             0x27  variable  FF_SWISS
+    5,13,0,0,...                             0x27  variable  FF_SWISS
+    5,15,0,0,...                             0x27  variable  FF_SWISS
+    5,2,0,9,...                              0x36  FIXED     FF_MODERN
+    3,2,0,0,...                              0x47  variable  FF_SCRIPT
+    4,2,0,0,...                              0x57  variable  FF_DECORATIVE
+
+Which reads, in the order the cases take precedence:
+
+  * **Family kind** -- PANOSE's first byte -- decides first: 3 (Latin
+    Handwritten) is `FF_SCRIPT` and 4 (Latin Decorative) is `FF_DECORATIVE`,
+    whatever else is said.
+  * **Proportion**, the fourth byte, decides next: 9 (monospaced) is
+    `FF_MODERN`, **and it is what clears the variable-pitch bit**. Courier New's
+    own stub is `0x36`, which is exactly what this fabrication produces -- so
+    the one fixed-pitch face among the five is fixed because its PANOSE says
+    monospaced, not because of any pitch flag in the font.
+  * **Serif style**, the second byte, decides the rest: 0 is `FF_DONTCARE`,
+    2 through 10 are `FF_ROMAN`, and 11 and above are `FF_SWISS`.
+
+`OS/2`'s `sFamilyClass` is not it. Symbol and Wingdings are class `0x0C03` and
+`0x0C00`, both "Symbolic", and neither maps to any of these; the PANOSE byte
+that separates them is the serif style, 5 against 0. And the two widths come
+from the same call, so `dfMaxWidth` being `xMax - xMin` is the installer's
+arithmetic rather than a coincidence of the files on this drive.
+
+This is an instrument, not a conformance record: nothing here implements
+`CreateScalableFontResource`, so the fixture replays as unimplemented the way
+`stack` does. What it settles is a *reason*, which is what section 8's list of
+what is not known is for.
 
 ## 9. Where the numbers stand
 

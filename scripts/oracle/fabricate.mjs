@@ -2211,6 +2211,70 @@ export const FABRICATIONS = [
     describe: "Courier New with the stub's dfAvgWidth lowered, 1229 to 1024",
   }),
 
+  tableBytes('symbol-panose-serif10', {
+    font: 'SYMBOL.TTF',
+    tag: 'OS/2',
+    offset: 32,
+    values: [5, 10, 0, 0, 0, 0, 0, 0, 0, 0],
+    describe: "Symbol with PANOSE saying the last serif style before the sans ones",
+  }),
+
+  tableBytes('symbol-panose-sans13', {
+    font: 'SYMBOL.TTF',
+    tag: 'OS/2',
+    offset: 32,
+    values: [5, 13, 0, 0, 0, 0, 0, 0, 0, 0],
+    describe: "Symbol with PANOSE saying the last of the sans serif styles",
+  }),
+
+  tableBytes('symbol-panose-serif15', {
+    font: 'SYMBOL.TTF',
+    tag: 'OS/2',
+    offset: 32,
+    values: [5, 15, 0, 0, 0, 0, 0, 0, 0, 0],
+    describe: "Symbol with PANOSE saying a serif style past the ones the standard names",
+  }),
+
+  tableBytes('symbol-panose-serif', {
+    font: 'SYMBOL.TTF',
+    tag: 'OS/2',
+    offset: 32,
+    values: [5, 2, 0, 0, 0, 0, 0, 0, 0, 0],
+    describe: "Symbol with PANOSE saying a cove serif and nothing else said",
+  }),
+
+  tableBytes('symbol-panose-sans', {
+    font: 'SYMBOL.TTF',
+    tag: 'OS/2',
+    offset: 32,
+    values: [5, 11, 0, 0, 0, 0, 0, 0, 0, 0],
+    describe: "Symbol with PANOSE saying a normal sans serif style",
+  }),
+
+  tableBytes('symbol-panose-mono', {
+    font: 'SYMBOL.TTF',
+    tag: 'OS/2',
+    offset: 32,
+    values: [5, 2, 0, 9, 0, 0, 0, 0, 0, 0],
+    describe: "Symbol with PANOSE saying a cove serif whose proportion is monospaced",
+  }),
+
+  tableBytes('symbol-panose-script', {
+    font: 'SYMBOL.TTF',
+    tag: 'OS/2',
+    offset: 32,
+    values: [3, 2, 0, 0, 0, 0, 0, 0, 0, 0],
+    describe: "Symbol with PANOSE saying the handwritten family kind",
+  }),
+
+  tableBytes('symbol-panose-decor', {
+    font: 'SYMBOL.TTF',
+    tag: 'OS/2',
+    offset: 32,
+    values: [4, 2, 0, 0, 0, 0, 0, 0, 0, 0],
+    describe: "Symbol with PANOSE saying the decorative family kind",
+  }),
+
   tableBytes('symbol-panose-any', {
     font: 'SYMBOL.TTF',
     tag: 'OS/2',
