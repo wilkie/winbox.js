@@ -1597,7 +1597,31 @@ export class Unimplemented extends Error {}
  * on one. A gap belongs here only with a count, and comes out again the moment
  * the count reaches zero.
  */
-export const KNOWN_GAPS: Record<string, string> = {};
+export const KNOWN_GAPS: Record<string, string> = {
+  /* The glyph sweep on an EGA, 895 cells of 6,046.
+   *
+   * Recorded for the first time here. Nothing had ever drawn a glyph on a
+   * display whose pixel is not square, and the sweep found three separate
+   * things; two are fixed and the third is this.
+   *
+   * The two fixed are both the device aspect going missing where the code
+   * assumed a square pixel: the strike chooser's off-square penalty compared
+   * against a constant hundred rather than against `MulDiv(100, aspectX,
+   * aspectY)`, which cost 294 cells and every raster face; and the vector
+   * faces' average width left the device's aspect out of the floor it is
+   * settled by, which cost 298 more.
+   *
+   * What is left is 768 cells of the four outline faces -- Symbol 213, Times
+   * New Roman 210, Courier New 176, Arial 169 -- 116 of the three plotter fonts
+   * and 6 of `ANSI_VAR_FONT`. The outline ones are the scan converter run
+   * anisotropically, which no VGA recording exercises: the base of a letter
+   * comes out right and an accent lands a column over, or a stem leans a column
+   * the other way. The plotter ones are a horizontal scale that is close and
+   * not exact.
+   */
+  'glyphs-ega:glyph':
+    'the glyph sweep on an EGA, 895 cells of 6,046: the scan converter run anisotropically (768 of the outline faces), the plotter fonts a column out (116), and six of ANSI_VAR_FONT',
+};
 
 /**
  * Functions a module declares but wires to a stub.

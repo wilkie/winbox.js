@@ -80,12 +80,21 @@ import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './repl
 
 /* Ceilings, and none may rise. The outline faces are at nought and stay there;
  * the bitmap ones are what is left to do.
+ *
+ * The ceilings are per display, because a recording on one is not a recording
+ * on another: an EGA realises a height at a different pixel size and draws it
+ * through a pixel that is not square, so its cells are a different set of
+ * questions rather than the same ones repeated. The square displays are at
+ * nought on the outline faces and stay there. The EGA's glyph sweep is recorded
+ * for the first time and is held at what it measures, so it can only fall.
  */
 const OUTLINE = ['Arial', 'Times New Roman', 'Courier New'];
 const RECORDS = 0;
 const PIXELS = 0;
 const BITMAP_RECORDS = 136;
 const BITMAP_PIXELS = 794;
+const WIDE_RECORDS = 895;
+const WIDE_PIXELS = 22959;
 
 /* The wide-net fixtures: nothing among the styled files, nothing above
  * thirty-one pixels, and one stretched outline of `widths` -- an unhinted `o`
@@ -139,7 +148,7 @@ if (fixtures.length === 0) {
   });
 } else {
   describe('the outline glyphs still in dispute', () => {
-    let rows: { args: string; wrong: number; fixture?: string }[] = [];
+    let rows: { args: string; wrong: number; fixture?: string; display?: string }[] = [];
 
     beforeAll(async () => {
       await prepareFonts();
@@ -151,6 +160,7 @@ if (fixtures.length === 0) {
           ...disagreementsIn((await replayFixture(fixture)).replayed).map((row) => ({
             ...row,
             fixture: fixture.probe,
+            display: (fixture as any).display,
           }))
         );
       }
@@ -161,8 +171,10 @@ if (fixtures.length === 0) {
        * Wingdings, and it has its own ceilings below; the list the three
        * outline families are held at nought on is everything else. */
       const WIDE_NET = ['styles', 'sizes', 'widths'];
+      const square = (row: { display?: string }) => !row.display || row.display === 'vga';
       const styled = rows.filter((row) => WIDE_NET.includes(row.fixture ?? ''));
-      const rest = rows.filter((row) => !WIDE_NET.includes(row.fixture ?? ''));
+      const rest = rows.filter((row) => !WIDE_NET.includes(row.fixture ?? '') && square(row));
+      const wide = rows.filter((row) => !WIDE_NET.includes(row.fixture ?? '') && !square(row));
       const outline = rest.filter((row) => isOutline(row.args));
       const bitmap = rest.filter((row) => !isOutline(row.args));
       const count = (list: typeof rows) => list.reduce((sum, row) => sum + row.wrong, 0);
@@ -171,6 +183,7 @@ if (fixtures.length === 0) {
         [
           `outline: ${outline.length} records, ${count(outline)} pixels`,
           `bitmap:  ${bitmap.length} records, ${count(bitmap)} pixels`,
+          `not square: ${wide.length} records, ${count(wide)} pixels`,
           ...rows.map((row) => `  ${row.args.padEnd(48)} ${String(row.wrong).padStart(3)} px`),
         ].join('\n')
       );
@@ -179,6 +192,8 @@ if (fixtures.length === 0) {
       expect(count(outline)).toBeLessThanOrEqual(PIXELS);
       expect(bitmap.length).toBeLessThanOrEqual(BITMAP_RECORDS);
       expect(count(bitmap)).toBeLessThanOrEqual(BITMAP_PIXELS);
+      expect(wide.length).toBeLessThanOrEqual(WIDE_RECORDS);
+      expect(count(wide)).toBeLessThanOrEqual(WIDE_PIXELS);
 
       /* And the wide net, which may only come down. */
       const styledOutline = styled.filter((row) => isOutline(row.args));

@@ -14597,6 +14597,59 @@ This is an instrument, not a conformance record: nothing here implements
 `stack` does. What it settles is a *reason*, which is what section 8's list of
 what is not known is for.
 
+
+### 8d. The first glyphs drawn on a pixel that is not square
+
+Every glyph ever recorded had been drawn on a VGA. The mapper, the metrics and
+the advances had all been recorded on an EGA and the rasteriser never had, so
+`glyphs` joins the per-display probes and 6,046 more cells came back. **4,559 of
+them agreed**, which is a fair account of how much of the pipeline does not care
+about the shape of a pixel, and 1,487 did not.
+
+They were three separate things.
+
+#### The strike chooser compared against a square pixel
+
+`FontManager.choose` scores a strike by how far off square it would come out,
+and the constant it compares against was a literal hundred. The comment beside
+it had already written down what the general form must be -- `MulDiv(100,
+aspectX, aspectY)` -- without anything to measure it on. An EGA measures it: 133
+rather than 100, and **294 cells and every raster face** come right.
+
+What that term decides is a small strike drawn many times against a larger one
+drawn few, and on a display that is not square it decides differently. Windows
+answers `MS Serif` at twenty-four pixels with its twelve row strike doubled
+where this took the eight row strike tripled; `Small Fonts` at ten with a five
+row strike doubled where this took the nine row strike as it stood.
+
+#### The plotter fonts left the device's aspect out of their width
+
+A vector face has one design drawn at whatever size is wanted, and its average
+width is settled by a floor:
+
+    average = floor(dfAvgWidth * cell * dfVertRes / (dfPixHeight * dfHorizRes))
+
+The aspect in there is the *design's* -- three horizontal to two vertical for
+all three plotter fonts -- and the device's was missing, because on a VGA it is
+the identity. Multiplying by `aspectX / aspectY` inside the same floor brings
+**298 more cells** and takes Roman, Script and Modern from 414 wrong to 116.
+
+#### And the scan converter has never run anisotropically
+
+That is what is left: 895 cells, 768 of them the four outline faces. Every VGA
+recording runs the hint program and the scan converter with a square transform,
+so the stretch that an EGA applies before a width is even asked for exercises
+paths nothing has ever checked. The shape of it is small and consistent -- the
+base of a letter comes out exactly right and an accent lands a column over, or a
+stem leans a column the other way -- which is what a rounding inside the
+transform looks like rather than a wrong size. The remaining 116 plotter cells
+are a horizontal scale that is close and not exact, and six belong to
+`ANSI_VAR_FONT`.
+
+It is recorded as a gap with its counts, and the disputed-glyph ceiling now
+keeps a separate figure per display: the square ones stay at nought, and this
+one is held where it was measured so it can only fall.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as

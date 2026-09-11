@@ -1161,6 +1161,10 @@ export class FontManager {
      */
     const wantsCell = height > 0;
 
+    /* What a pixel of this device is shaped like, in hundredths: a hundred
+     * where it is square, and a hundred and thirty-three on an EGA. */
+    const square = FontManager.muldiv(100, request.aspectX || 96, request.aspectY || 96);
+
     /* No height named means the mapper's own default, which is twelve points.
      * That is a size rather than a cell, so it is compared the way a negative
      * height is -- against the characters rather than against the cell around
@@ -1233,12 +1237,16 @@ export class FontManager {
        * A request naming a width says what the average is directly, which is
        * the same quantity arrived at from the other end.
        */
+      /* And the device's own aspect on top of the design's, which is the
+       * identity on a square pixel and four thirds on an EGA. The plotter fonts
+       * are the only faces whose width is arrived at this way, and the EGA's
+       * glyph sweep is the only recording that separates the two aspects. */
       const average =
         width > 0
           ? width
           : Math.floor(
-              (entry.header.dfAvgWidth * cell * entry.header.dfVertRes) /
-                (entry.header.dfPixHeight * entry.header.dfHorizRes)
+              (entry.header.dfAvgWidth * cell * entry.header.dfVertRes * (request.aspectX || 96)) /
+                (entry.header.dfPixHeight * entry.header.dfHorizRes * (request.aspectY || 96))
             );
 
       return {
@@ -1316,8 +1324,11 @@ export class FontManager {
        * is the term that decides between a small strike drawn many times and a
        * larger one drawn few.
        *
-       * The device's own aspect is a hundred here, because a VGA pixel is
-       * square; the general form is `MulDiv(100, aspectX, aspectY)`.
+       * The device's own aspect is a hundred on a VGA, whose pixel is square,
+       * and `MulDiv(100, aspectX, aspectY)` in general -- 133 on an EGA, which
+       * is ninety-six dots across to seventy-two down. That is what decides
+       * between a small strike drawn many times and a larger one drawn few, and
+       * on a display that is not square it decides differently.
        */
       const shape = FontManager.muldiv(
         100,
@@ -1329,18 +1340,14 @@ export class FontManager {
 
       let across = 1;
 
-      if (stretching && perTime + (perTime >> 1) < FontManager.SQUARE) {
-        across = Math.min(
-          FontManager.MAX_WIDTH_STRETCH,
-          FontManager.muldiv(FontManager.SQUARE, 1, perTime)
-        );
+      if (stretching && perTime + (perTime >> 1) < square) {
+        across = Math.min(FontManager.MAX_WIDTH_STRETCH, FontManager.muldiv(square, 1, perTime));
 
         cost = (cost + FontManager.STRETCH_PENALTY * across) | (across - 1);
       }
 
       cost +=
-        FontManager.ASPECT_PENALTY *
-        Math.abs(FontManager.SQUARE - FontManager.muldiv(shape, across, times));
+        FontManager.ASPECT_PENALTY * Math.abs(square - FontManager.muldiv(shape, across, times));
 
       /* And last, the two multiples against each other.
        *
