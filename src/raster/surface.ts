@@ -448,18 +448,23 @@ export class Surface {
        * does for a coordinate the program measures from. On a square pixel the
        * stretch is one and nothing moves.
        */
-      const fitted = italic
-        ? {
-            contours:
-              stretch === 1
-                ? outline.outlineOf(glyph)
-                : outline
-                    .outlineOf(glyph)
-                    .map((contour) => contour.map((point) => ({ ...point, x: point.x * stretch }))),
-            hinted: false,
-            scaled: false,
-          }
+      /* An outline that reaches here in design units -- a slant, or a glyph
+       * with no program to run -- is scaled afterwards by the vertical size,
+       * and that is only right down the page. So its design `x` is carried
+       * across the stretch first, the same thing `projectDesign` does for a
+       * coordinate the program measures from. A glyph the program fitted comes
+       * back in pixels and has the stretch in it already.
+       */
+      const across = (contours) =>
+        stretch === 1
+          ? contours
+          : contours.map((contour) => contour.map((point) => ({ ...point, x: point.x * stretch })));
+
+      const raw = italic
+        ? { contours: outline.outlineOf(glyph), hinted: false, scaled: false }
         : outline.hintedOutline(glyph, ppem, true, stretch);
+
+      const fitted = raw.scaled ? raw : { ...raw, contours: across(raw.contours) };
       const contours = fitted.contours;
 
       /* A slanted glyph is carried across its side bearing in whole pixels.

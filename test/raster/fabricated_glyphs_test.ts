@@ -152,6 +152,12 @@ describe('the fabricated glyph recordings', () => {
   const EXACT = 32394;
   const WRONG = 0;
 
+  /* And the same instruments recorded on an EGA, which is the first time any
+   * chosen geometry has been drawn through a pixel that is not square. Held
+   * where they were measured, so they can only improve. */
+  const WIDE_EXACT = 1881;
+  const WIDE_WRONG = 6986;
+
   /* The one place an unhinted outline is drawn differently.
    *
    * `edge-sweep` exists to take the interpreter out of the question. Its
@@ -841,15 +847,26 @@ describe('the fabricated glyph recordings', () => {
   present(
     'agree with Windows on three thousand cells of chosen geometry',
     async function () {
-      const manager: any = await prepareFonts();
+      await prepareFonts();
 
       let exact = 0;
       let wrong = 0;
       let total = 0;
+      let wideExact = 0;
+      let wideWrong = 0;
+      let wideTotal = 0;
 
       const report: string[] = [];
 
       for (const recording of all) {
+        /* A recording made on a display whose pixel is not square has to be
+         * replayed against that display's own fonts, and the fabricated file
+         * installed into *its* manager. Held apart in the counts below for the
+         * same reason: they are a different set of questions. */
+        const display = recording.fixture.display ?? 'vga';
+        const square = display === 'vga';
+        const manager: any = await prepareFonts(display);
+
         const font: any = new TrueTypeFont(new Uint8Array(readFileSync(recording.file)));
         const face = font.faceName;
 
@@ -904,16 +921,23 @@ describe('the fabricated glyph recordings', () => {
           manager._outlines[face] = installed;
         }
 
-        exact += fileExact;
-        wrong += fileWrong;
-        total += fileTotal;
+        if (square) {
+          exact += fileExact;
+          wrong += fileWrong;
+          total += fileTotal;
+        } else {
+          wideExact += fileExact;
+          wideWrong += fileWrong;
+          wideTotal += fileTotal;
+        }
 
         report.push(
-          `  ${recording.name.padEnd(18)} ${String(fileExact).padStart(4)}/${String(fileTotal).padStart(4)} cells  ${String(fileWrong).padStart(5)} wrong pixels`
+          `  ${recording.name.padEnd(22)} ${String(fileExact).padStart(4)}/${String(fileTotal).padStart(4)} cells  ${String(fileWrong).padStart(5)} wrong pixels`
         );
       }
 
-      report.push(`  ${'TOTAL'.padEnd(18)} ${exact}/${total} cells  ${wrong} wrong pixels`);
+      report.push(`  ${'TOTAL'.padEnd(22)} ${exact}/${total} cells  ${wrong} wrong pixels`);
+      report.push(`  ${'not square'.padEnd(22)} ${wideExact}/${wideTotal} cells  ${wideWrong} wrong pixels`);
 
       console.log(report.join('\n'));
 
@@ -922,6 +946,8 @@ describe('the fabricated glyph recordings', () => {
 
       expect(exact).toBeGreaterThanOrEqual(EXACT);
       expect(wrong).toBeLessThanOrEqual(WRONG);
+      expect(wideExact).toBeGreaterThanOrEqual(WIDE_EXACT);
+      expect(wideWrong).toBeLessThanOrEqual(WIDE_WRONG);
     },
     1800000
   );

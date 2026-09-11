@@ -14761,6 +14761,46 @@ The lean was measured and is not it: sweeping the shear slope over four
 readings, all four leave the same 2 of Symbol's 128 slanted cells agreeing, so
 the slope is not what separates them.
 
+
+#### Chosen geometry, drawn through a pixel that is not square
+
+Guessing at the shape of a letter stopped paying, so the instruments were
+recorded on the EGA instead. `cour-bars` replaces Courier New's letters with
+bars of known width and offset -- six widths from a sixth of a pixel to a half,
+at three sub-pixel phases -- and `cour-wedges` with wedges tapering to a point.
+Both are 258 of 258 on a VGA and had never been drawn anywhere else.
+
+On an EGA they came back **733 and 684 of 1,158**, and the first cell of each
+says why in one line. The bar in `A` stands at design 600 to 640 and Windows
+inks column 7; this inked column 6. The bar in `W` stands at 685 and Windows
+inks column 8; this inked column 6 again -- **two bars 85 design units apart
+landing in the same column**, which is a horizontal scale far too small rather
+than a fill rule at all.
+
+The reason is one line of `Surface.drawText`. A glyph whose program ran comes
+back in pixels with the stretch already in it; a glyph with **no program** comes
+back in design units, and everything after it multiplies by the vertical scale.
+The fabricated bars have no program -- that is the point of them -- so they were
+being scaled down the page in both directions. Carrying their design `x` across
+the stretch first, exactly as the slanted outlines already were, is
+
+    cour-bars    733 -> 941 of 1,158
+    cour-wedges  684 -> 940 of 1,158
+
+with the VGA's 258 of 258 untouched in both.
+
+**The recorded corpus does not move at all**, because every glyph of every
+shipped face has a program. That is the argument for instruments: the bug is in
+a path the real fonts never take, and it would have sat there indefinitely
+behind 6,046 cells that cannot reach it.
+
+What is left of the instruments is entirely the slanted cells, and the lean is
+measured not to be the cause a second time -- now that the design `x` is carried
+across, counting the shear's whole pixels across rather than down still moves
+neither instrument by one cell. The fabricated ceiling now keeps a figure per
+display, square at 32,394 of 32,394 with no wrong pixel and not-square at 1,881
+of 2,316.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
