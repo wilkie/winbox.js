@@ -14719,6 +14719,48 @@ accent where Windows leaves it.
 That is the method for the 614 that remain: run the program, watch which
 instruction moves the point, and ask what it read.
 
+
+#### Two more from the same method, and what the shape of the rest is
+
+Tracing found `WCVTF`; looking at what each group's cells actually *are* found
+two more, and both are the same mistake in a different place -- a horizontal
+quantity reached for down the page.
+
+**The cell a glyph is laid out in.** A bold overhang is drawn where it fits
+inside `boxLeft + advance`, and the advance was being asked for at the vertical
+size. On an EGA that cell is a column narrower than it should be, so the smear
+had nowhere to go: Symbol's bold `B` at eight pixels comes back six columns wide
+in Windows and was coming back five here, with the row between them identical.
+Measuring the cell with `LogicalFont.outlineAdvance` -- the rule the advance
+sweep proved exactly -- is 42 cells.
+
+**A synthesised slant's design `x`.** A slant is drawn from the raw outline with
+no program run, and everything after it multiplies by the vertical scale. Where
+the pixel is not square that is only right downward, so the design `x` is
+carried across the stretch first, which is what `projectDesign` already does for
+a coordinate the program measures from.
+
+That one is worth two cells and a great deal more than two cells' worth of
+pixels, which is the useful thing about it. Symbol's slanted `A` at eight pixels
+was three columns narrower than Windows and is now the right width, agreeing on
+every row but the two at its apex:
+
+    2  win ......#     ours .....#
+    3  win ....###     ours ....#.#
+    4  win ....###     ours ....###
+    5  win ..##..##    ours ..##..##
+
+**And those two rows are the shape of what is left.** Not a size, not a
+placement, not a scale: a run at the top of a letter that Windows fills and this
+does not. 570 cells, 17,605 pixels, and the next thing to ask is what the scan
+converter does with a crossing when the sample grid it is walking is not square
+-- which is the one part of the pipeline the 32,394 fabricated cells never
+exercised, because every one of them was drawn on a VGA.
+
+The lean was measured and is not it: sweeping the shear slope over four
+readings, all four leave the same 2 of Symbol's 128 slanted cells agreeing, so
+the slope is not what separates them.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as

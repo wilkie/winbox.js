@@ -1618,11 +1618,20 @@ export const KNOWN_GAPS: Record<string, string> = {
    * That is 281 more cells and it is the first thing the EGA has said about the
    * interpreter rather than about the mapper.
    *
-   * What is left is 614, and the same method reaches them: run the program,
-   * watch which instruction moves the point, and ask what it read.
+   * Two more came from the same method rather than from counting. The cell a
+   * glyph is laid out in was measured with the *vertical* advance, which made
+   * it too narrow to let a bold overhang through; and a synthesised slant is
+   * drawn from the raw outline, whose design `x` was being scaled down the page
+   * rather than across it. Together 44 more cells and a good deal more than
+   * that in pixels -- Symbol's slanted `A` at eight pixels is the right width
+   * now and differs only in the two rows at its apex.
+   *
+   * What is left is 570, and those two rows are the shape of it: not a size or
+   * a placement but what the scan converter does with a run under a transform
+   * that is not square.
    */
   'glyphs-ega:glyph':
-    'the glyph sweep on an EGA, 614 cells of 6,046: the hint program run anisotropically, narrowed one instruction at a time',
+    'the glyph sweep on an EGA, 570 cells of 6,046: what the scan converter does under an anisotropic transform, narrowed one instruction at a time',
 };
 
 /**

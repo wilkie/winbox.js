@@ -439,14 +439,27 @@ export class Surface {
        * move a hinted feature, is much worse than either: 1,795 wrong pixels
        * against 681 for not hinting and 1,030 for hinting and then shearing.
        */
+      const stretch = this._font instanceof LogicalFont ? this._font.stretch : 1;
+
+      /* A slant is drawn from the raw outline with no program run, and the
+       * scale applied to it afterwards is the vertical one. Where the pixel is
+       * not square that is only right down the page, so the design `x` is
+       * carried across the stretch first -- the same thing `projectDesign`
+       * does for a coordinate the program measures from. On a square pixel the
+       * stretch is one and nothing moves.
+       */
       const fitted = italic
-        ? { contours: outline.outlineOf(glyph), hinted: false, scaled: false }
-        : outline.hintedOutline(
-            glyph,
-            ppem,
-            true,
-            this._font instanceof LogicalFont ? this._font.stretch : 1
-          );
+        ? {
+            contours:
+              stretch === 1
+                ? outline.outlineOf(glyph)
+                : outline
+                    .outlineOf(glyph)
+                    .map((contour) => contour.map((point) => ({ ...point, x: point.x * stretch }))),
+            hinted: false,
+            scaled: false,
+          }
+        : outline.hintedOutline(glyph, ppem, true, stretch);
       const contours = fitted.contours;
 
       /* A slanted glyph is carried across its side bearing in whole pixels.
@@ -623,12 +636,14 @@ export class Surface {
          * `boxLeft + advance` in all sixty-six plain cells of the real face,
          * and one wider for bold. The bold overhang has to fit inside it.
          */
-        const cell =
-          box.left +
-          (outline.deviceAdvance(ppem, glyph) ??
-            outline.linearAdvance(glyph, ppem) ??
-            outline.hintedAdvance(glyph, ppem) ??
-            Math.round(outline.advanceOf(glyph) * scale));
+        /* The advance is the one the face lays the character out with, which
+         * on a pixel that is not square is measured across and not down.
+         * `LogicalFont.outlineAdvance` is that rule -- `LTSH` gated on the
+         * vertical size and scaled by the horizontal one, then the program run
+         * anisotropically -- and reaching for the vertical advance here made
+         * the cell too narrow on an EGA, which clipped the bold overhang. On a
+         * square pixel the two are the same number. */
+        const cell = box.left + font.outlineAdvance(character.charCodeAt(0));
 
         const from = Math.max(0, cellTop);
         const to = Math.min(this.height, cellBottom);
