@@ -692,7 +692,48 @@ test at `13f3` never fires.
 This is now what the mapper here does: two faces rather than all of them, gated
 on the named face's own charset and pitch. It answers the same 5,057 VGA records
 and 4,957 EGA records as the rule fitted from outside did, with the exceptions
-explained rather than listed. The walk is called more
+explained rather than listed.
+
+### What happens before the competition, and when it is reached at all
+
+`126a` is one arm of a larger routine at `0e95`, which `RealizeFont` calls at
+`0d2f` **before** the mapper and which answers a great many requests on its own;
+the mapper at `0550` runs only when it returns nought. Its arms are selected by a
+jump table at `1249`, on the low nibble of a flags word the searches leave
+behind, and they are:
+
+- **An exact match, at `0ef6`.** The raster table is walked for an entry whose
+  name atom, `dfPixHeight`, `dfAvgWidth`, `dfWeight`, `dfCharSet` and both
+  resolutions all equal what was asked for, with no italic, underline or
+  strikeout. A program that asks for exactly an installed strike gets it without
+  anything being scored. The whole arm is gated on `TTEnable`, which is what it
+  is for: it keeps TrueType from taking a request that named a raster face
+  exactly.
+- **The TrueType directory, at `1145`.** Walked for an entry whose atom matches
+  and whose `dfCharSet`, `dfItalic` and `dfWeight` all equal the request's --
+  `lfWeight` nought reading as 400, `lfCharSet` `DEFAULT_CHARSET` matching
+  anything. This is where the two bytes the floor is gated on come from, and it
+  is why the floor never applies to a face the search could not match: Symbol
+  asked for in the ANSI set is not found here at all, so eight pixel Symbol is
+  Symbol.
+- **The small lookup at `126a`**, described above, reached either from the floor
+  test or -- at `125e` -- when no name matched anything.
+- **Three well-known defaults, at `12c8`**, when no name matched and the height
+  is twelve or more. `lfPitchAndFamily` picks one of three atoms: `[0x646]` for
+  `FIXED_PITCH` and for `FF_MODERN`, `[0x644]` for `FF_SWISS`, `[0x642]` for
+  `FF_DONTCARE` and `FF_ROMAN` alike, and nothing at all for `FF_SCRIPT` or
+  `FF_DECORATIVE`. The lookup at `14e6` then asks the TrueType directory for
+  that atom at the weight and slant asked for.
+
+That last arm is the one that settles what is left. It cannot be what answers a
+request naming no face on either display, because `FF_DONTCARE` and `FF_ROMAN`
+take the *same* atom and the two answer differently -- Arial and Times New Roman
+on an EGA, MS Sans Serif and MS Serif on a VGA. So the lookup fails, `12fc` falls
+to `1301`, `0e95` returns nought, and **the scored competition at `0550` is what
+answers every one of them**. Which is exactly the hundred records still open
+here: we resolve a family default name and compare one family's strikes, where
+GDI scores the whole directory twice over. The rules for doing that are now read
+in full; what is missing is the arrangement, not the arithmetic. The walk is called more
 than once -- `0x859` passes a running limit and a base penalty taken from
 `[weights+0x68]`, gated on bit 0x2000 of `[0x64a]`, where `2c0a` passes an
 infinite limit and no base -- and a later pass has to beat the running best
