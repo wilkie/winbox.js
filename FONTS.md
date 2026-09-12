@@ -975,9 +975,26 @@ VGA and 65 on an EGA, the EGA glyph sweep from 5,751 of 6,046 to 3,965, and even
 the VGA `hinting` sweep loses six. `MPPEM` answering the size along the
 projection is as well established as anything in this section.
 
-**Open**, and now pointed at the right thing: some value the interpreter reports
-to a font's own program under a stretch, which decides the angle that program
-then hints along. `MPPEM` is not it.
+Tracing the stack back from the `SPVFS` says which. The two runs reach it by
+**different paths through the font's own code**:
+
+    square:     ... RS(18) -> 1, IF, PUSHW 3353 16037, ... NEG, SPVFS
+    stretched:  ... RCVT(23) -> 112, ..., SFVTL, GFV -> 2824 16139, CALL, EIF,
+                ... NEG, SPVFS
+
+Square, the program pushes the vector as a **literal pair** out of its own
+instruction stream. Stretched, it takes the current **freedom** vector with
+`GFV` and builds the projection from that. So the program has branched, and the
+branch is what the angle hangs on.
+
+That is as far as this has got. The vector itself is not the whole story either:
+feeding the square vector into the stretched run's first `MIRP` still lands the
+point at 664 rather than the 672 it needs, so whatever the branch changes, it
+changes more than the angle.
+
+**Open**, and narrowed to a branch: which test in Arial Italic's own program goes
+one way at thirteen pixels per em square and the other at thirteen by seventeen,
+and what this interpreter reports that decides it.
 
 ### Symbol, the face installed twice
 
