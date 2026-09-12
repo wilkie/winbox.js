@@ -323,6 +323,35 @@ instead. Windows answers a hundred; we still answer with the strike, because we
 resolve the face name before scoring anything and so never put an outline up
 against it. **Open**, and the same penalty comparison decides it.
 
+### A third display, and what it confirms
+
+A Hercules is 720 by 348 and monochrome, and its device caps are the reason to
+record it: it reports the **same** two logical resolutions an EGA does, ninety-six
+across and seventy-two down, and a wholly different pixel -- `ASPECTX` eleven
+and `ASPECTY` sixteen against thirty-eight and forty-eight. Every rule in this
+section that had to choose between the resolution and the pixel shape was pinned
+by two displays on which those two agreed in direction. Here they do not.
+
+The rules hold. Of the `font` sweep's 5,057 records, the face agrees on all 996,
+and so do the heights, the styles, the quality refusals and `CreateFontIndirect`.
+That covers the off-square penalty at `MulDiv(100, aspectY, aspectX)`, which is
+145 here against 126 on an EGA and 100 on a VGA; the default height of twelve
+points at the device's own vertical resolution; the weight class; the
+competition; and the two-face lookup below twelve pixels. None of them moved.
+
+What it broke is one rule that had never had a reason to be doubted: **how far a
+strike is stretched sideways**. On a VGA and an EGA the horizontal multiple is
+the vertical one capped at five, measured on both. On a Hercules it is often far
+less -- MS Sans Serif's eighteen row strike asked for a hundred pixels is drawn
+five times up and **once** across, its ten row strike five times each way,
+Courier's twelve row strike four up and twice across, its fifteen row strike six
+up and once across. Everything with a vertical multiple of three or less agrees.
+
+Nothing read so far says which it will be. It does not follow the multiple, nor
+the strike's own shape -- every one of these files is ninety-six by seventy-two,
+the same files an EGA installs -- nor the stretched cell, nor the stretched
+width. 150 records, declared with counts.
+
 ### What a display that is not square says about all of this
 
 The whole corpus above was recorded on a VGA, whose pixel is square and whose

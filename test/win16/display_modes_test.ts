@@ -23,7 +23,9 @@ describe('display modes', () => {
   it('offers both colour depths', function () {
     const depths = new Set(names.map((name) => DISPLAY_MODES[name].colors));
 
-    expect([...depths].sort((a, b) => a - b)).toEqual([16, 256]);
+    /* And monochrome besides, which Hercules is; the two the name means are
+     * the two a colour display is offered in. */
+    expect([16, 256].every((depth) => depths.has(depth))).toBe(true);
   });
 
   it('says of each mode whether it was measured', function () {

@@ -168,6 +168,48 @@ export const DISPLAY_MODES = {
     metrics: EGA_METRICS,
   },
 
+  hercules: {
+    ...COMMON,
+    name: 'Hercules',
+    description: 'Hercules, 720x348, monochrome',
+    provenance: RECORDED,
+
+    width: 720,
+    height: 348,
+    widthMillimetres: 225,
+    heightMillimetres: 145,
+
+    /* The same two resolutions an EGA reports -- ninety-six across and
+     * seventy-two down -- and a wholly different pixel: eleven wide to sixteen
+     * tall where an EGA's is thirty-eight to forty-eight. The two numbers say
+     * opposite things here, which is what makes this display worth recording:
+     * every rule settled on a VGA and an EGA had those two agreeing in
+     * direction, and here they do not.
+     */
+    logicalPixelsX: 96,
+    logicalPixelsY: 72,
+    aspectX: 11,
+    aspectY: 16,
+    aspectXY: 19,
+
+    bitsPerPixel: 1,
+    planes: 1,
+    colors: 2,
+
+    /* The Hercules driver is a different one and says so. **Recorded**: it
+     * offers fewer raster operations than the colour drivers, no clipping of
+     * its own, a brush count rather than "as many as you like", and ten pens
+     * where they have eighty.
+     */
+    rasterCaps: 665,
+    textCaps: 8196,
+    clipCaps: 0,
+    numBrushes: 77,
+    numPens: 10,
+
+    metrics: EGA_METRICS,
+  },
+
   vga256: {
     ...COMMON,
     name: 'VGA 256',

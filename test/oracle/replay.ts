@@ -1664,6 +1664,39 @@ export const KNOWN_GAPS: Record<string, string> = {
    * `FONTS.md` section 3 has all of them, along with the readings refused with
    * counts on the way.
    */
+  /* The `font` sweep on a Hercules, 150 records of 5,057.
+   *
+   * Recorded here for the first time, and the reason to record it is in the
+   * device caps: a Hercules reports the *same* two logical resolutions an EGA
+   * does, ninety-six across and seventy-two down, and a wholly different pixel
+   * -- `ASPECTX` eleven and `ASPECTY` sixteen, against thirty-eight and
+   * forty-eight. Every aspect rule settled this session was pinned by two
+   * displays on which those two numbers agreed in direction. Here they do not,
+   * so a third display tells them apart.
+   *
+   * They hold. The face the mapper settles on agrees on all 996 requests, and
+   * so do the heights, the styles, the quality refusals and `CreateFontIndirect`
+   * -- including the off-square penalty, which is `MulDiv(100, aspectY,
+   * aspectX)` and comes to 145 here where it is 126 on an EGA and 100 on a VGA,
+   * and the default height of twelve points at the device's own vertical
+   * resolution.
+   *
+   * What does not hold is how far a strike is stretched **sideways**. On a VGA
+   * and an EGA the horizontal multiple is the vertical one capped at five, and
+   * that was measured on both. On a Hercules it is often far less: MS Sans
+   * Serif's eighteen row strike asked for a hundred pixels is drawn five times
+   * up and **once** across, its ten row strike five times each way, Courier's
+   * twelve row strike four up and twice across, and its fifteen row strike six
+   * up and once across. Every case with a vertical multiple of three or less
+   * agrees. Nothing yet read explains which it will be: it does not follow the
+   * multiple, the strike's own shape -- every one of these files is ninety-six
+   * by seventy-two -- the stretched cell, or the stretched width.
+   */
+  'font-hercules:CreateFont widths':
+    'the Hercules mapper, 69 of 996: how far a strike is stretched sideways when it is stretched more than three times up',
+  'font-hercules:CreateFont extent':
+    'the Hercules mapper, 81 of 996: the records that follow the sideways stretch above',
+
   /* The `hinting` sweep on an EGA, 121 records of 8,494.
    *
    * Recorded here for the first time, and it is the sharpest thing said about
