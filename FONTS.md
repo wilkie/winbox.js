@@ -574,7 +574,67 @@ costs:
   outline, which brackets the outline's cost there between 212 and 300 -- but it
   is not a term of this size in this routine.
 
-What is still **open** is the arrangement of the passes. The walk is called more
+### The two passes, read rather than inferred
+
+The arrangement is now read out of `seg3:0550`, which is the mapper's top level
+and the only caller of both walks.
+
+It builds the weights into its own frame at `056b` -- taking the device's table
+at `[dc+0x9a]` when the device supplies one and the static one at `0x39c`
+otherwise -- fills in a height of zero at `05a0`, sets the running best to
+`0x7fffffff` at `05d3`, and then walks the table at `[0x36e]`, `[0x37a]` entries
+of fifty-two bytes, with the `FONTINFO` at `+0x12` of each. **That pass is
+raster and vector only**: `063b` skips outright any entry whose `dfType & 3` is
+neither nought nor one, which is exactly the test `1ba6` uses to recognise a
+scalable candidate. It also charges `w[0x68]`, a flat 2, to every entry whose
+device word is nought -- a font that is not the device's own.
+
+Then, at `0810`, it runs the second walk with the running best as a limit and
+the same flat 2 as a base, and that walk has to come in **strictly under** the
+limit to displace the raster answer: `297f` takes the below-branch and anything
+else returns without setting the `0x53a` the caller checks at `085c`. So a tie
+goes to the raster pass, which is what makes a VGA answer a request naming no
+face with MS Sans Serif's exact sixteen row strike rather than with Arial.
+
+Two gates sit in front of the second walk. `2845` requires bit 0 of `[0x64a]`,
+which is `TTEnable`; and `081e` requires the mapper's own tenth argument to be
+nought -- a flag threaded down from `RealizeFont` that turns TrueType off for one
+call.
+
+### What the sub-twelve rule is not
+
+With all of that, one thing still does not come out: below twelve pixels a strike
+whose cell is exactly the height asked for beats the outline of the name asked
+for, and no weight in the table can express it.
+
+The data says it sharply. On a VGA, Arial asked for at 3, 5, 6, 8, 10 and 11
+answers with Small Fonts or MS Serif -- and those are exactly the cells those two
+faces have -- while at 1, 2, 7 and 9, which none of them has, it answers Arial.
+At nine it answers Arial with a cell of **seven**, which is the next cell down
+that face can make; its realisable cells jump from seven to twelve, so there was
+never an eight, nine, ten or eleven for an exact strike to be compared against.
+And Courier New, asked for at every one of 1, 2, 3, 5, 6, 7 and 8, answers
+Courier New at all of them, though Small Fonts has exact strikes at three, five,
+six and eight.
+
+Charging the scalable candidate a flat penalty below twelve was swept from 0 to
+65,000 against both fixtures and **refused**: 917 and 959 at nought, 918 and 959
+at 10,000, and then downhill -- 906 and 959 at 10,200, 897 and 940 at 10,300,
+892 and 933 from 11,000 up. It buys the six Arial heights and loses the twelve
+Courier New ones and the four Arial ones either side, because an additive term
+cannot tell "there is an exact strike" from "there is not".
+
+Two more readings were tried and refused with counts. **Adopting the named
+face's `dfCharSet` into the request before scoring** gives 950 and 952 -- the
+same numbers as waiving the charset term when the name matches, so the corpus
+cannot tell those two apart -- and **adopting its `dfPitchAndFamily` as well**
+gives 950 and 934, which is worse than doing neither on the EGA.
+
+So the sub-twelve rule behaves like a lookup that runs before the competition
+rather than a term inside it, which is how `_exactStrike` implements it here.
+Where GDI does that lookup is **open**; the tenth argument of `0550` and what
+`0a48` and `0e95` do to the request before it is handed over are where to look
+next. The walk is called more
 than once -- `0x859` passes a running limit and a base penalty taken from
 `[weights+0x68]`, gated on bit 0x2000 of `[0x64a]`, where `2c0a` passes an
 infinite limit and no base -- and a later pass has to beat the running best
