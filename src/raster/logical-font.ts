@@ -287,12 +287,21 @@ export class LogicalFont extends Font {
      * rounded either. See `TrueTypeFont.unhintedAdvance` for the record
      * that separates the two.
      */
-    /* A slant is measured at the size the scaler has, fraction and all, since
-     * nothing is run on a grid for it. Everything else is a whole size, and
-     * reaching here means the horizontal whole size is the vertical one.
+    /* And it is measured at the *whole* horizontal size, the same one
+     * everything else here is measured at -- not at the fractional size the
+     * scaler is transformed by.
+     *
+     * A square display cannot tell the two apart, and the rule had been read
+     * off one: `xPpem` and `xWhole` are the same number wherever the pixel is
+     * square, and the reasoning that a slant is not run on a grid so has no
+     * whole size to be measured at looked sound. An EGA separates them.
+     * **Measured**: the twelve sizes the `font` sweep asks Symbol for in italic
+     * come out 38, 56, 64, 75, 78, 83, 104, 133, 153, 194, 269 and 531 pixels
+     * over its ten character specimen, and the whole size gives all twelve
+     * where the fractional one gives six.
      */
     const slant = this._style?.italic && !this._style?.exactStyle;
-    const ppem = slant ? this.xPpem : this.xWhole;
+    const ppem = this.xWhole;
 
     return slant
       ? font.unhintedAdvance(glyph, ppem)

@@ -800,11 +800,24 @@ so a slant it could not find a file for is still synthesised and still overhangs
 And it is reached only from a family that has strikes of its own name to fail
 with; a name nothing is installed under still goes to Times New Roman outright.
 
-**The EGA sweep is 5,050 of 5,057 and the VGA's is exact.** The face, the height,
-the widths and the style agree on all 996 requests of both. The seven left are
-Symbol in italic and only the extent of the specimen, each between one and five
-pixels out over ten characters -- how far the last character of a synthesised
-slant overhangs, which belongs with the rest of the slant work rather than here.
+### A synthesised slant is measured at the whole size, not the fractional one
+
+Seven records survived all of that, all of them Symbol in italic and all of them
+the extent of the specimen rather than any metric. The advance of a slanted
+glyph is the scaler's unhinted one -- the two phantoms scaled, rounded to
+sixty-fourths and differenced -- and it was being taken at `xPpem`, the
+fractional horizontal size the scaler is transformed by, on the reasoning that a
+slant is not run on a grid and so has no whole size to be measured at.
+
+A square display cannot tell that from the alternative, because `xPpem` and
+`xWhole` are the same number wherever the pixel is square. An EGA separates them,
+and it is the **whole** size. **Measured**: the twelve sizes the sweep asks
+Symbol for in italic come out 38, 56, 64, 75, 78, 83, 104, 133, 153, 194, 269 and
+531 pixels over its ten character specimen; the whole size gives all twelve and
+the fractional one gives six.
+
+**Both `font` sweeps are now exact: 5,057 of 5,057 on each display.** The EGA's
+began at 4,502 the day it was first recorded.
 
 ### Symbol, the face installed twice
 

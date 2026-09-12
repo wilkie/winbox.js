@@ -1630,29 +1630,13 @@ export const KNOWN_GAPS: Record<string, string> = {
    * a placement but what the scan converter does with a run under a transform
    * that is not square.
    */
-  /* The `font` sweep on an EGA, 30 records of 5,057.
+  /* The `font` sweep on an EGA is closed, and so is the VGA's.
    *
-   * It began at 4,502 the day it was first recorded and is 5,027 now; the
-   * commits between say what each step was and `FONTS.md` section 3 has all of
-   * them. The face the mapper settles on agrees on every one of the 996
-   * requests on both displays, which it did not before the scored competition
-   * went in.
-   *
-   * What is left is one thing:
-   *
-   *   - Symbol asked for in the ANSI set in bold or in italic, 30 records at
-   *     fifteen, sixteen and twenty pixels. Plainly it answers with a strike --
-   *     `SYMBOLB.FON` carries two whose `dfCharSet` is nought, and the exact
-   *     match at `seg3:0ef6` takes one of them -- and in bold or italic that
-   *     path refuses it, because it wants the weight equal and the slant nought.
-   *     Windows then answers with the Symbol *outline*, whose charset is two and
-   *     which the competition scores 65,000 for it; nothing read so far explains
-   *     how it wins. The plain answers are right, so this is narrow.
+   * It began at 4,502 the day an EGA was first recorded and both are exact now
+   * -- 5,057 of 5,057 each. The commits between say what every step was and
+   * `FONTS.md` section 3 has all of them, along with the readings refused with
+   * counts on the way.
    */
-
-  'font-ega:CreateFont extent':
-    'the EGA mapper, 7 of 996: how far a synthesised slant on Symbol overhangs',
-
   'glyphs-ega:glyph':
     'the glyph sweep on an EGA, 570 cells of 6,046: what the scan converter does under an anisotropic transform, narrowed one instruction at a time',
 };
