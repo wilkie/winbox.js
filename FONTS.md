@@ -953,10 +953,31 @@ control value's 256. Had that term been three rather than eleven the point would
 have landed at 672 and every rounding after it would have gone Windows' way.
 
 On a square pixel the same term is thirteen sixty-fourths and the chain is
-right, so it is not the term itself that is wrong; it is what the projection
-vector is under a stretch, which is set from the fitted outline by `SDPVTL` and
-comes out at `(16139, -2824)` here against `(16037, -3353)` square. **Open**, and
-now measured to an eighth of a pixel at one instruction.
+right, so it is not the term itself that is wrong; it is the projection vector,
+`(16139, -2824)` here against `(16037, -3353)` square.
+
+And that vector is **not ours to compute**. It is not set from the outline by
+`SPVTL` or `SDPVTL` at all: the instruction that sets it is `SPVFS`, opcode
+`0x0a`, which takes both components off the stack. The font's own program works
+the angle out and pushes it. So nothing in the vector arithmetic here is
+involved; what differs is a number this interpreter hands that program, and the
+program's answer changes with it.
+
+`MPPEM` is the obvious candidate, and the program leans on it: it is called
+repeatedly through the glyph, and under the stretch it is answered 17 at some
+points and 13 at others, depending on which projection is in force when it is
+asked -- `sizeAlong`, which is the control values' size through `cvtScale`.
+Square it answers 13 throughout.
+
+Answering the **vertical** size instead was tried and is **refused** with the
+largest counts of any reading here: `charscal` falls from 594 of 594 to 84 on a
+VGA and 65 on an EGA, the EGA glyph sweep from 5,751 of 6,046 to 3,965, and even
+the VGA `hinting` sweep loses six. `MPPEM` answering the size along the
+projection is as well established as anything in this section.
+
+**Open**, and now pointed at the right thing: some value the interpreter reports
+to a font's own program under a stretch, which decides the angle that program
+then hints along. `MPPEM` is not it.
 
 ### Symbol, the face installed twice
 
