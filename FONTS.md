@@ -1015,10 +1015,27 @@ way of being asked -- so `sizeAlong` is not merely the reading that scores best,
 it is the one that makes the mechanism possible. Windows takes the same branch
 we do; it could not do otherwise.
 
-**Open**, and now inside the branch rather than at it: what the interpreter
-reports that the font's *anisotropic* path reads, which is `SFVTL`, `GFV` and the
-`CALL` between them. That path is only ever taken on a display whose pixel is not
-square, which is why nothing before this recording could have exercised it.
+That suggested a test, and the test **refuted the obvious conclusion**. A width
+request stretches the scaler on a VGA exactly the way the pixel shape does on an
+EGA, so Arial's square test should answer no there too and the italic glyphs
+should take the same anisotropic road. Nothing in the corpus asked: every width
+sweep in it is upright. So `hinting` now asks for a slant and a width at once --
+twenty-four rows -- and **all twenty-four agree, on both displays**.
+
+So the anisotropic path is not wrong. It is right for a width request, upright
+and slanted, on a square screen and on one that is not. What is wrong belongs
+only to a stretch that comes from the **device** rather than from `lfWidth`, and
+only to a face whose program branches on the difference.
+
+That also re-frames a reading refused earlier. Running the advance square at the
+horizontal size *where the stretch is the device's* bought 100 of the 121 and
+cost 21 elsewhere, and was refused for leaving 21 of its own. The discriminator
+it used -- `xBase`, which is exactly "no width was asked for" -- is now known to
+be the right one to be asking about, even though that particular answer was not.
+
+**Open**: what a device stretch does to the scaler that a width stretch does not.
+The two produce the same `MPPEM` pair and the same transform here, and Windows
+tells them apart.
 
 ### Symbol, the face installed twice
 

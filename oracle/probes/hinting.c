@@ -84,7 +84,8 @@ static void probeAdvance(LPCSTR face, int height, BYTE italic, char character)
  */
 /* The advance under a width request, which stretches an outline face. The
  * record carries `w=` so the replay asks for the same. */
-static void probeStretched(LPCSTR face, int height, int width, char character)
+static void probeStretched(LPCSTR face, int height, int width, BYTE italic,
+                           char character)
 {
     HFONT font;
     HFONT previous;
@@ -95,10 +96,10 @@ static void probeStretched(LPCSTR face, int height, int width, char character)
     text[0] = character;
     text[1] = '\0';
 
-    wsprintf(probeArgs, "\"%s\",h=%d,w=%d,italic=0,'%c'", (LPSTR)face, height, width,
-             character);
+    wsprintf(probeArgs, "\"%s\",h=%d,w=%d,italic=%d,'%c'", (LPSTR)face, height, width,
+             (int)italic, character);
 
-    font = CreateFont(height, width, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET,
+    font = CreateFont(height, width, 0, 0, FW_NORMAL, italic, 0, 0, ANSI_CHARSET,
                       OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
                       DEFAULT_PITCH, face);
 
@@ -117,18 +118,29 @@ static void probeStretched(LPCSTR face, int height, int width, char character)
     DeleteObject(font);
 }
 
+/* Upright and slanted both.
+ *
+ * A face's own program may ask whether the pixel is square -- Arial does, by
+ * comparing `MPPEM` along one axis with `MPPEM` along the other -- and hint
+ * along a different angle when it is not. A width request makes it not, on any
+ * display. Nothing recorded before this asked for a slant and a width at once,
+ * so the branch that answers had never been exercised on a square screen.
+ */
 static void probeStretchedSweep(LPCSTR face, char character)
 {
     static const int AT16[] = { 0, 7, 8, 10, 12, 16 };
     static const int AT24[] = { 0, 9, 10, 12, 16, 20 };
     int index;
+    int slant;
 
-    for (index = 0; index < sizeof(AT16) / sizeof(AT16[0]); index++) {
-        probeStretched(face, 16, AT16[index], character);
-    }
+    for (slant = 0; slant <= 1; slant++) {
+        for (index = 0; index < sizeof(AT16) / sizeof(AT16[0]); index++) {
+            probeStretched(face, 16, AT16[index], (BYTE)slant, character);
+        }
 
-    for (index = 0; index < sizeof(AT24) / sizeof(AT24[0]); index++) {
-        probeStretched(face, 24, AT24[index], character);
+        for (index = 0; index < sizeof(AT24) / sizeof(AT24[0]); index++) {
+            probeStretched(face, 24, AT24[index], (BYTE)slant, character);
+        }
     }
 }
 

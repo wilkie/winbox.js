@@ -50760,6 +50760,78 @@
     },
     {
       "function": "advance",
+      "args": "\"Times New Roman\",h=16,w=0,italic=1,'N'",
+      "result": "advance=13,ppem=14",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=16,w=7,italic=1,'N'",
+      "result": "advance=11,ppem=14",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=16,w=8,italic=1,'N'",
+      "result": "advance=13,ppem=14",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=16,w=10,italic=1,'N'",
+      "result": "advance=15,ppem=14",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=16,w=12,italic=1,'N'",
+      "result": "advance=19,ppem=14",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=16,w=16,italic=1,'N'",
+      "result": "advance=25,ppem=14",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=24,w=0,italic=1,'N'",
+      "result": "advance=19,ppem=21",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=24,w=9,italic=1,'N'",
+      "result": "advance=15,ppem=21",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=24,w=10,italic=1,'N'",
+      "result": "advance=17,ppem=21",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=24,w=12,italic=1,'N'",
+      "result": "advance=19,ppem=21",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=24,w=16,italic=1,'N'",
+      "result": "advance=27,ppem=21",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Times New Roman\",h=24,w=20,italic=1,'N'",
+      "result": "advance=34,ppem=21",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
       "args": "\"Arial\",h=16,w=0,italic=0,'n'",
       "result": "advance=9,ppem=13",
       "section": "an outline face under a width, for the readouts of its diagonal"
@@ -50828,6 +50900,78 @@
       "function": "advance",
       "args": "\"Arial\",h=24,w=20,italic=0,'n'",
       "result": "advance=26,ppem=21",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Arial\",h=16,w=0,italic=1,'n'",
+      "result": "advance=9,ppem=13",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Arial\",h=16,w=7,italic=1,'n'",
+      "result": "advance=8,ppem=13",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Arial\",h=16,w=8,italic=1,'n'",
+      "result": "advance=9,ppem=13",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Arial\",h=16,w=10,italic=1,'n'",
+      "result": "advance=12,ppem=13",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Arial\",h=16,w=12,italic=1,'n'",
+      "result": "advance=14,ppem=13",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Arial\",h=16,w=16,italic=1,'n'",
+      "result": "advance=19,ppem=13",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Arial\",h=24,w=0,italic=1,'n'",
+      "result": "advance=15,ppem=20",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Arial\",h=24,w=9,italic=1,'n'",
+      "result": "advance=11,ppem=20",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Arial\",h=24,w=10,italic=1,'n'",
+      "result": "advance=12,ppem=20",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Arial\",h=24,w=12,italic=1,'n'",
+      "result": "advance=15,ppem=20",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Arial\",h=24,w=16,italic=1,'n'",
+      "result": "advance=19,ppem=20",
+      "section": "an outline face under a width, for the readouts of its diagonal"
+    },
+    {
+      "function": "advance",
+      "args": "\"Arial\",h=24,w=20,italic=1,'n'",
+      "result": "advance=24,ppem=20",
       "section": "an outline face under a width, for the readouts of its diagonal"
     }
   ]
