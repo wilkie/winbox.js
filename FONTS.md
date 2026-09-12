@@ -1037,6 +1037,20 @@ be the right one to be asking about, even though that particular answer was not.
 The two produce the same `MPPEM` pair and the same transform here, and Windows
 tells them apart.
 
+Two readings of that were tried and **refused**, and both are the natural ones:
+
+- **The device aspect never reaches the scaler at all** -- the program runs
+  square at the vertical size and the horizontal one is applied to the phantom
+  afterwards. It is an attractive story, because GDI carries the horizontal size
+  as a denominator rather than as a size and the `lfWidth` ratio is the only 8.8
+  transform it ever hands the scaler. Measured: `hinting-ega` falls from 8,373 of
+  8,494 to 7,605, `charscal-ega` from 594 to 563, `maxwidth-ega` from 1,782 to
+  1,759 and the EGA glyph sweep from 5,751 to 5,744.
+- **The control values are scaled at the vertical size** rather than at the
+  larger of the two: `charscal` falls from 594 of 594 to 333 on a VGA and 332 on
+  an EGA, the EGA glyph sweep to 5,559, `hinting-ega` to 8,286. `cvtSize` being
+  the larger of the two sizes is as well pinned as anything here.
+
 ### Symbol, the face installed twice
 
 Symbol is the only name carried by both a `.FON` and a `.TTF`, and it had been
