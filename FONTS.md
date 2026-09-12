@@ -910,23 +910,26 @@ runs, and the two displays move them opposite ways: stretched, point 5 goes 21
 sixty-fourths left and point 11 twenty right; square, point 5 goes 18 right and
 point 11 eleven left.
 
-Both of those are **roundings**, and they are roundings of `x`. Stretched, point
-5 lands on 416 and point 11 on 704 -- six and a half pixels and eleven exactly;
-square they land on 352 and 512, five and a half and eight. In each case that is
-the unhinted `x` rounded, to a half for one and to a whole for the other.
+Both of those are roundings, and the first reading of them here was **wrong and
+is retracted**. They are not roundings under the diagonal projection. Asking
+which instruction makes each move shows the projection in force is `(16384, 0)`,
+axis-aligned: an `MDAP` with rounding takes point 11 from 684 to 704, eleven
+pixels exactly, an `IP` nudges point 5, and a second `MDAP` takes it to 416, six
+and a half. Square, the same three take point 11 to 512 and point 5 to 352,
+eight pixels and five and a half. Every one of those is a plain horizontal
+rounding and every one of them is right.
 
-But the projection in force at that moment is the diagonal, `(16139, -2824)`,
-and a point rounded under a diagonal projection should have its **projected**
-coordinate rounded and then be carried back along the freedom vector -- not its
-`x`. Point 11 unhinted is at 684 in `x` and nothing in `y`, so its projected
-coordinate is 674, which is 10.53 pixels and rounds to 11, and carrying 704 back
-along `(1, 0)` puts `x` at 715 rather than at 704. Eleven sixty-fourths, at the
-first of three steps, in a chain that needs seventy-five.
+What they do is push the two reference points 41 sixty-fourths **apart** on an
+EGA and 29 **together** on a VGA, purely because the fractions fall differently
+at seventeen across than at thirteen. The first diagonal `MIRP` then re-
+establishes the stem width from the control value, which is exactly its job, and
+the trace shows it doing so correctly.
 
-On a square pixel the scaled outline's diagonal is the design's, the font's own
-control values were written for that angle, and rounding `x` and rounding the
-projection come to nearly the same place. Under a stretch the angle moves and
-they do not. **Open**, and that is the next thing to measure.
+So every step examined so far is right, and the eighty-two sixty-fourths are
+still unaccounted. The next unexamined gap is between the first `MIRP` and the
+second: the first leaves point 11 at 664 and the second finds it at 640, so
+something moves it twenty-four sixty-fourths in between and that instruction has
+not been identified. **Open**, and that is where to look.
 
 ### Symbol, the face installed twice
 
