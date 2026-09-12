@@ -373,17 +373,38 @@ and how far it falls depends on the strike as well as on the multiple -- at a
 stretched height of sixty it is four for the eight-wide strike, three for the
 seven-wide and two for the twelve-wide.
 
-Two readings were tried against the table and **refused**. The penalty routine's
-own `across`, `min(5, MulDiv(device, 1, MulDiv(shape, 1, times)))`, comes to 4,
-5, 5, 5 for four to seven times over and the table wants 2, 1, 1, 1 for the
-fifteen row strike. And a bitmap that must fit in a segment -- the realised font
-is the sum of its character widths times the multiple, over the stretched cell --
-fits the eight-wide strike exactly, where five times across at six times up is
-67,200 bytes and is refused while 53,760 is taken, and fails the seven-wide,
-where 46,920 is refused and 62,720 is accepted elsewhere. No single limit
-separates them.
+Three readings were tried against the table and **refused**.
 
-150 records, declared with counts.
+The penalty routine's own `across`, `min(5, MulDiv(device, 1, MulDiv(shape, 1,
+times)))`, comes to 4, 5, 5, 5 for four to seven times over where the table wants
+2, 1, 1, 1 for the fifteen row strike.
+
+A bitmap that must fit in a segment, the realised font being the sum of its
+character widths times the multiple over the stretched cell. Counted properly --
+a Windows raster font pads each glyph to a byte, so the row is the sum of
+`ceil(width * H / 8)` and not `ceil(sum * H / 8)`; `dfWidthBytes` says so, 231
+where the unpadded sum is 151 -- it still fails, and fails *within one face*:
+Courier's fifteen row strike is refused two across at five up, which would be
+50,400 bytes, and given one across at eight up, which is 53,760.
+
+And any product of the three numbers. `cell * V * H` peaks at 280 for the eight
+wide strike, 270 for the nine, 216 for the fourteen, 120 for the twelve, 100 for
+the twenty-five and 90 for the nineteen: it falls with the width, except where it
+does not.
+
+What the table does say plainly is **when** the collapse starts. Every strike
+keeps `H = V` until the stretched cell passes about fifty rows -- Fixedsys is
+whole at fifty and falls at sixty, System whole at forty-eight and falls at
+sixty, Courier whole at forty-five and falls at sixty, Small Fonts whole at
+forty-five and falls at fifty-four -- and an EGA has no such point at all, where
+MS Sans Serif's eighteen row strike is drawn five times each way into a cell of
+ninety.
+
+That is the shape of a **driver** limit rather than a GDI rule, which would also
+be why nothing in GDI's own arithmetic fits it: the display driver realises the
+strike and decides what it is willing to build. If so it belongs with the other
+things measured per display rather than derived, and the way to settle it is to
+record a fourth. 150 records, declared with counts.
 
 ### What a display that is not square says about all of this
 
