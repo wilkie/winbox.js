@@ -925,11 +925,38 @@ at seventeen across than at thirteen. The first diagonal `MIRP` then re-
 establishes the stem width from the control value, which is exactly its job, and
 the trace shows it doing so correctly.
 
-So every step examined so far is right, and the eighty-two sixty-fourths are
-still unaccounted. The next unexamined gap is between the first `MIRP` and the
-second: the first leaves point 11 at 664 and the second finds it at 640, so
-something moves it twenty-four sixty-fourths in between and that instruction has
-not been identified. **Open**, and that is where to look.
+The instruction in between is an `MDAP`, and finding it makes the whole chain
+legible. The pattern is the same three times over: a diagonal `MIRP` places a
+stem point at its control value, and an `MDAP` immediately rounds it to a whole
+pixel horizontally.
+
+    MIRP  p11 704 -> 664      MDAP  664 -> 640   (10.375 px, rounds to 10)
+    MIRP  p10 786 -> 735      MDAP  735 -> 704   (11.48  px, rounds to 11)
+    MIRP  p26 896 -> 821                          (the phantom, not rounded)
+
+And the phantom follows point 10 by a fixed 117 sixty-fourths, so Windows'
+answer can be read backwards through it. Fourteen pixels means a phantom of at
+least 885, which means point 10 at 768 -- twelve pixels -- which means the
+`MDAP` before it saw at least 12.5 and not our 11.48, which means point 11 at
+eleven pixels and not ten, which means the first `MIRP` left it at 672 or more
+and not at 664.
+
+**So the whole divergence is eight sixty-fourths at one instruction**, amplified
+into a pixel apiece by three successive roundings. Eight sixty-fourths is an
+eighth of a pixel.
+
+Where they come from is the `y` term of the diagonal projection. Point 5 sits a
+pixel above point 11, so the measurement from one to the other carries
+`-64 * -2824 / 16384`, eleven sixty-fourths, into a distance that is otherwise
+horizontal -- and eleven fewer sixty-fourths of `x` are then needed to reach the
+control value's 256. Had that term been three rather than eleven the point would
+have landed at 672 and every rounding after it would have gone Windows' way.
+
+On a square pixel the same term is thirteen sixty-fourths and the chain is
+right, so it is not the term itself that is wrong; it is what the projection
+vector is under a stretch, which is set from the fitted outline by `SDPVTL` and
+comes out at `(16139, -2824)` here against `(16037, -3353)` square. **Open**, and
+now measured to an eighth of a pixel at one instruction.
 
 ### Symbol, the face installed twice
 
