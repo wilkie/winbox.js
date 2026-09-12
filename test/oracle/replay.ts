@@ -1626,9 +1626,27 @@ export const KNOWN_GAPS: Record<string, string> = {
    * that in pixels -- Symbol's slanted `A` at eight pixels is the right width
    * now and differs only in the two rows at its apex.
    *
-   * What is left is 570, and those two rows are the shape of it: not a size or
-   * a placement but what the scan converter does with a run under a transform
-   * that is not square.
+   * What is left is 378, and it is two things.
+   *
+   * 372 are the scan converter, and those two rows are the shape of them: not a
+   * size or a placement but what it does with a run under a transform that is
+   * not square. They are Arial 93, Times New Roman 100, Courier New 44 and
+   * Symbol 135, and they cluster at twelve, sixteen and twenty-four pixels --
+   * 277 of the 372 are at one of those three.
+   *
+   * The other 6 are `ANSI_VAR_FONT`, and they are a mapping question rather
+   * than a drawing one. A stock font is kept here as a face at a **point** size
+   * -- Helv at eight -- which is right on a VGA, where that is MS Sans Serif's
+   * thirteen row strike. On an EGA Windows draws it **twelve** rows tall, which
+   * is that face's *ten* point strike; read as thirteen *pixels* instead, both
+   * displays come out right, the EGA by the mapper's own preference for the
+   * shorter of two equally near. **Recorded**, and the change is written and
+   * refused: `run_program_test` loads every `.FON` in `WINDOWS\SYSTEM` rather
+   * than the ones `SYSTEM.INI` and `WIN.INI` name, so `DOSAPP.FON` puts four
+   * more twelve row Terminals in the directory and a rule that picks by height
+   * takes the wrong one. Nothing separates them but the point size GDI would
+   * never have seen. The directory that test builds has to match GDI's before
+   * this can go in.
    */
   /* The `font` sweep on an EGA is closed, and so is the VGA's.
    *
@@ -1638,7 +1656,7 @@ export const KNOWN_GAPS: Record<string, string> = {
    * counts on the way.
    */
   'glyphs-ega:glyph':
-    'the glyph sweep on an EGA, 570 cells of 6,046: what the scan converter does under an anisotropic transform, narrowed one instruction at a time',
+    'the glyph sweep on an EGA, 378 cells of 6,046: 372 of them what the scan converter does under an anisotropic transform, and 6 the stock variable font',
 };
 
 /**
