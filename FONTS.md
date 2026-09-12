@@ -819,6 +819,49 @@ the fractional one gives six.
 **Both `font` sweeps are now exact: 5,057 of 5,057 on each display.** The EGA's
 began at 4,502 the day it was first recorded.
 
+### The advance under a stretch that is the device's, and four readings refused
+
+`hinting` asks Windows for the advance of a fitted glyph -- the distance between
+the two horizontal phantom points once the program has run -- for four faces,
+upright and slanted, at every height from eight to a hundred and ten. It had
+only ever been recorded on a VGA, where all 8,470 agree. Recorded on an EGA it
+is 8,349, and **every one of the 121 that disagree is Arial in italic**: Times
+New Roman, Courier New and Symbol are exact slanted, Arial is exact upright.
+
+Four things are settled about them.
+
+**The program decides them, not a table.** `LTSH` gives Arial Italic's `M` a
+threshold of 147 pixels per em and its `m` 222, which is above every size the
+sweep asks, so the linear shortcut never fires and the answer is the phantom the
+program left. They are wrong by exactly one pixel, in both directions -- short at
+thirteen pixels per em and long at thirty-three -- at about a third of the sizes,
+and the size the run happens at agrees every time.
+
+**Only two glyphs of the three asked are wrong**, `M` 31 times and `m` 90, and
+those are the two widest in the face. The third is exact at every size.
+
+And four readings were tried against the whole corpus and **refused**:
+
+- **Gate `LTSH` on the horizontal size** rather than the vertical: `charscal`
+  falls from 594 of 594 to 445 on a VGA and 451 on an EGA, and `hinting-ega`
+  does not improve. The vertical gate stands.
+- **Ask `hdmx` at the horizontal size first.** Wherever that table has an entry
+  for the horizontal size it does hold Windows' answer -- 14 at seventeen per em,
+  61 at seventy-five, 76 at ninety-two, three for three -- but it has entries at
+  few sizes, and asking it costs `charscal-ega` exactly what it buys
+  `hinting-ega`: seventeen each way.
+- **Run the advance square at the horizontal size** where the stretch is the
+  device's rather than the request's, told apart by `xBase`. It buys 100 of the
+  121 and costs 20 of `charscal-ega` and one of `maxwidth-ega` -- and the 21 it
+  leaves are what settle it: if this were the rule it would answer all of them.
+- The **anisotropic run** stays, because `charscal`'s 124,992 stretched advances
+  across both displays say so and nothing else comes close.
+
+So it is not the chain, it is the run: one face's program leaves its phantom a
+pixel from where Windows leaves it, under a transform that is not square, for
+its two widest glyphs. That is the same defect the EGA glyph sweep sees as 237
+slanted cells, and it is now one number per glyph instead of a thousand pixels.
+
 ### Symbol, the face installed twice
 
 Symbol is the only name carried by both a `.FON` and a `.TTF`, and it had been
