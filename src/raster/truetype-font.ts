@@ -1552,7 +1552,11 @@ export class TrueTypeFont {
         for (const contour of fitted.contours) {
           shapes.push(
             contour.map((point) => {
-              const px = fitted.scaled ? point.x * ONE : toPixels(point.x);
+              /* A component whose program ran comes back in pixels with the
+               * stretch in it; one with none comes back in design units, and
+               * its `x` has to be taken across rather than down. On a square
+               * pixel the two conversions are the same one. */
+              const px = fitted.scaled ? point.x * ONE : toPixelsX(point.x);
               const py = fitted.scaled ? point.y * ONE : toPixels(point.y);
 
               return { ...point, x: a * px + c * py + offsetX, y: b * px + d * py + offsetY };

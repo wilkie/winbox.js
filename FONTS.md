@@ -14801,6 +14801,40 @@ neither instrument by one cell. The fabricated ceiling now keeps a figure per
 display, square at 32,394 of 32,394 with no wrong pixel and not-square at 1,881
 of 2,316.
 
+
+#### And the same conversion inside a composite
+
+With the bars scaled across, what still failed of the two instruments was 173
+cells each, and classifying them settles the question in one line: **every one
+is an accented character**. The bars themselves -- the geometry the instruments
+exist to draw -- are exact. So the scan converter walking a sample grid that is
+not square is right, and had been all along; what is not is the path that
+assembles one glyph out of others.
+
+`compositeInPixels` is handed two conversions, one for each axis, and was using
+the vertical one for both coordinates of a component that comes back in design
+units:
+
+    const px = fitted.scaled ? point.x * ONE : toPixels(point.x);
+
+which is the same mistake as the one in `drawText`, in the one place the
+horizontal conversion was already sitting unused in the argument list. Taking an
+unhinted component's `x` across:
+
+    cour-bars    941 -> 1,114 of 1,158     upright cells 661/834 -> 834/834
+    cour-wedges  940 -> 1,114 of 1,158     wrong pixels  6,986 -> 976
+
+**The whole upright half of both instruments is now exact on an EGA**, accented
+characters included, and the 44 cells each has left are identical between them
+-- they are Courier New *Italic*, a real file the fabrication never rewrote, so
+they are not instrument geometry at all. That also explains why the lean could
+never be measured on them.
+
+The recorded corpus does not move on this one either, for the same reason as
+before: every component of every shipped face has a program of its own, so
+nothing in it takes the unhinted path. Two bugs now have been found only by
+drawing shapes that do.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
