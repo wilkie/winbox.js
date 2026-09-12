@@ -305,7 +305,10 @@ describe('the fabricated recordings', () => {
    */
   present('know which recordings did not take', function () {
     const stock = JSON.parse(
-      readFileSync(join(FIXTURES, '..', 'hinting.json'), 'utf8')
+      /* The VGA recording: these fabrications were all recorded on one, and
+       * the stock answers they are compared against have to come from the same
+       * display. `hinting` grew an EGA fixture of its own; see `KNOWN_GAPS`. */
+      readFileSync(join(FIXTURES, '..', 'hinting-vga.json'), 'utf8')
     ).records.reduce((into: any, record: any) => {
       into[`${record.function}|${record.args}`] = record.result;
 

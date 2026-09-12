@@ -1664,6 +1664,30 @@ export const KNOWN_GAPS: Record<string, string> = {
    * `FONTS.md` section 3 has all of them, along with the readings refused with
    * counts on the way.
    */
+  /* The `hinting` sweep on an EGA, 121 records of 8,470.
+   *
+   * Recorded here for the first time, and it is the sharpest thing said about
+   * the anisotropic run yet. `hinting` asks for the advance of a glyph the
+   * program has fitted -- the distance between the two horizontal phantoms once
+   * it has had its say -- across four faces, upright and slanted, at every
+   * height from eight to a hundred and ten. On a VGA all 8,470 agree. On an EGA
+   * 8,349 do, and **every one of the 121 that do not is Arial in italic**:
+   * Times New Roman, Courier New and Symbol are all exact slanted, and Arial is
+   * exact upright.
+   *
+   * They are off by exactly one pixel and in both directions -- short at eleven,
+   * twelve and sixteen, long at thirty-eight, forty-five and forty-six -- at
+   * about a third of the sizes asked, and the size the run happens at agrees
+   * every time. So it is not the transform and not the size: it is what one
+   * face's program does to its own phantom under a stretch.
+   *
+   * This is the same defect the EGA glyph sweep sees as 237 slanted cells, seen
+   * through a single number per glyph instead of a thousand pixels. Whatever
+   * closes it should close both.
+   */
+  'hinting-ega:advance':
+    'the EGA hint program, 121 of 8,470: Arial in italic advances a pixel wide or narrow at a third of the sizes',
+
   'glyphs-ega:glyph':
     'the glyph sweep on an EGA, 295 cells of 6,046: what the hint program does to a slanted design under an anisotropic transform, narrowed one instruction at a time',
 };
