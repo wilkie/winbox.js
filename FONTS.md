@@ -730,10 +730,40 @@ request naming no face on either display, because `FF_DONTCARE` and `FF_ROMAN`
 take the *same* atom and the two answer differently -- Arial and Times New Roman
 on an EGA, MS Sans Serif and MS Serif on a VGA. So the lookup fails, `12fc` falls
 to `1301`, `0e95` returns nought, and **the scored competition at `0550` is what
-answers every one of them**. Which is exactly the hundred records still open
-here: we resolve a family default name and compare one family's strikes, where
-GDI scores the whole directory twice over. The rules for doing that are now read
-in full; what is missing is the arrangement, not the arithmetic. The walk is called more
+answers every one of them**.
+
+### The competition, built
+
+`_compete` is that, written from the table above: `_named` charges the name,
+charset, pitch, family, weight, slant, underline and strikeout, `choose` charges
+the size, and the two passes run in GDI's order -- the directory in load order
+first, keeping the earliest of equals, then the outlines, which displace it only
+by coming in strictly under. A scalable candidate pays nothing for size at all
+except the 750 a request within two pixels of nothing costs, and a height of
+nought never reaches that test because `05a0` has already turned it into twelve
+points of the device.
+
+Four places now go to it, and they are the four where nothing has answered by
+name: a request that named no face at all; a request in the symbol set whose name
+is not itself a symbol face; a name the directory holds but the charset refuses,
+which is Wingdings in the ANSI set; and a name whose only strikes are OEM ones,
+which is Terminal in the ANSI set. `_exactStrike`, the rule fitted from outside
+for the last two of those, is gone -- the competition answers them and more.
+
+**The EGA sweep goes 4,957 to 5,018 of 5,057, and the VGA stays at 5,057.** The
+face the mapper settles on now agrees on all 996 requests of both. What is left
+is 39 records in two shapes:
+
+- **Symbol asked for in the ANSI set in bold or in italic**, 30 records at
+  fifteen, sixteen and twenty pixels. Plainly it answers with a strike, and the
+  reason is now clear -- `SYMBOLB.FON` carries two whose `dfCharSet` is nought
+  and the exact match at `0ef6` takes one of them -- but that path wants the
+  weight equal and the slant nought, so bold and italic fall past it. Windows
+  then answers with the Symbol *outline*, whose charset is two and which the
+  competition charges 65,000 for it. Nothing read so far explains how it wins.
+- **MS Serif asked for twenty-nine pixels**, 9 records: its twenty-six row strike
+  against nine rows three times over, which the table scores lower. Strike
+  against strike, no outline involved. The walk is called more
 than once -- `0x859` passes a running limit and a base penalty taken from
 `[weights+0x68]`, gated on bit 0x2000 of `[0x64a]`, where `2c0a` passes an
 infinite limit and no base -- and a later pass has to beat the running best

@@ -131,6 +131,7 @@ export class FontManager {
   /** `lfPitchAndFamily`, in the pieces the mapper reads it in. */
   static FIXED_PITCH = 0x01;
   static FF_ROMAN = 0x10;
+  static FF_SWISS = 0x20;
   static FF_MODERN = 0x30;
 
   /** `lfCharSet` values that decide a mapping on their own. */
@@ -187,6 +188,38 @@ export class FontManager {
    */
   static FACE_PENALTY = 10000 * 1024;
 
+  /* The rest of the table, in the order `0x39c` holds it. Each names the
+   * instruction that charges it; see `FONTS.md` section 3.
+   */
+  /** `18d2`: the candidate's `dfCharSet` is not the one asked for. */
+  static CHARSET_PENALTY = 65000 * 1024;
+  /** `19b1`: fixed pitch asked for and a variable one got. */
+  static FIXED_PENALTY = 15000 * 1024;
+  /** `19c8`: variable pitch asked for and a fixed one got. */
+  static VARIABLE_PENALTY = 350 * 1024;
+  /** `19e0`: no pitch asked for at all and a fixed one got. */
+  static PITCH_PENALTY = 1 * 1024;
+  /** `1a37`: the family asked for is not the candidate's. */
+  static FAMILY_PENALTY = 9000 * 1024;
+  /** `1a44`: the same, where the candidate claims no family. */
+  static NO_FAMILY_PENALTY = 8000 * 1024;
+  /** `1a26`: and 50 more when only one of the two is above `FF_MODERN`. */
+  static FAMILY_SIDE_PENALTY = 50 * 1024;
+  /** `1f35`: three for every ten of weight, after the synthesis adjustment. */
+  static WEIGHT_PENALTY = 3 * 1024;
+  /** `1fa4`: the candidate is slanted and the request is not, or the reverse. */
+  static ITALIC_PENALTY = 4 * 1024;
+  /** `1f86`: a slant the candidate does not have and can be given. */
+  static SLANT_PENALTY = 1 * 1024;
+  /** `1fe0` and `201c`: an underline or a strikeout that does not match. */
+  static UNDERLINE_PENALTY = 3 * 1024;
+  static STRIKEOUT_PENALTY = 3 * 1024;
+
+  /** `1ee8`: over this much heavier than the candidate and a bold is made. */
+  static SMEAR_ABOVE = 150;
+  /** And the candidate is treated as this much heavier once one is. */
+  static SMEAR_BY = 120;
+
   /** A square device pixel, as the mapper counts aspect: hundredths. */
   static SQUARE = 100;
 
@@ -204,10 +237,10 @@ export class FontManager {
    * Fonts at 3, 5, 6, 8, 10 and 11 and with itself everywhere else -- and those
    * six are exactly the strikes Small Fonts is installed in.
    *
-   * Twelve is where it stops, and why it stops there is **not** known. Several
-   * families carry a thirteen pixel strike, MS Sans Serif among them, which is
-   * the same FF_SWISS family Arial is in and ought to be the strongest raster
-   * candidate available; Arial wins that height anyway. See `FONTS.md`.
+   * Twelve is where it stops because `seg3:13f3` is `cmp ax,0xb`, and the
+   * scattered pattern is because what runs below it is a lookup in exactly two
+   * faces rather than a search of all of them. See `SMALL_FACES` and `FONTS.md`
+   * section 3.
    */
   static OUTLINE_FLOOR = 12;
 
@@ -229,7 +262,11 @@ export class FontManager {
    * takes those two rows and costs nothing anywhere: `font`, `glyphs`, `sizes`,
    * `styles` and `widths` do not move, and neither does the VGA sweep.
    *
-   * So this stays a list, and what orders it is not yet known.
+   * What orders it, for the sizes that turn on it, is now read: below twelve
+   * pixels GDI does not consult a list at all but asks MS Serif and then Small
+   * Fonts by atom, which is why MS Serif takes ten and eleven. See
+   * `SMALL_FACES`. Above twelve the order here still stands in for GDI's own
+   * font directory, which `_compete` walks by load order instead.
    */
   static INSTALLED_ORDER = [
     'MS Serif',
@@ -392,18 +429,6 @@ export class FontManager {
   }
 
   /**
-   * The face with a strike at exactly this cell height, if one should win.
-   *
-   * Only below `OUTLINE_FLOOR`, and only against an outline: this is the rule
-   * that answers a request for eight pixel Arial with Small Fonts. Ties go to
-   * whichever face `WIN.INI` lists first, which is how MS Serif takes 10 and 11
-   * from Small Fonts even though both carry those sizes.
-   *
-   * @param {number} height - The cell height asked for, in pixels.
-   * @param {number} charset - The character set the request asked for.
-   * @returns {Object|null} `{name, entries}`, or null if the outline should win.
-   */
-  /**
    * The earliest strike in the directory installed at exactly the height
    * asked for, in the character set asked for; see `map`. A positive height
    * is a cell and a negative one the characters within it.
@@ -535,6 +560,205 @@ export class FontManager {
   }
 
   /**
+   * Everything the penalty routine charges a candidate that is not its size.
+   *
+   * **Read out of `GDI.EXE`**, at `seg3:17b4`; `FONTS.md` section 3 has the
+   * whole table with the instruction that charges each term. This is the half
+   * that a scalable candidate pays too -- `1ba6` sends it past every size term
+   * and straight to the end -- so it is written once and used by both passes.
+   */
+  static _named(header, name, request) {
+    let cost = 0;
+
+    /* The name, by atom. A request that named none charges nothing to anyone,
+     * which is what lets the other terms decide. */
+    if (request.face) {
+      const asked = String(request.face).toLowerCase();
+      const alias = FontManager.SUBSTITUTES[asked];
+
+      if (name.toLowerCase() !== asked) {
+        cost += alias && name.toLowerCase() === String(alias).toLowerCase() ? 500 * 1024 : FontManager.FACE_PENALTY;
+      }
+    }
+
+    if (header.dfCharSet !== (request.charset ?? 0)) {
+      cost += FontManager.CHARSET_PENALTY;
+    }
+
+    /* The pitch, in the two encodings that do not agree: `lfPitchAndFamily`
+     * counts 1 as fixed and 2 as variable, and `dfPitchAndFamily` carries a
+     * bit that is set when the face is variable. */
+    const pitch = (request.pitchAndFamily ?? 0) & 3;
+    const fixed = !(header.dfPitchAndFamily & FontManager.FIXED_PITCH);
+
+    if (pitch === 0) {
+      cost += fixed ? FontManager.PITCH_PENALTY : 0;
+    } else if (pitch === 1) {
+      cost += fixed ? 0 : FontManager.FIXED_PENALTY;
+    } else if (pitch === 2) {
+      cost += fixed ? FontManager.VARIABLE_PENALTY : 0;
+    }
+
+    const wantFamily = (request.pitchAndFamily ?? 0) & 0xf0;
+    const hasFamily = header.dfPitchAndFamily & 0xf0;
+
+    if (wantFamily !== 0 && wantFamily !== hasFamily) {
+      if (hasFamily === 0) {
+        cost += FontManager.NO_FAMILY_PENALTY;
+      } else {
+        const together =
+          (wantFamily <= FontManager.FF_MODERN && hasFamily <= FontManager.FF_MODERN) ||
+          (wantFamily > FontManager.FF_MODERN && hasFamily > FontManager.FF_MODERN);
+
+        cost += together ? FontManager.FAMILY_PENALTY : FontManager.FAMILY_PENALTY + FontManager.FAMILY_SIDE_PENALTY;
+      }
+    }
+
+    /* The weight, three for every ten -- and before it is taken the candidate
+     * is made bold where the request is more than 150 heavier, which is the
+     * threshold measured from outside as "bold is synthesised above 550". */
+    const asked = request.weight ?? 0;
+    let has = header.dfWeight || 400;
+    let smeared = false;
+
+    if (asked) {
+      if (has + FontManager.SMEAR_ABOVE < asked) {
+        has += FontManager.SMEAR_BY;
+        smeared = true;
+      }
+
+      cost += FontManager.WEIGHT_PENALTY * FontManager.muldiv(1, Math.abs(asked - has), 10);
+    } else {
+      cost += FontManager.WEIGHT_PENALTY * FontManager.muldiv(1, Math.abs(400 - has), 20);
+    }
+
+    const slanted = !!header.dfItalic;
+
+    if (request.italic && !slanted) {
+      cost += FontManager.SLANT_PENALTY;
+    } else if (!!request.italic !== slanted) {
+      cost += FontManager.ITALIC_PENALTY;
+    }
+
+    /* An underline or a strikeout the candidate does not have is drawn on
+     * rather than charged for; only the other direction costs anything. */
+    if (!request.underline && header.dfUnderline) {
+      cost += FontManager.UNDERLINE_PENALTY;
+    }
+
+    if (!request.strikeout && header.dfStrikeOut) {
+      cost += FontManager.STRIKEOUT_PENALTY;
+    }
+
+    return { cost, smeared };
+  }
+
+  /**
+   * Scores every face in the directory and answers with the cheapest.
+   *
+   * This is what GDI does when nothing has answered by name: `seg3:0550` walks
+   * the raster and vector faces first, keeping the lowest penalty, and then
+   * walks the scalable ones with that as a limit -- and the second walk has to
+   * come in **strictly** under it to displace the first. A tie therefore goes to
+   * the raster answer, which is why a request naming no face at sixteen pixels
+   * is MS Sans Serif on a VGA, where that face has an exact sixteen row strike
+   * and pays nothing, and Arial on an EGA, where every strike pays the
+   * off-square term and nothing is free. See `FONTS.md` section 3.
+   */
+  _compete(request) {
+    let best = null;
+
+    /* In the order GDI's directory holds them, which is the order the files
+     * were loaded and, within a file, the order of its resources. Ties go to
+     * the earliest, and two faces can both be exact: Wingdings asked for in the
+     * ANSI set at ten pixels answers Small Fonts and not MS Serif, whose ten
+     * row strike sits after Small Fonts' own in `SMALLE.FON`.
+     */
+    const directory = [];
+
+    for (const name of Object.keys(this._fonts)) {
+      for (const entry of this._fonts[name]) {
+        directory.push({ name, entry });
+      }
+    }
+
+    directory.sort((one, other) => one.entry.order - other.entry.order);
+
+    {
+      for (const { name, entry } of directory) {
+        const { cost, smeared } = FontManager._named(entry.header, name, request);
+        const sized = FontManager.choose([entry], request);
+
+        if (!sized) {
+          continue;
+        }
+
+        const total = cost + sized.cost;
+
+        if (!best || total < best.total) {
+          best = { total, name, entry, sized, smeared };
+        }
+      }
+    }
+
+    let outline = null;
+
+    for (const installed of Object.keys(this._outlines)) {
+      for (const font of Object.values(this._outlines[installed]) as any[]) {
+        const stub = font.resource;
+        const header = {
+          dfCharSet: stub ? stub.charSet : font.symbolic ? FontManager.SYMBOL_CHARSET : 0,
+          dfPitchAndFamily: stub ? stub.pitchAndFamily : 0,
+          dfWeight: font.boldFace ? 700 : 400,
+          dfItalic: font.italicFace ? 1 : 0,
+          dfUnderline: 0,
+          dfStrikeOut: 0,
+        };
+
+        const { cost } = FontManager._named(header, installed, request);
+
+        /* A scalable candidate pays nothing at all for size, except where the
+         * request is within two pixels of nothing; `1e9e`. A height of nought
+         * never reaches that test: `05a0` has already replaced it with twelve
+         * points of the device, as a negative height. */
+        const height =
+          request.height ||
+          -FontManager.muldiv(FontManager.DEFAULT_POINTS, request.logPixelsY || 96, 72);
+        const total =
+          cost +
+          (height >= -2 && height <= 2
+            ? FontManager.HEIGHT_PENALTY + FontManager.TALLER_PENALTY
+            : 0);
+
+        if ((!outline || total < outline.total) && (!best || total < best.total)) {
+          outline = { total, name: installed, font };
+        }
+      }
+    }
+
+    if (outline) {
+      const chosen = FontManager.realiseOutline(outline.font, request);
+
+      if (chosen) {
+        return {
+          ...chosen,
+          outline: outline.font,
+          face: outline.name,
+          exactStyle: true,
+          faceBold: outline.font.boldFace,
+          outlineFamily: true,
+        };
+      }
+    }
+
+    if (!best) {
+      return null;
+    }
+
+    return { ...best.sized, face: best.name, outlineFamily: false };
+  }
+
+  /**
    * Finds the installed font that best answers a description of one.
    *
    * A program does not choose a font, it describes one, and GDI finds the
@@ -567,6 +791,21 @@ export class FontManager {
        * not a symbol face. */
       const named = this.outline(face);
 
+      if (!named || !named.font.symbolic) {
+        /* A name that is not itself a symbol face answers nothing in the symbol
+         * set, so nothing has answered by name and the competition runs. It is
+         * not "Symbol" by fiat: on an EGA it comes back Wingdings, because both
+         * symbol outlines pay the same wrong name and Wingdings is the earlier
+         * of the two in `WIN.INI`, while on a VGA Symbol's exact sixteen row
+         * strike pays nothing for its height and the raster pass keeps it.
+         */
+        const competed = this._compete(request);
+
+        if (competed) {
+          return competed;
+        }
+      }
+
       face = named && named.font.symbolic ? named.name : 'Symbol';
     } else if (charset === FontManager.OEM_CHARSET && !this._isOEM(face)) {
       /* The OEM character set is answered by Roman unless something else OEM
@@ -577,6 +816,16 @@ export class FontManager {
        */
       face = 'Roman';
     } else if (!face) {
+      /* A request that names no face at all is not given a family default: it
+       * goes to the scored competition, which is what `seg3:0550` does once
+       * `0e95` has failed to answer it by name. See `_compete`.
+       */
+      const competed = this._compete(request);
+
+      if (competed) {
+        return competed;
+      }
+
       face = FontManager.familyFace(pitchAndFamily);
     }
 
@@ -789,54 +1038,21 @@ export class FontManager {
 
     /* A name the directory holds but cannot answer in this character set --
      * Wingdings asked for in the ANSI set -- is scored like any other: every
-     * candidate carries the same name mismatch, so the height term decides,
-     * and a strike installed at exactly the height asked for beats an outline,
-     * which beats a strike that would have to be stretched. Ties go to the
-     * earliest in the directory. **Recorded**: at ten Windows answers Small
-     * Fonts, at sixteen, twenty and twenty-four MS Sans Serif -- the exact
-     * strikes, and where two are exact the earlier: MS Serif's ten row strike
-     * lives in `SMALLE.FON` after Small Fonts' own -- and at twelve, fourteen
-     * and eighteen, where no strike is exact, Arial, the first outline. Never
-     * MS Sans Serif stretched, which the family default would have been. An
-     * italic request goes to the italic file below, as it did.
+     * candidate carries the same name mismatch, so the other terms decide. That
+     * is the competition, and it is what runs here now: the searches in
+     * `seg3:0e95` all require the charset to match, so a name they will not
+     * accept is a name that answered nothing, and `0550` scores the directory.
+     *
+     * **Recorded** on both displays: at ten Windows answers Small Fonts, at
+     * sixteen, twenty and twenty-four MS Sans Serif on a VGA -- exact strikes
+     * pay nothing and the raster pass keeps the tie -- and on an EGA, where the
+     * off-square term makes every strike cost 210, Arial at sixteen.
      */
-    if (
-      outline &&
-      !usable &&
-      !wantsItalic &&
-      !this.lookup(face) &&
-      charset !== FontManager.OEM_CHARSET
-    ) {
-      const exact = this._exactStrike(request.height ?? 0, charset, request.weight || 400);
+    if (outline && !usable && !wantsItalic && charset !== FontManager.OEM_CHARSET) {
+      const competed = this._compete(request);
 
-      if (exact) {
-        return {
-          ...FontManager.choose(exact.entries, request),
-          face: exact.name,
-          outlineFamily: true,
-        };
-      }
-
-      for (const installed of Object.keys(this._outlines)) {
-        const first = this.outline(installed, wantsBold, wantsItalic);
-
-        if (!first || first.font.symbolic) {
-          continue;
-        }
-
-        const realised = FontManager.realiseOutline(first.font, request);
-
-        if (realised) {
-          return {
-            ...realised,
-            outline: first.font,
-            face: first.name,
-            exactStyle: first.exact,
-            faceBold: first.faceBold,
-          };
-        }
-
-        break;
+      if (competed) {
+        return competed;
       }
     }
 
@@ -862,6 +1078,21 @@ export class FontManager {
      * `WIN.INI` redirected the name, which decides what to call the result.
      */
     const found = !!entries && entries.length > 0;
+
+    /* A name whose only strikes the charset refuses has answered nothing, and
+     * the competition runs. Terminal asked for in the ANSI set is the case:
+     * every strike it has is an OEM one, so none of the searches in `0e95` will
+     * take it, and `0550` scores the directory -- MS Sans Serif on a VGA, whose
+     * sixteen row strike is exact and free, and Arial on an EGA, where it is
+     * not. **Recorded** on both.
+     */
+    if (!found && request.face && this.lookup(face)) {
+      const competed = this._compete(request);
+
+      if (competed) {
+        return competed;
+      }
+    }
 
     /* A request for italic changes what gets picked, rather than being
      * synthesised onto whatever would have been picked anyway.

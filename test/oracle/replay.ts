@@ -1630,51 +1630,36 @@ export const KNOWN_GAPS: Record<string, string> = {
    * a placement but what the scan converter does with a run under a transform
    * that is not square.
    */
-  /* The `font` sweep on an EGA, 100 records of 5,057, and every one of them the
-   * same question: an outline answers where we answer with a strike.
+  /* The `font` sweep on an EGA, 39 records of 5,057.
    *
-   * Recorded for the first time here. The sweep started at 4,502 and five
-   * things came out of it, all of them in the code and all of them measured
-   * against both displays -- a family whose every strike was refused for being
-   * stretched too far, the off-square penalty's device aspect, twelve points at
-   * the device's own vertical resolution rather than at ninety-six, which
-   * family a fallback strike answers for, and the weight class a face's own
-   * strike answers in. `FONTS.md` has each of them.
+   * It began at 4,502 the day it was first recorded and is 5,018 now; the
+   * commits between say what each step was and `FONTS.md` section 3 has all of
+   * them. The face the mapper settles on agrees on every one of the 996
+   * requests on both displays, which it did not before the scored competition
+   * went in.
    *
-   * What is left is one class in three shapes:
+   * What is left is two things:
    *
-   *   - a face name that did not come from the request. Asked for nothing at
-   *     sixteen pixels an EGA answers Arial, Courier New or Times New Roman by
-   *     family, and Wingdings for the symbol set; a VGA answers the bitmap
-   *     family every time, because there every bitmap family has a strike of
-   *     exactly sixteen rows and on an EGA most do not. 12 faces and the
-   *     records that follow them.
-   *   - a style that had to be synthesised. Symbol at fifteen, sixteen and
-   *     twenty pixels on an EGA answers its own strike plainly and the outline
-   *     in bold or in italic; on a VGA the strike answers all three.
-   *   - one strike against another: MS Serif asked for twenty-nine answers its
+   *   - Symbol asked for in the ANSI set in bold or in italic, 30 records at
+   *     fifteen, sixteen and twenty pixels. Plainly it answers with a strike --
+   *     `SYMBOLB.FON` carries two whose `dfCharSet` is nought, and the exact
+   *     match at `seg3:0ef6` takes one of them -- and in bold or italic that
+   *     path refuses it, because it wants the weight equal and the slant nought.
+   *     Windows then answers with the Symbol *outline*, whose charset is two and
+   *     which the competition scores 65,000 for it; nothing read so far explains
+   *     how it wins. The plain answers are right, so this is narrow.
+   *   - MS Serif asked for twenty-nine pixels, 9 records. It answers with its
    *     twenty-six row strike and we answer with nine rows three times over,
-   *     which the penalty table scores lower.
-   *
-   * All three are the same missing thing. We resolve the face name first and
-   * put one family's strikes up against one another; GDI scores every candidate
-   * in the font directory at once -- outlines included, with 10,000 for a name
-   * that does not match and nothing at all when no name was asked for -- and
-   * keeps the cheapest. On a square display the two arrangements agree; on an
-   * EGA they part company a hundred times.
+   *     which the penalty table scores lower. Strike against strike, with no
+   *     outline involved.
    */
-  'font-ega:CreateFont face':
-    'the EGA mapper, 12 of 996: an outline answers where the face name did not come from the request',
   'font-ega:CreateFont heights':
-    'the EGA mapper, 20 of 996: the records that follow the twelve faces above',
+    'the EGA mapper, 8 of 996: Symbol in bold or italic, and MS Serif at twenty-nine',
   'font-ega:CreateFont widths':
-    'the EGA mapper, 22 of 996: the records that follow the twelve faces above',
+    'the EGA mapper, 10 of 996: Symbol in bold or italic, and MS Serif at twenty-nine',
   'font-ega:CreateFont extent':
-    'the EGA mapper, 26 of 996: the records that follow the twelve faces above',
-  'font-ega:CreateFont style':
-    'the EGA mapper, 19 of 996: the records that follow the twelve faces above',
-  'font-ega:CreateFontIndirect':
-    'the EGA mapper, 1 of 5: a request naming nothing at all answers with Arial',
+    'the EGA mapper, 14 of 996: Symbol in bold or italic, and MS Serif at twenty-nine',
+  'font-ega:CreateFont style': 'the EGA mapper, 7 of 996: Symbol in bold or italic',
 
   'glyphs-ega:glyph':
     'the glyph sweep on an EGA, 570 cells of 6,046: what the scan converter does under an anisotropic transform, narrowed one instruction at a time',
