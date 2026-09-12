@@ -347,10 +347,43 @@ five times up and **once** across, its ten row strike five times each way,
 Courier's twelve row strike four up and twice across, its fifteen row strike six
 up and once across. Everything with a vertical multiple of three or less agrees.
 
-Nothing read so far says which it will be. It does not follow the multiple, nor
-the strike's own shape -- every one of these files is ninety-six by seventy-two,
-the same files an EGA installs -- nor the stretched cell, nor the stretched
-width. 150 records, declared with counts.
+The whole of it, measured. Each row is one strike and the horizontal multiple it
+is given at each vertical one, on an EGA and on a Hercules:
+
+| cell | ave | max | V   | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
+| ---- | --- | --- | --- | - | - | - | - | - | - | - |
+| 8    | 4   | 8   | EGA | 2 | 3 | 4 | 5 |   |   |   |
+| 8    | 4   | 8   | Her | 2 | 3 | 4 | 5 |   |   |   |
+| 10   | 8   | 8   | EGA | 2 | 3 | 4 | 5 | 5 | 5 |   |
+| 10   | 8   | 8   | Her | 2 | 3 | 4 | 5 | 4 | 4 |   |
+| 12   | 7   | 14  | EGA | 2 | 3 | 4 | 5 | 5 | 5 | 5 |
+| 12   | 7   | 14  | Her | 2 | 3 | 4 | 3 | 3 | 2 | 2 |
+| 12   | 9   | 9   | EGA | 2 | 3 | 4 |   | 5 | 5 |   |
+| 12   | 9   | 9   | Her | 2 | 3 | 2 |   |   | 1 |   |
+| 15   | 12  | 12  | EGA | 2 | 3 | 4 | 5 | 5 | 5 | 5 |
+| 15   | 12  | 12  | Her | 2 | 3 | 2 | 1 | 1 | 1 | 1 |
+| 18   | 9   | 19  | EGA | 2 |   |   | 5 |   |   |   |
+| 18   | 9   | 19  | Her | 2 |   |   | 1 |   |   |   |
+| 20   | 12  | 25  | EGA |   |   |   | 5 |   |   |   |
+| 20   | 12  | 25  | Her |   |   |   | 1 |   |   |   |
+
+Two things are plain from it. Up to three times over the two displays agree and
+the multiple is the vertical one; from four times over the Hercules falls away,
+and how far it falls depends on the strike as well as on the multiple -- at a
+stretched height of sixty it is four for the eight-wide strike, three for the
+seven-wide and two for the twelve-wide.
+
+Two readings were tried against the table and **refused**. The penalty routine's
+own `across`, `min(5, MulDiv(device, 1, MulDiv(shape, 1, times)))`, comes to 4,
+5, 5, 5 for four to seven times over and the table wants 2, 1, 1, 1 for the
+fifteen row strike. And a bitmap that must fit in a segment -- the realised font
+is the sum of its character widths times the multiple, over the stretched cell --
+fits the eight-wide strike exactly, where five times across at six times up is
+67,200 bytes and is refused while 53,760 is taken, and fails the seven-wide,
+where 46,920 is refused and 62,720 is accepted elsewhere. No single limit
+separates them.
+
+150 records, declared with counts.
 
 ### What a display that is not square says about all of this
 
