@@ -862,6 +862,34 @@ pixel from where Windows leaves it, under a transform that is not square, for
 its two widest glyphs. That is the same defect the EGA glyph sweep sees as 237
 slanted cells, and it is now one number per glyph instead of a thousand pixels.
 
+### Traced to one instruction, and it is not the control values
+
+Arial Italic's `M` at thirteen pixels per em and seventeen across is the
+smallest case. Its advance phantom is moved by exactly **one** instruction in
+the whole program, a `MIRP` with opcode `0xf2` -- minimum distance on, rounding
+off -- reading control value 202, which is the right side bearing. It is the end
+of a chain of three `MIRP`s that walk from point 5 to 11 to 10 and then to the
+phantom, all four of them along the same diagonal projection vector,
+`(16139, -2824)` in 2.14, which is the italic angle.
+
+Unhinted, the phantom sits at 906 sixty-fourths -- 14.16 pixels, the design
+advance scaled by the horizontal size. Windows finishes at 14. We finish at 821,
+12.83, so **our program narrows the glyph by 85 sixty-fourths and Windows by
+about ten**.
+
+The control values are not where that comes from. The three are read at the
+horizontal size and reduced by `cvtScale`, which for this projection is 0.9938:
+258, 95 and 116 sixty-fourths become 256, 94 and 115. Using the raw values
+instead changes the total by 4, and letting the cut-in take the outline's own
+distances -- 254, 100 and 118 -- changes it by 7. Neither is 85.
+
+What is left is the move itself: a `MIRP` puts a point at a given distance along
+the **projection** vector by moving it along the **freedom** vector, and here the
+two differ -- freedom is `(1, 0)` and the projection is ten degrees off it. On a
+square pixel the outline's own diagonal and the projection agree, so the
+difference never shows. Under a stretch the scaled outline's diagonal is not the
+design's, and this is where that matters. **Open**, and narrowed to that.
+
 ### Symbol, the face installed twice
 
 Symbol is the only name carried by both a `.FON` and a `.TTF`, and it had been
