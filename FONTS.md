@@ -14917,9 +14917,34 @@ the 550 at which a smear begins -- so it is not exactness. The second survives
 that and still loses sixty, so it is not simply smearing either.
 
 Both readings gain the same 35 records on the EGA, which says they agree about
-the EGA and differ only about the VGA. The separating case is therefore on the
-VGA and not yet recorded: something between 550 and 700, at a height a face has
-its own strike at. Nothing is changed until it is.
+the EGA and differ only about the VGA.
+
+And the VGA case *is* recorded, which is what makes this interesting. The
+`styles` sweep asks Symbol at sixteen pixels for every weight from 500 to 700 in
+tens, and all twenty-one agree today -- so on a VGA, bold Symbol at sixteen
+pixels **does** take the sixteen row strike. On an EGA, at the same height and
+the same weight, Windows takes the outline.
+
+Everything that could obviously separate them is the same. Both files hold a
+sixteen row Symbol strike; both strikes are weight 400; this implementation's
+own choice is identical in form on the two displays and differs only in which
+cells exist --
+
+    VGA strikes  13 16 19 21 27 35     picks strike16 at h=16, outline at 15 and 20
+    EGA strikes  14 15 16 16 20 26     picks strike15, strike16, strike20
+
+-- and every EGA height with a strike is a bold failure while every one without
+is a pass. What differs between the two files is the resolution they are cut
+for, 96x96 against 72x96, and that `SYMBOLB.FON` carries *two* sixteen row
+strikes where `SYMBOLE.FON` carries one. Neither explains fifteen and twenty,
+which are single.
+
+So the rule is bounded on both sides and still not written: a bold request above
+`OUTLINE_FLOOR` takes a face's own strike on a square pixel and the outline on
+an EGA, and nothing recorded says why. The next thing to ask is not another
+variant of the cost but a probe: `GetTextFace` and the metrics over a
+weight-by-height sweep on both displays, which would say which face Windows
+chose rather than leaving it to be inferred from ink.
 
 ## 9. Where the numbers stand
 
