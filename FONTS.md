@@ -496,7 +496,7 @@ term names its own offset into the table `0x511` builds from them:
 | `1c88` | `0x28` | 150    | a pixel of height, too short                          |
 | `1c68` | `0x2c` | 150    | a pixel of height, too tall                           |
 | `1d28` | `0x30` | 50     | a pixel of width, where a width was asked for         |
-| `1e58` | `0x34` | 50     | a vector face drawn at more than its design either way|
+| `1e49` | `0x34` | 50     | flat, for being drawn more than once either way       |
 | `1e89` | `0x38` | 4      | a hundredth between the two multiples                 |
 | `1c20` | `0x3c` | 20     | a multiple of the stretch                             |
 | `1de7` | `0x40` | 30     | a hundredth off square                                |
@@ -761,9 +761,13 @@ is 39 records in two shapes:
   weight equal and the slant nought, so bold and italic fall past it. Windows
   then answers with the Symbol *outline*, whose charset is two and which the
   competition charges 65,000 for it. Nothing read so far explains how it wins.
-- **MS Serif asked for twenty-nine pixels**, 9 records: its twenty-six row strike
-  against nine rows three times over, which the table scores lower. Strike
-  against strike, no outline involved. The walk is called more
+**MS Serif asked for twenty-nine pixels** was the other, and it is closed. The
+term that settles it is the last one the routine has, at `1e49`: `times` and
+`across` are each compared against one and `w[0x34]`, a flat 50, is added when
+either is over it. It had been read as a vector term and is not. Its twenty-six
+row strike is drawn once and pays 680; its nine row strike three times over pays
+630 without this and 680 and a hundredth with it, and Windows answers 26. The
+sweep goes to 5,027 of 5,057 and the VGA does not move. The walk is called more
 than once -- `0x859` passes a running limit and a base penalty taken from
 `[weights+0x68]`, gated on bit 0x2000 of `[0x64a]`, where `2c0a` passes an
 infinite limit and no base -- and a later pass has to beat the running best

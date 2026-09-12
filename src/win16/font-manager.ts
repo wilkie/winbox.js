@@ -179,6 +179,8 @@ export class FontManager {
   static BOLD_FILE = 600;
   static ASPECT_PENALTY = 30 * 1024;
   static RATIO_PENALTY = 4 * 1024;
+  /** `1e49`: flat, for being drawn more than once either way. */
+  static MULTIPLE_PENALTY = 50 * 1024;
 
   /* What a candidate pays for not being the face that was asked for, from the
    * same table: the mapper adds `AddAtom` on the candidate's name and charges
@@ -1725,6 +1727,20 @@ export class FontManager {
           (times > across
             ? FontManager.muldiv(FontManager.SQUARE, times, across)
             : FontManager.muldiv(FontManager.SQUARE, across, times));
+      }
+
+      /* And fifty flat for being drawn more than once at all, either way.
+       *
+       * **Read out of the binary**, at `seg3:1e49`: `times` and `across` are
+       * each compared against one, and `w[0x34]` is added when either is over
+       * it. It is the last term the routine has and the smallest that decides
+       * anything -- MS Serif asked for twenty-nine pixels on an EGA turns on it
+       * and on nothing else. Its twenty-six row strike is drawn once and pays
+       * 680; its nine row strike three times over pays 630 without this and 680
+       * plus a hundredth of a pixel with it, and Windows answers 26.
+       */
+      if (times > 1 || across > 1) {
+        cost += FontManager.MULTIPLE_PENALTY;
       }
 
       if (!smallest || size < smallest.size) {
