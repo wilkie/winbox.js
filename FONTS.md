@@ -14886,6 +14886,41 @@ look at is what the shear is applied *to*, not how steep it is. The 49 upright
 cells of the same instrument that fail say the same thing from the other side:
 Symbol's bars are not Courier's, and something before the slant is already out.
 
+
+#### The upright half of it is the mapper, and the rule is not yet separable
+
+The 49 upright cells `symbol-slant` leaves on an EGA are not the rasteriser at
+all. Windows draws the fabricated bar and this draws a real Symbol letter, which
+can only mean one thing: **Windows realised the outline and this realised a
+strike.** Split by height and weight the pattern is exact --
+
+    plain  8:12/12  10:12/12  12:13/14  13:12/12  14:2/2  15:14/14  16:12/12  20:14/14  24:13/14
+    bold   8:12/12  10:12/12  12:12/12  13:12/12            15: 0/12  16: 0/12  20: 0/12  24:12/12
+
+-- and `SYMBOLB.FON` holds Symbol strikes at fourteen, fifteen, sixteen, twenty
+and twenty-six rows. **Every bold height that fails is a height Symbol has a
+strike of its own at, and every bold height that passes is one it has none at.**
+Thirteen and twenty-four are right because there is no strike there; fifteen,
+sixteen and twenty are wrong because there is.
+
+So above `OUTLINE_FLOOR` a bold request is not answered by the face's own
+strike. That much the EGA says plainly. What it does *not* say is the rule,
+because every way of writing it costs more on the VGA than it gains:
+
+    require the weight to match          EGA +35   VGA -22 glyphs, -6 font, -84 styles
+    refuse a strike that would smear     EGA +35   VGA -22 glyphs, -6 font, -60 styles
+    drop the floor exception entirely    EGA -107  VGA -68 glyphs, -29 font, -86 styles
+
+The `styles` sweep is what refuses the first: Symbol at sixteen pixels asked for
+500, 510 and 520 does take the sixteen row strike, and those weights are below
+the 550 at which a smear begins -- so it is not exactness. The second survives
+that and still loses sixty, so it is not simply smearing either.
+
+Both readings gain the same 35 records on the EGA, which says they agree about
+the EGA and differ only about the VGA. The separating case is therefore on the
+VGA and not yet recorded: something between 550 and 700, at a height a face has
+its own strike at. Nothing is changed until it is.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
