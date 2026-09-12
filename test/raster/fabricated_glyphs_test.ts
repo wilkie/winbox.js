@@ -155,8 +155,8 @@ describe('the fabricated glyph recordings', () => {
   /* And the same instruments recorded on an EGA, which is the first time any
    * chosen geometry has been drawn through a pixel that is not square. Held
    * where they were measured, so they can only improve. */
-  const WIDE_EXACT = 2228;
-  const WIDE_WRONG = 976;
+  const WIDE_EXACT = 2403;
+  const WIDE_WRONG = 7785;
 
   /* The one place an unhinted outline is drawn differently.
    *

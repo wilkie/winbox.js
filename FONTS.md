@@ -14854,6 +14854,38 @@ coordinate rather than rounding it was refused earlier by both displays at once
 -- 412 records of the VGA say rounding -- so it is neither of the two obvious
 things, and the stroke walk wants an instrument of its own.
 
+
+#### An instrument for the synthesised slant, and what it rules out
+
+`symbol-slant` puts one upright bar in place of every Symbol letter, which is
+the whole of the synthesised slant with nothing else in the picture -- Symbol
+has no italic file, so the lean is Windows's own. It is 288 of 288 on a VGA and
+had never been recorded anywhere else.
+
+On an EGA it is **175 of 224 upright and 0 of 128 slanted**. Nothing slanted
+agrees at all, which is the cleanest statement of the problem there has been:
+the two fixes that came out of `cour-bars` are in the upright path, and the
+slant has something of its own.
+
+The bar at eight pixels shows it in five rows. Windows steps the leaning bar
+every second row -- columns 4, 4, 3, 3, 2 -- and this steps it a row early --
+4, 3, 3, 3, 2. **The slope agrees and the phase does not**, which is a rounding
+inside the shear rather than an angle.
+
+Six readings of the lean were scored against those 128 cells and not one of them
+is the answer:
+
+    floor(ppem/3)/ppem   0      round(ppem/3)/ppem  12
+    ppem/3 unrounded     0      ceil(ppem/3)/ppem   26
+    floor(ppem/2)/ppem  14      a flat half         13
+
+`ceil` is the best of them at 26 of 128 and is plainly not it either. So the
+lean has now been refused three times -- twice on the recorded corpus where
+nothing moved, and once here where everything is wrong -- and the next thing to
+look at is what the shear is applied *to*, not how steep it is. The 49 upright
+cells of the same instrument that fail say the same thing from the other side:
+Symbol's bars are not Courier's, and something before the slant is already out.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
