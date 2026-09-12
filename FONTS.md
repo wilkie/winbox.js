@@ -725,6 +725,15 @@ behind, and they are:
   `FF_DECORATIVE`. The lookup at `14e6` then asks the TrueType directory for
   that atom at the weight and slant asked for.
 
+Three smaller things fall out of the same routine. The **two atoms** every
+search matches against are made at `0bc0`: `FindAtom` on the face name, and a
+second from `0a1c`, which is `WIN.INI`'s `[FontSubstitutes]`. Between them sits a
+substitution of its own -- a name that is `System` **and** a request that is
+`FIXED_PITCH` becomes `FixedSys`, `[0x394]` for `[0x396]` in the same name
+table. And `0b1a` splits `lfClipPrecision`: its top four bits are moved out into
+a byte of GDI's own and the field is masked to its low nibble, so those bits are
+private flags rather than clipping, and `0d21`, `0edb` and `1173` all test them.
+
 That last arm is the one that settles what is left. It cannot be what answers a
 request naming no face on either display, because `FF_DONTCARE` and `FF_ROMAN`
 take the *same* atom and the two answer differently -- Arial and Times New Roman
@@ -755,12 +764,30 @@ face the mapper settles on now agrees on all 996 requests of both. What is left
 is 39 records in two shapes:
 
 - **Symbol asked for in the ANSI set in bold or in italic**, 30 records at
-  fifteen, sixteen and twenty pixels. Plainly it answers with a strike, and the
-  reason is now clear -- `SYMBOLB.FON` carries two whose `dfCharSet` is nought
-  and the exact match at `0ef6` takes one of them -- but that path wants the
-  weight equal and the slant nought, so bold and italic fall past it. Windows
-  then answers with the Symbol *outline*, whose charset is two and which the
-  competition charges 65,000 for it. Nothing read so far explains how it wins.
+  fifteen, sixteen and twenty pixels. Every path that answers by name wants the
+  weight and the slant equal to the request's -- `0f58` and `0f6a` in the exact
+  match, `11ac` and `11c0` in the TrueType walk -- and Symbol has no bold file
+  and no italic one, so bold and italic cannot be answered by name at all and
+  must be falling to the competition. Which is consistent: on a VGA the strike
+  and the outline tie and the raster pass keeps the strike, and on an EGA the
+  strike pays 210 for being off square and the outline takes it, and that is
+  exactly what the two recordings say.
+
+  Routing them there was tried and **refused**: it takes the whole of Symbol
+  down with it, because the competition charges every Symbol candidate 65,000
+  for a charset that is not the ANSI one asked for, and Windows answers a
+  request for Symbol in the ANSI set with Symbol at every size and style. The
+  VGA sweep goes 5,057 to 4,893 and the EGA's 5,027 to 4,903.
+
+  So the question is narrower than it looks, and it is not about bold at all:
+  **what excuses the charset term for a request that names Symbol?** Not simply
+  that the name matched -- Terminal and Wingdings are named too, are charset 255
+  and 2 against an ANSI request, and are *not* excused. What separates Symbol
+  from those two in the recording is that Symbol has raster strikes installed
+  under its own name and Wingdings has none, which is the rule the mapper here
+  already carries; where GDI reads it is not found yet, and it is not in `17b4`,
+  whose charset term at `18d2` is unconditional, nor in the four searches of
+  `0e95`, which all require the charset to match outright.
 **MS Serif asked for twenty-nine pixels** was the other, and it is closed. The
 term that settles it is the last one the routine has, at `1e49`: `times` and
 `across` are each compared against one and `w[0x34]`, a flat 50, is added when
