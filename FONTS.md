@@ -411,6 +411,43 @@ and one change closes all three: score every candidate in the font directory at
 once, outlines included, with 10,000 for a name that does not match and nothing
 at all when no name was asked for.
 
+### The scalable candidates are in the same directory, and what that does not explain
+
+The loop at `seg3:2841` is the one `FONTS.md` has been calling "the font
+directory walk", and reading its call site settles two things about it and
+refuses a third.
+
+Its thirteen arguments, pushed left to right, are `(named, out, ..., request,
+out, limitHi, limitLo, base)`; `RealizeFont` calls it at `2c0a` with a limit of
+`0x7fffffff` and a base of nought and a `named` of nought, which is what sends
+it to the walk at `287f` rather than straight to the realisation. It walks
+`[0x640]` forty-six bytes at a time and calls the penalty routine at `17b4` for
+each entry. So **outlines and strikes are entries in one directory and are
+scored by one routine**, which is the structure we do not have.
+
+The whole loop is gated at `2845` on bit 0 of `[0x64a]`, and it filters each
+entry at `28eb` on bit 7 of its first word against bit 7 of `[request+0xf]` --
+so the directory is walked more than once, with the entries split between the
+passes. **The candidates this pass scores are the scalable ones**, and it says
+so in how it fills the candidate block it hands the penalty routine: the height
+at `28f9` is set to **nought** and the width at `28a5` to `lfWidth` itself. A
+scalable face therefore pays nothing for width by construction, and its height
+term is the one at `1c82` taken against a candidate of nought:
+
+    penalty += 150 * lfHeight
+
+**That last does not map, and the EGA sweep is where it shows.** Asked for
+nothing at all at sixteen pixels, a scalable candidate would cost `150 * 16`,
+2,400, before the face term; MS Sans Serif's nearest strike on an EGA is fifteen
+rows and costs 150 and an aspect term, and on a VGA its sixteen row strike costs
+nothing at all. So this arrangement predicts the strike on both displays, and
+Windows answers Arial on the EGA and MS Sans Serif on the VGA. Either the raster
+pass scores its height on a different scale from this one -- the prose at `17b4`
+describes a term this pseudocode does not, `MulDiv(cell, wanted em, own em)`
+charged two a pixel one way and one the other -- or the candidate height for a
+scalable face is filled in somewhere the walk has not been read yet. **Open.**
+Recording it here rather than fitting a constant to the difference.
+
 ### Symbol, the face installed twice
 
 Symbol is the only name carried by both a `.FON` and a `.TTF`, and it had been
