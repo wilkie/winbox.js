@@ -631,10 +631,68 @@ cannot tell those two apart -- and **adopting its `dfPitchAndFamily` as well**
 gives 950 and 934, which is worse than doing neither on the EGA.
 
 So the sub-twelve rule behaves like a lookup that runs before the competition
-rather than a term inside it, which is how `_exactStrike` implements it here.
-Where GDI does that lookup is **open**; the tenth argument of `0550` and what
-`0a48` and `0e95` do to the request before it is handed over are where to look
-next. The walk is called more
+rather than a term inside it -- and that is exactly what it is.
+
+### `OUTLINE_FLOOR`, read out of the image
+
+The realiser at `seg3:0a68` -- the one whose frame holds the `LOGFONT` copy at
+`[bp-0xe8]` -- reaches the scalable walk at `1400` only past a test at `13f3`:
+
+```
+cmp ax,0xb          ; ax is lfHeight
+jna 13fd            ; eleven pixels or fewer: do not consult it
+cmp ax,0xfff6       ; and the same for a negative height of ten or fewer
+jc  1400
+```
+
+**That is `OUTLINE_FLOOR`.** Twelve was measured from outside; `cmp ax,0xb` is
+where it lives.
+
+The test is guarded, and the guard is what all the exceptions were. At `11d9`,
+having found the request's name in the TrueType directory, the realiser keeps
+two bytes of that entry -- `dfPitchAndFamily` at `[bp-0x25]` and `dfCharSet` at
+`[bp-0x26]` -- and `13db` requires the charset to be **nought** and `13e1` bit 0
+of the pitch to be **set**. So the floor applies only to a request that named an
+ANSI, variable-pitch TrueType face. Courier New is fixed pitch, so eight pixel
+Courier New is Courier New; Symbol and Wingdings are charset two, so eight pixel
+Symbol is Symbol, seven rows of it. Both had been **recorded** as exceptions
+before this was read, and this is the rule they are exceptions to.
+
+What happens instead, at `126a`, is not a competition at all:
+
+```
+if lfEscapement == 0 and (lfCharSet == ANSI or DEFAULT):
+    family = lfPitchAndFamily & 0xf0
+    found = family == FF_SWISS ? look([0x384])
+                               : look([0x386]) or look([0x384])
+    if found: realise it and stop
+```
+
+and `look` is the loop at `151e`, which walks the raster table for an entry whose
+**name atom** is the one given, whose `dfPixHeight` is exactly the cell asked for
+-- `-lfHeight + dfInternalLeading` for a negative height -- and whose
+`dfHorizRes` and `dfVertRes` are exactly the device's own. Nothing else: no
+weight, no pitch, no scoring.
+
+`[0x384]` and `[0x386]` are **Small Fonts** and **MS Serif**. Segment 2 holds a
+table of names at `+0x4b4`: `Terminal`, `Small Fonts`, `MS Serif`, `Symbol`,
+`ZapfDingbats`, `Zapf Dingbats`, `Helv`, `TmsRmn`, `Tms Rmn`, `System`,
+`FixedSys`, `MS Sans Serif`; their atoms are stored in consecutive words, and
+`Helv` and `Tms Rmn` are the pair already identified at `[0x38e]` and `[0x392]`
+as the substitute atoms, which fixes the numbering both ways from there.
+
+Every Arial record on a VGA falls out of it. Asked for at 3, 5, 6 and 8, MS Serif
+has no such cell and Small Fonts does, so Small Fonts answers. At 10 and 11 MS
+Serif has one and is asked first, so MS Serif answers -- which had looked like a
+directory-order tie-break and is not. At 1, 2, 7 and 9 neither face has one, so
+the lookup fails and the ordinary path realises Arial; at nine it comes back as a
+cell of **seven**, that face's next realisable cell down. At twelve and above the
+test at `13f3` never fires.
+
+This is now what the mapper here does: two faces rather than all of them, gated
+on the named face's own charset and pitch. It answers the same 5,057 VGA records
+and 4,957 EGA records as the rule fitted from outside did, with the exceptions
+explained rather than listed. The walk is called more
 than once -- `0x859` passes a running limit and a base penalty taken from
 `[weights+0x68]`, gated on bit 0x2000 of `[0x64a]`, where `2c0a` passes an
 infinite limit and no base -- and a later pass has to beat the running best

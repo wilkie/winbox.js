@@ -242,6 +242,22 @@ export class FontManager {
     'Small Fonts',
   ];
 
+  /* The two faces a small request may be answered from, and nothing else.
+   *
+   * **Read out of `GDI.EXE`.** Below twelve pixels the realiser does not score
+   * anything: at `seg3:126a` it looks the request up by atom in exactly two
+   * faces, `[0x384]` and `[0x386]`, and only falls through to the mapper when
+   * neither has a strike of the height asked for. Those two atoms are the
+   * second and third entries of the name table segment 2 holds at `+0x4b4` --
+   * `Terminal`, `Small Fonts`, `MS Serif`, `Symbol`, ... `Helv`, `TmsRmn`,
+   * `Tms Rmn` -- and `Helv` and `Tms Rmn` are the pair already identified as
+   * the substitute atoms at `[0x38e]` and `[0x392]`, which fixes the numbering.
+   * A request whose family is `FF_SWISS` gets only `Small Fonts`; anything else
+   * gets `MS Serif` first and `Small Fonts` after it.
+   */
+  static SMALL_FACES = ['MS Serif', 'Small Fonts'];
+  static SMALL_SWISS = ['Small Fonts'];
+
   /** The size the mapper picks when a request names none, in points. */
   static DEFAULT_POINTS = 12;
 
@@ -427,7 +443,16 @@ export class FontManager {
     return best ? { name: best.name, entries: [best.entry] } : null;
   }
 
-  _strikeAt(height, charset, fixedPitch, only = null, ownName = false, weight = 400, width = 0) {
+  _strikeAt(
+    height,
+    charset,
+    fixedPitch,
+    only = null,
+    ownName = false,
+    weight = 400,
+    width = 0,
+    order = null
+  ) {
     if (height <= 0 || (!ownName && height >= FontManager.OUTLINE_FLOOR)) {
       return null;
     }
@@ -439,7 +464,7 @@ export class FontManager {
      * the outline. An ANSI strike is no answer to a request for symbols, which
      * is the same reason an OEM strike is no answer to a request for ANSI.
      */
-    for (const name of only ? [only] : FontManager.INSTALLED_ORDER) {
+    for (const name of only ? [only] : (order ?? FontManager.INSTALLED_ORDER)) {
       const entries = this.lookup(name);
 
       if (!entries) {
@@ -663,6 +688,26 @@ export class FontManager {
       /* Zero is `lfWeight`'s "no preference", not a weight of nothing. */
       const wanted = request.weight || 400;
 
+      /* Whether a small request may be answered from a strike at all.
+       *
+       * **Read out of `GDI.EXE`.** The test at `seg3:13f3` is `cmp ax,0xb`:
+       * eleven pixels or fewer -- or a negative height of ten or fewer -- and
+       * the realiser does not consult the scalable walk at all. But it only
+       * gets that far when the two bytes `11d9` and `11df` left behind are
+       * right: those are the `dfPitchAndFamily` and `dfCharSet` of the TrueType
+       * face the name was found in, and `13db` requires the charset to be
+       * nought and `13e1` requires bit 0 of the pitch -- an ANSI face of
+       * variable pitch.
+       *
+       * That is the whole of why `OUTLINE_FLOOR` has exceptions. Courier New is
+       * fixed pitch, so eight pixel Courier New is Courier New and not Small
+       * Fonts; Symbol and Wingdings are charset two, so eight pixel Symbol is
+       * Symbol, seven rows of it. Both were **recorded** as exceptions before
+       * this was read, and this is the rule they are exceptions to.
+       */
+      const stub = outline.font.resource;
+      const small = !stub || (stub.charSet === 0 && (stub.pitchAndFamily & 1) === 1);
+
       /* A face's own strike is tried first and on its own terms -- it is not a
        * fallback, so `OUTLINE_FLOOR` does not apply to it -- and where it has
        * none at the height asked for, the ordinary search runs as it always
@@ -681,7 +726,7 @@ export class FontManager {
               request.width || 0
             )
           : null) ??
-        (request.width
+        (request.width || (!symbolic && !small)
           ? null
           : this._strikeAt(
               request.height ?? 0,
@@ -689,7 +734,11 @@ export class FontManager {
               outline.font.fixedPitch,
               symbolic ? (own ?? outline.name) : null,
               symbolic && Boolean(own),
-              wanted
+              wanted,
+              0,
+              (pitchAndFamily & 0xf0) === FontManager.FF_SWISS
+                ? FontManager.SMALL_FACES.slice(1)
+                : FontManager.SMALL_FACES
             ));
 
       if (strike) {
