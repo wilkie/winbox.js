@@ -763,45 +763,48 @@ for the last two of those, is gone -- the competition answers them and more.
 face the mapper settles on now agrees on all 996 requests of both. What is left
 is 39 records in two shapes:
 
-- **Symbol asked for in the ANSI set in bold or in italic**, 30 records at
-  fifteen, sixteen and twenty pixels. Every path that answers by name wants the
-  weight and the slant equal to the request's -- `0f58` and `0f6a` in the exact
-  match, `11ac` and `11c0` in the TrueType walk -- and Symbol has no bold file
-  and no italic one, so bold and italic cannot be answered by name at all and
-  must be falling to the competition. Which is consistent: on a VGA the strike
-  and the outline tie and the raster pass keeps the strike, and on an EGA the
-  strike pays 210 for being off square and the outline takes it, and that is
-  exactly what the two recordings say.
+### `CreateFontIndirect` rewrites five names before anything sees them
 
-  Routing them there was tried and **refused**: it takes the whole of Symbol
-  down with it, because the competition charges every Symbol candidate 65,000
-  for a charset that is not the ANSI one asked for, and Windows answers a
-  request for Symbol in the ANSI set with Symbol at every size and style. The
-  VGA sweep goes 5,057 to 4,893 and the EGA's 5,027 to 4,903.
+The thing that excused the charset term is not in the mapper at all. It is at
+`seg3:0042`, in the routine that builds the font object: it takes an atom for the
+face name and compares it against five of the well-known ones.
 
-  So the question is narrower than it looks, and it is not about bold at all:
-  **what excuses the charset term for a request that names Symbol?** Not simply
-  that the name matched -- Terminal and Wingdings are named too, are charset 255
-  and 2 against an ANSI request, and are *not* excused. What separates Symbol
-  from those two in the recording is that Symbol has raster strikes installed
-  under its own name and Wingdings has none, which is the rule the mapper here
-  already carries; where GDI reads it is not found yet, and it is not in `17b4`,
-  whose charset term at `18d2` is unconditional, nor in the four searches of
-  `0e95`, which all require the charset to match outright.
-**MS Serif asked for twenty-nine pixels** was the other, and it is closed. The
-term that settles it is the last one the routine has, at `1e49`: `times` and
-`across` are each compared against one and `w[0x34]`, a flat 50, is added when
-either is over it. It had been read as a vector term and is not. Its twenty-six
-row strike is drawn once and pays 680; its nine row strike three times over pays
-630 without this and 680 and a hundredth with it, and Windows answers 26. The
-sweep goes to 5,027 of 5,057 and the VGA does not move. The walk is called more
-than once -- `0x859` passes a running limit and a base penalty taken from
-`[weights+0x68]`, gated on bit 0x2000 of `[0x64a]`, where `2c0a` passes an
-infinite limit and no base -- and a later pass has to beat the running best
-*strictly* to displace it. Which pass sees the raster entries and which the
-scalable ones, and what that base is worth, is what the three shapes above turn
-on; Symbol answering its own strike plainly and the outline in bold at the same
-size is the sharpest case it has to explain.
+```
+if name is Symbol, ZapfDingbats or Zapf Dingbats: lfCharSet = SYMBOL_CHARSET
+if name is Tms Rmn:                               lfCharSet = ANSI_CHARSET
+if name is Helv:  lfPitchAndFamily = (lfPitchAndFamily & ~3) | VARIABLE_PITCH
+```
+
+So a program that asks for Symbol in the ANSI character set has not made an ANSI
+request by the time anything looks at it -- `lfCharSet` is two, every Symbol
+candidate pays nothing for its character set, and everything else pays 65,000.
+The mapper needs no exception for Symbol because the request no longer contains
+one. That is why Terminal and Wingdings, which are named the same way and are
+not on the list, are *not* excused.
+
+With that in, the last class comes apart the way the reading said it would.
+Every path that answers by name wants the weight and the slant equal to the
+request's -- `0f58` and `0f6a` in the exact match, `11ac` and `11c0` in the
+TrueType walk -- and Symbol has no bold file and no italic one, so bold and
+italic Symbol cannot be answered by name and fall to the competition. There the
+strike and the outline both pay nothing for the character set, and the display
+decides: on a VGA they tie and the raster pass keeps the strike, and on an EGA
+the strike pays 210 for being off square and the outline takes it. Both
+recordings say exactly that.
+
+Three pieces of plumbing went with it. A face's own strike now answers only in
+the weight class *and* the slant asked for, with no relaxation where the family
+has neither -- that relaxation was standing in for the competition. The
+competition reports whether the file it settled on is really the style asked for,
+so a slant it could not find a file for is still synthesised and still overhangs.
+And it is reached only from a family that has strikes of its own name to fail
+with; a name nothing is installed under still goes to Times New Roman outright.
+
+**The EGA sweep is 5,050 of 5,057 and the VGA's is exact.** The face, the height,
+the widths and the style agree on all 996 requests of both. The seven left are
+Symbol in italic and only the extent of the specimen, each between one and five
+pixels out over ten characters -- how far the last character of a synthesised
+slant overhangs, which belongs with the rest of the slant work rather than here.
 
 ### Symbol, the face installed twice
 

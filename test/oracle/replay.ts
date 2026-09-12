@@ -1649,10 +1649,9 @@ export const KNOWN_GAPS: Record<string, string> = {
    *     which the competition scores 65,000 for it; nothing read so far explains
    *     how it wins. The plain answers are right, so this is narrow.
    */
-  'font-ega:CreateFont heights': 'the EGA mapper, 5 of 996: Symbol in bold or italic',
-  'font-ega:CreateFont widths': 'the EGA mapper, 7 of 996: Symbol in bold or italic',
-  'font-ega:CreateFont extent': 'the EGA mapper, 11 of 996: Symbol in bold or italic',
-  'font-ega:CreateFont style': 'the EGA mapper, 7 of 996: Symbol in bold or italic',
+
+  'font-ega:CreateFont extent':
+    'the EGA mapper, 7 of 996: how far a synthesised slant on Symbol overhangs',
 
   'glyphs-ega:glyph':
     'the glyph sweep on an EGA, 570 cells of 6,046: what the scan converter does under an anisotropic transform, narrowed one instruction at a time',

@@ -545,7 +545,7 @@ export class FontManager {
         const heavy = weight > FontManager.BOLD_FILE;
         const classed = (entry) => (entry.header.dfWeight || 400) > FontManager.BOLD_FILE === heavy;
 
-        const light = ownName && entries.some(classed) ? matching.filter(classed) : matching;
+        const light = ownName ? matching.filter(classed) : matching;
 
         if (light.length === 0) {
           continue;
@@ -746,7 +746,15 @@ export class FontManager {
           ...chosen,
           outline: outline.font,
           face: outline.name,
-          exactStyle: true,
+
+          /* Whether the file that won is the style that was asked for, which is
+           * what decides whether a slant or a smear has to be made. The
+           * competition can settle on a regular file for an italic request --
+           * Symbol has no italic one -- and then the slant is synthesised the
+           * same as anywhere else. */
+          exactStyle:
+            !!outline.font.italicFace === !!request.italic &&
+            !!outline.font.boldFace === (request.weight ?? 0) > FontManager.BOLD_FILE,
           faceBold: outline.font.boldFace,
           outlineFamily: true,
         };
@@ -965,8 +973,14 @@ export class FontManager {
        * did. Restricting the search to the face's own name instead of trying it
        * first is what made Arial at eight pixels stop being `MS Serif`.
        */
+      /* And a slant the family has no file for is not a strike's to answer
+       * either, for the same reason the weight is not: `0f58` and `11ac` both
+       * want `lfItalic` equal to the candidate's. */
+      const slanted =
+        !wantsItalic || (this.lookup(own) ?? []).some((entry) => entry.header.dfItalic);
+
       const strike =
-        (own && !symbolic
+        (own && !symbolic && slanted
           ? this._strikeAt(
               request.height ?? 0,
               charset,
@@ -977,7 +991,7 @@ export class FontManager {
               request.width || 0
             )
           : null) ??
-        (request.width || (!symbolic && !small)
+        (request.width || (symbolic ? !slanted : !small)
           ? null
           : this._strikeAt(
               request.height ?? 0,
@@ -1023,6 +1037,26 @@ export class FontManager {
            */
           outlineFamily: strike.name !== outline.name,
         };
+      }
+
+      /* Nothing of the name answered, so nothing answered by name at all, and
+       * the competition runs. Every search in `seg3:0e95` wants the weight and
+       * the slant equal to the request's, so a style the family has no file for
+       * cannot be answered by name however many strikes it has: Symbol in bold
+       * is not its own strike smeared. What it *is* depends on the display, and
+       * the competition is what says so -- on a VGA its strike and its outline
+       * tie and the raster pass keeps the strike, and on an EGA the strike pays
+       * 210 for being off square and the outline takes it. **Recorded**, thirty
+       * records of the EGA sweep and thirteen glyph cells of the VGA's.
+       */
+      /* Only where the outline is the face that was asked for. A name nothing
+       * is installed under is answered by Times New Roman outright and never
+       * reaches the competition; see `FALLBACK_OUTLINE`.
+       */
+      const competed = named && own ? this._compete(request) : null;
+
+      if (competed) {
+        return competed;
       }
 
       const chosen = FontManager.realiseOutline(outline.font, request);

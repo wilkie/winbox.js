@@ -42,6 +42,34 @@ export function CreateFontIndirect(lplf) {
     return NULL;
   }
 
+  /* Five names `CreateFontIndirect` rewrites the request for, before the font
+   * object is even stored.
+   *
+   * **Read out of `GDI.EXE`** at `seg3:0042`: it takes an atom for the face
+   * name and compares it against five of the well-known ones. `Symbol`,
+   * `ZapfDingbats` and `Zapf Dingbats` force `lfCharSet` to `SYMBOL_CHARSET`;
+   * `Tms Rmn` forces it to `ANSI_CHARSET`; and `Helv` replaces the pitch bits
+   * of `lfPitchAndFamily` with `VARIABLE_PITCH`, leaving the family alone.
+   *
+   * The first of those is what makes a request for Symbol in the ANSI set come
+   * back as Symbol. It is not an exception in the mapper -- by the time the
+   * mapper sees the request it is a symbol request, and every Symbol candidate
+   * pays nothing for its character set where everything else pays 65,000. See
+   * `FontManager._named`.
+   */
+  const named = String(lplf.lfFaceName ?? '').toLowerCase();
+
+  let charset = lplf.lfCharSet ?? 0;
+  let pitchAndFamily = lplf.lfPitchAndFamily ?? 0;
+
+  if (named === 'symbol' || named === 'zapfdingbats' || named === 'zapf dingbats') {
+    charset = 2;
+  } else if (named === 'tms rmn') {
+    charset = 0;
+  } else if (named === 'helv') {
+    pitchAndFamily = (pitchAndFamily & ~3) | 2;
+  }
+
   const request = {
     face: lplf.lfFaceName ?? '',
     height: lplf.lfHeight ?? 0,
@@ -50,8 +78,8 @@ export function CreateFontIndirect(lplf) {
     italic: !!lplf.lfItalic,
     underline: !!lplf.lfUnderline,
     strikeout: !!lplf.lfStrikeOut,
-    charset: lplf.lfCharSet ?? 0,
-    pitchAndFamily: lplf.lfPitchAndFamily ?? 0,
+    charset,
+    pitchAndFamily,
 
     /* Proof quality refuses a stretched strike outright; see
      * `FontManager.choose`.
