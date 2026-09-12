@@ -1628,14 +1628,17 @@ export const KNOWN_GAPS: Record<string, string> = {
    *
    * What is left is 372, and all of it is one thing.
    *
-   * It is the scan converter, and those two rows are the shape of it: not a
-   * size or a placement but what it does with a run under a transform that is
-   * not square. Arial 93, Times New Roman 100, Courier New 44 and Symbol 135,
-   * clustered at twelve, sixteen and twenty-four pixels -- 277 of the 372 are
-   * at one of those three.
+   * What is left is 295, and the synthesised slant is no longer any of it: a
+   * lean is a whole number of *horizontal* pixels over one em of rise, and
+   * carrying it and the side bearing across at the horizontal size took Symbol
+   * from 135 cells to 58. See `Surface.leanOf`.
    *
-   * The six that were `ANSI_VAR_FONT` are closed: a stock font is a face at a
-   * cell height in pixels and not at a point size. See `stock-fonts.ts`.
+   * The 237 that remain in Arial, Times New Roman and Courier New are all
+   * `italic=1`, and none of them is a synthesis: those three ship an italic
+   * file, so what is being drawn is an ordinary hinted outline out of that
+   * file. They are the anisotropic run itself, and they cluster at twelve,
+   * sixteen and twenty-four pixels. The other 58 are Symbol, 45 slanted and 13
+   * upright.
    */
   /* The `font` sweep on an EGA is closed, and so is the VGA's.
    *
@@ -1645,7 +1648,7 @@ export const KNOWN_GAPS: Record<string, string> = {
    * counts on the way.
    */
   'glyphs-ega:glyph':
-    'the glyph sweep on an EGA, 372 cells of 6,046: what the scan converter does under an anisotropic transform, narrowed one instruction at a time',
+    'the glyph sweep on an EGA, 295 cells of 6,046: what the hint program does under an anisotropic transform, narrowed one instruction at a time',
 };
 
 /**

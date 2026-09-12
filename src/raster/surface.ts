@@ -498,7 +498,16 @@ export class Surface {
        * Only a half rounded down fits both. It is the one tie in the corpus,
        * and it is written down as that.
        */
-      const shift = Math.ceil((outline.bearingShift(glyph) * ppem * 64) / outline.unitsPerEm - 0.5);
+      /* At the *horizontal* size, because a bearing is a distance across the
+       * page. The two are the same number wherever the pixel is square, which
+       * is where this was read; on an EGA Arial at sixteen pixels runs at
+       * thirteen up and seventeen across, and carrying its slanted glyphs by
+       * thirteen leaves every one of them a column to the left of where Windows
+       * draws it.
+       */
+      const shift = Math.ceil(
+        (outline.bearingShift(glyph) * ppem * stretch * 64) / outline.unitsPerEm - 0.5
+      );
 
       /* An upright glyph that has no program of its own comes back from
        * `hintedOutline` exactly as stored, and so has not been carried across
@@ -597,7 +606,9 @@ export class Surface {
          * across, and slanting leans it over by an amount proportional to how
          * far above the baseline each point sits.
          */
-        const slanted = italic ? this.slant(contours, fitted.scaled ? 1 : scale, ppem) : contours;
+        const slanted = italic
+          ? this.slant(contours, fitted.scaled ? 1 : scale, ppem, ppem * stretch)
+          : contours;
 
         const inked = fill(slanted, {
           // Hinting hands back pixels; an unhinted outline is still in units.
@@ -631,7 +642,7 @@ export class Surface {
           /* And the box is built from the sheared corners of the glyph's
            * bounding box rather than from the outline's own extent; see
            * `leanOf` and the note in `glyph-raster`. */
-          lean: italic ? Surface.leanOf(ppem) : 0,
+          lean: italic ? Surface.leanOf(ppem, ppem * stretch) : 0,
         });
 
         const box = (inked as any).box ?? { left: 0, right: this.width };
@@ -730,8 +741,8 @@ export class Surface {
    * sits, so the baseline itself stays put and the top of the letter travels
    * furthest. The proportion is the same one the bitmap faces lean by.
    */
-  slant(contours, scale, ppem) {
-    const lean = Surface.leanOf(ppem);
+  slant(contours, scale, ppem, across = ppem) {
+    const lean = Surface.leanOf(ppem, across);
 
     /* Each point is sheared in sixty-fourths, with the two roundings apart.
      *
@@ -802,8 +813,8 @@ export class Surface {
    * bottom of the cell, which is a different mechanism with a different number.
    * See `BitmapFont.SLANT` and `FONTS.md` section 3.
    */
-  static leanOf(ppem) {
-    return Math.floor(ppem / 3) / ppem;
+  static leanOf(ppem, across = ppem) {
+    return Math.floor(across / 3) / ppem;
   }
 
   /**
