@@ -436,17 +436,52 @@ term is the one at `1c82` taken against a candidate of nought:
 
     penalty += 150 * lfHeight
 
-**That last does not map, and the EGA sweep is where it shows.** Asked for
-nothing at all at sixteen pixels, a scalable candidate would cost `150 * 16`,
-2,400, before the face term; MS Sans Serif's nearest strike on an EGA is fifteen
-rows and costs 150 and an aspect term, and on a VGA its sixteen row strike costs
-nothing at all. So this arrangement predicts the strike on both displays, and
-Windows answers Arial on the EGA and MS Sans Serif on the VGA. Either the raster
-pass scores its height on a different scale from this one -- the prose at `17b4`
-describes a term this pseudocode does not, `MulDiv(cell, wanted em, own em)`
-charged two a pixel one way and one the other -- or the candidate height for a
-scalable face is filled in somewhere the walk has not been read yet. **Open.**
-Recording it here rather than fitting a constant to the difference.
+That reading of the height term predicted the wrong answer, and chasing why
+found the piece that had been missing all along. **A scalable candidate pays no
+height, width, aspect or multiple penalty at all.** The test is at `1ba6`:
+
+```
+al = dfType & 3
+if al == 3: goto 1e9e          # past every term above
+```
+
+and `1e9e` is four instructions:
+
+```
+if -2 <= lfHeight <= 2:
+    penalty += 150 + 600       # w[0x2c] + w[0x20], the taller pair
+    candidate height = -2
+```
+
+which is why Arial asked for one pixel answers two. Everything else -- the
+stretch, the height distance, the width, the off-square term, the two multiples
+against each other -- is skipped. So an outline is scored on its **name,
+character set, pitch and style only**, and is free on size at every size.
+
+That settles the shape of the remaining hundred. On a VGA every raster strike's
+own shape is `MulDiv(100, 96, 96)` and the device's is `MulDiv(100, 36, 36)`, so
+a strike at exactly the height asked for pays nothing and ties the outline,
+and the tie goes to the earlier entry in the directory. On an EGA the two are
+133 and 126, and the term at `1d34` charges 30 a hundredth of the difference:
+**every raster candidate on an EGA pays 210 before anything else**. Nothing is
+free there, so wherever the name does not decide it the outline wins -- which is
+exactly what the sweep says, and exactly what we get wrong.
+
+One more weight falls out of the same read. **A character set mismatch costs
+65,000**, the first and largest entry in the table: `18d2` compares the
+candidate's `dfCharSet` against `lfCharSet` and adds `w[0]` when they differ.
+That dwarfs the 10,000 a wrong name costs, and it is why Symbol asked for in the
+ANSI set at sixteen pixels on an EGA answers with the sixteen row strike whose
+`dfCharSet` is nought rather than with the Symbol outline, whose is two.
+
+What is still **open** is the arrangement of the passes. The walk is called more
+than once -- `0x859` passes a running limit and a base penalty taken from
+`[weights+0x68]`, gated on bit 0x2000 of `[0x64a]`, where `2c0a` passes an
+infinite limit and no base -- and a later pass has to beat the running best
+*strictly* to displace it. Which pass sees the raster entries and which the
+scalable ones, and what that base is worth, is what the three shapes above turn
+on; Symbol answering its own strike plainly and the outline in bold at the same
+size is the sharpest case it has to explain.
 
 ### Symbol, the face installed twice
 
