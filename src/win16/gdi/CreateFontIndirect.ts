@@ -58,11 +58,20 @@ export function CreateFontIndirect(lplf) {
      */
     quality: lplf.lfQuality ?? 0,
 
-    /* The device's own aspect, because an outline is realised wider than it is
-     * tall wherever the pixel is not square. See `FontManager.map`.
+    /* The device's logical resolution, because an outline is realised wider
+     * than it is tall wherever the pixel is not square. See `FontManager.map`.
      */
-    aspectX: this.display?.logicalPixelsX ?? 0,
-    aspectY: this.display?.logicalPixelsY ?? 0,
+    logPixelsX: this.display?.logicalPixelsX ?? 0,
+    logPixelsY: this.display?.logicalPixelsY ?? 0,
+
+    /* And the shape of a pixel, which is a different number read from a
+     * different place: `GDIINFO.dpAspectX` and `dpAspectY`, which
+     * `GetDeviceCaps` answers `ASPECTX` and `ASPECTY` from. The strike
+     * chooser's off-square term is the only thing that wants it, and it wants
+     * it rather than the resolution; see `FontManager.choose`.
+     */
+    aspectX: this.display?.aspectX ?? 0,
+    aspectY: this.display?.aspectY ?? 0,
   };
 
   const found = this.fonts.map(request);

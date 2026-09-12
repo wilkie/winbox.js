@@ -173,6 +173,9 @@ export class FontManager {
   static STRETCH_PENALTY = 20 * 1024;
   static HEIGHT_PENALTY = 150 * 1024;
   static TALLER_PENALTY = 600 * 1024;
+
+  /** Above this weight the family's bold file is opened rather than smeared. */
+  static BOLD_FILE = 600;
   static ASPECT_PENALTY = 30 * 1024;
   static RATIO_PENALTY = 4 * 1024;
 
@@ -459,14 +462,38 @@ export class FontManager {
       );
 
       if (matching.length > 0) {
-        /* Nearest weight, the same rule `_exactStrike` was measured on. It
-         * matters only where a face carries two strikes of one cell, which on a
-         * VGA nothing does: an EGA installs `ARIALB.FON` and `TIMESB.FON`, whose
-         * ten point strikes come in four hundred and seven hundred, and without
-         * this a plain request takes whichever the file lists first. */
-        const light = ownName
-          ? matching.filter((entry) => (entry.header.dfWeight || 400) <= weight)
-          : matching;
+        /* A face's own strike answers only in the weight class it was asked
+         * in, and the two classes are the same two the outline files are
+         * chosen by: over six hundred is bold and anything else is not.
+         *
+         * An EGA installs `ARIALB.FON` and `TIMESB.FON`, and each holds four
+         * strikes -- eleven and thirteen rows at four hundred, twelve and
+         * fourteen at seven hundred. Windows answers a request for eleven
+         * pixels of Arial with the eleven row strike when it asks for four
+         * hundred and with the *outline* when it asks for seven, and answers
+         * twelve pixels the other way about: the outline at four hundred and
+         * the twelve row strike at seven. So the strike is not a nearest-weight
+         * match that may be emboldened, it is an exact answer to the class or
+         * no answer at all. **Recorded**, eight rows of the EGA sweep at four
+         * heights and two weights each.
+         *
+         * This had been read as nearest weight not over the one asked for,
+         * which gets the four hundred requests right and hands every seven
+         * hundred one a four hundred strike to smear.
+         *
+         * It holds only where the family has the class to offer. `SYMBOLE.FON`
+         * carries nothing but four hundred, and Symbol asked for bold at
+         * sixteen pixels on a VGA is still its own sixteen row strike with a
+         * smear rather than the outline -- the same answer the plain request
+         * gets, one pixel wider. So the class decides between strikes the
+         * family *has*, and a family that has none of the class asked for
+         * answers with what it has. **Recorded** both ways: 13 glyph cells and
+         * the whole `styles` sweep turn on it.
+         */
+        const heavy = weight > FontManager.BOLD_FILE;
+        const classed = (entry) => (entry.header.dfWeight || 400) > FontManager.BOLD_FILE === heavy;
+
+        const light = ownName && entries.some(classed) ? matching.filter(classed) : matching;
 
         if (light.length === 0) {
           continue;
@@ -560,7 +587,7 @@ export class FontManager {
      * switches at 600 and the smear at 550, and a request between them gets
      * the regular outline smeared rather than the bold one drawn.
      */
-    const wantsBold = (request.weight ?? 0) > 600;
+    const wantsBold = (request.weight ?? 0) > FontManager.BOLD_FILE;
     const wantsItalic = !!request.italic;
 
     const named = this.outline(face, wantsBold, wantsItalic);
@@ -684,8 +711,17 @@ export class FontManager {
            * strike is not a fallback from anywhere, so a slant synthesised onto
            * it reports `tmItalic` as 1 the way any strike's does, not the 255
            * an outline family answers with.
+           *
+           * It is the strike that answered that decides it, not whether the
+           * family has one somewhere. An EGA installs `ARIALB.FON`, so Arial
+           * has strikes of its own at eleven and thirteen rows; asked for at
+           * eight it still falls to `MS Serif`, and that is a fallback and
+           * answers 255. Reading it as "the family has a strike" instead makes
+           * every small Arial and Times New Roman on an EGA answer 1, and takes
+           * the emboldening floor off them as well -- `emboldens` reads the
+           * same flag. **Recorded**, eighteen records of the EGA sweep.
            */
-          outlineFamily: !own,
+          outlineFamily: strike.name !== outline.name,
         };
       }
 
@@ -864,7 +900,13 @@ export class FontManager {
      * A symbol outline is out for a request that did not ask for symbols, the
      * same way it is everywhere else here.
      */
-    if (found && chosen.cost > FontManager.FACE_PENALTY) {
+    /* A family with no candidate at all costs more than any name does, so it
+     * loses to an outline the same way a family whose best strike is too
+     * expensive does. See `choose`, which answers nothing rather than its
+     * smallest when every strike it has was refused for being stretched too
+     * far.
+     */
+    if (!chosen || (found && chosen.cost > FontManager.FACE_PENALTY)) {
       const symbols = charset === FontManager.SYMBOL_CHARSET;
       for (const installed of Object.keys(this._outlines)) {
         const other = this.outline(installed, wantsBold, wantsItalic);
@@ -883,6 +925,10 @@ export class FontManager {
         }
         break;
       }
+    }
+
+    if (!chosen) {
+      return null;
     }
 
     const echo = found && substituted && request.face;
@@ -972,8 +1018,8 @@ export class FontManager {
      * reports across, and the standard VGA driver reports down; a caller that
      * does not name a display gets the square pixel that implies, which is what
      * this did before the aspect was known about at all. */
-    const logX = request.aspectX || 96;
-    const logY = request.aspectY || 96;
+    const logX = request.logPixelsX || 96;
+    const logY = request.logPixelsY || 96;
 
     /* `dfPoints` for all three outline faces is the em, and the stub carries
      * both, so the em stands in for it. */
@@ -1079,9 +1125,16 @@ export class FontManager {
      * and Times New Roman wrong, because nineteen pixels does not fit in
      * eighteen and the size below it does. The strike path already had this
      * right; only this one did not.
+     *
+     * Sixteen is what twelve points comes to at ninety-six dots to the inch,
+     * and it is the device's own vertical resolution that says so: an EGA's is
+     * seventy-two, twelve points is twelve pixels there, and all three outline
+     * faces answer a height of zero with a cell of fifteen. **Recorded** on
+     * both displays.
      */
     if (height <= 0) {
-      const size = height < 0 ? -height : Math.round((FontManager.DEFAULT_POINTS * 96) / 72);
+      const size =
+        height < 0 ? -height : mulDiv(FontManager.DEFAULT_POINTS, request.logPixelsY || 96, 72);
       const extent = font.extentAt(size, ...ratioOf(size));
 
       return extent
@@ -1162,15 +1215,34 @@ export class FontManager {
     const wantsCell = height > 0;
 
     /* What a pixel of this device is shaped like, in hundredths: a hundred
-     * where it is square, and a hundred and thirty-three on an EGA. */
-    const square = FontManager.muldiv(100, request.aspectX || 96, request.aspectY || 96);
+     * where it is square, and a hundred and twenty-six on an EGA.
+     *
+     * **Read out of the binary.** The penalty routine at `seg3:17b4` forms it
+     * at `1d34` as `MulDiv(100, arg, arg)` from two words the mapper's loop at
+     * `2841` passes it, and those two are `[si+0x2a]` and `[si+0x28]` of the
+     * device's `GDIINFO` -- `dpAspectY` and `dpAspectX`, which `GetDeviceCaps`
+     * answers `ASPECTY` and `ASPECTX` from. Not the logical resolution: a VGA
+     * reports 36 and 36 and an EGA 38 and 48, so this is 100 and 126 where the
+     * resolution would say 100 and 133. A square display cannot tell the two
+     * apart, which is why the EGA recording is what settled it.
+     */
+    const square = FontManager.muldiv(100, request.aspectY || 96, request.aspectX || 96);
 
     /* No height named means the mapper's own default, which is twelve points.
      * That is a size rather than a cell, so it is compared the way a negative
      * height is -- against the characters rather than against the cell around
      * them -- and lands on the same strike Windows picks.
+     *
+     * Twelve points is a size on the page and not a count of rows, so how many
+     * rows it comes to is the device's own vertical resolution: sixteen on a
+     * VGA and twelve on an EGA. Asked for nothing at all on an EGA, Windows
+     * answers MS Sans Serif's twelve point strike -- fifteen rows around twelve
+     * characters -- where the VGA's sixteen would have taken the fourteen point
+     * one. **Recorded.**
      */
-    const target = height ? Math.abs(height) : Math.round((FontManager.DEFAULT_POINTS * 96) / 72);
+    const target = height
+      ? Math.abs(height)
+      : FontManager.muldiv(FontManager.DEFAULT_POINTS, request.logPixelsY || 96, 72);
 
     /* Each strike answers for itself how many times over it may be drawn, and
      * then the largest of those that fits is taken.
@@ -1204,21 +1276,31 @@ export class FontManager {
     if (entries[0] && entries[0].isVector) {
       const entry = entries[0];
 
-      /* Zero means the mapper's default, which for a scalable face is eighteen
-       * pixels rather than the twelve points a bitmap face gets. Recorded for
-       * all three plotter fonts, whose designs are different heights.
-       */
-      let cell = height ? Math.abs(height) : 18;
-
       /* A negative height asks for the characters rather than the cell, and
        * the leading is a fixed fraction of the design, so the cell it implies
        * follows from it.
+       *
+       * Zero asks for the mapper's default, and that is the same twelve points
+       * a bitmap face gets rather than a size of its own. It had been read as a
+       * flat eighteen pixels, which is what twelve points comes to on a VGA
+       * once the design's own leading is put back: twelve points is sixteen
+       * pixels at ninety-six dots to the inch, and sixteen characters inside
+       * Roman's twenty-eight row design make an eighteen row cell. On an EGA,
+       * where the vertical resolution is seventy-two, twelve points is twelve
+       * pixels and the cell is fourteen -- which is what Windows answers.
+       * **Recorded**, for all three plotter fonts on both displays.
        */
-      if (height < 0) {
-        const design = entry.header.dfPixHeight;
-        const em = design - entry.header.dfInternalLeading;
+      const design = entry.header.dfPixHeight;
+      const em = design - entry.header.dfInternalLeading;
 
-        cell = Math.round((-height * design) / em);
+      let cell = Math.abs(height);
+
+      if (height <= 0) {
+        const characters = height
+          ? -height
+          : FontManager.muldiv(FontManager.DEFAULT_POINTS, request.logPixelsY || 96, 72);
+
+        cell = Math.round((characters * design) / em);
       }
 
       /* Widths do not scale with the height, and the reason is a rounding that
@@ -1245,8 +1327,8 @@ export class FontManager {
         width > 0
           ? width
           : Math.floor(
-              (entry.header.dfAvgWidth * cell * entry.header.dfVertRes * (request.aspectX || 96)) /
-                (entry.header.dfPixHeight * entry.header.dfHorizRes * (request.aspectY || 96))
+              (entry.header.dfAvgWidth * cell * entry.header.dfVertRes * (request.aspectY || 96)) /
+                (entry.header.dfPixHeight * entry.header.dfHorizRes * (request.aspectX || 96))
             );
 
       return {
@@ -1379,6 +1461,26 @@ export class FontManager {
      * pixel of MS Sans Serif gives its eight point strike.
      */
     best = best ?? smallest;
+
+    /* And a family every one of whose strikes was refused answers with nothing
+     * at all, which is not the same thing as answering with its smallest.
+     *
+     * The refusal above -- a strike may not be drawn so many times over that
+     * the multiple plus two reaches its own height -- can take every strike a
+     * family has, and then the family is simply not a candidate. On an EGA,
+     * whose strikes are three quarters the height of a VGA's, Fixedsys is a
+     * single ten row strike and Small Fonts tops out at nine, so a request from
+     * seventy-eight pixels upward leaves both with nothing: eight times over is
+     * the most GDI will draw a strike, and ten is where eight plus two reaches.
+     * Windows answers those requests with Arial. **Recorded**, by the `font`
+     * sweep on an EGA -- 41 requests, every one of them Fixedsys or Small Fonts
+     * at a height of seventy-eight or more, and every one of them answered
+     * `Arial`. The same sweep on a VGA has no such request, because there the
+     * same two faces carry thirteen and eleven row strikes.
+     */
+    if (!best) {
+      return null;
+    }
 
     /* Sideways the strike is drawn at most five times over, however many times
      * it is drawn upward.

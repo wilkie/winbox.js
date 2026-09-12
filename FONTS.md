@@ -323,6 +323,94 @@ instead. Windows answers a hundred; we still answer with the strike, because we
 resolve the face name before scoring anything and so never put an outline up
 against it. **Open**, and the same penalty comparison decides it.
 
+### What a display that is not square says about all of this
+
+The whole corpus above was recorded on a VGA, whose pixel is square and whose
+two logical resolutions are both ninety-six. An EGA's are ninety-six across and
+seventy-two down, and recording the `font` sweep there for the first time -- the
+same 5,057 requests -- answered five questions the VGA could not put.
+
+**A family every one of whose strikes is refused answers with nothing, not with
+its smallest.** The refusal at `1c17` -- a strike may not be drawn so many times
+over that the multiple plus two reaches its own height -- can take a whole
+family. An EGA's strikes are three quarters of a VGA's, so Fixedsys is a single
+ten row strike there and Small Fonts tops out at nine, and eight times over is
+the most GDI will draw either: from a request of seventy-eight pixels upward
+both families have no candidate at all and Arial answers. **Recorded**, 41
+requests, every one of them those two faces at seventy-eight or more, every one
+of them `Arial`. A VGA has no such request, because there the same two faces
+carry thirteen and eleven row strikes.
+
+**The off-square penalty's device shape is `dpAspectY` over `dpAspectX`, not the
+logical resolution.** The penalty routine forms it at `1d34` as `MulDiv(100,
+arg, arg)` from two words the loop at `2841` passes, and those two are
+`[si+0x2a]` and `[si+0x28]` of the device's `GDIINFO` -- the words
+`GetDeviceCaps` answers `ASPECTY` and `ASPECTX` from. A VGA reports 36 and 36
+and an EGA 48 and 38, so the term is 100 and **126**, where the resolution would
+have said 100 and 133 and the raw aspect the other way round 79. A square
+display cannot tell the three apart. Measured against the EGA sweep: 126 is
+right where 133 and 79 are not, and neither alternative is a small difference --
+79 costs 46 records outright.
+
+**Twelve points is a count of rows only once the device says how many.** The
+mapper's default height is twelve points, which is sixteen pixels at
+ninety-six dots to the inch and twelve at seventy-two. All three paths had the
+sixteen written into them as a constant: the strike chooser's target, the
+plotter faces' default cell -- read as a flat eighteen pixels, which is what
+sixteen characters of Roman come out at once its own leading is put back -- and
+the outline realiser's default size. On an EGA the three answers are a fifteen
+row strike of MS Sans Serif, a fourteen row cell of Roman, and a fifteen row
+cell of Arial, Times New Roman and Courier New alike. **Recorded** on both
+displays; 107 records of the EGA sweep turn on it, and the plotter faces'
+average widths come out exact -- Roman's is half the cell at every size from
+forty pixels to a hundred and sixty.
+
+**The plotter faces' average width carries `dpAspectY` over `dpAspectX` too**,
+and not the logical resolution. Roman's floor is
+
+    average = floor(dfAvgWidth * cell * dfVertRes * dpAspectY
+                    / (dfPixHeight * dfHorizRes * dpAspectX))
+
+which is `floor(19 * cell * 2 * 48 / (32 * 3 * 38))` on an EGA -- exactly
+`cell / 2`, at every one of the seven sizes recorded, where the resolution's
+four thirds gives one or two too many at all of them.
+
+**Which family a fallback strike answers for is decided by the strike, not by
+whether the family has one.** `tmItalic` and the emboldening floor both read
+that flag; see `Synthesised styles`. An EGA installs `ARIALB.FON` and
+`TIMESB.FON`, so Arial has strikes of its own at eleven and thirteen rows --
+and asked for at eight pixels it still falls to `MS Serif`, which is a fallback
+and answers 255. Reading the flag as "the family has a strike somewhere" makes
+every small Arial and Times New Roman on an EGA answer 1 and takes the floor off
+them as well. 18 records.
+
+**A face's own strike answers only in the weight class asked for, where the
+family has that class.** `ARIALB.FON` holds four strikes: eleven and thirteen
+rows at four hundred, twelve and fourteen at seven hundred. Arial asked for at
+eleven pixels answers with the eleven row strike in four hundred and with the
+_outline_ in seven; at twelve it answers the other way about, the outline in
+four hundred and the twelve row strike in seven. So the strike is an exact
+answer to the class or no answer at all -- not a nearest-weight match to be
+smeared. It holds only where the family has the class to offer: `SYMBOLE.FON`
+carries nothing but four hundred, and Symbol asked for bold at sixteen pixels on
+a VGA is still its own sixteen row strike with a smear. **Recorded** both ways,
+eight rows of the EGA sweep and thirteen glyph cells of the VGA's.
+
+With all five the EGA sweep is 4,957 of 5,057 and the VGA's stays at 5,057 of
+5,057. The hundred that are left are one question in three shapes, and it is the
+same question the four proof-quality exceptions above are: we resolve the face
+name before scoring anything, so an outline is never put up against a strike.
+Asked for nothing at all at sixteen pixels an EGA answers Arial, Courier New or
+Times New Roman by family and Wingdings for the symbol set, where a VGA answers
+the bitmap family every time -- because there every bitmap family has a strike of
+exactly sixteen rows and on an EGA most do not. Symbol at fifteen, sixteen and
+twenty pixels answers its own strike plainly and the outline in bold or in
+italic. And MS Serif asked for twenty-nine answers its twenty-six row strike
+where the penalty table above scores nine rows three times over lower. **Open**,
+and one change closes all three: score every candidate in the font directory at
+once, outlines included, with 10,000 for a name that does not match and nothing
+at all when no name was asked for.
+
 ### Symbol, the face installed twice
 
 Symbol is the only name carried by both a `.FON` and a `.TTF`, and it had been

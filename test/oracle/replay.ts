@@ -1630,6 +1630,52 @@ export const KNOWN_GAPS: Record<string, string> = {
    * a placement but what the scan converter does with a run under a transform
    * that is not square.
    */
+  /* The `font` sweep on an EGA, 100 records of 5,057, and every one of them the
+   * same question: an outline answers where we answer with a strike.
+   *
+   * Recorded for the first time here. The sweep started at 4,502 and five
+   * things came out of it, all of them in the code and all of them measured
+   * against both displays -- a family whose every strike was refused for being
+   * stretched too far, the off-square penalty's device aspect, twelve points at
+   * the device's own vertical resolution rather than at ninety-six, which
+   * family a fallback strike answers for, and the weight class a face's own
+   * strike answers in. `FONTS.md` has each of them.
+   *
+   * What is left is one class in three shapes:
+   *
+   *   - a face name that did not come from the request. Asked for nothing at
+   *     sixteen pixels an EGA answers Arial, Courier New or Times New Roman by
+   *     family, and Wingdings for the symbol set; a VGA answers the bitmap
+   *     family every time, because there every bitmap family has a strike of
+   *     exactly sixteen rows and on an EGA most do not. 12 faces and the
+   *     records that follow them.
+   *   - a style that had to be synthesised. Symbol at fifteen, sixteen and
+   *     twenty pixels on an EGA answers its own strike plainly and the outline
+   *     in bold or in italic; on a VGA the strike answers all three.
+   *   - one strike against another: MS Serif asked for twenty-nine answers its
+   *     twenty-six row strike and we answer with nine rows three times over,
+   *     which the penalty table scores lower.
+   *
+   * All three are the same missing thing. We resolve the face name first and
+   * put one family's strikes up against one another; GDI scores every candidate
+   * in the font directory at once -- outlines included, with 10,000 for a name
+   * that does not match and nothing at all when no name was asked for -- and
+   * keeps the cheapest. On a square display the two arrangements agree; on an
+   * EGA they part company a hundred times.
+   */
+  'font-ega:CreateFont face':
+    'the EGA mapper, 12 of 996: an outline answers where the face name did not come from the request',
+  'font-ega:CreateFont heights':
+    'the EGA mapper, 20 of 996: the records that follow the twelve faces above',
+  'font-ega:CreateFont widths':
+    'the EGA mapper, 22 of 996: the records that follow the twelve faces above',
+  'font-ega:CreateFont extent':
+    'the EGA mapper, 26 of 996: the records that follow the twelve faces above',
+  'font-ega:CreateFont style':
+    'the EGA mapper, 19 of 996: the records that follow the twelve faces above',
+  'font-ega:CreateFontIndirect':
+    'the EGA mapper, 1 of 5: a request naming nothing at all answers with Arial',
+
   'glyphs-ega:glyph':
     'the glyph sweep on an EGA, 570 cells of 6,046: what the scan converter does under an anisotropic transform, narrowed one instruction at a time',
 };
