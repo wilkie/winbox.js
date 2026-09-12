@@ -904,8 +904,29 @@ outline's diagonal is the design's and the mixture comes out where the font
 expects it. Under a stretch it does not, and every sixty-fourth of unfitted `y`
 arrives in `x` multiplied by the wrong thing.
 
-**Open**, and that is where to look: the projected distance under a diagonal
-projection, with `x` fitted and `y` not, at a size that is not square.
+And the drift does not start in the chain either. Traced with the reference
+points printed, both of the first `MIRP`'s ends have already moved before it
+runs, and the two displays move them opposite ways: stretched, point 5 goes 21
+sixty-fourths left and point 11 twenty right; square, point 5 goes 18 right and
+point 11 eleven left.
+
+Both of those are **roundings**, and they are roundings of `x`. Stretched, point
+5 lands on 416 and point 11 on 704 -- six and a half pixels and eleven exactly;
+square they land on 352 and 512, five and a half and eight. In each case that is
+the unhinted `x` rounded, to a half for one and to a whole for the other.
+
+But the projection in force at that moment is the diagonal, `(16139, -2824)`,
+and a point rounded under a diagonal projection should have its **projected**
+coordinate rounded and then be carried back along the freedom vector -- not its
+`x`. Point 11 unhinted is at 684 in `x` and nothing in `y`, so its projected
+coordinate is 674, which is 10.53 pixels and rounds to 11, and carrying 704 back
+along `(1, 0)` puts `x` at 715 rather than at 704. Eleven sixty-fourths, at the
+first of three steps, in a chain that needs seventy-five.
+
+On a square pixel the scaled outline's diagonal is the design's, the font's own
+control values were written for that angle, and rounding `x` and rounding the
+projection come to nearly the same place. Under a stretch the angle moves and
+they do not. **Open**, and that is the next thing to measure.
 
 ### Symbol, the face installed twice
 
