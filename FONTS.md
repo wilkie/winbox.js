@@ -14835,6 +14835,25 @@ before: every component of every shipped face has a program of its own, so
 nothing in it takes the unhinted path. Two bugs now have been found only by
 drawing shapes that do.
 
+#### And the plotter fonts' width is not a scale any more
+
+The three plotter fonts are 39, 49 and 216 of their 84, 84 and 252 EGA cells,
+and the shape of what is wrong looks like a horizontal scale a little out. It is
+not. Sweeping the width scale as a free parameter over the whole set -- the
+value it computes, and that value at eight ninths, seven ninths, two thirds and
+ten ninths -- the one it already computes is the best of them on all three
+faces, by a wide margin:
+
+    Modern   as is 39   x8/9 28   x7/9 4   x2/3 2   x10/9 8
+    Script   as is 49   x8/9 18   x7/9 3   x2/3 1   x10/9 6
+    Roman    as is 216  x8/9 19   x7/9 3   x2/3 3   x10/9 15
+
+So the aspect correction in the average is right and what is left of the plotter
+fonts is not the scale but what is done with it. Truncating the scaled
+coordinate rather than rounding it was refused earlier by both displays at once
+-- 412 records of the VGA say rounding -- so it is neither of the two obvious
+things, and the stroke walk wants an instrument of its own.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
