@@ -883,12 +883,29 @@ horizontal size and reduced by `cvtScale`, which for this projection is 0.9938:
 instead changes the total by 4, and letting the cut-in take the outline's own
 distances -- 254, 100 and 118 -- changes it by 7. Neither is 85.
 
-What is left is the move itself: a `MIRP` puts a point at a given distance along
-the **projection** vector by moving it along the **freedom** vector, and here the
-two differ -- freedom is `(1, 0)` and the projection is ten degrees off it. On a
-square pixel the outline's own diagonal and the projection agree, so the
-difference never shows. Under a stretch the scaled outline's diagonal is not the
-design's, and this is where that matters. **Open**, and narrowed to that.
+The move itself is textbook and checks out to the sixty-fourth. The phantom's
+projected distance from point 10 before the instruction is 189; the control
+value says 115; the difference of -74 is carried along the freedom vector
+`(1, 0)` as `-74 * 16384 / 16139`, which is -75, and 896 - 75 is exactly the 821
+that comes out. So neither the arithmetic nor the table is wrong.
+
+**What is wrong is that point 10 is already 82 sixty-fourths left of where it
+should be**, and the phantom is only following it. The chain drifts: against the
+unhinted outline, point 5 ends 6 sixty-fourths left, point 11 forty-four, point
+10 eighty-two. And each step's control value is within a few sixty-fourths of
+that step's original distance -- 256 against 254, 94 against 100, 115 against 118
+-- so each move should be a few sixty-fourths and not forty.
+
+It is forty because the projection is diagonal and a diagonal projection mixes
+in `y`. The three `MIRP`s that walk the stem run **before** the two that fit the
+glyph vertically -- the trace has them in that order -- so at the moment they
+measure, `x` has been fitted and `y` has not. On a square pixel the scaled
+outline's diagonal is the design's and the mixture comes out where the font
+expects it. Under a stretch it does not, and every sixty-fourth of unfitted `y`
+arrives in `x` multiplied by the wrong thing.
+
+**Open**, and that is where to look: the projected distance under a diagonal
+projection, with `x` fitted and `y` not, at a size that is not square.
 
 ### Symbol, the face installed twice
 
