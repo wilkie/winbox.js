@@ -992,9 +992,33 @@ feeding the square vector into the stretched run's first `MIRP` still lands the
 point at 664 rather than the 672 it needs, so whatever the branch changes, it
 changes more than the angle.
 
-**Open**, and narrowed to a branch: which test in Arial Italic's own program goes
-one way at thirteen pixels per em square and the other at thirteen by seventeen,
-and what this interpreter reports that decides it.
+The branch is at `0x58` at address 60223, and its condition is storage 18. Which
+`prep` wrote, and the seven instructions that write it are worth reading in full:
+
+    SVTCA[x]        set both vectors along x
+    PUSHB 18
+    MPPEM           -> 17 stretched, 13 square
+    SVTCA[y]        set both vectors along y
+    MPPEM           -> 13 stretched, 13 square
+    EQ              -> 0 stretched, 1 square
+    WS              storage[18] = that
+
+**Arial asks whether the pixel is square.** It sets the projection along one axis
+and takes `MPPEM`, sets it along the other and takes `MPPEM` again, compares the
+two and remembers the answer; every glyph program in the face then branches on
+it, and the italic ones hint along a different angle when it says no.
+
+That settles `MPPEM` from a second direction and more firmly than the sweep
+counts did. A font can only hint anisotropically at all if `MPPEM` answers
+differently along the two axes -- the question the font is asking has no other
+way of being asked -- so `sizeAlong` is not merely the reading that scores best,
+it is the one that makes the mechanism possible. Windows takes the same branch
+we do; it could not do otherwise.
+
+**Open**, and now inside the branch rather than at it: what the interpreter
+reports that the font's *anisotropic* path reads, which is `SFVTL`, `GFV` and the
+`CALL` between them. That path is only ever taken on a display whose pixel is not
+square, which is why nothing before this recording could have exercised it.
 
 ### Symbol, the face installed twice
 
