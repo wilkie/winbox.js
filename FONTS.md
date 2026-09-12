@@ -474,6 +474,91 @@ That dwarfs the 10,000 a wrong name costs, and it is why Symbol asked for in the
 ANSI set at sixteen pixels on an EGA answers with the sixteen row strike whose
 `dfCharSet` is nought rather than with the Symbol outline, whose is two.
 
+### The whole routine, and what a scorer built from it gets right
+
+Reading the rest of `17b4` gives every term it has. The weights are confirmed
+byte for byte -- segment 48 at `0x39c` holds exactly the twenty-eight words
+`FONTS.md` transcribed, followed by the two unscaled ones, 1 and 10 -- and each
+term names its own offset into the table `0x511` builds from them:
+
+| at     | offset | weight | what it charges                                      |
+| ------ | ------ | ------ | ---------------------------------------------------- |
+| `18d2` | `0x00` | 65,000 | `dfCharSet != lfCharSet`                              |
+| `1a9c` | `0x04` | 19,000 | a vector face under `OUT_STROKE_PRECIS` and its kin   |
+| `19b1` | `0x08` | 15,000 | fixed pitch asked for, variable got                   |
+| `1952` | `0x0c` | 10,000 | the name matched neither atom                         |
+| `1972` | `0x10` | 500    | the name matched the substitute atom                  |
+| `1a37` | `0x14` | 9,000  | a family mismatch                                     |
+| `1a44` | `0x18` | 8,000  | a family mismatch where the candidate has no family   |
+| `1a26` | `0x1c` | 50     | a family mismatch across `FF_MODERN`                  |
+| `1c78` | `0x20` | 600    | flat, for erring on the tall side                     |
+| `19c8` | `0x24` | 350    | variable pitch asked for, fixed got                   |
+| `1c88` | `0x28` | 150    | a pixel of height, too short                          |
+| `1c68` | `0x2c` | 150    | a pixel of height, too tall                           |
+| `1d28` | `0x30` | 50     | a pixel of width, where a width was asked for         |
+| `1e58` | `0x34` | 50     | a vector face drawn at more than its design either way|
+| `1e89` | `0x38` | 4      | a hundredth between the two multiples                 |
+| `1c20` | `0x3c` | 20     | a multiple of the stretch                             |
+| `1de7` | `0x40` | 30     | a hundredth off square                                |
+| `1fa4` | `0x44` | 4      | an italic mismatch                                    |
+| `1f86` | `0x48` | 1      | a slant that had to be synthesised                    |
+| `1f35` | `0x4c` | 3      | ten of weight                                         |
+| `1fe0` | `0x50` | 3      | an underline mismatch                                 |
+| `201c` | `0x54` | 3      | a strikeout mismatch                                  |
+| `19e0` | `0x58` | 1      | no pitch asked for and a fixed one got                |
+| `2052` | `0x5c` | 1      | a synthesised style under an escapement               |
+| `1afb` | `0x60` | 2      | a pixel a vector face is drawn short of its design    |
+| `1b0f` | `0x64` | 1      | a pixel it is drawn over                              |
+| `06fd` | `0x68` | 2      | flat, for any font that is not the device's own       |
+
+Two of those are worth naming on their own. **The weight term is
+`3 * MulDiv(1, |lfWeight - dfWeight|, 10)`**, and before it is taken the
+candidate is adjusted: `1ee8` compares `dfWeight + 150` against `lfWeight` and,
+where the request is heavier than that, treats the candidate as 120 heavier and
+sets bit `0x0100` in the penalty it returns. That bit is what `07dc` reads to
+mark the realisation emboldened and add 300 to the weight it reports -- so the
+threshold measured from outside as "bold is synthesised above 550" is
+`dfWeight + 150` read out of the image, and the 700 that comes back is
+`400 + 300`. **A slant that has to be synthesised costs 1**, against 4 for
+having the wrong one, and sets bit `0x0200` the same way.
+
+And the **default height** is read at `05a0`: `MulDiv(12, dpLogPixelsY, 72)`,
+floored at 8 and negated -- a size rather than a cell, which is the rule the
+plotter and outline faces were measured into above, with a floor nothing on
+either display reaches.
+
+**A scorer built from the table above, with nothing fitted, gets 917 of the
+VGA's 996 face choices and 959 of the EGA's.** It was written as a scratch
+instrument rather than as code we keep, because what it is for is to say what is
+left rather than to answer requests. What is left is three named things and
+nothing else:
+
+- **a symbol face asked for in the ANSI set**, 39 on a VGA and none on an EGA.
+  Symbol asked for at sixteen pixels with `ANSI_CHARSET` answers Symbol, whose
+  `dfCharSet` is two; the charset term above says that costs 65,000 and MS Sans
+  Serif's exact sixteen row strike costs 10,000 for the name alone. The EGA has
+  none of these because `SYMBOLB.FON` carries two strikes whose `dfCharSet` is
+  nought.
+- **a name that is not installed**, 9 and 8: `WIN.INI` `[FontSubstitutes]`, which
+  the instrument does not read and the mapper here does.
+- **an exact strike below twelve pixels**, 26 and 24. Arial asked for at eight
+  answers Small Fonts, at nine answers Arial, at ten and eleven MS Serif, and at
+  twelve and thirteen Arial again -- so a strike whose cell is exactly the height
+  asked for beats the outline of the name asked for, but only below twelve. That
+  brackets the missing term tightly: at nine the outline beats a strike a pixel
+  out, so it costs less than 10,150; at eleven it loses to an exact one, so it
+  costs at least 10,000; and at thirteen it beats an exact one, so above the
+  threshold it costs less than 10,000. The penalty routine has no term that
+  could do it -- `1ba6` skips every size term a scalable candidate might pay --
+  so it is not in `17b4` at all.
+
+Two readings of the charset term were tried against the corpus and **refused**:
+skipping it where the candidate's name matches the request's costs 950 and 952
+(it fixes the symbol class and breaks 7 on the EGA), and skipping it wherever
+`lfCharSet` is `ANSI_CHARSET` costs 952 and 954. Both are better than the read
+model on the VGA and worse on the EGA, and neither is anything the image says,
+so neither is adopted.
+
 What is still **open** is the arrangement of the passes. The walk is called more
 than once -- `0x859` passes a running limit and a base penalty taken from
 `[weights+0x68]`, gated on bit 0x2000 of `[0x64a]`, where `2c0a` passes an
