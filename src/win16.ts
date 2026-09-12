@@ -20,6 +20,7 @@ import { ModuleManager } from './win16/module-manager.js';
 import { HandleManager } from './win16/handle-manager.js';
 import { WindowManager } from './win16/window-manager.js';
 import { FontManager } from './win16/font-manager.js';
+import { fontDirectoryOrder, inDirectoryOrder } from './win16/font-directory.js';
 
 // The various OS modules
 import { Kernel } from './win16/kernel.js';
@@ -173,11 +174,38 @@ export class Win16 {
   async boot() {
     const files = await this.files.list('C:\\WINDOWS\\SYSTEM');
 
-    await Promise.all(
-      files
-        .filter((file) => file.name.toUpperCase().endsWith('.FON'))
-        .map((file) => this._fonts.load(file))
+    /* In the order GDI's font directory holds them rather than the order the
+     * directory listing hands them over, because the mapper's ties go to the
+     * earliest entry and nothing else separates two faces with a strike at the
+     * height asked for. See `font-directory.ts`. One at a time, too: loading
+     * them together left the order to whichever read finished first.
+     */
+    const profile = async (name) => {
+      const windows = await this.files.list('C:\\WINDOWS');
+      const file: any = windows.find(
+        (one: any) => String(one.name ?? '').toUpperCase() === name
+      );
+
+      if (!file) {
+        return null;
+      }
+
+      const bytes = new Uint8Array(await file.read(0, file.size));
+
+      return Array.from(bytes, (byte) => String.fromCharCode(byte)).join('');
+    };
+
+    const order = fontDirectoryOrder(await profile('SYSTEM.INI'), await profile('WIN.INI'));
+
+    const fonts = inDirectoryOrder(
+      files.filter((file: any) => String(file.name ?? '').toUpperCase().endsWith('.FON')),
+      order,
+      (file: any) => String(file.name ?? '')
     );
+
+    for (const file of fonts) {
+      await this._fonts.load(file);
+    }
   }
 
   /**

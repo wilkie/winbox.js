@@ -9,6 +9,7 @@ import { FAT16 } from '../../src/file-systems/fat16.js';
 import { Executable } from '../../src/executable.js';
 import { Machine } from '../../src/emulator/machine.js';
 import { Win16 } from '../../src/win16.js';
+import { fontDirectoryOrder, inDirectoryOrder } from '../../src/win16/font-directory.js';
 import { DEFAULT_DISPLAY_MODE } from '../../src/win16/display-modes.js';
 
 /**
@@ -206,10 +207,31 @@ async function loadInstalledFonts(win16: any) {
   const installed: any = new FAT16(disk);
   await installed.mount();
 
-  for (const entry of await installed.list(['WINDOWS', 'SYSTEM'])) {
-    if (entry.info.name.toUpperCase().endsWith('.FON')) {
-      await win16.fonts.load(await installed.open(['WINDOWS', 'SYSTEM', entry.info.name]));
+  /* In GDI's own order, which is the two profiles and not the directory
+   * listing: the mapper's ties go to the earliest entry, and this system has
+   * `DOSAPP.FON` on it, whose five faces called Terminal GDI never has in its
+   * directory at all. See `font-directory.ts`.
+   */
+  const text = async (name: string) => {
+    const file = await installed.open(['WINDOWS', name]);
+
+    if (!file) {
+      return null;
     }
+
+    const bytes = new Uint8Array(await file.read(0, file.size));
+
+    return Array.from(bytes, (byte) => String.fromCharCode(byte)).join('');
+  };
+
+  const order = fontDirectoryOrder(await text('SYSTEM.INI'), await text('WIN.INI'));
+
+  const names = (await installed.list(['WINDOWS', 'SYSTEM']))
+    .map((entry: any) => String(entry.info.name))
+    .filter((name: string) => name.toUpperCase().endsWith('.FON'));
+
+  for (const name of inDirectoryOrder(names, order, (one: string) => one)) {
+    await win16.fonts.load(await installed.open(['WINDOWS', 'SYSTEM', name]));
   }
 }
 

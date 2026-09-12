@@ -10,11 +10,20 @@
  * width, weight, and the character range.
  *
  * Two of them are worth pointing at. `ANSI_VAR_FONT` asks for Helv, which no
- * installed file provides; `WIN.INI` substitutes MS Sans Serif, whose eight
- * point entry matches exactly, and the reported face stays Helv. And
- * `DEVICE_DEFAULT_FONT` is Courier at twelve points on this display driver,
- * not a system font at all -- the name suggests otherwise, which is why it was
- * worth measuring rather than assuming.
+ * installed file provides; `WIN.INI` substitutes MS Sans Serif, and the
+ * reported face stays Helv. And `DEVICE_DEFAULT_FONT` is Courier on this
+ * display driver, not a system font at all -- the name suggests otherwise,
+ * which is why it was worth measuring rather than assuming.
+ *
+ * The size is a **cell height in pixels**, and an EGA is what says so. Read as
+ * a point size, `ANSI_VAR_FONT` is MS Sans Serif at eight points, which is
+ * thirteen rows on a VGA and ten on an EGA; Windows draws it twelve rows tall
+ * on an EGA, which is that face's *ten* point strike. Read as thirteen pixels
+ * it is the thirteen row strike on a VGA and the twelve row one on an EGA --
+ * the nearest either way, and where two are equally near the shorter, which is
+ * the mapper's own two-to-one preference. **Recorded**: six cells of the EGA
+ * glyph sweep turn on it and every other stock font on both displays is
+ * unmoved.
  */
 /* Keyed by the stock font constants as numbers rather than through `Gdi`.
  * These are keys of an object literal, so they are evaluated while this module
@@ -24,12 +33,12 @@
  * run when they are called.
  */
 export const STOCK_FONTS = {
-  10: { face: 'Terminal', points: 12 }, // OEM_FIXED_FONT
-  11: { face: 'Courier', points: 10 }, // ANSI_FIXED_FONT
-  12: { face: 'Helv', points: 8 }, // ANSI_VAR_FONT
-  13: { face: 'System', points: 10 }, // SYSTEM_FONT
-  14: { face: 'Courier', points: 12 }, // DEVICE_DEFAULT_FONT
-  16: { face: 'Fixedsys', points: 12 }, // SYSTEM_FIXED_FONT
+  10: { face: 'Terminal', cell: 12 }, // OEM_FIXED_FONT
+  11: { face: 'Courier', cell: 13 }, // ANSI_FIXED_FONT
+  12: { face: 'Helv', cell: 13 }, // ANSI_VAR_FONT
+  13: { face: 'System', cell: 16 }, // SYSTEM_FONT
+  14: { face: 'Courier', cell: 16 }, // DEVICE_DEFAULT_FONT
+  16: { face: 'Fixedsys', cell: 15 }, // SYSTEM_FIXED_FONT
 };
 
 /** The font every device context starts with, before anything selects one. */
@@ -55,10 +64,9 @@ export function stockFontHandle(context, index) {
   }
 
   /* A stock font is a face at a size, and both halves matter: the same file
-   * holds Courier at ten points and at fifteen, and they are thirteen and
-   * twenty pixels tall.
+   * holds Courier at thirteen rows and at twenty.
    */
-  const font = context.fonts.realize(wanted.face, wanted.points);
+  const font = context.fonts.realize(wanted.face, wanted.cell);
 
   if (!font) {
     return null;

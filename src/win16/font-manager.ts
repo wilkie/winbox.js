@@ -1844,21 +1844,34 @@ export class FontManager {
    * @param {number} points - The point size asked for.
    * @returns {LogicalFont} The font, or null if the face is not installed.
    */
-  realize(face, points) {
+  realize(face, cell) {
     const entries = this.lookup(face);
 
     if (!entries || entries.length === 0) {
       return null;
     }
 
+    /* The mapper's own height term decides which strike: nearest, and between
+     * two equally near the shorter, because being too tall costs 150 a pixel
+     * and 600 more besides. Ties go to the earliest in the directory, which is
+     * the order the faces were loaded in; see `font-directory.ts`.
+     */
+    const cost = (entry) => {
+      const height = entry.header.dfPixHeight;
+
+      return height > cell
+        ? FontManager.HEIGHT_PENALTY * (height - cell) + FontManager.TALLER_PENALTY
+        : FontManager.HEIGHT_PENALTY * (cell - height);
+    };
+
     let best = entries[0];
 
     for (const entry of entries) {
-      if (Math.abs(entry.size - points) < Math.abs(best.size - points)) {
+      if (cost(entry) < cost(best)) {
         best = entry;
       }
     }
 
-    return new LogicalFont(face, points, best);
+    return new LogicalFont(face, cell, best);
   }
 }
