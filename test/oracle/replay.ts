@@ -1635,10 +1635,27 @@ export const KNOWN_GAPS: Record<string, string> = {
    *
    * The 237 that remain in Arial, Times New Roman and Courier New are all
    * `italic=1`, and none of them is a synthesis: those three ship an italic
-   * file, so what is being drawn is an ordinary hinted outline out of that
-   * file. They are the anisotropic run itself, and they cluster at twelve,
-   * sixteen and twenty-four pixels. The other 58 are Symbol, 45 slanted and 13
-   * upright.
+   * file, so what is being drawn is an ordinary hinted outline out of it. The
+   * other 58 are Symbol, 45 slanted and 13 upright.
+   *
+   * Three things are known about the 237 and they narrow it a long way.
+   *
+   *   - **The program runs.** Drawing those same cells from the raw outline
+   *     with no program at all gets 37 of 654 where running it gets 417, so
+   *     Windows is hinting them and the fault is inside the run rather than in
+   *     whether to make one.
+   *   - **The run is right for an upright glyph.** The `widths` sweep is 2,270
+   *     glyph cells drawn stretched on a VGA and every one of them agrees, as
+   *     does every upright cell of this sweep. But that sweep asks for no
+   *     italic at all -- 2,270 cells across four faces, none slanted -- so a
+   *     slanted design under a stretch had never been drawn anywhere until this
+   *     recording. It is the first corpus that exercises it.
+   *   - **It is the glyphs with stems.** `b`, `j`, `m`, `B`, `E`, `K`, `N`,
+   *     `R`, `k`, `n`, `1`, `M`, `4`, `d` head the list at fourteen or fifteen
+   *     cells each of the eighteen they are asked for, and in an italic file a
+   *     stem is a diagonal. Two thirds of the failures are under twelve wrong
+   *     pixels in a cell of 1,024, and the shape of them is a stem placed a
+   *     column over at one end and right at the other.
    */
   /* The `font` sweep on an EGA is closed, and so is the VGA's.
    *
@@ -1648,7 +1665,7 @@ export const KNOWN_GAPS: Record<string, string> = {
    * counts on the way.
    */
   'glyphs-ega:glyph':
-    'the glyph sweep on an EGA, 295 cells of 6,046: what the hint program does under an anisotropic transform, narrowed one instruction at a time',
+    'the glyph sweep on an EGA, 295 cells of 6,046: what the hint program does to a slanted design under an anisotropic transform, narrowed one instruction at a time',
 };
 
 /**
