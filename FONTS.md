@@ -552,12 +552,27 @@ nothing else:
   could do it -- `1ba6` skips every size term a scalable candidate might pay --
   so it is not in `17b4` at all.
 
-Two readings of the charset term were tried against the corpus and **refused**:
-skipping it where the candidate's name matches the request's costs 950 and 952
-(it fixes the symbol class and breaks 7 on the EGA), and skipping it wherever
-`lfCharSet` is `ANSI_CHARSET` costs 952 and 954. Both are better than the read
-model on the VGA and worse on the EGA, and neither is anything the image says,
-so neither is adopted.
+Four readings were tried against the corpus and **refused**, each with what it
+costs:
+
+- **Skip the charset term where the candidate's name matches the request's**:
+  950 and 952. It fixes the whole symbol class on the VGA and breaks seven on the
+  EGA, and the seven say why it is wrong -- they are `Terminal` and `WingDings`
+  asked for in the ANSI set, which the waiver lets answer with themselves where
+  Windows answers `Arial`. So whatever excuses Symbol is narrower than "the name
+  matched".
+- **Skip it wherever `lfCharSet` is `ANSI_CHARSET`**: 952 and 954. Same shape,
+  same objection.
+- **Drop the charset term altogether**: 913 and 918, which is worse than the read
+  model both ways and settles that the term is real.
+- **Charge a scalable candidate the face-name weight below twelve pixels**, which
+  is what the `OUTLINE_FLOOR` measured from outside would be if it lived in the
+  penalty: 918 and 959, against 917 and 959. It moves almost nothing, because on
+  an EGA the exact strike it is meant to lose to is already paying 210 for the
+  aspect and 10,000 for its name. The threshold is real -- Arial at thirteen
+  pixels on an EGA answers with the thirteen row strike and at twelve with the
+  outline, which brackets the outline's cost there between 212 and 300 -- but it
+  is not a term of this size in this routine.
 
 What is still **open** is the arrangement of the passes. The walk is called more
 than once -- `0x859` passes a running limit and a base penalty taken from
