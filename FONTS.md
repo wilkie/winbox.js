@@ -402,9 +402,27 @@ ninety.
 
 That is the shape of a **driver** limit rather than a GDI rule, which would also
 be why nothing in GDI's own arithmetic fits it: the display driver realises the
-strike and decides what it is willing to build. If so it belongs with the other
-things measured per display rather than derived, and the way to settle it is to
-record a fourth. 150 records, declared with counts.
+strike and decides what it is willing to build.
+
+A fourth display settles which. A Super VGA is 800 by 600 with a square pixel and
+the same ninety-six dots each way a VGA has, so it tests the rules at a
+resolution none of them was measured at, and it answers **5,057 of 5,057** --
+every field of every request, the sideways stretch among them. So the count now
+reads:
+
+| display   | pixel     | planes | sideways stretch |
+| --------- | --------- | ------ | ---------------- |
+| VGA       | square    | 4      | `H = min(V, 5)`  |
+| Super VGA | square    | 4      | `H = min(V, 5)`  |
+| EGA       | 38 by 48  | 4      | `H = min(V, 5)`  |
+| Hercules  | 11 by 16  | 1      | collapses        |
+
+It is not the pixel being square, because an EGA's is not and it does not
+collapse. It is not the resolution, because a Super VGA differs from a VGA in
+nothing else and agrees. What is left is the driver, and the one that behaves
+differently is the only monochrome one -- one bitplane against four, on a screen
+with about thirty kilobytes of memory in it. 150 records, declared with counts,
+and belonging with the things measured per display rather than derived.
 
 ### What a display that is not square says about all of this
 
