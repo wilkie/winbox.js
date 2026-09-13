@@ -15888,6 +15888,25 @@ prediction held: the three still standing are exactly that shape.
   seven, so the sides agree and the top does not. Courier New ships an italic
   file, so this glyph is hinted rather than sheared: it is that face's program
   under the stretch, which is the family the `MSIRP` placement came from.
+
+  Narrowed, and it is **not** the scan converter. The outline that converter is
+  handed, read out of it at the moment it is handed over, has the glyph's origin
+  at `(2,6)` and already in pixels, and the arithmetic on it is flat. Row three
+  samples at `y = 2.5`; there the outer contour crosses at `x` 1.60 and 6.01 and
+  **the counter is still open**, crossing at 2.10 and 5.39. That leaves two
+  slivers, `[3.60, 4.10]` and `[7.39, 8.01]` in cell columns, and no span that
+  could fill three to seven. Windows fills it solid, which a scanline can only do
+  with the counter closed.
+
+  So the counter is too tall here. Its top sits at `y = 3.17` and it has to come
+  out below 2.5 -- more than two thirds of a pixel -- while the outer top, at
+  3.50, is where it should be, since row two is empty on both. The points are
+  the top of the glyph's second contour, 50 to 52, at 811 design units. Reading
+  those out of Windows is the next step, and the instrument for it is the one
+  that settled `MSIRP`: a fabrication whose program is cut short and reports a
+  point. It wants one addition -- the existing readout reports a point's `x`,
+  and this wants its `y`, which is `SVTCA[y]` and `GC` before the vectors are
+  turned back to `x` for the `SCFS`.
 - **Symbol's slanted `m` and `y` at fifteen.** One pixel each, both at the top
   of a stem: the `m` has one column too many at row nine, the `y` has its top
   two rows a column apart from Windows'. Symbol has no italic file, so these are
