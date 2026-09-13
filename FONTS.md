@@ -431,9 +431,31 @@ What the EGA does is now beyond doubt, though, which the old sweep could not
 show: across every strike and every multiple it is `min(V, 5)` with no exception
 anywhere.
 
-That is the shape of a **driver** limit rather than a GDI rule, which would also
-be why nothing in GDI's own arithmetic fits it: the display driver realises the
-strike and decides what it is willing to build.
+That looked like the shape of a **driver** limit rather than a GDI rule, which
+would also have been why nothing in GDI's own arithmetic fits it: the display
+driver realises the strike, so the driver decides what it is willing to build.
+
+**That is wrong, and the drivers say so themselves.** A Windows 3.1 display
+driver exports `RealizeObject` at ordinal 10, and every one of them begins the
+same way: it takes the object style, decrements it, refuses anything past three,
+and indexes two parallel tables -- one of handlers, one of realised sizes -- by
+pen, brush, font. In `HERCULES.DRV` those tables are at `seg1:0x2d37` and
+`0x2d3d`, and the font entries are the handler `0x2cc1` and the size **0**. The
+handler is one byte: `C3`, a bare `ret`.
+
+`VGA.DRV` is the same shape at `seg1:0x2bd6`/`0x2bdc` -- handler `0x2b3b`, size
+0, one `C3` -- and so is `EGA.DRV` at `0x2bba`/`0x2bc0`. **No display driver in
+the set realises a font at all.** The realised strike is GDI's, on all three, and
+so is the stretch.
+
+Which puts the rule back inside `GDI.EXE`, where the `across` computation at
+`seg3:1d34`-`1db8` already reproduces the EGA exactly and the Hercules not at
+all -- and where something the two displays do not share has to be clamping it.
+The two inputs that differ are the device aspect, 126 against 145, and nothing
+else: the font files are the same `96x72` strikes on both, and the vertical
+multiples they are drawn at are identical. A larger device aspect makes that
+formula ask for *more* sideways stretch, and the Hercules takes less, so the
+clamp is somewhere the reading has not yet been.
 
 A fourth display settles which. A Super VGA is 800 by 600 with a square pixel and
 the same ninety-six dots each way a VGA has, so it tests the rules at a

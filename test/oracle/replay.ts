@@ -1694,7 +1694,10 @@ export const KNOWN_GAPS: Record<string, string> = {
    * and the default height of twelve points at the device's own vertical
    * resolution.
    *
-   * What does not hold is how far a strike is stretched **sideways**. On a VGA
+   * What does not hold is how far a strike is stretched **sideways**, and it is
+   * not the driver's doing: `RealizeObject` is stubbed for fonts in all three
+   * display drivers -- a bare `ret` and a realised size of nought -- so the
+   * strike is GDI's to build on every one of them. See `FONTS.md` section 3. On a VGA
    * and an EGA the horizontal multiple is the vertical one capped at five, and
    * that was measured on both. On a Hercules it is often far less: MS Sans
    * Serif's eighteen row strike asked for a hundred pixels is drawn five times
