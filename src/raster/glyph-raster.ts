@@ -875,6 +875,22 @@ export function fillWalked(contours, options) {
       continue;
     }
 
+    /* Always to the left, which is what **simple** dropout control does.
+     *
+     * `DoHorizDropout` has two placements and picks between them on the scan
+     * kind: `lXDrop--` for a simple dropout and, for a smart one, the average
+     * of the two exact crossings, `(fxX1 + fxX2 - 1) >> (SUBSHFT + 1)`. Every
+     * installed family answers `SCANTYPE` 1, which is the simple kind, so this
+     * is the branch that runs.
+     *
+     * **The other branch was built and refused.** Keeping each crossing's
+     * unrounded sixty-fourth alongside its rounded index -- the walker throws
+     * it away -- and averaging them costs 22 fabricated cells applied to
+     * slanted glyphs only and 134 applied to every glyph, against 32,394 of
+     * 32,394 with this. So the scan kind really is simple, which is what the
+     * interpreter says it is, and a cell that wants the pixel on the other side
+     * of the dropout does not want it because of smart control.
+     */
     let column = on - 1;
 
     if (column < boxLeft) {

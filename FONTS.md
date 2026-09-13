@@ -15922,9 +15922,37 @@ prediction held: the three still standing are exactly that shape.
   four at row seven with it. Windows draws both, at `(6,5)` and `(7,4)`; this
   draws one, at `(6,4)`. Correct the column and the second follows.
 
-  Which way `PerformHorizDropout` leans is therefore the whole of it, and it is
-  not simply `on - 1`: the bar in `symbol-slant` has its rescue at `on - 1` and
-  Windows agrees there. What separates the two cases is not yet read.
+  Which way the horizontal rescue leans is therefore the whole of it, and the
+  routine that decides has now been read rather than guessed at. `DoHorizDropout`
+  does its stub tests, then asks about the pixel left and the pixel right of the
+  *undecremented* coordinate -- each guarded on being clear of the corresponding
+  edge, which is what this side already had -- and then picks between two
+  placements on the scan kind: `lXDrop--` for a **simple** dropout, and for a
+  **smart** one the average of the two exact crossings,
+  `(fxX1 + fxX2 - 1) >> (SUBSHFT + 1)`.
+
+  Smart would have fitted both cells: the bar's two crossings average to about
+  2.95 and floor to two, which is where Windows puts it, and the `y`'s would have
+  to average at or above five, which is where Windows puts that. So it was built
+  -- the walker throws each crossing's unrounded sixty-fourth away at
+  `scan-walk.ts`'s `addHorizOn`, and it was kept alongside the rounded index and
+  sorted with it -- and **refused**: applied to slanted glyphs only it costs 22
+  fabricated cells, applied to every glyph 134, against 32,394 of 32,394 with the
+  simple placement. Which agrees with what the interpreter says, since every
+  installed family answers `SCANTYPE` 1 and that is the simple kind.
+
+  The rounding that makes the index was checked against the source in the same
+  pass and it is right: `AddReversal` forms a scanline index as
+  `(fxCoord + SUBHALF + (sDir >> 1)) >> SUBSHFT`, which is `(x + 32) >> 6` one
+  way round and `(x + 31) >> 6` the other -- exactly the pair this side uses for
+  an off crossing and an on crossing.
+
+  So the rescue is right, the placement is right, and the rounding that feeds
+  them is right. What is left is the crossing itself: for that row this side has
+  the run as `[5,5]`, a dropout, and a run of `[5,6]` would fill column five
+  outright, leave nothing to block the vertical rescue at `(7,4)`, and give
+  Windows' two pixels exactly. Whether the reference's off crossing lands a
+  column further out there is the next thing to ask.
 
 The lean is measured and is not it, twice over: sweeping the shear slope over
 four readings leaves the same cells wrong, and the rule that finally fitted the
