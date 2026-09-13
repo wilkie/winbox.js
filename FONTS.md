@@ -675,6 +675,27 @@ costs:
   outline, which brackets the outline's cost there between 212 and 300 -- but it
   is not a term of this size in this routine.
 
+### The plotter faces, and the display that disagrees with them
+
+The glyph sweep recorded on a Super VGA is **6,046 of 6,046** -- a fourth display
+drawing every cell of every face exactly, with nothing changed for it. Recorded
+on a Hercules it is 5,529, and the 517 split in two.
+
+305 of them are the slanted cells an EGA has too, which is the `hinting` defect
+seen as pixels. The other **212 are the plotter faces**: Roman upright and
+slanted, Modern and Script. They are drawn exactly on a VGA, on a Super VGA and
+on an EGA, and wrongly here.
+
+Their metrics are right on this display -- the `font` sweep's widths agree for
+all three faces, so the average and maximum a stroke font reports come out where
+Windows puts them, off the floor described in section 4. It is the strokes
+themselves. A stroke font is scaled separately in each direction because its
+design carries an aspect of its own, three horizontal to two vertical for all
+three of these, and a Hercules is the first display whose pixel disagrees with
+that by much: eleven by sixteen against an EGA's thirty-eight by forty-eight.
+Whether those are the pixels Windows chooses had never been established for any
+display; three of them now say yes and one says no.
+
 ### The two passes, read rather than inferred
 
 The arrangement is now read out of `seg3:0550`, which is the mapper's top level

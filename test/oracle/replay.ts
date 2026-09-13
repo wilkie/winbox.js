@@ -1734,6 +1734,24 @@ export const KNOWN_GAPS: Record<string, string> = {
   'hinting-vga:advance':
     'the hint program under a stretch, 8 of 8,542: the same defect, reproduced on a square screen by asking for a width',
 
+  /* The glyph sweep on a Hercules, 517 cells of 6,046.
+   *
+   * 305 are the same slanted cells an EGA has -- Arial, Times New Roman and
+   * Courier New in italic, and Symbol -- and they are one defect with
+   * `hinting`'s advances; see above.
+   *
+   * The other **212 are the plotter faces**, and they are new: Roman upright and
+   * slanted, Modern and Script. They pass on a VGA, on a Super VGA and on an
+   * EGA, so the strokes are drawn where Windows draws them on three displays and
+   * not on the fourth. Their *metrics* are right here -- the `font` sweep's
+   * widths agree for all three faces on this display -- so it is the drawing and
+   * not the size. A stroke font is scaled separately in each direction, since
+   * the design has an aspect of its own, and this is the first display whose
+   * pixel disagrees with that design by much.
+   */
+  'glyphs-hercules:glyph':
+    'the glyph sweep on a Hercules, 517 cells of 6,046: 305 the slanted cells an EGA also has, and 212 the plotter faces, which three other displays draw right',
+
   'glyphs-ega:glyph':
     'the glyph sweep on an EGA, 295 cells of 6,046: what the hint program does to a slanted design under an anisotropic transform, narrowed one instruction at a time',
 };
