@@ -1742,20 +1742,22 @@ export const KNOWN_GAPS: Record<string, string> = {
    * exactly the 32 we get wrong, because we draw what a VGA draws.
    *
    * Every one of the 32 has an offset of eight in one direction or the other:
-   * `8,-5`, `-8,-5`, `-5,8`, `-5,-8` and their kin, the full symmetric set of
-   * `+-8` against `+-1`, `+-2`, `+-4` and `+-5`. Eight is where the line leaves
-   * the cell, so these are the ones that need clipping -- and `GetDeviceCaps`
-   * says a Hercules is the one display of the four that cannot clip for itself:
-   * `CLIPCAPS` is nought here and one on the VGA, the Super VGA and the EGA. So
-   * GDI clips these and the driver clips the rest, and the two do not agree at
-   * the boundary. That is a reading rather than a measurement, and what would
-   * settle it is a fifth display that also reports nought.
+   * the full symmetric set of `+-8` against `+-1`, `+-2`, `+-4` and `+-5`. The
+   * cell is thirty-two square and the line starts at its middle, so eight ends
+   * at twenty-four and nothing is clipped -- eight is just the longest offset
+   * the sweep asks for.
+   *
+   * The pixels say what it is. Eight across and four down, a slope of exactly a
+   * half, is four runs of two on a VGA and one, two, two, two, one on a
+   * Hercules: the steps fall half a step earlier. The two drivers start their
+   * error term at different places, one at nought and one at half the
+   * increment, so they part where a step lands on a tie.
    *
    * This is why the plotter faces fail on this display: a stroke font is lines,
    * and 212 of its cells differ by a pixel where a stroke meets the edge.
    */
   'lines-hercules:line':
-    'the line sweep on a Hercules, 32 of 248: every one an offset of eight, which is where a line leaves the cell and where this driver cannot clip for itself',
+    'the line sweep on a Hercules, 32 of 248: this driver starts its error term half a step from where a VGA starts its own',
 
   /* The glyph sweep on a Hercules, 517 cells of 6,046.
    *

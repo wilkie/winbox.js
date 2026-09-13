@@ -703,17 +703,28 @@ from the VGA's**, and they are exactly the 32 we get wrong, because we draw what
 VGA draws.
 
 Every one of the 32 has an offset of eight in one direction or the other: the
-full symmetric set of `±8` against `±1`, `±2`, `±4` and `±5`. Eight is where the
-line leaves the cell, so these are precisely the ones that need clipping -- and
-`GetDeviceCaps` says a Hercules is the one display of the four that cannot clip
-for itself, `CLIPCAPS` nought here against one on the VGA, the Super VGA and the
-EGA. So GDI clips these and the driver clips the rest, and the two do not agree
-at the boundary.
+full symmetric set of `±8` against `±1`, `±2`, `±4` and `±5`.
 
-That last is a reading rather than a measurement, and what would settle it is a
-fifth display that also reports nought. What is measured is that line drawing is
-**not** device-independent, which nothing in this repository had assumed either
-way.
+An earlier reading here said eight was where the line left the cell, so these
+were the ones needing clipping, and pointed at `CLIPCAPS` being nought on this
+display and one on the other three. **That is wrong and is retracted.** The cell
+is thirty-two square and the line starts at its middle, so an offset of eight
+ends at twenty-four and nothing is clipped; eight is simply the longest offset
+the sweep asks for.
+
+The pixels say what it is. A line eight across and four down -- a slope of
+exactly one half -- comes out as four runs of two on a VGA, starting at the
+origin, and on a Hercules as a run of one, then three of two, then one of one.
+The steps fall half a step earlier. Eight across and one down is four pixels then
+four on a VGA and five then three on a Hercules; eight across and two down is
+three, four, one against two, four, two. Every one of them is the same thing:
+**the two drivers start their error term at different places**, one at nought and
+one at half the increment, so they part exactly where a step lands on a tie and
+agree everywhere else.
+
+That is measured, not read: line drawing is **not** device-independent, which
+nothing in this repository had assumed either way, and the plotter faces lose 212
+cells on this display for that reason and none on the other three.
 
 ### The two passes, read rather than inferred
 
