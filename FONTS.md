@@ -455,34 +455,52 @@ that `across` is scored, not realised. It exists to price a candidate, and
 `seg3:1a55` and never leaves the routine. This side implements it faithfully and
 it has nothing to do with the width that comes back.
 
-The width that comes back is written by a different chain, at `seg3:1b2e`-`1b95`,
-and it writes into the caller's output record rather than into a penalty. That
-record is the one this side returns from `choose`: `+0` takes the realised height
-at `1aed` and `+4` takes the realised width at `1b8e`, and the two branches match
-ours exactly -- `1b31` checks the requested width at `LOGFONT+0x56` and, when it
-is there, uses it outright, which is our `if (width > 0)`.
+#### Reading the scorer's frame, and a wrong turn undone
 
-The other branch is the one we have never had. Decoded as far as its operands:
+The routine is passed a small record that the caller fills from the candidate
+just before calling it, at `seg3:068d`-`06b0`. Six fields, and every offset lands
+on a real `FNT` header field once the base is right -- `es:di` is the header plus
+`0x30`:
 
-    r = ([bp-0x12] * dfHorizRes * aspectX)
-        / (aspectY * dfVertRes * [bp+0x16][4] * [bp+0x16][0])
+    [es:di+0x28] -> 0x58  dfPixHeight
+    [es:di+0x1c] -> 0x4c  dfInternalLeading
+    [es:di+0x2b] -> 0x5b  dfAvgWidth
+    [es:di+0x23] -> 0x53  dfWeight
+    [es:di+0x20] -> 0x50  dfItalic (and dfUnderline above it)
+    [es:di+0x22] -> 0x52  dfStrikeOut
 
-floored at one. `[bp-0x12]` is the requested height, set at `1ad5` and priced
-against the realised one immediately after. What the record's two fields hold on
-entry to this is **not** established, and is not guessed at here.
+Six offsets, six fields, no slack: the frame is decoded. And it settles the other
+pointer with it. The routine keeps `[bp-0x26]` at `[bp+0x18]` for a scalable
+candidate and `[bp+0x18] + 0x12` for a raster one, which is the header plus
+`0x42` -- **`dfType`** -- so the `[es:bx+4]` and `[es:bx+6]` it divides are
+`dfVertRes` and `dfHorizRes`, and `shape` on this side is reading the two fields
+it should.
 
-What is worth having already is the orientation. The device aspect enters as
-`aspectX / aspectY` -- the *reciprocal* of where every formula on this side puts
-it -- and that is the first input found anywhere that points the right way. A
-Hercules pixel is eleven wide to sixteen tall against an EGA's thirty-eight to
-forty-eight, so `aspectX / aspectY` is smaller here, and a smaller value means
-*less* sideways stretch. Every earlier fit had the device aspect pushing the
-other way, which is why none of them could reach an answer below the multiple.
+Which means the block at `1ac5`-`1b95` is not what the last reading took it for.
+It is entered only when `dfType & 3` is one, at `1ab0`, and bit zero of `dfType`
+is the vector flag: **it is the plotter path**, not the raster one. A strike
+never goes through it.
 
-That is a direction, not a magnitude: thirteen per cent between the two displays
-is one step at most, and the table wants four down to two and then to one. The
-strike dependence has to come out of the two record fields, which is where the
-next reading goes.
+What it is, is our own plotter width. Calibrating the sign of the 32-bit divide
+helper against the version on this side -- which is measured correct, the plotter
+cells being exact on every display -- the chain reads
+
+    (aspectY * dfVertRes * dfAvgWidth * cell)
+      / (dfPixHeight * dfHorizRes * aspectX)
+
+operand for operand what `FontManager.choose` computes for a vector face. That
+rule was measured and is now also read.
+
+So the claim in the previous commit -- that the device aspect enters here as
+`aspectX / aspectY`, the reciprocal of where this side puts it, and that this was
+the first input pointing the right way for a Hercules -- **is withdrawn.** It came
+from taking the divide's operands in the wrong order, and the path it came from
+is not the strike's path anyway. Nothing about the sideways stretch follows from
+it.
+
+The raster realised width is therefore still not located. What is now certain is
+where it is not: not in the driver, not in the scorer's `across`, and not in the
+vector chain.
 
 Meanwhile the defect on this side is one line. `FontManager.choose` ends with
 `horizontal = min(scale, 5)` -- the vertical multiple capped at five, with no

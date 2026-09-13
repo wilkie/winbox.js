@@ -1674,6 +1674,13 @@ export class FontManager {
        * identity on a square pixel and four thirds on an EGA. The plotter fonts
        * are the only faces whose width is arrived at this way, and the EGA's
        * glyph sweep is the only recording that separates the two aspects. */
+      /* **And now read as well as measured.** The same chain is at `seg3:1b46`
+       * -- `dfPixHeight` times `dfHorizRes` times `aspectX` under `aspectY`
+       * times `dfVertRes` times `dfAvgWidth` times the cell -- reached only
+       * when `dfType & 3` is one, which is the vector flag. The block is
+       * guarded at `seg3:1ab0`, and `1b31` above it takes a requested width
+       * outright, which is the branch this ternary is.
+       */
       const average =
         width > 0
           ? width
@@ -1861,8 +1868,10 @@ export class FontManager {
     /* This has no display in it, and Windows's does. It is right on a VGA, a
      * Super VGA and an EGA and wrong on a Hercules, where the sideways multiple
      * falls away above three and this does not: 942 records of that sweep.
-     * GDI's own is the chain at `seg3:1b46`-`1b95`, which is decoded as far as
-     * its operands in `FONTS.md` section 3 and no further. */
+     * Where GDI's own is has not been found. `seg3:1b46`-`1b95` was taken for
+     * it once and is not: it is entered only when `dfType & 3` is one, which is
+     * the vector flag, and it is the plotter width rule this file already has.
+     * See `FONTS.md` section 3. */
     let horizontal = Math.min(best.scale, FontManager.MAX_WIDTH_STRETCH);
 
     if (width > 0) {
