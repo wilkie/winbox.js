@@ -1116,41 +1116,42 @@ way of being asked -- so `sizeAlong` is not merely the reading that scores best,
 it is the one that makes the mechanism possible. Windows takes the same branch
 we do; it could not do otherwise.
 
-That suggested a test, and the test **refuted the obvious conclusion**. A width
-request stretches the scaler on a VGA exactly the way the pixel shape does on an
-EGA, so Arial's square test should answer no there too and the italic glyphs
-should take the same anisotropic road. Nothing in the corpus asked: every width
-sweep in it is upright. So `hinting` now asks for a slant and a width at once --
-twenty-four rows -- and **all twenty-four agree, on both displays**.
+That suggested a test, and the test was **run badly the first time and then
+run properly**, and the two answers are opposite. A width request stretches the
+scaler on a VGA exactly the way the pixel shape does on an EGA, so Arial's square
+test should answer no there too and its italic glyphs should take the same
+anisotropic road. Nothing in the corpus asked: every width sweep in it is
+upright. The first extension of `hinting` asked for a slant and a width together
+and all of it agreed -- but it asked only the one letter each face was already
+being swept with, `n` for Arial, and `n` is not a letter that fails.
 
-So the anisotropic path is not wrong. It is right for a width request, upright
-and slanted, on a square screen and on one that is not. What is wrong belongs
-only to a stretch that comes from the **device** rather than from `lfWidth`, and
-only to a face whose program branches on the difference.
+Asked for `M` and `m` under a width, **a plain VGA fails eight of them**, and
+fails them with the same numbers an EGA gives: `M` at sixteen pixels per em wants
+fourteen and gets thirteen on both.
 
-That also re-frames a reading refused earlier. Running the advance square at the
-horizontal size *where the stretch is the device's* bought 100 of the 121 and
-cost 21 elsewhere, and was refused for leaving 21 of its own. The discriminator
-it used -- `xBase`, which is exactly "no width was asked for" -- is now known to
-be the right one to be asking about, even though that particular answer was not.
+So the earlier conclusion is retracted. It is not about the device, it is about a
+stretch, and it reproduces on a square screen with no pixel shape and no mapper
+in the way. The reading refused for being about the wrong thing -- running the
+advance square at the horizontal size where the stretch is the device's -- was
+refused for the right reason after all, since there is no such distinction to
+draw.
 
-**Open**: what a device stretch does to the scaler that a width stretch does not.
-The two produce the same `MPPEM` pair and the same transform here, and Windows
-tells them apart.
+Two readings of the stretch itself were tried and **refused**, and both are the
+natural ones:
 
-Two readings of that were tried and **refused**, and both are the natural ones:
-
-- **The device aspect never reaches the scaler at all** -- the program runs
-  square at the vertical size and the horizontal one is applied to the phantom
-  afterwards. It is an attractive story, because GDI carries the horizontal size
-  as a denominator rather than as a size and the `lfWidth` ratio is the only 8.8
-  transform it ever hands the scaler. Measured: `hinting-ega` falls from 8,373 of
-  8,494 to 7,605, `charscal-ega` from 594 to 563, `maxwidth-ega` from 1,782 to
-  1,759 and the EGA glyph sweep from 5,751 to 5,744.
+- **The stretch never reaches the scaler at all** -- the program runs square at
+  the vertical size and the horizontal one is applied to the phantom afterwards.
+  It is an attractive story, because GDI carries the horizontal size as a
+  denominator rather than as a size. Measured: `hinting-ega` falls by 768,
+  `charscal-ega` from 594 to 563, `maxwidth-ega` from 1,782 to 1,759 and the EGA
+  glyph sweep from 5,751 to 5,744.
 - **The control values are scaled at the vertical size** rather than at the
   larger of the two: `charscal` falls from 594 of 594 to 333 on a VGA and 332 on
-  an EGA, the EGA glyph sweep to 5,559, `hinting-ega` to 8,286. `cvtSize` being
-  the larger of the two sizes is as well pinned as anything here.
+  an EGA, the EGA glyph sweep to 5,559. `cvtSize` being the larger of the two is
+  as well pinned as anything here.
+
+**Open**, and now reproducible in one line on the plainest display there is:
+`"Arial", h=16, w=8, italic=1, 'M'` wants fourteen and gets thirteen.
 
 ### Symbol, the face installed twice
 

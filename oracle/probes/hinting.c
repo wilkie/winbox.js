@@ -376,6 +376,13 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeNote("an outline face under a width, for the readouts of its diagonal");
     probeStretchedSweep("Times New Roman", 'N');
     probeStretchedSweep("Arial", 'n');
+    /* And the two letters the EGA sweep disagrees on, which the one letter a
+     * face used to be asked for was never going to reach: `M` and `m` are the
+     * widest Arial has, they are the only ones whose slanted advance an EGA
+     * gets wrong, and asking them under a *width* says whether that is about a
+     * stretch at all or only about the one a device's pixel makes. */
+    probeStretchedSweep("Arial", 'M');
+    probeStretchedSweep("Arial", 'm');
 
     probeFinish();
 
