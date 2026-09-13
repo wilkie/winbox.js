@@ -441,6 +441,12 @@ export class Surface {
        */
       const stretch = this._font instanceof LogicalFont ? this._font.stretch : 1;
 
+      /* The horizontal size the lean is a third of, which is the *fractional*
+       * one and not the whole one everything else here is measured at. See
+       * `Surface.leanOf`.
+       */
+      const acrossPixels = this._font instanceof LogicalFont ? this._font.xPpem : ppem;
+
       /* A slant is drawn from the raw outline with no program run, and the
        * scale applied to it afterwards is the vertical one. Where the pixel is
        * not square that is only right down the page, so the design `x` is
@@ -607,7 +613,7 @@ export class Surface {
          * far above the baseline each point sits.
          */
         const slanted = italic
-          ? this.slant(contours, fitted.scaled ? 1 : scale, ppem, ppem * stretch)
+          ? this.slant(contours, fitted.scaled ? 1 : scale, ppem, acrossPixels)
           : contours;
 
         const inked = fill(slanted, {
@@ -642,7 +648,7 @@ export class Surface {
           /* And the box is built from the sheared corners of the glyph's
            * bounding box rather than from the outline's own extent; see
            * `leanOf` and the note in `glyph-raster`. */
-          lean: italic ? Surface.leanOf(ppem, ppem * stretch) : 0,
+          lean: italic ? Surface.leanOf(ppem, acrossPixels) : 0,
         });
 
         const box = (inked as any).box ?? { left: 0, right: this.width };
@@ -769,11 +775,50 @@ export class Surface {
   /**
    * How far a synthesised italic leans at this size.
    *
-   * A whole number of pixels of lean over one em of rise, and the whole number
-   * is `floor(ppem / 3)`. Nominally a third; in practice a third truncated onto
+   * A whole number of pixels of lean over one em of rise. The whole number is
+   * `floor(ppem / 3)` -- nominally a third; in practice a third truncated onto
    * the pixel grid, so the slope is `4/12` at twelve per em, `5/16` at sixteen,
-   * `6/20` at twenty -- never a third exactly except where three divides the
-   * size.
+   * `6/20` at twenty, never a third exactly except where three divides the size
+   * -- and then that whole number is **carried across the device's own aspect
+   * and rounded again**, because it is a count of pixels down the page and the
+   * lean is across it.
+   *
+   * The second rounding is invisible on a square pixel, where the aspect is one
+   * and the number comes back as itself, and every reading of this had been
+   * taken on one.
+   *
+   * **Measured**, by sweeping the numerator against `symbol-slant` recorded on
+   * an EGA -- one upright bar in place of every Symbol letter, so the slanted
+   * cell is the shear and nothing else -- and asking which whole number makes
+   * every cell of a size exact. Nineteen sizes answer with exactly one, and the
+   * rule gives all nineteen:
+   *
+   *     ppem  across   wants   floor(ppem/3) x aspect
+   *        6   8.000       3    2 x 4/3 =  2.67
+   *        7   9.333       3    2 x 4/3 =  2.67
+   *        9  12.000       4    3 x 4/3 =  4
+   *       11  14.667       4    3 x 4/3 =  4
+   *       12  16.000       5    4 x 4/3 =  5.33
+   *       14  18.667       5    4 x 4/3 =  5.33
+   *       16  21.333       7    5 x 4/3 =  6.67
+   *       20  26.667       8    6 x 4/3 =  8
+   *       23  30.667       9    7 x 4/3 =  9.33
+   *       24  32.000      11    8 x 4/3 = 10.67
+   *       27  36.000      12    9 x 4/3 = 12
+   *       31  41.333      13   10 x 4/3 = 13.33
+   *
+   * No product in the sweep lands on an exact half, so which way a half goes is
+   * **not** measured and nothing here should be read as saying it is.
+   *
+   * The horizontal size is the *fractional* one, `xPpem`, and not the whole
+   * `xWhole` that the advance and the hint program are measured at. Taking the
+   * whole one instead is 322 of 352 cells against 340, and truncating the
+   * product rather than rounding it is 306. Four further readings were refused
+   * on the same sweep: `floor(across/3)/ppem` (306), `round(across/3)/ppem`
+   * (290), `ceil(across/3)/ppem` (260) and the unrounded `across/3/ppem` (258).
+   * The six readings scored against this instrument before were all scored
+   * while its *upright* half was also failing, which is why none of them could
+   * be right and why the number they agreed on meant nothing.
    *
    * **Read out of GDI's memory, not fitted.** `oracle/probes/stack.c` recovers
    * the box the scan converter is set up from; 948 of them were recorded across
@@ -809,7 +854,7 @@ export class Surface {
    * See `BitmapFont.SLANT` and `FONTS.md` section 3.
    */
   static leanOf(ppem, across = ppem) {
-    return Math.floor(across / 3) / ppem;
+    return Math.round((Math.floor(ppem / 3) * across) / ppem) / ppem;
   }
 
   /**

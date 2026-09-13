@@ -1733,11 +1733,13 @@ export const KNOWN_GAPS: Record<string, string> = {
    * and 212 of its cells differ by a pixel where a stroke meets the edge.
    */
 
-  /* The glyph sweep on a Hercules, 50 cells of 6,046.
+  /* The glyph sweep on a Hercules, 18 cells of 6,046.
    *
-   * 45 are the same cells an EGA has, and ten more of the same kind that only
-   * this display's pixel is far enough from square to reach -- Symbol at weight
-   * 400, the synthesised shear -- and Courier New's italic `g`; see below.
+   * Three are the same cells an EGA has; see below. Ten are Symbol **bold and
+   * upright**, which is not the rasteriser at all: above `OUTLINE_FLOOR` a bold
+   * request takes the face's own strike on a square pixel and the outline here,
+   * and no reading of that has survived the VGA. `FONTS.md` section 8d has the
+   * costs. It is only visible on this display now.
    *
    * The other five are what is left of the plotter faces, which were 212 until
    * a line learnt to break a tie the way the driver in front of it does: Roman
@@ -1748,21 +1750,20 @@ export const KNOWN_GAPS: Record<string, string> = {
    * where the remaining 305 are too.
    */
   'glyphs-hercules:glyph':
-    'the glyph sweep on a Hercules, 50 cells of 6,046: 44 Symbol and one Courier New of the same kind an EGA has, and five plotter cells left over from the driver tie',
+    'the glyph sweep on a Hercules, 18 cells of 6,046: ten Symbol bold where the mapper takes a strike and Windows takes an outline, the three an EGA also has, and five plotter cells',
 
-  /* The glyph sweep on an EGA, 35 cells of 6,046.
+  /* The glyph sweep on an EGA, three cells of 6,046.
    *
-   * 34 are Symbol and every one of them is weight 400 -- the bold strike the
-   * earlier note here blamed is not in it, and that note was wrong. 29 are
-   * single slanted letters, which is the synthesised shear on a pixel that is
-   * not square: the shape of the sheared stroke, not where it sits. The other
-   * five are pairs that also differ in shape, so they survived the pen learning
-   * to step by `outlineAdvance`.
-   *
-   * The last is Courier New's italic `g` at twelve.
+   * Courier New's italic `g` at twelve, and Symbol's slanted `m` and `y` at
+   * fifteen. The `g` is the one glyph in the corpus whose descender tail is a
+   * dropout the face does not hint at that size; the other two are the last of
+   * the synthesised shear, and `symbol-slant` -- the instrument that is nothing
+   * but the shear -- has twelve cells left at one size of its own, all of them
+   * at a vertical size of eight, where no whole number of pixels of lean makes
+   * the cell right. So the lean is not what is left there either.
    */
   'glyphs-ega:glyph':
-    'the glyph sweep on an EGA, 35 cells of 6,046: 34 Symbol at weight 400, nearly all of them the synthesised shear on a pixel that is not square, and one Courier New',
+    'the glyph sweep on an EGA, three cells of 6,046: Courier New italic `g` at twelve and Symbol slanted `m` and `y` at fifteen',
 };
 
 /**

@@ -15812,44 +15812,69 @@ coordinate rather than rounding it was refused earlier by both displays at once
 things, and the stroke walk wants an instrument of its own.
 
 
-#### An instrument for the synthesised slant, and what it rules out
+#### An instrument for the synthesised slant, and the lean it finally gives up
 
 `symbol-slant` puts one upright bar in place of every Symbol letter, which is
 the whole of the synthesised slant with nothing else in the picture -- Symbol
 has no italic file, so the lean is Windows's own. It is 288 of 288 on a VGA and
 had never been recorded anywhere else.
 
-On an EGA it is **175 of 224 upright and 0 of 128 slanted**. Nothing slanted
-agrees at all, which is the cleanest statement of the problem there has been:
-the two fixes that came out of `cour-bars` are in the upright path, and the
-slant has something of its own.
+On an EGA it was **175 of 224 upright and 0 of 128 slanted**, and six readings of
+the lean were scored against those 128 cells and every one refused. That scoring
+was worthless and it is worth saying why: the upright half of the same instrument
+was failing at the same time, so the slanted cells were being asked to be right
+about a shear applied to a bar that was already in the wrong place. No lean could
+have scored well and the one that scored least badly meant nothing.
 
-The bar at eight pixels shows it in five rows. Windows steps the leaning bar
-every second row -- columns 4, 4, 3, 3, 2 -- and this steps it a row early --
-4, 3, 3, 3, 2. **The slope agrees and the phase does not**, which is a rounding
-inside the shear rather than an angle.
+With the mapper and the pen fixed the upright half is exact, and the question can
+be asked properly. Sweep the numerator -- the lean is some whole number of pixels
+over one em of rise -- and ask, size by size, which whole numbers make *every*
+cell of that size right. **Nineteen of the twenty sizes answer with exactly one
+number**, which is what a real measurement looks like:
 
-Six readings of the lean were scored against those 128 cells and not one of them
-is the answer:
+    ppem  across   wants    floor(ppem/3) x aspect
+       6   8.000       3     2 x 4/3 =  2.67
+       7   9.333       3     2 x 4/3 =  2.67
+       9  12.000       4     3 x 4/3 =  4
+      11  14.667       4     3 x 4/3 =  4
+      12  16.000       5     4 x 4/3 =  5.33
+      14  18.667       5     4 x 4/3 =  5.33
+      16  21.333       7     5 x 4/3 =  6.67
+      20  26.667       8     6 x 4/3 =  8
+      23  30.667       9     7 x 4/3 =  9.33
+      24  32.000      11     8 x 4/3 = 10.67
+      27  36.000      12     9 x 4/3 = 12
+      31  41.333      13    10 x 4/3 = 13.33
 
-    floor(ppem/3)/ppem   0      round(ppem/3)/ppem  12
-    ppem/3 unrounded     0      ceil(ppem/3)/ppem   26
-    floor(ppem/2)/ppem  14      a flat half         13
+The right-hand column is the rule, and it gets all nineteen. **The lean is a
+whole number of pixels of the em computed down the page -- `floor(ppem / 3)`,
+which is the number the stack probe read out of GDI's memory on a VGA -- and then
+carried across the device's own aspect and rounded again.** On a square pixel the
+aspect is one and the second rounding returns the number it was given, which is
+why every reading of this taken on a VGA was right and incomplete at once.
 
-`ceil` is the best of them at 26 of 128 and is plainly not it either. So the
-lean has now been refused three times -- twice on the recorded corpus where
-nothing moved, and once here where everything is wrong -- and the next thing to
-look at is what the shear is applied *to*, not how steep it is. The 49 upright
-cells of the same instrument that fail say the same thing from the other side:
-Symbol's bars are not Courier's, and something before the slant is already out.
+The horizontal size it is carried across is the *fractional* one, and not the
+whole `xWhole` that the advance and the hint program are both measured at. That
+is measured too, on the same sweep: the whole size is 322 cells of 352 against
+340, and truncating the product rather than rounding it is 306. The four earlier
+shapes are 306, 290, 260 and 258.
 
+No product in the sweep lands on an exact half, so **which way a half goes is not
+measured** and nothing above should be read as claiming it.
+
+`symbol-slant` on an EGA goes from 175 of 352 to **340**, and the recorded glyph
+sweep on that display to **6,043 of 6,046** -- three cells, none of them a shear:
+Courier New's italic `g` at twelve, and Symbol's slanted `m` and `y` at fifteen.
+The instrument's own twelve remaining cells are all at a vertical size of eight,
+where no whole number of pixels makes the cell right at all, so whatever is left
+there is not the lean either.
 
 #### The upright half of it is the mapper, and the rule is not yet separable
 
-The 49 upright cells `symbol-slant` leaves on an EGA are not the rasteriser at
-all. Windows draws the fabricated bar and this draws a real Symbol letter, which
+The 49 upright cells `symbol-slant` once left on an EGA were not the rasteriser
+at all. Windows drew the fabricated bar and this drew a real Symbol letter, which
 can only mean one thing: **Windows realised the outline and this realised a
-strike.** Split by height and weight the pattern is exact --
+strike.** Split by height and weight the pattern was exact --
 
     plain  8:12/12  10:12/12  12:13/14  13:12/12  14:2/2  15:14/14  16:12/12  20:14/14  24:13/14
     bold   8:12/12  10:12/12  12:12/12  13:12/12            15: 0/12  16: 0/12  20: 0/12  24:12/12
@@ -15860,8 +15885,12 @@ strike of its own at, and every bold height that passes is one it has none at.**
 Thirteen and twenty-four are right because there is no strike there; fifteen,
 sixteen and twenty are wrong because there is.
 
+Those 49 are gone -- the instrument's upright half is exact on an EGA now -- but
+the question they asked is not, and the recorded sweep still shows it on the
+Hercules, where ten bold upright Symbol cells are the largest thing left.
+
 So above `OUTLINE_FLOOR` a bold request is not answered by the face's own
-strike. That much the EGA says plainly. What it does *not* say is the rule,
+strike. That much both displays say plainly. What it does *not* say is the rule,
 because every way of writing it costs more on the VGA than it gains:
 
     require the weight to match          EGA +35   VGA -22 glyphs, -6 font, -84 styles
@@ -16016,8 +16045,8 @@ recorded on is counted.
 | ------------------------------------------------------------ | ------- | --------- |
 | `font`                                                       | 5,057   | **100%**  |
 | `glyphs` (VGA, Super VGA)                                    | 6,046   | **100%**  |
-| `glyphs` (EGA)                                               | 6,046   | 99.4%     |
-| `glyphs` (Hercules)                                          | 6,046   | 99.2%     |
+| `glyphs` (EGA)                                               | 6,046   | 99.95%    |
+| `glyphs` (Hercules)                                          | 6,046   | 99.7%     |
 | `hinting` (VGA, EGA)                                         | 14,928  | **100%**  |
 | `lines` (all four displays)                                  | 740     | **100%**  |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
@@ -16031,9 +16060,9 @@ not the font's box scaled by any one size.
 
 **Every glyph cell on a square pixel is exact**, as is every stretched advance
 in `hinting` and every line on every display. What `KNOWN_GAPS` holds besides
-that one metric is the 35 EGA and 50 Hercules glyph cells -- nearly all of them
-Symbol at weight 400, which is the synthesised shear on a pixel that is not
-square, plus Courier New's italic `g` and five plotter cells -- and the Hercules
+that one metric is three EGA glyph cells -- Courier New's italic `g` at twelve
+and Symbol's slanted `m` and `y` at fifteen -- those same three on a Hercules
+with ten bold Symbol cells and five plotter cells beside them, and the Hercules
 `font` sweep's sideways strike stretch. The `stack` fixture is not in the table because it is an
 instrument rather than an oracle: its 3,650 records are the scaler's own stack,
 which nothing on this side is meant to reproduce, and the conformance suite
