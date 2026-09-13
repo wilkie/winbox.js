@@ -347,6 +347,19 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
         for (letter = alphabet; *letter; letter++) {
             probeSweep("Symbol", 1, *letter);
         }
+
+        /* And the same face upright.
+         *
+         * The slanted sweep was asked for because a synthesised slant is the
+         * thing being measured. The upright one is asked because the glyph
+         * probe draws two of a letter side by side, and on a display whose
+         * pixel is not square the *second* of them lands elsewhere than
+         * Windows puts it while the first is exact -- which is a width and not
+         * a shape, and nothing has ever recorded this face's widths upright.
+         */
+        for (letter = alphabet; *letter; letter++) {
+            probeSweep("Symbol", 0, *letter);
+        }
     }
 
     /* Times New Roman's `y`, whose descender tail is the other last pixel.

@@ -706,31 +706,26 @@ export class Surface {
         }
       }
 
-      /* The same sources `LogicalFont.measure` asks, in the same order, so that
-       * where the pen lands and what a string measures cannot disagree.
+      /* `LogicalFont.measure`'s own rule, so that where the pen lands and what
+       * a string measures cannot disagree.
        *
-       * Including the slant, which has a source of its own. A face Windows is
-       * shearing is drawn with no program run and measured with the scaler's
-       * unhinted advance, and the pen steps by that too -- it is one number,
-       * not a measured one and a drawn one.
+       * It used to be the same *sources* in the same order rather than the same
+       * function, and that is not the same thing. `outlineAdvance` asks them at
+       * the whole **horizontal** size -- `hdmx`, `LTSH`, the program, and for a
+       * synthesised slant the scaler's unhinted advance -- and this asked them
+       * at the vertical one. A square pixel cannot tell the two apart, and
+       * every reading of them had been taken on one.
        *
-       * **Recorded**, because the two had been allowed to differ here and
-       * nothing could see it: every cell of the glyph corpus draws a single
-       * character, and a single character never steps. `glyphs` now draws
-       * sixteen pairs of Symbol slanted, at the sizes where the unhinted
-       * advance and the upright's hinted one differ by a whole pixel or more.
-       * Stepping by the upright's advance puts the second glyph in the wrong
-       * column in **all sixteen**; stepping by this puts it in the right one in
-       * all sixteen. The upright pairs recorded beside them are the control --
-       * there the two candidates are the same number, and both readings agree
-       * with Windows at every size.
+       * **Recorded.** `hinting` now sweeps Symbol upright as well as slanted,
+       * which says what the advance is rather than leaving it to be read out of
+       * ink: 14,928 records on each of two displays, all of them exact, and
+       * Symbol's `z` at a twenty-two pixel cell on an EGA advances by thirteen.
+       * The pen stepped by eleven. The glyph corpus draws pairs precisely
+       * because a single character never steps and nothing else could see it;
+       * on an EGA 24 of its 29 pairs were in the wrong column, and with the one
+       * rule they are in the right one.
        */
-      pen += italic
-        ? outline.unhintedAdvance(glyph, ppem)
-        : (outline.deviceAdvance(ppem, glyph) ??
-          outline.linearAdvance(glyph, ppem) ??
-          outline.hintedAdvance(glyph, ppem) ??
-          Math.round(outline.advanceOf(glyph) * scale));
+      pen += font.outlineAdvance(character.charCodeAt(0));
     }
   }
 

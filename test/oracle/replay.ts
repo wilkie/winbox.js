@@ -1733,10 +1733,11 @@ export const KNOWN_GAPS: Record<string, string> = {
    * and 212 of its cells differ by a pixel where a stroke meets the edge.
    */
 
-  /* The glyph sweep on a Hercules, 74 cells of 6,046.
+  /* The glyph sweep on a Hercules, 50 cells of 6,046.
    *
-   * 69 are the same cells an EGA has -- Symbol, and Courier New's italic `g`
-   * -- and they are the mapper rather than the rasteriser; see below.
+   * 45 are the same cells an EGA has, and ten more of the same kind that only
+   * this display's pixel is far enough from square to reach -- Symbol at weight
+   * 400, the synthesised shear -- and Courier New's italic `g`; see below.
    *
    * The other five are what is left of the plotter faces, which were 212 until
    * a line learnt to break a tie the way the driver in front of it does: Roman
@@ -1747,19 +1748,21 @@ export const KNOWN_GAPS: Record<string, string> = {
    * where the remaining 305 are too.
    */
   'glyphs-hercules:glyph':
-    'the glyph sweep on a Hercules, 74 cells of 6,046: 68 Symbol and one Courier New as on an EGA, and five plotter cells left over from the driver tie',
+    'the glyph sweep on a Hercules, 50 cells of 6,046: 44 Symbol and one Courier New of the same kind an EGA has, and five plotter cells left over from the driver tie',
 
-  /* The glyph sweep on an EGA, 59 cells of 6,046.
+  /* The glyph sweep on an EGA, 35 cells of 6,046.
    *
-   * 58 are Symbol, and they are the mapper rather than the rasteriser: above
-   * `OUTLINE_FLOOR` a bold request takes the face's own strike on a square
-   * pixel and the outline here, and no reading of that has yet survived the
-   * VGA. See `FONTS.md`, section 8d.
+   * 34 are Symbol and every one of them is weight 400 -- the bold strike the
+   * earlier note here blamed is not in it, and that note was wrong. 29 are
+   * single slanted letters, which is the synthesised shear on a pixel that is
+   * not square: the shape of the sheared stroke, not where it sits. The other
+   * five are pairs that also differ in shape, so they survived the pen learning
+   * to step by `outlineAdvance`.
    *
-   * The other is Courier New's italic `g` at twelve.
+   * The last is Courier New's italic `g` at twelve.
    */
   'glyphs-ega:glyph':
-    'the glyph sweep on an EGA, 59 cells of 6,046: 58 Symbol, where the mapper takes a strike and Windows takes an outline, and one Courier New',
+    'the glyph sweep on an EGA, 35 cells of 6,046: 34 Symbol at weight 400, nearly all of them the synthesised shear on a pixel that is not square, and one Courier New',
 };
 
 /**

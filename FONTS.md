@@ -15966,11 +15966,43 @@ it is four lines.
 
 **What it closed.** `hinting` goes to **8,542 of 8,542 on both displays** --
 every stretched advance of every character of every face, exact. The glyph sweep
-on an EGA goes from 295 short to 59 and on a Hercules from 310 to 74, and what is
-left is a different thing entirely: 58 and 68 of them are Symbol, which is the
-mapper choosing a strike where Windows chose an outline (see above), one is
-Courier New's italic `g` at twelve, and five are the plotter faces on the
-Hercules.
+on an EGA goes from 295 short to 59 and on a Hercules from 310 to 74.
+
+#### The pen and the ruler, measured apart at last
+
+What was left was almost all Symbol, and the first guess about it was wrong and
+is worth saying so: it looked like the bold strike-or-outline question above, and
+it is not, because **every remaining cell is weight 400.**
+
+Split by what is drawn, it is two things. 29 of them on each display draw a
+*pair* of the same letter, and in every pair the first glyph is exact and the
+second is in the wrong column -- which is a width and not a shape. The rest draw
+one letter, slanted.
+
+The pairs came apart with a probe. `hinting` had only ever swept Symbol in
+italic, because a synthesised slant was what it was built to measure, so this
+face's upright advances had never been recorded at all; the disagreement could
+only be read out of ink, which cannot say whether the advance is wrong or the
+drawing is. Swept upright as well -- **14,928 records on each of two displays,
+every one exact** -- it says plainly that Symbol's `z` at a twenty-two pixel cell
+on an EGA advances by thirteen, and that we already knew it.
+
+So the ruler was right and the pen was not. `Surface` stepped by *the same
+sources* `LogicalFont.measure` asks, in the same order, rather than by the same
+function -- and `outlineAdvance` asks them at the whole **horizontal** size while
+the pen asked at the vertical one. On a square pixel those are one number, and
+every reading of that code had been taken on a square pixel. The glyph corpus
+draws pairs for exactly this reason: a single character never steps, so nothing
+else in 6,046 cells could see it.
+
+One rule for both puts 24 of the 29 pairs right on each display. The EGA stands
+at 35 cells and the Hercules at 50, and what is left is one kind of thing: the
+synthesised shear on a pixel that is not square, the shape of the sheared stroke
+rather than where it sits. Ten more of them show on a Hercules than on an EGA,
+which is what you would expect of a defect that grows with how far the pixel is
+from square: eleven by sixteen against thirty-eight by forty-eight. Beside them
+sit Courier New's italic `g` at twelve and, on the Hercules only, five plotter
+cells.
 
 ## 9. Where the numbers stand
 
@@ -15984,9 +16016,9 @@ recorded on is counted.
 | ------------------------------------------------------------ | ------- | --------- |
 | `font`                                                       | 5,057   | **100%**  |
 | `glyphs` (VGA, Super VGA)                                    | 6,046   | **100%**  |
-| `glyphs` (EGA)                                               | 6,046   | 99.0%     |
-| `glyphs` (Hercules)                                          | 6,046   | 98.8%     |
-| `hinting` (VGA, EGA)                                         | 8,542   | **100%**  |
+| `glyphs` (EGA)                                               | 6,046   | 99.4%     |
+| `glyphs` (Hercules)                                          | 6,046   | 99.2%     |
+| `hinting` (VGA, EGA)                                         | 14,928  | **100%**  |
 | `lines` (all four displays)                                  | 740     | **100%**  |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
 | `styles`                                                     | 9,178   | **100%**  |
@@ -15999,10 +16031,10 @@ not the font's box scaled by any one size.
 
 **Every glyph cell on a square pixel is exact**, as is every stretched advance
 in `hinting` and every line on every display. What `KNOWN_GAPS` holds besides
-that one metric is the 59 EGA and 74 Hercules glyph cells -- 58 and 68 of them
-Symbol, which is the mapper taking a strike where Windows took an outline, one
-Courier New's italic `g`, five the plotter faces -- and the Hercules `font`
-sweep's sideways strike stretch. The `stack` fixture is not in the table because it is an
+that one metric is the 35 EGA and 50 Hercules glyph cells -- nearly all of them
+Symbol at weight 400, which is the synthesised shear on a pixel that is not
+square, plus Courier New's italic `g` and five plotter cells -- and the Hercules
+`font` sweep's sideways strike stretch. The `stack` fixture is not in the table because it is an
 instrument rather than an oracle: its 3,650 records are the scaler's own stack,
 which nothing on this side is meant to reproduce, and the conformance suite
 reports them as unsupported.
