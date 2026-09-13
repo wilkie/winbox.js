@@ -778,6 +778,14 @@ export class Surface {
      * `slant-width` go to 288 of 288 with no wrong pixels, joining
      * `symbol-slant` and `symbol-shapes`. Rounding the shear term down instead
      * costs four records.
+     *
+     * And swept again once a display with a pixel that is not square had an
+     * instrument of its own, where the halves land differently: a half upward
+     * is 32,394 fabricated cells of 32,394 and 2,654 of the 2,668 that are not
+     * square, against 31,973 and 2,650 for flooring, 31,959 and 2,650 for
+     * ceiling, 32,383 and 2,654 for away from zero, and 32,347 and 2,652 for
+     * toward it. Upward is best on both counts and alone in being exact on the
+     * first.
      */
     const k = scale * 64;
 

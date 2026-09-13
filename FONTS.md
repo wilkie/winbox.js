@@ -15760,10 +15760,13 @@ the identity. Multiplying by `aspectX / aspectY` inside the same floor brings
 
 #### And the scan converter has never run anisotropically
 
-That is what is left: 895 cells, 768 of them the four outline faces. Every VGA
-recording runs the hint program and the scan converter with a square transform,
-so the stretch that an EGA applies before a width is even asked for exercises
-paths nothing has ever checked. The shape of it is small and consistent -- the
+That was what was left at the time: 895 cells, 768 of them the four outline
+faces. It is **three** now, and the subsections below are the history of getting
+there -- each one is a mechanism found and closed, and the counts in them are the
+counts as they stood when they were written. Every VGA recording runs the hint
+program and the scan converter with a square transform, so the stretch that an
+EGA applies before a width is even asked for exercises paths nothing had ever
+checked. The shape of it is small and consistent -- the
 base of a letter comes out exactly right and an accent lands a column over, or a
 stem leans a column the other way -- which is what a rounding inside the
 transform looks like rather than a wrong size. The remaining 116 plotter cells
@@ -15876,14 +15879,24 @@ every row but the two at its apex:
 
 **And those two rows are the shape of what is left.** Not a size, not a
 placement, not a scale: a run at the top of a letter that Windows fills and this
-does not. 570 cells, 17,605 pixels, and the next thing to ask is what the scan
-converter does with a crossing when the sample grid it is walking is not square
--- which is the one part of the pipeline the 32,394 fabricated cells never
-exercised, because every one of them was drawn on a VGA.
+does not. It was 570 cells and 17,605 pixels when that was written, and the
+prediction held: the three still standing are exactly that shape.
 
-The lean was measured and is not it: sweeping the shear slope over four
-readings, all four leave the same 2 of Symbol's 128 slanted cells agreeing, so
-the slope is not what separates them.
+- **Courier New's italic `g` at twelve.** Its bowl closes at the top, and
+  Windows fills the whole run -- columns three to seven -- where this fills six
+  and seven. The row below is identical on both, two separate marks at three and
+  seven, so the sides agree and the top does not. Courier New ships an italic
+  file, so this glyph is hinted rather than sheared: it is that face's program
+  under the stretch, which is the family the `MSIRP` placement came from.
+- **Symbol's slanted `m` and `y` at fifteen.** One pixel each, both at the top
+  of a stem: the `m` has one column too many at row nine, the `y` has its top
+  two rows a column apart from Windows'. Symbol has no italic file, so these are
+  sheared rather than hinted -- a different mechanism with the same signature.
+
+The lean is measured and is not it, twice over: sweeping the shear slope over
+four readings leaves the same cells wrong, and the rule that finally fitted the
+lean everywhere else -- `floor(ppem/3)` carried across the aspect -- leaves these
+three untouched.
 
 
 #### Chosen geometry, drawn through a pixel that is not square
