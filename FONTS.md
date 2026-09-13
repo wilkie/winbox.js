@@ -679,7 +679,8 @@ costs:
 
 The glyph sweep recorded on a Super VGA is **6,046 of 6,046** -- a fourth display
 drawing every cell of every face exactly, with nothing changed for it. Recorded
-on a Hercules it is 5,529, and the 517 split in two.
+on a Hercules it was 5,529, and the 517 split in two -- 310 of them still
+outstanding once the rest of this section was understood.
 
 305 of them are the slanted cells an EGA has too, which is the `hinting` defect
 seen as pixels. The other **212 are the plotter faces**: Roman upright and
@@ -698,33 +699,75 @@ display; three of them now say yes and one says no.
 
 And the reason is one layer down. A stroke font is lines, and `lines` -- which
 walks one line from the middle of a cell out to every offset in a range -- had
-also only ever run on a VGA. Recorded on a Hercules, **32 of its 248 cells differ
-from the VGA's**, and they are exactly the 32 we get wrong, because we draw what a
-VGA draws.
+also only ever run on a VGA. Recorded on a Hercules, its cells differ from the
+VGA's, and they are exactly the cells we get wrong, because we draw what a VGA
+draws.
 
-Every one of the 32 has an offset of eight in one direction or the other: the
-full symmetric set of `±8` against `±1`, `±2`, `±4` and `±5`.
+#### What every driver agrees on
 
-An earlier reading here said eight was where the line left the cell, so these
-were the ones needing clipping, and pointed at `CLIPCAPS` being nought on this
-display and one on the other three. **That is wrong and is retracted.** The cell
-is thirty-two square and the line starts at its middle, so an offset of eight
-ends at twenty-four and nothing is clipped; eight is simply the longest offset
-the sweep asks for.
+The first sweep had four rings, radius 3, 5, 8 and 13. A tie -- a line passing
+exactly between two pixels -- needs an even major span to arise at all, and only
+one of those four radii is even, so seven slopes in the whole corpus could tie.
+Seven is few enough to fit almost anything, and the first two readings taken off
+it were both wrong. The sweep now has seven rings, four of them even, and eight
+fans from the corner of the cell as well, where a line has room for a span of
+thirty-one instead of fifteen: **740 records on each of four displays**.
 
-The pixels say what it is. A line eight across and four down -- a slope of
-exactly one half -- comes out as four runs of two on a VGA, starting at the
-origin, and on a Hercules as a run of one, then three of two, then one of one.
-The steps fall half a step earlier. Eight across and one down is four pixels then
-four on a VGA and five then three on a Hercules; eight across and two down is
-three, four, one against two, four, two. Every one of them is the same thing:
-**the two drivers start their error term at different places**, one at nought and
-one at half the increment, so they part exactly where a step lands on a tie and
-agree everywhere else.
+The first thing that says is the strong one. Every pixel of all 2,960, on every
+driver, is **the pixel nearest the true line**: for a major span `M` and a minor
+span `m`, the minor coordinate at step `i` is `i * m / M` rounded, with no
+exceptions anywhere. A driver has no freedom here at all except at a tie.
 
-That is measured, not read: line drawing is **not** device-independent, which
-nothing in this repository had assumed either way, and the plotter faces lose 212
-cells on this display for that reason and none on the other three.
+The second is that VGA, Super VGA and EGA are identical record for record, all
+740, and their tie rule is one sentence: **a tie goes to the smaller y**. Upward
+on the screen, whichever direction the line runs and whichever axis is the long
+one. An earlier version of this said six of eight quadrant cases round down and
+two round up, and called the two odd. They are not odd. On a steep line the minor
+coordinate is x, so holding y down means moving x whichever way the two
+directions disagree; it is the same sentence seen through the other axis.
+
+#### What the Hercules does instead
+
+It differs in **192 of the 740**, and its rule is not a direction. It is the
+slope, in lowest terms. Reduce the span and the rise to `m/M`, and a tie **rises
+when `2m > M` and falls when `2m < M`** -- with the two end slopes, `1/M` and
+`(M-1)/M`, each the other way about.
+
+That is the whole of it. It predicts all 740 records on the Hercules and all 740
+on each of the other three, which is why it is stated as measured; the two end
+slopes turning over is not explained here, and nothing below should be read as
+explaining it.
+
+Two readings were refused on the way, and both are worth keeping.
+
+The first was clipping. `CLIPCAPS` is nought on the Hercules and one on the other
+three, and on the old sweep every failure sat at the longest offset it asked for,
+which looked exactly like a driver that cannot clip for itself meeting one that
+can. It is not: the cell is thirty-two square and the line starts in the middle,
+so an offset of eight reaches twenty-four and nothing the probe draws comes near
+an edge. The correlation was with the end of the sweep, not with the edge of the
+cell -- which is its own lesson about a sweep that stops too early.
+
+The second was the run-length slice: the shape a driver writing whole bytes into
+a packed monochrome bitmap would naturally use, and the shape you would guess
+for this display in particular. It matches the Hercules on four of the seven
+slopes the old sweep could test, which is what made it tempting, and 204 records
+of 232 overall -- the same 204 it scores against the VGA, so it distinguishes
+nothing.
+
+#### What it fixes
+
+A tie is now the driver's to break: `lineTie` on the display mode, `'top'` on the
+three colour drivers and `'slope'` on the Hercules, read by `BitmapContext.stroke`.
+
+`lines` goes to **740 of 740 on all four displays**, and the glyph sweep on a
+Hercules from 517 short to 310 -- **207 of the 212 plotter cells**. The five left
+are `Roman` slanted `M` and `W` at forty pixels, and `Script` `j` at sixteen and
+forty and `y` at forty; the other 305 are the slanted cells an EGA has too, which
+are the `hinting` defect and not this.
+
+Line drawing is **not** device-independent, which nothing in this repository had
+assumed either way.
 
 ### The two passes, read rather than inferred
 

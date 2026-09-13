@@ -540,7 +540,7 @@ export class Context {
    * From the middle of the cell to a point given as an offset, which is how
    * the probe asks: nothing about fonts, one pen a pixel wide, and the ink.
    */
-  drawLine(dx: number, dy: number) {
+  drawLine(dx: number, dy: number, fromX = 16, fromY = 16) {
     const surface: any = Surface.offscreen(32, 32);
 
     surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
@@ -549,8 +549,12 @@ export class Context {
     surface.context.strokeStyle = 'black';
     surface.context.beginPath();
     surface.context.excludeLast = true;
-    surface.context.moveTo(16, 16);
-    surface.context.lineTo(16 + dx, 16 + dy);
+
+    /* A line is the driver's to draw, and the drivers do not agree. */
+    surface.context.lineTie = this.display.lineTie;
+
+    surface.context.moveTo(fromX, fromY);
+    surface.context.lineTo(fromX + dx, fromY + dy);
     surface.context.stroke();
 
     return this.readCell(surface);
@@ -560,6 +564,9 @@ export class Context {
     const surface: any = Surface.offscreen(cell, cell);
 
     surface.font = font;
+
+    /* The plotter faces are drawn as lines, and a line is the driver's. */
+    surface.context.lineTie = this.display.lineTie;
 
     // White to start with, as `PatBlt(..., WHITENESS)` left it.
     surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
@@ -1533,6 +1540,11 @@ const ADAPTERS: Record<
   line(context, args) {
     return context.drawLine(Number(args[0]), Number(args[1]));
   },
+
+  /* The same, from the corner, where a line has room for a longer span. */
+  corner(context, args) {
+    return context.drawLine(Number(args[0]), Number(args[1]), 0, 0);
+  },
 };
 
 /** Thrown by an adapter for a function we have not implemented at all. */
@@ -1756,26 +1768,23 @@ export const KNOWN_GAPS: Record<string, string> = {
    * This is why the plotter faces fail on this display: a stroke font is lines,
    * and 212 of its cells differ by a pixel where a stroke meets the edge.
    */
-  'lines-hercules:line':
-    'the line sweep on a Hercules, 32 of 248: this driver starts its error term half a step from where a VGA starts its own',
 
-  /* The glyph sweep on a Hercules, 517 cells of 6,046.
+  /* The glyph sweep on a Hercules, 310 cells of 6,046.
    *
    * 305 are the same slanted cells an EGA has -- Arial, Times New Roman and
    * Courier New in italic, and Symbol -- and they are one defect with
    * `hinting`'s advances; see above.
    *
-   * The other **212 are the plotter faces**, and they are new: Roman upright and
-   * slanted, Modern and Script. They pass on a VGA, on a Super VGA and on an
-   * EGA, so the strokes are drawn where Windows draws them on three displays and
-   * not on the fourth. Their *metrics* are right here -- the `font` sweep's
-   * widths agree for all three faces on this display -- so it is the drawing and
-   * not the size. A stroke font is scaled separately in each direction, since
-   * the design has an aspect of its own, and this is the first display whose
-   * pixel disagrees with that design by much.
+   * The other five are what is left of the plotter faces, which were 212 until
+   * a line learnt to break a tie the way the driver in front of it does: Roman
+   * slanted `M` and `W` at forty pixels, and Script `j` at sixteen and forty and
+   * `y` at forty. Every other plotter cell on this display now agrees, as do all
+   * 740 lines of the `lines` sweep, so whatever these five are it is not the
+   * tie. They are all descenders or diagonals of a slanted design, which is
+   * where the remaining 305 are too.
    */
   'glyphs-hercules:glyph':
-    'the glyph sweep on a Hercules, 517 cells of 6,046: 305 the slanted cells an EGA also has, and 212 the plotter faces, which three other displays draw right',
+    'the glyph sweep on a Hercules, 310 cells of 6,046: 305 the slanted cells an EGA also has, and five plotter cells left over from the driver tie',
 
   'glyphs-ega:glyph':
     'the glyph sweep on an EGA, 295 cells of 6,046: what the hint program does to a slanted design under an anisotropic transform, narrowed one instruction at a time',

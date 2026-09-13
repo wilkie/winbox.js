@@ -20,6 +20,7 @@
  */
 export class BitmapContext {
   declare excludeLast: any;
+  declare lineTie: any;
   declare _width: number;
   declare _height: number;
   declare _pixels: Uint8Array;
@@ -159,6 +160,34 @@ export class BitmapContext {
     this.excludeLast = false;
   }
 
+  /**
+   * Whether a tie rises, for a line of major span `steps` and minor span
+   * `minor`, under the named driver's rule.
+   *
+   * `'top'` is the rule the VGA, the Super VGA and the EGA share: a tie goes
+   * to the smaller y, which in the minor coordinate normalised to the
+   * direction of travel never rises. `'slope'` is the Hercules driver's: the
+   * slope in lowest terms decides, rising above a half and falling below it,
+   * with the two end slopes turned over. See `stroke`.
+   */
+  static tieRises(rule, steps, minor) {
+    if (rule !== 'slope') {
+      return false;
+    }
+
+    let a = steps;
+    let b = minor;
+
+    while (b) {
+      [a, b] = [b, a % b];
+    }
+
+    const span = steps / a;
+    const rise = minor / a;
+
+    return (2 * rise > span) !== (rise === 1 || rise === span - 1);
+  }
+
   moveTo(x, y) {
     this._path = [[x, y]];
   }
@@ -175,17 +204,49 @@ export class BitmapContext {
    * n`, rounded. Which is the same line until it lands exactly between two
    * pixels, and GDI has a rule for that which an error term does not express.
    *
-   * **Recorded**, by drawing 248 lines from the middle of a cell to every
-   * point on four rings around it and reading the ink back. Every tie -- every
-   * line whose span is even -- rounds the minor coordinate *down*, except on a
-   * steep line whose x and y run in opposite directions, where it rounds up.
-   * Six of the eight quadrant-and-orientation cases say down and two say up,
-   * and each is settled by about thirty lines, so this is a reading rather
-   * than a fit.
+   * **Recorded**, by drawing 740 lines on each of four displays: seven rings
+   * around the middle of a cell, and eight fans from its corner where a line
+   * has room for a longer span. Every pixel of all 2,960 is the pixel nearest
+   * the true line, on every driver, without exception. So the only thing a
+   * driver decides is the tie, and the only thing this has to get right is
+   * which way it goes.
    *
-   * The exception is odd and is left as it is measured. It is the difference
-   * between `(16,16)-(17,24)`, which holds x at 16 through the halfway row,
-   * and `(16,16)-(17,8)`, which does not.
+   * Three of the four displays -- VGA, Super VGA, EGA -- are identical record
+   * for record, and their rule is one sentence: **a tie goes to the smaller
+   * y**. Upward on the screen, whichever way the line runs and whichever axis
+   * is the long one. Written in the minor coordinate that is what
+   * `lineTie: 'top'` means below, and the sign juggling in `rises` is only
+   * saying it in terms of a signed offset: on a steep line the minor
+   * coordinate is x, so holding y down means moving x whichever way the two
+   * directions disagree.
+   *
+   * An earlier reading of this had it as six of eight quadrant cases rounding
+   * down and two up, with the two called odd and left alone. They are not odd;
+   * they are the same rule seen through the other axis.
+   *
+   * The Hercules driver is the fourth, and it differs in 192 of the 740. Its
+   * rule is not a direction at all but the slope, in lowest terms: for a line
+   * whose span and rise reduce to `m/M`, a tie rises when `2m > M` and falls
+   * when `2m < M`, and the two end slopes `1/M` and `(M-1)/M` are each the
+   * other way about. That predicts all 740 records on the Hercules and all 740
+   * on each of the other three, so it is measured rather than read -- though
+   * why the two end slopes turn over is not known, and nothing here should be
+   * taken as knowing it.
+   *
+   * The first version of this sweep used rings of 3, 5, 8 and 13, of which one
+   * radius is even; a tie needs an even span, so seven slopes in the whole
+   * corpus could tie at all, and seven is few enough to fit almost anything.
+   * The even rings and the corner fans exist because of that.
+   *
+   * Two readings were refused along the way, and both are worth the space.
+   * `CLIPCAPS` is nought on the Hercules and one on the other three, and the
+   * failures were all at the sweep's longest offset, which looked like a
+   * clipping difference until the cell was measured: it is thirty-two square
+   * and the line starts in the middle, so nothing the probe draws comes near
+   * an edge. And a run-length slice -- the shape a driver writing whole bytes
+   * into a packed monochrome bitmap would use -- matches the Hercules on four
+   * slopes out of seven and no better than the VGA overall, 204 records of
+   * 232 for both.
    *
    * A line also does not draw the pixel it stops on -- GDI's rule for `LineTo`
    * and `Polyline` -- which callers ask for with `excludeLast`.
@@ -240,10 +301,11 @@ export class BitmapContext {
       const major = (acrossX ? dx : dy) > 0 ? 1 : -1;
       const minor = acrossX ? dy : dx;
 
-      /* Up on a tie only where the line is steep and its two axes disagree in
-       * direction; down everywhere else.
+      /* Which way this driver takes a tie, in the minor coordinate as it is
+       * signed here rather than normalised to the direction of travel.
        */
-      const up = !acrossX && dx * dy < 0 ? 0 : 1;
+      const rises = BitmapContext.tieRises(this.lineTie, steps, Math.abs(minor));
+      const up = (acrossX ? rises : rises === dx * dy > 0) ? 0 : 1;
 
       for (let step = 0; step < stop; step++) {
         const offset = Math.floor((2 * minor * step + steps - up) / (2 * steps));

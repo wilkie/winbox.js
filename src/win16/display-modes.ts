@@ -55,6 +55,12 @@ const COMMON = {
   textCaps: 8708,
   clipCaps: 1,
 
+  /* How the driver breaks a tie when a line passes exactly between two
+   * pixels. Every Windows 3.1 colour driver recorded here takes it to the
+   * smaller y; the Hercules does not. See `BitmapContext.stroke`.
+   */
+  lineTie: 'top',
+
   // Brushes are made on demand rather than drawn from a pool.
   numBrushes: -1,
   numPens: 80,
@@ -206,6 +212,14 @@ export const DISPLAY_MODES = {
     clipCaps: 0,
     numBrushes: 77,
     numPens: 10,
+
+    /* And it draws a line differently, which none of the capability bits say.
+     * The three colour drivers break a tie toward the smaller y; this one
+     * breaks it by the slope. **Recorded**: 192 of 740 lines land elsewhere
+     * than they do on a VGA, and the rule that predicts all 740 is in
+     * `BitmapContext.stroke`.
+     */
+    lineTie: 'slope',
 
     metrics: EGA_METRICS,
   },
