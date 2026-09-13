@@ -696,6 +696,25 @@ that by much: eleven by sixteen against an EGA's thirty-eight by forty-eight.
 Whether those are the pixels Windows chooses had never been established for any
 display; three of them now say yes and one says no.
 
+And the reason is one layer down. A stroke font is lines, and `lines` -- which
+walks one line from the middle of a cell out to every offset in a range -- had
+also only ever run on a VGA. Recorded on a Hercules, **32 of its 248 cells differ
+from the VGA's**, and they are exactly the 32 we get wrong, because we draw what a
+VGA draws.
+
+Every one of the 32 has an offset of eight in one direction or the other: the
+full symmetric set of `±8` against `±1`, `±2`, `±4` and `±5`. Eight is where the
+line leaves the cell, so these are precisely the ones that need clipping -- and
+`GetDeviceCaps` says a Hercules is the one display of the four that cannot clip
+for itself, `CLIPCAPS` nought here against one on the VGA, the Super VGA and the
+EGA. So GDI clips these and the driver clips the rest, and the two do not agree
+at the boundary.
+
+That last is a reading rather than a measurement, and what would settle it is a
+fifth display that also reports nought. What is measured is that line drawing is
+**not** device-independent, which nothing in this repository had assumed either
+way.
+
 ### The two passes, read rather than inferred
 
 The arrangement is now read out of `seg3:0550`, which is the mapper's top level

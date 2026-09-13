@@ -1734,6 +1734,29 @@ export const KNOWN_GAPS: Record<string, string> = {
   'hinting-vga:advance':
     'the hint program under a stretch, 8 of 8,542: the same defect, reproduced on a square screen by asking for a width',
 
+  /* The line sweep on a Hercules, 32 records of 248.
+   *
+   * `lines` walks one line from the middle of a cell out to every offset in a
+   * range and records the pixels. It had only ever run on a VGA. Recorded on a
+   * Hercules, **32 of its 248 cells differ from the VGA's**, and they are
+   * exactly the 32 we get wrong, because we draw what a VGA draws.
+   *
+   * Every one of the 32 has an offset of eight in one direction or the other:
+   * `8,-5`, `-8,-5`, `-5,8`, `-5,-8` and their kin, the full symmetric set of
+   * `+-8` against `+-1`, `+-2`, `+-4` and `+-5`. Eight is where the line leaves
+   * the cell, so these are the ones that need clipping -- and `GetDeviceCaps`
+   * says a Hercules is the one display of the four that cannot clip for itself:
+   * `CLIPCAPS` is nought here and one on the VGA, the Super VGA and the EGA. So
+   * GDI clips these and the driver clips the rest, and the two do not agree at
+   * the boundary. That is a reading rather than a measurement, and what would
+   * settle it is a fifth display that also reports nought.
+   *
+   * This is why the plotter faces fail on this display: a stroke font is lines,
+   * and 212 of its cells differ by a pixel where a stroke meets the edge.
+   */
+  'lines-hercules:line':
+    'the line sweep on a Hercules, 32 of 248: every one an offset of eight, which is where a line leaves the cell and where this driver cannot clip for itself',
+
   /* The glyph sweep on a Hercules, 517 cells of 6,046.
    *
    * 305 are the same slanted cells an EGA has -- Arial, Times New Roman and
