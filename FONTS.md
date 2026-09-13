@@ -15952,12 +15952,31 @@ prediction held: the three still standing are exactly that shape.
   confirms one of the two emitters and not the crossing behind the `y`'s run.
 
   What stands is the structure of the routine, which is read: the stub tests,
-  the two guarded neighbour tests, the two placements, the clamp. What is open is
-  which placement applies and whether the run is a dropout at all -- for that row
-  this side has `[5,5]`, and a run of `[5,6]` would fill column five outright,
-  leave nothing to block the vertical rescue at `(7,4)`, and give Windows' two
-  pixels exactly. Testing smart properly means evaluating the edge behind each
-  entry at the scanline, which is the callback the reference keeps a table of.
+  the two guarded neighbour tests, the two placements, the clamp. And the
+  question of *which* placement is moot, because **the run should not be a
+  dropout at all.**
+
+  The reference calls one when the two list entries are equal --
+  `*psHorizOn == *psHorizOff`, stepped in parallel -- which is what this side
+  does. So the disagreement is in the entries, and the geometry says what they
+  should be. At that row the sample line is `y = 5.5`, and the `y`'s little peak
+  there is three segments: an on-curve point at `(2.2656, 5.4316)`, a control at
+  `(2.9688, 5.5313)`, an on-curve at `(3.2031, 5.5313)` -- so the curve really
+  does reach above the line -- then a control at `(3.6719, 5.5313)` and another
+  at `(4.2813, 5.1387)`, which imply an on-curve point at their midpoint.
+
+  Solving those two quadratics at `y = 5.5` puts the crossings at **4.7933** and
+  **5.5513** pixels. The indices the lists want are `(x + 31) >> 6` and
+  `(x + 32) >> 6`, which is **5 and 6** -- a run, filling column five outright.
+  This side has `[5, 5]`.
+
+  Three sixty-fourths is the whole of it: the off crossing sits at 355 where the
+  boundary for six is 352. And the segment it lies on is nearly flat -- its `y`
+  falls by 0.031 of a pixel from end to end -- which is exactly where a walk that
+  steps rather than solves can lose one. So it is the **spline walk**, and the
+  rest of this cell follows from it: fill column five and there is no rescue at
+  row six, nothing to block the vertical rescue at `(7,4)`, and Windows' two
+  pixels come out.
 
 The lean is measured and is not it, twice over: sweeping the shear slope over
 four readings leaves the same cells wrong, and the rule that finally fitted the
