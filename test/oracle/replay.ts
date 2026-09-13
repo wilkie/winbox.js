@@ -1709,42 +1709,6 @@ export const KNOWN_GAPS: Record<string, string> = {
   'font-hercules:CreateFont extent':
     'the Hercules mapper, 81 of 996: the records that follow the sideways stretch above',
 
-  /* The `hinting` sweep, 130 records of 8,542 on an EGA and 8 on a VGA.
-   *
-   * Recorded here for the first time, and it is the sharpest thing said about
-   * the anisotropic run yet. `hinting` asks for the advance of a glyph the
-   * program has fitted -- the distance between the two horizontal phantoms once
-   * it has had its say -- across four faces, upright and slanted, at every
-   * height from eight to a hundred and ten. On an EGA 8,412 of 8,542 agree and on
-   * a VGA 8,534, and **every one of the 138 that do not is Arial in italic**,
-   * and every one is its `M` or its `m`: Times New Roman, Courier New and Symbol
-   * are all exact slanted, and Arial is exact upright.
-   *
-   * They are off by exactly one pixel and in both directions -- short at eleven,
-   * twelve and sixteen, long at thirty-eight, forty-five and forty-six -- at
-   * about a third of the sizes asked, and the size the run happens at agrees
-   * every time. So it is not the transform and not the size: it is what one
-   * face's program does to its own phantom under a stretch.
-   *
-   * This is the same defect the EGA glyph sweep sees as 237 slanted cells, seen
-   * through a single number per glyph instead of a thousand pixels. Whatever
-   * closes it should close both.
-   *
-   * It **is** anisotropic hinting in general, and the first reading of that here
-   * was wrong twice over. The probe was extended to ask for a slant and a width
-   * at once, which nothing in the corpus had ever asked, and the first extension
-   * asked only the one letter a face was already being swept with -- `n` for
-   * Arial -- which is not a letter that fails. Asked for `M` and `m` under a
-   * width, a plain VGA fails eight of them, and fails them with the same numbers
-   * an EGA gives: `M` at sixteen pixels wants fourteen and gets thirteen on both.
-   *
-   * So it is not about the device at all. It is about a stretch, and it can be
-   * reproduced on a square screen with no mapper and no pixel shape in the way.
-   */
-  'hinting-ega:advance':
-    'the hint program under a stretch, 130 of 8,542: Arial in italic advances a pixel wide or narrow, its `M` and its `m` only',
-  'hinting-vga:advance':
-    'the hint program under a stretch, 8 of 8,542: the same defect, reproduced on a square screen by asking for a width',
 
   /* The line sweep on a Hercules, 32 records of 248.
    *
@@ -1769,11 +1733,10 @@ export const KNOWN_GAPS: Record<string, string> = {
    * and 212 of its cells differ by a pixel where a stroke meets the edge.
    */
 
-  /* The glyph sweep on a Hercules, 310 cells of 6,046.
+  /* The glyph sweep on a Hercules, 74 cells of 6,046.
    *
-   * 305 are the same slanted cells an EGA has -- Arial, Times New Roman and
-   * Courier New in italic, and Symbol -- and they are one defect with
-   * `hinting`'s advances; see above.
+   * 69 are the same cells an EGA has -- Symbol, and Courier New's italic `g`
+   * -- and they are the mapper rather than the rasteriser; see below.
    *
    * The other five are what is left of the plotter faces, which were 212 until
    * a line learnt to break a tie the way the driver in front of it does: Roman
@@ -1784,10 +1747,19 @@ export const KNOWN_GAPS: Record<string, string> = {
    * where the remaining 305 are too.
    */
   'glyphs-hercules:glyph':
-    'the glyph sweep on a Hercules, 310 cells of 6,046: 305 the slanted cells an EGA also has, and five plotter cells left over from the driver tie',
+    'the glyph sweep on a Hercules, 74 cells of 6,046: 68 Symbol and one Courier New as on an EGA, and five plotter cells left over from the driver tie',
 
+  /* The glyph sweep on an EGA, 59 cells of 6,046.
+   *
+   * 58 are Symbol, and they are the mapper rather than the rasteriser: above
+   * `OUTLINE_FLOOR` a bold request takes the face's own strike on a square
+   * pixel and the outline here, and no reading of that has yet survived the
+   * VGA. See `FONTS.md`, section 8d.
+   *
+   * The other is Courier New's italic `g` at twelve.
+   */
   'glyphs-ega:glyph':
-    'the glyph sweep on an EGA, 295 cells of 6,046: what the hint program does to a slanted design under an anisotropic transform, narrowed one instruction at a time',
+    'the glyph sweep on an EGA, 59 cells of 6,046: 58 Symbol, where the mapper takes a strike and Windows takes an outline, and one Courier New',
 };
 
 /**

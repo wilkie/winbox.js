@@ -15903,17 +15903,91 @@ variant of the cost but a probe: `GetTextFace` and the metrics over a
 weight-by-height sweep on both displays, which would say which face Windows
 chose rather than leaving it to be inferred from ink.
 
+#### A twilight point that was never placed, and the slant it cost
+
+The `hinting` sweep had held eight wrong advances on a VGA and 130 on an EGA
+since it was first widened to ask for a width. Every one was Arial in italic and
+every one was its `M` or its `m`, a pixel wide or narrow, at about a third of the
+sizes asked. The same defect was 237 of the EGA glyph sweep's slanted cells.
+
+The chase is worth recording because none of it was reading.
+
+**One instruction.** Tracing `"Arial", h=16, w=8, italic=1, 'M'` -- ppem 13,
+horizontal size 17 -- the advance leaves the scaling at fourteen pixels and the
+program moves it once, at a `MIRP` three instructions from the end, to 12.8281.
+That rounds to thirteen where Windows says fourteen. The `MIRP` measures from
+point 10, so the question became where point 10 is; and point 10 is put there by
+a `MIRP` and an `MDAP` immediately before, which we finish at **11.4844** and
+round down to 11.
+
+**Two readouts, and the half pixel.** `ariali-m-p10-cut353` and
+`ariali-m-p10-cut359` are fabrications that already existed -- Arial Italic's `M`
+with its program cut after those bytes and a readout of point 10 in place of the
+tail -- but they had been recorded before the sweep ever asked for a width.
+Recorded again, Windows reports the point at **exactly 11.5** before the `MDAP`
+and at **12** after it. So the `MDAP` is not the disagreement: it rounds a half
+up, as ours does, and we simply arrive a sixty-fourth below the half.
+`ariali-m-p11-cut351` says the reference point of that `MIRP` is at ten pixels on
+both, so the sixty-fourth is in the measurement and not in where it starts.
+
+**Four refusals, with counts.** A sixty-fourth is reachable from several places
+and each was tried against the whole sweep:
+
+    no stretch factor on a diagonal control-value read   EGA 8,401  VGA 8,532
+    the factor quantised to the projection's long axis   EGA 8,401  VGA 8,532
+    the freedom-vector step truncating instead of rounding   EGA 8,415  VGA 8,530
+    the projection truncating instead of rounding       EGA 8,413  VGA 8,531
+    (unchanged)                                         EGA 8,412  VGA 8,534
+
+Every one costs more than it gains, and the first two break the fabricated
+corpus besides. So the control-value stretch is right, both roundings are right,
+and the sixty-fourth is not in the arithmetic of that instruction at all.
+
+**Where it actually was.** Arial Italic does not slant by a constant. Its `prep`
+builds the vector every slanted measurement in the face is taken along, out of
+two twilight points: one set from a control value with `MIAP`, a second stepped
+sideways from it with `MSIRP`, and the line between the second and the origin.
+Under a width request the two scale by different amounts, so that vector is the
+face's own answer to the stretch -- and it is the one number in the chain that
+had never been read out of Windows.
+
+Two more fabrications read it: `ariali-m-store10` and `ariali-m-store11` report
+the storage `prep` leaves the two components in, as the glyph's advance. At
+thirteen pixels stretched to seventeen Windows has **(15798, 4337)** and we had
+**(16139, 2824)** -- not a sixty-fourth but a wholly shallower slant.
+
+The cause is one rule. A twilight point has no outline behind it, so the
+instruction that first places it has to write one; `MIRP` and `MIAP` both do,
+and **our `MSIRP` did not**. The twilight zone is scratch space that the last
+program to use it leaves dirty, so the second point kept a `y` from a previous
+call and the line came out at the wrong angle. Placing it on the reference point
+first, then stepping it, is what the reference does and what FreeType does, and
+it is four lines.
+
+**What it closed.** `hinting` goes to **8,542 of 8,542 on both displays** --
+every stretched advance of every character of every face, exact. The glyph sweep
+on an EGA goes from 295 short to 59 and on a Hercules from 310 to 74, and what is
+left is a different thing entirely: 58 and 68 of them are Symbol, which is the
+mapper choosing a strike where Windows chose an outline (see above), one is
+Courier New's italic `g` at twelve, and five are the plotter faces on the
+Hercules.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
 it stands:
 
+Where a probe is recorded on more than one display, every display it was
+recorded on is counted.
+
 | Fixture                                                      | Records | Agreement |
 | ------------------------------------------------------------ | ------- | --------- |
 | `font`                                                       | 5,057   | **100%**  |
-| `glyphs`                                                     | 6,046   | **100%**  |
-| `hinting`                                                    | 8,470   | **100%**  |
-| `lines`                                                      | 248     | **100%**  |
+| `glyphs` (VGA, Super VGA)                                    | 6,046   | **100%**  |
+| `glyphs` (EGA)                                               | 6,046   | 99.0%     |
+| `glyphs` (Hercules)                                          | 6,046   | 98.8%     |
+| `hinting` (VGA, EGA)                                         | 8,542   | **100%**  |
+| `lines` (all four displays)                                  | 740     | **100%**  |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
 | `styles`                                                     | 9,178   | **100%**  |
 | `sizes`                                                      | 800     | **100%**  |
@@ -15921,8 +15995,14 @@ it stands:
 
 `widths` is short of one record and it is not a glyph: the maximum width metric
 for Courier New at twenty-two pixels asked for five, which section 8a proves is
-not the font's box scaled by any one size. **Every glyph cell in the table is
-exact.** `KNOWN_GAPS` holds that one metric and nothing else. The `stack` fixture is not in the table because it is an
+not the font's box scaled by any one size.
+
+**Every glyph cell on a square pixel is exact**, as is every stretched advance
+in `hinting` and every line on every display. What `KNOWN_GAPS` holds besides
+that one metric is the 59 EGA and 74 Hercules glyph cells -- 58 and 68 of them
+Symbol, which is the mapper taking a strike where Windows took an outline, one
+Courier New's italic `g`, five the plotter faces -- and the Hercules `font`
+sweep's sideways strike stretch. The `stack` fixture is not in the table because it is an
 instrument rather than an oracle: its 3,650 records are the scaler's own stack,
 which nothing on this side is meant to reproduce, and the conformance suite
 reports them as unsupported.

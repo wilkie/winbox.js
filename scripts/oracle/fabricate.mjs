@@ -227,6 +227,9 @@ export const ops = {
   /** Set a point's coordinate along the projection vector. */
   setCoordinate: () => [0x48],
 
+  /** Replace a storage index on the stack with what is in it. */
+  readStorage: () => [0x43],
+
   duplicate: () => [0x20],
   pop: () => [0x21],
   swap: () => [0x23],
@@ -999,6 +1002,13 @@ function readout(name, { index, bases, magnify, describe }) {
  * every reading as a constant offset. Reporting a number that is known in
  * advance is the only way to find out whether there is one.
  */
+export function reportStorage(index, phantom) {
+  return [0x01, ...ops.byte(phantom), ...ops.byte(index), ...ops.readStorage(), ...ops.setCoordinate()];
+}
+
+/**
+ * Instructions that report a fixed number as the glyph's advance.
+ */
 export function reportConstant(value, phantom) {
   return [0x01, ...ops.byte(phantom), ...ops.word(value), ...ops.setCoordinate()];
 }
@@ -1135,7 +1145,7 @@ function stackReporter(
  */
 function reporter(
   name,
-  { font = 'TIMES.TTF', character, point, constant, cut, magnify, describe }
+  { font = 'TIMES.TTF', character, point, constant, storage, cut, magnify, describe }
 ) {
   return {
     name,
@@ -1165,9 +1175,11 @@ function reporter(
        * reading mean anything.
        */
       const ending =
-        constant === undefined
-          ? reportPoint(point, pointCount(bytes, glyph) + 1, magnify)
-          : reportConstant(constant, pointCount(bytes, glyph) + 1);
+        storage !== undefined
+          ? reportStorage(storage, pointCount(bytes, glyph) + 1)
+          : constant === undefined
+            ? reportPoint(point, pointCount(bytes, glyph) + 1, magnify)
+            : reportConstant(constant, pointCount(bytes, glyph) + 1);
 
       const code = [...full.slice(0, cut), ...ending];
 
@@ -5778,6 +5790,33 @@ export const FABRICATIONS = [
     ],
     report: 1,
     describe: 'IP with the far reference moved one pixel, reporting the interpolated point',
+  }),
+
+  /* What `prep` left in the storage the `M`'s own program reads its projection
+   * vector out of.
+   *
+   * Arial Italic does not slant by a constant. `prep` builds a vector from two
+   * twilight points it has just scaled and rounded, and stores the two
+   * components in 10 and 11; every slanted measurement in the face is taken
+   * along it. Under a width request the two points scale by different amounts
+   * in x and in y, so the vector is the face's own answer to the stretch --
+   * which is the one number in this whole chain that has never been read out of
+   * Windows. The cut is nought because `prep` has already run.
+   */
+  reporter('ariali-m-store10', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    storage: 10,
+    cut: 0,
+    describe: "Arial Italic's M reporting storage 10, the slant vector's first component",
+  }),
+
+  reporter('ariali-m-store11', {
+    font: 'ARIALI.TTF',
+    character: 'M',
+    storage: 11,
+    cut: 0,
+    describe: "Arial Italic's M reporting storage 11, the slant vector's second component",
   }),
 
   reporter('ariali-m-p10-cut344', {

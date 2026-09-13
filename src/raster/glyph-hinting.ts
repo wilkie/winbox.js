@@ -1240,6 +1240,36 @@ export class Hinter {
     }
   }
 
+  /**
+   * The same step as `movePoint`, applied to where a point was *scaled to*.
+   *
+   * Only a twilight point ever wants this. It has no design position, so the
+   * instruction that first places it has to write one, and the placement is a
+   * distance along the freedom vector exactly as a move is -- see `MSIRP`.
+   */
+  moveOriginal(zone, index, distance) {
+    const { freedom, projection } = this.state;
+
+    let along = mulDiv(projection.x, freedom.x, UNIT) + mulDiv(projection.y, freedom.y, UNIT);
+
+    if (along === 0) {
+      return;
+    }
+
+    // The same refusal to divide by a small number; see `movePoint`.
+    if (Math.abs(along) < UNIT / 16) {
+      along = along < 0 ? -UNIT : UNIT;
+    }
+
+    if (freedom.x !== 0) {
+      zone.originalX[index] += mulDiv(distance, freedom.x, along);
+    }
+
+    if (freedom.y !== 0) {
+      zone.originalY[index] += mulDiv(distance, freedom.y, along);
+    }
+  }
+
   /** Rounds a distance according to the current round state. */
   round(value, compensation = 0) {
     if (!this.state.rounding) {
@@ -2647,6 +2677,40 @@ export class Hinter {
 
       const zoneOne = this.zone(state.zp1);
       const zoneZero = this.zone(state.zp0);
+
+      /* A twilight point has no outline behind it, so it starts where the
+       * reference point is and is moved the asked-for distance from there --
+       * the same rule `MIRP` and `MIAP` already follow, and for the same
+       * reason: nothing else has ever put it anywhere.
+       *
+       * Leaving it where it was is not harmless, because the twilight zone is
+       * scratch space that the last program to use it left dirty. Arial
+       * Italic is the face that shows it. Its `prep` builds the slant every
+       * measurement in the face is taken along, by setting one twilight point
+       * from a control value and stepping a second one sideways from it with
+       * this instruction; the vector is the line between the second and the
+       * origin. Without the placement the second point keeps the *y* a
+       * previous call left in it and the slant comes out shallower than the
+       * face's -- at thirteen pixels stretched to seventeen, a vector of
+       * (16139, 2824) where Windows has (15798, 4337).
+       *
+       * **Recorded**, by two fabricated fonts whose `M` reports the storage
+       * `prep` leaves the two components in: `ariali-m-store10` and
+       * `ariali-m-store11`. See `FONTS.md`.
+       */
+      if (state.zp1 === 0) {
+        zoneOne.originalX[index] = zoneZero.originalX[state.rp0];
+        zoneOne.originalY[index] = zoneZero.originalY[state.rp0];
+
+        this.moveOriginal(zoneOne, index, distance);
+
+        zoneOne.x[index] = zoneOne.originalX[index];
+        zoneOne.y[index] = zoneOne.originalY[index];
+
+        // The same stand-in `MIRP` and `MIAP` use; see there.
+        zoneOne.unscaledX[index] = zoneOne.originalX[index];
+        zoneOne.unscaledY[index] = zoneOne.originalY[index];
+      }
 
       const current = this.project(
         zoneOne.x[index] - zoneZero.x[state.rp0],
