@@ -15958,11 +15958,41 @@ taken only when nothing has to be made from it.
 
 The three cost readings tabulated above were all attempts to write "bold refuses
 a strike", and none of them could have been right, because bold is not what does
-it. What term of the penalty does is still not read: both candidates are weight
-400 upright files, so the weight term moves them together, and something that
-differs by display has to be moving them apart. `CreateFont face` agrees on all
-1,500 records of every display, so the disagreement is never about the name --
-only about which realisation of it answers.
+it.
+
+#### And the term that does it was already here
+
+The penalty routine charges a raster candidate for its *shape*. At `seg3:1d34`
+it takes `MulDiv(100, dpAspectY, dpAspectX)` -- the device's own pixel -- and at
+`1db8` it takes `MulDiv(100, dfVertRes, dfHorizRes)` from the candidate's own
+header, scales it by the multiples the strike would be drawn at, and adds the
+difference. This side has had that term for a while, and it is what makes a
+strike cost 210 on an EGA and nothing on a VGA. A scalable candidate has no such
+header and pays nothing on either.
+
+So the comparison was right all along and **the request never reached it**. A
+face's own strike, found by the name-directed search at `seg3:0e95`, was returned
+outright; the competition only ran when that search found nothing. Windows
+short-circuits too, but only for an **exact** answer -- the weight it was asked
+in and the slant it was asked in. Anything that would have to be *made* from the
+strike goes to the competition, and there the off-square term decides:
+
+- on a square pixel the strike pays nothing, the outline ties with it, and the
+  raster pass keeps the tie -- so a VGA answers 800 and italic from the strike;
+- on an EGA or a Hercules the strike pays 210 and the outline comes in under it
+  -- so every weight but 400, and every slant but upright, takes the outline.
+
+Which is the measured surface exactly, and it explains the shape that made the
+old reading impossible: three hundred refuses the strike for the same reason
+eight hundred does, because neither of them is the weight the strike is cut at.
+
+The exactness is asked of the face's *own* strike only. A strike reached by
+falling back to another family -- eight pixel Arial answered by Small Fonts -- is
+not the face's to be exact about.
+
+**`font` goes to 7,577 of 7,577 on the VGA, the Super VGA and the EGA**, and on
+the Hercules everything but the sideways strike stretch. `styles` holds at 9,178
+and `sizes` at 800.
 
 #### And one thing the sweep did settle
 
@@ -15978,8 +16008,8 @@ one outline family with no bold file of its own -- so a sweep that asks 400 and
 records, on a VGA and an EGA alike.
 
 With it, **`font` is 7,577 of 7,577 on a VGA and on a Super VGA** -- every
-height, every weight, both slants, exact. What is left is 56 records on an EGA
-and the same 27 of them on a Hercules, and every one is the choice above.
+height, every weight, both slants, exact. That left 56 records on an EGA and the
+same 27 of them on a Hercules, and the section above is what they were.
 
 #### A twilight point that was never placed, and the slant it cost
 
@@ -16092,8 +16122,7 @@ recorded on is counted.
 
 | Fixture                                                      | Records | Agreement |
 | ------------------------------------------------------------ | ------- | --------- |
-| `font` (VGA, Super VGA)                                      | 7,577   | **100%**  |
-| `font` (EGA)                                                 | 7,577   | 99.3%     |
+| `font` (VGA, Super VGA, EGA)                                 | 7,577   | **100%**  |
 | `glyphs` (VGA, Super VGA)                                    | 6,046   | **100%**  |
 | `glyphs` (EGA)                                               | 6,046   | 99.95%    |
 | `glyphs` (Hercules)                                          | 6,046   | 99.7%     |

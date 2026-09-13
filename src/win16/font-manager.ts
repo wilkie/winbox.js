@@ -1006,7 +1006,42 @@ export class FontManager {
                 : FontManager.SMALL_FACES
             ));
 
-      if (strike) {
+      /* A face's own strike answers outright only when it answers *exactly*:
+       * the weight it was asked in and the slant it was asked in. Anything that
+       * would have to be made from it -- a smear, a shear, or merely a weight
+       * that does not match -- goes to the competition instead, and there the
+       * off-square term decides.
+       *
+       * This is the whole of why the same request is answered two ways on two
+       * displays. On a square pixel the strike pays nothing for its shape, the
+       * outline ties with it, and the raster pass keeps the tie; on an EGA or a
+       * Hercules the strike pays 210 for being off square and the outline takes
+       * it. The short-circuit above it is what hid that: a strike that answered
+       * by name never reached the comparison at all.
+       *
+       * **Recorded.** The `font` sweep asks every hundred of weight from three
+       * to eight against every height from eight to twenty-eight, both slants,
+       * on four displays. Symbol at a height it has a strike for is answered by
+       * the strike at every weight and both slants on a VGA and a Super VGA,
+       * and only at weight 400 upright on an EGA and a Hercules -- three
+       * hundred takes the outline exactly as eight hundred does. It was read
+       * before as "a bold request refuses a strike", which cannot be right,
+       * since a *lighter* request refuses it too.
+       *
+       * The exactness is asked of the face's own strike only. A strike reached
+       * by falling back to another family -- eight pixel Arial answered by
+       * Small Fonts -- is not the face's to be exact about, and is left alone.
+       */
+      const exactOwn =
+        strike &&
+        (strike.name !== outline.name ||
+          strike.entries.some(
+            (entry) =>
+              (!wanted || (entry.header.dfWeight || 400) === wanted) &&
+              !!entry.header.dfItalic === wantsItalic
+          ));
+
+      if (strike && exactOwn) {
         /* Which family the mapper had settled on before the size sent it to a
          * strike, because `tmItalic` still answers for that one.
          *
