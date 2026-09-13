@@ -883,13 +883,18 @@ export function fillWalked(contours, options) {
      * installed family answers `SCANTYPE` 1, which is the simple kind, so this
      * is the branch that runs.
      *
-     * **The other branch was built and refused.** Keeping each crossing's
-     * unrounded sixty-fourth alongside its rounded index -- the walker throws
-     * it away -- and averaging them costs 22 fabricated cells applied to
-     * slanted glyphs only and 134 applied to every glyph, against 32,394 of
-     * 32,394 with this. So the scan kind really is simple, which is what the
-     * interpreter says it is, and a cell that wants the pixel on the other side
-     * of the dropout does not want it because of smart control.
+     * **The other branch has not been tested, and an attempt that said it had
+     * is withdrawn.** It wants the two crossings unrounded, and this walk never
+     * forms them: `calcLine` steps a Bresenham over pixels and emits indices
+     * outright, which is exactly why the reference recomputes the crossings
+     * through `pfnHCallBack` when it needs them. An attempt to keep them
+     * alongside took them from `Endpoints`, the *other* emitter, whose lists
+     * cover only the vertices that land on a sample line -- so the values it
+     * averaged belonged to different crossings than the runs it placed, and the
+     * counts it produced mean nothing.
+     *
+     * Testing it properly means evaluating the edge behind each entry at the
+     * scanline, which is the callback the reference keeps a table of.
      */
     let column = on - 1;
 

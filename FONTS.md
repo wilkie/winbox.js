@@ -15931,28 +15931,33 @@ prediction held: the three still standing are exactly that shape.
   **smart** one the average of the two exact crossings,
   `(fxX1 + fxX2 - 1) >> (SUBSHFT + 1)`.
 
-  Smart would have fitted both cells: the bar's two crossings average to about
-  2.95 and floor to two, which is where Windows puts it, and the `y`'s would have
-  to average at or above five, which is where Windows puts that. So it was built
-  -- the walker throws each crossing's unrounded sixty-fourth away at
-  `scan-walk.ts`'s `addHorizOn`, and it was kept alongside the rounded index and
-  sorted with it -- and **refused**: applied to slanted glyphs only it costs 22
-  fabricated cells, applied to every glyph 134, against 32,394 of 32,394 with the
-  simple placement. Which agrees with what the interpreter says, since every
-  installed family answers `SCANTYPE` 1 and that is the simple kind.
+  Smart would fit both cells: the bar's two crossings average to about 2.95 and
+  floor to two, which is where Windows puts it, and the `y`'s would have to
+  average at or above five, which is where Windows puts that.
 
-  The rounding that makes the index was checked against the source in the same
-  pass and it is right: `AddReversal` forms a scanline index as
-  `(fxCoord + SUBHALF + (sDir >> 1)) >> SUBSHFT`, which is `(x + 32) >> 6` one
-  way round and `(x + 31) >> 6` the other -- exactly the pair this side uses for
-  an off crossing and an on crossing.
+  **An attempt to refuse it is withdrawn.** The attempt kept each crossing's
+  unrounded sixty-fourth beside its rounded index and reported 22 fabricated
+  cells lost on slanted glyphs and 134 on all. Those counts mean nothing. This
+  walk never forms an unrounded crossing at all: `calcLine` steps a Bresenham
+  over pixels and emits indices outright, which is precisely why the reference
+  recomputes the crossings through `pfnHCallBack` when smart control needs them.
+  The values the attempt averaged came from `Endpoints`, the *other* emitter,
+  whose lists hold only the vertices that land on a sample line -- so they
+  belonged to different crossings than the runs being placed.
 
-  So the rescue is right, the placement is right, and the rounding that feeds
-  them is right. What is left is the crossing itself: for that row this side has
-  the run as `[5,5]`, a dropout, and a run of `[5,6]` would fill column five
-  outright, leave nothing to block the vertical rescue at `(7,4)`, and give
-  Windows' two pixels exactly. Whether the reference's off crossing lands a
-  column further out there is the next thing to ask.
+  A claim made in the same pass is withdrawn with it. `AddReversal` does form a
+  scanline index as `(fxCoord + SUBHALF + (sDir >> 1)) >> SUBSHFT`, which is
+  `(x + 32) >> 6` one way and `(x + 31) >> 6` the other, and that is the pair
+  `Endpoints` uses -- but the main walk does not round anything, so this
+  confirms one of the two emitters and not the crossing behind the `y`'s run.
+
+  What stands is the structure of the routine, which is read: the stub tests,
+  the two guarded neighbour tests, the two placements, the clamp. What is open is
+  which placement applies and whether the run is a dropout at all -- for that row
+  this side has `[5,5]`, and a run of `[5,6]` would fill column five outright,
+  leave nothing to block the vertical rescue at `(7,4)`, and give Windows' two
+  pixels exactly. Testing smart properly means evaluating the edge behind each
+  entry at the scanline, which is the callback the reference keeps a table of.
 
 The lean is measured and is not it, twice over: sweeping the shear slope over
 four readings leaves the same cells wrong, and the rule that finally fitted the
