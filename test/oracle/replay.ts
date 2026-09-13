@@ -1708,12 +1708,10 @@ export const KNOWN_GAPS: Record<string, string> = {
    * multiple, the strike's own shape -- every one of these files is ninety-six
    * by seventy-two -- the stretched cell, or the stretched width.
    */
-  'font-hercules:CreateFont widths':
-    'the Hercules mapper, 396 of 2,261: how far a strike is stretched sideways when it is stretched more than three times up',
   'font-hercules:CreateFont extent':
-    'the Hercules mapper, 534 of 2,261: the records that follow the sideways stretch above',
+    'the Hercules mapper, 150 of 2,261: a specimen measured across a strike this display holds to a segment',
   'font-hercules:CreateFont heights':
-    'the Hercules mapper, 12 of 2,261: which strike a tall request settles on, once the sideways stretch has moved the penalties',
+    'the Hercules mapper, 12 of 2,261: which strike a tall request settles on',
 
 
 

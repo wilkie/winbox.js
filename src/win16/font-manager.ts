@@ -146,6 +146,9 @@ export class FontManager {
   /** And the most it is drawn sideways, which is not the same number. */
   static MAX_WIDTH_STRETCH = 5;
 
+  /** What a device without `RC_BIGFONT` is held to: one segment. */
+  static FONT_SEGMENT = 0x10000;
+
   /**
    * The quality at which a stretched strike is refused rather than scored.
    *
@@ -1865,14 +1868,47 @@ export class FontManager {
      * 25: five fives. **Recorded**, across a sweep of every height from one to
      * a hundred and twenty.
      */
-    /* This has no display in it, and Windows's does. It is right on a VGA, a
-     * Super VGA and an EGA and wrong on a Hercules, where the sideways multiple
-     * falls away above three and this does not: 942 records of that sweep.
-     * Where GDI's own is has not been found. `seg3:1b46`-`1b95` was taken for
-     * it once and is not: it is entered only when `dfType & 3` is one, which is
-     * the vector flag, and it is the plotter width rule this file already has.
-     * See `FONTS.md` section 3. */
     let horizontal = Math.min(best.scale, FontManager.MAX_WIDTH_STRETCH);
+
+    /* And then as far down as it has to come to fit in a segment, on a device
+     * that cannot hold a font bigger than one.
+     *
+     * `RC_BIGFONT` is bit ten of `RASTERCAPS`, and what it says is exactly
+     * this. The VGA, the Super VGA and the EGA all have it and are never held
+     * to anything; a Hercules has not, and its sideways multiple falls away
+     * above three where nothing else about it differs at all -- the same font
+     * files, the same strikes, the same vertical multiples as an EGA, and a
+     * device aspect that pushes the other way.
+     *
+     * The size is the realised font's own: its header, its character table,
+     * and a bitmap of `dfWidthBytes` stretched sideways by this multiple and
+     * downward by the cell. **Measured** against all 62 places the sweep pins a
+     * horizontal multiple on that display, and it gets every one. Counting the
+     * bitmap alone, without the header and the table, gets 60 -- and the two it
+     * misses are exactly the two that sit just inside the segment with them
+     * counted and just outside without: Courier's twelve row strike four times
+     * up, and MS Sans Serif's twenty-eight row strike twice.
+     *
+     * `FONTS.md` section 3 refused this reading twice. Both refusals were of
+     * the arithmetic rather than the idea -- one left the header and table out,
+     * the other summed the family's character widths instead of taking the
+     * strike's own `dfWidthBytes`.
+     */
+    if (request.bigFont === false && best.entry) {
+      const header = best.entry.header;
+      const table = (header.dfLastChar - header.dfFirstChar + 2) * best.entry.entrySize;
+      const overhead = best.entry.tableOffset + table;
+      const rows = header.dfPixHeight * best.scale;
+
+
+      while (
+        horizontal > 1 &&
+        overhead + header.dfWidthBytes * horizontal * rows > FontManager.FONT_SEGMENT
+      ) {
+        horizontal--;
+      }
+
+    }
 
     if (width > 0) {
       const average = best.entry.header.dfAvgWidth;

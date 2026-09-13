@@ -100,6 +100,16 @@ export function CreateFontIndirect(lplf) {
      */
     aspectX: this.display?.aspectX ?? 0,
     aspectY: this.display?.aspectY ?? 0,
+
+    /* Whether the device can hold a font bigger than a segment.
+     *
+     * `RC_BIGFONT` is bit ten of `RASTERCAPS` and its documented meaning is
+     * exactly that. A display that has it will take a strike stretched as far
+     * as the strike chooser wants to stretch it; one that has not is held to
+     * sixty-four kilobytes and the sideways multiple comes down until the
+     * realised font fits. See `FontManager.choose`.
+     */
+    bigFont: ((this.display?.rasterCaps ?? 0) & 0x0400) !== 0,
   };
 
   const found = this.fonts.map(request);

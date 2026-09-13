@@ -498,9 +498,45 @@ from taking the divide's operands in the wrong order, and the path it came from
 is not the strike's path anyway. Nothing about the sideways stretch follows from
 it.
 
-The raster realised width is therefore still not located. What is now certain is
-where it is not: not in the driver, not in the scorer's `across`, and not in the
-vector chain.
+The raster realised width is not in that chain either. But knowing where it is
+not turned out to be enough, because the thing that finds it is not a reading at
+all -- it is a capability bit that had been sitting in the recorded device caps
+the whole time.
+
+#### `RC_BIGFONT`, and a reading refused twice on its arithmetic
+
+`RASTERCAPS` bit ten is `RC_BIGFONT`, and what it means is *capable of
+supporting fonts larger than 64K*. Recorded, it is set on the VGA, the Super VGA
+and the EGA -- 18,137 has it -- and **clear on the Hercules**, whose 665 does
+not. A display without it is held to a segment, and the sideways multiple comes
+down until the realised font fits.
+
+The size is the realised font's own, which is the part that matters: its header,
+its character table, and a bitmap of the strike's `dfWidthBytes` stretched
+sideways by the multiple and downward by the cell. Scored against all 62 places
+the widened sweep pins a horizontal multiple on that display, it gets **62 of
+62**, and the limit interval it leaves is a single band, 63,540 to 64,655 -- with
+a segment less a 224 character table and a header landing inside it.
+
+Counting the bitmap alone gets 60, and the two it misses are the two that sit
+just inside the segment with the header and table counted and just outside
+without: Courier's twelve row strike four times up, and MS Sans Serif's
+twenty-eight row strike twice. That is why this was refused before -- **twice,
+and both times on the arithmetic rather than the idea.** One count left the
+header and the table out; the other summed the whole family's character widths
+where the strike's own `dfWidthBytes` is the number the format actually stores.
+
+It also explains, after the fact, every fit that failed. The collapse point moves
+with the strike because `dfWidthBytes` does; it is not a threshold on the
+stretched height, or a ratio of the strike's own shape, or anything to do with
+the device aspect, all of which were tried against the table and refused. And it
+is why three displays needed no rule at all: they can hold a font bigger than a
+segment, so nothing ever comes down.
+
+**`font` on a Hercules goes from 10,440 of 11,382 to 11,220, and `CreateFont
+widths` -- every average and every maximum, at every height, of every face -- is
+2,261 of 2,261.** What is left there is 150 records of `CreateFont extent` and 12
+of `CreateFont heights`.
 
 Meanwhile the defect on this side is one line. `FontManager.choose` ends with
 `horizontal = min(scale, 5)` -- the vertical multiple capped at five, with no
