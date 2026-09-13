@@ -141,7 +141,19 @@ export function GetTextMetrics(hdc, lptm) {
     // Only a style that had to be made shows up as an overhang.
     const bold = smeared === 1;
 
-    lptm.tmWeight = (style.weight ?? 0) >= 700 ? 700 : outline.weight;
+    /* A weight that had to be smeared reports 700, whatever it asked for --
+     * the same rule a strike follows, and at the same threshold the smear
+     * itself begins at.
+     *
+     * It was `>= 700` here, which is the threshold for opening a family's bold
+     * *file* and not the one for making bold out of the plain one. The two are
+     * fifty apart and only Symbol can tell them apart, since it is the one
+     * outline family with no bold file. **Recorded**: the `font` sweep now asks
+     * every hundred of weight against every height, and at 600 Windows answers
+     * `tmWeight=700` with an overhang of one at every height from eight to
+     * twenty-eight, on a VGA and on an EGA alike -- 87 records that said 400.
+     */
+    lptm.tmWeight = bold ? 700 : outline.weight;
     /* 255 rather than 1, which is not the same answer a raster face gives.
      *
      * `tmItalic` is documented as non-zero for italic and the two kinds of

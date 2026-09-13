@@ -1705,9 +1705,49 @@ export const KNOWN_GAPS: Record<string, string> = {
    * by seventy-two -- the stretched cell, or the stretched width.
    */
   'font-hercules:CreateFont widths':
-    'the Hercules mapper, 69 of 996: how far a strike is stretched sideways when it is stretched more than three times up',
+    'the Hercules mapper, 84 of 1,500: how far a strike is stretched sideways when it is stretched more than three times up, and the Symbol choice below',
   'font-hercules:CreateFont extent':
-    'the Hercules mapper, 81 of 996: the records that follow the sideways stretch above',
+    'the Hercules mapper, 217 of 1,500: the records that follow the sideways stretch above, and the Symbol choice below',
+
+  /* Which realisation a weight other than four hundred is answered from, on a
+   * display whose pixel is not square. 56 records of 7,577 on an EGA, and the
+   * same 27 of them on a Hercules.
+   *
+   * The `font` sweep now asks every hundred of weight from three to eight
+   * against every height from eight to twenty-eight, on every display, and
+   * `tmPitchAndFamily` says outright which kind of font answered -- the vector
+   * and TrueType bits are set for an outline and clear for a strike. That was
+   * the probe `FONTS.md` section 8d said was the next thing to ask, and the
+   * surface it draws is not the one that section guessed at.
+   *
+   * On a VGA and a Super VGA, at any height where Symbol has a strike of its
+   * own, **the strike answers every weight and both slants** -- 800 and italic
+   * included, smeared and sheared as needed.
+   *
+   * On an EGA and a Hercules, the strike answers **only weight 400 upright**.
+   * Three hundred takes the outline, five hundred takes the outline, and so
+   * does italic. It is not about bold: a lighter request leaves the strike
+   * exactly as a heavier one does.
+   *
+   * So the rule is not the one that was written from ink -- "above
+   * `OUTLINE_FLOOR` a bold request is not answered by the face's own strike".
+   * It is that on a pixel that is not square a strike is only taken when
+   * nothing has to be made from it, and nothing yet read says which term of
+   * the penalty does that. `CreateFont face` agrees on all 1,500 of both
+   * displays, so the disagreement is never about the name.
+   */
+  'font-ega:CreateFont style':
+    'the EGA mapper, 15 of 1,500: a strike answers only weight 400 upright on a pixel that is not square, and we take it for 300 and 500 as well',
+  'font-ega:CreateFont heights':
+    'the EGA mapper, 12 of 1,500: the records that follow the choice above',
+  'font-ega:CreateFont widths':
+    'the EGA mapper, 15 of 1,500: the records that follow the choice above',
+  'font-ega:CreateFont extent':
+    'the EGA mapper, 14 of 1,500: the records that follow the choice above',
+  'font-hercules:CreateFont style':
+    'the Hercules mapper, 15 of 1,500: the same choice an EGA makes; see `font-ega:CreateFont style`',
+  'font-hercules:CreateFont heights':
+    'the Hercules mapper, 12 of 1,500: the records that follow the choice above',
 
 
   /* The line sweep on a Hercules, 32 records of 248.

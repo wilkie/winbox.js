@@ -15925,12 +15925,61 @@ for, 96x96 against 72x96, and that `SYMBOLB.FON` carries *two* sixteen row
 strikes where `SYMBOLE.FON` carries one. Neither explains fifteen and twenty,
 which are single.
 
-So the rule is bounded on both sides and still not written: a bold request above
-`OUTLINE_FLOOR` takes a face's own strike on a square pixel and the outline on
-an EGA, and nothing recorded says why. The next thing to ask is not another
-variant of the cost but a probe: `GetTextFace` and the metrics over a
-weight-by-height sweep on both displays, which would say which face Windows
-chose rather than leaving it to be inferred from ink.
+So the rule is bounded on both sides and still not written. The next thing to
+ask is not another variant of the cost but a probe: `GetTextFace` and the
+metrics over a weight-by-height sweep on both displays, which would say which
+face Windows chose rather than leaving it to be inferred from ink.
+
+#### The sweep, and what it says instead
+
+That probe now exists. The `font` sweep asks every hundred of weight from three
+hundred to eight hundred against every height from eight to twenty-eight, both
+slants, on every display -- and `tmPitchAndFamily` answers outright, since the
+vector and TrueType bits are set for an outline and clear for a strike. It costs
+504 requests a display and it settles the shape of the rule at once.
+
+It is not the shape guessed above. On a **VGA and a Super VGA**, at any height
+where Symbol has a strike of its own, the strike answers **every weight and both
+slants** -- eight hundred and italic included, smeared and sheared as needed:
+
+    h=13  up300 up400 up500 up600 up700 up800 | it300 ... it800
+            s     s     s     s     s     s   |   s          s
+
+On an **EGA and a Hercules**, at a height where Symbol has a strike, the strike
+answers **only weight 400 upright**:
+
+    h=15  up300 up400 up500 up600 up700 up800 | it300 ... it800
+            O     s     O     O     O     O   |   O          O
+
+Three hundred takes the outline, and so does five hundred. **It was never about
+bold.** A lighter request leaves the strike exactly as a heavier one does, and a
+slanted one leaves it at weight 400. On a pixel that is not square a strike is
+taken only when nothing has to be made from it.
+
+The three cost readings tabulated above were all attempts to write "bold refuses
+a strike", and none of them could have been right, because bold is not what does
+it. What term of the penalty does is still not read: both candidates are weight
+400 upright files, so the weight term moves them together, and something that
+differs by display has to be moving them apart. `CreateFont face` agrees on all
+1,500 records of every display, so the disagreement is never about the name --
+only about which realisation of it answers.
+
+#### And one thing the sweep did settle
+
+A weight that had to be **smeared** reports `tmWeight = 700`, whatever it asked
+for -- the same rule a strike follows and at the same threshold the smear itself
+begins at, which is above 550.
+
+This side had `>= 700` there for the outline path, which is the threshold for
+opening a family's bold *file* rather than for making bold out of the plain one.
+The two are fifty apart, and only Symbol can tell them apart, since it is the
+one outline family with no bold file of its own -- so a sweep that asks 400 and
+700 can never see it and the sweep that asks 600 sees it at every height. 87
+records, on a VGA and an EGA alike.
+
+With it, **`font` is 7,577 of 7,577 on a VGA and on a Super VGA** -- every
+height, every weight, both slants, exact. What is left is 56 records on an EGA
+and the same 27 of them on a Hercules, and every one is the choice above.
 
 #### A twilight point that was never placed, and the slant it cost
 
@@ -16043,7 +16092,8 @@ recorded on is counted.
 
 | Fixture                                                      | Records | Agreement |
 | ------------------------------------------------------------ | ------- | --------- |
-| `font`                                                       | 5,057   | **100%**  |
+| `font` (VGA, Super VGA)                                      | 7,577   | **100%**  |
+| `font` (EGA)                                                 | 7,577   | 99.3%     |
 | `glyphs` (VGA, Super VGA)                                    | 6,046   | **100%**  |
 | `glyphs` (EGA)                                               | 6,046   | 99.95%    |
 | `glyphs` (Hercules)                                          | 6,046   | 99.7%     |

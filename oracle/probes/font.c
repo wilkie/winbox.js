@@ -190,6 +190,37 @@ static void probeQuality(LPCSTR face)
     }
 }
 
+/*
+ * One face at every height crossed with every weight, and both slants.
+ *
+ * This exists to settle one thing. Above the outline floor a request for a
+ * bold or slanted Symbol is answered by the face's own strike on a VGA and by
+ * the TrueType outline on an EGA, at the same height and the same weight --
+ * which is the last mapper rule still written from the ink rather than from
+ * what Windows says it chose. `GetTextFace` and `tmPitchAndFamily` say it
+ * outright: the vector and TrueType bits are set for an outline and clear for
+ * a strike.
+ *
+ * The sparse sweep only ever asks 400 and 700, which finds the two ends of a
+ * boundary and never the boundary. This asks every hundred across, and every
+ * height from eight to twenty-eight down, on whichever display it is recorded
+ * on -- so the answer is a surface rather than two points.
+ */
+static void probeWeights(LPCSTR face, BYTE charset)
+{
+    int height;
+    int weight;
+    BYTE italic;
+
+    for (height = 8; height <= 28; height++) {
+        for (weight = 300; weight <= 800; weight += 100) {
+            for (italic = 0; italic <= 1; italic++) {
+                probeFont(height, 0, weight, italic, 0, 0, charset, DEFAULT_PITCH, face);
+            }
+        }
+    }
+}
+
 static void probeDense(LPCSTR face)
 {
     int height;
@@ -379,6 +410,10 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeFace("MS Sans Serif", 0);
 
     probeNote("the other installed bitmap faces");
+    probeNote("every weight against every height, to find the boundary");
+    probeWeights("Symbol", ANSI_CHARSET);
+    probeWeights("MS Serif", ANSI_CHARSET);
+
     probeFace("Courier", 16);
     probeFace("MS Serif", 16);
     probeFace("System", 16);
