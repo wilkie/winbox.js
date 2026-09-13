@@ -15889,24 +15889,27 @@ prediction held: the three still standing are exactly that shape.
   file, so this glyph is hinted rather than sheared: it is that face's program
   under the stretch, which is the family the `MSIRP` placement came from.
 
-  Narrowed, and it is **not** the scan converter. The outline that converter is
-  handed, read out of it at the moment it is handed over, has the glyph's origin
-  at `(2,6)` and already in pixels, and the arithmetic on it is flat. Row three
-  samples at `y = 2.5`; there the outer contour crosses at `x` 1.60 and 6.01 and
-  **the counter is still open**, crossing at 2.10 and 5.39. That leaves two
-  slivers, `[3.60, 4.10]` and `[7.39, 8.01]` in cell columns, and no span that
-  could fill three to seven. Windows fills it solid, which a scanline can only do
-  with the counter closed.
+  **It is not the hint program, and the reading that said so is withdrawn.** A
+  twelve pixel cell of Courier New on an EGA is **eight** pixels per em, and
+  eight is below the size at which that face's `prep` turns grid-fitting off --
+  `INSTCTRL`, selector one, guarded by `MPPEM < 9`, which section 6 read out of
+  the binary. The outline handed to the scan converter shows it: the counter's
+  top is at `y = 3.17` at seven and eight pixels per em and at exactly `3.00` at
+  nine and ten. Fractional below, on the grid above. **No program runs here**, so
+  nothing it does can be the difference.
 
-  So the counter is too tall here. Its top sits at `y = 3.17` and it has to come
-  out below 2.5 -- more than two thirds of a pixel -- while the outer top, at
-  3.50, is where it should be, since row two is empty on both. The points are
-  the top of the glyph's second contour, 50 to 52, at 811 design units. Reading
-  those out of Windows is the next step, and the instrument for it is the one
-  that settled `MSIRP`: a fabrication whose program is cut short and reports a
-  point. It wants one addition -- the existing readout reports a point's `x`,
-  and this wants its `y`, which is `SVTCA[y]` and `GC` before the vectors are
-  turned back to `x` for the `SCFS`.
+  The arithmetic offered with that reading is withdrawn as well, and for a
+  separate reason: it walked the contour as a polygon through every point,
+  control points included, and this glyph's top is a curve. Where a spline
+  actually crosses a scanline is not where the chord between its controls does,
+  so "the counter is still open at row three" was never established.
+
+  What this cell is, then, is the case section 6 already has: **Courier New at
+  eight pixels per em with no grid-fitting**, where every stroke of the face is a
+  dropout candidate and Windows rescues a particular subset of them. That section
+  has failed to fit the selection rule three ways and says so. This is one more
+  cell of it, and the useful thing here is the identification rather than any new
+  measurement -- it is not two problems, it is one.
 - **Symbol's slanted `m` and `y` at fifteen.** One pixel each, both at the top
   of a stem: the `m` has one column too many at row nine, the `y` has its top
   two rows a column apart from Windows'. Symbol has no italic file, so these are
