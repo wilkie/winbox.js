@@ -634,11 +634,37 @@ export function fillWalked(contours, options) {
         const at = place(point);
 
         /* When the glyph is being slanted the two roundings are kept apart, so
-         * the x this box is built from is not the one `place` gives. */
+         * the x this box is built from is not the one `place` gives.
+         *
+         * And the un-shear rounds a half **down** where everything else here
+         * rounds one up. That is not a second convention, it is the first one
+         * being undone: the shear that put the point where it is rounded
+         * `lean * y` to a sixty-fourth and a half went up, so subtracting the
+         * unrounded `lean * y` back off lands exactly half a sixty-fourth above
+         * the coordinate it started from. Rounding that down returns it.
+         *
+         * Symbol's slanted bar at eight pixels per em on an EGA is the case
+         * that shows it, and all four of its corners: two have the shear term
+         * on a half -- `round(-37.5)` -- and come back at 69.50 and 124.50
+         * where the design says 69 and 124, and two do not and come back at
+         * 68.75 and 123.75. A half downward returns all four; a half upward
+         * returns the two that never left. The box's left edge is the one that
+         * matters, because a dropout rescue is clamped into it, and half a
+         * sixty-fourth there is a whole column: the rescue lands on three where
+         * Windows puts it on two.
+         *
+         * **Measured.** `symbol-slant` on an EGA goes from 340 of 352 cells to
+         * **352 with no wrong pixels**, the fabricated corpus stays at 32,394 of
+         * 32,394, and the instruments drawn on a pixel that is not square go
+         * from 2,654 of 2,668 to 2,666. Truncating instead of rounding the half
+         * fixes the same twelve and costs four of the corpus, so it is the half
+         * and not the direction of the whole.
+         */
+        const unsheared = (value: number) => Math.ceil(value * scale * 64 - 0.5);
+
         const across = lean
           ? originX +
-            (sixtyFourth(point[0] - lean * point[1]) + Math.round(lean * point[1] * scale * 64)) /
-              64
+            (unsheared(point[0] - lean * point[1]) + Math.round(lean * point[1] * scale * 64)) / 64
           : at[0];
 
         leftmost = Math.min(leftmost, across);

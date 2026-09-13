@@ -16065,11 +16065,34 @@ No product in the sweep lands on an exact half, so **which way a half goes is no
 measured** and nothing above should be read as claiming it.
 
 `symbol-slant` on an EGA goes from 175 of 352 to **340**, and the recorded glyph
-sweep on that display to **6,043 of 6,046** -- three cells, none of them a shear:
-Courier New's italic `g` at twelve, and Symbol's slanted `m` and `y` at fifteen.
-The instrument's own twelve remaining cells are all at a vertical size of eight,
-where no whole number of pixels makes the cell right at all, so whatever is left
-there is not the lean either.
+sweep on that display to **6,043 of 6,046**.
+
+#### And the twelve the lean could not reach
+
+The instrument's own twelve remaining cells were all at a vertical size of eight,
+where no whole number of pixels of lean makes the cell right at all -- which was
+the clue. They are not the lean; they are the **box**.
+
+A slanted glyph's box is built by un-shearing each point, rounding, and shearing
+it back, because the two roundings are kept apart. The un-shear subtracts the
+*unrounded* `lean * y`, and the shear that put the point there rounded it -- so
+where that rounding took a half upward, the un-shear lands exactly half a
+sixty-fourth above the coordinate it started from. All four corners of the bar
+say so: two have the shear term on a half, `round(-37.5)`, and come back at 69.50
+and 124.50 where the design says 69 and 124; the other two come back at 68.75 and
+123.75 and round to themselves. **A half downward returns all four. A half upward
+returns only the two that never moved.**
+
+Half a sixty-fourth is a whole column here, because a dropout rescue is clamped
+into the box: at eight pixels per em the bar's bottom row is a rescue, the box
+starts a column to the right of where it should, and the rescue lands on three
+where Windows puts it on two.
+
+`symbol-slant` on an EGA goes to **352 of 352 with no wrong pixels**, the
+fabricated corpus stays at 32,394 of 32,394, and the instruments drawn on a pixel
+that is not square go from 2,654 of 2,668 to **2,666**. Truncating instead of
+rounding the half fixes the same twelve and costs four of the corpus, so it is
+the half and not the direction of the whole.
 
 #### The upright half of it is the mapper, and the rule is not yet separable
 
