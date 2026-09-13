@@ -15911,9 +15911,20 @@ prediction held: the three still standing are exactly that shape.
   cell of it, and the useful thing here is the identification rather than any new
   measurement -- it is not two problems, it is one.
 - **Symbol's slanted `m` and `y` at fifteen.** One pixel each, both at the top
-  of a stem: the `m` has one column too many at row nine, the `y` has its top
-  two rows a column apart from Windows'. Symbol has no italic file, so these are
-  sheared rather than hinted -- a different mechanism with the same signature.
+  of a stem. Symbol has no italic file, so these are sheared rather than hinted.
+
+  Traced through the walker, the `y` is **one decision with two consequences**.
+  Its row six holds a zero-length run, `[5,5]`, which is a dropout; the
+  horizontal pass places the rescue at `on - 1`, column four, and Windows places
+  it at column five. That one pixel then blocks a second rescue: column four has
+  a vertical dropout at row seven, and the vertical pass declines a rescue whose
+  neighbour above is already lit -- so our column four at row six takes column
+  four at row seven with it. Windows draws both, at `(6,5)` and `(7,4)`; this
+  draws one, at `(6,4)`. Correct the column and the second follows.
+
+  Which way `PerformHorizDropout` leans is therefore the whole of it, and it is
+  not simply `on - 1`: the bar in `symbol-slant` has its rescue at `on - 1` and
+  Windows agrees there. What separates the two cases is not yet read.
 
 The lean is measured and is not it, twice over: sweeping the shear slope over
 four readings leaves the same cells wrong, and the rule that finally fitted the
