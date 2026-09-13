@@ -12,6 +12,7 @@ import { GlobalAllocator } from './win16/global-allocator.js';
 import { Allocator } from './win16/allocator.js';
 import { Loader } from './win16/loader.js';
 import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
+import { BitmapContext } from './raster/bitmap-context.js';
 import { Linker } from './win16/linker.js';
 import { Scheduler } from './win16/scheduler.js';
 
@@ -87,6 +88,12 @@ export class Win16 {
      * in. See win16/display-modes.ts.
      */
     this._display = displayMode((options as any).display ?? DEFAULT_DISPLAY_MODE);
+
+    /* A line and a bold smear are the display driver's to draw, and the drivers
+     * do not agree -- see `BitmapContext.driver`. Everything that rasterises
+     * reads it from there, so the choice of display has to reach it.
+     */
+    BitmapContext.driver = this._display;
 
     // Retain the machine instance
     this._machine = machine;

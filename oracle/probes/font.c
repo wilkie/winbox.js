@@ -221,11 +221,21 @@ static void probeWeights(LPCSTR face, BYTE charset)
     }
 }
 
+/*
+ * One face at every height, far enough up to reach the large multiples.
+ *
+ * It used to stop at forty, which is high enough to see a strike drawn two or
+ * three times and no higher. How far a strike is stretched *sideways* only
+ * parts company with how far it is stretched upward above three, and on a
+ * Hercules it parts company badly -- so the range has to reach the multiples
+ * where it does. A hundred and twenty is eight times the tallest strike any of
+ * these faces has, which is the cap the mapper itself applies at `seg3:1c08`.
+ */
 static void probeDense(LPCSTR face)
 {
     int height;
 
-    for (height = 1; height <= 40; height++) {
+    for (height = 1; height <= 120; height++) {
         probeFont(height, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET, DEFAULT_PITCH, face);
     }
 
@@ -501,6 +511,11 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeDense("System");
     probeDense("Small Fonts");
     probeDense("Courier");
+
+    /* And the three faces whose sideways stretch disagrees on a Hercules. */
+    probeDense("MS Sans Serif");
+    probeDense("MS Serif");
+    probeDense("Symbol");
 
     /* A face that is already bold in the file, so a request for bold has
      * nothing to synthesise, and one that is fixed pitch.

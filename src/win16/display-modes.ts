@@ -61,6 +61,12 @@ const COMMON = {
    */
   lineTie: 'top',
 
+  /* And whether it draws the emboldening overhang where the smear would need
+   * a byte more of the destination row. The colour drivers drop it; see
+   * `Surface.fillText`.
+   */
+  boldOverhang: 'byte',
+
   // Brushes are made on demand rather than drawn from a pool.
   numBrushes: -1,
   numPens: 80,
@@ -220,6 +226,14 @@ export const DISPLAY_MODES = {
      * `BitmapContext.stroke`.
      */
     lineTie: 'slope',
+
+    /* And it draws the emboldening overhang where the colour drivers drop it.
+     * **Recorded**: of the 6,046 cells of the glyph sweep, the two displays
+     * that report ninety-six by seventy-two disagree about ten, every one of
+     * them bold, and in every one this display has exactly one more pixel at
+     * the right-hand end of a row. See `Surface.fillText`.
+     */
+    boldOverhang: 'always',
 
     metrics: EGA_METRICS,
   },

@@ -567,6 +567,7 @@ export class Context {
 
     /* The plotter faces are drawn as lines, and a line is the driver's. */
     surface.context.lineTie = this.display.lineTie;
+    surface.boldOverhang = this.display.boldOverhang;
 
     // White to start with, as `PatBlt(..., WHITENESS)` left it.
     surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
@@ -1705,9 +1706,11 @@ export const KNOWN_GAPS: Record<string, string> = {
    * by seventy-two -- the stretched cell, or the stretched width.
    */
   'font-hercules:CreateFont widths':
-    'the Hercules mapper, 69 of 1,500: how far a strike is stretched sideways when it is stretched more than three times up',
+    'the Hercules mapper, 396 of 2,261: how far a strike is stretched sideways when it is stretched more than three times up',
   'font-hercules:CreateFont extent':
-    'the Hercules mapper, 207 of 1,500: the records that follow the sideways stretch above',
+    'the Hercules mapper, 534 of 2,261: the records that follow the sideways stretch above',
+  'font-hercules:CreateFont heights':
+    'the Hercules mapper, 12 of 2,261: which strike a tall request settles on, once the sideways stretch has moved the penalties',
 
 
 
@@ -1734,13 +1737,9 @@ export const KNOWN_GAPS: Record<string, string> = {
    * and 212 of its cells differ by a pixel where a stroke meets the edge.
    */
 
-  /* The glyph sweep on a Hercules, 18 cells of 6,046.
+  /* The glyph sweep on a Hercules, eight cells of 6,046.
    *
-   * Three are the same cells an EGA has; see below. Ten are Symbol **bold and
-   * upright**, which is not the rasteriser at all: above `OUTLINE_FLOOR` a bold
-   * request takes the face's own strike on a square pixel and the outline here,
-   * and no reading of that has survived the VGA. `FONTS.md` section 8d has the
-   * costs. It is only visible on this display now.
+   * Three are the same cells an EGA has; see below.
    *
    * The other five are what is left of the plotter faces, which were 212 until
    * a line learnt to break a tie the way the driver in front of it does: Roman
@@ -1751,7 +1750,7 @@ export const KNOWN_GAPS: Record<string, string> = {
    * where the remaining 305 are too.
    */
   'glyphs-hercules:glyph':
-    'the glyph sweep on a Hercules, 18 cells of 6,046: ten Symbol bold where the mapper takes a strike and Windows takes an outline, the three an EGA also has, and five plotter cells',
+    'the glyph sweep on a Hercules, eight cells of 6,046: the three an EGA also has, and five plotter cells',
 
   /* The glyph sweep on an EGA, three cells of 6,046.
    *

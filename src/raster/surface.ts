@@ -25,6 +25,9 @@ function entryOf(font) {
 }
 
 export class Surface {
+  declare boldOverhang: any;
+
+
   /* **And the shear is very probably not this at all.**
    *
    * Comparing every slanted cell of the four slant instruments against its own
@@ -667,6 +670,11 @@ export class Surface {
          * square pixel the two are the same number. */
         const cell = box.left + font.outlineAdvance(character.charCodeAt(0));
 
+        /* Whether this driver draws the emboldening overhang where the colour
+         * drivers drop it; see the condition below.
+         */
+        const spills = (this.boldOverhang ?? BitmapContext.driver?.boldOverhang) === 'always';
+
         const from = Math.max(0, cellTop);
         const to = Math.min(this.height, cellBottom);
 
@@ -704,7 +712,18 @@ export class Surface {
                * the box's left and cost twenty-eight records; the two differ by
                * whatever the hinted outline reaches left of its origin.
                */
-              if (bold && (column + 1 < box.right || (box.right <= cell && box.right % 8 !== 0))) {
+              /* And a Hercules draws it wherever the smear reaches.
+               *
+               * The condition above is the colour drivers', measured on a VGA.
+               * A Hercules keeps none of it: every bold cell of the corpus that
+               * the two 96x72 displays disagree about is one of these, ten of
+               * them, and in every one the Hercules has exactly one more pixel
+               * at the right-hand end of a row. **Recorded**, and the two
+               * weaker readings refused with it -- dropping only the byte test
+               * closes seven of the ten and dropping only the cell test closes
+               * three, against ten for drawing it always.
+               */
+              if (bold && (spills || column + 1 < box.right || (box.right <= cell && box.right % 8 !== 0))) {
                 this.context.setPixel(column + 1, row, colour);
               }
             }

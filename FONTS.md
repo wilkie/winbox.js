@@ -352,20 +352,42 @@ is given at each vertical one, on an EGA and on a Hercules:
 
 | cell | ave | max | V   | 2 | 3 | 4 | 5 | 6 | 7 | 8 |
 | ---- | --- | --- | --- | - | - | - | - | - | - | - |
+| 5    | 3   | 5   | EGA | 2 |   |   |   |   |   |   |
+| 5    | 3   | 5   | Her | 2 |   |   |   |   |   |   |
+| 6    | 4   | 6   | EGA | 2 |   |   |   |   |   |   |
+| 6    | 4   | 6   | Her | 2 |   |   |   |   |   |   |
 | 8    | 4   | 8   | EGA | 2 | 3 | 4 | 5 |   |   |   |
 | 8    | 4   | 8   | Her | 2 | 3 | 4 | 5 |   |   |   |
+| 9    | 5   | 9   | EGA | 2 | 3 | 4 | 5 | 5 |   |   |
+| 9    | 5   | 9   | Her | 2 | 3 | 4 | 5 | 5 |   |   |
+| 10   | 5   | 11  | EGA | 2 |   | 4 | 5 |   |   |   |
+| 10   | 5   | 11  | Her | 2 |   | 4 | 5 |   |   |   |
 | 10   | 8   | 8   | EGA | 2 | 3 | 4 | 5 | 5 | 5 |   |
 | 10   | 8   | 8   | Her | 2 | 3 | 4 | 5 | 4 | 4 |   |
+| 12   | 6   | 14  | EGA | 2 | 3 |   |   | 5 |   |   |
+| 12   | 6   | 14  | Her | 2 | 3 |   |   |   |   |   |
 | 12   | 7   | 14  | EGA | 2 | 3 | 4 | 5 | 5 | 5 | 5 |
 | 12   | 7   | 14  | Her | 2 | 3 | 4 | 3 | 3 | 2 | 2 |
 | 12   | 9   | 9   | EGA | 2 | 3 | 4 |   | 5 | 5 |   |
 | 12   | 9   | 9   | Her | 2 | 3 | 2 |   |   | 1 |   |
+| 15   | 8   | 18  | EGA | 2 | 3 |   | 5 | 5 |   |   |
+| 15   | 8   | 18  | Her | 2 | 3 |   | 2 | 2 |   |   |
+| 15   | 8   | 16  | EGA | 2 | 3 | 4 | 5 |   | 5 |   |
+| 15   | 8   | 16  | Her | 2 | 3 | 3 | 2 |   |   |   |
 | 15   | 12  | 12  | EGA | 2 | 3 | 4 | 5 | 5 | 5 | 5 |
 | 15   | 12  | 12  | Her | 2 | 3 | 2 | 1 | 1 | 1 | 1 |
-| 18   | 9   | 19  | EGA | 2 |   |   | 5 |   |   |   |
-| 18   | 9   | 19  | Her | 2 |   |   | 1 |   |   |   |
-| 20   | 12  | 25  | EGA |   |   |   | 5 |   |   |   |
-| 20   | 12  | 25  | Her |   |   |   | 1 |   |   |   |
+| 16   | 9   | 20  | EGA | 2 | 3 | 4 |   | 5 |   |   |
+| 16   | 9   | 20  | Her | 2 | 3 | 2 |   | 1 |   |   |
+| 18   | 9   | 19  | EGA | 2 | 3 | 4 | 5 | 5 |   |   |
+| 18   | 9   | 19  | Her | 2 | 3 | 2 | 1 |   |   |   |
+| 20   | 12  | 25  | EGA | 2 | 3 | 4 | 5 | 5 |   |   |
+| 20   | 12  | 25  | Her | 2 | 2 | 1 | 1 | 1 |   |   |
+| 22   | 12  | 24  | EGA | 2 | 3 | 4 | 5 |   |   |   |
+| 22   | 12  | 24  | Her | 2 | 2 | 1 | 1 |   |   |   |
+| 26   | 16  | 33  | EGA | 2 | 3 | 4 |   |   |   |   |
+| 26   | 16  | 33  | Her | 2 | 1 | 1 |   |   |   |   |
+| 28   | 16  | 32  | EGA | 2 | 3 | 4 |   |   |   |   |
+| 28   | 16  | 32  | Her | 1 | 1 |   |   |   |   |   |
 
 Two things are plain from it. Up to three times over the two displays agree and
 the multiple is the vertical one; from four times over the Hercules falls away,
@@ -392,13 +414,22 @@ wide strike, 270 for the nine, 216 for the fourteen, 120 for the twelve, 100 for
 the twenty-five and 90 for the nineteen: it falls with the width, except where it
 does not.
 
-What the table does say plainly is **when** the collapse starts. Every strike
-keeps `H = V` until the stretched cell passes about fifty rows -- Fixedsys is
-whole at fifty and falls at sixty, System whole at forty-eight and falls at
-sixty, Courier whole at forty-five and falls at sixty, Small Fonts whole at
-forty-five and falls at fifty-four -- and an EGA has no such point at all, where
-MS Sans Serif's eighteen row strike is drawn five times each way into a cell of
-ninety.
+What the table used to say plainly was **when** the collapse starts: every strike
+seemed to keep `H = V` until the stretched cell passed about fifty rows. The
+sweep behind it stopped at a requested height of forty, which reaches a multiple
+of two or three and no more; widened to a hundred and twenty -- eight times the
+tallest strike any of these faces has, which is the cap the mapper itself applies
+at `seg3:1c08` -- and asked for three more faces, the table above is the whole
+surface, and "about fifty" does not survive it.
+
+The last multiple each strike keeps whole, as a stretched cell height: 40, 54,
+50, 50, 48, 36, 45, 45, 45, 48, 54, 40, 44, 52, 28. From twenty-eight to
+fifty-four. It is not a constant height, and the two extremes are the two
+sixteen-wide strikes -- the twenty-eight row one falls at its *second* multiple.
+
+What the EGA does is now beyond doubt, though, which the old sweep could not
+show: across every strike and every multiple it is `min(V, 5)` with no exception
+anywhere.
 
 That is the shape of a **driver** limit rather than a GDI rule, which would also
 be why nothing in GDI's own arithmetic fits it: the display driver realises the
@@ -15993,6 +16024,26 @@ not the face's to be exact about.
 **`font` goes to 7,577 of 7,577 on the VGA, the Super VGA and the EGA**, and on
 the Hercules everything but the sideways strike stretch. `styles` holds at 9,178
 and `sizes` at 800.
+
+#### The bold overhang is the driver's too
+
+Ten cells of the glyph sweep are drawn differently by the two displays that both
+report ninety-six dots across and seventy-two down, and every one of the ten is
+bold. In every one the Hercules has **exactly one more inked pixel at the
+right-hand end of a row** -- the emboldening overhang, which a colour driver
+drops where the smear would need one more byte of the destination row and this
+one draws wherever the smear reaches.
+
+Two weaker readings were scored against the same ten and refused: dropping only
+the byte test closes seven of them, dropping only the cell test closes three, and
+drawing it always closes all ten with nothing else moved on any display.
+
+So a line's tie and a bold glyph's overhang are both the driver's, and
+`BitmapContext.driver` is where a rasteriser finds out which one it is drawing
+for. The oracle harness tells each surface outright, because it replays
+recordings from four displays in one process; the emulator sets it once at boot
+from its own display mode, which is what it should have done when the line tie
+went in and did not.
 
 #### And one thing the sweep did settle
 

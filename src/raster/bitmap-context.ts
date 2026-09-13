@@ -21,6 +21,21 @@
 export class BitmapContext {
   declare excludeLast: any;
   declare lineTie: any;
+
+  /**
+   * The display driver being emulated, for the handful of things a driver
+   * decides rather than GDI.
+   *
+   * Drawing a line and smearing a bold glyph are both the driver's, and the
+   * drivers do not agree -- see `stroke` here and the overhang in
+   * `Surface.fillText`. A context or a surface can be told outright, which is
+   * what the oracle harness does when it replays a recording made on one
+   * display; everything else reads this, which the emulator sets once at boot
+   * from its own display mode. One page emulates one display, so there is one
+   * of these, and it lives here rather than on `Surface` because `Surface`
+   * already imports this and the other way round would be a circle.
+   */
+  static driver: any = null;
   declare _width: number;
   declare _height: number;
   declare _pixels: Uint8Array;
@@ -304,7 +319,11 @@ export class BitmapContext {
       /* Which way this driver takes a tie, in the minor coordinate as it is
        * signed here rather than normalised to the direction of travel.
        */
-      const rises = BitmapContext.tieRises(this.lineTie, steps, Math.abs(minor));
+      const rises = BitmapContext.tieRises(
+        this.lineTie ?? BitmapContext.driver?.lineTie,
+        steps,
+        Math.abs(minor)
+      );
       const up = (acrossX ? rises : rises === dx * dy > 0) ? 0 : 1;
 
       for (let step = 0; step < stop; step++) {
