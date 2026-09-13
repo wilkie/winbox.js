@@ -448,14 +448,46 @@ handler is one byte: `C3`, a bare `ret`.
 the set realises a font at all.** The realised strike is GDI's, on all three, and
 so is the stretch.
 
-Which puts the rule back inside `GDI.EXE`, where the `across` computation at
-`seg3:1d34`-`1db8` already reproduces the EGA exactly and the Hercules not at
-all -- and where something the two displays do not share has to be clamping it.
-The two inputs that differ are the device aspect, 126 against 145, and nothing
-else: the font files are the same `96x72` strikes on both, and the vertical
-multiples they are drawn at are identical. A larger device aspect makes that
-formula ask for *more* sideways stretch, and the Hercules takes less, so the
-clamp is somewhere the reading has not yet been.
+Which puts the rule back inside `GDI.EXE`. And the first thing to say about it
+there is that **`seg3:1d34`-`1db8` is not the place**, though it looked like it:
+that `across` is scored, not realised. It exists to price a candidate, and
+`[bp-0xc]` -- the horizontal multiple it computes -- is initialised to one at
+`seg3:1a55` and never leaves the routine. This side implements it faithfully and
+it has nothing to do with the width that comes back.
+
+The width that comes back is written by a different chain, at `seg3:1b2e`-`1b95`,
+and it writes into the caller's output record rather than into a penalty. That
+record is the one this side returns from `choose`: `+0` takes the realised height
+at `1aed` and `+4` takes the realised width at `1b8e`, and the two branches match
+ours exactly -- `1b31` checks the requested width at `LOGFONT+0x56` and, when it
+is there, uses it outright, which is our `if (width > 0)`.
+
+The other branch is the one we have never had. Decoded as far as its operands:
+
+    r = ([bp-0x12] * dfHorizRes * aspectX)
+        / (aspectY * dfVertRes * [bp+0x16][4] * [bp+0x16][0])
+
+floored at one. `[bp-0x12]` is the requested height, set at `1ad5` and priced
+against the realised one immediately after. What the record's two fields hold on
+entry to this is **not** established, and is not guessed at here.
+
+What is worth having already is the orientation. The device aspect enters as
+`aspectX / aspectY` -- the *reciprocal* of where every formula on this side puts
+it -- and that is the first input found anywhere that points the right way. A
+Hercules pixel is eleven wide to sixteen tall against an EGA's thirty-eight to
+forty-eight, so `aspectX / aspectY` is smaller here, and a smaller value means
+*less* sideways stretch. Every earlier fit had the device aspect pushing the
+other way, which is why none of them could reach an answer below the multiple.
+
+That is a direction, not a magnitude: thirteen per cent between the two displays
+is one step at most, and the table wants four down to two and then to one. The
+strike dependence has to come out of the two record fields, which is where the
+next reading goes.
+
+Meanwhile the defect on this side is one line. `FontManager.choose` ends with
+`horizontal = min(scale, 5)` -- the vertical multiple capped at five, with no
+display in it at all. That **is** the EGA rule, exactly, and a VGA's and a Super
+VGA's; it is why three displays are exact and the fourth is 942 records short.
 
 A fourth display settles which. A Super VGA is 800 by 600 with a square pixel and
 the same ninety-six dots each way a VGA has, so it tests the rules at a

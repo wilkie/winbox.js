@@ -1858,6 +1858,11 @@ export class FontManager {
      * 25: five fives. **Recorded**, across a sweep of every height from one to
      * a hundred and twenty.
      */
+    /* This has no display in it, and Windows's does. It is right on a VGA, a
+     * Super VGA and an EGA and wrong on a Hercules, where the sideways multiple
+     * falls away above three and this does not: 942 records of that sweep.
+     * GDI's own is the chain at `seg3:1b46`-`1b95`, which is decoded as far as
+     * its operands in `FONTS.md` section 3 and no further. */
     let horizontal = Math.min(best.scale, FontManager.MAX_WIDTH_STRETCH);
 
     if (width > 0) {
