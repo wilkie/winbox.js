@@ -150,6 +150,19 @@ export class FontManager {
   static FONT_SEGMENT = 0x10000;
 
   /**
+   * How many bytes a strike drawn `times` up and `across` sideways comes to.
+   *
+   * The realised font's own size: its header, its character table, and a
+   * bitmap of `dfWidthBytes` stretched both ways. See `choose`.
+   */
+  static segmentSize(entry, times, across) {
+    const header = entry.header;
+    const table = (header.dfLastChar - header.dfFirstChar + 2) * entry.entrySize;
+
+    return entry.tableOffset + table + header.dfWidthBytes * across * header.dfPixHeight * times;
+  }
+
+  /**
    * The quality at which a stretched strike is refused rather than scored.
    *
    * Read out of `GDI.EXE` and then asked for: the mapper's penalty routine
@@ -1731,6 +1744,8 @@ export class FontManager {
         ? Math.min(FontManager.MAX_STRETCH, Math.floor((target + (measured >> 2)) / measured))
         : 1;
 
+
+
       /* Refused outright when the multiple plus two is not less than the
        * strike's own height, which is why the three row and five row strikes of
        * Small Fonts are barely stretched: three never can be, five only
@@ -1895,19 +1910,33 @@ export class FontManager {
      * strike's own `dfWidthBytes`.
      */
     if (request.bigFont === false && best.entry) {
-      const header = best.entry.header;
-      const table = (header.dfLastChar - header.dfFirstChar + 2) * best.entry.entrySize;
-      const overhead = best.entry.tableOffset + table;
-      const rows = header.dfPixHeight * best.scale;
-
-
       while (
         horizontal > 1 &&
-        overhead + header.dfWidthBytes * horizontal * rows > FontManager.FONT_SEGMENT
+        FontManager.segmentSize(best.entry, best.scale, horizontal) > FontManager.FONT_SEGMENT
       ) {
         horizontal--;
       }
 
+      /* And down again where even one across will not fit.
+       *
+       * The sideways multiple comes down first and reaches one; past that the
+       * only thing left to give is the multiple upward. MS Sans Serif's
+       * twenty-eight row strike asked for a hundred and twelve pixels on a
+       * Hercules is four times over at one across, which is 66,234 bytes, and
+       * Windows answers eighty-four -- three times over, 50,050. **Recorded**,
+       * nine heights of the dense sweep, 112 to 120, and the three the sparse
+       * one asks beside them.
+       *
+       * It comes down after the choice rather than during it: doing it while
+       * the candidates are being scored changes what they cost and settles
+       * twelve other records on the wrong strike.
+       */
+      while (
+        best.scale > 1 &&
+        FontManager.segmentSize(best.entry, best.scale, horizontal) > FontManager.FONT_SEGMENT
+      ) {
+        best.scale--;
+      }
     }
 
     if (width > 0) {

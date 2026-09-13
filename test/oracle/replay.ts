@@ -1677,41 +1677,22 @@ export const KNOWN_GAPS: Record<string, string> = {
    * `FONTS.md` section 3 has all of them, along with the readings refused with
    * counts on the way.
    */
-  /* The `font` sweep on a Hercules, 150 records of 5,057.
+  /* The `font` sweep on a Hercules is closed too, 11,382 of 11,382.
    *
-   * Recorded here for the first time, and the reason to record it is in the
-   * device caps: a Hercules reports the *same* two logical resolutions an EGA
-   * does, ninety-six across and seventy-two down, and a wholly different pixel
-   * -- `ASPECTX` eleven and `ASPECTY` sixteen, against thirty-eight and
-   * forty-eight. Every aspect rule settled this session was pinned by two
-   * displays on which those two numbers agreed in direction. Here they do not,
-   * so a third display tells them apart.
+   * It was recorded because a Hercules reports the *same* two logical
+   * resolutions an EGA does, ninety-six across and seventy-two down, and a
+   * wholly different pixel -- `ASPECTX` eleven and `ASPECTY` sixteen against
+   * thirty-eight and forty-eight -- so it tells apart every aspect rule that
+   * two agreeing displays had pinned. Every one of them held.
    *
-   * They hold. The face the mapper settles on agrees on all 996 requests, and
-   * so do the heights, the styles, the quality refusals and `CreateFontIndirect`
-   * -- including the off-square penalty, which is `MulDiv(100, aspectY,
-   * aspectX)` and comes to 145 here where it is 126 on an EGA and 100 on a VGA,
-   * and the default height of twelve points at the device's own vertical
-   * resolution.
-   *
-   * What does not hold is how far a strike is stretched **sideways**, and it is
-   * not the driver's doing: `RealizeObject` is stubbed for fonts in all three
-   * display drivers -- a bare `ret` and a realised size of nought -- so the
-   * strike is GDI's to build on every one of them. See `FONTS.md` section 3. On a VGA
-   * and an EGA the horizontal multiple is the vertical one capped at five, and
-   * that was measured on both. On a Hercules it is often far less: MS Sans
-   * Serif's eighteen row strike asked for a hundred pixels is drawn five times
-   * up and **once** across, its ten row strike five times each way, Courier's
-   * twelve row strike four up and twice across, and its fifteen row strike six
-   * up and once across. Every case with a vertical multiple of three or less
-   * agrees. Nothing yet read explains which it will be: it does not follow the
-   * multiple, the strike's own shape -- every one of these files is ninety-six
-   * by seventy-two -- the stretched cell, or the stretched width.
+   * What did not was how far a strike is stretched sideways, and it took the
+   * rest of a session: not the driver, which stubs `RealizeObject` for fonts on
+   * all three displays; not the penalty routine's `across`, which only prices a
+   * candidate; not the vector chain, which is the plotter's. It is `RC_BIGFONT`,
+   * bit ten of `RASTERCAPS`, which this display alone does not have -- so its
+   * realised font is held to a segment and both multiples come down until it
+   * fits. `FONTS.md` section 3 has the arithmetic and the readings refused.
    */
-  'font-hercules:CreateFont extent':
-    'the Hercules mapper, 150 of 2,261: a specimen measured across a strike this display holds to a segment',
-  'font-hercules:CreateFont heights':
-    'the Hercules mapper, 12 of 2,261: which strike a tall request settles on',
 
 
 

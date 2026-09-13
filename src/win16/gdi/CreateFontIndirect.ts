@@ -163,6 +163,12 @@ export function CreateFontIndirect(lplf) {
      * take the average and the maximum at. See `LogicalFont.xBase`.
      */
     xBase: found.xBase,
+
+    /* Whether this display's driver keeps the emboldening overhang, which
+     * makes a smeared string measure one wider as well as draw one wider. See
+     * `LogicalFont.measure` and `Surface.fillText`.
+     */
+    boldOverhang: this.display?.boldOverhang,
     ascent: found.ascent,
     descent: found.descent,
   });

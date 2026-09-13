@@ -322,9 +322,21 @@ export class LogicalFont extends Font {
       /* A bold that had to be synthesised costs a pixel a character, which is
        * what makes the string longer as well as each letter wider. Only Symbol
        * reaches this; the other outline families have a bold file of their own.
+       *
+       * And one more for the whole string where the driver keeps the
+       * emboldening overhang. The last character's smear reaches a column past
+       * its own cell, and a Hercules counts it where the colour drivers do not:
+       * Windows measures the `font` sweep's ten character specimen at 47
+       * against an EGA's 46, at 55 against 54, at 115 against 114 -- the same
+       * face, the same size, the same string, one pixel apart. It is the same
+       * rule the glyph sweep found in ink; see `Surface.fillText`.
        */
       if ((this._style.weight ?? 0) > 550 && !this._style.faceBold) {
         width += String(text).length;
+
+        if (this._style.boldOverhang === 'always') {
+          width += 1;
+        }
       }
 
       return { width, height: this._style.ascent + this._style.descent };

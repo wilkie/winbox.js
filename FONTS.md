@@ -535,8 +535,27 @@ segment, so nothing ever comes down.
 
 **`font` on a Hercules goes from 10,440 of 11,382 to 11,220, and `CreateFont
 widths` -- every average and every maximum, at every height, of every face -- is
-2,261 of 2,261.** What is left there is 150 records of `CreateFont extent` and 12
-of `CreateFont heights`.
+2,261 of 2,261.** Two things were left, and both fell out of the same segment.
+
+The first is 150 extents, every one Symbol at a weight over 550: Windows measures
+the ten character specimen at 47 on this display against an EGA's 46, at 55
+against 54, at 115 against 114. One pixel, the same face, the same size, the
+same string. It is the emboldening overhang again -- the last character's smear
+reaches a column past its own cell, and this driver counts it in the measurement
+exactly as it draws it in the ink. The glyph sweep had already found the drawing
+half of that; this is the ruler catching up with the pen.
+
+The second is 12 heights, MS Sans Serif from 112 pixels upward. Its twenty-eight
+row strike four times over at **one** across is 66,234 bytes, which still does
+not fit; so the sideways multiple, having reached one, stops being the thing that
+can give, and the multiple upward comes down instead. Windows answers 84 -- three
+times over, 50,050 bytes -- and so does this now.
+
+That reduction has to happen *after* the candidates are scored and not while.
+Doing it during the scoring changes what a candidate costs and settles twelve
+other records on the wrong strike; the chosen one is what gets held down.
+
+**The `font` sweep is now 11,382 of 11,382 on all four displays.**
 
 Meanwhile the defect on this side is one line. `FontManager.choose` ends with
 `horizontal = min(scale, 5)` -- the vertical multiple capped at five, with no
@@ -16281,7 +16300,7 @@ recorded on is counted.
 
 | Fixture                                                      | Records | Agreement |
 | ------------------------------------------------------------ | ------- | --------- |
-| `font` (VGA, Super VGA, EGA)                                 | 7,577   | **100%**  |
+| `font` (all four displays)                                   | 11,382  | **100%**  |
 | `glyphs` (VGA, Super VGA)                                    | 6,046   | **100%**  |
 | `glyphs` (EGA)                                               | 6,046   | 99.95%    |
 | `glyphs` (Hercules)                                          | 6,046   | 99.7%     |
@@ -16300,8 +16319,8 @@ not the font's box scaled by any one size.
 in `hinting` and every line on every display. What `KNOWN_GAPS` holds besides
 that one metric is three EGA glyph cells -- Courier New's italic `g` at twelve
 and Symbol's slanted `m` and `y` at fifteen -- those same three on a Hercules
-with ten bold Symbol cells and five plotter cells beside them, and the Hercules
-`font` sweep's sideways strike stretch. The `stack` fixture is not in the table because it is an
+with ten bold Symbol cells and five plotter cells beside them, and nothing else: the Hercules
+`font` sweep's sideways strike stretch is closed. The `stack` fixture is not in the table because it is an
 instrument rather than an oracle: its 3,650 records are the scaler's own stack,
 which nothing on this side is meant to reproduce, and the conformance suite
 reports them as unsupported.
