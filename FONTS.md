@@ -869,9 +869,18 @@ one of those four radii is even, so seven slopes in the whole corpus could tie.
 Seven is few enough to fit almost anything, and the first two readings taken off
 it were both wrong. The sweep now has seven rings, four of them even, and eight
 fans from the corner of the cell as well, where a line has room for a span of
-thirty-one instead of fifteen: **740 records on each of four displays**.
+thirty-one instead of fifteen.
 
-The first thing that says is the strong one. Every pixel of all 2,960, on every
+It also asks the fans from an **odd** coordinate. Every ring and the first fan
+begin on an even one, so nothing recorded could say whether a tie depends on
+where the line starts rather than only on its slope -- and a glyph's strokes
+begin wherever the outline puts them, which is the one thing in the corpus that
+draws a line at all. It does not: **236 slopes across four origins, on a VGA and
+on a Hercules, and not one turns on the parity of either coordinate.**
+
+That makes it **977 records on each of four displays**, and exact on all four.
+
+The first thing that says is the strong one. Every pixel of all 3,908, on every
 driver, is **the pixel nearest the true line**: for a major span `M` and a minor
 span `m`, the minor coordinate at step `i` is `i * m / M` rounded, with no
 exceptions anywhere. A driver has no freedom here at all except at a tie.
@@ -16305,7 +16314,7 @@ recorded on is counted.
 | `glyphs` (EGA)                                               | 6,046   | 99.95%    |
 | `glyphs` (Hercules)                                          | 6,046   | 99.7%     |
 | `hinting` (VGA, EGA)                                         | 14,928  | **100%**  |
-| `lines` (all four displays)                                  | 740     | **100%**  |
+| `lines` (all four displays)                                  | 977     | **100%**  |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
 | `styles`                                                     | 9,178   | **100%**  |
 | `sizes`                                                      | 800     | **100%**  |
@@ -16319,7 +16328,8 @@ not the font's box scaled by any one size.
 in `hinting` and every line on every display. What `KNOWN_GAPS` holds besides
 that one metric is three EGA glyph cells -- Courier New's italic `g` at twelve
 and Symbol's slanted `m` and `y` at fifteen -- those same three on a Hercules
-with ten bold Symbol cells and five plotter cells beside them, and nothing else: the Hercules
+with five plotter cells beside them -- not the tie, which does not turn on where
+a stroke begins any more than on its slope -- and nothing else: the Hercules
 `font` sweep's sideways strike stretch is closed. The `stack` fixture is not in the table because it is an
 instrument rather than an oracle: its 3,650 records are the scaler's own stack,
 which nothing on this side is meant to reproduce, and the conformance suite
