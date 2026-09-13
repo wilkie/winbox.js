@@ -15972,11 +15972,21 @@ prediction held: the three still standing are exactly that shape.
 
   Three sixty-fourths is the whole of it: the off crossing sits at 355 where the
   boundary for six is 352. And the segment it lies on is nearly flat -- its `y`
-  falls by 0.031 of a pixel from end to end -- which is exactly where a walk that
-  steps rather than solves can lose one. So it is the **spline walk**, and the
-  rest of this cell follows from it: fill column five and there is no rescue at
-  row six, nothing to block the vertical rescue at `(7,4)`, and Windows' two
-  pixels come out.
+  falls by 0.031 of a pixel from end to end -- which is where a walk that steps
+  rather than solves can lose one. The rest of the cell follows from it: fill
+  column five and there is no rescue at row six, nothing to block the vertical
+  rescue at `(7,4)`, and Windows' two pixels come out.
+
+  **It is not the flattening depth.** A curve here is cut into `2^depth` chords
+  and each handed to the line walker, which is what the binary does rather than
+  the conic forward difference the document describes -- and the depth comes from
+  the second difference with a floor of one. That segment's second difference is
+  small enough to take the floor, so it is drawn as two chords, and four would
+  put the crossing where the geometry wants it. Swept, the floor is **measured**:
+  one is 32,394 fabricated cells of 32,394, two is 30,643 and three 30,282. So
+  two chords is right and the sixty-fourths go somewhere else -- into the
+  rounding of the chord's own endpoints, or into the line walker's stepping on
+  it, and which of those has not been separated.
 
 The lean is measured and is not it, twice over: sweeping the shear slope over
 four readings leaves the same cells wrong, and the rule that finally fitted the
