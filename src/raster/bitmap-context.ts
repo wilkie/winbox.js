@@ -253,6 +253,13 @@ export class BitmapContext {
    * corpus could tie at all, and seven is few enough to fit almost anything.
    * The even rings and the corner fans exist because of that.
    *
+   * And a tie does not depend on **where the line begins**, only on its slope.
+   * Every ring and the first fan start on an even coordinate, so nothing could
+   * say -- and a glyph's strokes start wherever the outline puts them, which is
+   * why it was worth asking. The fans now ask the same spans from `(1,1)`,
+   * `(1,0)` and `(0,1)` as well: 236 slopes across four origins, on a VGA and
+   * on a Hercules, and not one of them turns on the parity of either.
+   *
    * Two readings were refused along the way, and both are worth the space.
    * `CLIPCAPS` is nought on the Hercules and one on the other three, and the
    * failures were all at the sweep's longest offset, which looked like a

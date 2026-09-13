@@ -22,6 +22,13 @@
  * which turned out to be too few to say what breaks a tie. So 10, 12 and 14 are
  * here as well, and the even radii now outnumber the odd.
  *
+ * The fans also ask the same spans from an odd coordinate. Nothing recorded
+ * could say whether a tie depends on where the line begins rather than only on
+ * its slope, because every ring and the first fan all begin on an even one --
+ * and a glyph's strokes begin wherever the outline puts them. It does not: 236
+ * slopes across four origins, on a VGA and on a Hercules, and not one of them
+ * turns on the parity of either coordinate.
+ *
  * The origin is the middle of a thirty-two square cell, so a radius of fifteen
  * is the most that still lands inside it, which caps the major span at fifteen
  * and the even spans at fourteen. A tie turns out to be decided by the slope in
@@ -80,16 +87,16 @@ static void probeLine(int dx, int dy)
     probe("line", probeArgs, probeResult);
 }
 
-/* One fan from the corner of the cell, at a fixed major span. */
-static void probeCorner(int span)
+/* One fan from a fixed point, at a fixed major span. */
+static void probeFrom(int fromX, int fromY, int span)
 {
     int minor;
 
     for (minor = 0; minor <= span; minor++) {
         PatBlt(memory, 0, 0, CELL_WIDTH, CELL_HEIGHT, WHITENESS);
 
-        MoveTo(memory, 0, 0);
-        LineTo(memory, span, minor);
+        MoveTo(memory, fromX, fromY);
+        LineTo(memory, fromX + span, fromY + minor);
 
         GetBitmapBits(canvas, (LONG)CELL_BYTES, bits);
 
@@ -105,8 +112,8 @@ static void probeCorner(int span)
             *at = '\0';
         }
 
-        wsprintf(probeArgs, "%d,%d", span, minor);
-        probe("corner", probeArgs, probeResult);
+        wsprintf(probeArgs, "%d,%d,%d,%d", fromX, fromY, span, minor);
+        probe("from", probeArgs, probeResult);
     }
 }
 
@@ -149,14 +156,35 @@ int PASCAL WinMain(HANDLE instance, HANDLE previous, LPSTR command, int show)
     probeRing(14);
 
     probeNote("a pen one pixel wide, from the corner of the cell");
-    probeCorner(16);
-    probeCorner(18);
-    probeCorner(20);
-    probeCorner(22);
-    probeCorner(24);
-    probeCorner(26);
-    probeCorner(28);
-    probeCorner(30);
+    probeFrom(0, 0, 16);
+    probeFrom(0, 0, 18);
+    probeFrom(0, 0, 20);
+    probeFrom(0, 0, 22);
+    probeFrom(0, 0, 24);
+    probeFrom(0, 0, 26);
+    probeFrom(0, 0, 28);
+    probeFrom(0, 0, 30);
+
+    /* And the same spans from somewhere odd.
+     *
+     * Both fans above begin on an even coordinate, and so does every ring, so
+     * nothing recorded has ever been able to say whether a tie depends on where
+     * the line starts rather than only on its slope. A glyph's strokes begin
+     * wherever the outline puts them, and the plotter faces are the only thing
+     * in the corpus that draws one -- which is where the question came from.
+     */
+    probeNote("and from an odd coordinate, which nothing has asked before");
+    probeFrom(1, 1, 16);
+    probeFrom(1, 1, 18);
+    probeFrom(1, 1, 20);
+    probeFrom(1, 1, 22);
+    probeFrom(1, 1, 24);
+    probeFrom(1, 1, 26);
+    probeFrom(1, 1, 28);
+    probeFrom(1, 0, 16);
+    probeFrom(0, 1, 16);
+    probeFrom(1, 0, 20);
+    probeFrom(0, 1, 20);
 
     SelectObject(memory, previousBitmap);
     DeleteObject(canvas);

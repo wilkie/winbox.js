@@ -1542,9 +1542,10 @@ const ADAPTERS: Record<
     return context.drawLine(Number(args[0]), Number(args[1]));
   },
 
-  /* The same, from the corner, where a line has room for a longer span. */
-  corner(context, args) {
-    return context.drawLine(Number(args[0]), Number(args[1]), 0, 0);
+  /* The same from a named point, where a line has room for a longer span and
+   * where the point itself can be odd. */
+  from(context, args) {
+    return context.drawLine(Number(args[2]), Number(args[3]), Number(args[0]), Number(args[1]));
   },
 };
 
