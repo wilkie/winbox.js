@@ -1151,7 +1151,40 @@ natural ones:
   as well pinned as anything here.
 
 **Open**, and now reproducible in one line on the plainest display there is:
-`"Arial", h=16, w=8, italic=1, 'M'` wants fourteen and gets thirteen.
+`"Arial", h=16, w=8, italic=1, 'M'` wants fourteen and gets thirteen. That
+request realises at thirteen pixels per em and seventeen across -- the same pair
+an EGA reaches with no width at all -- so the two are one run and one defect.
+
+Traced side by side against the same glyph at thirteen square, which is right,
+the whole of it is seven instructions:
+
+    MDAP  RTG    p11  684 -> 704   (10.69, to eleven)
+    IP           p5   437 -> 432
+    MDAP  RTHG   p5   432 -> 416   (6.75, to six and a half)
+    MIRP  cvt    p11  704 -> 664
+    MDAP  RTG    p11  664 -> 640   (10.375, to ten)
+    MIRP  cvt    p10  786 -> 735
+    MDAP  RTG    p10  735 -> 704   (11.48, to eleven)
+    MIRP  cvt    p26  896 -> 821   (12.83, and the advance is thirteen)
+
+The round states are **identical** in the two runs -- period sixty-four, phase
+nought for the whole-pixel roundings and phase thirty-two for the half, threshold
+thirty-two throughout -- so nothing here is rounding differently from the square
+case; the numbers reaching the roundings differ.
+
+Windows finishes at fourteen, and reading that back through the chain says point
+11 has to leave the first `MIRP` at 672 or more rather than at 664. It leaves at
+664 because the measured distance from point 5 is 295 where the control value is
+256: the two roundings before it pull the points 41 sixty-fourths apart, point 5
+down to six and a half and point 11 up to eleven, and the `MIRP` then pulls point
+11 back by forty.
+
+One arithmetic is worth writing down. Had point 5 landed on seven rather than six
+and a half, the measured distance would be 263, the `MIRP` would move point 11 by
+seven, it would round to eleven, point 10 would follow to twelve and the advance
+would be fourteen -- and the square run, worked the same way, is unchanged at
+ten. That is not a proposal, since `RTHG` is what the font asked for and six and
+a half is what `RTHG` gives; it is the size of the target.
 
 ### Symbol, the face installed twice
 
