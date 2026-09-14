@@ -3,28 +3,23 @@
  *
  * Glyphs drawn an order of magnitude taller than any cell the corpus had.
  *
- * Every glyph ever recorded before this fits in a thirty-two row cell, and one
- * question cannot be asked at that size: whether GDI rasterises a tall glyph in
- * bands, and whether dropout control survives a band boundary. The scaler's own
- * client interface offers two banding strategies and says only the more
- * expensive one "can preserve dropout-control behaviour", which says the cheaper
- * one loses it -- and a stroke thin enough to be rescued on every scanline would
- * then fail on one particular device row, the same row for every glyph at that
- * size.
+ * Every glyph the corpus draws fits in a thirty-two row cell. `oracle/probes/
+ * bands.c` draws two hundred rows into a sixty-four wide bitmap and writes down,
+ * for each row, the leftmost inked column or `ff` for a row with no ink -- built
+ * to ask whether GDI rasterises a tall glyph in bands and whether dropout
+ * control survives a band boundary. **It does**; `FONTS.md` settled that when
+ * the probe was first recorded, and nothing here changes it.
  *
- * `oracle/probes/bands.c` draws two hundred rows into a sixty-four wide bitmap
- * and records, for each row, the leftmost inked column or `ff` for a row with no
- * ink. A break shows as one `ff` between two equal values and needs no
- * interpretation.
+ * This file exists because the write-up of that finding ends by saying nothing
+ * replays these recordings, that the implementation has no banding and so would
+ * "agree by construction", and that a test which cannot fail is worth less than
+ * the recording it is made from.
  *
- * **The answer is that nothing breaks.** In Windows' own recording the tallest
- * rescued hairline runs 108 consecutive rows and the tallest stroke 148, and
- * there is not one single-row gap anywhere in either recording. Whatever GDI
- * does, dropout control is intact across it, and drawing a glyph in one pass --
- * which is what `fillWalked` does -- is right. See `FONTS.md` section 8e.
- *
- * What the sweep did find is two things nothing at thirty-two rows could have,
- * and the ceilings below hold them where they were measured.
+ * It does not agree by construction. It fails 145 times of 576, and the
+ * failures are two things the band question was silent about: four stock
+ * records this draws as nothing at all, and a large disagreement about which
+ * sub-pixel strokes dropout control rescues at fifty to a hundred and twenty
+ * pixels per em. The ceilings below hold both where they were measured.
  */
 
 'use strict';
