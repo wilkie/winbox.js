@@ -15996,11 +15996,25 @@ prediction held: the three still standing are exactly that shape.
   `x[4,15)` under either rounding of its left edge, so last section's change is
   not implicated here either.
 
+  **And it is not the shear's rounding either.** The two points that govern that
+  chord -- its start and its control -- both land on an exact half: at a `y` of
+  354 sixty-fourths the shear term is `147.5`, and nine points of this glyph are
+  in the same position. Rounding a half upward, which is what this side does and
+  what the sweep over the whole fabricated corpus measured, puts the start at 333
+  and the control at 363 and the chord's crossing at 351. Rounding it downward
+  puts them at 332 and 362 and the crossing at 350. Both are index five, and the
+  wrong way: the boundary for six is 352 and the true curve crosses at 355.
+
   So for this one cell the rescue, the placement, the dropout test, the pairing,
-  the flattening, its depth, its threshold, its chord rounding and the box are
-  all excluded by measurement. What is left is the sheared outline itself: one
-  sixty-fourth on one point of it would move the chord far enough. Reading that
-  out of Windows is where this goes next.
+  the flattening, its depth, its threshold, its chord rounding, the box and the
+  shear's rounding are all excluded by measurement, and every one of them in the
+  direction that would have helped.
+
+  What that leaves is the sheared outline's *values* rather than how they are
+  rounded, and nothing recorded can see them: a glyph Windows is shearing runs no
+  program, so the readout that settled `MSIRP` has nothing to attach to. The cell
+  is exhausted at the observability this corpus has, and saying so is worth more
+  than another fit. It is one pixel of one letter on two displays.
 
 The lean is measured and is not it, twice over: sweeping the shear slope over
 four readings leaves the same cells wrong, and the rule that finally fitted the
