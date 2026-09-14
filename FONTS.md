@@ -16094,6 +16094,101 @@ statement about this implementation and not about the record. The decode above
 is what an adapter would need.
 
 
+### 8e. Does GDI band a tall glyph, and does dropout control survive it?
+
+A description of the font scaler's client interface says two things no fixture
+could otherwise see. Rasterising a glyph takes a scanline range -- a band -- and
+a client may ask for one band at a time to save memory; and of the two banding
+strategies offered, only the more expensive one "can preserve dropout-control
+behaviour", which says the cheaper one loses it.
+
+If GDI bands, and if a boundary loses what dropout control needs to carry across
+it, a stroke thin enough to be rescued on every scanline fails on one particular
+device row -- **the same row for every glyph at that size**, wherever the
+boundary falls. Nothing else measured here does that: every other rule found
+fails at a stroke's own ends, which move with the stroke.
+
+Every glyph in the corpus is drawn into a thirty-two row cell, so nothing in it
+could ask. `oracle/probes/bands.c` draws two hundred rows into a sixty-four wide
+bitmap and records, for each row, the leftmost inked column or `ff` for a row
+with no ink at all -- a profile rather than a picture, because a two hundred row
+bitmap does not fit in a record and the question does not need one. A hairline
+standing upright gives the same column on every row it occupies, so a break is
+one `ff` between two equal values.
+
+#### The mechanism, read from the scaler
+
+`fsc_SetupScan` takes a high and a low band limit. Where they equal the glyph's
+box it installs the plain intersection adder; where they do not it installs the
+*banded* one, which discards any crossing outside `[lLoScanBand, lHiScanBand)`.
+So a banded pass genuinely does not see the rest of the glyph.
+
+What carries dropout control across the seam is an **overscan row**. When the
+client asks for banding with dropout, `fsc_SetupScan` allocates one row of
+storage and marks it uninitialised; `fsc_FillBitMap` is then handed an
+`lOrgLoBand` that differs from the band it scans, and after `LookForDropouts`
+has run it copies the band's lowest row into that storage and records which row
+it was. The reader closes the loop: `GetBitAbs` returns the bitmap where the row
+is inside the band, and **where it is not, returns the saved row if that is
+exactly the row asked for**. Dropout control looks one row up and one row down,
+so one saved row is all it needs.
+
+That is the expensive strategy. The cheap one leaves the storage unallocated and
+`GetBitAbs` answers nought for anything outside the band, which is what "loses
+dropout-control behaviour" means: a rescue at the seam sees no neighbour and
+behaves as though the stroke ended there.
+
+#### What Windows actually does
+
+**Nothing breaks.** In the recordings there is not one single-row gap anywhere:
+
+- `times-hairs`, the face whose `SCANCTRL` is `0x17c` and so keeps dropout
+  control to 124 pixels per em, gives rescued hairlines up to **108 consecutive
+  rows** with no interruption.
+- `cour-hairs` gives strokes up to **148 consecutive rows**, likewise.
+- The only internal gaps in either recording are nine of exactly five rows, all
+  at rows 53 to 57 of one size of one face, and they are two separate features
+  of the letter with a blank between them rather than a break in one.
+
+So whatever GDI does about bands, the result is **indistinguishable from not
+banding at all**, and a rasteriser that draws the whole glyph in one pass -- as
+`fillWalked` does -- is right to. The probe cannot tell "no banding" from
+"banding with the overscan row", and for an implementation it does not matter:
+the two are the same picture.
+
+This side agrees. Drawn in one pass, the two stock faces at sixty to a hundred
+and eighty pixels come back **142 of 144 records each** -- ten times the size
+anything else in the corpus asks for, and no band-shaped failure in any of them.
+
+#### What the sweep found instead
+
+Two things, both invisible at thirty-two rows, and both now held by
+`test/raster/tall_glyphs_test.ts` where they were measured.
+
+**Four stock records where this draws nothing at all.** `M` and `W` of Times New
+Roman at a hundred and forty, `A` and `M` of Courier New at a hundred and
+eighty. Windows draws the letter -- 82 to 96 rows of ink -- and this produces no
+ink in any of the sixty-four columns on any of the two hundred rows. They are
+the widest letters at the largest size each face is asked for, which is a lead
+and not yet a reason.
+
+**And the hairlines, which are the real question.** At these sizes a sub-pixel
+stroke is entirely dropout control's to place, and the two sides disagree about
+which ones exist at all:
+
+| | Windows blanks, this draws | Windows draws, this blanks | otherwise |
+| --- | --- | --- | --- |
+| `cour-hairs` | 18 | 38 | 27 |
+| `times-hairs` | **74** | 0 | 0 |
+
+`times-hairs` is the sharp one: Windows leaves 74 of its 144 hairlines blank and
+this draws a stroke in every one. It is **not** the `SCANCTRL` threshold --
+traced, Times New Roman reports `0x17c` at both ends of the sweep, dropout
+control on at 52 pixels per em and at 123 -- and it is not the band boundary,
+which is the whole point of the recording. At a quarter of a pixel wide and a
+hundred rows tall, Windows is refusing rescues this makes, and no rule in this
+file predicts which.
+
 ### 8d. The first glyphs drawn on a pixel that is not square
 
 Every glyph ever recorded had been drawn on a VGA. The mapper, the metrics and

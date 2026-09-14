@@ -613,6 +613,49 @@ export class Context {
     return this.readCell(surface);
   }
 
+  /**
+   * A character drawn far taller than a cell, reported as a column profile.
+   *
+   * The `bands` probe draws two hundred rows into a sixty-four wide bitmap and
+   * writes down the leftmost inked column of each row, or `ff` where the row is
+   * empty. A bitmap that size will not fit in a record and the question does
+   * not need one: a hairline standing upright gives the same column on every
+   * row it occupies, so a break shows as one `ff` between two equal values.
+   */
+  drawTall(font: any, character: string) {
+    const surface: any = Surface.offscreen(64, 200);
+
+    surface.font = font;
+    surface.context.lineTie = this.display.lineTie;
+    surface.context.clipCaps = this.display.clipCaps;
+    surface.boldOverhang = this.display.boldOverhang;
+
+    surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
+    surface.fillRect(0, 0, 64, 200);
+
+    surface.fillText(2, 0, character);
+
+    const pixels = surface.context.pixels;
+
+    let hex = '';
+
+    for (let row = 0; row < 200; row++) {
+      let found = 0xff;
+
+      for (let column = 0; column < 64 && found === 0xff; column++) {
+        const at = (row * 64 + column) * 4;
+
+        if (pixels[at] < 0x80 && pixels[at + 3] !== 0) {
+          found = column;
+        }
+      }
+
+      hex += found.toString(16).padStart(2, '0');
+    }
+
+    return hex;
+  }
+
   /** The cell as the probes write it: one bit a pixel, white set. */
   readCell(surface: any, cell = 32) {
     const pixels = surface.context.pixels;
@@ -1586,6 +1629,41 @@ const ADAPTERS: Record<
   /* A fan whose long axis is y, which the rings are too short to ask. */
   down(context, args) {
     return context.drawLine(Number(args[3]), Number(args[2]), Number(args[0]), Number(args[1]));
+  },
+
+  /**
+   * One character drawn two hundred rows tall, as a column profile.
+   *
+   * The same `CreateFont` fields the glyph probe uses, so the two agree about
+   * what was asked for; only the cell and the record's shape differ.
+   */
+  column(context, args) {
+    if (!context.fonts) {
+      throw new NeedsDrive('the fonts live on the drive image; run the oracle pipeline');
+    }
+
+    const fields: Record<string, number> = {};
+
+    for (const field of args.slice(1, -1)) {
+      const [name, value] = String(field).split('=');
+
+      fields[name] = Number(value);
+    }
+
+    const handle = CreateFontIndirect.call(context, {
+      lfHeight: fields.h ?? 0,
+      lfWidth: fields.w ?? 0,
+      lfWeight: fields.weight ?? 0,
+      lfItalic: fields.italic ?? 0,
+      lfCharSet: 0,
+      lfFaceName: String(args[0]),
+    });
+
+    if (!handle) {
+      throw new Unimplemented('no font mapped');
+    }
+
+    return context.drawTall(context.handles.resolve(handle), String(args[args.length - 1]).replace(/'/g, ''));
   },
 
   /* A whole polyline, drawn as a chain of `LineTo` calls through named points.
