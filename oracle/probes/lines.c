@@ -117,6 +117,128 @@ static void probeFrom(int fromX, int fromY, int span)
     }
 }
 
+/* One segment named by both its ends. */
+static void probeSegment(int fromX, int fromY, int toX, int toY)
+{
+    LPSTR at;
+    int index;
+
+    PatBlt(memory, 0, 0, CELL_WIDTH, CELL_HEIGHT, WHITENESS);
+
+    MoveTo(memory, fromX, fromY);
+    LineTo(memory, toX, toY);
+
+    GetBitmapBits(canvas, (LONG)CELL_BYTES, bits);
+
+    at = probeResult;
+
+    for (index = 0; index < CELL_BYTES; index++) {
+        *at++ = HEX[(bits[index] >> 4) & 0x0f];
+        *at++ = HEX[bits[index] & 0x0f];
+    }
+
+    *at = '\0';
+
+    wsprintf(probeArgs, "%d,%d,%d,%d", fromX, fromY, toX, toY);
+    probe("segment", probeArgs, probeResult);
+}
+
+/* One fan whose long axis is y rather than x.
+ *
+ * Every steep line the sweep above draws begins at the middle of the cell and
+ * spans at most fifteen, because that is as far as a ring reaches. The corner
+ * fans buy a span of thirty-one and every denominator up to thirty, but their
+ * long axis is always x. So a steep line longer than fifteen has never been
+ * asked at all, and neither has a steep line that begins anywhere but the one
+ * point -- which is exactly what a plotter glyph draws.
+ *
+ * The minor offset is swept over whatever keeps the far end inside the cell,
+ * so the fan asks every slope it can reach rather than a fixed count.
+ */
+static void probeDown(int fromX, int fromY, int span)
+{
+    int minor;
+
+    for (minor = -span; minor <= span; minor++) {
+        if (fromX + minor < 0 || fromX + minor >= CELL_WIDTH) {
+            continue;
+        }
+
+        PatBlt(memory, 0, 0, CELL_WIDTH, CELL_HEIGHT, WHITENESS);
+
+        MoveTo(memory, fromX, fromY);
+        LineTo(memory, fromX + minor, fromY + span);
+
+        GetBitmapBits(canvas, (LONG)CELL_BYTES, bits);
+
+        {
+            LPSTR at = probeResult;
+            int index;
+
+            for (index = 0; index < CELL_BYTES; index++) {
+                *at++ = HEX[(bits[index] >> 4) & 0x0f];
+                *at++ = HEX[bits[index] & 0x0f];
+            }
+
+            *at = '\0';
+        }
+
+        wsprintf(probeArgs, "%d,%d,%d,%d", fromX, fromY, span, minor);
+        probe("down", probeArgs, probeResult);
+    }
+}
+
+/* A fan of lines that begin outside the cell and end on a named row.
+ *
+ * Every line in every sweep above lies wholly inside the cell, so nothing has
+ * ever asked what a clipped one draws -- and a plotter glyph at a forty pixel
+ * cell is wider than the cell and its strokes begin off the right-hand edge.
+ * The one display that cannot clip for itself is the one that gets them wrong.
+ */
+static void probeAcross(int fromX, int fromY, int toY)
+{
+    int toX;
+
+    for (toX = 0; toX < CELL_WIDTH; toX++) {
+        probeSegment(fromX, fromY, toX, toY);
+    }
+}
+
+/* And the same the other way about: a line that begins inside and ends past an
+ * edge, which is the shape of a descender at a size the cell cannot hold.
+ */
+static void probeBelow(int fromX, int fromY, int toY)
+{
+    int toX;
+
+    for (toX = -8; toX < CELL_WIDTH + 8; toX++) {
+        probeSegment(fromX, fromY, toX, toY);
+    }
+}
+
+/* Every short line from a point just off an edge.
+ *
+ * The fans below cross an edge at a shallow angle over a long span, which is
+ * the shape a plotter capital makes. A plotter descender makes another: two or
+ * three pixels of hook, drawn from a point a column outside the cell, where the
+ * whole line is shorter than the distance it is clipped by.
+ */
+static void probeShort(int fromX, int fromY)
+{
+    int dx;
+    int dy;
+
+    for (dy = -4; dy <= 4; dy++) {
+        for (dx = -4; dx <= 4; dx++) {
+            if (dx == 0 && dy == 0) {
+                continue;
+            }
+
+            probeSegment(fromX, fromY, fromX + dx, fromY + dy);
+        }
+    }
+}
+
 /* One ring of endpoints at a fixed distance from the origin. */
 static void probeRing(int radius)
 {
@@ -198,6 +320,95 @@ int PASCAL WinMain(HANDLE instance, HANDLE previous, LPSTR command, int show)
     probeFrom(0, 1, 16);
     probeFrom(1, 0, 20);
     probeFrom(0, 1, 20);
+
+    /* Steep lines longer than fifteen, which nothing has asked.
+     *
+     * Every steep line above starts at the middle of the cell, so its span is
+     * capped at fifteen and its start is one fixed point. A plotter stroke at a
+     * forty pixel cell is steep, spans twenty-six, and starts on row five --
+     * none of which the sweep can produce. The three spans of twenty-six differ
+     * only in where they stop: on the last row of the cell, one short of it,
+     * and well inside. That separates the span from the edge.
+     */
+    probeNote("fans whose long axis is y, which the rings are too short to ask");
+    probeDown(16, 5, 26);
+    probeDown(16, 4, 26);
+    probeDown(16, 0, 26);
+    probeDown(16, 5, 20);
+    probeDown(16, 0, 20);
+    probeDown(16, 1, 20);
+    probeDown(17, 0, 20);
+    probeDown(16, 0, 10);
+    probeDown(16, 1, 10);
+    probeDown(17, 1, 10);
+
+    /* And the strokes of the five glyphs that disagree, drawn as lines.
+     *
+     * These are the device segments this side computes for `Roman` slanted `M`
+     * and `W` at forty and `Script` `j` at sixteen and forty and `y` at forty,
+     * on a Hercules, with the two `W` strokes an EGA computes beside them. Drawn
+     * through `LineTo` they answer the one question a glyph cannot: whether the
+     * pixels we disagree about are a property of the line or of the font.
+     */
+    probeNote("the strokes of the glyphs that disagree, drawn as lines");
+    probeSegment(24, 5, 16, 31);
+    probeSegment(34, 5, 16, 31);
+    probeSegment(34, 5, 25, 31);
+    probeSegment(43, 5, 25, 31);
+    probeSegment(25, 5, 19, 25);
+    probeSegment(35, 5, 28, 25);
+    probeSegment(20, 5, 29, 5);
+    probeSegment(25, 5, 21, 31);
+    probeSegment(42, 5, 21, 31);
+    probeSegment(25, 5, 12, 31);
+    probeSegment(42, 5, 29, 31);
+    probeSegment(43, 5, 30, 31);
+    probeSegment(26, 5, 23, 28);
+    probeSegment(23, 5, 14, 31);
+    probeSegment(32, 5, 14, 31);
+    probeSegment(2, 22, 4, 17);
+    probeSegment(4, 17, -2, 37);
+    probeSegment(12, 17, 6, 37);
+    probeSegment(3, 7, 0, 15);
+    probeSegment(0, 12, 2, 11);
+    probeSegment(2, 11, 4, 10);
+
+    /* And lines that leave the cell, which nothing has asked either.
+     *
+     * The first four fans begin to the right of the cell and end on its last
+     * row; the next two begin to the left of it; the last three begin inside
+     * and end below. Between them they cross every edge in both directions and
+     * at every slope the cell can reach.
+     */
+    probeNote("lines that leave the cell, which the driver that cannot clip must be given clipped");
+    probeAcross(33, 5, 31);
+    probeAcross(35, 5, 31);
+    probeAcross(40, 5, 31);
+    probeAcross(47, 5, 31);
+    probeAcross(-2, 5, 31);
+    probeAcross(-9, 5, 31);
+    probeBelow(16, 17, 37);
+    probeBelow(4, 17, 37);
+    probeBelow(16, 5, 45);
+
+    /* And the edges the fans above do not cross.
+     *
+     * Every clipped line so far enters or leaves through a side. A plotter
+     * descender leaves through the bottom and comes back, so a line that
+     * *begins* below the cell has never been drawn, and neither has one that
+     * begins above it.
+     */
+    probeNote("lines that begin past the top or the bottom, and short ones from just outside");
+    probeAcross(16, 37, 5);
+    probeAcross(16, 37, 0);
+    probeAcross(16, -6, 26);
+    probeAcross(16, -6, 31);
+    probeAcross(-1, 17, 15);
+    probeAcross(-1, 17, 25);
+    probeShort(-1, 17);
+    probeShort(32, 16);
+    probeShort(16, 32);
+    probeShort(16, -1);
 
     SelectObject(memory, previousBitmap);
     DeleteObject(canvas);

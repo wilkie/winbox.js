@@ -91,16 +91,24 @@ import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './repl
  * The wide net now holds two displays rather than one, an EGA and a Hercules,
  * and its ceiling is what the two of them measure. Adding a display raises it
  * once, by what that display brings; from there it can only fall. The Hercules
- * brought 517, of which 305 are the slanted cells the EGA also has and 212 are
- * the plotter faces, which three other displays draw exactly.
+ * brought 517, of which 305 were the slanted cells the EGA also has and 212 the
+ * plotter faces, which three other displays draw exactly.
+ *
+ * It is seven records now, and the two displays are nearly the same three
+ * cells. The plotter faces went in two steps, both of them about a line rather
+ * than a glyph: a tie is the driver's to break, which took 212 to five, and a
+ * line that leaves the cell is GDI's to draw rather than the driver's, which
+ * took five to one. What is left is `Courier New`'s italic `g` at twelve and
+ * `Symbol`'s slanted `m` and `y` at fifteen, on both displays, and `Script`'s
+ * `j` at sixteen on the Hercules alone.
  */
 const OUTLINE = ['Arial', 'Times New Roman', 'Courier New'];
 const RECORDS = 0;
 const PIXELS = 0;
 const BITMAP_RECORDS = 136;
 const BITMAP_PIXELS = 794;
-const WIDE_RECORDS = 812;
-const WIDE_PIXELS = 17605;
+const WIDE_RECORDS = 7;
+const WIDE_PIXELS = 15;
 
 /* The wide-net fixtures: nothing among the styled files, nothing above
  * thirty-one pixels, and one stretched outline of `widths` -- an unhinted `o`

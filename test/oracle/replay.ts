@@ -550,8 +550,10 @@ export class Context {
     surface.context.beginPath();
     surface.context.excludeLast = true;
 
-    /* A line is the driver's to draw, and the drivers do not agree. */
+    /* A line is the driver's to draw, and the drivers do not agree -- and one
+     * that leaves the cell is GDI's, on the driver that cannot clip. */
     surface.context.lineTie = this.display.lineTie;
+    surface.context.clipCaps = this.display.clipCaps;
 
     surface.context.moveTo(fromX, fromY);
     surface.context.lineTo(fromX + dx, fromY + dy);
@@ -565,8 +567,10 @@ export class Context {
 
     surface.font = font;
 
-    /* The plotter faces are drawn as lines, and a line is the driver's. */
+    /* The plotter faces are drawn as lines, and a line is the driver's -- and
+     * a line that leaves the cell is GDI's, on the driver that cannot clip. */
     surface.context.lineTie = this.display.lineTie;
+    surface.context.clipCaps = this.display.clipCaps;
     surface.boldOverhang = this.display.boldOverhang;
 
     // White to start with, as `PatBlt(..., WHITENESS)` left it.
@@ -1547,6 +1551,19 @@ const ADAPTERS: Record<
   from(context, args) {
     return context.drawLine(Number(args[2]), Number(args[3]), Number(args[0]), Number(args[1]));
   },
+
+  /* A fan whose long axis is y, which the rings are too short to ask. */
+  down(context, args) {
+    return context.drawLine(Number(args[3]), Number(args[2]), Number(args[0]), Number(args[1]));
+  },
+
+  /* One line named by both its ends, so a glyph's stroke can be asked for
+   * directly rather than rebuilt from a span and an offset. */
+  segment(context, args) {
+    const [fromX, fromY, toX, toY] = args.map(Number);
+
+    return context.drawLine(toX - fromX, toY - fromY, fromX, fromY);
+  },
 };
 
 /** Thrown by an adapter for a function we have not implemented at all. */
@@ -1697,43 +1714,49 @@ export const KNOWN_GAPS: Record<string, string> = {
 
 
 
-  /* The line sweep on a Hercules, 32 records of 248.
+  /* The line sweep on a Hercules, thirteen records of 2,289.
    *
-   * `lines` walks one line from the middle of a cell out to every offset in a
-   * range and records the pixels. It had only ever run on a VGA. Recorded on a
-   * Hercules, **32 of its 248 cells differ from the VGA's**, and they are
-   * exactly the 32 we get wrong, because we draw what a VGA draws.
+   * `lines` draws one line into a thirty-two square cell and records the
+   * pixels. It began as four rings of offsets round the middle of the cell and
+   * has grown every time a plotter glyph asked something it could not answer:
+   * seven rings now, corner fans that buy a span of thirty-one, fans from odd
+   * coordinates, fans whose long axis is y, and -- last -- lines that leave the
+   * cell altogether, which is what a plotter glyph draws at a forty pixel size
+   * and what nothing had ever recorded.
    *
-   * Every one of the 32 has an offset of eight in one direction or the other:
-   * the full symmetric set of `+-8` against `+-1`, `+-2`, `+-4` and `+-5`. The
-   * cell is thirty-two square and the line starts at its middle, so eight ends
-   * at twenty-four and nothing is clipped -- eight is just the longest offset
-   * the sweep asks for.
+   * The three colour drivers are exact, all 2,289 each, clipped lines and all.
+   * They answer `CP_RECTANGLE` for `CLIPCAPS` and clip for themselves, and a
+   * clipped line of theirs is exactly the visible part of the whole line.
    *
-   * The pixels say what it is. Eight across and four down, a slope of exactly a
-   * half, is four runs of two on a VGA and one, two, two, two, one on a
-   * Hercules: the steps fall half a step earlier. The two drivers start their
-   * error term at different places, one at nought and one at half the
-   * increment, so they part where a step lands on a tie.
+   * The Hercules answers nought, so GDI clips for it, and GDI's walk is not the
+   * driver's: a tie turns over and the pixel the line stops on is drawn when it
+   * sits on the edge the line is running at. `BitmapContext.stroke` has both,
+   * with the counts, and `FONTS.md` has the reading.
    *
-   * This is why the plotter faces fail on this display: a stroke font is lines,
-   * and 212 of its cells differ by a pixel where a stroke meets the edge.
+   * What is left is thirteen records of one display, of two shapes. Four are
+   * steep lines from below the cell that stop on a column edge; nine are lines
+   * of four pixels or fewer that begin one pixel outside an edge. One cell of
+   * the glyph corpus is the second shape -- `Script`'s `j` at sixteen -- and
+   * nothing else in the corpus draws either.
    */
+  'lines-hercules:segment':
+    'the line sweep on a Hercules, thirteen records of 2,289: four steep lines from below the cell and nine of four pixels or fewer from just outside an edge',
 
-  /* The glyph sweep on a Hercules, eight cells of 6,046.
+  /* The glyph sweep on a Hercules, four cells of 6,046.
    *
    * Three are the same cells an EGA has; see below.
    *
-   * The other five are what is left of the plotter faces, which were 212 until
-   * a line learnt to break a tie the way the driver in front of it does: Roman
-   * slanted `M` and `W` at forty pixels, and Script `j` at sixteen and forty and
-   * `y` at forty. Every other plotter cell on this display now agrees, as do all
-   * 740 lines of the `lines` sweep, so whatever these five are it is not the
-   * tie. They are all descenders or diagonals of a slanted design, which is
-   * where the remaining 305 are too.
+   * The fourth is the last of the plotter faces, which were 212 until a line
+   * learnt to break a tie the way the driver in front of it does, and five
+   * until it learnt that a line leaving the cell is GDI's to draw and not the
+   * driver's. Roman slanted `M` and `W` at forty pixels and Script `j` and `y`
+   * at forty all went with that; what is left is Script `j` at sixteen, whose
+   * hook is four pixels long and begins one column off the left of the cell.
+   * That is the one shape the line sweep also still gets wrong -- see the
+   * `lines` note above -- so it is one defect counted twice and not two.
    */
   'glyphs-hercules:glyph':
-    'the glyph sweep on a Hercules, eight cells of 6,046: the three an EGA also has, and five plotter cells',
+    'the glyph sweep on a Hercules, four cells of 6,046: the three an EGA also has, and Script `j` at sixteen',
 
   /* The glyph sweep on an EGA, three cells of 6,046.
    *

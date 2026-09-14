@@ -22,6 +22,13 @@ export class BitmapContext {
   declare excludeLast: any;
   declare lineTie: any;
 
+  /* Whether the driver clips a line for itself -- `CLIPCAPS`, which is
+   * `CP_RECTANGLE` on the three colour drivers and nought on the Hercules. A
+   * driver that does not is handed a line GDI has clipped, and GDI's walk is
+   * not the driver's; see `stroke`.
+   */
+  declare clipCaps: any;
+
   /**
    * The display driver being emulated, for the handful of things a driver
    * decides rather than GDI.
@@ -303,7 +310,7 @@ export class BitmapContext {
        * off -- gets it from the last segment alone.
        */
       const last = index === this._path.length - 1;
-      const stop = last && !this.excludeLast ? steps + 1 : steps;
+      let stop = last && !this.excludeLast ? steps + 1 : steps;
 
       /* A segment from a point to itself draws nothing.
        *
@@ -331,7 +338,77 @@ export class BitmapContext {
         steps,
         Math.abs(minor)
       );
-      const up = (acrossX ? rises : rises === dx * dy > 0) ? 0 : 1;
+      let up = (acrossX ? rises : rises === dx * dy > 0) ? 0 : 1;
+
+      /* A line that leaves the surface is not the driver's to draw.
+       *
+       * `CLIPCAPS` says whether a driver clips for itself. The three colour
+       * drivers answer `CP_RECTANGLE` and do: **recorded**, 858 clipped lines
+       * on each of them, and every one is exactly the part of the whole line
+       * that falls inside -- the same pixels, nothing added and nothing moved.
+       * The Hercules driver answers nought, so GDI clips for it, and what GDI
+       * draws is not what that driver would have: 187 of the 858 differ.
+       *
+       * Two things change, and between them they are all but thirteen of it.
+       *
+       * **The tie stops being the driver's, and turns over.** GDI's own walk
+       * takes a tie to the *larger* y where the colour drivers take it to the
+       * smaller -- the same sentence with the sign reversed, and on a steep
+       * line seen through the other axis exactly as theirs is. It is not the
+       * slope rule this driver uses when it draws for itself. 307 ties arise in
+       * the clipped lines of the sweep; 98 of them land elsewhere because of
+       * this, and the other 209 are slopes where the two rules agree anyway.
+       *
+       * **And the pixel the line stops on is drawn, when that pixel is on the
+       * edge the line is running at.** Not any edge: the major coordinate's. A
+       * fan of endpoints slid along the last row says it cleanly -- from
+       * `(47,5)`, every steep line to row thirty-one draws the row it stops on
+       * and every shallow one does not, and the one shallow line that does is
+       * the one that stops on column thirty-one. Of 522 clipped lines where the
+       * two answers differ, 518 follow it.
+       *
+       * The minor span is asked about because two vertical lines --
+       * `(16,-6)->(16,31)` and `(16,37)->(16,0)` -- stop on the edge and do not
+       * draw it. A line with no minor span is the one case where GDI has no
+       * second axis to clip against, which is a guess at why and not a reading;
+       * what is measured is the two records.
+       *
+       * Thirteen records of 2,289 are still wrong, all on this display and all
+       * of one of two shapes. Four are steep lines from below the cell that
+       * stop on a *column* edge rather than a row edge -- `(16,37)->(0,5)` and
+       * `(16,37)->(31,5)` draw the pixel they stop on where this does not, and
+       * `(16,37)->(8,5)` and `(16,37)->(24,5)` break a tie the other way from
+       * the rule above. The other nine are lines of four pixels or fewer
+       * beginning one pixel outside an edge, where Windows draws a run that is
+       * neither this walk's nor the driver's: `(32,16)->(28,14)` puts three
+       * pixels on one row where every rule here bends them across two.
+       *
+       * Those nine fit a different account -- that GDI re-seeds the walk at the
+       * point where the line crosses the edge and truncates from there rather
+       * than rounding -- and that account was fitted and **refused**: scored
+       * against all 858 clipped lines it gets 288, where this gets 845. It
+       * explains nine records and loses 557.
+       *
+       * This is why the plotter faces failed on this display once the tie was
+       * settled: a slanted `Roman` at a forty pixel cell is wider than the
+       * thirty-two square the probe draws into, so its strokes begin off the
+       * right-hand edge and end on the last row -- both halves of this, in four
+       * of the five glyphs. The fifth, `Script`'s `j` at sixteen, is one of the
+       * short lines above.
+       */
+      const clips = this.clipCaps ?? BitmapContext.driver?.clipCaps ?? 1;
+      const within = (x, y) => x >= 0 && y >= 0 && x < this._width && y < this._height;
+
+      if (!clips && !(within(fromX, fromY) && within(toX, toY))) {
+        up = (acrossX ? true : dx * dy > 0) ? 0 : 1;
+
+        const edge = acrossX ? toX : toY;
+        const limit = acrossX ? this._width : this._height;
+
+        if (minor !== 0 && edge === (major > 0 ? limit - 1 : 0)) {
+          stop = steps + 1;
+        }
+      }
 
       for (let step = 0; step < stop; step++) {
         const offset = Math.floor((2 * minor * step + steps - up) / (2 * steps));
