@@ -16893,10 +16893,37 @@ crosses at 5.495, which rounds to five. **Four sixty-fourths of a pixel**, and
 no rounding of the subdivision midpoint reaches across it: the exact half-way
 point is 360.5 in sixty-fourths and the crossing needs 362.
 
-**The `m` is the same shape with the other sign.** Its row nine `on` crossing
-sits within a sixty-fourth of the rounding boundary and this takes the lower
-column, inking `(4,9)` where Windows does not. It has no horizontal rescues at
-all.
+**And the walk lands on the tie exactly.** The chord is
+`(333,-414) -> (361,-417)`, and `CalcLine`'s determinant starts at `lQ = 1` --
+the "to include pixel centers" seed a downward line gets -- and takes
+`terminalX * initialYStep - terminalY * initialXStep = 28 x 2 - 3 x 19 = -1`,
+so `q` is **nought**. The loop branches on `q > 0`, so the first step is the
+horizontal one and it emits column five. One more and it would step `x` first
+and emit six, which is Windows' answer. There is no closer miss available: the
+quantity that decides this pixel is an integer and it is zero.
+
+The obvious move is refused. Branching on `q >= 0` instead is 31,920 fabricated
+cells of 32,394 with 809 wrong pixels, 2,634 of the 2,668 that are not square,
+and 5,871 of the recorded 6,046 on each non-square display -- against 32,394,
+2,668 and 6,044. The seed and the sense are both right; it is the chord that is
+a sixty-fourth out.
+
+Subdividing *that one curve* once more does give Windows' answer: at depth two
+the crossing falls on the chord `(347,-415) -> (361,-417)`, whose determinant is
+`1 + 14 x 1 - 2 x 5 = 5`, positive, so `x` steps first and the row's `off` is
+six. Doing it to every curve is the catastrophe in the table above. What selects
+this curve and not the rest is not read.
+
+**The `m` is close but not on the tie.** Its edge is a straight one --
+`(240,-723) -> (364,-424)`, no flattening involved -- and its determinant at the
+deciding step is -92 against a step of 7,936, about one part in eighty-six. An
+`initialXStep` of 47 rather than 48 turns it over, which is one sixty-fourth of
+where the sheared point lands.
+
+Its row nine `on` crossing sits within a sixty-fourth of the rounding boundary
+and this takes the lower column, inking `(4,9)` where Windows does not. It has
+no horizontal rescues at all, so unlike the `y` it is one pixel and one
+decision.
 
 **And the stub check is not involved in either.** `stubs` is false for this
 face, so every rescue in both glyphs is accepted; the question is where they
@@ -16933,6 +16960,9 @@ and it is not the locus of these cells.
 
 Upward is alone in being exact on both fabricated corpora, and the margin over
 the nearest rival has widened rather than narrowed.
+
+**The determinant's tie test**, `q > 0`: `q >= 0` costs 474 fabricated cells,
+34 non-square ones and 173 recorded cells on each non-square display.
 
 **And the reference's own dropout placement.** `DoHorizDropout` reads
 `lXDrop = *psOn`, tests the pixel to the left under `lXDrop > lBoxLeft` and the

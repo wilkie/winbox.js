@@ -1870,6 +1870,15 @@ export const KNOWN_GAPS: Record<string, string> = {
    * sixty-fourths of a pixel, and no rounding of the subdivision midpoint
    * reaches across it.
    *
+   * The walk lands on the tie exactly: `CalcLine`'s determinant for that chord
+   * is `1 + 28*2 - 3*19`, which is **nought**, and the loop branches on
+   * `q > 0`. One more and it would step `x` first and emit six. Branching on
+   * `q >= 0` instead is refused -- 31,920 fabricated cells of 32,394 against
+   * 32,394 -- so the seed and the sense are right and the chord is a
+   * sixty-fourth out. Subdividing that one curve once more does give Windows'
+   * answer; doing it to every curve costs 1,748 cells. What selects it is not
+   * read.
+   *
    * The `m` is the same shape with the other sign: its row nine `on` crossing
    * sits within a sixty-fourth of the boundary and this takes the lower column.
    *
