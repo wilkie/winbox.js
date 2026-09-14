@@ -22,6 +22,11 @@ export class BitmapContext {
   declare excludeLast: any;
   declare lineTie: any;
 
+  /* Whether this path is handed over as a single polyline, the way a stroke
+   * glyph's run is, rather than as one `LineTo` after another. See `stroke`.
+   */
+  declare polyline: any;
+
   /* Whether the driver clips a line for itself -- `CLIPCAPS`, which is
    * `CP_RECTANGLE` on the three colour drivers and nought on the Hercules. A
    * driver that does not is handed a line GDI has clipped, and GDI's walk is
@@ -180,6 +185,7 @@ export class BitmapContext {
      * than assumed. See `Surface.strokeText`.
      */
     this.excludeLast = false;
+    this.polyline = false;
   }
 
   /**
@@ -282,6 +288,53 @@ export class BitmapContext {
    */
   stroke() {
     const colour = BitmapContext.toRGBA(this.strokeStyle);
+
+    const clips = this.clipCaps ?? BitmapContext.driver?.clipCaps ?? 1;
+
+    /* Whether GDI has to take the *whole* path from the driver rather than the
+     * segments of it that leave the surface.
+     *
+     * A polyline reaches a driver as one `Output` call, so either the driver
+     * takes it or GDI does; there is no third thing. But which of those happens
+     * is not decided by whether the path leaves the surface. It is decided by
+     * whether any point of it is **negative**.
+     *
+     * **Measured**, on the four ways of scoping it, against the two glyph
+     * sweeps on a Hercules -- 6,046 cells at seven sizes and 1,584 at every
+     * size from eight to forty:
+     *
+     *     scoping                          glyphs   plotter
+     *     this segment only                  6042      1580
+     *     any point past an edge             6038      1567
+     *     the whole path, either way         6039      1569
+     *     the whole path when a point is
+     *       negative, else this segment      6043      1582
+     *
+     * A coordinate past the right-hand edge or below the bottom is a coordinate
+     * the driver can be handed and told to stop at; a negative one is not, and
+     * the two behave differently in exactly that way. That is a reading of the
+     * numbers and not of the code.
+     *
+     * `Script`'s `j` is what found it. Its hook reaches a column off the left
+     * of the cell, and the pixel we were short of it sat on the *stem* -- a
+     * segment lying wholly inside, two segments earlier. Drawn alone as a line,
+     * or as the second of a chain of two, Windows breaks that segment's tie
+     * toward where it began; drawn inside the glyph it breaks it the other way.
+     * Both were recorded: `segment(3,7,0,15)` and `chain(2,9,3,7,0,15)` and the
+     * whole thirteen point run as `poly` all give the first answer, and the
+     * glyph gives the second -- so the glyph is not drawing what `LineTo` would
+     * draw, and the run's negative points are the only thing that separates it.
+     *
+     * That is why this is gated on `polyline` rather than applied to every
+     * path. A glyph's run reaches a driver as one `Output` call and a chain of
+     * `LineTo`s reaches it as one call each, and the recordings say the two do
+     * not agree; `Surface.strokeText` is the only caller that sets it. Why one
+     * `Output` of thirteen points and thirteen `Output`s of two behave
+     * differently at all is **not read** -- only that they do, in eleven `poly`
+     * records against the same points inside a letter.
+     */
+    const negative =
+      this.polyline && this._path.some(([x, y]) => Math.floor(x) < 0 || Math.floor(y) < 0);
 
     for (let index = 1; index < this._path.length; index++) {
       const [fromX, fromY] = this._path[index - 1].map(Math.floor);
@@ -401,12 +454,11 @@ export class BitmapContext {
        * Windows does. That cell is a pixel of the glyph's own geometry and not
        * of the line under it.
        */
-      const clips = this.clipCaps ?? BitmapContext.driver?.clipCaps ?? 1;
       const within = (x, y) => x >= 0 && y >= 0 && x < this._width && y < this._height;
 
       let entry = -1;
 
-      if (!clips && !(within(fromX, fromY) && within(toX, toY))) {
+      if (!clips && (negative || !(within(fromX, fromY) && within(toX, toY)))) {
         up = (acrossX ? true : dx * dy > 0) ? 0 : 1;
 
         const start = acrossX ? fromX : fromY;

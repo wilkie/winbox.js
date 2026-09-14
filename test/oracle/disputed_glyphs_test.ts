@@ -94,21 +94,29 @@ import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './repl
  * brought 517, of which 305 were the slanted cells the EGA also has and 212 the
  * plotter faces, which three other displays draw exactly.
  *
- * It is seven records now, and the two displays are nearly the same three
- * cells. The plotter faces went in two steps, both of them about a line rather
- * than a glyph: a tie is the driver's to break, which took 212 to five, and a
- * line that leaves the cell is GDI's to draw rather than the driver's, which
- * took five to one. What is left is `Courier New`'s italic `g` at twelve and
- * `Symbol`'s slanted `m` and `y` at fifteen, on both displays, and `Script`'s
- * `j` at sixteen on the Hercules alone.
+ * The plotter faces went in three steps, every one of them about a line rather
+ * than a glyph: a tie is the driver's to break, which took 212 to five; a line
+ * that leaves the cell is GDI's to draw rather than the driver's, which took
+ * five to one; and a run with a negative point is GDI's *whole*, which took the
+ * last. **Every plotter cell of the glyph sweep agrees on all four displays.**
+ *
+ * What is left of the glyph sweep is `Courier New`'s italic `g` at twelve and
+ * `Symbol`'s slanted `m` and `y` at fifteen, the same three on both.
+ *
+ * The ceiling then rose once, by two, for a fixture rather than a display. The
+ * `plotter` sweep draws the three stroke faces at every height from eight to
+ * forty rather than at seven of them -- 1,584 cells on each of four displays,
+ * built to pin the transform the last `Script` cell had put in doubt -- and it
+ * brought two of its own: `Script`'s `g` and `y` at thirty-four on the
+ * Hercules. From here it can only fall.
  */
 const OUTLINE = ['Arial', 'Times New Roman', 'Courier New'];
 const RECORDS = 0;
 const PIXELS = 0;
 const BITMAP_RECORDS = 136;
 const BITMAP_PIXELS = 794;
-const WIDE_RECORDS = 7;
-const WIDE_PIXELS = 15;
+const WIDE_RECORDS = 8;
+const WIDE_PIXELS = 18;
 
 /* The wide-net fixtures: nothing among the styled files, nothing above
  * thirty-one pixels, and one stretched outline of `widths` -- an unhinted `o`

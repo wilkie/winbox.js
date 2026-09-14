@@ -886,10 +886,11 @@ on row thirty-one, which is exactly there. Asked, with a ring of fifteen and a
 corner fan of span thirty-one, the answer is flat again: **both displays exclude
 the endpoint in every one of them.**
 
-The sweep is **2,449 records on each of four displays** now: the last additions
-are lines that leave the cell, and lines of four pixels or fewer drawn from the
-middle of it and from just outside each edge. The section below this one is what
-those said.
+The sweep is **2,478 records on each of four displays** now: the last additions
+are lines that leave the cell, lines of four pixels or fewer drawn from the
+middle of it and from just outside each edge, and whole polylines -- the runs a
+plotter glyph computes, drawn as chains of `LineTo` calls through the same
+points. The two sections below this one are what those said.
 
 Which left Roman's slanted `W` at forty saying something odd. Its strokes are
 identical on the two displays -- printed out of this side, the same eight runs,
@@ -1070,6 +1071,75 @@ rounded away from the start -- but only the entry, and only where the major axis
 brought the line in; the walk after it is not re-seeded and does not truncate.
 Keeping the half that scored and dropping the half that did not took those nine
 records and two more with them, and cost nothing.
+
+#### And the last of them: a letter is not drawn the way a line is
+
+One cell survived all of that -- `Script`'s `j` at sixteen pixels on the
+Hercules, one pixel at `(1,11)` -- and it turned into the most informative thing
+in the section, because chasing it required saying out loud what a stroke glyph
+actually is.
+
+The pixel is on the `j`'s **stem**: the segment from `(3,7)` to `(0,15)`, a
+steep span of eight with a minor of three, which ties exactly half way down.
+Drawn as a line that tie goes toward where the line began, and inside the letter
+it goes the other way.
+
+Three recordings say that is not a line property, and each was made because the
+one before it was not enough.
+
+- **`segment(3,7,0,15)`** -- the stem alone, named by both ends. Windows draws
+  the tie toward the start. Ten more origins for the same slope say the same:
+  `(4,7)`, `(3,8)`, `(4,8)`, `(16,7)`, `(17,7)`, `(16,8)`, `(17,8)`, `(3,16)`,
+  `(16,16)`, odd and even, and not one turns on where the line begins.
+- **`chain(2,9,3,7,0,15)`** -- the stem as the *second* of two, since inside the
+  letter it is. Same answer.
+- **`poly`** -- the whole thirteen point run in device pixels, and the same run
+  cut back to three, four, five, six, eight and nine points, and with its
+  duplicate points removed. Every one of them draws what this side draws.
+
+So the letter is not drawing the run. The run drawn as lines and the run drawn
+as a letter are different ink, with the same points, on the same display.
+
+What the letter does instead was found by scoping the question. GDI has to take
+a path from a driver that cannot clip; the question is *how much* of it.
+**Measured**, against the two glyph sweeps on a Hercules -- the 6,046 cell sweep
+at seven sizes and the 1,584 cell one at every size from eight to forty:
+
+| what GDI takes | `glyphs` | `plotter` |
+| --- | --- | --- |
+| only the segments that leave the cell | 6042 | 1580 |
+| the whole run, if any point leaves the cell | 6039 | 1569 |
+| the whole run, if any point is past the right or bottom | 6038 | 1567 |
+| **the whole run, if any point is negative; else only the segments** | **6043** | **1582** |
+
+A coordinate past the right-hand edge or below the bottom is one a driver can be
+handed and told to stop at. A negative one is not. The two behave differently in
+exactly that way, and that is a reading of the numbers rather than of the code:
+why one `Output` of thirteen points and thirteen `Output`s of two points differ
+at all is **not read**.
+
+`Script`'s `j` is the case because its hook reaches a column off the *left* of
+the cell while `Roman`'s `m` at forty runs off the *right*: the first is GDI's
+whole and the second is not, and scoping it either way loses one of them.
+
+#### What that closes
+
+**Every plotter cell of the glyph sweep agrees on all four displays** -- 420 of
+420 -- and the Hercules glyph sweep is 6,043 of 6,046, the same three cells an
+EGA has, none of them a stroke font.
+
+The `plotter` fixture is new and is why: 1,584 cells on each of four displays,
+the three stroke faces and Roman slanted at every height from eight to forty.
+It exists because the glyph sweep had come down to one pixel and one pixel
+cannot pin a transform -- searching a scale, an offset and a rounding mode
+against that single cell admitted **1,843** combinations, of which the most
+tempting was a horizontal scale of exactly a half. A design coordinate crosses a
+pixel boundary at a different size for every value it takes, so a dense sweep in
+the size is a dense sweep in the transform; asked that way the transform turned
+out to be right and the drawing wrong.
+
+Two of its 1,584 are still short, both on the Hercules: `Script`'s `g` and `y`
+at thirty-four, a pixel each, one column to the left of where this puts them.
 
 ### The two passes, read rather than inferred
 
@@ -16630,7 +16700,7 @@ Three things, and all three were found the same way: a cell of the corpus that
 two displays draw differently with everything else held identical.
 
 **A line's tie.** Every pixel of every line in the sweep that lies wholly inside
-the cell -- 2,289 records on each of the four displays, 1,431 of them uncrossed
+the cell -- 2,478 records on each of the four displays, 1,620 of them uncrossed
 by an edge -- is the pixel nearest the true line, on every driver; a driver's
 only freedom is where the line passes exactly between two. The three colour
 drivers are identical record for record and their rule is one sentence -- a tie
@@ -16647,9 +16717,15 @@ by GDI on the fourth. 858 clipped lines on each display; the colour drivers draw
 exactly the visible part of the whole line, and on the Hercules 187 of the 858
 differ, because GDI's walk is not the driver's -- it turns the tie over and it
 draws the pixel the line stops on when that pixel is on the edge the line is
-running at. This is the third driver property and the one that took longest to
-see, because it is not a difference in *how* a line is drawn but in *who* draws
-it.
+running at, and it rounds the step the line enters on away from where the line
+began. This is the third driver property and the one that took longest to see,
+because it is not a difference in *how* a line is drawn but in *who* draws it.
+
+How much GDI takes is its own question, and it is not answered by whether the
+path leaves the surface. A **negative** coordinate anywhere in a polyline takes
+the whole of it; a coordinate past the right-hand edge or the bottom takes only
+the segments that cross. Measured four ways against 7,630 stroke glyph cells;
+see the table in the line section above.
 
 **A bold glyph's overhang.** A smear reaches a column past the glyph's own cell.
 A colour driver drops that column where it would need one more byte of the
@@ -16725,19 +16801,17 @@ none of the others guessed: the extra pixel is not the driver's at all.
 
 ### What is still open
 
-Two line records of 2,449, on the Hercules alone: `(16,37)->(0,5)` and
+Two line records of 2,478, on the Hercules alone: `(16,37)->(0,5)` and
 `(16,37)->(31,5)`, steep lines climbing out of the bottom of the cell that stop
 on a *column* edge and draw the pixel they stop on. The same shape running the
 other way down the page does not, and 74 shallow lines in that position do not
 either, so there is no rule there yet -- only two records, and nothing in the
 glyph corpus draws the shape.
 
-And one plotter cell, `Script`'s `j` at sixteen on the Hercules, which is not a
-line question: every line of four pixels or fewer is now recorded from the
-middle of the cell as well as from just outside each edge, 160 of them, and all
-four displays agree on every one. Windows draws the `j`'s hook one pixel longer
-than the eight device points we compute for it, so the question is about the
-coordinates.
+And two cells of the `plotter` sweep, `Script`'s `g` and `y` at thirty-four on
+the Hercules, a pixel each. `Script`'s `j` at sixteen, which used to sit here,
+is closed: a stroke glyph's run with a negative point in it is GDI's to draw
+whole, where a run that merely leaves the cell to the right is not.
 
 ## 9. Where the numbers stand
 
@@ -16751,11 +16825,12 @@ recorded on is counted.
 | ------------------------------------------------------------ | ------- | --------- |
 | `font` (all four displays)                                   | 11,382  | **100%**  |
 | `glyphs` (VGA, Super VGA)                                    | 6,046   | **100%**  |
-| `glyphs` (EGA)                                               | 6,046   | 99.95%    |
-| `glyphs` (Hercules)                                          | 6,046   | 99.93%    |
+| `glyphs` (EGA, Hercules)                                     | 6,046   | 99.95%    |
 | `hinting` (VGA, EGA)                                         | 14,928  | **100%**  |
-| `lines` (VGA, Super VGA, EGA)                                | 2,449   | **100%**  |
-| `lines` (Hercules)                                           | 2,449   | 99.9%     |
+| `lines` (VGA, Super VGA, EGA)                                | 2,478   | **100%**  |
+| `lines` (Hercules)                                           | 2,478   | 99.9%     |
+| `plotter` (VGA, Super VGA, EGA)                              | 1,584   | **100%**  |
+| `plotter` (Hercules)                                         | 1,584   | 99.9%     |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
 | `styles`                                                     | 9,178   | **100%**  |
 | `sizes`                                                      | 800     | **100%**  |
@@ -16769,12 +16844,11 @@ not the font's box scaled by any one size.
 in `hinting` and every line that does not leave its cell on any display. What
 `KNOWN_GAPS` holds besides that one metric is three EGA glyph cells -- Courier
 New's italic `g` at twelve and Symbol's slanted `m` and `y` at fifteen -- those
-same three on a Hercules with one plotter cell beside them, `Script`'s `j` at
-sixteen, whose hook Windows draws a pixel longer than the device points we
-compute for it -- and two Hercules line records, steep lines climbing out of the
-bottom of the cell that stop on a column edge. Nothing else: the Hercules `font`
-sweep's sideways strike stretch is closed, and so are the four plotter cells the
-clipping rule took with it. The `stack` fixture is not in the table because it is an
+same three on a Hercules -- two cells of the new `plotter` sweep, `Script`'s `g`
+and `y` at thirty-four on that display, and two Hercules line records, steep
+lines climbing out of the bottom of the cell that stop on a column edge. Nothing
+else. **Every plotter cell of the glyph sweep agrees on all four displays**, and
+so does every stroke face at every size from eight to forty but those two. The `stack` fixture is not in the table because it is an
 instrument rather than an oracle: its 3,650 records are the scaler's own stack,
 which nothing on this side is meant to reproduce, and the conformance suite
 reports them as unsupported.

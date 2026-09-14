@@ -957,6 +957,11 @@ export class Surface {
         for (let copy = 0; copy <= (smeared ? 1 : 0); copy++) {
           this.context.beginPath();
           (this.context as any).excludeLast = true;
+
+          /* One run is one polyline, which is not the same as a chain of
+           * `LineTo` calls through the same points -- see `BitmapContext.stroke`
+           * and the `poly` records of the `lines` fixture. */
+          (this.context as any).polyline = true;
           run.forEach(([px, py], index) => {
             /* A design coordinate below the cell is pulled back to its last
              * row rather than falling off it.

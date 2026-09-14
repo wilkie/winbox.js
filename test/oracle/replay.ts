@@ -582,6 +582,37 @@ export class Context {
     return this.readCell(surface, cell);
   }
 
+  /**
+   * A whole path, drawn as a chain of `LineTo` calls, into the same cell.
+   *
+   * Deliberately *not* a polyline in the sense `Surface.strokeText` means: this
+   * is what a caller making one `LineTo` call per segment gets, and the probe's
+   * `poly` records exist to say that a stroke glyph's run through the same
+   * points is not the same ink. See `BitmapContext.stroke`.
+   */
+  drawPath(points: number[][]) {
+    const surface: any = Surface.offscreen(32, 32);
+
+    surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
+    surface.fillRect(0, 0, 32, 32);
+
+    surface.context.strokeStyle = 'black';
+    surface.context.beginPath();
+    surface.context.excludeLast = true;
+    surface.context.lineTie = this.display.lineTie;
+    surface.context.clipCaps = this.display.clipCaps;
+
+    surface.context.moveTo(points[0][0], points[0][1]);
+
+    for (const [x, y] of points.slice(1)) {
+      surface.context.lineTo(x, y);
+    }
+
+    surface.context.stroke();
+
+    return this.readCell(surface);
+  }
+
   /** The cell as the probes write it: one bit a pixel, white set. */
   readCell(surface: any, cell = 32) {
     const pixels = surface.context.pixels;
@@ -1557,6 +1588,32 @@ const ADAPTERS: Record<
     return context.drawLine(Number(args[3]), Number(args[2]), Number(args[0]), Number(args[1]));
   },
 
+  /* A whole polyline, drawn as a chain of `LineTo` calls through named points.
+   *
+   * The probe holds the runs a plotter glyph computes, so this is the same ink
+   * asked for twice: once as a letter and once as the lines the letter is made
+   * of. They are not the same, which is the point of having it. */
+  /* Two lines end to end, which is the shortest thing that is not one line. */
+  chain(context, args) {
+    const [x0, y0, x1, y1, x2, y2] = args.map(Number);
+
+    return context.drawPath([
+      [x0, y0],
+      [x1, y1],
+      [x2, y2],
+    ]);
+  },
+
+  poly(context, args) {
+    const points: number[][] = [];
+
+    for (let at = 0; at + 1 < args.length; at += 2) {
+      points.push([Number(args[at]), Number(args[at + 1])]);
+    }
+
+    return context.drawPath(points);
+  },
+
   /* One line named by both its ends, so a glyph's stroke can be asked for
    * directly rather than rebuilt from a span and an offset. */
   segment(context, args) {
@@ -1714,17 +1771,24 @@ export const KNOWN_GAPS: Record<string, string> = {
 
 
 
-  /* The line sweep on a Hercules, two records of 2,449.
+  /* The line sweep on a Hercules, two records of 2,478.
    *
    * `lines` draws one line into a thirty-two square cell and records the
    * pixels. It began as four rings of offsets round the middle of the cell and
    * has grown every time a plotter glyph asked something it could not answer:
    * seven rings now, corner fans that buy a span of thirty-one, fans from odd
    * coordinates, fans whose long axis is y, lines that leave the cell
-   * altogether, and every line of four pixels or fewer from five origins -- one
-   * in the middle of the cell and one just outside each edge.
+   * altogether, every line of four pixels or fewer from five origins -- one in
+   * the middle of the cell and one just outside each edge -- and, last, whole
+   * polylines: the runs a plotter glyph computes, drawn as chains of `LineTo`
+   * calls through the same points, whole and cut back a point at a time.
    *
-   * The three colour drivers are exact, all 2,449 each, clipped lines and all.
+   * Those last are the instrument that separated two things nothing had been
+   * able to tell apart. A stroke glyph's run and a chain of `LineTo` calls
+   * through the same points do **not** draw the same ink, so a letter is not
+   * drawing what a line would draw. See `BitmapContext.stroke`.
+   *
+   * The three colour drivers are exact, all 2,478 each, clipped lines and all.
    * They answer `CP_RECTANGLE` for `CLIPCAPS` and clip for themselves, and a
    * clipped line of theirs is exactly the visible part of the whole line.
    *
@@ -1742,28 +1806,43 @@ export const KNOWN_GAPS: Record<string, string> = {
    * corpus draws the shape.
    */
   'lines-hercules:segment':
-    'the line sweep on a Hercules, two records of 2,449: steep lines from below the cell that stop on a column edge and draw the pixel they stop on',
+    'the line sweep on a Hercules, two records of 2,478: steep lines from below the cell that stop on a column edge and draw the pixel they stop on',
 
-  /* The glyph sweep on a Hercules, four cells of 6,046.
+  /* The plotter sweep on a Hercules, two cells of 1,584.
    *
-   * Three are the same cells an EGA has; see below.
+   * `plotter` draws the three stroke faces at every height from eight to forty
+   * rather than at the seven the glyph sweep asks. It was built because the
+   * glyph sweep had come down to a single pixel -- `Script`'s `j` at sixteen --
+   * and one cell cannot pin a transform: searching a scale, an offset and a
+   * rounding mode against that one cell admitted 1,843 combinations. A design
+   * coordinate crosses a pixel boundary at a different size for every value it
+   * takes, so a dense sweep in the size is a dense sweep in the transform.
    *
-   * The fourth is the last of the plotter faces, which were 212 until a line
-   * learnt to break a tie the way the driver in front of it does, and five
-   * until it learnt that a line leaving the cell is GDI's to draw and not the
-   * driver's. Roman slanted `M` and `W` at forty pixels and Script `j` and `y`
-   * at forty all went with that; what is left is Script `j` at sixteen.
+   * It found four cells rather than one, and the four together said the answer
+   * was not the transform at all: a stroke glyph's run is not drawn the way a
+   * line is. 1,582 of 1,584 now, and 1,584 on each of the other three.
    *
-   * One pixel, at `(1,11)`, on the hook. It is not the line: the sweep now
-   * draws every line of four pixels or fewer from the middle of the cell as
-   * well as from just outside it, 160 of them, and all four displays agree on
-   * every one -- so the two-step slope of a half the hook turns on is measured
-   * and we walk it the way Windows does. Windows puts one more pixel in the
-   * hook than the design points we compute can produce, which makes it a
-   * question about the coordinates rather than about the rasteriser.
+   * What is left is `Script`'s `g` and `y` at thirty-four, one pixel each, a
+   * column to the left of where this puts it.
+   */
+  'plotter-hercules:glyph':
+    'the plotter sweep on a Hercules, two cells of 1,584: `Script` `g` and `y` at thirty-four, one pixel each',
+
+  /* The glyph sweep on a Hercules is the same three cells an EGA has.
+   *
+   * It was 517 short when this display was first recorded, of which 212 were
+   * the plotter faces. Those are closed, in three steps and not one of them
+   * about a glyph: a tie is the driver's to break; a line that leaves the cell
+   * is GDI's to draw rather than the driver's; and a run with a negative point
+   * is GDI's *whole*, where a run that merely runs off the right-hand edge is
+   * not.
+   *
+   * **Every plotter cell of this sweep agrees on all four displays.** What is
+   * left here is the three cells `glyphs-ega:glyph` describes below, which this
+   * display has as well.
    */
   'glyphs-hercules:glyph':
-    'the glyph sweep on a Hercules, four cells of 6,046: the three an EGA also has, and Script `j` at sixteen',
+    'the glyph sweep on a Hercules, three cells of 6,046: the same three an EGA has',
 
   /* The glyph sweep on an EGA, three cells of 6,046.
    *

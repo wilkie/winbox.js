@@ -14703,6 +14703,180 @@
       "args": "15,15,19,19",
       "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffff7fffffffbfffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
       "section": "lines that begin past the top or the bottom, and short ones from just outside"
+    },
+    {
+      "function": "segment",
+      "args": "3,7,0,15",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffefffffffdfffffffdfffffffdfffffffbfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "one steep slope from ten origins, and the same inside a chain"
+    },
+    {
+      "function": "segment",
+      "args": "4,7,1,15",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7ffffffefffffffefffffffefffffffdfffffffdfffffffbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "one steep slope from ten origins, and the same inside a chain"
+    },
+    {
+      "function": "segment",
+      "args": "3,8,0,16",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffefffffffdfffffffdfffffffdfffffffbfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "one steep slope from ten origins, and the same inside a chain"
+    },
+    {
+      "function": "segment",
+      "args": "4,8,1,16",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7ffffffefffffffefffffffefffffffdfffffffdfffffffbfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "one steep slope from ten origins, and the same inside a chain"
+    },
+    {
+      "function": "segment",
+      "args": "16,7,13,15",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7ffffffefffffffefffffffefffffffdfffffffdfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "one steep slope from ten origins, and the same inside a chain"
+    },
+    {
+      "function": "segment",
+      "args": "17,7,14,15",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffffbfffffff7fffffff7fffffff7ffffffefffffffefffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "one steep slope from ten origins, and the same inside a chain"
+    },
+    {
+      "function": "segment",
+      "args": "16,8,13,16",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7ffffffefffffffefffffffefffffffdfffffffdfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "one steep slope from ten origins, and the same inside a chain"
+    },
+    {
+      "function": "segment",
+      "args": "17,8,14,16",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffbfffffffbfffffff7fffffff7fffffff7ffffffefffffffefffffffdffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "one steep slope from ten origins, and the same inside a chain"
+    },
+    {
+      "function": "segment",
+      "args": "3,16,0,24",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffefffffffdfffffffdfffffffdfffffffbfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "one steep slope from ten origins, and the same inside a chain"
+    },
+    {
+      "function": "segment",
+      "args": "16,16,13,24",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7ffffffefffffffefffffffefffffffdfffffffdfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "one steep slope from ten origins, and the same inside a chain"
+    },
+    {
+      "function": "chain",
+      "args": "2,9,3,7,0,15",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffcfffffffdfffffffdfffffffdfffffffbfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "one steep slope from ten origins, and the same inside a chain"
+    },
+    {
+      "function": "chain",
+      "args": "3,7,3,7,0,15",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffefffffffdfffffffdfffffffdfffffffbfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "one steep slope from ten origins, and the same inside a chain"
+    },
+    {
+      "function": "chain",
+      "args": "2,8,3,7,0,15",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffcfffffffdfffffffdfffffffdfffffffbfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "one steep slope from ten origins, and the same inside a chain"
+    },
+    {
+      "function": "chain",
+      "args": "4,9,3,7,0,15",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffe7ffffffd7ffffffdfffffffdfffffffbfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "one steep slope from ten origins, and the same inside a chain"
+    },
+    {
+      "function": "chain",
+      "args": "15,18,16,16,13,24",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffffffe7ffffffefffffffefffffffefffffffdfffffffdfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "one steep slope from ten origins, and the same inside a chain"
+    },
+    {
+      "function": "chain",
+      "args": "16,16,16,16,13,24",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fffffff7ffffffefffffffefffffffefffffffdfffffffdfffffffbffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "one steep slope from ten origins, and the same inside a chain"
+    },
+    {
+      "function": "chain",
+      "args": "2,9,3,7,3,7",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffdfffffffdfffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "one steep slope from ten origins, and the same inside a chain"
+    },
+    {
+      "function": "chain",
+      "args": "0,15,3,7,2,9",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffcfffffffdfffffffdfffffffdfffffffbfffffffbfffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "one steep slope from ten origins, and the same inside a chain"
+    },
+    {
+      "function": "poly",
+      "args": "2,9,3,7,0,15,0,15,-1,15,-1,15,-1,15,-1,13,0,12,2,11,2,11,4,10,5,9",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffcfffffffdfffffffd7ffffffcfffffff3fffffffbfffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "j16"
+    },
+    {
+      "function": "poly",
+      "args": "2,9,3,7,0,15",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffcfffffffdfffffffdfffffffdfffffffbfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "j16 cut to 3"
+    },
+    {
+      "function": "poly",
+      "args": "2,9,3,7,0,15,0,15",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffcfffffffdfffffffdfffffffdfffffffbfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "j16 cut to 4"
+    },
+    {
+      "function": "poly",
+      "args": "2,9,3,7,0,15,0,15,-1,15",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffcfffffffdfffffffdfffffffdfffffffbfffffffbfffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "j16 cut to 5"
+    },
+    {
+      "function": "poly",
+      "args": "2,9,3,7,0,15,0,15,-1,15,-1,15",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffcfffffffdfffffffdfffffffdfffffffbfffffffbfffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "j16 cut to 6"
+    },
+    {
+      "function": "poly",
+      "args": "2,9,3,7,0,15,0,15,-1,15,-1,15,-1,15,-1,13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffcfffffffdfffffffdfffffffdfffffffbfffffffbfffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "j16 cut to 8"
+    },
+    {
+      "function": "poly",
+      "args": "2,9,3,7,0,15,0,15,-1,15,-1,15,-1,15,-1,13,0,12",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffcfffffffdfffffffdfffffffdfffffffbfffffffbfffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "j16 cut to 9"
+    },
+    {
+      "function": "poly",
+      "args": "2,9,3,7,0,15,-1,15,-1,13,0,12,2,11,4,10,5,9",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffcfffffffdfffffffd7ffffffcfffffff3fffffffbfffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "j16 no duplicates"
+    },
+    {
+      "function": "poly",
+      "args": "2,9,3,7,0,15,0,15,1,15,1,15,1,15,1,13,0,12,2,11,2,11,4,10,5,9",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffcfffffffdfffffffd7ffffffcfffffff3fffffffbfffffff3fffffff3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "j16 kept inside"
+    },
+    {
+      "function": "poly",
+      "args": "2,11,3,9,0,19,-1,20,-2,20,-2,20,-2,19,-2,18,0,16,1,15,3,14,4,13,6,11",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffcfffffffdfffffffdbffffffd7ffffffcfffffff9fffffff3fffffffbfffffff7fffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "j21"
+    },
+    {
+      "function": "poly",
+      "args": "2,11,3,9,0,19",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffffcfffffffdfffffffdfffffffdfffffffdfffffffbfffffffbfffffffbfffffff7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "j21 cut to 3"
     }
   ]
 }
