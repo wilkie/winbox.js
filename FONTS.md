@@ -878,7 +878,23 @@ begin wherever the outline puts them, which is the one thing in the corpus that
 draws a line at all. It does not: **236 slopes across four origins, on a VGA and
 on a Hercules, and not one turns on the parity of either coordinate.**
 
-That makes it **977 records on each of four displays**, and exact on all four.
+It also asks for lines that stop on the very **last row and last column** the
+cell has. Every ring reaches fourteen from a middle at sixteen and every corner
+fan thirty from nought, so the thirty-second row and the thirty-second column had
+never been an endpoint at all -- and a plotter stroke at a forty pixel cell ends
+on row thirty-one, which is exactly there. Asked, with a ring of fifteen and a
+corner fan of span thirty-one, the answer is flat again: **both displays exclude
+the endpoint in every one of them.**
+
+That makes it **1,133 records on each of four displays**, and exact on all four.
+
+Which leaves Roman's slanted `W` at forty saying something odd. Its strokes are
+identical on the two displays -- printed out of this side, the same eight runs,
+the same design points, the same rows, the last of them ending on row thirty-one
+-- and the EGA agrees with Windows where the Hercules does not. The whole of the
+difference is those endpoints: Windows draws them there and not on an EGA. The
+exclusion is now measured to be the same on both, so it is not the exclusion, and
+what it is instead is not read.
 
 The first thing that says is the strong one. Every pixel of all 3,908, on every
 driver, is **the pixel nearest the true line**: for a major span `M` and a minor
@@ -16473,7 +16489,7 @@ recorded on is counted.
 | `glyphs` (EGA)                                               | 6,046   | 99.95%    |
 | `glyphs` (Hercules)                                          | 6,046   | 99.7%     |
 | `hinting` (VGA, EGA)                                         | 14,928  | **100%**  |
-| `lines` (all four displays)                                  | 977     | **100%**  |
+| `lines` (all four displays)                                  | 1,133   | **100%**  |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
 | `styles`                                                     | 9,178   | **100%**  |
 | `sizes`                                                      | 800     | **100%**  |

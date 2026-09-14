@@ -173,6 +173,19 @@ int PASCAL WinMain(HANDLE instance, HANDLE previous, LPSTR command, int show)
      * wherever the outline puts them, and the plotter faces are the only thing
      * in the corpus that draws one -- which is where the question came from.
      */
+    /* And lines that stop on the very last row or column the cell has.
+     *
+     * A line does not draw the pixel it stops on, and every sweep above stops
+     * with room to spare -- the rings reach fourteen from a middle at sixteen
+     * and the corner fans thirty from nought, so the thirty-second row and the
+     * thirty-second column have never been an endpoint. The plotter faces put
+     * one there: at a forty pixel cell their strokes end on row thirty-one, and
+     * that is where a Hercules and an EGA part company.
+     */
+    probeNote("stopping on the last row and the last column, which nothing has asked");
+    probeFrom(0, 0, 31);
+    probeRing(15);
+
     probeNote("and from an odd coordinate, which nothing has asked before");
     probeFrom(1, 1, 16);
     probeFrom(1, 1, 18);
