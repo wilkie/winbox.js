@@ -15977,16 +15977,30 @@ prediction held: the three still standing are exactly that shape.
   column five and there is no rescue at row six, nothing to block the vertical
   rescue at `(7,4)`, and Windows' two pixels come out.
 
-  **It is not the flattening depth.** A curve here is cut into `2^depth` chords
-  and each handed to the line walker, which is what the binary does rather than
-  the conic forward difference the document describes -- and the depth comes from
-  the second difference with a floor of one. That segment's second difference is
-  small enough to take the floor, so it is drawn as two chords, and four would
-  put the crossing where the geometry wants it. Swept, the floor is **measured**:
-  one is 32,394 fabricated cells of 32,394, two is 30,643 and three 30,282. So
-  two chords is right and the sixty-fourths go somewhere else -- into the
-  rounding of the chord's own endpoints, or into the line walker's stepping on
-  it, and which of those has not been separated.
+  **It is not the flattening.** A curve here is cut into `2^depth` chords and
+  each handed to the line walker, which is what the binary does rather than the
+  conic forward difference the document describes. Traced, the two entries for
+  that row come from chords `(273,-420)->(311,-415)` and `(333,-414)->(361,-417)`
+  in the walk's own sixty-fourths, and both emit index five.
+
+  The second of those is the one in question, and the arithmetic on it closes
+  every door in the flattening. Its chord crosses the sample line at 351.67 where
+  the true curve crosses at 355.0 and the boundary for index six is 352 -- so the
+  chord under-shoots the bulge by three sixty-fourths and loses the column by a
+  third of one. Four chords would recover it, and the depth rule is measured
+  against that wish and refuses: a floor of one is 32,394 fabricated cells of
+  32,394 where two is 30,643 and three 30,282, and the threshold that decides
+  when to subdivide is 0x80, where 0x40 is 31,232, 0x20 is 30,688 and 0x10 is
+  30,441. The chord's own endpoints are rounded half upward and check out --
+  the curve's midpoint is 360.5 and the accumulator gives 361 -- and the box is
+  `x[4,15)` under either rounding of its left edge, so last section's change is
+  not implicated here either.
+
+  So for this one cell the rescue, the placement, the dropout test, the pairing,
+  the flattening, its depth, its threshold, its chord rounding and the box are
+  all excluded by measurement. What is left is the sheared outline itself: one
+  sixty-fourth on one point of it would move the chord far enough. Reading that
+  out of Windows is where this goes next.
 
 The lean is measured and is not it, twice over: sweeping the shear slope over
 four readings leaves the same cells wrong, and the rule that finally fitted the
