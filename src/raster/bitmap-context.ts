@@ -466,7 +466,36 @@ export class BitmapContext {
 
       let entry = -1;
 
-      if (!clips && (negative || !(within(fromX, fromY) && within(toX, toY)))) {
+      /* A segment that stops on the edge of a run that carries on past it.
+       *
+       * Its own two ends are both inside, so nothing above catches it, and yet
+       * it is part of what GDI has to clip: the polyline it belongs to crosses
+       * the edge, and the crossing happens at this segment's far end rather
+       * than inside it. Windows draws it GDI's way.
+       *
+       * **Measured.** On the Hercules -- the only display where it can matter,
+       * since the other three clip for themselves -- the condition reaches 55
+       * segments of the two glyph sweeps, 37 of them distinct. Two of those
+       * were drawn wrongly before and the other fifty-three were already right
+       * and stay right, so this is not a rule fitted to the two. Asking for the
+       * segment to run *down* the page as well makes no difference -- every one
+       * of the 55 does -- and asking for it to run up turns the rule off.
+       *
+       * Those two are `Script`'s `g` and `y` at thirty-four pixels, whose
+       * descenders end on the last row of the cell and carry on below it. With
+       * this, the `plotter` sweep is exact on all four displays.
+       */
+      const after = this._path[index + 1];
+      const alongX = Math.abs(toX - fromX) >= Math.abs(toY - fromY);
+      const towards = (alongX ? toX - fromX : toY - fromY) > 0 ? 1 : -1;
+      const stops = alongX ? toX : toY;
+      const reach = alongX ? this._width : this._height;
+      const brink =
+        stops === (towards > 0 ? reach - 1 : 0) &&
+        !!after &&
+        !within(Math.floor(after[0]), Math.floor(after[1]));
+
+      if (!clips && (negative || brink || !(within(fromX, fromY) && within(toX, toY)))) {
         up = (acrossX ? true : dx * dy > 0) ? 0 : 1;
 
         const start = acrossX ? fromX : fromY;

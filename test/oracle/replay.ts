@@ -1787,43 +1787,20 @@ export const KNOWN_GAPS: Record<string, string> = {
    * drawing what a line would draw. See `BitmapContext.stroke`.
    */
 
-  /* The plotter sweep on a Hercules, two cells of 1,584.
-   *
-   * `plotter` draws the three stroke faces at every height from eight to forty
-   * rather than at the seven the glyph sweep asks. It was built because the
-   * glyph sweep had come down to a single pixel -- `Script`'s `j` at sixteen --
-   * and one cell cannot pin a transform: searching a scale, an offset and a
-   * rounding mode against that one cell admitted 1,843 combinations. A design
-   * coordinate crosses a pixel boundary at a different size for every value it
-   * takes, so a dense sweep in the size is a dense sweep in the transform.
-   *
-   * It found four cells rather than one, and the four together said the answer
-   * was not the transform at all: a stroke glyph's run is not drawn the way a
-   * line is. 1,582 of 1,584 now, and 1,584 on each of the other three.
-   *
-   * What is left is `Script`'s `g` and `y` at thirty-four, one pixel each, a
-   * column to the left of where this puts it. Both are a tie in a segment
-   * ending exactly on the bottom row of a run that carries on below it, and in
-   * both Windows takes the tie away from where the segment began. Widening the
-   * takeover to cover a run that leaves the cell at the bottom fixes those two
-   * and breaks six -- `y` at thirty-three, thirty-six and thirty-seven across
-   * all three faces -- each of which wants it the other way.
-   */
-  'plotter-hercules:glyph':
-    'the plotter sweep on a Hercules, two cells of 1,584: `Script` `g` and `y` at thirty-four, one pixel each',
-
-  /* The glyph sweep on a Hercules is the same three cells an EGA has.
+  /* The glyph sweep on a Hercules is the same two cells an EGA has.
    *
    * It was 517 short when this display was first recorded, of which 212 were
-   * the plotter faces. Those are closed, in three steps and not one of them
+   * the plotter faces. Those are closed, in four steps and not one of them
    * about a glyph: a tie is the driver's to break; a line that leaves the cell
-   * is GDI's to draw rather than the driver's; and a run with a negative point
-   * is GDI's *whole*, where a run that merely runs off the right-hand edge is
-   * not.
+   * is GDI's to draw rather than the driver's; a run with a negative point is
+   * GDI's *whole*, where a run that merely runs off the right-hand edge is not;
+   * and a segment that stops on the edge of a run carrying on past it is GDI's
+   * as well.
    *
-   * **Every plotter cell of this sweep agrees on all four displays.** What is
-   * left here is the two cells `glyphs-ega:glyph` describes below, which this
-   * display has as well.
+   * **Every stroke cell on every display agrees**, in this sweep at its seven
+   * sizes and in `plotter` at every size from eight to forty. What is left here
+   * is the two cells `glyphs-ega:glyph` describes below, which this display has
+   * as well.
    */
   'glyphs-hercules:glyph':
     'the glyph sweep on a Hercules, two cells of 6,046: the same two an EGA has',

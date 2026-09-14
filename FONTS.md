@@ -1006,6 +1006,17 @@ driver uses when it draws for itself. 307 ties arise among the clipped lines; 98
 land elsewhere because of this and the other 209 are slopes where the two rules
 agree anyway.
 
+**And a segment that stops on the edge of a run carrying on past it is GDI's as
+well.** Its own two ends are both inside, so nothing above catches it, and yet
+it is part of what has to be clipped: the polyline crosses the edge at this
+segment's far end rather than inside it. On the Hercules the condition reaches
+55 segments of the two glyph sweeps, 37 of them distinct; two were drawn wrongly
+before and the other fifty-three were already right and stay right. Requiring
+the segment to run *down* the page as well changes nothing -- every one of the
+55 does -- and requiring it to run up turns the rule off. Those two are
+`Script`'s `g` and `y` at thirty-four, whose descenders end on the last row of
+the cell and carry on below it.
+
 **And the pixel the line stops on is drawn, when that pixel is on the edge the
 line is running at.** Not any edge -- the major coordinate's. Sliding a fan of
 endpoints along the last row says it in one picture: from `(47,5)`, every steep
@@ -16976,17 +16987,18 @@ placement is about to write.
 on all of them, clipped lines and all. The last two were the minor-axis stop
 above.
 
-Two cells of the `plotter` sweep, `Script`'s `g` and `y` at thirty-four on the
-Hercules, a pixel each. Both are a tie in a segment ending exactly on the bottom
-row of a run that carries on below it, and in both Windows takes the tie away
-from where the segment began where the driver's slope rule takes it toward.
-Widening the takeover to cover a run that leaves the cell at the bottom fixes
-those two and breaks six -- `y` at thirty-three, thirty-six and thirty-seven
-across all three faces -- each of which wants the tie the other way.
+**Nothing in `plotter` either.** Its two last cells, `Script`'s `g` and `y` at
+thirty-four on the Hercules, are the brink clause above. Widening the takeover
+to cover any run that leaves the cell at the bottom was tried first and refused:
+it fixes those two and breaks six -- `y` at thirty-three, thirty-six and
+thirty-seven across all three faces -- each of which wants the tie the other
+way. The clause that works is narrower and does not touch them.
 
-`Script`'s `j` at sixteen, which used to sit here, is closed: a stroke glyph's
-run with a negative point in it is GDI's to draw whole, where a run that merely
-leaves the cell to the right is not.
+**Every stroke cell on every display agrees**, in the glyph sweep at its seven
+sizes and in `plotter` at every size from eight to forty. What is left anywhere
+in the recorded corpus is `Symbol`'s slanted `m` and `y` at fifteen, on the two
+displays whose pixel is not square, and the maximum width metric, which is not a
+glyph.
 
 ## 9. Where the numbers stand
 
@@ -17002,10 +17014,8 @@ recorded on is counted.
 | `glyphs` (VGA, Super VGA)                                    | 6,046   | **100%**  |
 | `glyphs` (EGA, Hercules)                                     | 6,046   | 99.97%    |
 | `hinting` (VGA, EGA)                                         | 14,928  | **100%**  |
-| `lines` (VGA, Super VGA, EGA)                                | 2,478   | **100%**  |
-| `lines` (Hercules)                                           | 2,478   | 99.9%     |
-| `plotter` (VGA, Super VGA, EGA)                              | 1,584   | **100%**  |
-| `plotter` (Hercules)                                         | 1,584   | 99.9%     |
+| `lines` (all four displays)                                  | 2,478   | **100%**  |
+| `plotter` (all four displays)                                | 1,584   | **100%**  |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
 | `styles`                                                     | 9,178   | **100%**  |
 | `sizes`                                                      | 800     | **100%**  |
@@ -17016,16 +17026,16 @@ for Courier New at twenty-two pixels asked for five, which section 8a proves is
 not the font's box scaled by any one size.
 
 **Every glyph cell on a square pixel is exact**, as is every stretched advance
-in `hinting`, and **every line on every display** -- clipped or not, which it had
-not been. What `KNOWN_GAPS` holds besides that one metric is two EGA glyph cells
--- Symbol's slanted `m` and `y` at fifteen -- those same two on a Hercules, and
-two cells of the `plotter` sweep, `Script`'s `g` and `y` at thirty-four on that
-display. Nothing else. **Every plotter cell of the glyph sweep agrees on all
-four displays**, and so does every stroke face at every size from eight to forty
-but those two. The `stack` fixture is not in the table because it is an
-instrument rather than an oracle: its 3,650 records are the scaler's own stack,
-which nothing on this side is meant to reproduce, and the conformance suite
-reports them as unsupported.
+in `hinting`, **every line on every display** -- clipped or not, which it had not
+been -- and **every stroke cell on every display**, at every size from eight to
+forty. What `KNOWN_GAPS` holds besides that one metric is four glyph cells:
+Symbol's slanted `m` and `y` at fifteen, on each of the two displays whose pixel
+is not square.
+
+The `stack` fixture is not in the table because it is an instrument rather than
+an oracle: its 3,650 records are the scaler's own stack, which nothing on this
+side is meant to reproduce, and the conformance suite reports them as
+unsupported.
 
 The fabricated corpus -- the fonts rewritten to isolate one mechanism each, which
 ask questions no stock face does -- stands at **32,394 of 32,394 cells and no

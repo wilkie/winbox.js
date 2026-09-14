@@ -105,20 +105,24 @@ import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './repl
  * the column block's charge was narrowed to the vertices the outline leaves
  * going up: three pixels of the bowl's top, on both displays.
  *
- * The ceiling then rose once, by two, for a fixture rather than a display. The
- * `plotter` sweep draws the three stroke faces at every height from eight to
- * forty rather than at seven of them -- 1,584 cells on each of four displays,
- * built to pin the transform the last `Script` cell had put in doubt -- and it
- * brought two of its own: `Script`'s `g` and `y` at thirty-four on the
- * Hercules. From here it can only fall.
+ * The ceiling rose once, by two, for a fixture rather than a display -- the
+ * `plotter` sweep, which draws the three stroke faces at every height from eight
+ * to forty rather than at seven of them, 1,584 cells on each of four displays.
+ * Its two are closed as well: a segment that stops on the edge of a run
+ * carrying on past it is GDI's to draw, which is the third clause of the
+ * clipping rule. **Every stroke cell on every display agrees**, at every size
+ * from eight to forty.
+ *
+ * What is left is four records and eight pixels: `Symbol`'s slanted `m` and `y`
+ * at fifteen, on each of the two displays whose pixel is not square.
  */
 const OUTLINE = ['Arial', 'Times New Roman', 'Courier New'];
 const RECORDS = 0;
 const PIXELS = 0;
 const BITMAP_RECORDS = 136;
 const BITMAP_PIXELS = 794;
-const WIDE_RECORDS = 6;
-const WIDE_PIXELS = 12;
+const WIDE_RECORDS = 4;
+const WIDE_PIXELS = 8;
 
 /* The wide-net fixtures: nothing among the styled files, nothing above
  * thirty-one pixels, and one stretched outline of `widths` -- an unhinted `o`
