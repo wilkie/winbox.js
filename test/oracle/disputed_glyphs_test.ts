@@ -113,16 +113,23 @@ import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './repl
  * clipping rule. **Every stroke cell on every display agrees**, at every size
  * from eight to forty.
  *
- * What is left is four records and eight pixels: `Symbol`'s slanted `m` and `y`
- * at fifteen, on each of the two displays whose pixel is not square.
+ * And it is nought. **Every glyph cell of every recording, on every display,
+ * agrees** -- outline, strike and stroke, square pixel and not. The last four
+ * records were `Symbol`'s slanted `m` and `y` at fifteen on the two non-square
+ * displays, and they were not a rule: the stretch and the scale were two
+ * multiplications where Windows has one, and a product that is exactly 57.5
+ * came out as 57.49999999999999. See `Surface.fillText`.
+ *
+ * This list is now what its opening paragraph always said it should be: a list
+ * that must stay empty, rather than a rate that may drift.
  */
 const OUTLINE = ['Arial', 'Times New Roman', 'Courier New'];
 const RECORDS = 0;
 const PIXELS = 0;
 const BITMAP_RECORDS = 136;
 const BITMAP_PIXELS = 794;
-const WIDE_RECORDS = 4;
-const WIDE_PIXELS = 8;
+const WIDE_RECORDS = 0;
+const WIDE_PIXELS = 0;
 
 /* The wide-net fixtures: nothing among the styled files, nothing above
  * thirty-one pixels, and one stretched outline of `widths` -- an unhinted `o`

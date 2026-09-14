@@ -16880,66 +16880,72 @@ Four of those six are the same shape -- *this driver draws one more pixel* --
 and three of the four are wrong. The one that is right is right for a reason
 none of the others guessed: the extra pixel is not the driver's at all.
 
-### The two Symbol cells, narrowed to one decision each
+### The last two cells: one multiplication too many
 
-`Symbol`'s slanted `m` and `y` at fifteen pixels are the last cells of the
-recorded glyph corpus, on both displays whose pixel is not square. They were
-carried as "exhausted at current observability"; they are not, and this is where
-they now stand.
+`Symbol`'s slanted `m` and `y` at fifteen pixels were the last cells of the
+recorded glyph corpus, on both displays whose pixel is not square. They had been
+carried as "exhausted at current observability", then narrowed to one integer
+comparison each. They were never a rule. They were arithmetic.
 
-**The `y` is one decision, not three pixels.** Its row six is a zero-length run
--- the `on` and `off` crossings round to the same column -- so `DoHorizDropout`
-places a pixel, and simple dropout control places it to the left: column four.
-Windows has column five. That pixel at `(4,6)` then blocks the *vertical* rescue
-at `(4,7)`, because `PerformVertDropout` declines where the pixel above it is
-already lit -- which is why Windows inks `(4,7)` and this does not. One wrong
-placement, three differing pixels.
+**Each wanted the same thing: the edge's starting `x` one sixty-fourth to the
+right.** That is what the two determinants say when they are written out. The
+`y`'s deciding chord is `(333,-414) -> (361,-417)`, and `CalcLine`'s determinant
+for it is `1 + 28 x 2 - 3 x 19`, which is **nought**; the loop branches on
+`q > 0`, so it takes the horizontal step and emits column five where Windows has
+six. An `initialXStep` of 18 rather than 19 turns it over, and that is `x1` at
+334 rather than 333. The `m`'s edge is a straight one, `(240,-723) -> (364,-424)`,
+whose determinant at the deciding step is -92 against a step of 7,936; an
+`initialXStep` of 47 rather than 48 turns *it* over, and that is `x1` at 241
+rather than 240. Two different glyphs, two different shapes, one quantity.
 
-**For the placement to be five, the row must not be a dropout at all.** Its
-`off` crossing would have to be six, which makes the row an ordinary run filling
-column five and leaves nothing to place. The curve crosses the scanline at
-5.558, which rounds to six. The chord the walk's own flattening makes of it
-crosses at 5.495, which rounds to five. **Four sixty-fourths of a pixel**, and
-no rounding of the subdivision midpoint reaches across it: the exact half-way
-point is 360.5 in sixty-fourths and the crossing needs 362.
+**And the quantity was a rounding error in a double.** The `y`'s starting point
+has a design `x` of 230, a stretch of eight twelfths and a scale of twelve over
+2048, and the raster rounds the product to a sixty-fourth:
 
-**And the walk lands on the tie exactly.** The chord is
-`(333,-414) -> (361,-417)`, and `CalcLine`'s determinant starts at `lQ = 1` --
-the "to include pixel centers" seed a downward line gets -- and takes
-`terminalX * initialYStep - terminalY * initialXStep = 28 x 2 - 3 x 19 = -1`,
-so `q` is **nought**. The loop branches on `q > 0`, so the first step is the
-horizontal one and it emits column five. One more and it would step `x` first
-and emit six, which is Windows' answer. There is no closer miss available: the
-quantity that decides this pixel is an integer and it is zero.
+    230 x (8/12) x (12/2048) x 64  =  57.5   exactly
 
-The obvious move is refused. Branching on `q >= 0` instead is 31,920 fabricated
-cells of 32,394 with 809 wrong pixels, 2,634 of the 2,668 that are not square,
-and 5,871 of the recorded 6,046 on each non-square display -- against 32,394,
-2,668 and 6,044. The seed and the sense are both right; it is the chord that is
-a sixty-fourth out.
+The `ppem` cancels; the true value is `230 x 8 x 64 / 2048`, an integer over a
+power of two, and it lands exactly on a half. Computed as written -- the stretch
+applied to the design coordinate, the scale applied to the result -- it comes
+out as **57.49999999999999**, and rounds to 57 where it should round to 58. One
+sixty-fourth, on one point.
 
-Subdividing *that one curve* once more does give Windows' answer: at depth two
-the crossing falls on the chord `(347,-415) -> (361,-417)`, whose determinant is
-`1 + 14 x 1 - 2 x 5 = 5`, positive, so `x` steps first and the row's `off` is
-six. Doing it to every curve is the catastrophe in the table above. What selects
-this curve and not the rest is not read.
+That one sixty-fourth moved the crossing across a rounding boundary; the
+crossing turned an ordinary run into a zero-length one; the zero-length run
+became a dropout; the dropout was placed a column to the left of where the run
+would have filled; and the pixel it placed there blocked the *vertical* rescue
+in the row below, which `PerformVertDropout` declines where the pixel above is
+already lit. Three differing pixels in the `y`, from one unit in the last place.
 
-**The `m` is close but not on the tie.** Its edge is a straight one --
-`(240,-723) -> (364,-424)`, no flattening involved -- and its determinant at the
-deciding step is -92 against a step of 7,936, about one part in eighty-six. An
-`initialXStep` of 47 rather than 48 turns it over, which is one sixty-fourth of
-where the sheared point lands.
+**The fix is to do what Windows does and multiply once.** `Surface.fillText` now
+folds the stretch into the sixty-fourth the raster rounds to, on the exact
+product `x * xWhole * 64 / unitsPerEm`, and hands the coordinate on already
+sitting on that grid -- which is idempotent, since `slant` and `sixtyFourth`
+round to the same grid and find it already there. Nothing about the model
+changes; only the arithmetic. On a square pixel the stretch is one and the code
+does not run at all.
 
-Its row nine `on` crossing sits within a sixty-fourth of the rounding boundary
-and this takes the lower column, inking `(4,9)` where Windows does not. It has
-no horizontal rescues at all, so unlike the `y` it is one pixel and one
-decision.
+### Where that leaves the corpus
 
-**And the stub check is not involved in either.** `stubs` is false for this
-face, so every rescue in both glyphs is accepted; the question is where they
-land, not whether.
+**Every glyph cell Windows has been recorded drawing is now drawn the same way
+here.** `glyphs` is 6,046 records on each of four displays and exact on all
+four; `plotter` is 1,584 on each and exact on all four; `lines` is 2,478 on each
+and exact on all four; the fabricated corpus is 32,394 cells on a square pixel
+and 2,668 on one that is not, both exact with no wrong pixel anywhere.
 
-#### Four things confirmed getting there
+`KNOWN_GAPS` holds one entry and it is not a glyph: the maximum width metric for
+Courier New at twenty-two pixels.
+
+The lesson is worth keeping separately from the fix. Every reading refused on
+the way to this -- the smart dropout placement, the flattening depth, the norm
+threshold, the shear's rounding, the determinant's tie, the stub check -- was
+refused correctly, because none of them was wrong. The corpus had been narrowed
+to a true statement about the geometry that no rule could satisfy, and at that
+point the thing to doubt was the arithmetic rather than the model. A quantity
+that is exactly a half in exact arithmetic, and that a double cannot hold, is
+worth checking for before the model is.
+
+#### Four things confirmed getting there#### Four things confirmed getting there
 
 Each was swept against the fabricated corpus, the non-square fabricated corpus
 and the recorded glyph sweep at once, and each came back to what is already
@@ -17011,8 +17017,7 @@ recorded on is counted.
 | Fixture                                                      | Records | Agreement |
 | ------------------------------------------------------------ | ------- | --------- |
 | `font` (all four displays)                                   | 11,382  | **100%**  |
-| `glyphs` (VGA, Super VGA)                                    | 6,046   | **100%**  |
-| `glyphs` (EGA, Hercules)                                     | 6,046   | 99.97%    |
+| `glyphs` (all four displays)                                 | 6,046   | **100%**  |
 | `hinting` (VGA, EGA)                                         | 14,928  | **100%**  |
 | `lines` (all four displays)                                  | 2,478   | **100%**  |
 | `plotter` (all four displays)                                | 1,584   | **100%**  |
@@ -17025,12 +17030,9 @@ recorded on is counted.
 for Courier New at twenty-two pixels asked for five, which section 8a proves is
 not the font's box scaled by any one size.
 
-**Every glyph cell on a square pixel is exact**, as is every stretched advance
-in `hinting`, **every line on every display** -- clipped or not, which it had not
-been -- and **every stroke cell on every display**, at every size from eight to
-forty. What `KNOWN_GAPS` holds besides that one metric is four glyph cells:
-Symbol's slanted `m` and `y` at fifteen, on each of the two displays whose pixel
-is not square.
+**Every glyph cell is exact, on every display** -- outline, strike and stroke,
+square pixel and not -- as is every stretched advance in `hinting` and every
+line, clipped or not. `KNOWN_GAPS` holds one entry and it is not a glyph.
 
 The `stack` fixture is not in the table because it is an instrument rather than
 an oracle: its 3,650 records are the scaler's own stack, which nothing on this

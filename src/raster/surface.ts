@@ -464,10 +464,39 @@ export class Surface {
        * coordinate the program measures from. A glyph the program fitted comes
        * back in pixels and has the stretch in it already.
        */
+      /* The stretch is folded into the sixty-fourth the raster rounds to, not
+       * applied to the design coordinate and left to a second multiplication.
+       *
+       * `stretch` is `xWhole / ppem` and everything downstream multiplies by
+       * `ppem / unitsPerEm` and rounds to a sixty-fourth, so the `ppem` cancels
+       * and the true value is `x * xWhole * 64 / unitsPerEm` -- an integer over
+       * a power of two, exact in a double. Multiplying by the two ratios one
+       * after the other is not: `230 * (8/12) * (12/2048) * 64` is exactly 57.5
+       * and comes out of the arithmetic as 57.49999999999999, which rounds the
+       * wrong way and puts the point a sixty-fourth to the left.
+       *
+       * So the grid rounding happens here, on the exact product, and the value
+       * is handed on already sitting on it -- which is idempotent, because
+       * `slant` and `sixtyFourth` round to that same grid and find it already
+       * there. Nothing about the model changes; only the arithmetic.
+       *
+       * **Measured**: it is the last two cells of the recorded glyph corpus,
+       * `Symbol`'s slanted `m` and `y` at fifteen on both displays whose pixel
+       * is not square, and it touches nothing on a square pixel, where the
+       * stretch is one and this does not run at all.
+       */
+      const grid = (ppem * 64) / outline.unitsPerEm;
+      const sideways = this._font instanceof LogicalFont ? this._font.xWhole : ppem;
+
       const across = (contours) =>
         stretch === 1
           ? contours
-          : contours.map((contour) => contour.map((point) => ({ ...point, x: point.x * stretch })));
+          : contours.map((contour) =>
+              contour.map((point) => ({
+                ...point,
+                x: Math.round((point.x * sideways * 64) / outline.unitsPerEm) / grid,
+              }))
+            );
 
       const raw = italic
         ? { contours: outline.outlineOf(glyph), hinted: false, scaled: false }

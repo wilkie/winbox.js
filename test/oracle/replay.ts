@@ -1787,71 +1787,25 @@ export const KNOWN_GAPS: Record<string, string> = {
    * drawing what a line would draw. See `BitmapContext.stroke`.
    */
 
-  /* The glyph sweep on a Hercules is the same two cells an EGA has.
+  /* The glyph corpus is closed, on all four displays.
    *
-   * It was 517 short when this display was first recorded, of which 212 were
-   * the plotter faces. Those are closed, in four steps and not one of them
-   * about a glyph: a tie is the driver's to break; a line that leaves the cell
-   * is GDI's to draw rather than the driver's; a run with a negative point is
-   * GDI's *whole*, where a run that merely runs off the right-hand edge is not;
-   * and a segment that stops on the edge of a run carrying on past it is GDI's
-   * as well.
+   * `glyphs` is 6,046 records on each of a VGA, a Super VGA, an EGA and a
+   * Hercules, and every one of them agrees; so is `plotter`'s 1,584 on each,
+   * and `lines`' 2,478. **Every glyph cell Windows has been recorded drawing,
+   * in either corpus, is drawn the same way here.**
    *
-   * **Every stroke cell on every display agrees**, in this sweep at its seven
-   * sizes and in `plotter` at every size from eight to forty. What is left here
-   * is the two cells `glyphs-ega:glyph` describes below, which this display has
-   * as well.
+   * The last two were `Symbol`'s slanted `m` and `y` at fifteen, on the two
+   * displays whose pixel is not square, and they were not a rule at all. The
+   * stretch was applied to the design coordinate and the scale to the result,
+   * two multiplications where Windows has one: `230 * (8/12) * (12/2048) * 64`
+   * is exactly 57.5 and came out of the arithmetic as 57.49999999999999, which
+   * rounds the wrong way and puts the point a sixty-fourth to the left. One
+   * sixty-fourth on one point moved a crossing across a rounding boundary, and
+   * through it a dropout, and through that a second rescue the first had
+   * blocked. See `Surface.fillText`.
+   *
+   * What is left in `KNOWN_GAPS` is one metric and no pixels.
    */
-  'glyphs-hercules:glyph':
-    'the glyph sweep on a Hercules, two cells of 6,046: the same two an EGA has',
-
-  /* The glyph sweep on an EGA, two cells of 6,046.
-   *
-   * Symbol's slanted `m` and `y` at fifteen, and nothing else.
-   *
-   * The `y` is **one** decision with two consequences, which is worth knowing
-   * before anyone counts its three pixels as three problems. Its row six is a
-   * zero-length run, so `DoHorizDropout` places a pixel, and simple dropout
-   * control places it to the left: column four, where Windows has column five.
-   * That pixel then blocks the *vertical* rescue at column four, row seven --
-   * `PerformVertDropout` declines where the pixel above is already lit -- which
-   * is why Windows has `(4,7)` and this does not. Fix the placement and both
-   * follow.
-   *
-   * For the placement to be five the row must not be a dropout at all: its
-   * `off` crossing has to be six, making it an ordinary run that fills column
-   * five. The curve crosses at 5.558, which rounds to six. The chord the
-   * reference's own flattening makes of it -- two deep, which the corpus
-   * confirms to the last cell -- crosses at 5.495, which rounds to five. Four
-   * sixty-fourths of a pixel, and no rounding of the subdivision midpoint
-   * reaches across it.
-   *
-   * The walk lands on the tie exactly: `CalcLine`'s determinant for that chord
-   * is `1 + 28*2 - 3*19`, which is **nought**, and the loop branches on
-   * `q > 0`. One more and it would step `x` first and emit six. Branching on
-   * `q >= 0` instead is refused -- 31,920 fabricated cells of 32,394 against
-   * 32,394 -- so the seed and the sense are right and the chord is a
-   * sixty-fourth out. Subdividing that one curve once more does give Windows'
-   * answer; doing it to every curve costs 1,748 cells. What selects it is not
-   * read.
-   *
-   * The `m` is the same shape with the other sign: its row nine `on` crossing
-   * sits within a sixty-fourth of the boundary and this takes the lower column.
-   *
-   * The stub check is **not** involved in either -- `stubs` is false for this
-   * face -- and neither is the lean: `symbol-slant`, the instrument that is
-   * nothing but the shear, is exact, and so is `symbol-slant-ega`.
-   *
-   * Courier New's italic `g` at twelve was here until this session. It was
-   * three pixels of the top of the bowl, and it was not the outline, the
-   * hinting or the dropout placement: at eight pixels per em the bowl's top is
-   * a third of a pixel tall, so the row is a vertical rescue in three columns,
-   * and one of the three had its `on` entry popped by the column block's
-   * overflow charge. Narrowing that charge to the vertices the outline leaves
-   * going *up* closed it; see `Endpoints.check` in `scan-walk.ts`.
-   */
-  'glyphs-ega:glyph':
-    'the glyph sweep on an EGA, two cells of 6,046: Symbol slanted `m` and `y` at fifteen',
 };
 
 /**
