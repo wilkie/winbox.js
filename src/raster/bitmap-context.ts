@@ -373,45 +373,76 @@ export class BitmapContext {
        * second axis to clip against, which is a guess at why and not a reading;
        * what is measured is the two records.
        *
-       * Thirteen records of 2,289 are still wrong, all on this display and all
-       * of one of two shapes. Four are steep lines from below the cell that
-       * stop on a *column* edge rather than a row edge -- `(16,37)->(0,5)` and
-       * `(16,37)->(31,5)` draw the pixel they stop on where this does not, and
-       * `(16,37)->(8,5)` and `(16,37)->(24,5)` break a tie the other way from
-       * the rule above. The other nine are lines of four pixels or fewer
-       * beginning one pixel outside an edge, where Windows draws a run that is
-       * neither this walk's nor the driver's: `(32,16)->(28,14)` puts three
-       * pixels on one row where every rule here bends them across two.
+       * Two records of 2,449 are still wrong, both on this display and both of
+       * one shape: a steep line from below the cell that stops on a *column*
+       * edge rather than a row edge. `(16,37)->(0,5)` and `(16,37)->(31,5)`
+       * draw the pixel they stop on where the rule above says they should not.
+       * The same shape running the other way down the page --
+       * `(16,-6)->(0,26)` and `(16,-6)->(31,26)` -- does not draw it, and 74
+       * shallow lines stopping on a column edge do not either, so there is no
+       * rule here yet, only two records.
        *
-       * Those nine fit a different account -- that GDI re-seeds the walk at the
-       * point where the line crosses the edge and truncates from there rather
-       * than rounding -- and that account was fitted and **refused**: scored
-       * against all 858 clipped lines it gets 288, where this gets 845. It
-       * explains nine records and loses 557.
+       * A reading was fitted to the nine that used to sit beside these two and
+       * **refused**: that GDI re-seeds the walk where the line crosses the edge
+       * and truncates from there rather than rounding. Worked by hand it gets
+       * four of the nine pixel for pixel, which is persuasive at that size;
+       * scored against all 858 clipped lines it gets 288 where this gets 856.
+       * What those nine actually wanted is the entry rounding above.
        *
        * This is why the plotter faces failed on this display once the tie was
        * settled: a slanted `Roman` at a forty pixel cell is wider than the
        * thirty-two square the probe draws into, so its strokes begin off the
        * right-hand edge and end on the last row -- both halves of this, in four
-       * of the five glyphs. The fifth, `Script`'s `j` at sixteen, is one of the
-       * short lines above.
+       * of the five glyphs. The fifth, `Script`'s `j` at sixteen, is not this at
+       * all: the sweep now draws every line of four pixels or fewer from the
+       * middle of the cell as well as from just outside it, 160 of them, and
+       * every one agrees on every display -- so the two-step slope of a half
+       * that the `j`'s hook turns on is measured, and we draw it the way
+       * Windows does. That cell is a pixel of the glyph's own geometry and not
+       * of the line under it.
        */
       const clips = this.clipCaps ?? BitmapContext.driver?.clipCaps ?? 1;
       const within = (x, y) => x >= 0 && y >= 0 && x < this._width && y < this._height;
 
+      let entry = -1;
+
       if (!clips && !(within(fromX, fromY) && within(toX, toY))) {
         up = (acrossX ? true : dx * dy > 0) ? 0 : 1;
 
+        const start = acrossX ? fromX : fromY;
         const edge = acrossX ? toX : toY;
         const limit = acrossX ? this._width : this._height;
 
         if (minor !== 0 && edge === (major > 0 ? limit - 1 : 0)) {
           stop = steps + 1;
         }
+
+        /* And the step the line enters on takes its tie the other way again.
+         *
+         * Where the *major* coordinate starts outside, GDI has to find the
+         * minor coordinate at the row or column the line comes in on, and at a
+         * half it rounds **away from the start** rather than by the walk's own
+         * rule. Only that one step: everything after it is the walk again.
+         *
+         * **Measured**: it decides eleven of the sweep's records and no others,
+         * because it can only bite where the entry lands exactly on a half. The
+         * eight shortest are four pixels or fewer from a point one column or row
+         * outside an edge -- every one of them a slope of a half, which is what
+         * puts the entry on a tie -- and `Script`'s `j` at sixteen pixels is one
+         * of them with a letter round it. Rounding away at *every* entry, rather
+         * than only where the major brought the line in, was tried and is worse:
+         * 843 of the 858 clipped lines against 856.
+         */
+        if (major > 0 && start < 0) {
+          entry = -start;
+        } else if (major < 0 && start > limit - 1) {
+          entry = start - (limit - 1);
+        }
       }
 
       for (let step = 0; step < stop; step++) {
-        const offset = Math.floor((2 * minor * step + steps - up) / (2 * steps));
+        const rounding = step === entry ? (minor > 0 ? 0 : 1) : up;
+        const offset = Math.floor((2 * minor * step + steps - rounding) / (2 * steps));
 
         const x = acrossX ? fromX + major * step : fromX + offset;
         const y = acrossX ? fromY + offset : fromY + major * step;

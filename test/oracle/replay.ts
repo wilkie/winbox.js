@@ -1714,33 +1714,35 @@ export const KNOWN_GAPS: Record<string, string> = {
 
 
 
-  /* The line sweep on a Hercules, thirteen records of 2,289.
+  /* The line sweep on a Hercules, two records of 2,449.
    *
    * `lines` draws one line into a thirty-two square cell and records the
    * pixels. It began as four rings of offsets round the middle of the cell and
    * has grown every time a plotter glyph asked something it could not answer:
    * seven rings now, corner fans that buy a span of thirty-one, fans from odd
-   * coordinates, fans whose long axis is y, and -- last -- lines that leave the
-   * cell altogether, which is what a plotter glyph draws at a forty pixel size
-   * and what nothing had ever recorded.
+   * coordinates, fans whose long axis is y, lines that leave the cell
+   * altogether, and every line of four pixels or fewer from five origins -- one
+   * in the middle of the cell and one just outside each edge.
    *
-   * The three colour drivers are exact, all 2,289 each, clipped lines and all.
+   * The three colour drivers are exact, all 2,449 each, clipped lines and all.
    * They answer `CP_RECTANGLE` for `CLIPCAPS` and clip for themselves, and a
    * clipped line of theirs is exactly the visible part of the whole line.
    *
    * The Hercules answers nought, so GDI clips for it, and GDI's walk is not the
-   * driver's: a tie turns over and the pixel the line stops on is drawn when it
-   * sits on the edge the line is running at. `BitmapContext.stroke` has both,
-   * with the counts, and `FONTS.md` has the reading.
+   * driver's: the tie turns over, the step the line enters on takes its tie
+   * away from the start, and the pixel the line stops on is drawn when it sits
+   * on the edge the line is running at. `BitmapContext.stroke` has all three
+   * with their counts, and `FONTS.md` has the reading.
    *
-   * What is left is thirteen records of one display, of two shapes. Four are
-   * steep lines from below the cell that stop on a column edge; nine are lines
-   * of four pixels or fewer that begin one pixel outside an edge. One cell of
-   * the glyph corpus is the second shape -- `Script`'s `j` at sixteen -- and
-   * nothing else in the corpus draws either.
+   * What is left is two records of one display: `(16,37)->(0,5)` and
+   * `(16,37)->(31,5)`, steep lines from below the cell that stop on a column
+   * edge and draw the pixel they stop on. The same shape running the other way
+   * down the page does not, and neither do 74 shallow lines in that position,
+   * so there is no rule there yet -- only two records, and nothing in the glyph
+   * corpus draws the shape.
    */
   'lines-hercules:segment':
-    'the line sweep on a Hercules, thirteen records of 2,289: four steep lines from below the cell and nine of four pixels or fewer from just outside an edge',
+    'the line sweep on a Hercules, two records of 2,449: steep lines from below the cell that stop on a column edge and draw the pixel they stop on',
 
   /* The glyph sweep on a Hercules, four cells of 6,046.
    *
@@ -1750,10 +1752,15 @@ export const KNOWN_GAPS: Record<string, string> = {
    * learnt to break a tie the way the driver in front of it does, and five
    * until it learnt that a line leaving the cell is GDI's to draw and not the
    * driver's. Roman slanted `M` and `W` at forty pixels and Script `j` and `y`
-   * at forty all went with that; what is left is Script `j` at sixteen, whose
-   * hook is four pixels long and begins one column off the left of the cell.
-   * That is the one shape the line sweep also still gets wrong -- see the
-   * `lines` note above -- so it is one defect counted twice and not two.
+   * at forty all went with that; what is left is Script `j` at sixteen.
+   *
+   * One pixel, at `(1,11)`, on the hook. It is not the line: the sweep now
+   * draws every line of four pixels or fewer from the middle of the cell as
+   * well as from just outside it, 160 of them, and all four displays agree on
+   * every one -- so the two-step slope of a half the hook turns on is measured
+   * and we walk it the way Windows does. Windows puts one more pixel in the
+   * hook than the design points we compute can produce, which makes it a
+   * question about the coordinates rather than about the rasteriser.
    */
   'glyphs-hercules:glyph':
     'the glyph sweep on a Hercules, four cells of 6,046: the three an EGA also has, and Script `j` at sixteen',

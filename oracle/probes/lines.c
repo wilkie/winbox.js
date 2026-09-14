@@ -410,6 +410,16 @@ int PASCAL WinMain(HANDLE instance, HANDLE previous, LPSTR command, int show)
     probeShort(16, 32);
     probeShort(16, -1);
 
+    /* And short lines that stay inside it, which nothing has asked either.
+     *
+     * Every ring is three pixels across or more and every fan sixteen, so a
+     * line of one or two pixels has never been drawn anywhere but off an edge.
+     * A plotter letter is mostly made of them: `Script`'s `j` at sixteen pixels
+     * walks its hook in steps of one and two.
+     */
+    probeShort(16, 16);
+    probeShort(15, 15);
+
     SelectObject(memory, previousBitmap);
     DeleteObject(canvas);
     DeleteDC(memory);

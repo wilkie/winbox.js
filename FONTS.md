@@ -886,8 +886,10 @@ on row thirty-one, which is exactly there. Asked, with a ring of fifteen and a
 corner fan of span thirty-one, the answer is flat again: **both displays exclude
 the endpoint in every one of them.**
 
-The sweep is **2,289 records on each of four displays** now, the last of them
-lines that leave the cell; the section below this one is what those said.
+The sweep is **2,449 records on each of four displays** now: the last additions
+are lines that leave the cell, and lines of four pixels or fewer drawn from the
+middle of it and from just outside each edge. The section below this one is what
+those said.
 
 Which left Roman's slanted `W` at forty saying something odd. Its strokes are
 identical on the two displays -- printed out of this side, the same eight runs,
@@ -985,10 +987,11 @@ was refused because the sweep of the day never came near an edge, and the
 correlation was with the end of the sweep rather than with the edge of the cell.
 It comes back now with the edge actually asked about, and it is right.
 
-The sweep is now 2,289 records: fans that begin to the right of the cell and end
+The sweep is now 2,449 records: fans that begin to the right of the cell and end
 on its last row, fans that begin to the left, fans that end below it, fans that
-begin above and below, and every line of four pixels or fewer from a point one
-pixel outside each of the four edges. **858 of them are clipped.**
+begin above and below, and every line of four pixels or fewer from five origins
+-- the middle of the cell and a point one pixel outside each of the four edges.
+**858 of them are clipped.**
 
 The three colour drivers clip for themselves, and a clipped line of theirs is
 exactly the visible part of the whole line -- 858 of 858 on each, nothing added,
@@ -1010,6 +1013,17 @@ and the single shallow line that does is the one that stops on column
 thirty-one. Of 522 clipped lines where drawing the stop and not drawing it give
 different answers, **518 follow it**.
 
+**And the step the line enters on takes its tie away from the start.** Where the
+*major* coordinate begins outside, GDI has to work out the minor coordinate at
+the row or column the line comes in on, and at a half it rounds away from where
+the line began rather than by the walk's own rule -- that one step only, and the
+walk again after it. It can bite only where the entry lands exactly on a half,
+which is why it decides eleven records and no others: eight are four pixels or
+fewer from a point one row or column outside an edge, every one of them a slope
+of a half, and the other three are steep lines climbing out of the bottom of the
+cell. Rounding away at *every* entry rather than only where the major brought
+the line in is worse -- 843 of the 858 clipped lines against 856.
+
 The two vertical lines `(16,-6)->(16,31)` and `(16,37)->(16,0)` stop on the edge
 and do not draw it, which is why the code asks whether the minor span is zero at
 all. A line with no minor span is the one case where GDI has no second axis to
@@ -1025,32 +1039,37 @@ The glyph sweep on a Hercules goes from five plotter cells wrong to **one**, and
 the whole corpus across four displays to 6,046, 6,046, 6,043 and 6,042. The wide
 net is seven records and fifteen pixels, down from 812 and 17,605.
 
-Thirteen line records of 2,289 are still wrong, all on this display and all one
-of two shapes.
+**Two** line records of 2,449 are still wrong, both on this display and both of
+one shape: a steep line from below the cell that stops on a *column* edge rather
+than a row edge. `(16,37)->(0,5)` and `(16,37)->(31,5)` draw the pixel they stop
+on where the rule says they should not. The same shape running the other way
+down the page -- `(16,-6)->(0,26)` and `(16,-6)->(31,26)` -- does not draw it,
+and 74 shallow lines stopping on a column edge do not either, so there is no
+rule there yet, only two records. Nothing in the glyph corpus draws the shape.
 
-- **Four** are steep lines from below the cell that stop on a *column* edge
-  rather than a row edge. `(16,37)->(0,5)` and `(16,37)->(31,5)` draw the pixel
-  they stop on where the rule above says they should not, and `(16,37)->(8,5)`
-  and `(16,37)->(24,5)` break a tie the other way. Two more of the same shape
-  going the other way down the page -- `(16,-6)->(0,26)` and `(16,-6)->(31,26)`
-  -- do *not* draw it, and 74 shallow lines in the same position do not either,
-  so there is no rule here yet, only four records.
-- **Nine** are lines of four pixels or fewer that begin one pixel outside an
-  edge. `(32,16)->(28,14)` puts three pixels on one row where every rule here
-  bends them across two.
-
-One cell of the glyph corpus is the second shape -- `Script`'s `j` at sixteen,
-whose hook is four pixels long and starts a column off the left of the cell --
-so it is one defect counted twice rather than two.
+`Script`'s `j` at sixteen is still wrong and is **not** this. The sweep now
+draws every line of four pixels or fewer from the middle of the cell as well as
+from just outside it -- 160 records, and all four displays agree on every one of
+them -- so the two-step slope of a half the `j`'s hook turns on is measured, and
+we walk it the way Windows does. Windows puts one more pixel in that hook, at
+`(1,11)`, than the eight device points we compute for it can produce. That makes
+it a question about the coordinates and not about the rasteriser, and it is the
+one plotter cell left on any display.
 
 A reading was refused here too, and it is the interesting one, because it
-explains those nine exactly. **Re-seeding**: that GDI clips the segment to the
-edge, starts its walk at the crossing point with the minor coordinate rounded
-away from the start, and then *truncates* rather than rounds. Worked out by hand
-it gets `(32,16)->(28,14)`, `(-1,17)->(3,15)`, `(16,32)->(14,28)` and
-`(16,32)->(15,30)` right, pixel for pixel, which is four of the nine and very
-persuasive at that size. Scored against all 858 clipped lines it gets **288**,
-where the rule above gets **845**. It explains nine records and loses 557.
+explains nine records that were wrong at the time exactly. **Re-seeding**: that
+GDI clips the segment to the edge, starts its walk at the crossing point with
+the minor coordinate rounded away from the start, and then *truncates* rather
+than rounds. Worked out by hand it gets `(32,16)->(28,14)`, `(-1,17)->(3,15)`,
+`(16,32)->(14,28)` and `(16,32)->(15,30)` right, pixel for pixel, which is four
+of the nine and very persuasive at that size. Scored against all 858 clipped
+lines it gets **288**, where the rule above gets **856**.
+
+Half of it was right, and that is the useful part of the story. The entry *is*
+rounded away from the start -- but only the entry, and only where the major axis
+brought the line in; the walk after it is not re-seeded and does not truncate.
+Keeping the half that scored and dropping the half that did not took those nine
+records and two more with them, and cost nothing.
 
 ### The two passes, read rather than inferred
 
@@ -16706,20 +16725,19 @@ none of the others guessed: the extra pixel is not the driver's at all.
 
 ### What is still open
 
-Thirteen line records of 2,289, on the Hercules alone, and one glyph cell that is
-the same defect seen through a letter.
+Two line records of 2,449, on the Hercules alone: `(16,37)->(0,5)` and
+`(16,37)->(31,5)`, steep lines climbing out of the bottom of the cell that stop
+on a *column* edge and draw the pixel they stop on. The same shape running the
+other way down the page does not, and 74 shallow lines in that position do not
+either, so there is no rule there yet -- only two records, and nothing in the
+glyph corpus draws the shape.
 
-Four are steep lines from below the cell that stop on a *column* edge rather than
-a row edge: two draw the pixel they stop on where the rule says they should not,
-and two break a tie the other way. Two more of the same shape running the other
-way down the page do not draw it, and 74 shallow lines in the same position do
-not either, so there is no rule there yet -- only four records.
-
-Nine are lines of four pixels or fewer that begin one pixel outside an edge.
-`(32,16)->(28,14)` puts three pixels on one row where every rule here bends them
-across two. `Script`'s `j` at sixteen is that shape -- a four pixel hook starting
-a column off the left of the cell -- which is why one plotter glyph is still
-wrong on this display and none is on the other three.
+And one plotter cell, `Script`'s `j` at sixteen on the Hercules, which is not a
+line question: every line of four pixels or fewer is now recorded from the
+middle of the cell as well as from just outside each edge, 160 of them, and all
+four displays agree on every one. Windows draws the `j`'s hook one pixel longer
+than the eight device points we compute for it, so the question is about the
+coordinates.
 
 ## 9. Where the numbers stand
 
@@ -16736,8 +16754,8 @@ recorded on is counted.
 | `glyphs` (EGA)                                               | 6,046   | 99.95%    |
 | `glyphs` (Hercules)                                          | 6,046   | 99.93%    |
 | `hinting` (VGA, EGA)                                         | 14,928  | **100%**  |
-| `lines` (VGA, Super VGA, EGA)                                | 2,289   | **100%**  |
-| `lines` (Hercules)                                           | 2,289   | 99.4%     |
+| `lines` (VGA, Super VGA, EGA)                                | 2,449   | **100%**  |
+| `lines` (Hercules)                                           | 2,449   | 99.9%     |
 | `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
 | `styles`                                                     | 9,178   | **100%**  |
 | `sizes`                                                      | 800     | **100%**  |
@@ -16752,11 +16770,11 @@ in `hinting` and every line that does not leave its cell on any display. What
 `KNOWN_GAPS` holds besides that one metric is three EGA glyph cells -- Courier
 New's italic `g` at twelve and Symbol's slanted `m` and `y` at fifteen -- those
 same three on a Hercules with one plotter cell beside them, `Script`'s `j` at
-sixteen -- and thirteen Hercules line records, which are that same `j` seen
-without the letter round it: four pixels of hook starting a column off the edge
-of the cell, drawn by GDI because that driver cannot clip. Nothing else: the
-Hercules `font` sweep's sideways strike stretch is closed, and so are the four
-plotter cells the clipping rule took with it. The `stack` fixture is not in the table because it is an
+sixteen, whose hook Windows draws a pixel longer than the device points we
+compute for it -- and two Hercules line records, steep lines climbing out of the
+bottom of the cell that stop on a column edge. Nothing else: the Hercules `font`
+sweep's sideways strike stretch is closed, and so are the four plotter cells the
+clipping rule took with it. The `stack` fixture is not in the table because it is an
 instrument rather than an oracle: its 3,650 records are the scaler's own stack,
 which nothing on this side is meant to reproduce, and the conformance suite
 reports them as unsupported.
