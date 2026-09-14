@@ -1851,11 +1851,31 @@ export const KNOWN_GAPS: Record<string, string> = {
 
   /* The glyph sweep on an EGA, two cells of 6,046.
    *
-   * Symbol's slanted `m` and `y` at fifteen, and nothing else. They are the
-   * last of the synthesised shear, and `symbol-slant` -- the instrument that is
-   * nothing but the shear -- has twelve cells left at one size of its own, all
-   * of them at a vertical size of eight, where no whole number of pixels of
-   * lean makes the cell right. So the lean is not what is left there either.
+   * Symbol's slanted `m` and `y` at fifteen, and nothing else.
+   *
+   * The `y` is **one** decision with two consequences, which is worth knowing
+   * before anyone counts its three pixels as three problems. Its row six is a
+   * zero-length run, so `DoHorizDropout` places a pixel, and simple dropout
+   * control places it to the left: column four, where Windows has column five.
+   * That pixel then blocks the *vertical* rescue at column four, row seven --
+   * `PerformVertDropout` declines where the pixel above is already lit -- which
+   * is why Windows has `(4,7)` and this does not. Fix the placement and both
+   * follow.
+   *
+   * For the placement to be five the row must not be a dropout at all: its
+   * `off` crossing has to be six, making it an ordinary run that fills column
+   * five. The curve crosses at 5.558, which rounds to six. The chord the
+   * reference's own flattening makes of it -- two deep, which the corpus
+   * confirms to the last cell -- crosses at 5.495, which rounds to five. Four
+   * sixty-fourths of a pixel, and no rounding of the subdivision midpoint
+   * reaches across it.
+   *
+   * The `m` is the same shape with the other sign: its row nine `on` crossing
+   * sits within a sixty-fourth of the boundary and this takes the lower column.
+   *
+   * The stub check is **not** involved in either -- `stubs` is false for this
+   * face -- and neither is the lean: `symbol-slant`, the instrument that is
+   * nothing but the shear, is exact, and so is `symbol-slant-ega`.
    *
    * Courier New's italic `g` at twelve was here until this session. It was
    * three pixels of the top of the bowl, and it was not the outline, the

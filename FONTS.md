@@ -16870,6 +16870,77 @@ Four of those six are the same shape -- *this driver draws one more pixel* --
 and three of the four are wrong. The one that is right is right for a reason
 none of the others guessed: the extra pixel is not the driver's at all.
 
+### The two Symbol cells, narrowed to one decision each
+
+`Symbol`'s slanted `m` and `y` at fifteen pixels are the last cells of the
+recorded glyph corpus, on both displays whose pixel is not square. They were
+carried as "exhausted at current observability"; they are not, and this is where
+they now stand.
+
+**The `y` is one decision, not three pixels.** Its row six is a zero-length run
+-- the `on` and `off` crossings round to the same column -- so `DoHorizDropout`
+places a pixel, and simple dropout control places it to the left: column four.
+Windows has column five. That pixel at `(4,6)` then blocks the *vertical* rescue
+at `(4,7)`, because `PerformVertDropout` declines where the pixel above it is
+already lit -- which is why Windows inks `(4,7)` and this does not. One wrong
+placement, three differing pixels.
+
+**For the placement to be five, the row must not be a dropout at all.** Its
+`off` crossing would have to be six, which makes the row an ordinary run filling
+column five and leaves nothing to place. The curve crosses the scanline at
+5.558, which rounds to six. The chord the walk's own flattening makes of it
+crosses at 5.495, which rounds to five. **Four sixty-fourths of a pixel**, and
+no rounding of the subdivision midpoint reaches across it: the exact half-way
+point is 360.5 in sixty-fourths and the crossing needs 362.
+
+**The `m` is the same shape with the other sign.** Its row nine `on` crossing
+sits within a sixty-fourth of the rounding boundary and this takes the lower
+column, inking `(4,9)` where Windows does not. It has no horizontal rescues at
+all.
+
+**And the stub check is not involved in either.** `stubs` is false for this
+face, so every rescue in both glyphs is accepted; the question is where they
+land, not whether.
+
+#### Four things confirmed getting there
+
+Each was swept against the fabricated corpus, the non-square fabricated corpus
+and the recorded glyph sweep at once, and each came back to what is already
+implemented.
+
+**The flattening norm's threshold**, `0x80`:
+
+| threshold | fabricated | not square | EGA and Hercules |
+| --- | --- | --- | --- |
+| **0x80** | **32,394** | **2,668** | **6,044** |
+| 0x40 | 31,232 | 2,540 | 5,671 |
+| 0x20 | 30,688 | 2,484 | 5,538 |
+| 0x100 | 30,690 | 2,510 | 5,566 |
+
+**The depth itself.** One more subdivision everywhere gives 30,646, 2,474 and
+5,517; two more gives 30,282, 2,429 and 5,400. The flattening is not approximate
+and it is not the locus of these cells.
+
+**The shear's rounding**, re-swept now that the corpus has moved under it:
+
+| the shear term rounds | fabricated | not square | EGA and Hercules |
+| --- | --- | --- | --- |
+| **up** | **32,394** | **2,668** | **6,044** |
+| away from zero | 32,383 | 2,656 | 6,044 |
+| down | 32,336 | 2,654 | 6,041 |
+| toward the floor | 31,973 | 2,652 | 6,021 |
+| toward the ceiling | 31,959 | 2,664 | 6,010 |
+
+Upward is alone in being exact on both fabricated corpora, and the margin over
+the nearest rival has widened rather than narrowed.
+
+**And the reference's own dropout placement.** `DoHorizDropout` reads
+`lXDrop = *psOn`, tests the pixel to the left under `lXDrop > lBoxLeft` and the
+one to the right under `lXDrop < lBoxRight`, then decrements for a simple
+dropout and clamps into the box. That is what is implemented, term for term;
+the left-hand test is the only thing omitted, and it reads the pixel the simple
+placement is about to write.
+
 ### What is still open
 
 Two line records of 2,478, on the Hercules alone: `(16,37)->(0,5)` and
