@@ -1771,42 +1771,21 @@ export const KNOWN_GAPS: Record<string, string> = {
 
 
 
-  /* The line sweep on a Hercules, two records of 2,478.
+  /* `lines` is closed, on all four displays, 2,478 records each.
    *
-   * `lines` draws one line into a thirty-two square cell and records the
-   * pixels. It began as four rings of offsets round the middle of the cell and
-   * has grown every time a plotter glyph asked something it could not answer:
-   * seven rings now, corner fans that buy a span of thirty-one, fans from odd
-   * coordinates, fans whose long axis is y, lines that leave the cell
-   * altogether, every line of four pixels or fewer from five origins -- one in
-   * the middle of the cell and one just outside each edge -- and, last, whole
-   * polylines: the runs a plotter glyph computes, drawn as chains of `LineTo`
-   * calls through the same points, whole and cut back a point at a time.
+   * It began as four rings of offsets round the middle of a thirty-two square
+   * cell and grew every time a plotter glyph asked something it could not
+   * answer: seven rings, corner fans that buy a span of thirty-one, fans from
+   * odd coordinates, fans whose long axis is y, lines that leave the cell
+   * altogether, every line of four pixels or fewer from five origins, and whole
+   * polylines -- the runs a plotter glyph computes, drawn as chains of `LineTo`
+   * calls through the same points.
    *
    * Those last are the instrument that separated two things nothing had been
    * able to tell apart. A stroke glyph's run and a chain of `LineTo` calls
    * through the same points do **not** draw the same ink, so a letter is not
    * drawing what a line would draw. See `BitmapContext.stroke`.
-   *
-   * The three colour drivers are exact, all 2,478 each, clipped lines and all.
-   * They answer `CP_RECTANGLE` for `CLIPCAPS` and clip for themselves, and a
-   * clipped line of theirs is exactly the visible part of the whole line.
-   *
-   * The Hercules answers nought, so GDI clips for it, and GDI's walk is not the
-   * driver's: the tie turns over, the step the line enters on takes its tie
-   * away from the start, and the pixel the line stops on is drawn when it sits
-   * on the edge the line is running at. `BitmapContext.stroke` has all three
-   * with their counts, and `FONTS.md` has the reading.
-   *
-   * What is left is two records of one display: `(16,37)->(0,5)` and
-   * `(16,37)->(31,5)`, steep lines from below the cell that stop on a column
-   * edge and draw the pixel they stop on. The same shape running the other way
-   * down the page does not, and neither do 74 shallow lines in that position,
-   * so there is no rule there yet -- only two records, and nothing in the glyph
-   * corpus draws the shape.
    */
-  'lines-hercules:segment':
-    'the line sweep on a Hercules, two records of 2,478: steep lines from below the cell that stop on a column edge and draw the pixel they stop on',
 
   /* The plotter sweep on a Hercules, two cells of 1,584.
    *

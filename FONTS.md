@@ -1040,13 +1040,12 @@ The glyph sweep on a Hercules goes from five plotter cells wrong to **one**, and
 the whole corpus across four displays to 6,046, 6,046, 6,043 and 6,042. The wide
 net is seven records and fifteen pixels, down from 812 and 17,605.
 
-**Two** line records of 2,449 are still wrong, both on this display and both of
-one shape: a steep line from below the cell that stops on a *column* edge rather
-than a row edge. `(16,37)->(0,5)` and `(16,37)->(31,5)` draw the pixel they stop
-on where the rule says they should not. The same shape running the other way
-down the page -- `(16,-6)->(0,26)` and `(16,-6)->(31,26)` -- does not draw it,
-and 74 shallow lines stopping on a column edge do not either, so there is no
-rule there yet, only two records. Nothing in the glyph corpus draws the shape.
+**`lines` is exact on all four displays**, 2,478 records each. The last two were
+`(16,37)->(0,5)` and `(16,37)->(31,5)`, steep lines from below the cell stopping
+on a *column* edge rather than a row edge, and they are the minor-axis clause
+above: the same shape running the other way down the page --
+`(16,-6)->(0,26)` and `(16,-6)->(31,26)` -- does not draw the stop, and neither
+do the seventy-nine downward lines in that position.
 
 `Script`'s `j` at sixteen is still wrong and is **not** this. The sweep now
 draws every line of four pixels or fewer from the middle of the cell as well as
@@ -16973,17 +16972,21 @@ placement is about to write.
 
 ### What is still open
 
-Two line records of 2,478, on the Hercules alone: `(16,37)->(0,5)` and
-`(16,37)->(31,5)`, steep lines climbing out of the bottom of the cell that stop
-on a *column* edge and draw the pixel they stop on. The same shape running the
-other way down the page does not, and 74 shallow lines in that position do not
-either, so there is no rule there yet -- only two records, and nothing in the
-glyph corpus draws the shape.
+**Nothing in `lines`.** It is 2,478 records on each of four displays and exact
+on all of them, clipped lines and all. The last two were the minor-axis stop
+above.
 
-And two cells of the `plotter` sweep, `Script`'s `g` and `y` at thirty-four on
-the Hercules, a pixel each. `Script`'s `j` at sixteen, which used to sit here,
-is closed: a stroke glyph's run with a negative point in it is GDI's to draw
-whole, where a run that merely leaves the cell to the right is not.
+Two cells of the `plotter` sweep, `Script`'s `g` and `y` at thirty-four on the
+Hercules, a pixel each. Both are a tie in a segment ending exactly on the bottom
+row of a run that carries on below it, and in both Windows takes the tie away
+from where the segment began where the driver's slope rule takes it toward.
+Widening the takeover to cover a run that leaves the cell at the bottom fixes
+those two and breaks six -- `y` at thirty-three, thirty-six and thirty-seven
+across all three faces -- each of which wants the tie the other way.
+
+`Script`'s `j` at sixteen, which used to sit here, is closed: a stroke glyph's
+run with a negative point in it is GDI's to draw whole, where a run that merely
+leaves the cell to the right is not.
 
 ## 9. Where the numbers stand
 
@@ -17013,13 +17016,13 @@ for Courier New at twenty-two pixels asked for five, which section 8a proves is
 not the font's box scaled by any one size.
 
 **Every glyph cell on a square pixel is exact**, as is every stretched advance
-in `hinting` and every line that does not leave its cell on any display. What
-`KNOWN_GAPS` holds besides that one metric is two EGA glyph cells -- Symbol's
-slanted `m` and `y` at fifteen -- those same two on a Hercules -- two cells of the new `plotter` sweep, `Script`'s `g`
-and `y` at thirty-four on that display, and two Hercules line records, steep
-lines climbing out of the bottom of the cell that stop on a column edge. Nothing
-else. **Every plotter cell of the glyph sweep agrees on all four displays**, and
-so does every stroke face at every size from eight to forty but those two. The `stack` fixture is not in the table because it is an
+in `hinting`, and **every line on every display** -- clipped or not, which it had
+not been. What `KNOWN_GAPS` holds besides that one metric is two EGA glyph cells
+-- Symbol's slanted `m` and `y` at fifteen -- those same two on a Hercules, and
+two cells of the `plotter` sweep, `Script`'s `g` and `y` at thirty-four on that
+display. Nothing else. **Every plotter cell of the glyph sweep agrees on all
+four displays**, and so does every stroke face at every size from eight to forty
+but those two. The `stack` fixture is not in the table because it is an
 instrument rather than an oracle: its 3,650 records are the scaler's own stack,
 which nothing on this side is meant to reproduce, and the conformance suite
 reports them as unsupported.

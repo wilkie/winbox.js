@@ -441,16 +441,9 @@ export class BitmapContext {
        * second axis to clip against, which is a guess at why and not a reading;
        * what is measured is the two records.
        *
-       * Two records of 2,449 are still wrong, both on this display and both of
-       * one shape: a steep line from below the cell that stops on a *column*
-       * edge rather than a row edge. `(16,37)->(0,5)` and `(16,37)->(31,5)`
-       * draw the pixel they stop on where the rule above says they should not.
-       * The same shape running the other way down the page --
-       * `(16,-6)->(0,26)` and `(16,-6)->(31,26)` -- does not draw it, and 74
-       * shallow lines stopping on a column edge do not either, so there is no
-       * rule here yet, only two records.
+       * **The sweep is exact on all four displays**, 2,478 records each.
        *
-       * A reading was fitted to the nine that used to sit beside these two and
+       * A reading was fitted to nine records that used to be wrong here and
        * **refused**: that GDI re-seeds the walk where the line crosses the edge
        * and truncates from there rather than rounding. Worked by hand it gets
        * four of the nine pixel for pixel, which is persuasive at that size;
@@ -482,6 +475,33 @@ export class BitmapContext {
 
         if (minor !== 0 && edge === (major > 0 ? limit - 1 : 0)) {
           stop = steps + 1;
+        } else if (minor !== 0) {
+          /* And the same again on the *minor* axis, for a line running up.
+           *
+           * A line can stop on the edge it is running at in the other
+           * coordinate too -- a steep line whose x reaches column nought or
+           * thirty-one exactly as it ends. Windows draws that stop as well, and
+           * only when the line runs up the screen.
+           *
+           * **Measured**: 81 clipped lines of the sweep stop on their minor
+           * edge, two of them running up and seventy-nine running down. Drawing
+           * the stop for the two and not the seventy-nine is `lines` exact on
+           * all four displays, 2,478 records each; drawing it for the
+           * seventy-nine instead costs 76 of them. So the direction is doing
+           * the work and is not a fit to the two.
+           *
+           * Why up and not down is **not read**, and it is the third time this
+           * corpus has answered a question with that word -- the column block's
+           * charge in `Endpoints.check` is the same shape. Nothing here should
+           * be taken as knowing why.
+           */
+          const other = acrossX ? toY : toX;
+          const span = acrossX ? this._height : this._width;
+          const rising = acrossX ? minor < 0 : major < 0;
+
+          if (rising && other === (minor > 0 ? span - 1 : 0)) {
+            stop = steps + 1;
+          }
         }
 
         /* And the step the line enters on takes its tie the other way again.
