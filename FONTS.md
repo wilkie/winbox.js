@@ -1118,6 +1118,19 @@ exactly that way, and that is a reading of the numbers rather than of the code:
 why one `Output` of thirteen points and thirteen `Output`s of two points differ
 at all is **not read**.
 
+Four narrowings were tried on top of it and all four are worse, which is what
+says the test is the point being negative rather than the run being clipped:
+
+| also take the run when | `glyphs` | `plotter` |
+| --- | --- | --- |
+| *(nothing else -- what is implemented)* | 6043 | 1582 |
+| a point is below the bottom | 6043 | 1578 |
+| the next point of the run is outside | 6043 | 1578 |
+| the point before this segment is outside | 6042 | 1581 |
+
+No run in the corpus has a negative `y` without a negative `x`, so testing `x`
+alone and testing both cannot be told apart here.
+
 `Script`'s `j` is the case because its hook reaches a column off the *left* of
 the cell while `Roman`'s `m` at forty runs off the *right*: the first is GDI's
 whole and the second is not, and scoping it either way loses one of them.
@@ -1140,6 +1153,13 @@ out to be right and the drawing wrong.
 
 Two of its 1,584 are still short, both on the Hercules: `Script`'s `g` and `y`
 at thirty-four, a pixel each, one column to the left of where this puts them.
+Both are a tie in a segment that ends exactly on the bottom row of the cell in a
+run that carries on below it, and in both Windows takes the tie away from where
+the segment began where the driver's slope rule takes it toward. Widening the
+takeover to cover a run that leaves the cell at the bottom fixes those two and
+breaks six -- `y` at thirty-three, thirty-six and thirty-seven across all three
+faces -- each of which wants the tie the other way, so it is not a rule about
+these runs and the two are left counted.
 
 ### The two passes, read rather than inferred
 

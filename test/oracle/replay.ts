@@ -1823,7 +1823,12 @@ export const KNOWN_GAPS: Record<string, string> = {
    * line is. 1,582 of 1,584 now, and 1,584 on each of the other three.
    *
    * What is left is `Script`'s `g` and `y` at thirty-four, one pixel each, a
-   * column to the left of where this puts it.
+   * column to the left of where this puts it. Both are a tie in a segment
+   * ending exactly on the bottom row of a run that carries on below it, and in
+   * both Windows takes the tie away from where the segment began. Widening the
+   * takeover to cover a run that leaves the cell at the bottom fixes those two
+   * and breaks six -- `y` at thirty-three, thirty-six and thirty-seven across
+   * all three faces -- each of which wants it the other way.
    */
   'plotter-hercules:glyph':
     'the plotter sweep on a Hercules, two cells of 1,584: `Script` `g` and `y` at thirty-four, one pixel each',

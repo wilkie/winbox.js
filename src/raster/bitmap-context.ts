@@ -332,6 +332,21 @@ export class BitmapContext {
      * `Output` of thirteen points and thirteen `Output`s of two behave
      * differently at all is **not read** -- only that they do, in eleven `poly`
      * records against the same points inside a letter.
+     *
+     * Four narrowings of this were tried against the same two sweeps and all
+     * four are worse, which is what says the test is the point being negative
+     * and not the run being clipped:
+     *
+     *     x < 0 only                                       6043  1582
+     *     x < 0 or y < 0  (what this does)                 6043  1582
+     *     ... or a point below the bottom                  6043  1578
+     *     ... or the next point of the run is outside      6043  1578
+     *     ... or the point before this segment is outside  6042  1581
+     *
+     * No run in the corpus has a negative y without a negative x, so the first
+     * two cannot be told apart here; the second is written because a coordinate
+     * a driver cannot address is the thing being described, and y is as much of
+     * one as x.
      */
     const negative =
       this.polyline && this._path.some(([x, y]) => Math.floor(x) < 0 || Math.floor(y) < 0);
