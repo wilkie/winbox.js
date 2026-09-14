@@ -16002,10 +16002,96 @@ that separates them is the serif style, 5 against 0. And the two widths come
 from the same call, so `dfMaxWidth` being `xMax - xMin` is the installer's
 arithmetic rather than a coincidence of the files on this drive.
 
-This is an instrument, not a conformance record: nothing here implements
-`CreateScalableFontResource`, so the fixture replays as unimplemented the way
-`stack` does. What it settles is a *reason*, which is what section 8's list of
-what is not known is for.
+#### What `CreateScalableFontResource` writes, field by field
+
+Nothing here implements this call, so the fixture replays as unsupported. That
+makes it the one recording of a **real API function** the conformance suite
+cannot check, which is a reason to write down what it says rather than leave it
+as a count -- an implementation of it later should not have to record the probe
+again. Everything below is decoded from the 213 records and checked against the
+five `.TTF` files they were made from.
+
+**The file.** A stub NE library of about 1,310 bytes, and the whole of it is
+header and resources: no segments, no imports, no code.
+
+| | |
+| --- | --- |
+| DOS header | 128 bytes, `e_lfanew` = `0x80` |
+| NE signature at `0x80` | linker 5.16, flags `0x8000` (library), 0 segments, 0 module references |
+| target | OS 2 (Windows), expected version `0x0300` |
+| resident name | the `.TTF`'s base name, upper case -- `SYMBOL`, `WINGDING`, `COUR` |
+| non-resident name | `FONTRES:` followed by the face name |
+| resource alignment | shift 4, so offsets and lengths are in sixteens |
+
+**Two resources, and no others.**
+
+| type | id | length | contents |
+| --- | --- | --- | --- |
+| 204 (`0xCC`) | 1 | 128 | the full path of the `.TTF`, NUL-padded -- `C:\WINDOWS\SYSTEM\SYMBOL.TTF` |
+| 7 (`RT_FONTDIR`) | the string `"FONTDIR"` | 144 or 160 | a count, an ordinal and one `FONTDIRENTRY` |
+
+The `FONTDIR` resource is a `WORD` count of fonts -- always 1 -- then a `WORD`
+font ordinal, which is **nought** rather than one, and then the entry. Its
+length is the entry rounded up to the alignment: the fixed part is 113 bytes,
+the device name is empty and costs one NUL, and then three strings follow.
+
+**The entry.** Every measurement in it is in the font's own design units, not in
+pixels: `dfPoints` carries `unitsPerEm` and the rest are at that scale. The
+column on the right is where the value comes from, verified against all five
+files.
+
+| field | Symbol | Wingdings | Arial | Courier New | Times | source |
+| --- | --- | --- | --- | --- | --- | --- |
+| `dfVersion` | `0x0200` | same | same | same | same | constant |
+| `dfSize` | 149 | same | same | same | same | constant |
+| `dfCopyright` | `Windows! Windows! Windows!` | same | same | same | same | constant |
+| `dfType` | `0x4083` | same | same | same | same | constant |
+| `dfPoints` | 2048 | 2048 | 2048 | 2048 | 2048 | `head.unitsPerEm` |
+| `dfVertRes`, `dfHorizRes` | 72, 72 | same | same | same | same | constant |
+| `dfAscent` | 2059 | 1841 | 1854 | 1705 | 1825 | `hhea.ascender` |
+| `dfInternalLeading` | 461 | 225 | 240 | 272 | 220 | `dfPixHeight - unitsPerEm` |
+| `dfExternalLeading` | 0 | 0 | 67 | 0 | 87 | `hhea.lineGap` |
+| `dfItalic`, `dfUnderline`, `dfStrikeOut` | 0 | 0 | 0 | 0 | 0 | the style has its own `.FOT` |
+| `dfWeight` | 400 | 400 | 400 | 400 | 400 | `OS/2.usWeightClass` |
+| `dfCharSet` | 2 | 2 | 0 | 0 | 0 | 2 where PANOSE's family kind is 5 |
+| `dfPixWidth` | 0 | 0 | 0 | 0 | 0 | nought, meaning proportional |
+| `dfPixHeight` | 2509 | 2273 | 2288 | 2320 | 2268 | `hhea.ascender - hhea.descender` |
+| `dfPitchAndFamily` | `0x17` | `0x07` | `0x27` | `0x36` | `0x17` | PANOSE, by the rule above |
+| `dfAvgWidth` | 1191 | 1822 | 904 | 1229 | 821 | `OS/2.xAvgCharWidth` |
+| `dfMaxWidth` | 2280 | 2783 | 2142 | 1345 | 2223 | `head.xMax - head.xMin` |
+| `dfFirstChar` | 30 | 30 | 30 | 30 | 30 | constant |
+| `dfLastChar` | 255 | 255 | 255 | 255 | 255 | constant |
+| `dfDefaultChar`, `dfBreakChar` | 1, 2 | same | same | same | same | constant |
+| `dfWidthBytes`, `dfDevice` | 0, 0 | same | same | same | same | constant |
+| `dfFace` | 118 | 118 | 118 | 118 | 118 | offset from the resource to the face name |
+| `dfReserved` | `0xf000000b` | `0xf000000c` | `0x0b` | `0x0b` | `0x0b` | **not explained** |
+
+Then the strings, in order: an empty device name, the face name, the family
+name, and the style name -- `Symbol`, `Symbol`, `Regular`.
+
+**`dfMaxWidth` is the bounding box and not the widest advance**, which is the
+whole of why section 8a could not make it come out of any one size. Courier New
+is the case that proves it: every glyph in it advances 1229, `hhea` says so, and
+the stub carries 1345, which is `xMax - xMin`. Nothing that scales an advance
+can produce that number.
+
+**`dfAscent` is `hhea`'s and not the bounding box's.** Arial's `yMax` is 1836
+and its `hhea.ascender` is 1854, and the stub carries 1854.
+
+Three things are observed and not explained, and an implementation should copy
+them rather than derive them: `dfType`'s `0x4083`, the font ordinal of nought,
+and `dfReserved`, whose low word is 11 for four of the five faces and 12 for
+Wingdings and whose high word is `0xf000` on exactly the two faces whose
+`cmap` lives in the `0xF000` private range.
+
+#### Why it is written down here
+
+`stack` is an instrument and will stay one: its records are the scaler's own
+working memory and nothing on this side is meant to reproduce them. `fotmake`
+is different in kind. It records what a **documented API call** does, and a
+faithful Windows 3.1 would make these files; that it has no adapter today is a
+statement about this implementation and not about the record. The decode above
+is what an adapter would need.
 
 
 ### 8d. The first glyphs drawn on a pixel that is not square
@@ -17040,20 +17126,26 @@ agree -- including the `max` field, which was the one in question. It lives in
 `maxwidth` rather than in `widths`, and this section had said otherwise for
 longer than it was true.
 
-Two fixtures are counted apart because they are **instruments rather than
-oracles**, and the conformance suite reports their 3,863 records as unsupported
-rather than as disagreements:
+Two fixtures are counted apart, and the conformance suite reports their 3,863
+records as unsupported rather than as disagreements. They are not the same kind
+of thing as each other.
 
-- `stack`, 3,650 records of the scaler's own working memory, which nothing on
-  this side is meant to reproduce.
-- `fotmake`, 213 records of what `CreateScalableFontResource` writes into a
-  `.FOT` stub. It was built to find where the stub's fields come from -- they
-  come from `PANOSE`, which it settled -- and `CreateScalableFontResource` is
-  not implemented here, so there is nothing to replay it against.
+- `stack`, 3,650 records, is an **instrument**: the scaler's own working memory,
+  read to find out where a number came from. Nothing on this side is meant to
+  reproduce it and nothing should try. The same goes for `bands` and `heap`,
+  two probes that were written and never recorded.
+- `fotmake`, 213 records, is a recording of a **real API function**.
+  `CreateScalableFontResource` is documented, a program can call it, and a
+  faithful Windows 3.1 would write the files it writes. That it has no adapter
+  is a statement about this implementation and not about the record, so section
+  8c now decodes it field by field -- the NE stub's layout, both resources, and
+  every value of the `FONTDIR` entry with the `.TTF` field it is derived from.
+  An implementation of the call should not have to record the probe again.
 
 Those 3,863 are the only recorded behaviour this implementation has never been
-checked against. They are unasked questions rather than wrong answers, and the
-distinction is the one the gap list has always drawn.
+checked against, and only 213 of them are behaviour it ought to have. They are
+unasked questions rather than wrong answers, which is the distinction the gap
+list has always drawn.
 
 The fabricated corpus -- the fonts rewritten to isolate one mechanism each, which
 ask questions no stock face does -- stands at **32,394 of 32,394 cells and no

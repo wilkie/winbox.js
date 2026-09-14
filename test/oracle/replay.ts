@@ -1813,12 +1813,20 @@ export const KNOWN_GAPS: Record<string, string> = {
    *
    * What is not checked is 3,863 records the suite reports as **unsupported**,
    * which is a different thing from a disagreement and is why they are counted
-   * apart. `stack` is 3,650 of them -- the scaler's own working memory, which
-   * nothing here is meant to reproduce -- and `fotmake` the other 213, which
-   * are what `CreateScalableFontResource` writes into a `.FOT` stub. Both were
-   * built as reading instruments and both answered what they were built to
-   * ask; neither has an adapter, because neither names anything this
-   * implements.
+   * apart. They are not the same kind of thing as each other.
+   *
+   * `stack` is 3,650 of them and is an instrument: the scaler's own working
+   * memory, read to find where a number came from, which nothing here is meant
+   * to reproduce.
+   *
+   * `fotmake` is the other 213 and is a recording of a **real API function**.
+   * `CreateScalableFontResource` is documented and callable, and a faithful
+   * Windows 3.1 would write the `.FOT` stubs it writes; having no adapter is a
+   * statement about this implementation rather than about the record. So
+   * `FONTS.md` section 8c decodes it field by field -- the NE layout, both
+   * resources, and every value of the `FONTDIR` entry beside the `.TTF` field
+   * it comes from -- and an adapter written later has the whole of what it
+   * needs without recording the probe again.
    */
 };
 
