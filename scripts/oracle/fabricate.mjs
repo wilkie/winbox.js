@@ -4360,6 +4360,115 @@ export const FABRICATIONS = [
     },
   },
 
+  /* What "anything else in the glyph" has to be.
+   *
+   * `times-bare-hairs` and `times-near-hairs` between them say a sub-pixel bar
+   * is rescued when it is the whole glyph and never when something else shares
+   * it, and that how far away that something is makes no difference at all --
+   * a hundred design units and eleven hundred give the same pattern cell for
+   * cell. What the something has to *be* is still open, and the ballast is
+   * three things at once: a second contour, a shape with real runs of its own,
+   * and a reason the glyph's box does not collapse to one column.
+   *
+   * These three separate them, one variable each, against the same bars.
+   *
+   *   - `times-thin-pair` gives the bar a companion that is another sub-pixel
+   *     bar, so the glyph has two contours and a wide box and **no real run
+   *     anywhere in it**. If the rescue comes back, the companion has to be
+   *     something that draws.
+   *   - `times-stacked` puts the companion directly above the bar in the same
+   *     columns, so there are two contours and the box still **collapses in
+   *     x**. If the rescue comes back, it is the box and not the contour count.
+   *   - `times-beside` puts the ballast on the bar's own rows instead of below
+   *     them. If that differs from `times-hairs`, sharing scanlines matters.
+   */
+  ...(() => {
+    const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+    const WIDTHS = [4, 6, 8, 10, 12, 14];
+    const PHASES = [0, 42, 85, 128, 170, 213];
+    const LOW = -300;
+    const HIGH = 1500;
+
+    /* One recipe per companion, all sharing the bars the others use. */
+    const bars = (companion) => (bytes) => {
+      for (let index = 0; index < WIDE.length; index++) {
+        const width = WIDTHS[index % WIDTHS.length];
+        const phase = PHASES[Math.floor(index / WIDTHS.length) % PHASES.length];
+        const left = 600 + phase;
+
+        const bar = [
+          [left, LOW],
+          [left, HIGH],
+          [left + width, HIGH],
+          [left + width, LOW],
+        ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: 0,
+          height: 0,
+          contours: [bar, companion(left, width)],
+          program: [],
+        });
+        setBearing(bytes, glyph, left);
+      }
+
+      return bytes;
+    };
+
+    return [
+      {
+        name: 'times-thin-pair',
+        from: 'TIMES.TTF',
+        as: 'TIMES.TTF',
+        describe: 'two sub-pixel bars in one glyph, so nothing in it draws ordinarily',
+
+        /* The companion is the same shape as the bar and just as narrow, a
+         * thousand units to the right and on the same rows. Nothing in the
+         * glyph covers a sample column except by accident of phase, so if a
+         * rescue needs a neighbour that draws, neither bar gets one. */
+        edit: bars((left, width) => [
+          [left + 1000, LOW],
+          [left + 1000, HIGH],
+          [left + 1000 + width, HIGH],
+          [left + 1000 + width, LOW],
+        ]),
+      },
+      {
+        name: 'times-stacked',
+        from: 'TIMES.TTF',
+        as: 'TIMES.TTF',
+        describe: 'the bar with a second contour above it in the same columns',
+
+        /* Directly above, the same width and the same phase, with a gap between
+         * so the two are separate contours rather than one tall bar. The box is
+         * the same single column it is for the bare bars. */
+        edit: bars((left, width) => [
+          [left, HIGH + 200],
+          [left, HIGH + 500],
+          [left + width, HIGH + 500],
+          [left + width, HIGH + 200],
+        ]),
+      },
+      {
+        name: 'times-beside',
+        from: 'TIMES.TTF',
+        as: 'TIMES.TTF',
+        describe: 'the times-hairs ballast moved onto the rows the bar occupies',
+
+        /* The same block `times-hairs` uses, at the same distance, but spanning
+         * the bar's own scanlines instead of sitting below them. */
+        edit: bars((left) => [
+          [left + 1100, 200],
+          [left + 1100, 400],
+          [left + 1300, 400],
+          [left + 1300, 200],
+        ]),
+      },
+    ];
+  })(),
+
   /* A flat shelf between two scanlines, in a glyph that has scanlines.
    *
    * The bar font asked whether Windows inks a horizontal stroke that misses

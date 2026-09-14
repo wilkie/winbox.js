@@ -16173,32 +16173,55 @@ zero-length run at the same column, which is `HorizCrossings` returning two with
 both `VertCrossings` nought -- neither neighbour guard fires, and the clamp
 writes.
 
-**Two more fabrications corner it.** `times-bare-hairs` is the same bars with
-nothing else in the glyph at all; `times-near-hairs` keeps the ballast but moves
-it from eleven hundred design units away to one hundred, so the box is a handful
-of columns instead of a third of the bitmap.
+**Five fabrications corner it**, all the same bars with a different companion,
+one variable at a time.
 
-| recording | what is in the glyph | Windows draws |
-| --- | --- | --- |
-| `times-bare-hairs` | the bar alone | **144 of 144** |
-| `times-near-hairs` | the bar and a block a hundred units off | 70 of 144 |
-| `times-hairs` | the bar and a block eleven hundred units off | 70 of 144 |
+| recording | what else is in the glyph | box | Windows draws |
+| --- | --- | --- | --- |
+| `times-bare-hairs` | nothing | one column | **144 of 144** |
+| `times-stacked` | a second contour above it, same columns | one column | **144 of 144** |
+| `times-near-hairs` | a block a hundred units across, below | wide | 70 of 144 |
+| `times-hairs` | a block eleven hundred units across, below | wide | 70 of 144 |
+| `times-thin-pair` | a second sub-pixel bar, which never draws | wide | 70 of 144 |
+| `times-beside` | a block on the bar's own rows | wide | 70 of 144 |
 
-The near and the far recordings are **the same pattern cell for cell**. So the
-variable is not how wide the glyph is; it is whether the bar is the whole of it.
-A sub-pixel bar that is the entire glyph is rescued every time, and the moment
-anything else shares the glyph -- however far away, and on rows the bar does not
-touch -- it is rescued never.
+The four wide ones are **the same pattern cell for cell** -- not merely the same
+count but the same sixty of the same hundred and forty-four -- so:
 
-That is the same shape as the rule section 8 carries as **measured and not
-read**: a glyph whose box collapses in `x` skips the stub check. This is a
-second instrument reaching it from a different direction and ten times the size,
-and this side gets the bare case exactly right -- 144 of 144.
+- it is **not the contour count**: `times-stacked` has two contours and is
+  rescued every time;
+- it is **not whether the companion draws**: `times-thin-pair`'s companion is
+  itself a quarter of a pixel wide and covers no sample column either, and the
+  bar is refused all the same;
+- it is **not whether the companion shares scanlines**: `times-beside` puts it
+  on the bar's own rows and is identical to putting it below them;
+- it is **not the distance**: a hundred design units and eleven hundred give the
+  same answer.
 
-What this side gets wrong is the other half. When the box does not collapse our
-stub check runs, and it *passes*, so we make 74 rescues in each ballasted
-recording that Windows does not. Since the reference's check passes too, whatever
-refuses them is not the check as written, and nothing in this file yet names it.
+What is left is the box. **A sub-pixel bar is rescued when and only when the
+glyph's box collapses in `x`**, and `times-stacked` is what proves it is the box
+rather than the company: it adds a whole second contour while leaving the box one
+column wide, and every bar survives.
+
+That is the rule section 8 carries as **measured and not read** -- a glyph whose
+box collapses in `x` skips the stub check -- reached from a second direction, at
+ten times the size, with the confound removed. This side has it right on both
+collapsed-box recordings, 144 of 144 each.
+
+#### And the other half, which is still open
+
+When the box does not collapse, this side's stub check runs and *passes*, so it
+makes 74 rescues in each of the four wide recordings that Windows does not. The
+reference's check passes too, so whatever refuses them is not the check as
+written.
+
+The strong form of the measurement was tried and **refused outright**: making a
+horizontal rescue only where the box collapses is 26,414 fabricated cells of
+32,394 with 19,904 wrong pixels, 2,330 of the 2,668 that are not square, and
+5,554 of the recorded 6,046. Horizontal rescues plainly do happen in glyphs
+whose box is wide -- most of section 6 is them -- so the rule that refuses these
+bars is narrower than "the box is wide" and this instrument cannot see its other
+term.
 
 `test/raster/tall_glyphs_test.ts` holds all of it where it was measured.
 

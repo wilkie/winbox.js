@@ -20,14 +20,25 @@
  * at all, and a disagreement about which sub-pixel strokes dropout control
  * rescues at fifty to a hundred and twenty pixels per em.
  *
- * Two more fabrications were made to corner the second of those, and between
- * them they isolate it completely. `times-bare-hairs` is the same bars with
- * nothing else in the glyph; `times-near-hairs` puts the ballast a hundred
- * design units from the bar instead of eleven hundred. Windows draws **all 144**
- * bare bars and the same 70 of 144 in both ballasted ones, near and far alike --
- * so the variable is not how wide the glyph is but whether the bar is the whole
- * of it. This side matches the bare case exactly, 144 of 144, and makes 74
- * rescues in each ballasted case that Windows does not. See `FONTS.md` 8e.
+ * Five more fabrications were made to corner the second of those, all the same
+ * bars with a different companion, and between them they isolate it exactly.
+ * Windows rescues a sub-pixel bar **when and only when the glyph's box collapses
+ * in x**:
+ *
+ *     times-bare-hairs   the bar alone                            144 of 144
+ *     times-stacked      a second contour above it, same columns  144 of 144
+ *     times-near-hairs   a block a hundred units across            70 of 144
+ *     times-hairs        a block eleven hundred units across       70 of 144
+ *     times-thin-pair    a second sub-pixel bar, which never draws 70 of 144
+ *     times-beside       a block on the bar's own rows             70 of 144
+ *
+ * `times-stacked` is the one that settles it: two contours, and rescued every
+ * time, because the companion sits in the same columns and leaves the box one
+ * column wide. It is not the contour count, not whether the companion draws,
+ * not whether it shares scanlines, and not how far away it is.
+ *
+ * This side agrees on both collapsed-box recordings, 144 of 144, and makes 74
+ * rescues Windows refuses in each of the other four. See `FONTS.md` 8e.
  */
 
 'use strict';
@@ -52,7 +63,15 @@ const FONTS = 'oracle/build/fonts';
  * Each recording also draws the *other*, unmodified face at the same sizes, so
  * every run carries its own control: 288 records, half of them a stock face.
  */
-const RECORDINGS = ['cour-hairs', 'times-hairs', 'times-bare-hairs', 'times-near-hairs'];
+const RECORDINGS = [
+  'cour-hairs',
+  'times-hairs',
+  'times-bare-hairs',
+  'times-near-hairs',
+  'times-thin-pair',
+  'times-stacked',
+  'times-beside',
+];
 
 /* Ceilings, and none may rise.
  *
@@ -83,6 +102,9 @@ const EXPECTED: Record<string, { stock: number; hairs: number; total: number }> 
   'times-hairs': { stock: 142, hairs: 70, total: 288 },
   'times-bare-hairs': { stock: 142, hairs: 144, total: 288 },
   'times-near-hairs': { stock: 142, hairs: 70, total: 288 },
+  'times-thin-pair': { stock: 142, hairs: 70, total: 288 },
+  'times-stacked': { stock: 142, hairs: 144, total: 288 },
+  'times-beside': { stock: 142, hairs: 70, total: 288 },
 };
 
 function recordings() {
