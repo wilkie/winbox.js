@@ -14470,6 +14470,57 @@ the cross product of the turn is not set, which is the quantity `seg42:1342`
 classifies by. A vertex where it is set -- Courier New Italic's `m`, the `g`,
 the `9`, the pound sign's tip -- charges nothing.
 
+**And only where the outline leaves the vertex going up.** That is a second
+condition on the same charge, measured later and on three corpora at once. The
+quadrant the outgoing direction lies in offers four one-bit gates and only one
+of them is clean:
+
+| charge when the vertex heads | square | not square | EGA and Hercules |
+| --- | --- | --- | --- |
+| **up**, `quadrant & 0x3` | **32,394** | **2,668** | **6,044** |
+| down, `quadrant & 0xc` | 32,386 | 2,666 | 6,043 |
+| left, `quadrant & 0x6` | 32,386 | 2,668 | 6,044 |
+| right, `quadrant & 0x9` | 32,394 | 2,666 | 6,043 |
+
+Each of the other three loses one corpus to win another; `up` wins all three
+and loses nothing, which is why it is adopted. It is also the half of the
+quadrant that makes a vertex an `on` crossing in the *horizontal* topology --
+suggestive, and not a reading, because the block being charged is the column's
+and the vertical topology turns on left and right rather than on up and down.
+
+The reference's own sizing was read on the way and **refused**. `fsc_SetupScan`
+does not have one capacity for a glyph: it walks the column range once,
+accumulating the contour reversals whose own column has been reached, and gives
+each column an `on` region and an `off` region of that many entries -- a
+reversal being filed at `(fxCoord + SUBHALF + (sDir >> 1)) >> SUBSHFT` and
+carrying `-sDir`, so the running sum at a column is the number of strands
+crossing it. Implemented that way the corpus comes back two pixels short, and
+the shipped GDI is where the answer has to come from anyway: `seg42:0f2a` sizes
+one block for the whole glyph from the glyph's own points, which is what is
+written above. The per-column capacity is the reference's scheme and not the
+one Windows ships.
+
+#### What the second condition closed
+
+`Courier New`'s italic `g` at twelve pixels, on both displays whose pixel is not
+square, and two instruments beside it.
+
+At a twelve pixel cell on an EGA the `g` is drawn at eight pixels per em with no
+grid-fitting at all -- `INSTCTRL` is guarded by `MPPEM < 9` in that face's
+`prep` -- and the whole letter is five rows. The top row of its bowl is the ink
+between the outer contour's top and the counter's, which at that size is about a
+third of a pixel: no row of it fills, so the row exists only as a vertical
+rescue in each of three columns. Windows makes all three. We made one, refused
+one on the stub test, and in the third had no dropout to make at all, because the
+column's `on` entry for that row had been popped by the overflow charge. Ours had
+three `on` entries and a block of six, which is exactly full and so exactly the
+boundary this condition sits on.
+
+The instruments agree: `cour-bars-ega` and `cour-wedges-ega` were three wrong
+pixels each and are now exact, which takes the non-square fabricated corpus to
+**2,668 of 2,668 with no wrong pixel**. The square corpus stays at 32,394 of
+32,394.
+
 **Adopted**, because it is right about everything:
 
 | corpus                                       | before                           | after                            |
@@ -16845,7 +16896,7 @@ recorded on is counted.
 | ------------------------------------------------------------ | ------- | --------- |
 | `font` (all four displays)                                   | 11,382  | **100%**  |
 | `glyphs` (VGA, Super VGA)                                    | 6,046   | **100%**  |
-| `glyphs` (EGA, Hercules)                                     | 6,046   | 99.95%    |
+| `glyphs` (EGA, Hercules)                                     | 6,046   | 99.97%    |
 | `hinting` (VGA, EGA)                                         | 14,928  | **100%**  |
 | `lines` (VGA, Super VGA, EGA)                                | 2,478   | **100%**  |
 | `lines` (Hercules)                                           | 2,478   | 99.9%     |
@@ -16862,9 +16913,8 @@ not the font's box scaled by any one size.
 
 **Every glyph cell on a square pixel is exact**, as is every stretched advance
 in `hinting` and every line that does not leave its cell on any display. What
-`KNOWN_GAPS` holds besides that one metric is three EGA glyph cells -- Courier
-New's italic `g` at twelve and Symbol's slanted `m` and `y` at fifteen -- those
-same three on a Hercules -- two cells of the new `plotter` sweep, `Script`'s `g`
+`KNOWN_GAPS` holds besides that one metric is two EGA glyph cells -- Symbol's
+slanted `m` and `y` at fifteen -- those same two on a Hercules -- two cells of the new `plotter` sweep, `Script`'s `g`
 and `y` at thirty-four on that display, and two Hercules line records, steep
 lines climbing out of the bottom of the cell that stop on a column edge. Nothing
 else. **Every plotter cell of the glyph sweep agrees on all four displays**, and
@@ -16875,7 +16925,8 @@ reports them as unsupported.
 
 The fabricated corpus -- the fonts rewritten to isolate one mechanism each, which
 ask questions no stock face does -- stands at **32,394 of 32,394 cells and no
-wrong pixels**.
+wrong pixels**, and the same instruments recorded through a pixel that is not
+square at **2,668 of 2,668, also with none wrong**.
 
 ### The chase, end to end
 

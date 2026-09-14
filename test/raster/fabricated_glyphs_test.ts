@@ -153,10 +153,15 @@ describe('the fabricated glyph recordings', () => {
   const WRONG = 0;
 
   /* And the same instruments recorded on an EGA, which is the first time any
-   * chosen geometry has been drawn through a pixel that is not square. Held
-   * where they were measured, so they can only improve. */
-  const WIDE_EXACT = 2403;
-  const WIDE_WRONG = 7785;
+   * chosen geometry has been drawn through a pixel that is not square.
+   *
+   * **Every cell of them, with nothing wrong anywhere**, which they had not
+   * been: `cour-bars-ega` and `cour-wedges-ega` were three wrong pixels each
+   * until the column block's charge was narrowed to the vertices the outline
+   * leaves going *up*. See `Endpoints.check` in `scan-walk.ts` for the four
+   * gates and their counts. */
+  const WIDE_EXACT = 2668;
+  const WIDE_WRONG = 0;
 
   /* The one place an unhinted outline is drawn differently.
    *

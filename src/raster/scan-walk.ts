@@ -320,13 +320,31 @@ export class Endpoints {
   check(x: number, y: number, dropout = true) {
     /* A vertex sitting on a sample line and a sample column at once, kept for
      * the fill to charge against its column's block. See `fillWalked`.
+     *
+     * **Only where the outline leaves it going up.** The charge is one entry,
+     * and which vertex earns it is not read; that it is the upward ones is
+     * measured, on three corpora at once and against the three other one-bit
+     * gates the quadrant offers:
+     *
+     *     charge when the vertex heads   square   not square   EGA/Hercules
+     *     up    (quadrant & 0x3)          32394       2668         6044
+     *     down  (quadrant & 0xc)          32386       2666         6043
+     *     left  (quadrant & 0x6)          32386       2668         6044
+     *     right (quadrant & 0x9)          32394       2666         6043
+     *
+     * Only `up` is clean on all three; each of the others loses one corpus to
+     * win another. `up` is also the half of the quadrant that makes a vertex an
+     * `on` crossing in `horizTopology` below -- which is suggestive and is not
+     * a reading, because the block being charged is the *column's* and the
+     * vertical pass turns on `left` and `right` rather than on `up` and `down`.
      */
     if (
       this.onScanline(this.y1) &&
       this.onScanline(this.x1) &&
       !(this.x1 === x && this.y1 === y) &&
       this.x0 !== Infinity &&
-      !this.flags(x, y).cross
+      !this.flags(x, y).cross &&
+      (this.flags(x, y).quadrant & 0x3) !== 0
     ) {
       (this.lists.crowded ??= new Set()).add(this.x1 >> SHIFT);
     }

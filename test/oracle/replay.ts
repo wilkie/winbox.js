@@ -1843,24 +1843,30 @@ export const KNOWN_GAPS: Record<string, string> = {
    * not.
    *
    * **Every plotter cell of this sweep agrees on all four displays.** What is
-   * left here is the three cells `glyphs-ega:glyph` describes below, which this
+   * left here is the two cells `glyphs-ega:glyph` describes below, which this
    * display has as well.
    */
   'glyphs-hercules:glyph':
-    'the glyph sweep on a Hercules, three cells of 6,046: the same three an EGA has',
+    'the glyph sweep on a Hercules, two cells of 6,046: the same two an EGA has',
 
-  /* The glyph sweep on an EGA, three cells of 6,046.
+  /* The glyph sweep on an EGA, two cells of 6,046.
    *
-   * Courier New's italic `g` at twelve, and Symbol's slanted `m` and `y` at
-   * fifteen. The `g` is the one glyph in the corpus whose descender tail is a
-   * dropout the face does not hint at that size; the other two are the last of
-   * the synthesised shear, and `symbol-slant` -- the instrument that is nothing
-   * but the shear -- has twelve cells left at one size of its own, all of them
-   * at a vertical size of eight, where no whole number of pixels of lean makes
-   * the cell right. So the lean is not what is left there either.
+   * Symbol's slanted `m` and `y` at fifteen, and nothing else. They are the
+   * last of the synthesised shear, and `symbol-slant` -- the instrument that is
+   * nothing but the shear -- has twelve cells left at one size of its own, all
+   * of them at a vertical size of eight, where no whole number of pixels of
+   * lean makes the cell right. So the lean is not what is left there either.
+   *
+   * Courier New's italic `g` at twelve was here until this session. It was
+   * three pixels of the top of the bowl, and it was not the outline, the
+   * hinting or the dropout placement: at eight pixels per em the bowl's top is
+   * a third of a pixel tall, so the row is a vertical rescue in three columns,
+   * and one of the three had its `on` entry popped by the column block's
+   * overflow charge. Narrowing that charge to the vertices the outline leaves
+   * going *up* closed it; see `Endpoints.check` in `scan-walk.ts`.
    */
   'glyphs-ega:glyph':
-    'the glyph sweep on an EGA, three cells of 6,046: Courier New italic `g` at twelve and Symbol slanted `m` and `y` at fifteen',
+    'the glyph sweep on an EGA, two cells of 6,046: Symbol slanted `m` and `y` at fifteen',
 };
 
 /**

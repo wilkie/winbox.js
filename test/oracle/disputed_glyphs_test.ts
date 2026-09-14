@@ -100,8 +100,10 @@ import { loadFixtures, prepareFonts, replayFixture, type Replayed } from './repl
  * five to one; and a run with a negative point is GDI's *whole*, which took the
  * last. **Every plotter cell of the glyph sweep agrees on all four displays.**
  *
- * What is left of the glyph sweep is `Courier New`'s italic `g` at twelve and
- * `Symbol`'s slanted `m` and `y` at fifteen, the same three on both.
+ * What is left of the glyph sweep is `Symbol`'s slanted `m` and `y` at fifteen,
+ * the same two on both. `Courier New`'s italic `g` at twelve sat here too until
+ * the column block's charge was narrowed to the vertices the outline leaves
+ * going up: three pixels of the bowl's top, on both displays.
  *
  * The ceiling then rose once, by two, for a fixture rather than a display. The
  * `plotter` sweep draws the three stroke faces at every height from eight to
@@ -115,8 +117,8 @@ const RECORDS = 0;
 const PIXELS = 0;
 const BITMAP_RECORDS = 136;
 const BITMAP_PIXELS = 794;
-const WIDE_RECORDS = 8;
-const WIDE_PIXELS = 18;
+const WIDE_RECORDS = 6;
+const WIDE_PIXELS = 12;
 
 /* The wide-net fixtures: nothing among the styled files, nothing above
  * thirty-one pixels, and one stretched outline of `widths` -- an unhinted `o`
