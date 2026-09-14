@@ -16933,8 +16933,7 @@ four; `plotter` is 1,584 on each and exact on all four; `lines` is 2,478 on each
 and exact on all four; the fabricated corpus is 32,394 cells on a square pixel
 and 2,668 on one that is not, both exact with no wrong pixel anywhere.
 
-`KNOWN_GAPS` holds one entry and it is not a glyph: the maximum width metric for
-Courier New at twenty-two pixels.
+`KNOWN_GAPS` is empty.
 
 The lesson is worth keeping separately from the fix. Every reading refused on
 the way to this -- the smart dropout placement, the flattening depth, the norm
@@ -17001,10 +17000,10 @@ thirty-seven across all three faces -- each of which wants the tie the other
 way. The clause that works is narrower and does not touch them.
 
 **Every stroke cell on every display agrees**, in the glyph sweep at its seven
-sizes and in `plotter` at every size from eight to forty. What is left anywhere
-in the recorded corpus is `Symbol`'s slanted `m` and `y` at fifteen, on the two
-displays whose pixel is not square, and the maximum width metric, which is not a
-glyph.
+sizes and in `plotter` at every size from eight to forty. `Symbol`'s slanted `m`
+and `y` at fifteen were what remained when this was written, and the section
+after next is what they turned out to be; nothing is left in the recorded corpus
+now.
 
 ## 9. Where the numbers stand
 
@@ -17021,23 +17020,40 @@ recorded on is counted.
 | `hinting` (VGA, EGA)                                         | 14,928  | **100%**  |
 | `lines` (all four displays)                                  | 2,478   | **100%**  |
 | `plotter` (all four displays)                                | 1,584   | **100%**  |
-| `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
+| `maxwidth` (VGA, EGA)                                        | 1,782   | **100%**  |
+| `charscal` (VGA, EGA)                                        | 594     | **100%**  |
+| `widths`                                                     | 2,480   | **100%**  |
 | `styles`                                                     | 9,178   | **100%**  |
 | `sizes`                                                      | 800     | **100%**  |
-| `widths`                                                     | 2,480   | 99.96%    |
+| `strings`, `text`, `profile`, `memory`, `handles`, `devcaps` | 322     | **100%**  |
+| `maxorder`                                                   | 25      | **100%**  |
 
-`widths` is short of one record and it is not a glyph: the maximum width metric
-for Courier New at twenty-two pixels asked for five, which section 8a proves is
-not the font's box scaled by any one size.
+**Every record of every fixture agrees.** 133,410 of them, across 37 recordings
+on four displays, and `KNOWN_GAPS` is **empty** -- not one key. Every glyph cell
+is exact on every display, outline, strike and stroke, square pixel and not; so
+is every metric, every stretched advance in `hinting`, and every line, clipped
+or not.
 
-**Every glyph cell is exact, on every display** -- outline, strike and stroke,
-square pixel and not -- as is every stretched advance in `hinting` and every
-line, clipped or not. `KNOWN_GAPS` holds one entry and it is not a glyph.
+The maximum width metric for Courier New at twenty-two pixels was the last thing
+named here, and it is closed: all eighteen of those records, on both displays,
+agree -- including the `max` field, which was the one in question. It lives in
+`maxwidth` rather than in `widths`, and this section had said otherwise for
+longer than it was true.
 
-The `stack` fixture is not in the table because it is an instrument rather than
-an oracle: its 3,650 records are the scaler's own stack, which nothing on this
-side is meant to reproduce, and the conformance suite reports them as
-unsupported.
+Two fixtures are counted apart because they are **instruments rather than
+oracles**, and the conformance suite reports their 3,863 records as unsupported
+rather than as disagreements:
+
+- `stack`, 3,650 records of the scaler's own working memory, which nothing on
+  this side is meant to reproduce.
+- `fotmake`, 213 records of what `CreateScalableFontResource` writes into a
+  `.FOT` stub. It was built to find where the stub's fields come from -- they
+  come from `PANOSE`, which it settled -- and `CreateScalableFontResource` is
+  not implemented here, so there is nothing to replay it against.
+
+Those 3,863 are the only recorded behaviour this implementation has never been
+checked against. They are unasked questions rather than wrong answers, and the
+distinction is the one the gap list has always drawn.
 
 The fabricated corpus -- the fonts rewritten to isolate one mechanism each, which
 ask questions no stock face does -- stands at **32,394 of 32,394 cells and no

@@ -1804,7 +1804,21 @@ export const KNOWN_GAPS: Record<string, string> = {
    * through it a dropout, and through that a second rescue the first had
    * blocked. See `Surface.fillText`.
    *
-   * What is left in `KNOWN_GAPS` is one metric and no pixels.
+   * **`KNOWN_GAPS` is empty.** Every record of every fixture agrees -- 133,410
+   * of them across 37 recordings on four displays. The maximum width metric
+   * for Courier New at twenty-two was the last thing this list named, and it
+   * had been closed for some time before anyone checked: all eighteen of those
+   * records agree on both displays, the `max` field included, and they live in
+   * `maxwidth` rather than in `widths`.
+   *
+   * What is not checked is 3,863 records the suite reports as **unsupported**,
+   * which is a different thing from a disagreement and is why they are counted
+   * apart. `stack` is 3,650 of them -- the scaler's own working memory, which
+   * nothing here is meant to reproduce -- and `fotmake` the other 213, which
+   * are what `CreateScalableFontResource` writes into a `.FOT` stub. Both were
+   * built as reading instruments and both answered what they were built to
+   * ask; neither has an adapter, because neither names anything this
+   * implements.
    */
 };
 
