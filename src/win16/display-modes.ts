@@ -30,6 +30,17 @@
  * those bits were identical across all three of them.
  */
 
+/**
+ * What a display driver decides, and what it does not.
+ *
+ * Two things on these modes are the driver's rather than GDI's -- `lineTie` and
+ * `boldOverhang` -- and both were found by a cell of the corpus that two
+ * displays draw differently with everything else held identical. `FONTS.md`
+ * section 8b gathers the evidence for both, the things that turned out **not**
+ * to be the driver's after looking like it, and the five readings of that shape
+ * refused with their counts. Read it before adding a third.
+ */
+
 /** A driver whose numbers were read out of real Windows. */
 export const RECORDED = 'recorded';
 

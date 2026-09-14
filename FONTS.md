@@ -16474,6 +16474,120 @@ from square: eleven by sixteen against thirty-eight by forty-eight. Beside them
 sit Courier New's italic `g` at twelve and, on the Hercules only, five plotter
 cells.
 
+## 8b. What the display driver decides, and what it does not
+
+Four displays have been recorded now -- a VGA, a Super VGA, an EGA and a
+Hercules -- and the reason to keep adding them is that a rule pinned on one
+display is a rule pinned on one set of numbers. This section gathers what the
+driver turned out to decide, what it turned out not to, and the readings that
+were refused on the way, so that the next display-shaped question can be asked
+against evidence rather than against intuition.
+
+Seven probes are recorded per display: `devcaps`, `maxwidth`, `charscal`,
+`glyphs`, `font`, `hinting` and `lines`.
+
+### The four, and the numbers that separate them
+
+| | VGA | Super VGA | EGA | Hercules |
+| --- | --- | --- | --- | --- |
+| pixels | 640x480 | 800x600 | 640x350 | 720x348 |
+| planes, colours | 4, 16 | 4, 16 | 4, 16 | **1, 2** |
+| `LOGPIXELS` x, y | 96, 96 | 96, 96 | 96, **72** | 96, **72** |
+| `ASPECTX`, `ASPECTY` | 36, 36 | 36, 36 | 38, 48 | **11, 16** |
+| `RASTERCAPS` | 18137 | 18137 | 18137 | **665** |
+| `CLIPCAPS` | 1 | 1 | 1 | **0** |
+| `NUMPENS` | 80 | 80 | 80 | **10** |
+
+The EGA and the Hercules report the *same* two logical resolutions and a wholly
+different pixel, which is what makes the fourth display worth its recording: it
+tells apart every rule that `LOGPIXELS` and `ASPECT` had agreed about. And of
+the capability bits, one matters here -- `RC_BIGFONT`, bit ten, which the three
+colour drivers have and the Hercules has not. `RC_BITMAP64`, bit three, is set on
+all four, which is worth saying because it is the bit one reaches for first.
+
+### What is the driver's
+
+Two things, and both were found the same way: a cell of the corpus that two
+displays draw differently with everything else held identical.
+
+**A line's tie.** Every pixel of the sweep -- 1,133 records on each of the four
+displays -- is the pixel nearest the true line, on every driver; a driver's only
+freedom is where the line passes exactly between two. The three colour drivers are identical record for record
+and their rule is one sentence -- a tie goes to the smaller y. The Hercules
+takes it by the slope in lowest terms: reduce the span and rise to `m/M`, and a
+tie **rises when `2m > M` and falls when `2m < M`**, with the two end slopes
+`1/M` and `(M-1)/M` each the other way about. That predicts all 1,133 records on
+each of the four. Why the ends turn over is not known and is not claimed.
+
+**A bold glyph's overhang.** A smear reaches a column past the glyph's own cell.
+A colour driver drops that column where it would need one more byte of the
+destination row; the Hercules draws it wherever the smear reaches. Ten glyph
+cells turn on it -- the two `96x72` displays disagree about 354 cells of 6,046,
+of which 344 are the plotter faces and the tie above, and the other ten are
+Symbol: every one bold, every one a single pixel at the right-hand end of a row.
+And so do 150 records of `CreateFont extent`, where Windows measures a ten character
+specimen at 47 against an EGA's 46, at 55 against 54, at 115 against 114.
+
+Both live on the display mode, as `lineTie` and `boldOverhang`, and a rasteriser
+reads them from `BitmapContext.driver`. The oracle harness tells each surface
+outright, because it replays four displays in one process; the emulator sets it
+once at boot from its own display mode.
+
+### What is not the driver's, though it looked like it
+
+**Realising a font.** A Windows 3.1 display driver exports `RealizeObject` at
+ordinal 10 and dispatches on the object style through two parallel tables, one of
+handlers and one of realised sizes. In all three drivers the font entry is a
+handler of one byte -- `C3`, a bare `ret` -- and a size of **nought**:
+
+| driver | tables | font handler | size |
+| --- | --- | --- | --- |
+| `HERCULES.DRV` | `seg1:0x2d37` / `0x2d3d` | `0x2cc1` | 0 |
+| `VGA.DRV` | `0x2bd6` / `0x2bdc` | `0x2b3b` | 0 |
+| `EGA.DRV` | `0x2bba` / `0x2bc0` | `0x2b1f` | 0 |
+
+No display driver in the set realises a font at all. The strike is GDI's to
+build on every one of them.
+
+**How far a strike is stretched sideways.** This looked like a driver limit for a
+long time and is a GDI rule keyed on a capability bit: a device without
+`RC_BIGFONT` is held to a segment, and both multiples come down until the
+realised font -- its header, its character table, and a bitmap of `dfWidthBytes`
+stretched both ways -- fits inside one.
+
+### Readings refused, with their counts
+
+- **Clipping.** `CLIPCAPS` is nought on the Hercules and one on the other three,
+  and every early line failure sat at the sweep's longest offset. The cell is
+  thirty-two square and the line starts in the middle, so an offset of eight
+  reaches twenty-four: the correlation was with the end of the sweep, not the
+  edge of the cell.
+- **A run-length slice**, which is the shape a driver writing whole bytes into a
+  packed monochrome bitmap would use: four of seven slopes and 204 records of
+  232, the same 204 it scores against the VGA, so it tells the two apart not at
+  all.
+- **"The driver decides what it is willing to build."** Refuted by the three
+  `RealizeObject` stubs above.
+- **"The driver draws the final point where a line stops at the edge."** The
+  sweep had never put an endpoint on the thirty-second row or column -- the
+  rings reach fourteen from a middle at sixteen, the fans thirty from nought. A
+  ring of fifteen and a fan of span thirty-one say both displays exclude it, in
+  every one of them.
+- **The tie depends on where the line begins.** 236 slopes across four origins,
+  on a VGA and a Hercules, and not one turns on the parity of either coordinate.
+
+Three of those five are the same shape -- *this driver draws one more pixel* --
+and two of the three are wrong. It is worth knowing before reaching for it a
+fourth time.
+
+### What is still open
+
+Roman's slanted `W` at a forty pixel cell. Its strokes are identical on the two
+displays: the same eight runs, the same design points, the same rows, the last
+of them ending on row thirty-one. The EGA agrees with Windows and the Hercules
+does not, and the whole difference is those endpoints. The exclusion is measured
+the same on both, so it is not the exclusion, and what it is instead is not read.
+
 ## 9. Where the numbers stand
 
 Every fixture the oracle has recorded, replayed against this implementation as
