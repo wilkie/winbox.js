@@ -15,11 +15,19 @@
  * "agree by construction", and that a test which cannot fail is worth less than
  * the recording it is made from.
  *
- * It does not agree by construction. It fails 145 times of 576, and the
- * failures are two things the band question was silent about: four stock
- * records this draws as nothing at all, and a large disagreement about which
- * sub-pixel strokes dropout control rescues at fifty to a hundred and twenty
- * pixels per em. The ceilings below hold both where they were measured.
+ * It does not agree by construction. It fails, and the failures are two things
+ * the band question was silent about: four stock records this draws as nothing
+ * at all, and a disagreement about which sub-pixel strokes dropout control
+ * rescues at fifty to a hundred and twenty pixels per em.
+ *
+ * Two more fabrications were made to corner the second of those, and between
+ * them they isolate it completely. `times-bare-hairs` is the same bars with
+ * nothing else in the glyph; `times-near-hairs` puts the ballast a hundred
+ * design units from the bar instead of eleven hundred. Windows draws **all 144**
+ * bare bars and the same 70 of 144 in both ballasted ones, near and far alike --
+ * so the variable is not how wide the glyph is but whether the bar is the whole
+ * of it. This side matches the bare case exactly, 144 of 144, and makes 74
+ * rescues in each ballasted case that Windows does not. See `FONTS.md` 8e.
  */
 
 'use strict';
@@ -33,7 +41,7 @@ import { prepareFonts, replayRecord } from '../oracle/replay.js';
 const FIXTURES = 'oracle/fixtures/fabricated';
 const FONTS = 'oracle/build/fonts';
 
-/* The two recordings, and what each is for. `cour-hairs` puts sub-pixel
+/* The recordings, and what each is for. `cour-hairs` puts sub-pixel
  * hairlines in Courier New, whose own `SCANCTRL` gives up dropout control above
  * forty-four pixels per em, so it is the control: at these sizes a hairline that
  * misses every pixel centre should simply not be drawn. `times-hairs` puts the
@@ -44,7 +52,7 @@ const FONTS = 'oracle/build/fonts';
  * Each recording also draws the *other*, unmodified face at the same sizes, so
  * every run carries its own control: 288 records, half of them a stock face.
  */
-const RECORDINGS = ['cour-hairs', 'times-hairs'];
+const RECORDINGS = ['cour-hairs', 'times-hairs', 'times-bare-hairs', 'times-near-hairs'];
 
 /* Ceilings, and none may rise.
  *
@@ -73,6 +81,8 @@ const RECORDINGS = ['cour-hairs', 'times-hairs'];
 const EXPECTED: Record<string, { stock: number; hairs: number; total: number }> = {
   'cour-hairs': { stock: 142, hairs: 61, total: 288 },
   'times-hairs': { stock: 142, hairs: 70, total: 288 },
+  'times-bare-hairs': { stock: 142, hairs: 144, total: 288 },
+  'times-near-hairs': { stock: 142, hairs: 70, total: 288 },
 };
 
 function recordings() {

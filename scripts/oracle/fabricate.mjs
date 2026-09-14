@@ -4239,6 +4239,127 @@ export const FABRICATIONS = [
     },
   },
 
+  /* The same hairlines with nothing beside them.
+   *
+   * `times-hairs` puts a ballast block far to the right of the bar, so the
+   * glyph's box is wide and the bar is not the degenerate narrow-glyph case.
+   * Recorded, Windows draws those bars **only where they cover a sample
+   * column** -- the sweep is all-or-nothing in the width at every phase and
+   * every size -- which is to say it rescues none of them, at fifty-two pixels
+   * per em and at a hundred and twenty-three, with `SCANCTRL` measured on at
+   * both.
+   *
+   * Nothing in the scaler predicts that. The stub check passes on a bar that
+   * tall: the row above and the row below each hold a zero-length run at the
+   * same column, so `HorizCrossings` returns two and the two `VertCrossings`
+   * terms are nought, which is exactly the two the check wants.
+   *
+   * So the question is what the ballast is doing. It is the only thing that
+   * separates this from every hairline in the corpus that *is* rescued, and it
+   * does two things at once: it widens the box past the gap between two sample
+   * columns, and it puts a second contour in the glyph. This removes it and
+   * changes nothing else.
+   */
+  {
+    name: 'times-bare-hairs',
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: 'the times-hairs bars with the ballast removed, to ask what the ballast does',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const WIDTHS = [4, 6, 8, 10, 12, 14];
+      const PHASES = [0, 42, 85, 128, 170, 213];
+      const LOW = -300;
+      const HIGH = 1500;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const width = WIDTHS[index % WIDTHS.length];
+        const phase = PHASES[Math.floor(index / WIDTHS.length) % PHASES.length];
+        const left = 600 + phase;
+
+        const bar = [
+          [left, LOW],
+          [left, HIGH],
+          [left + width, HIGH],
+          [left + width, LOW],
+        ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: 0,
+          height: 0,
+          contours: [bar],
+          program: [],
+        });
+        setBearing(bytes, glyph, left);
+      }
+
+      return bytes;
+    },
+  },
+
+  /* The same again with the ballast brought close.
+   *
+   * `times-bare-hairs` says the ballast is what stops the rescue, and it does
+   * two things at once: it puts a second contour in the glyph and it widens the
+   * box from one column to thirty-three. This moves it from 1700 design units
+   * to 700 -- a hundred units right of the bar rather than eleven hundred --
+   * so the second contour is still there and the box is a handful of columns
+   * instead of a third of the bitmap. If Windows still refuses, width is not
+   * the variable.
+   */
+  {
+    name: 'times-near-hairs',
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: 'the times-hairs bars with the ballast brought a hundred units away',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+
+      const WIDTHS = [4, 6, 8, 10, 12, 14];
+      const PHASES = [0, 42, 85, 128, 170, 213];
+      const LOW = -300;
+      const HIGH = 1500;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const width = WIDTHS[index % WIDTHS.length];
+        const phase = PHASES[Math.floor(index / WIDTHS.length) % PHASES.length];
+        const left = 600 + phase;
+
+        const bar = [
+          [left, LOW],
+          [left, HIGH],
+          [left + width, HIGH],
+          [left + width, LOW],
+        ];
+
+        /* Still below the bar and sharing no scanline; only nearer across. */
+        const ballast = [
+          [left + 100, -700],
+          [left + 100, -500],
+          [left + 160, -500],
+          [left + 160, -700],
+        ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, {
+          width: 0,
+          height: 0,
+          contours: [bar, ballast],
+          program: [],
+        });
+        setBearing(bytes, glyph, left);
+      }
+
+      return bytes;
+    },
+  },
+
   /* A flat shelf between two scanlines, in a glyph that has scanlines.
    *
    * The bar font asked whether Windows inks a horizontal stroke that misses

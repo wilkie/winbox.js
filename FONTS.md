@@ -16147,13 +16147,58 @@ two sides disagree about which ones exist at all:
 | `cour-hairs` | 18 | 38 | 27 |
 | `times-hairs` | **74** | 0 | 0 |
 
-`times-hairs` is the sharp one: Windows leaves 74 of its 144 hairlines blank and
-this draws a stroke in every one. It is **not** the `SCANCTRL` threshold --
-traced, Times New Roman reports `0x17c` at both ends of the sweep, so dropout
-control is measured on at fifty-two pixels per em and at a hundred and
-twenty-three -- and it is not banding. At a quarter of a pixel wide and a hundred
-rows tall, Windows is refusing rescues this makes, and no rule in this file
-predicts which.
+#### What Windows is refusing, cornered
+
+`times-hairs` is the sharp one, and it is worth reading as a picture. The
+fabrication sweeps six bar widths against six sub-pixel phases, and Windows'
+answer is **all-or-nothing and monotone in the width** at every size: for a
+given phase, the narrow bars are blank and the wide ones are whole, and the
+crossover moves with the phase. That is exactly the shape of *does the bar cover
+a sample column*. Windows draws the bar when it covers one and **rescues it
+never**:
+
+    h=60    ..##.. ..##.. .###.. .###.. ####.. ####..     w = 4, 6, 8, 10, 12, 14
+    h=90    ..#..# ..#..# ..#..# #.#..# #.##.# #.##.#     each group is six phases
+    h=120   ...##. ...##. ..###. ..###. .####. .####.
+    h=140   ...... ..#.#. #.#.#. #.#.#. #.#.## #.####
+
+It is **not** the `SCANCTRL` threshold: traced, Times New Roman reports `0x17c`
+at both ends of the sweep, so dropout control is measured on at fifty-two pixels
+per em and at a hundred and twenty-three, and Courier New -- whose threshold is
+forty-four, so control is measured *off* over the whole sweep -- gives the same
+shape. It is not banding, which is what the recording was made to ask. And it is
+not the reference: `DoHorizDropout` would draw every one of them. The stub check
+passes, both terms two -- the row above and the row below each hold a
+zero-length run at the same column, which is `HorizCrossings` returning two with
+both `VertCrossings` nought -- neither neighbour guard fires, and the clamp
+writes.
+
+**Two more fabrications corner it.** `times-bare-hairs` is the same bars with
+nothing else in the glyph at all; `times-near-hairs` keeps the ballast but moves
+it from eleven hundred design units away to one hundred, so the box is a handful
+of columns instead of a third of the bitmap.
+
+| recording | what is in the glyph | Windows draws |
+| --- | --- | --- |
+| `times-bare-hairs` | the bar alone | **144 of 144** |
+| `times-near-hairs` | the bar and a block a hundred units off | 70 of 144 |
+| `times-hairs` | the bar and a block eleven hundred units off | 70 of 144 |
+
+The near and the far recordings are **the same pattern cell for cell**. So the
+variable is not how wide the glyph is; it is whether the bar is the whole of it.
+A sub-pixel bar that is the entire glyph is rescued every time, and the moment
+anything else shares the glyph -- however far away, and on rows the bar does not
+touch -- it is rescued never.
+
+That is the same shape as the rule section 8 carries as **measured and not
+read**: a glyph whose box collapses in `x` skips the stub check. This is a
+second instrument reaching it from a different direction and ten times the size,
+and this side gets the bare case exactly right -- 144 of 144.
+
+What this side gets wrong is the other half. When the box does not collapse our
+stub check runs, and it *passes*, so we make 74 rescues in each ballasted
+recording that Windows does not. Since the reference's check passes too, whatever
+refuses them is not the check as written, and nothing in this file yet names it.
 
 `test/raster/tall_glyphs_test.ts` holds all of it where it was measured.
 
