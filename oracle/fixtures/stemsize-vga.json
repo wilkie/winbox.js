@@ -1,0 +1,1442 @@
+{
+  "probe": "stemsize",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=120,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1c19171514121111100f0e0e0d0c0c0c0b0b0b0b0a0a0a0a0a0a0a0a0a0a0b0b0b0b0c0c0d0d0e0e0f10111213141517191c33333333333332323231302f2e2d2b291615151516ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=120,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff220a0909090a1010101010101010101010101010101010101010101010101010101010101010101010101010100908080809ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=120,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff06050505060a0a0a0b0b0b0b0b0c0c0c0c0c0d0d0d0d0d0e0e0e0e0e0f0f0f0f0f10101010111111111112121212121313ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=120,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1804030303040a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0403030304ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=120,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1f1b19171514131211100f0e0e0d0d0c0c0b0b0b0b0a0a0a0a0a0a0a0a0a0a0b0b0b0b0c0c0d0d0e0e0f10111213141517191b1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=120,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff0908080809101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010100908080809ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=120,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff0908080809101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010100908080809ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=124,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1c19171514131211100f0e0e0d0d0c0c0b0b0b0b0a0a0a0a0a0a0a0a0a0a0b0b0b0b0c0c0d0d0e0e0f10111213141517191c343434343434343333323231302f2e2c2a1615151516ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=124,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff220a0909090a1010101010101010101010101010101010101010101010101010101010101010101010101010100807070708ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=124,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff06050505060a0a0b0b0b0b0c0c0c0c0c0d0d0d0d0e0e0e0e0e0f0f0f0f1010101010111111111212121213131313131414ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=124,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1804030303040a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0403030304ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=124,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1f1b19171614131211100f0e0e0d0d0c0c0b0b0b0b0a0a0a0a0a0a0a0a0a0a0b0b0b0b0c0c0d0d0e0e0f10111213141617191b1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=124,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffff080707070810101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010100807070708ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=124,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffff080707070810101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010100807070708ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=128,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1d1a18161413121110100f0e0e0d0d0c0c0b0b0b0b0a0a0a0a0a0a0a0a0a0a0a0b0b0b0b0c0c0d0d0e0e0f10101112131516181a1d35353535353535343433333231302f2d2a1615151516ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=128,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff23200a0909090a10101010101010101010101010101010101010101010101010101010101010101010101010101010100807070708ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=128,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff06050505060a0a0a0b0b0b0b0c0c0c0c0c0d0d0d0d0d0e0e0e0e0f0f0f0f0f1010101011111111111212121213131313131414ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=128,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff181604030303040a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0403030304ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=128,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff201c1a18161514131211100f0e0e0d0d0c0c0b0b0b0b0a0a0a0a0a0a0a0a0a0a0a0b0b0b0b0c0c0d0d0e0e0f10111213141516181a1c20ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=128,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffff0908080809111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111110908080809ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=128,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffff0908080809111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111110908080809ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=132,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1e1b1917161514131211100f0f0e0e0d0d0d0c0c0c0b0b0b0b0b0b0b0b0b0b0b0b0c0c0c0d0d0d0e0e0f0f1011121314151617191b1e373737373737373636363534343332302f2c1716161617ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=132,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff24210a0909090a1111111111111111111111111111111111111111111111111111111111111111111111111111111111110908080809ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=132,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff06050505060a0a0a0b0b0b0b0c0c0c0c0c0d0d0d0d0d0e0e0e0e0f0f0f0f0f101010101111111111121212121313131313141414ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=132,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1a1704030303040b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0403030304ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=132,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff211d1a18171514131211100f0f0e0d0d0c0c0c0b0b0b0b0a0a0a0a0a0a0a0a0a0a0b0b0b0b0c0c0c0d0d0e0f0f10111213141517181a1d21ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=132,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffff09080808091111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111110908080809ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=132,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffff09080808091111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111110908080809ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=136,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff201c1a1817151413121111100f0f0e0e0d0d0c0c0c0c0b0b0b0b0b0b0b0b0b0b0b0c0c0c0c0d0d0e0e0f0f1011111213141517181a1c203a3a3a3a3a3a3a3a393938383736353433312e1918181819ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=136,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff25210a0909090a111111111111111111111111111111111111111111111111111111111111111111111111111111111111110908080809ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=136,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff07060606070b0b0c0c0c0c0c0d0d0d0d0d0e0e0e0e0e0f0f0f0f101010101011111111111212121212131313131414141414151515ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=136,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1a1704030303040b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0403030304ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=136,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff221f1c1a1817161413121111100f0f0e0e0d0d0c0c0c0c0b0b0b0b0b0b0b0b0b0b0b0c0c0c0c0d0d0e0e0f0f1011111213141617181a1c1f22ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=136,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff090808080911111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111110908080809ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=136,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff090808080911111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111110908080809ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff201d1b191716151413121110100f0e0e0d0d0d0c0c0c0c0b0b0b0b0b0b0b0b0b0b0b0c0c0c0c0d0d0d0e0e0f101011121314151617191b1d203b3b3b3b3b3b3b3b3a3a3a39383837363534322f1918181819ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff26230b0a0a0a0b1212121212121212121212121212121212121212121212121212121212121212121212121212121212121212120908080809ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff07060606070b0b0b0c0c0c0c0d0d0d0d0e0e0e0e0e0f0f0f0f101010101011111111121212121213131313141414141515151515161616ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1a1704030303040b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0403030304ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff231f1d1b191816151413121110100f0f0e0e0d0d0c0c0c0c0b0b0b0b0b0b0b0b0b0b0b0c0c0c0c0d0d0e0e0f0f101011121314151618191b1d1f23ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0a0909090a13131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313130a0909090affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0a0909090a13131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313130a0909090affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=144,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff201d1b191716151413121111100f0f0e0e0d0d0d0c0c0c0c0b0b0b0b0b0b0b0b0b0b0b0c0c0c0c0d0d0d0e0e0f0f101111121314151617191b1d203b3b3b3b3b3b3b3a3a3a39383837363533312f181717171718ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=144,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff28240b0a0a0a0a0b121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212090808080809ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=144,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0706060606070b0b0c0c0c0c0c0d0d0d0d0e0e0e0e0e0f0f0f0f0f101010101111111111121212121313131313141414141515151515161616ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=144,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1b190403030303040b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b040303030304ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=144,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff24201d1b1a181716151413121110100f0e0e0d0d0d0c0c0c0c0b0b0b0b0b0b0b0b0b0b0b0c0c0c0c0d0d0d0e0e0f101011121314151617181a1b1e2024ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=144,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0a090909090a131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313130a090909090affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=144,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0a090909090a131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313130a090909090affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=148,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff221f1d1b1918171615141312111110100f0f0e0e0d0d0d0d0d0c0c0c0c0c0c0c0c0c0c0c0d0d0d0d0d0e0e0f0f1010111112131415161718191b1d1f223e3e3e3e3e3e3e3e3d3d3c3c3b3a3a38373634311a191919191affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=148,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff29260b0a0a0a0a0b13131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313130a090909090affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=148,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0706060606070c0c0c0d0d0d0d0e0e0e0e0e0f0f0f0f0f101010101111111111121212121313131313141414141415151515161616161617171717ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=148,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1d1a0403030303040c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c040303030304ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=148,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff26221f1d1b1a19171615141312121110100f0f0e0e0e0d0d0d0d0c0c0c0c0c0c0c0c0c0c0c0d0d0d0d0e0e0e0f0f10101112121314151617191a1b1d1f2226ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=148,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0a090909090a131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313130a090909090affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=148,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0a090909090a131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313130a090909090affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=152,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff231f1d1b1a18171615141312121110100f0f0e0e0e0d0d0d0d0c0c0c0c0c0c0c0c0c0c0c0c0d0d0d0d0e0e0e0f0f10101112121314151617181a1b1d1f233f3f3f3f3f3f3f3f3e3e3e3d3d3c3b3a39383735321a191919191affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=152,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2b270c0b0b0b0b0c1414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414140b0a0a0a0a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=152,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0706060606070c0c0d0d0d0d0d0e0e0e0e0e0f0f0f0f0f10101010111111111112121212121313131313141414141415151515161616161617171717ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=152,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1d1b0403030303040c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c040303030304ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=152,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2722201e1c1a19181615141413121111100f0f0f0e0e0d0d0d0d0c0c0c0c0c0c0c0c0c0c0c0c0d0d0d0d0e0e0e0f0f10111112131414151618191a1c1e202227ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=152,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0a0a0a0a0b1414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414140b0a0a0a0a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=152,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0a0a0a0a0b1414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414140b0a0a0a0a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=156,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff24211e1c1b1918171615141312111110100f0f0e0e0e0d0d0d0d0c0c0c0c0c0c0c0c0c0c0c0c0d0d0d0d0e0e0e0f0f1010111212131415161718191b1c1e2124ffffffffffffffffffffffffff3f3f3e3d3c3b3937341c1b1b1b1b1cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=156,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2c280c0b0b0b0b0c14141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414140a090909090affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=156,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0706060606070c0c0c0d0d0d0d0e0e0e0e0e0f0f0f0f10101010101111111112121212121313131314141414151515151516161616171717171718181818ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=156,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1e1b0403030303040c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c040303030304ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=156,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2823201e1d1b1a18171615141312121110100f0f0e0e0e0d0d0d0d0c0c0c0c0c0c0c0c0c0c0c0c0d0d0d0d0e0e0e0f0f10101112121314151617181a1b1d1e202328ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=156,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0a090909090a1414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414140a090909090affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=156,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0a090909090a1414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414140a090909090affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=160,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff25211f1d1b1a18171615141313121111100f0f0f0e0e0e0d0d0d0d0c0c0c0c0c0c0c0c0c0c0c0c0d0d0d0d0e0e0e0f0f1010111112131314151617181a1b1d1f2125ffffffffffffffffffffffffffff3f3f3e3d3b3a38351c1b1b1b1b1cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=160,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2c280c0b0b0b0b0c141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414140a090909090affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=160,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0706060606070c0c0c0d0d0d0d0d0e0e0e0e0f0f0f0f0f1010101010111111111212121212131313131314141414151515151516161616171717171718181818ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=160,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1e1b0403030303040c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c040303030304ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=160,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2924211f1d1c1a1918171615141312121110100f0f0e0e0e0d0d0d0d0c0c0c0c0c0c0c0c0c0c0c0c0d0d0d0d0e0e0e0f0f1010111212131415161718191a1c1d1f212429ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=160,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0a0a0a0a0b15151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515150b0a0a0a0a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=160,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0a0a0a0a0b15151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515150b0a0a0a0a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=164,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff25211e1c1b19181716141413121110100f0f0e0e0d0d0c0c0c0c0c0b0b0b0b0b0b0b0b0b0b0b0c0c0c0c0d0d0d0e0e0f0f10101112131414161718191b1c1f2125ffffffffffffffffffffffffffffffffffffff3f3e3d3b39361d1c1c1c1c1dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=164,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2d2a0d0c0c0c0c0d15151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515150b0a0a0a0a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=164,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0807070707080d0d0d0e0e0e0e0e0f0f0f0f0f10101010111111111112121212121313131314141414141515151515161616161617171717181818181819191919ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=164,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1f1c0504040404050d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d050404040405ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=164,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2a2523201f1d1c1a191817161514131312111110100f0f0f0e0e0e0e0e0d0d0d0d0d0d0d0d0d0d0d0e0e0e0e0e0f0f0f101011111213131415161718191a1c1d1f2023252affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=164,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff09080808080915151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515090808080809ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=164,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff09080808080915151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515090808080809ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=168,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2723201e1c1b1918171615141312121110100f0f0e0e0e0d0d0d0d0c0c0c0c0c0c0c0c0c0c0c0c0d0d0d0d0d0e0e0e0f0f1011111213131415161718191b1c1e202327ffffffffffffffffffffffffffffffffffffffffff3f3d3b381f1d1d1d1d1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=168,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2e2a0c0b0b0b0b0c151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515150b0a0a0a0a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=168,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0706060606070d0d0d0d0e0e0e0e0e0f0f0f0f101010101011111111111212121212131313131414141414151515151516161616161717171718181818181919191919ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=168,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1f1d0403030303040d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d040303030304ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=168,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2b2623211f1e1c1b1a191717161514131312111110100f0f0f0e0e0e0e0e0d0d0d0d0d0d0d0d0d0d0d0e0e0e0e0e0f0f0f101011111213131415161717191a1b1c1e1f2123262bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=168,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff090808080809151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515090808080809ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=168,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff090808080809151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515090808080809ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=172,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2723201e1d1b1a19181716151413131211111010100f0f0e0e0e0e0e0d0d0d0d0d0d0d0d0d0d0d0d0e0e0e0e0e0f0f10101011121213131415161718191a1b1d1e202327ffffffffffffffffffffffffffffffffffffffff3f3d3c3a371d1c1b1b1b1c1dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=172,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2f2b0d0c0b0b0b0c0d1515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515150b0a0909090a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=172,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff090807070708090d0d0d0e0e0e0e0f0f0f0f1010101010111111111212121212131313131414141414151515151616161616171717171818181818191919191a1a1a1a1bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=172,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff211e050403030304050d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d05040303030405ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=172,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2b272422201e1d1b1a19181716151413131212111010100f0f0e0e0e0e0e0d0d0d0d0d0d0d0d0d0d0d0d0e0e0e0e0e0f0f10101011121213131415161718191a1b1d1e202224272bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=172,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0a0909090a0b16161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616160b0a0909090a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=172,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0a0909090a0b16161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616160b0a0909090a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=176,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2824211f1d1b1a1918171615141312121110100f0f0e0e0e0d0d0d0d0c0c0c0c0c0c0c0c0c0c0c0c0d0d0d0d0d0e0e0e0f0f1010111212131415161718191a1b1d1f212428ffffffffffffffffffffffffffffffffffffffffffffff3e3c391f1e1d1d1d1e1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=176,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff312d0e0d0c0c0c0d0e161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616160c0b0a0a0a0b0cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=176,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff090807070708090d0d0e0e0e0e0e0f0f0f0f101010101011111111121212121213131313131414141415151515151616161617171717171818181819191919191a1a1a1a1affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=176,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff221f060504040405060e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e06050404040506ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=176,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2c272522201f1d1c1a19181716151514131212111110100f0f0f0e0e0e0e0e0d0d0d0d0d0d0d0d0d0d0d0e0e0e0e0e0f0f0f10101111121213141515161718191a1c1d1f202225282cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=176,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0c0b0a0a0a0b0c171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717170c0b0a0a0a0b0cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=176,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0c0b0a0a0a0b0c171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717170c0b0a0a0a0b0cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff292422201e1c1b191817161514141312111110100f0f0e0e0e0d0d0d0d0c0c0c0c0c0c0c0c0c0c0c0c0c0d0d0d0d0e0e0e0f0f1010111112131414151617181a1b1c1e20222429ffffffffffffffffffffffffffffffffffffffffffffffffff3e3b201e1e1e1e1e20ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff332e0f0e0d0d0d0e0f1717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717170d0c0b0b0b0c0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff090807070708090e0e0f0f0f0f0f1010101010111111111112121212131313131314141414141515151515161616161717171717181818181819191919191a1a1a1a1b1b1b1b1bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2320060504040405060e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e06050404040506ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2e29262422201f1d1c1b1a191817161515141313121211111010100f0f0f0f0e0e0e0e0e0e0e0e0e0e0e0e0e0f0f0f0f101010111112121313141515161718191a1b1c1d1f20222426292effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0a0909090a0b171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717170b0a0909090a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0a0909090a0b171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717170b0a0909090a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=184,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2a2523201f1d1b1a191817161514131312111110100f0f0e0e0e0d0d0d0d0c0c0c0c0c0c0c0c0c0c0c0c0c0d0d0d0d0e0e0e0f0f101011111213131415161718191a1b1d1f2023252affffffffffffffffffffffffffffffffffffffffffffffffffff3c21201f1f1f2021ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=184,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff332f0e0d0c0c0c0d0e17171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717170c0b0a0a0a0b0cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=184,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff090807070708090e0e0e0f0f0f0f10101010101111111112121212121313131314141414151515151516161616171717171818181818191919191a1a1a1a1a1b1b1b1b1c1c1c1c1d1dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=184,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2320050403030304050e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e05040303030405ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=184,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2f2a27252321201e1d1c1b19191817161514141313121211111010100f0f0f0f0f0e0e0e0e0e0e0e0e0e0e0e0e0f0f0f0f0f101010111112121313141415161718191a1b1c1d1e20212325272a2fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=184,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0a0909090a0b1717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717170b0a0909090a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=184,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0a0909090a0b1717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717170b0a0909090a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=188,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2c282523211f1e1c1b1a191817161615141413121211111010100f0f0f0f0f0e0e0e0e0e0e0e0e0e0e0e0e0e0f0f0f0f10101011111112121314141516161718191a1b1c1e1f212325282cffffffffffffffffffffffffffffffffffffffffffffffffffffff3e22202020202021ffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=188,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff34300e0d0c0c0c0d0e171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717170c0b0a0a0a0b0cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=188,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff090807070708090e0e0e0f0f0f0f0f1010101011111111111212121213131313131414141415151515151616161617171717171818181819191919191a1a1a1a1a1b1b1b1b1c1c1c1c1c1dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=188,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2320050403030304050e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e05040303030405ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=188,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff302b28262422201f1e1c1b1a19181717161514141313121211111010100f0f0f0f0f0e0e0e0e0e0e0e0e0e0e0e0e0f0f0f0f0f10101011111212121314141516171718191a1b1c1e1f20222426282b30ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=188,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0a0909090a0b1818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818180b0a0909090a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=188,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0a0909090a0b1818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818180b0a0909090a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=192,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2c272522201f1d1c1b1a19181716151413131212111110100f0f0f0e0e0e0e0e0d0d0d0d0d0d0d0d0d0d0d0d0e0e0e0e0e0f0f0f10101111121213141415161718191a1b1c1d1f202225272cffffffffffffffffffffffffffffffffffffffffffffffffffffffff3e22202020202022ffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=192,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff35300f0e0d0d0d0e0f18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818180d0c0b0b0b0c0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=192,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff090807070708090e0e0e0f0f0f0f0f101010101111111111121212121213131313141414141415151515161616161617171717171818181819191919191a1a1a1a1a1b1b1b1b1c1c1c1c1c1dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=192,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2421060504040405060f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f06050404040506ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=192,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff312c29262422211f1e1d1b1a19181817161515141313121211111010100f0f0f0f0f0e0e0e0e0e0e0e0e0e0e0e0e0e0f0f0f0f0f10101011111212131314151516171818191a1c1d1e1f21222426292c31ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=192,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0a0909090a0b18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818180b0a0909090a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=192,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0a0909090a0b18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818180b0a0909090a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=196,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2c282523211f1e1c1b1a1918171615151413131211111010100f0f0f0e0e0e0e0e0d0d0d0d0d0d0d0d0d0d0d0d0e0e0e0e0e0f0f0f1010101111121313141515161718191a1b1c1e1f212325282cffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f2220202020202022ffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=196,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3733100f0e0e0e0e0f1019191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919190e0d0c0c0c0c0d0effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=196,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0a0908080808090a0f0f1010101010111111111112121212121313131314141414141515151515161616161617171717181818181819191919191a1a1a1a1a1b1b1b1b1b1c1c1c1c1d1d1d1d1d1effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=196,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff262306050404040405060f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0605040404040506ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=196,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff332e2b2826242321201e1d1c1b1a1918181716151514141313121211111110101010100f0f0f0f0f0f0f0f0f0f0f0f0f1010101010111111121213131414151516171818191a1b1c1d1e2021232426282b2e33ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=196,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0c0b0a0a0a0a0b0c19191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919190c0b0a0a0a0a0b0cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=196,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0c0b0a0a0a0a0b0c19191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919190c0b0a0a0a0a0b0cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=200,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2d29262422201e1d1c1b1a1918171615141413121211111010100f0f0f0e0e0e0e0e0d0d0d0d0d0d0d0d0d0d0d0d0e0e0e0e0e0f0f0f1010101111121213141415161718191a1b1c1d1f20222426292dffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2322212121212223ffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=200,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff38340f0e0d0d0d0d0e0f191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919190d0c0b0b0b0b0c0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=200,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff09080707070708090f0f0f10101010111111111112121212131313131314141414151515151516161616171717171818181818191919191a1a1a1a1a1b1b1b1b1c1c1c1c1c1d1d1d1d1e1e1e1e1e1f1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=200,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff262305040303030304050f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0504030303030405ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=200,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff332e2b2927252322201f1e1d1c1b1a1918171616151514131313121211111110101010100f0f0f0f0f0f0f0f0f0f0f0f0f1010101010111111121212131314151516161718191a1b1c1d1e1f2022232527292b2e33ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=200,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0c0b0b0b0b0c0d1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a0d0c0b0b0b0b0c0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=200,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0c0b0b0b0b0c0d1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a0d0c0b0b0b0b0c0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=204,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2e2a272422211f1e1d1c1b1a19181716151514131312121111111010100f0f0f0f0f0e0e0e0e0e0e0e0e0e0e0e0e0e0f0f0f0f0f10101011111112121314141515161718191a1b1c1d1e1f212324272a2effffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2221202020202122ffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=204,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3934310f0e0d0d0d0d0e0f191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919190d0c0b0b0b0b0c0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=204,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff09080707070708090f0f1010101010111111111212121212131313131414141414151515151616161616171717171818181818191919191a1a1a1a1a1b1b1b1b1c1c1c1c1c1d1d1d1d1e1e1e1e1e1f1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=204,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff27242105040303030304050f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0504030303030405ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=204,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff342f2c2927252322211f1e1d1c1b1a191817171615151414131312121111111110101010100f0f0f0f0f0f0f0f0f0f0f0f101010101011111111121213131414151516171718191a1b1c1d1e1f2122232527292c2f34ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=204,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0a090909090a0b19191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919190b0a090909090a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=204,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0a090909090a0b19191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919190b0a090909090a0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=208,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff302b28262422201f1e1c1b1a1919181716151514131312121111111010100f0f0f0f0f0e0e0e0e0e0e0e0e0e0e0e0e0e0f0f0f0f0f1010101111111212131314151516171819191a1b1d1e1f20222426282b30ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2423222222222324ffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=208,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3a3633100f0e0e0e0e0f101a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a0e0d0c0c0c0c0d0effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=208,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff09080707070708090f0f10101010101111111111121212121313131313141414141415151515161616161617171717181818181819191919191a1a1a1a1b1b1b1b1b1c1c1c1c1c1d1d1d1d1e1e1e1e1e1f1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=208,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff28252306050404040405061010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010100605040404040506ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=208,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff35302c2a2826242321201f1e1c1b1b1a1918171616151514141313121211111110101010100f0f0f0f0f0f0f0f0f0f0f0f0f0f1010101010111111121213131414151516161718191a1b1b1c1e1f2021232426282a2c3035ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=208,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0c0b0a0a0a0a0b0c1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a0c0b0a0a0a0a0b0cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=208,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0c0b0a0a0a0a0b0c1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a0c0b0a0a0a0a0b0cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=212,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff302c2926242321201e1d1c1b1a1918171716151414131312121111111010100f0f0f0f0f0e0e0e0e0e0e0e0e0e0e0e0e0e0f0f0f0f0f1010101111111212131314141516171718191a1b1c1d1e2021232426292c30ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2524232323232425ffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=212,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3a3633100f0e0e0e0e0f101a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a0e0d0c0c0c0c0d0effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=212,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0a0908080808090a101010111111111112121212121313131314141414141515151515161616161617171717181818181819191919191a1a1a1a1b1b1b1b1b1c1c1c1c1c1d1d1d1d1d1e1e1e1e1f1f1f1f1f2020ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=212,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff282523060504040404050610101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010100605040404040506ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=212,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff37322e2c292726242322201f1e1d1c1b1a191918171716151514141313131212121111111111101010101010101010101010101011111111111212121313131414151516171718191a1a1b1c1d1e1f202223242627292c2e3237ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=212,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0c0b0a0a0a0a0b0c1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a0c0b0a0a0a0a0b0cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=212,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0c0b0a0a0a0a0b0c1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a0c0b0a0a0a0a0b0cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=216,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff322d2a27252322201f1e1d1c1b1a1918171616151414131312121111101010100f0f0f0f0f0e0e0e0e0e0e0e0e0e0e0e0e0e0f0f0f0f0f1010101111111212131314141516161718191a1b1c1d1e1f20222325272a2d32ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2625242424242526ff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=216,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3d383512100f0f0f0f10121c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c100e0d0d0d0d0e10ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=216,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0908080808090b101010111111111112121212131313131314141414151515151616161616171717171818181818191919191a1a1a1a1a1b1b1b1b1c1c1c1c1c1d1d1d1d1e1e1e1e1e1f1f1f1f2020202020212121ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=216,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2925230604030303030406101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010100604030303030406ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=216,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff37322f2c2a282625232221201f1e1d1c1b1a19181817161615151414131313121212111111111110101010101010101010101010101111111111121212131313141415151616171818191a1b1c1d1e1f202122232526282a2c2f3237ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=216,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0b0a0a0a0a0b0d1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b0d0b0a0a0a0a0b0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=216,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0b0a0a0a0a0b0d1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b0d0b0a0a0a0a0b0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=220,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff332e2b2826252321201f1e1d1c1b1a191818171615151414131312121211111110101010100f0f0f0f0f0f0f0f0f0f0f0f0f0f101010101011111112121213131414151516171818191a1b1c1d1e1f2022232526282b2e33ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2625242424",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=220,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3d3835110f0e0e0e0e0f111b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b0f0d0c0c0c0c0d0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=220,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0908080808090b10101011111111111212121213131313131414141415151515151616161617171717171818181819191919191a1a1a1a1b1b1b1b1b1c1c1c1c1c1d1d1d1d1e1e1e1e1e1f1f1f1f2020202020212121ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=220,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff292623060403030303040610101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010100604030303030406ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=220,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff38332f2d2a292725242221201f1e1d1c1b1a1919181717161515141414131312121211111111111010101010101010101010101010101111111111121212131314141415151617171819191a1b1c1d1e1f202122242527292b2d2f3338ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=220,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0b0a0a0a0a0b0d1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b0d0b0a0a0a0a0b0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=220,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0b0a0a0a0a0b0d1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b0d0b0a0a0a0a0b0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=224,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff342f2c292826242321201f1e1d1c1b1a1919181717161615151414131312121212111111111110101010101010101010101010101111111111121212131313141415151616171718191a1a1b1c1d1e1f2022232426282a2c2f34ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff26252424",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=224,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3a3712100f0f0f0f0f10121c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c100e0d0d0d0d0d0e10ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=224,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b090808080808090b10101011111111121212121213131313131414141415151515151616161616171717171818181818191919191a1a1a1a1a1b1b1b1b1b1c1c1c1c1d1d1d1d1d1e1e1e1e1e1f1f1f1f2020202020212121ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=224,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2b27250604030303030304061010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010060403030303030406ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=224,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3934302d2b29282624232221201e1d1d1c1b1a1918181716161515141413131312121211111111111010101010101010101010101010101111111111121212131313141415151616171818191a1b1c1d1e1f20212223242628292b2e303439ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=224,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0e0c0b0b0b0b0b0c0e1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c0e0c0b0b0b0b0b0c0effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=224,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0e0c0b0b0b0b0b0c0e1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c0e0c0b0b0b0b0b0c0effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=228,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff35302d2a2826242322201f1e1d1c1b1a19191817161615151414131312121211111110101010100f0f0f0f0f0f0f0f0f0f0f0f0f0f10101010101111111212121313141415151616171819191a1b1c1d1e1f2022232526282a2d3035ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=228,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b3812100f0f0f0f0f10121c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c0f0d0c0c0c0c0c0d0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=228,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b090808080808090b11111112121212121313131313141414141515151515161616161617171717171818181819191919191a1a1a1a1a1b1b1b1b1b1c1c1c1c1d1d1d1d1d1e1e1e1e1e1f1f1f1f1f202020202121212121222222ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=228,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2c292607050404040404050711111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111070504040404040507ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=228,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b35322f2d2b29282625232221201f1e1d1c1b1b1a191918171716161515141414131313121212121211111111111111111111111111111112121212121313131414141515161617171819191a1b1b1c1d1e1f20212223252628292b2d2f32353bffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=228,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0b0a0a0a0a0a0b0d1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c0d0b0a0a0a0a0a0b0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=228,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0b0a0a0a0a0a0b0d1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c0d0b0a0a0a0a0a0b0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=232,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff35302d2a2826252322211f1e1d1c1b1a1a19181717161515141413131212121111111010101010100f0f0f0f0f0f0f0f0f0f0f0f0f10101010101011111112121213131414151516171718191a1b1b1c1d1e1f2122232526282a2d3035ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=232,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3d3a1311101010101011131d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d100e0d0d0d0d0d0e10ffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=232,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b090808080808090b1111111212121213131313131414141415151515151616161617171717171818181819191919191a1a1a1a1b1b1b1b1b1c1c1c1c1c1d1d1d1d1e1e1e1e1e1f1f1f1f2020202020212121212222222222232323ffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=232,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2c29260705040404040405071111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111070504040404040507ffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=232,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b3633302e2c2a282725242322211f1f1e1d1c1b1a1a1918181716161515151414131313131212121212111111111111111111111111111112121212121313131314141515151616171818191a1a1b1c1d1e1f20212223242527282a2c2e3033363bffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=232,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0e0c0b0b0b0b0b0c0e1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d0e0c0b0b0b0b0b0c0effffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=232,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0e0c0b0b0b0b0b0c0e1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d0e0c0b0b0b0b0b0c0effffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=236,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff36312e2b292726242321201f1e1d1c1b1a19191817161615151414131312121211111110101010100f0f0f0f0f0f0f0f0f0f0f0f0f0f0f10101010101111111212121313141415151616171819191a1b1c1d1e1f202123242627292b2e3136ffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=236,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3d3a12100f0f0f0f0f10121d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d100e0d0d0d0d0d0e10ffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=236,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b090808080808090b111111121212121213131313141414141415151515161616161617171717181818181819191919191a1a1a1a1b1b1b1b1b1c1c1c1c1d1d1d1d1d1e1e1e1e1e1f1f1f1f202020202021212121222222222223232323ffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=236,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2d292706040303030303040611111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111060403030303030406ffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=236,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3c3734312e2c2b29272625232221201f1e1d1c1c1b1a19191817171616151514141413131313121212121211111111111111111111111111111212121212131313131414141515161617171819191a1b1c1c1d1e1f20212223252627292b2c2e3134373cffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=236,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0e0c0b0b0b0b0b0c0e1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d0e0c0b0b0b0b0b0c0effffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=236,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0e0c0b0b0b0b0b0c0e1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d0e0c0b0b0b0b0b0c0effffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=240,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff37322f2c2a282725242221201f1e1d1c1b1a1a191818171616151514141313131212121111111111111010101010101010101010101010111111111112121212131313141415151616171818191a1b1b1c1d1e1f202123242527282a2c2f3237ffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=240,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3d3a12100f0f0f0f0f10121d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d100e0d0d0d0d0d0e10ffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=240,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b090808080808090b111111121212121213131313131414141415151515151616161617171717171818181818191919191a1a1a1a1a1b1b1b1b1b1c1c1c1c1d1d1d1d1d1e1e1e1e1f1f1f1f1f202020202021212121222222222223232323ffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=240,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2d29270604030303030304061111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111060403030303030406ffffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=240,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3d3834312f2d2b29282625242321201f1e1e1d1c1b1a1a191818171716161515141414131313121212121211111111111111111111111111111112121212121313131414141515161617171818191a1a1b1c1d1e1e1f20212324252628292b2d2f3134383dffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=240,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0e0c0b0b0b0b0b0c0e1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d0e0c0b0b0b0b0b0c0effffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=240,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0e0c0b0b0b0b0b0c0e1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d0e0c0b0b0b0b0b0c0effffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=244,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3833302d2b29272624232221201f1e1d1c1b1a19191817171615151414141313121212121111111111101010101010101010101010101010111111111112121213131314141515161617171819191a1b1c1d1e1f20212223242627292b2d303338ffffffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=244,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3c1311101010101011131e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e100e0d0d0d0d0d0e10ffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=244,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0c0a09090909090a0c1212121313131313141414141515151515161616161617171717181818181819191919191a1a1a1a1a1b1b1b1b1c1c1c1c1c1d1d1d1d1d1e1e1e1e1f1f1f1f1f2020202020212121212122222222232323232324242424ffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=244,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2e2a28070504040404040507121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212070504040404040507ffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=244,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f393633312e2d2b2928272524232221201f1e1d1c1c1b1a1a191818171716161515151414141313131313131212121212121212121212121212131313131313141414151515161617171818191a1a1b1c1c1d1e1f2021222324252728292b2d2e313336393fffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=244,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0f0d0c0c0c0c0c0d0f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f0f0d0c0c0c0c0c0d0fffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=244,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0f0d0c0c0c0c0c0d0f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f0f0d0c0c0c0c0c0d0fffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=248,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3934312e2c2a282725242221201f1e1d1c1b1b1a19181817161615151414141313121212121111111111101010101010101010101010101010111111111112121212131314141415151617171818191a1b1b1c1d1e1f202123242527282a2c2e313439ffffffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=248,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3c1311101010101011131e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e100e0d0d0d0d0d0e10ffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=248,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0c0a09090909090a0c12121213131313131414141415151515151616161616171717171818181818191919191a1a1a1a1a1b1b1b1b1b1c1c1c1c1d1d1d1d1d1e1e1e1e1f1f1f1f1f2020202020212121212222222222232323232424242424252525ffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=248,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2e2b280705040404040405071212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212070504040404040507ffffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=248,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3a3633312f2d2b2a28272625232221201f1e1e1d1c1b1b1a1919181817171616151515141414131313131313121212121212121212121212121213131313131314141415151516161717181819191a1b1b1c1d1e1e1f20212223252627282a2b2d2f3133363a3fffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=248,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0e0c0b0b0b0b0b0c0e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e0e0c0b0b0b0b0b0c0effffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=248,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0e0c0b0b0b0b0b0c0e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e0e0c0b0b0b0b0b0c0effffffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=252,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3934312e2c2a29272624232221201f1e1d1c1b1a1919181717161615151414131313121212121111111111101010101010101010101010101010111111111112121212131313141415151616171818191a1a1b1c1d1e1f20212223242627292a2c2f313439ffffffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=252,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f1413121111111112131420202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020201210100f0f0f0f101112ffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=252,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0c0b0a090909090a0b0c1212121313131314141414141515151515161616161717171717181818181819191919191a1a1a1a1b1b1b1b1b1c1c1c1c1c1d1d1d1d1e1e1e1e1e1f1f1f1f1f2020202021212121212222222222232323232324242424252525ffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=252,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff302c2a06050403030303040506121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121206040403030303040506ffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=252,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b373432302e2c2b2928262524232221201f1e1d1d1c1b1b1a191918181717161615151514141414131313131312121212121212121212121212121213131313131414141415151516161717181819191a1b1b1c1d1d1e1f2021222324252628292b2c2e303234373bffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=252,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0f0d0d0c0c0c0c0d0d0f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f0f0d0d0c0c0c0c0d0d0fffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=252,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0f0d0d0c0c0c0c0d0d0f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f0f0d0d0c0c0c0c0d0d0fffffffffffffffffffffffff",
+      "section": "stock Courier New, every fourth cell from a hundred and twenty to two hundred and fifty-two"
+    }
+  ]
+}

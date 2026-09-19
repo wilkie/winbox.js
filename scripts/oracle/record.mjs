@@ -60,6 +60,12 @@ const PER_DISPLAY = new Set([
   'hinting',
   'lines',
   'plotter',
+
+  /* Stock glyphs swept in size, which is a question about the pixel as much as
+   * about the size. Without this the EGA run overwrites the VGA one and the
+   * two look like the same probe disagreeing with itself.
+   */
+  'stemsize',
 ]);
 
 /** Where a probe writes, on the guest and on the host. */

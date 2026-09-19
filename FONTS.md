@@ -16508,7 +16508,7 @@ stretched pixel, and the fallback was left holding the question on its own.
 | recording | before | after |
 | --- | --- | --- |
 | `bands-cour-hairs-ega` | 252 of 288 | **288 of 288** |
-| `bands-times-hairs-ega` | 255 of 288 | 259 of 288 |
+| `bands-times-hairs-ega` | 255 of 288 | 259 of 288, and 262 once 8i lands |
 
 The Courier recording closes completely, at every one of its four sizes. What
 made it legible was that the fabricated bars are sub-pixel, so whether one is
@@ -16550,9 +16550,81 @@ and cold and warm agree for it.
 **Three of stock Courier New at a hundred and eighty.** `g`, `n` and `w` come
 out one or two columns across from where Windows puts them -- one left, one
 right, one two left -- so it is not a shift but three separate placements. Both
-sides draw the letter. It is the hinted run under a stretch at a hundred and
-fifty-seven pixels per em, and it is narrow: the same face at the same size on a
-VGA is exact, and stock Times New Roman is exact at all four sizes on the EGA.
+sides draw the letter. It looked like the hinted run under a stretch, and it was
+not: 8i sweeps the same face in size on both displays and finds `w` wrong on a
+VGA as well. All three are closed there, and this recording is exact.
+
+### 8i. The control value cut-in only applies where the distance is rounded
+
+The three glyphs 8h left behind -- stock Courier New's `g`, `n` and `w` a column
+or two across at a cell of a hundred and eighty on an EGA -- turned out not to
+be about the stretch at all, and the probe that said so nearly did not get
+built.
+
+`oracle/probes/stemsize.c` sweeps stock Courier New every fourth cell from a
+hundred and twenty to two hundred and fifty-two, seven characters, on both
+displays. No fabrication: these are the shipped glyphs. It says immediately that
+`w` is wrong on a **VGA** too, from a cell of a hundred and ninety-six upward,
+so a square pixel is no defence and the size is what matters.
+
+#### What the letter is doing
+
+Courier New's `w` has a top-left serif placed by a `MIRP` of `0xf1` -- set
+`rp0`, **no rounding**, no minimum distance. Its control value is 82 design
+units; the outline's own distance between the same two points is 97. The font
+sets its own cut-in, with `SCVTCI`, to 85 sixty-fourths.
+
+The gap between the two grows with the size, and crosses:
+
+| pixels per em | gap | cut-in | this side |
+| --- | --- | --- | --- |
+| 179 | 84 | 85 | takes the control value |
+| 184 | 86 | 85 | **falls back to the outline** |
+
+Falling back moves the serif by 15 design units -- a pixel and a third at that
+size -- and Windows does not move it. Read off the recording, Windows' serif
+sits a constant 82 design units from the stem at every cell from a hundred and
+twenty to two hundred and fifty-two: the offset grows smoothly, 6, 7, 8
+columns, with no step anywhere. It is using the control value throughout.
+
+So the cut-in does not apply to a `MIRP` that does not round. The other `MIRP`s
+of the same glyph do round, and one of those fires its cut-in at a hundred and
+seventy-nine pixels per em where Windows and this agree -- so it is not that the
+cut-in is never applied.
+
+#### And the comparison is strict
+
+`MIAP`'s cut-in in this implementation has always been `>`; `MIRP`'s was `>=`.
+With the rounding gate in place the four cells still short were exactly the ones
+where the gap lands **on** the cut-in to the sixty-fourth -- `w` at a cell of
+two hundred and forty-four on both displays, `E` at a hundred and twenty and
+`g` and `n` at a hundred and eighty on the EGA. Strict closes all four.
+
+Both halves are load-bearing, counted on 238 records on each of two displays:
+
+| | VGA | EGA |
+| --- | --- | --- |
+| neither | 223 | 208 |
+| strict comparison alone | 223 | 211 |
+| the rounding gate alone | 237 | 234 |
+| **both** | **238** | **238** |
+
+Nothing else in the corpus moves.
+
+#### A pipeline bug this turned up
+
+`stemsize` is recorded on two displays and was not in `record.mjs`'s
+`PER_DISPLAY` set, so the EGA run wrote its fixture over the VGA one. The
+symptom was a probe that appeared not to reproduce itself -- every record of two
+consecutive runs differing -- and then appeared to say that replacing
+`TIMES.TTF` with a fabrication changed how stock Courier New is drawn, which
+would have been a remarkable thing to believe. It was the same file twice, once
+from each display.
+
+Both readings were caught by the same habit that caught the scrambled printout
+in 8g: **record it twice and compare the records**. A third run agreed with the
+second and with `bands` on all fourteen records they share, and the odd one out
+was the EGA data wearing the VGA name.
 
 ### 8d. The first glyphs drawn on a pixel that is not square
 
@@ -17490,10 +17562,13 @@ The three `buffer` recordings that pinned the second of those are 1,229 of their
 1,230, and 8f names the one.
 
 The nine `bands` recordings now include two on an EGA: `cour-hairs-ega` is 288
-of 288 and `times-hairs-ega` 259, the difference being 8g's cold first
-realization and three glyphs of stock Courier New at a hundred and eighty. 8h is
-what closed the rest of them -- a glyph with no program of its own is still
-scan-converted with what `prep` decided.
+of 288 and `times-hairs-ega` 262, the only thing short of it being 8g's cold
+first realization. 8h and 8i are what closed the rest of them -- a glyph with no
+program of its own is still scan-converted with what `prep` decided, and the
+control value cut-in only applies to a `MIRP` that rounds.
+
+`stemsize` is exact: 238 records on each of two displays, stock Courier New
+swept from a cell of a hundred and twenty to one of two hundred and fifty-two.
 
 The seven `dropsize` and `dropdown` recordings are 2,851 of their 2,856, on a
 square pixel and on one that is not. The five are one cell height of the

@@ -127,11 +127,10 @@ const RECORDINGS = [
  * gives dropout control up above forty-four pixels per em, so cold and warm
  * agree for it at every size the probe asks.
  *
- * **And three of stock Courier New at a hundred and eighty**, where `g`, `n`
- * and `w` come out one or two columns across from where Windows puts them. Both
- * sides draw the letter; it is the hinted run under a stretch at a hundred and
- * fifty-seven pixels per em, and the same face at the same size on a VGA is
- * exact, as is stock Times New Roman at all four sizes on the EGA.
+ * The three stock Courier New records this also used to miss -- `g`, `n` and
+ * `w` at a hundred and eighty -- are closed. They were not the stretch: the
+ * control value cut-in does not apply to a `MIRP` that does not round, and the
+ * comparison is strict. See `FONTS.md` 8i and `oracle/probes/stemsize.c`.
  */
 const EXPECTED: Record<string, { stock: number; hairs: number; total: number }> = {
   'cour-hairs': { stock: 144, hairs: 144, total: 288 },
@@ -142,7 +141,7 @@ const EXPECTED: Record<string, { stock: number; hairs: number; total: number }> 
   'times-stacked': { stock: 144, hairs: 144, total: 288 },
   'times-beside': { stock: 144, hairs: 144, total: 288 },
   'cour-hairs-ega': { stock: 144, hairs: 144, total: 288 },
-  'times-hairs-ega': { stock: 141, hairs: 118, total: 288 },
+  'times-hairs-ega': { stock: 144, hairs: 118, total: 288 },
 };
 
 function recordings() {

@@ -2913,8 +2913,42 @@ export class Hinter {
        * the table says, the table wins; where it is far off, the font is doing
        * something the table was not written for and the outline wins. It only
        * applies within one zone -- across two there is nothing to compare.
+       *
+       * **And only where the distance is being rounded.** A `MIRP` with the
+       * round bit clear takes its control value whatever the outline says, at
+       * any size.
+       *
+       * `stemsize` is what says so. Courier New's `w` has a top-left serif
+       * placed by a `MIRP` of `0xf1` -- set `rp0`, no rounding, no minimum
+       * distance -- whose control value is 82 design units against an outline
+       * distance of 97. The font sets its own cut-in, to 85 sixty-fourths, and
+       * the gap between those two grows with the size: 84 sixty-fourths at a
+       * hundred and seventy-nine pixels per em, 86 at a hundred and eighty-four.
+       * Applying the cut-in there moves the serif by a pixel and a third at
+       * every size above the crossing, and Windows does not move it: its serif
+       * sits a constant 82 design units from the stem from a cell of a hundred
+       * and twenty to one of two hundred and fifty-two, on both displays.
+       *
+       * The comparison is also **strict**. `MIAP`'s has always been; this one
+       * was not, and the four cells where they differ are exactly the ones
+       * where the gap lands on the cut-in to the sixty-fourth.
+       *
+       * **Measured** on `stemsize`, 238 records on each of two displays:
+       *
+       *     neither                       223 and 208
+       *     strict comparison alone       223 and 211
+       *     the rounding gate alone       237 and 234
+       *     both                          238 and 238
+       *
+       * and nothing else in the corpus moves: the fabricated cells disagree
+       * about nothing, `glyphs` is 6,046 on each of four displays, `lines`
+       * 2,478 and `plotter` 1,584.
        */
-      if (state.zp0 === state.zp1 && Math.abs(distance - original) >= state.controlCutIn) {
+      const fired =
+        (opcode & 0x04) !== 0 &&
+        state.zp0 === state.zp1 &&
+        Math.abs(distance - original) > state.controlCutIn;
+      if (fired) {
         distance = original;
       }
 
