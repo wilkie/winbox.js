@@ -6661,6 +6661,146 @@ export const FABRICATIONS = [
     },
   },
 
+  /* Twice *what*, asked at a cell that is not four bytes wide.
+   *
+   * `times-reach` and `cour-tall` pin the buffer at a cell eighteen rows tall,
+   * and every glyph they draw sits in a cell narrow enough to pad to four bytes
+   * a row. At that width "twice the cell" and "eight bytes a row of the cell"
+   * are the same number, and `bands` is what says they are not the same rule --
+   * a hundred-row Courier cell is twelve and sixteen bytes across.
+   *
+   * So ask it where the two part. Each glyph carries the same two shapes: a
+   * marker by the baseline, small enough to read in a sixty-four column
+   * bitmap, and a block a thousand two hundred units wide standing well above
+   * the cell, where it is clipped away and never draws. The block cannot be
+   * seen; it can only be counted. If the marker comes back the glyph was
+   * drawn.
+   *
+   * The characters are chosen for their advances and nothing else -- `W` is
+   * 1933 units and the apostrophe 369, five times narrower -- and they all
+   * carry the identical shape, so the glyph's own bitmap is the same for every
+   * one of them at a given size and only the cell differs.
+   *
+   *     eight bytes a row of the cell   nothing is drawn above about
+   *                                     fifty-nine, every character alike
+   *     twice the cell                  `W`, `M` and `A` are drawn at every
+   *                                     size in the sweep, and the narrow
+   *                                     ones come and go as the padding steps
+   *
+   * Recorded against a bare version as well, which is the same marker with no
+   * block at all and must be drawn at every size.
+   */
+  ...[
+    ['times-buffer', true],
+    ['times-buffer-bare', false],
+  ].map(([name, ballast]) => ({
+    name,
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: ballast
+      ? 'a marker by the baseline and an unseen block above the cell, at ten advances'
+      : 'the same marker with no block, as the control',
+
+    edit: (bytes) => {
+      /* Two hundred units tall and sixty wide, which is a few pixels either way
+       * at every size the probe asks for, and it sits on the baseline. */
+      const marker = [
+        [0, 0],
+        [0, 200],
+        [60, 200],
+        [60, 0],
+      ];
+
+      /* And the block: twelve hundred units across, starting above the
+       * ascender -- Times New Roman's `hhea` says 1825 -- so no part of it is
+       * inside the cell and none of it is ever drawn.
+       */
+      const block = [
+        [0, 2200],
+        [0, 2800],
+        [1200, 2800],
+        [1200, 2200],
+      ];
+
+      for (const character of "WMAorIil.'") {
+        setGlyph(bytes, null, glyphFor(bytes, character.charCodeAt(0)), {
+          /* One instruction that changes nothing, so the glyph is hinted rather
+           * than merely scaled; see `times-reach`. */
+          program: [...ops.yAxis()],
+          contours: ballast ? [marker, block] : [marker],
+        });
+      }
+
+      return bytes;
+    },
+  })),
+
+  /* And how big the buffer actually is, which the first sweep never reached.
+   *
+   * `times-buffer` gives every character the same block and finds Windows
+   * refuses none of them at any size -- which is enough to say the buffer is
+   * not two of the character's own cell, and says nothing about how big it is.
+   * The ratio of the glyph's bitmap to the cell's is very nearly constant
+   * across the sweep, because both grow with the size, so one block is one
+   * point on the curve however many sizes it is drawn at.
+   *
+   * So give the ten characters ten different blocks instead, and let the size
+   * sweep test the padding rather than the ratio. The block heights are
+   * assigned in an order deliberately uncorrelated with the advances -- `A`,
+   * the third widest, gets the smallest block and `r`, the fifth narrowest,
+   * the largest -- so a limit that is the face's own cell cuts them in height
+   * order at every size and one that is the character's does not.
+   */
+  {
+    name: 'times-buffer-sweep',
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: 'ten unseen blocks of ten heights, to find where the buffer gives out',
+
+    edit: (bytes) => {
+      const marker = [
+        [0, 0],
+        [0, 200],
+        [60, 200],
+        [60, 0],
+      ];
+
+      /* Two thousand units across, and a top that brackets the limit: the
+       * bitmap is about the buffer at four thousand nine hundred, so these run
+       * from half of that to nearly double.
+       */
+      const TOPS = {
+        A: 2600,
+        l: 3300,
+        I: 4000,
+        W: 4400,
+        '.': 4700,
+        "'": 5000,
+        o: 5400,
+        i: 6000,
+        M: 7000,
+        r: 8500,
+      };
+
+      for (const [character, top] of Object.entries(TOPS)) {
+        setGlyph(bytes, null, glyphFor(bytes, character.charCodeAt(0)), {
+          program: [...ops.yAxis()],
+          contours: [
+            marker,
+            [
+              [0, 2200],
+              [0, top],
+              [2000, top],
+              [2000, 2200],
+            ],
+          ],
+        });
+      }
+
+      return bytes;
+    },
+  },
+
   /* Which of the font's own numbers the limit is twice of.
    *
    * The bars above put it between fifteen sevenths and sixteen sevenths of the

@@ -1510,7 +1510,7 @@ const ADAPTERS: Record<
     const asked = String(args[args.length - 1] ?? '');
     const character = asked.startsWith('#')
       ? String.fromCharCode(parseInt(asked.slice(1), 16))
-      : asked.replace(/'/g, '');
+      : asked.replace(/^'|'$/g, '');
     const extent = GetTextExtent.call(context, hdc, context.lpcstr(character), character.length);
 
     return `advance=${extent & 0xffff},ppem=${metrics.tmHeight - metrics.tmInternalLeading}`;
@@ -1554,7 +1554,7 @@ const ADAPTERS: Record<
     const asked = String(args[args.length - 1]);
     const character = asked.startsWith('#')
       ? String.fromCharCode(parseInt(asked.slice(1), 16))
-      : asked.replace(/'/g, '');
+      : asked.replace(/^'|'$/g, '');
 
     const stock = {
       SYSTEM_FONT: 13,
@@ -1663,7 +1663,15 @@ const ADAPTERS: Record<
       throw new Unimplemented('no font mapped');
     }
 
-    return context.drawTall(context.handles.resolve(handle), String(args[args.length - 1]).replace(/'/g, ''));
+    /* The probe quotes the character it drew, so the apostrophe arrives as
+     * three quotes in a row. Stripping every quote leaves nothing to draw and
+     * the cell comes back blank at every size, which reads as a rasteriser
+     * failure and is a parser one; only the outer pair is punctuation.
+     */
+    return context.drawTall(
+      context.handles.resolve(handle),
+      String(args[args.length - 1]).replace(/^'|'$/g, '')
+    );
   },
 
   /* A whole polyline, drawn as a chain of `LineTo` calls through named points.

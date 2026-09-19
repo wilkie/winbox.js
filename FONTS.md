@@ -16261,25 +16261,25 @@ The other failure -- Windows draws the letter and this draws no ink at all --
 is not about shape or size in the rasteriser at all. GDI refuses to draw a glyph
 whose bitmap will not fit the buffer it keeps for one, and that refusal was
 already measured and implemented, from `times-reach` and `times-wide`: a bar
-reaching thirty-five rows above the baseline in an eighteen-row cell is drawn
-and one reaching thirty-six is not, and a glyph thirty-six pixels across -- eight
+reaching thirty-five rows above the baseline in a sixteen-row cell is drawn and
+one reaching thirty-six is not, and a glyph thirty-six pixels across -- eight
 bytes a row rather than four -- is refused at exactly half as many rows. Both
-say 144 bytes, and it was written down as **eight bytes per row of the cell**.
+say 128 bytes, and it was written down as **eight bytes per row of the cell**.
 
-That is true and it is a coincidence of the instrument. Every recording behind
-it had a cell four bytes wide, and the budget is **twice the cell**: the advance
-by the ascent plus the descent, padded to whole longs, doubled -- which for a
-four-byte cell row *is* eight per row.
+That is true and it is a coincidence of the instrument. At that cell the face is
+fifteen pixels across, so its row pads to four bytes, and *three* different
+rules give the same 128: twice the character's own cell, twice the face's cell,
+and the face's cell with one more long on each row. Nothing in `times-reach`
+separates them.
 
-`bands` is where the two part, because a hundred-row cell is not four bytes
-across. A Courier cell is twelve bytes wide at a hundred and forty pixels and
-sixteen at a hundred and eighty, and the flat eight refuses glyphs Windows
-draws:
+`bands` is where the frozen four gives out, because a hundred-row Courier cell
+is not four bytes across -- twelve at a hundred and forty pixels, sixteen at a
+hundred and eighty -- and the flat eight refuses glyphs Windows draws:
 
-| | rows x bytes | flat 8 x cell | twice the cell | Windows |
-| --- | --- | --- | --- | --- |
-| Courier `E`, h=140 | 95 x 12 = 1,140 | 1,120 -- refused | 3,360 -- drawn | draws it |
-| Courier `E`, h=180 | 123 x 16 = 1,968 | 1,440 -- refused | 5,760 -- drawn | draws it |
+| | rows x bytes | flat 8 x cell | Windows |
+| --- | --- | --- | --- |
+| Courier `E`, h=140 | 95 x 12 = 1,140 | 1,120 -- refused | draws it |
+| Courier `E`, h=180 | 123 x 16 = 1,968 | 1,440 -- refused | draws it |
 
 That is all four stock records and 38 of the 144 `cour-hairs` hairlines, which
 had been counted as a dropout disagreement and were nothing of the kind: with
@@ -16287,18 +16287,97 @@ the buffer right, Courier's hairlines are drawn where they cover a sample column
 and blank where they do not, with dropout control off over the whole sweep, and
 Windows and this agree on every one of the 144.
 
-The multiplier is two because that is the smallest factor fitting what is
-recorded: `times-reach` and `times-wide` pin the ceiling at a cell eighteen rows
-by four bytes, and **nothing recorded refuses a glyph at a large cell**, so two
-is a floor from below and not a measured ceiling. A future instrument that walks
-a glyph's height up at a hundred-row cell would settle it.
+### 8f. `buffer`, which separates the three readings of that ceiling
 
-#### Where that leaves the recordings
+`bands` says the frozen four is wrong and cannot say what is right, so
+`oracle/probes/buffer.c` asks directly. Every glyph of the fabrication carries
+two shapes: a marker by the baseline, small enough to read in a sixty-four
+column bitmap, and a block standing above the ascender, where the cell clips it
+away. **The block is never seen -- it can only be counted.** If the marker comes
+back the glyph was drawn; a blank bitmap means it was refused. The ten
+characters run from `W`, which advances 1933 units, to the apostrophe at 369.
+
+Three recordings, 410 records each, at every cell from thirty to a hundred and
+ninety:
+
+| recording | what the ten glyphs carry |
+| --- | --- |
+| `times-buffer-bare` | the marker alone -- the control, drawn at every size |
+| `times-buffer` | one block for all ten, so only the cell differs |
+| `times-buffer-sweep` | ten blocks of ten heights, to find the ceiling |
+
+**The character's own cell is refuted outright.** In `times-buffer` the ten
+carry an identical shape, and their cells differ by four to one; Windows draws
+every one of them at every size. Twice the character's cell refuses 126 of the
+410 -- at a hundred and ninety the apostrophe's cell allows 3,040 bytes and the
+glyph is 3,872 -- and Windows refuses none.
+
+**The face's cell, twice, is too generous.** `times-buffer-sweep` assigns the
+ten block heights in an order deliberately uncorrelated with the ten advances --
+`A`, the third widest, gets the smallest block and `r`, the fifth narrowest, the
+largest -- so a face-wide limit cuts them in height order at every size and a
+per-character one does not. **They cut in height order at every size below a
+cell of 142**, which settles that much on its own, and the threshold is about
+half what twice the face's cell predicts.
+
+**The ceiling, read off the sweep.** In bytes per row of the cell:
+
+| cell | 30 | 34 to 66 | 70 to 98 | 102 to 134 | 138 |
+| --- | --- | --- | --- | --- | --- |
+| threshold | 8 | 12 | 16 | 20 | 24 |
+| `tmMaxCharWidth` pads to | 4 | 8 | 12 | 16 | 20 |
+
+A long more, in every band. So:
+
+> A glyph is drawn when its bitmap fits the face's own cell with one more long
+> on each row: the ascent plus the descent, by `tmMaxCharWidth` padded to whole
+> longs and given another four bytes.
+
+It is the bounding box and not the widest advance. At a cell of thirty-four the
+box is thirty-three pixels and the widest advance thirty, which pad to eight
+bytes and to four; the recording says twelve, which is the eight and a long.
+
+#### And the sweep stops being monotone, which is an overflow
+
+Above a cell of 142 the height order breaks, and it breaks in a shape no size
+rule has: **the tallest blocks come back** while every shorter one between them
+stays blank. `r`, the tallest of the ten, is refused to a cell of 138 and drawn
+from 142 on; `M`, the second tallest, is refused to 166 and drawn from 170.
+
+Each crosses where its own reach passes **512 rows** -- `r` reaches 506 at 138
+and 519 at 142, `M` reaches 502 at 166 and 513 at 170. Five hundred and twelve
+rows is 32,768 sixty-fourths, which is where a signed sixteen-bit number turns
+over. The height GDI measures is a count of sixty-fourths of a row in sixteen
+bits, and a glyph that reaches further than that wraps to a negative height and
+is always drawn.
+
+It is implemented as the wrap rather than as a size test, so that what is
+reproduced is the arithmetic and not its consequence.
+
+**409 of 410.** The one left is `r` at a cell of a hundred and ninety, which is
+inside the wrap: both sides draw it, and Windows inks all two hundred rows where
+this inks the marker's sixteen. The same character four sizes earlier, equally
+wrapped, inks the marker and nothing else on both sides. What makes the block
+itself appear once the height has gone negative is **not known**, and one cell
+of a deliberate arithmetic overflow is not enough to read it from.
+`test/raster/glyph_buffer_test.ts` holds it where it was measured.
+
+#### A parser bug worth writing down
+
+The apostrophe came back blank on this side at every size of every one of the
+three recordings, including the control that is a marker and nothing else, which
+reads exactly like a rasteriser refusing a glyph. It was the replay adapter. The
+probe writes the character it drew in quotes, so the apostrophe arrives as three
+quotes in a row, and the adapter stripped *every* quote rather than the outer
+pair -- leaving no character to draw. Two other adapters had the same line. A
+recording is only as good as the thing that reads it back.
+
+#### Where that leaves the band recordings
 
 All seven, all 288 records each, stock and hairline: **exact**.
 `test/raster/tall_glyphs_test.ts` holds it where it was measured.
 
-#### The moral
+#### The moral, which 8f then repeated
 
 A recording that is only read is worth less than a recording that is replayed,
 even when replaying it looks certain to agree. The reasoning that it would agree
@@ -16309,6 +16388,12 @@ dropout control stops, and the shape of the buffer that decides whether a glyph
 is drawn at all. Neither is a band. Both had been written down from instruments
 that could not see them: one had never varied the size, the other never had a
 cell wider than four bytes.
+
+And the buffer took a second instrument after that. `bands` could say the old
+reading was wrong and could not say what was right, because everything it draws
+is a real letter in a real cell and the three candidate rules only separate when
+the glyph's bitmap and the face's cell are allowed to move independently. That
+is what a fabrication with a shape nobody can see is for.
 
 ### 8d. The first glyphs drawn on a pixel that is not square
 
@@ -17237,10 +17322,13 @@ and 2,668 on one that is not, both exact with no wrong pixel anywhere.
 
 The seven `bands` recordings are exact as well -- 288 records each, stock faces
 and fabricated hairlines alike, at sixty to a hundred and eighty pixels and a
-hundred rows of ink. Getting the last of them there took the two rules in 8e:
-the glyph buffer is twice the cell rather than eight bytes a row, and a dropout
-in a glyph whose box has not collapsed is not rescued above forty-eight pixels
-per em.
+hundred rows of ink. Getting the last of them there took the two rules in 8e: a
+dropout in a glyph whose box has not collapsed is not rescued above forty-eight
+pixels per em, and the buffer a glyph has to fit is the face's own cell with a
+long to spare on each row rather than a flat eight bytes.
+
+The three `buffer` recordings that pinned the second of those are 1,229 of their
+1,230, and 8f names the one.
 
 `KNOWN_GAPS` is empty.
 

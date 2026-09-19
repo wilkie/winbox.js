@@ -616,9 +616,27 @@ export class Surface {
        * and thirty-six rows in a cell of eighteen, and one reaching 35.55 is
        * refused where one reaching 35.00 is not.
        */
-      const rows = reach.length
+      const raised = reach.length
         ? Math.round(Math.max(...reach.map((point: any) => point.y)) * up)
         : 0;
+
+      /* And it is counted in sixty-fourths of a row, in sixteen signed bits,
+       * so a glyph reaching more than five hundred and twelve rows above the
+       * baseline wraps to a negative height and is always drawn.
+       *
+       * **Recorded**, and it is why the sweep stops being monotone. In
+       * `buffer-times-buffer-sweep` the blocks are ordered by height, and up to
+       * a cell of 138 Windows draws exactly the short ones -- and then the two
+       * tallest blocks of the ten come back, first `r` at 142 and then `M` as
+       * well at 170, while every block between them stays blank. Both cross at
+       * the same place: `r` reaches 506 rows at 138 and 519 at 142, `M` 502 at
+       * 166 and 513 at 170. Five hundred and twelve rows is 32,768
+       * sixty-fourths, which is where a signed sixteen-bit number turns over.
+       *
+       * Written as the wrap rather than as a size test, so that it is the
+       * arithmetic that is being reproduced and not its consequence.
+       */
+      const rows = (((raised + 512) % 1024) + 1024) % 1024 - 512;
 
       /* And what is really being counted is bytes, not rows.
        *
@@ -635,38 +653,54 @@ export class Surface {
 
       const rowBytes = ((columns + 31) >> 5 || 1) * 4;
 
-      /* And what it is compared against is twice the glyph's own cell.
+      /* And what it is compared against is one cell of the *face*, a long wider
+       * than the face is.
        *
-       * The cell is the advance by the ascent plus the descent, padded the same
-       * way -- so the buffer a glyph has to fit in is two cells' worth of
-       * bitmap, which is the obvious thing for a rasteriser that keeps the
-       * shape and its emboldened copy.
+       * The cell is the ascent plus the descent by `tmMaxCharWidth` -- the
+       * font's own bounding box carried across the horizontal size, which is
+       * the width GDI has on hand for a face it has selected -- padded to whole
+       * longs and then given one more. So a glyph has to fit a bitmap of the
+       * widest cell the face can produce, with a long to spare on each row.
        *
-       * This was written `8 * (ascent + descent)` while every recording behind
-       * it had a cell four bytes wide, where the two are the same number: twice
-       * four is eight. `bands` is where they part. A hundred rows tall, a
-       * Courier cell is twelve bytes across at a hundred and forty pixels and
-       * sixteen at a hundred and eighty, and the flat eight refuses glyphs
-       * Windows draws -- 38 of the 144 `cour-hairs` hairlines, and the four
-       * stock records that were the other half of that file's opening note,
-       * `M` and `W` of Times at a hundred and forty and `A` and `M` of Courier
-       * at a hundred and eighty. Every one of them is a glyph whose bitmap is
-       * over eight bytes a row because its cell is.
+       * Two earlier readings of the same ceiling collapse onto this one and
+       * could not be told from it. `times-reach` and `times-wide` measure it at
+       * a cell sixteen rows tall where the face is fifteen pixels across, so
+       * `tmMaxCharWidth` pads to four bytes: a long more is eight, twice the
+       * cell is eight, and eight bytes a row of the cell is eight. All three
+       * say 128 bytes, a glyph reaching thirty-four rows at four bytes is
+       * refused and one thirty-six pixels wide is refused at half as many rows,
+       * and nothing in that instrument moves them apart.
        *
-       * **Measured.** Twice the cell takes all seven `bands` recordings to 288
-       * of 288, stock and hairline alike, and costs nothing anywhere else: the
-       * fabricated corpus disagrees about nothing, `glyphs` is 6,046 of 6,046
-       * on each of four displays, `lines` 2,478 and `plotter` 1,584.
+       * `buffer` is what moves them apart. Ten characters carry an identical
+       * marker by the baseline and a block standing above the ascender, where
+       * the cell clips it away so it can only be counted; the ten block heights
+       * are assigned in an order uncorrelated with the ten advances, and the
+       * sweep runs from a cell of thirty to one of a hundred and ninety.
        *
-       * The multiplier is two because `times-reach` and `times-wide` pin it at
-       * a cell eighteen rows tall and four bytes wide -- refused at thirty-six
-       * rows of four bytes and at eighteen of eight, both 144, against a cell of
-       * 72. Nothing recorded refuses a glyph at a large cell, so two is the
-       * smallest factor that fits what is recorded and not a measured ceiling
-       * from above.
+       *     the character's own cell, twice    refuted: Windows refuses none of
+       *                                        the ten when they share a block
+       *                                        it says are too big
+       *     the face's cell, twice             too generous by about a half at
+       *                                        every size above a cell of
+       *                                        thirty-four
+       *     the face's cell and a long         exact
+       *
+       * The threshold in bytes a cell row, read off the sweep: 8 at a cell of
+       * 30, 12 from 34 to 66, 16 from 70 to 98, 20 from 102 to 134, 24 at 138 --
+       * and `tmMaxCharWidth` pads to 4, 8, 12, 16 and 20 across those same
+       * bands. A long more, every time. It is the box and not the widest
+       * advance: at a cell of thirty-four the box is thirty-three pixels and the
+       * advance thirty, which pad to eight bytes and four, and the recording
+       * says twelve.
+       *
+       * **Measured.** `buffer` is 409 of its 410 records with this and 284 with
+       * the character's own cell; all seven `bands` recordings stay 288 of 288,
+       * the fabricated corpus disagrees about nothing, `glyphs` is 6,046 of
+       * 6,046 on each of four displays, `lines` 2,478 and `plotter` 1,584.
        */
-      const cellBytes = ((font.outlineAdvance(character.charCodeAt(0)) + 31) >> 5 || 1) * 4;
-      const budget = 2 * cellBytes * (font.style.ascent + font.style.descent);
+      const maxWidth = Math.round((outline.boundingWidth * acrossPixels) / outline.unitsPerEm);
+      const cellBytes = ((maxWidth + 63) >> 5 || 1) * 4;
+      const budget = cellBytes * (font.style.ascent + font.style.descent);
 
       if (contours.length && rows * rowBytes < budget) {
         /* An outline face has no bold or italic of its own here -- only the
