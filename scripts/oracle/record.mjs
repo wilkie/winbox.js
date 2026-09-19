@@ -66,6 +66,8 @@ const PER_DISPLAY = new Set([
    * two look like the same probe disagreeing with itself.
    */
   'stemsize',
+  'stemwide',
+  'stemedge',
 ]);
 
 /** Where a probe writes, on the guest and on the host. */

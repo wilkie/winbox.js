@@ -1772,6 +1772,43 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* Arial and Times New Roman above a cell of two hundred and twelve, on a
+   * display whose pixel is not square.
+   *
+   * `stemwide` sweeps the three outline faces every eighth cell from
+   * forty-eight to two hundred and forty-eight on both displays. On a **VGA it
+   * is exact**, 780 of 780, which is the first thing said about stock glyphs
+   * anywhere above forty pixels per em and what says the cut-in rule of 8i
+   * generalises past the one face that found it.
+   *
+   * On an EGA it is exact to a cell of two hundred and twelve and wrong from
+   * two hundred and fourteen, for Arial and Times New Roman and **not for
+   * Courier New**, which is exact at every size the sweep asks. `stemedge`
+   * walks the crossing by twos and puts it between those two cells exactly:
+   * every one of the twenty records at two hundred and twelve agrees and none
+   * of the twenty at two hundred and fourteen does.
+   *
+   * What crosses there is the horizontal size, 255 pixels per em to 257 -- but
+   * that is **correlated and not explanatory**, because Courier New passes two
+   * hundred and fifty-six in the same sweep and stays exact. The vertical size
+   * crosses 192 at the same cell and Courier New passes that too. So it is
+   * something the two faces' programs do and Courier New's does not, at a size
+   * their nearly equal metrics reach together.
+   *
+   * Two readings refused by count on `stemwide`'s 780 EGA records: the size the
+   * program reads being the vertical one rather than the horizontal, 429; and
+   * that size clamped to 255, 681, which is no change at all. A single
+   * different horizontal size does not explain it either -- swept whole by
+   * whole at the first broken cell, the best of them agrees on 10 of 30 where
+   * the right answer would agree on 30.
+   *
+   * Windows draws a shorter glyph than the size asks for there: Arial's `A`
+   * spans 124 rows at a cell of two hundred and twelve and 121 at two hundred
+   * and fourteen, starting five rows lower, while this side's grows.
+   */
+  'stemwide-ega:column': '99 of 780 records, Arial and Times above a cell of 212',
+  'stemedge-ega:column': '98 of 220 records, the same crossing walked by twos',
+
   /* The glyph sweep on an EGA, 895 cells of 6,046.
    *
    * Recorded for the first time here. Nothing had ever drawn a glyph on a

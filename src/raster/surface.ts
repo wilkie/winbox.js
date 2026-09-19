@@ -713,7 +713,6 @@ export class Surface {
           ? this.slant(contours, fitted.scaled ? 1 : scale, ppem, acrossPixels)
           : contours;
 
-        if (process.env.WINBOX_TRACE) console.error(`SIZE ppem=${ppem} across=${acrossPixels} xWhole=${(this._font as any).xWhole} stretch=${stretch}`);
         const inked = fill(slanted, {
           // Hinting hands back pixels; an unhinted outline is still in units.
           scale: fitted.scaled ? 1 : scale,

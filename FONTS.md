@@ -16626,6 +16626,67 @@ in 8g: **record it twice and compare the records**. A third run agreed with the
 second and with `bands` on all fourteen records they share, and the odd one out
 was the EGA data wearing the VGA name.
 
+### 8j. The other two faces, swept the same way
+
+`stemsize` found the cut-in rule of 8i in one face and seven characters, which
+is a thin sample for a rule about the interpreter. `oracle/probes/stemwide.c`
+asks the same question of Arial, Times New Roman and Courier New, ten characters
+each, every eighth cell from forty-eight to two hundred and forty-eight, on both
+displays. 780 records apiece.
+
+**On a VGA it is exact.** 780 of 780, three faces, a cell of forty-eight to one
+of two hundred and forty-eight. That is the first thing said about stock glyphs
+anywhere above forty pixels per em -- the whole recorded corpus is drawn at eight
+to forty -- and it says the cut-in rule generalises well past the face that
+found it.
+
+**On an EGA it is exact to a cell of two hundred and twelve** and wrong from two
+hundred and fourteen, for Arial and Times New Roman and **not for Courier New**,
+which is exact at every size the sweep asks. 681 of 780.
+
+`oracle/probes/stemedge.c` walks the crossing by twos and puts it between those
+two cells exactly:
+
+| cell | 202 to 212 | 214 to 222 |
+| --- | --- | --- |
+| Arial | 10 of 10, every size | 0 of 10, every size but two |
+| Times New Roman | 10 of 10, every size | 0 of 10, every size |
+
+#### What crosses there, and what does not explain it
+
+The horizontal size goes from 255 pixels per em to 257. That is a tempting
+number and it is **correlated rather than explanatory**: Courier New passes two
+hundred and fifty-six in the same sweep -- at a cell of two hundred and sixteen
+it is drawn at two hundred and fifty-nine across -- and stays exact to the end.
+The vertical size crosses 192 at the same cell, and Courier New passes that too.
+
+So it is something Arial's and Times New Roman's programs do and Courier New's
+does not, at a size their nearly equal metrics reach together: both are drawn at
+about a hundred and ninety-three pixels per em at a cell of two hundred and
+fourteen, where Courier New at the same cell is at two hundred and two.
+
+Two readings of the size a program reads, refused by count on the 780 EGA
+records:
+
+| the size `MPPEM` answers with | agreed |
+| --- | --- |
+| **the horizontal one** (what this does) | **681** |
+| the vertical one | 429 |
+| the horizontal one clamped to 255 | 681 -- no change at all |
+
+A single wrong horizontal size does not explain it either. Swept whole by whole
+at the first broken cell, the best of them agrees on 10 of 30 where the right
+answer would agree on 30, so no one number reproduces what Windows draws.
+
+**What Windows does there** is draw a glyph *smaller* than the size asks for:
+Arial's `A` spans 124 rows at a cell of two hundred and twelve and 121 at two
+hundred and fourteen, and starts five rows lower, while this side's grows with
+the cell as it should. Whatever the two faces ask for at that size, Windows
+gives them something short of it.
+
+This is in `KNOWN_GAPS`, with its counts, which is where a measurement that is
+not yet a rule belongs.
+
 ### 8d. The first glyphs drawn on a pixel that is not square
 
 Every glyph ever recorded had been drawn on a VGA. The mapper, the metrics and
@@ -17575,7 +17636,14 @@ square pixel and on one that is not. The five are one cell height of the
 descending EGA sweep, which is the only size either sweep realizes cold, and 8g
 says why that is not a size rule.
 
-`KNOWN_GAPS` is empty.
+`stemwide` sweeps the three outline faces from a cell of forty-eight to one of
+two hundred and forty-eight -- the first question ever asked of stock glyphs
+above forty pixels per em -- and is **780 of 780 on a VGA**.
+
+`KNOWN_GAPS` holds two entries, and they are the same finding twice: Arial and
+Times New Roman on an EGA above a cell of two hundred and twelve, 99 records of
+`stemwide`'s 780 and 98 of `stemedge`'s 220. 8j has the counts and the readings
+already refused. Every other record the harness knows how to replay agrees.
 
 The lesson is worth keeping separately from the fix. Every reading refused on
 the way to this -- the smart dropout placement, the flattening depth, the norm
