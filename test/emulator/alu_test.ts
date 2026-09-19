@@ -1131,7 +1131,9 @@ describe('ALU', () => {
   describe('#div8', () => {
     it('should divide two positive numbers', function () {
       const a = Helper.randomInteger(0x00, 0x7f);
-      const b = Helper.randomInteger(0x00, 0x7f);
+      // From one, not from zero: a zero divisor faults, and `divide_error_test`
+      // is where that is asked for on purpose.
+      const b = Helper.randomInteger(0x01, 0x7f);
       const result = (a / b) | ((a % b) << 8);
       expect(this.alu.div8(a, b)).toEqual(result);
     });
@@ -1154,7 +1156,8 @@ describe('ALU', () => {
   describe('#div16', () => {
     it('should divide two positive numbers', function () {
       const a = Helper.randomInteger(0x0000, 0x7fff);
-      const b = Helper.randomInteger(0x0000, 0x7fff);
+      // From one, as in `div8` above.
+      const b = Helper.randomInteger(0x0001, 0x7fff);
       const result = (a / b) | ((a % b) << 16);
       expect(this.alu.div16(a, b)).toEqual(result);
     });
@@ -1178,7 +1181,9 @@ describe('ALU', () => {
   describe('#idiv8', () => {
     it('should divide two positive numbers', function () {
       const a = Helper.randomInteger(0x00, 0x7f);
-      const b = Helper.randomInteger(0x00, 0x7f);
+      // From one, not from zero: a zero divisor faults, and `divide_error_test`
+      // is where that is asked for on purpose.
+      const b = Helper.randomInteger(0x01, 0x7f);
       const result = (a / b) | ((a % b) << 8);
       expect(this.alu.idiv8(a, b)).toEqual(result);
     });
@@ -1208,7 +1213,8 @@ describe('ALU', () => {
   describe('#idiv16', () => {
     it('should divide two positive numbers', function () {
       const a = Helper.randomInteger(0x0000, 0x7fff);
-      const b = Helper.randomInteger(0x0000, 0x7fff);
+      // From one, as in `div8` above.
+      const b = Helper.randomInteger(0x0001, 0x7fff);
       let result = (this.alu.toSigned16(a) / this.alu.toSigned16(b)) & 0xffff;
       result |= ((this.alu.toSigned16(a) % this.alu.toSigned16(b)) & 0xffff) << 16;
       expect(this.alu.idiv16(a, b)).toEqual(result >>> 0);
@@ -1252,7 +1258,8 @@ describe('ALU', () => {
     });
 
     it('should not affect carry', function () {
-      const flag = !!Helper.randomInteger(0, 1);
+      // Two, not one: the high bound is exclusive, so `(0, 1)` is never true.
+      const flag = !!Helper.randomInteger(0, 2);
       this.alu.cpu.flags.carry = flag;
       const a = Helper.randomInteger(0x00, 0xff);
       this.alu.dec8(a);
@@ -1303,7 +1310,8 @@ describe('ALU', () => {
     });
 
     it('should not affect carry', function () {
-      const flag = !!Helper.randomInteger(0, 1);
+      // Two, not one: the high bound is exclusive, so `(0, 1)` is never true.
+      const flag = !!Helper.randomInteger(0, 2);
       this.alu.cpu.flags.carry = flag;
       const a = Helper.randomInteger(0x0000, 0xffff);
       this.alu.dec16(a);
@@ -1354,7 +1362,8 @@ describe('ALU', () => {
     });
 
     it('should not affect carry', function () {
-      const flag = !!Helper.randomInteger(0, 1);
+      // Two, not one: the high bound is exclusive, so `(0, 1)` is never true.
+      const flag = !!Helper.randomInteger(0, 2);
       this.alu.cpu.flags.carry = flag;
       const a = Helper.randomInteger(0x00, 0xff);
       this.alu.inc8(a);
@@ -1404,7 +1413,8 @@ describe('ALU', () => {
     });
 
     it('should not affect carry', function () {
-      const flag = !!Helper.randomInteger(0, 1);
+      // Two, not one: the high bound is exclusive, so `(0, 1)` is never true.
+      const flag = !!Helper.randomInteger(0, 2);
       this.alu.cpu.flags.carry = flag;
       const a = Helper.randomInteger(0x0000, 0xffff);
       this.alu.inc16(a);

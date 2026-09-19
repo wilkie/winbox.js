@@ -8,7 +8,24 @@ import { random } from './random.js';
 export class Helper {
   static VisibilityMatchers: any;
   /**
-   * Returns a random integer between min (inclusive) and max (exclusive).
+   * Returns a random integer.
+   *
+   * The arguments are the largest first, and **every call site passes them the
+   * other way round** -- `randomInteger(0x00, 0x7f)`. That is not a mistake
+   * that shows: the span goes negative and the result lands in the range the
+   * caller plainly meant, so nothing has ever looked wrong. What it actually
+   * returns, called that way, is the first argument up to **one below** the
+   * second: `randomInteger(0x00, 0x7f)` gives 0x00 to 0x7e.
+   *
+   * Both ends of that are worth knowing. The low bound is reachable, so a
+   * divisor drawn as `randomInteger(0x00, 0x7f)` **can be zero** -- which made
+   * four of the divide tests fault about once in a hundred and twenty-eight
+   * runs, and they now draw from one. The high bound is not reachable, so
+   * `randomInteger(0, 1)` is always 0 and never a coin: the four flag tests
+   * that wanted one ask for `randomInteger(0, 2)`.
+   *
+   * Written down rather than corrected, because every caller in the suite
+   * depends on the behaviour as it is.
    */
   static randomInteger(max, min) {
     max = Math.floor(max);
