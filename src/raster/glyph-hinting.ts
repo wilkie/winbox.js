@@ -3165,7 +3165,26 @@ export class Hinter {
    * about rotated and stretched text, and this draws neither.
    */
   get dropout() {
-    const control = this.scanControl ?? 0;
+    return this.dropoutFrom(this.scanControl);
+  }
+
+  /**
+   * What `prep` alone left for the scan converter.
+   *
+   * A glyph with no program of its own never runs anything that could change
+   * `SCANCTRL`, and it is still scan-converted with whatever `prep` set -- the
+   * setting belongs to the size, not to the glyph. Reading it needs `prep` to
+   * have run, which for such a glyph nothing else makes happen.
+   */
+  get prepDropout() {
+    this.prepare();
+
+    return this.dropoutFrom(this._prepScan ? this._prepScan.control : this.scanControl);
+  }
+
+  /** The rule itself, which both of those ask. */
+  dropoutFrom(value) {
+    const control = value ?? 0;
 
     // Bit 11 turns it off above the size, and outranks bit 8 turning it on.
     if (control & 0x800 && this.ppem > (control & 0xff)) {

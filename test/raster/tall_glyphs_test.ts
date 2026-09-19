@@ -87,6 +87,13 @@ const RECORDINGS = [
   'times-thin-pair',
   'times-stacked',
   'times-beside',
+
+  /* And two of them again on a display whose pixel is not square, which is
+   * where a glyph with no program of its own turned out to be asking the wrong
+   * thing of the scan converter. See the ceilings below.
+   */
+  'cour-hairs-ega',
+  'times-hairs-ega',
 ];
 
 /* Ceilings, and none may rise.
@@ -107,6 +114,25 @@ const RECORDINGS = [
  * without the cap, the four wide hairline recordings drop from 144 of 144 to 70
  * and `cour-hairs` to 77.
  */
+/* The two EGA recordings are not exact, and the two things short of it are
+ * named rather than chased.
+ *
+ * **A face's first size is not scan-converted like the rest** (8g): whatever is
+ * decided when a face is first realized at a size is cached for that size for
+ * the life of the process, and on a non-square pixel a cold realization gets no
+ * dropout control. `bands` realizes Courier New at four sizes before it reaches
+ * Times New Roman, so Times' first size -- sixty -- is the cold one, and 26 of
+ * its 36 records are a rescue Windows did not make. There is no per-process
+ * state here to model that with. `cour-hairs-ega` cannot see it: Courier New
+ * gives dropout control up above forty-four pixels per em, so cold and warm
+ * agree for it at every size the probe asks.
+ *
+ * **And three of stock Courier New at a hundred and eighty**, where `g`, `n`
+ * and `w` come out one or two columns across from where Windows puts them. Both
+ * sides draw the letter; it is the hinted run under a stretch at a hundred and
+ * fifty-seven pixels per em, and the same face at the same size on a VGA is
+ * exact, as is stock Times New Roman at all four sizes on the EGA.
+ */
 const EXPECTED: Record<string, { stock: number; hairs: number; total: number }> = {
   'cour-hairs': { stock: 144, hairs: 144, total: 288 },
   'times-hairs': { stock: 144, hairs: 144, total: 288 },
@@ -115,6 +141,8 @@ const EXPECTED: Record<string, { stock: number; hairs: number; total: number }> 
   'times-thin-pair': { stock: 144, hairs: 144, total: 288 },
   'times-stacked': { stock: 144, hairs: 144, total: 288 },
   'times-beside': { stock: 144, hairs: 144, total: 288 },
+  'cour-hairs-ega': { stock: 144, hairs: 144, total: 288 },
+  'times-hairs-ega': { stock: 141, hairs: 118, total: 288 },
 };
 
 function recordings() {

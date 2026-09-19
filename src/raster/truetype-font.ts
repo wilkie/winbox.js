@@ -802,8 +802,16 @@ export class TrueTypeFont {
       program = { composite: true, at: range.start, length: 0 };
     }
 
+    /* Nothing to run, and still a `SCANCTRL` to obey.
+     *
+     * `prep` sets the scan converter up once for the size, and a glyph with no
+     * program of its own is converted with that setting like any other. Without
+     * this the caller has no answer and falls back to dropout control being on,
+     * which is wrong for every face that gives it up at a size -- Courier New
+     * above forty-four pixels per em, Arial above sixteen.
+     */
     if (!program) {
-      return { contours, hinted: false, scaled: false };
+      return { contours, hinted: false, scaled: false, dropout: this.prepDropout(ppem, stretch) };
     }
 
     try {
@@ -910,6 +918,29 @@ export class TrueTypeFont {
   }
 
   /** The interpreter for a size, built once and kept. */
+  /**
+   * What the font's `prep` asks of the scan converter at a size.
+   *
+   * For a glyph that has a program this comes back with the fitted outline;
+   * this is the same answer for one that has none.
+   *
+   * @param {number} ppem - The size in pixels per em.
+   * @param {number} stretch - The horizontal size over the vertical one.
+   * @returns {boolean|undefined} Whether dropout control is on, or undefined
+   *                              where the font has no answer.
+   */
+  prepDropout(ppem, stretch = 1) {
+    if (!ppem) {
+      return undefined;
+    }
+
+    try {
+      return this.hinterAt(ppem, true, stretch).prepDropout;
+    } catch {
+      return undefined;
+    }
+  }
+
   hinterAt(ppem, roundPhantoms = true, stretch = 1) {
     this._hinters = this._hinters ?? new Map();
 

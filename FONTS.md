@@ -16485,6 +16485,75 @@ the VGA one was a scrambled printout, and it cost a probe and several recordings
 to find that out. Comparing the records themselves rather than a rendering of
 them would have said so immediately.
 
+### 8h. A glyph with no program is still asked what `prep` decided
+
+Running the band recordings on an EGA opened a gap that had been invisible on a
+square pixel, and closing it is one line of principle.
+
+`prep` runs once for a size and sets `SCANCTRL` for everything drawn at it. A
+glyph that has a program of its own may change that for itself -- Arial Bold
+Italic's `ø` does -- and the next glyph starts from `prep`'s value again. A
+glyph with **no** program never runs anything, and is scan-converted with
+`prep`'s value like any other.
+
+This asked `prep` only where a glyph had a program to run. Where it did not,
+`hintedOutline` came back with no answer at all and the caller fell back to
+dropout control being **on**. That is wrong for every face that gives it up at a
+size: Courier New above forty-four pixels per em, Arial above sixteen.
+
+It had never shown, because on a square pixel the forty-eight pixel cap of 8e
+refuses the same rescues for a different reason. 8g takes that cap off on a
+stretched pixel, and the fallback was left holding the question on its own.
+
+| recording | before | after |
+| --- | --- | --- |
+| `bands-cour-hairs-ega` | 252 of 288 | **288 of 288** |
+| `bands-times-hairs-ega` | 255 of 288 | 259 of 288 |
+
+The Courier recording closes completely, at every one of its four sizes. What
+made it legible was that the fabricated bars are sub-pixel, so whether one is
+drawn is a precise question about one coordinate. Traced at a cell of a hundred,
+the thirty-six bars sit at four sub-pixel phases, and **Windows' answer is
+exactly what this side's own coordinates predict** -- a bar is drawn when its
+span covers a sample column and blank when it does not, to the sixty-fourth:
+
+| phase | bar spans | centre | drawn |
+| --- | --- | --- | --- |
+| 42 | 40.875 to 41.109 .. 41.719 | 41.5 | the two widest only |
+| 128 | 46.078 to 46.328 .. 46.922 | 46.5 | all but the two narrowest |
+| 170 | 48.625 to 48.859 .. 49.469 | none | **none of the six** |
+| 213 | 51.219 to 51.469 .. 52.078 | 51.5 | all but the narrowest |
+
+Thirteen of those are blank in Windows and were drawn here, and all thirteen are
+the ones whose span stops just short of a centre. So the coordinates were never
+in question and neither was the coverage rule; the ink was a **rescue**, made
+because nobody had asked Courier New's `prep` whether dropout control was still
+on. It is not, above forty-four pixels per em, and at a cell of a hundred the
+size is ninety-three.
+
+The horizontal size that produced those coordinates is the **whole** one,
+`xWhole`, not the fractional `xPpem`. Swapping them was tried on the same two
+recordings and refused: stock Times New Roman falls from 36 of 36 to 26, 31 and
+30 at cells of ninety, a hundred and twenty and a hundred and forty.
+
+#### What is left in those two recordings
+
+Two things, both named in `test/raster/tall_glyphs_test.ts` rather than chased.
+
+**Times New Roman's first size, 26 records.** That is 8g's cold realization:
+`bands` draws four sizes of Courier New before it reaches Times, so Times' first
+size is the cold one and Windows rescues nothing at it. There is no per-process
+state here to model that with. `cour-hairs-ega` cannot see the same effect,
+because Courier New has given dropout control up at every size the probe asks
+and cold and warm agree for it.
+
+**Three of stock Courier New at a hundred and eighty.** `g`, `n` and `w` come
+out one or two columns across from where Windows puts them -- one left, one
+right, one two left -- so it is not a shift but three separate placements. Both
+sides draw the letter. It is the hinted run under a stretch at a hundred and
+fifty-seven pixels per em, and it is narrow: the same face at the same size on a
+VGA is exact, and stock Times New Roman is exact at all four sizes on the EGA.
+
 ### 8d. The first glyphs drawn on a pixel that is not square
 
 Every glyph ever recorded had been drawn on a VGA. The mapper, the metrics and
@@ -17419,6 +17488,12 @@ long to spare on each row rather than a flat eight bytes.
 
 The three `buffer` recordings that pinned the second of those are 1,229 of their
 1,230, and 8f names the one.
+
+The nine `bands` recordings now include two on an EGA: `cour-hairs-ega` is 288
+of 288 and `times-hairs-ega` 259, the difference being 8g's cold first
+realization and three glyphs of stock Courier New at a hundred and eighty. 8h is
+what closed the rest of them -- a glyph with no program of its own is still
+scan-converted with what `prep` decided.
 
 The seven `dropsize` and `dropdown` recordings are 2,851 of their 2,856, on a
 square pixel and on one that is not. The five are one cell height of the
