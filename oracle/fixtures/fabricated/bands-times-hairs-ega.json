@@ -1,0 +1,1742 @@
+{
+  "probe": "bands",
+  "display": "ega",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "egahires",
+    "displayDescription": "EGA, 640x350, 16 colours"
+  },
+  "font": "times-hairs",
+  "records": [
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffff0808131212111110100f0f0e0e0d0d0d0c0c0b0b0a0a09090808070706060202ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffff06060b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0606ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffff06060b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0606ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'K'",
+      "result": "ffffffffffffffffffffffffff06060b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0606ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'M'",
+      "result": "ffffffffffffffffffffffffff0303070707070707070707070707070707070707070707070707070707070303ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'N'",
+      "result": "ffffffffffffffffffffffffff05050a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0606ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'R'",
+      "result": "ffffffffffffffffffffffffff06060b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0606ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'S'",
+      "result": "ffffffffffffffffffffffffff13100e0d0c0b0a0a0a0a0a0b0b0c0e11151c202223232408080808080808080812ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffff0303060606060707070707070808080808080909090909090a0a0a0a0a0a0b0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'X'",
+      "result": "ffffffffffffffffffffffffff040408090a0b0c0d0e0f10111213141514131211100f0e0d0c0b0a0908070404ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'Z'",
+      "result": "ffffffffffffffffffffffffff0c0c0c0c0c0c0c0c0c0c1b1a19181716151413121211100f0e0d0c0b0a0a0a0affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff130e0b0b20202121212121110d0b0a08080707070708080a0b0effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'b'",
+      "result": "ffffffffffffffffffffff0404090909090909090909090909090909090909090909090909090909090909040415ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'d'",
+      "result": "ffffffffffffffffffffff1f1f24242424242424120f0d0b0a090808070706060606060607070808090a0b0d0f12ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff130f0d0c0b0a09080807070707070707080809090a0b0d0e1014ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'f'",
+      "result": "ffffffffffffffffffffff191615131312121212120a0a12121212121212121212121212121212121212120909ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff120f0d0c0a0a090808070707070707070808090a0a0c0d0f122222222221201f1c0f0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'j'",
+      "result": "ffffffffffffffffff181818181818ffffffffffff08081c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1b1b19180909ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'k'",
+      "result": "ffffffffffffffffffffff0a0a0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0a0affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff0e020207070707070707070707070707070707070707070202ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff1506060b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0606ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff13100e0c0b0a09090808070707070707080809090a0b0c0e1013ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff130f0d0c0b0b0b0b0c0d0e11181e212223090909090909090912ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'t'",
+      "result": "ffffffffffffffffffffffffff0f0f0f0f0f0f0f0f07070f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f1010111316ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffff04040707070808080909090a0a0a0a0b0b0b0c0c0c0d0d0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffff06060a0a0b0c0c0d0e0e0f1010111212131414151616171817171615151414130707ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'0'",
+      "result": "ffffffffffffffffffff1412100f0e0d0c0c0b0b0b0a0a0a0a0a0a0a0a0a0a0a0a0a0a0b0b0b0c0c0d0e0f101114ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'1'",
+      "result": "ffffffffffffffffffff1814100c0a0b1717171717171717171717171717171717171717171717171717170b0bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'2'",
+      "result": "ffffffffffffffffffff13100d0c0b0a09090922222221201f1e1d1c1a19181615141211100e0d0c0a09080808ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'3'",
+      "result": "ffffffffffffffffffff130f0d0b0a0a222323232322211f1d14141b1e202122232424242424232209090a0c0f13ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'4'",
+      "result": "ffffffffffffffffffffff1b1a191818171615141413121111100f0e0e0d0c0b0a0a0a0a1d1d1d1d1d1d1d1515ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'5'",
+      "result": "ffffffffffffffffffffff0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d22232324242424242423232209090b0c0f13ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'6'",
+      "result": "ffffffffffffffffffff1d191715141211100f0f0e0d0d0d0c0c0c0c0c0c0c0c0c0c0d0d0d0e0e0f101011131517ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'7'",
+      "result": "ffffffffffffffffffffff090909090a212120201f1f1e1e1e1d1d1c1c1c1b1b1a1a1919191818171717161616ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'8'",
+      "result": "ffffffffffffffffffff13100f0d0c0b0b0a0a0a0a0a0b0b0c0d0f110e0d0c0b0b0a0a0a0a0a0a0b0b0c0d0f1013ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=60,weight=400,italic=0,'9'",
+      "result": "ffffffffffffffffffff1411100f0e0d0c0c0b0b0b0b0b0b0c0c0d0e0e10111424242423232221201f1d1b0b0b0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffff0e0d0d0e1f1f1e1e1d1d1c1c1b1b1a1a19191818171716161515141413131212111110100f0f0e0e0d0d0c0c0b0b0a0a0903020203ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffff0a09090a1212121212121212121212121212121212121212121212121212121212121212121212121212121212121212120a09090affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffff0a09090a1212121212121212121212121212121212121212121212121212121212121212121212121212121212121212120a09090affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'K'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffff0a09090a1212121212121212121212121212121212121212121212121212121212121212121212121212121212121212120a09090affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'M'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffff040303040a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a04030304ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'N'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffff060505060e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e08070708ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'R'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffff0a09090a1212121212121212121212121212121212121212121212121212121212121212121212121212121212121212120a09090affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'S'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff211c1a181615141312111110101010101011111112131416181b1f242c323537393a3b3b3c3c0e0d0d0d0d0d0d0d0d0d0d0d0d0d0d0e20ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffff050404050909090a0a0a0a0a0a0a0b0b0b0b0b0b0b0c0c0c0c0c0c0c0d0d0d0d0d0d0d0e0e0e0e0e0e0e0f0f0f0f0f0f0f10101010ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'X'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffff070606070c0d0e0f1011121314161718191a1b1c1d1e1f20212221201f1e1d1c1b1a191817161514131211100f0e0d0c0b07060607ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'Z'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffff11111111111111111111111111111111111229292827262524232221201f1e1d1c1b1a19181716151414131211100f0e0e0e0e0e0effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff211b1612111112343535363636363636361d18151311100e0d0d0c0c0b0b0b0b0b0c0c0d0e0f10121418ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'b'",
+      "result": "ffffffffffffffffffffffffffffffffff070606070f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0706060724ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'d'",
+      "result": "ffffffffffffffffffffffffffffffffff323131323a3a3a3a3a3a3a3a3a3a3a3a1e1a17151312100f0e0e0d0c0b0b0a0a0a09090909090909090a0a0a0b0b0c0d0d0e0f10121315171a1effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff201c191715141211100f0e0e0d0c0c0c0b0b0b0b0b0b0b0b0c0c0c0d0d0e0e0f101112131516181a1d22ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'f'",
+      "result": "ffffffffffffffffffffffffffffffffff2b2725232221201f1f1e1e1e1e1e1e1e1e111010111e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e0f0e0e0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1e1a181614131211100f0e0d0d0c0c0c0b0b0b0b0b0b0b0b0b0c0c0c0d0e0e0f101112131416181a1e383838383838373736353432302d18171718ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffffff27272727272727272727ffffffffffffffffffff0d0c0c0d2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2d2d2c2c2b2928250e0d0d0effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'k'",
+      "result": "ffffffffffffffffffffffffffffffffff0f0e0e0f171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717170f0e0e0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff19040303040b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b04030304ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff240a09090a111111111111111111111111111111111111111111111111111111111111111109080809ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff211d1a181614131211100f0e0d0d0c0c0c0b0b0b0b0b0b0b0b0c0c0c0d0d0e0f101112131416181a1d21ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff201b18161413121211111111111213131516191d252e32353738393a0f0e0e0e0e0e0e0e0e0e0e0e0f1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'t'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff19181818181818181818181818180c0b0b0c1818181818181818181818181818181818181818181818181818181819191a1a1b1d1e2125ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff070606070b0b0c0c0c0c0d0d0d0e0e0e0e0f0f0f1010101011111112121212131313141414141515ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0c0b0b0c1010111212131414151616171818191a1a1b1c1c1d1e1e1f1f202121222323242525262726262524242323222121201f1f1e0c0b0b0cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'0'",
+      "result": "ffffffffffffffffffffffffffffffff221f1d1b1918171615141413131212111111111010101010101010101010101010101010101010101111111212121313141515161718191b1c1f22ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'1'",
+      "result": "ffffffffffffffffffffffffffffffff27231f1a161210101125252525252525252525252525252525252525252525252525252525252525252525252525252525252525252511101011ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'2'",
+      "result": "ffffffffffffffffffffffffffffffff201c19171514131211100f0f0e0e0e0f38383837373635343332302f2e2c2b2a282725242321201e1d1b1a191716141311100f0d0c0c0c0c0c0cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'3'",
+      "result": "ffffffffffffffffffffffffffffffff211c191614121110101138383939393939383837363533312e222121222a2f323435373839393a3a3b3b3b3b3b3a3a39380e0e0e0f101215181b20ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'4'",
+      "result": "ffffffffffffffffffffffffffffffffff2b2a292828272625252423222221201f1f1e1d1c1c1b1a19191817161615141313121110100f0f0f0f0f2f2f2f2f2f2f2f2f2f2f2f23222223ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'5'",
+      "result": "ffffffffffffffffffffffffffffffffff141414141414141414141414141414141414141414141414141414153738393a3a3a3b3b3b3b3b3b3b3b3a3a3939380f0e0e0f10121416191c20ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'6'",
+      "result": "ffffffffffffffffffffffffffffffff312c29262422201f1d1c1b1a191817171615151414131313131212121212121212121212121313131314141415151617171819191a1c1d1e212327ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'7'",
+      "result": "ffffffffffffffffffffffffffffffffff0e0e0e0e0e0e0e0e0e0f35353434333333323231313030302f2f2e2e2e2d2d2c2c2c2b2b2a2a29292928282727272626252525242423232324ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'8'",
+      "result": "ffffffffffffffffffffffffffffffff201d1a1817151413131211111010101010101011111213131516181a1c1917161413131211111110101010101010111111121314151617181a1d21ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=100,weight=400,italic=0,'9'",
+      "result": "ffffffffffffffffffffffffffffffff221e1c1a191817161515141413131212121212121212131313141515161718191a1c1f223b3b3b3a3a3939383736353433312f2e2b281212121417ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff16141414162d2d2c2c2b2b2a2a29292828272726262525242423232222212120201f1f1e1e1d1d1c1c1b1b1a1a1a19191818171716161515141413131212111110100f0f0e0e0604040406ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0909090b17171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717170b0909090bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0909090b17171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717170b0909090bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'K'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0909090b17171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717170b0909090bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'M'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff07050505070e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0503030305ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'N'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff080606060814141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414140b0909090bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'R'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0909090b17171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717171717170b0909090bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'S'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffff2e292523211f1d1c1b1a1918171716161615151515151515161616171718191a1c1d1f2225282d333affffffffffffffffffffffffff12111111111111111111111111111111111111111112282dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff06040404060c0c0c0c0d0d0d0d0d0d0d0e0e0e0e0e0e0e0f0f0f0f0f0f0f101010101010101111111111111212121212121213131313131313141414141414141515151515151616161616ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'X'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0b0b0b0d131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f30313231302f2e2d2c2b2a292827262524232221201f1e1d1c1b1a1918171615141312110a0909090bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'Z'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1818181818181818181818181818181818181818181818193c3b3a39383736353433323130302f2e2d2c2b2a29282726252524232221201f1e1d1c1b1a1a19181716151414141414141414ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2e27221d191716161618ffffffffffffffffffffffffff2a231f1c1a18161514131211100f0f0f0e0e0e0e0e0e0e0f0f10101112131416181a1d22ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'b'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff07060505061313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131307050505060732ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'d'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2b2623201e1c1a191716151413121111100f0f0e0e0e0d0d0d0c0c0c0c0c0c0c0c0c0d0d0d0e0e0e0f0f101111121314151617191a1c1e2023262bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2d282522201e1c1a1918171615141312111110100f0f0f0f0e0e0e0e0e0e0e0e0e0f0f0f0f101011111213131415161718191b1c1e1f2224272a30ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'f'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff3e39363432312f2e2d2d2c2b2b2a2a2a2a2a2a2a2a2a2a2a2a18161616182a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a1614141416ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2a2522201d1c1a19171615141312121110100f0f0e0e0e0e0d0d0d0d0d0d0d0d0d0e0e0e0e0f0f10101112121314151617191a1c1e2022252affffffffffffffffffffffffffffffffffffff3e21201f2021ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffff3636363636363636363636363636ffffffffffffffffffffffffffff1412121214ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3e3e3d3c3a3936331311111113ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'k'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff1412121214202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020201412121214ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff221f05030303050e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0503030305ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff322e0e0c0c0c0e1717171717171717171717171717171717171717171717171717171717171717171717171717171717171717170c0a0a0a0cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2e292623211f1d1b1a1917161514141312111110100f0f0f0f0e0e0e0e0e0e0e0e0e0f0f0f0f1010111112131414151617191a1b1d1f212326292effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2d2824211f1d1c1a191918181717171717181819191a1b1d1e212429303bffffffffffffffffff141313131313131313131313131313131315262dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'t'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2120202020202020202020202020202020202020100e0e0e10202020202020202020202020202020202020202020202020202020202020202020202020202020212121222323242627292b2e33ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff09070707090e0e0f0f0f101010101111111212121213131314141415151515161616171717181818181919191a1a1a1a1b1b1b1c1c1c1dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0f0e0e0e10151616171818191a1a1b1c1c1d1e1e1f2020212222232424252626272828292a2a2b2c2c2d2e2e2f303031323233343435363535343333323131302f2f2e2e2d2c2c2b2a2a29100e0e0e10ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'0'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffff302c292725242221201f1e1d1c1b1b1a1919181818171717161616161615151515151515151515151515151515151515151515151515151516161616171717181819191a1a1b1c1c1d1e1f202122232527292c30ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'1'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffff37332f2b26221e1a1616151617333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333331816161618ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'2'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffff2e292523201f1d1c1a19181716161514141313131314ffffffffffffffffffffffffffffffffffff3f3e3d3b3a383736343331302f2d2c2b292826252422211f1e1c1b1a1817151413111010101010101010ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'3'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffff2f2a2623201e1c1b1918181819ffffffffffffffffffffffffffffffffffffffffff3e2e2d2d2d2f393effffffffffffffffffffffffffffffffffffffffffffffffffffffffff141313131416181a1d2023272dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'4'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff3c3b3a39393837363635343333323130302f2e2d2d2c2b2a2a292827272625242423222121201f1e1e1d1c1b1b1a19181817161515141414151515ffffffffffffffffffffffffffffffff3432323234ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'5'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1dffffffffffffffffffffffffffffffffffffffffffffffffffffffff15131313141517191b1d1f2225282effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'6'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff3c39363432302e2d2b2a282726252423222120201f1e1e1d1d1c1c1b1b1b1a1a1a1a1919191919191919191919191919191a1a1a1a1a1b1b1b1c1c1c1d1d1e1e1f1f202121222324252627282a2b2d303337ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'7'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffff14141414141414141414141516ffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3f3e3e3e3d3d3c3c3c3b3b3a3a3a393938383737373636353535343433333332323131313132ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'8'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffff2f2a27252322201f1e1d1c1b1a19191818181717171717171717181818191a1a1b1c1d1e20212325272523211f1e1c1b1a19191817171616161515151515151515161616171718191a1a1b1d1e1f212224272a2fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=140,weight=400,italic=0,'9'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffff312c2a282624232221201f1e1e1d1c1c1b1b1a1a1a1a1919191919191919191a1a1a1b1b1b1c1d1d1e1f202122232426282a2d31ffffffffffffffffffffffffffffffffffffffffffff3e3c391b1919191a1d21ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1a19181818191a39393838373736363535343433333232313130302f2f2e2e2d2d2c2c2b2b2a2a29292828272726262525242423232222212120201f1f1e1e1d1d1c1c1b1b1a1a19191818171716161515141413131212111107060505050607ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0c0b0b0b0c0d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d0d0c0b0b0b0c0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0c0b0b0b0c0d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d0d0c0b0b0b0c0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'K'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0c0b0b0b0c0d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d0d0c0b0b0b0c0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'M'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff080706060607081212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121206050404040506ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'N'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff09080707070809191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919190d0c0b0b0b0c0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'R'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0c0b0b0b0c0d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d0d0c0b0b0b0c0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'S'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3c36322f2d2b29272624232221201f1f1e1d1d1c1c1c1b1b1b1b1b1b1b1b1b1c1c1c1d1d1e1f1f2021232426282a2c2f33373cffffffffffffffffffffffffffffffffffffff18171616161616161616161616161616161616161616161616161718353cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff070605050506070f0f0f1010101010101011111111111112121212121212131313131313131414141414141515151515151516161616161617171717171717181818181818181919191919191a1a1a1a1a1a1a1b1b1b1b1b1b1c1c1c1c1c1c1cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'X'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0f0e0d0d0d0e0f1718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3e3d3c3b3a393837363534333231302f2e2d2c2b2a292827262524232221201f1e1d1c1b1a19181716150d0c0b0b0b0c0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'Z'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1f20ffffffffffffffffffffffffff3f3e3d3c3b3a39393837363534333231302f2e2d2c2b2a29282827262524232221201f1e1d1c1b1a1919191919191919191919ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b342e2824201d1c1c1c1d1effffffffffffffffffffffffffffffffff362e2a2623211f1d1c1a19181716151413131212121111111111111111121213131414151617191a1b1d1f22262cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'b'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff090807070708091919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919090807070708093cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'d'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff38322e2b29262422211f1e1d1b1a1918171716151414131312121111111010100f0f0f0f0f0f0f0f0f0f0f1010101011111212131314141516171718191a1b1d1e1f21222426292b2e3238ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3a34302d2a2826242321201e1d1c1b1a19181716161514141313131212121211111111111111111111111212121213131414151516161718191a1b1c1d1e1f2022232527282b2d3033373effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'f'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3e3d3c3b3a39383837373736363636363636363636363636361e1d1c1c1c1d1e3636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636361c1b1a1a1a1b1cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff36312d2a2826242221201e1d1c1b1a19181716161515141413131212121211111111111111111111111212121213131414151516161718191a1b1c1d1e2021232426282b2d3137ffffffffffffffffffffffffffffffffffffffffffffffffffffff29282727272829ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff18171616161718ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff18171616161718ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'k'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff19181717171819292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292919181717171819ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2c280504030303040511111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111105040303030405ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3c11100f0f0f10111d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d0f0e0d0d0d0e0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3d3733302d2b2827252322201f1e1d1c1b1a1918171716161515141413131313121212121212121212121213131313141415151616171718191a1b1c1d1e1f2022232527282b2d3033373dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b34302d2a282624232120201f1e1e1e1d1d1d1d1d1d1e1e1f1f202122232526292b2f353dffffffffffffffffffffffffff1a1918181818181818181818181818181818181818191a343affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'t'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2b2a292929292929292929292929292929292929292929292914121111111214292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292a2a2a2b2b2c2d2e2e30313335373a3dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0b0a0909090a0b12121313131414141415151516161616171717181818181919191a1a1a1a1b1b1b1c1c1c1c1d1d1d1d1e1e1e1f1f1f1f20202021212121222222232323232424ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff131211111112131a1b1c1c1d1e1e1f2020212222232424252626272828292a2a2b2c2c2d2e2e2f3030313232333434353636373838393a3a3b3c3c3d3e3e3fffffffffffffffffffffffffffffffff3f3e3e3d3c3c3b3a3a393938373736353513121111111213ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'0'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3e393633312f2e2c2b2a292827262524232322212120201f1f1e1e1e1d1d1d1d1c1c1c1c1c1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1c1c1c1c1c1d1d1d1e1e1e1f1f20202121222323242525262728292a2b2c2d2f313336393effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'1'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3c37332f2b26221e1c1b1b1b1c1dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1e1d1c1c1c1d1effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'2'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b35322f2c2a2826242322211f1f1e1d1c1b1b1a191918181818191affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3d3c3a393836353332302f2e2c2b292826252422211f1e1c1b1a18171514141414141414141414ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'3'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3d3733302d2a2826242321201f1e1e1e1f20ffffffffffffffffffffffffffffffffffffffffffffffffffffff3c3b3a3a3a3b3cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff191817171718191a1c1e202325282b2f343affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'4'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3e3d3d3c3b3a39393837363635343333323130302f2e2d2d2c2b2a2a292827272625242423222121201f1e1e1d1c1b1a1a1919191919191919ffffffffffffffffffffffffffffffffffffffffffff3f3e3e3e3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'5'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222324ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff191817171718191a1c1d1f212325282a2d30353bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'6'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3e3c3a393736343332312f2e2d2d2c2b2a29282827272625252424232323222222212121212120202020202020202020202020202020202121212121222222222323232424242525262627272828292a2a2b2c2d2e2e2f3132333436383a3c3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'7'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1919191919191919191919191919191a1bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3f3f3e3e3e3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'8'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3d3834322f2d2c2a292726252423222121201f1f1f1e1e1e1d1d1d1d1d1d1d1d1e1e1e1f1f1f2021222223242527282a2c2d3032302d2b2a28262524232221201f1f1e1d1d1c1c1c1c1b1b1b1b1b1b1b1b1b1c1c1c1d1d1e1e1f1f2021222324252628292b2d2f3134373dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Courier New\",h=180,weight=400,italic=0,'9'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3a373432302f2e2c2b2a292827272625252423232222222121212120202020202020202020212121212222232324242525262728292a2b2c2d2f303235373a3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff21202020212224272bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'K'",
+      "result": "ffffffffffffffffff16161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'M'",
+      "result": "ffffffffffffffffff16161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'N'",
+      "result": "ffffffffffffffffff16161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'R'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'S'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'X'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'Z'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'b'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'d'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'f'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'j'",
+      "result": "ffffffffffffffffff19191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'k'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'t'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'0'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'1'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'2'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'3'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'4'",
+      "result": "ffffffffffffffffff1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'5'",
+      "result": "ffffffffffffffffff1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'6'",
+      "result": "ffffffffffffffffff1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'7'",
+      "result": "ffffffffffffffffff1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'8'",
+      "result": "ffffffffffffffffff1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=60,weight=400,italic=0,'9'",
+      "result": "ffffffffffffffffff1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffff2121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffff2121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffff2121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'K'",
+      "result": "ffffffffffffffffffffffffffff2121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'M'",
+      "result": "ffffffffffffffffffffffffffff2121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'N'",
+      "result": "ffffffffffffffffffffffffffff2121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'R'",
+      "result": "ffffffffffffffffffffffffffff2323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'S'",
+      "result": "ffffffffffffffffffffffffffff2323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffff2323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'X'",
+      "result": "ffffffffffffffffffffffffffff2323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'Z'",
+      "result": "ffffffffffffffffffffffffff23232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffff23232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'b'",
+      "result": "ffffffffffffffffffffffffffff2525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'d'",
+      "result": "ffffffffffffffffffffffffffff2525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffff25252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'f'",
+      "result": "ffffffffffffffffffffffffff25252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffff25252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffff25252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'k'",
+      "result": "ffffffffffffffffffffffffff27272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffff27272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffff27272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffff27272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffff27272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'t'",
+      "result": "ffffffffffffffffffffffffff27272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffff29292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffff29292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'0'",
+      "result": "ffffffffffffffffffffffffff29292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'1'",
+      "result": "ffffffffffffffffffffffffff29292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'2'",
+      "result": "ffffffffffffffffffffffffff29292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'3'",
+      "result": "ffffffffffffffffffffffffff29292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929292929ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'4'",
+      "result": "ffffffffffffffffffffffffffff2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'5'",
+      "result": "ffffffffffffffffffffffffffff2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'6'",
+      "result": "ffffffffffffffffffffffffffff2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'7'",
+      "result": "ffffffffffffffffffffffffffff2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'8'",
+      "result": "ffffffffffffffffffffffffffff2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=90,weight=400,italic=0,'9'",
+      "result": "ffffffffffffffffffffffffffff2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffff2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffff2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffff2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'K'",
+      "result": "ffffffffffffffffffffffffffffffff2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'M'",
+      "result": "ffffffffffffffffffffffffffffffff2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'N'",
+      "result": "ffffffffffffffffffffffffffffffff2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'R'",
+      "result": "ffffffffffffffffffffffffffffffffff2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'S'",
+      "result": "ffffffffffffffffffffffffffffffff2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffff2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'X'",
+      "result": "ffffffffffffffffffffffffffffffff2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'Z'",
+      "result": "ffffffffffffffffffffffffffffffff2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffff2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'b'",
+      "result": "ffffffffffffffffffffffffffffffffff3131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'d'",
+      "result": "ffffffffffffffffffffffffffffffff31313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffff31313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'f'",
+      "result": "ffffffffffffffffffffffffffffffff31313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffff31313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffffffffff31313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'k'",
+      "result": "ffffffffffffffffffffffffffffffffff3434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffff34343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffff34343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffff34343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffff34343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'t'",
+      "result": "ffffffffffffffffffffffffffffffff34343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffff3737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffff3737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'0'",
+      "result": "ffffffffffffffffffffffffffffffff37373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'1'",
+      "result": "ffffffffffffffffffffffffffffffff37373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'2'",
+      "result": "ffffffffffffffffffffffffffffffff37373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'3'",
+      "result": "ffffffffffffffffffffffffffffffff37373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'4'",
+      "result": "ffffffffffffffffffffffffffffffffff3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'5'",
+      "result": "ffffffffffffffffffffffffffffffffff3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'6'",
+      "result": "ffffffffffffffffffffffffffffffff3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'7'",
+      "result": "ffffffffffffffffffffffffffffffff3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'8'",
+      "result": "ffffffffffffffffffffffffffffffff3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=120,weight=400,italic=0,'9'",
+      "result": "ffffffffffffffffffffffffffffffff3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'E'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'K'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'M'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'N'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'R'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'S'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'X'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'Z'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'b'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'d'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'f'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'j'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'k'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'m'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'t'",
+      "result": "ffffffffffffffffffffffffffffffffffffffff3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'y'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'0'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'1'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'2'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'3'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'4'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'5'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'6'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'7'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'8'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=140,weight=400,italic=0,'9'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "tall glyphs, to ask whether a band boundary breaks a rescued stroke"
+    }
+  ]
+}

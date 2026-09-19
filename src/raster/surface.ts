@@ -713,6 +713,7 @@ export class Surface {
           ? this.slant(contours, fitted.scaled ? 1 : scale, ppem, acrossPixels)
           : contours;
 
+        if (process.env.WINBOX_TRACE) console.error(`SIZE ppem=${ppem} across=${acrossPixels} xWhole=${(this._font as any).xWhole} stretch=${stretch}`);
         const inked = fill(slanted, {
           // Hinting hands back pixels; an unhinted outline is still in units.
           scale: fitted.scaled ? 1 : scale,
@@ -729,8 +730,10 @@ export class Surface {
 
           /* The scan converter needs the size as well as the scale: above
            * forty-eight pixels per em it stops rescuing a dropout in a glyph
-           * whose box has not collapsed. See `fillWalked`. */
+           * whose box has not collapsed -- and only on a square pixel, which is
+           * what `across` is here to say. See `fillWalked`. */
           ppem,
+          across: acrossPixels,
           /* A glyph Windows is slanting for us keeps every row it had upright.
            *
            * **Measured**, and it is an invariant rather than a tendency: across

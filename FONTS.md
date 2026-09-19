@@ -16248,7 +16248,9 @@ So the rule this implements, in `glyph-raster`:
 > rescued at any size.
 
 Whether the size that matters is the vertical one or the horizontal one under a
-stretch is **not known**: every recording behind it is a square pixel.
+stretch was not known when this was written -- every recording behind it is a
+square pixel. 8g answers it by recording the same sweep on an EGA, and the
+answer is neither: the cap is a square pixel's and a stretch turns it off.
 
 **It costs nothing and it is load-bearing.** With it the fabricated corpus
 disagrees about nothing at all, `glyphs` is 6,046 of 6,046 on each of four
@@ -16394,6 +16396,94 @@ reading was wrong and could not say what was right, because everything it draws
 is a real letter in a real cell and the three candidate rules only separate when
 the glyph's bitmap and the face's cell are allowed to move independently. That
 is what a fabrication with a shape nobody can see is for.
+
+### 8g. The cap is a square pixel's, and the first realization is not like the rest
+
+Two things came out of running `dropsize` on an EGA, and only one of them is
+about size.
+
+#### A stretch turns the cap off
+
+8e says a run no sample column covers is not rescued above forty-eight pixels
+per em, and ends by saying it is not known whether the size that matters is the
+vertical one or the horizontal one under a stretch, because every recording
+behind it is a square pixel.
+
+It is neither. On an EGA, where the horizontal size is four thirds of the
+vertical, **nothing stops**: Times New Roman rescues every one of the twelve
+bars at every height to seventy, which is fifty-one pixels per em down the page
+and sixty-eight across. Both are well past forty-eight, and the bare-bar control
+is drawn at every size on both displays, so the probe is looking where the bar
+is.
+
+The three readings, counted on the two EGA recordings, 840 records:
+
+| the cap is on | agreed |
+| --- | --- |
+| the vertical size, whatever the pixel | 325 and 330 |
+| the horizontal size | 244 and 249 |
+| **the vertical size, and only on a square pixel** | **420 and 415** |
+
+So the cap applies where the pixel is square and not otherwise. What a stretch
+does to make it not apply is **not read**. It is not the font asking: `SCANCTRL`
+has bits for rotated and stretched text and Times New Roman sets none of them --
+its value is `0x17c`, which is bit eight and a threshold of a hundred and
+twenty-four and nothing else.
+
+The five records short of everything are `dropdown`'s largest height, and they
+are the other finding.
+
+#### The first size a face is realized at is not scan-converted like the rest
+
+`oracle/probes/dropdown.c` is `dropsize` walked downward, so every size is
+realized having seen only larger ones. On a VGA the two sweeps are **identical,
+record for record**. On an EGA they differ at exactly one cell height out of
+thirty-five -- seventy, which is the first size the descending sweep asks for.
+
+Cold, that size draws only the bars that actually cover a sample column. Warm,
+it rescues all twelve.
+
+`oracle/probes/scanleak.c` was written to find what "warm" means, and the way it
+found it was by elimination. It measures the same twelve bars at eight heights
+after each of several preparations, and none of these moves the answer at all:
+
+- **the font drawn before it** -- nothing, Courier New at a cell of twenty,
+  Courier New at a hundred and eighty, Arial at a hundred and eighty: identical,
+  which rules out `SCANCTRL` leaking from one face's `prep` into the next;
+- **the whole of what `bands` does first** -- four Courier New fonts at sixty to
+  a hundred and eighty, thirty-six glyphs through each: identical;
+- **the order of the sizes** -- the disputed height first or seventh: identical;
+- **one font for twelve characters against one font each**: identical;
+- **sweeping every smaller size of the same face first**: identical.
+
+What does move it is moving that sweep **in front of the first measurement**.
+The disputed height then rescues, and so does every later request for it --
+including the ones in the blocks that had reported it blank before the reorder.
+So it is not the state at the moment of drawing: whatever is decided is decided
+when a face is first realized at a size, and it is cached per size for the life
+of the process.
+
+It is per face rather than per process. `bands` on an EGA realizes Courier New
+at four sizes before it reaches Times New Roman, and Times New Roman's first
+size is still the cold one.
+
+**This is a caveat about instruments, not only a curiosity.** Two probes drawing
+the same glyph, from the same file, at the same size, on the same display can
+disagree, and which answer a recording holds depends on the order of its own
+loops. The implementation models none of it -- there is no per-process state
+here to model it with -- so the five cold records are the five
+`test/raster/dropout_size_test.ts` does not claim.
+
+#### And a correction to how this was nearly read
+
+The trail started from an apparent contradiction between `bands` and `dropsize`
+on a VGA that **was not there**. The comparison printed each recording's
+characters in object-key order, and the thirty-six character set `bands` draws
+ends in digits -- which JavaScript orders first, ahead of the letters. The two
+recordings agree on all twelve records they share. The EGA disagreement is real;
+the VGA one was a scrambled printout, and it cost a probe and several recordings
+to find that out. Comparing the records themselves rather than a rendering of
+them would have said so immediately.
 
 ### 8d. The first glyphs drawn on a pixel that is not square
 
@@ -17329,6 +17419,11 @@ long to spare on each row rather than a flat eight bytes.
 
 The three `buffer` recordings that pinned the second of those are 1,229 of their
 1,230, and 8f names the one.
+
+The seven `dropsize` and `dropdown` recordings are 2,851 of their 2,856, on a
+square pixel and on one that is not. The five are one cell height of the
+descending EGA sweep, which is the only size either sweep realizes cold, and 8g
+says why that is not a size rule.
 
 `KNOWN_GAPS` is empty.
 

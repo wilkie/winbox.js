@@ -391,6 +391,7 @@ export function fillWalked(contours, options) {
     stubs = true,
     lean = 0,
     ppem = 0,
+    across = 0,
   } = options;
 
   const pixels = new Uint8Array(width * height);
@@ -884,10 +885,26 @@ export function fillWalked(contours, options) {
      * wide hairline recordings fall from 144 of 144 to 70, and `cour-hairs`
      * from 144 to 77.
      *
-     * Whether the size that matters is this one or the horizontal one under a
-     * stretch is **not known**: every recording behind it is a square pixel.
+     * **And it is a square pixel's rule.** That was recorded afterwards, by
+     * running the same sweep on an EGA, where the horizontal size is four
+     * thirds of this one: nothing stops. Times keeps rescuing every one of the
+     * twelve bars at every height to seventy, which is fifty-one pixels per em
+     * down the page and sixty-eight across -- both well past forty-eight.
+     *
+     * So the cap is not a threshold on either size, and the three readings that
+     * would make it one are refused by count on the two EGA recordings, 840
+     * records:
+     *
+     *     this size, uncapped by the pixel   325 and 330
+     *     the horizontal size                244 and 249
+     *     capped only on a square pixel      420 and 415
+     *
+     * The five are `dropdown`'s largest height and are not this rule; see 8g.
+     * What a stretch does to make the cap not apply is **not read** -- the
+     * font's own `SCANCTRL` has bits for stretched text and Times New Roman
+     * does not set them, so this is GDI's or the scaler's and not the font's.
      */
-    if (!narrow && ppem >= 48) {
+    if (!narrow && ppem >= 48 && across === ppem) {
       continue;
     }
 
