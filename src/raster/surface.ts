@@ -635,7 +635,38 @@ export class Surface {
 
       const rowBytes = ((columns + 31) >> 5 || 1) * 4;
 
-      const budget = 8 * (font.style.ascent + font.style.descent);
+      /* And what it is compared against is twice the glyph's own cell.
+       *
+       * The cell is the advance by the ascent plus the descent, padded the same
+       * way -- so the buffer a glyph has to fit in is two cells' worth of
+       * bitmap, which is the obvious thing for a rasteriser that keeps the
+       * shape and its emboldened copy.
+       *
+       * This was written `8 * (ascent + descent)` while every recording behind
+       * it had a cell four bytes wide, where the two are the same number: twice
+       * four is eight. `bands` is where they part. A hundred rows tall, a
+       * Courier cell is twelve bytes across at a hundred and forty pixels and
+       * sixteen at a hundred and eighty, and the flat eight refuses glyphs
+       * Windows draws -- 38 of the 144 `cour-hairs` hairlines, and the four
+       * stock records that were the other half of that file's opening note,
+       * `M` and `W` of Times at a hundred and forty and `A` and `M` of Courier
+       * at a hundred and eighty. Every one of them is a glyph whose bitmap is
+       * over eight bytes a row because its cell is.
+       *
+       * **Measured.** Twice the cell takes all seven `bands` recordings to 288
+       * of 288, stock and hairline alike, and costs nothing anywhere else: the
+       * fabricated corpus disagrees about nothing, `glyphs` is 6,046 of 6,046
+       * on each of four displays, `lines` 2,478 and `plotter` 1,584.
+       *
+       * The multiplier is two because `times-reach` and `times-wide` pin it at
+       * a cell eighteen rows tall and four bytes wide -- refused at thirty-six
+       * rows of four bytes and at eighteen of eight, both 144, against a cell of
+       * 72. Nothing recorded refuses a glyph at a large cell, so two is the
+       * smallest factor that fits what is recorded and not a measured ceiling
+       * from above.
+       */
+      const cellBytes = ((font.outlineAdvance(character.charCodeAt(0)) + 31) >> 5 || 1) * 4;
+      const budget = 2 * cellBytes * (font.style.ascent + font.style.descent);
 
       if (contours.length && rows * rowBytes < budget) {
         /* An outline face has no bold or italic of its own here -- only the
@@ -661,6 +692,11 @@ export class Surface {
            * An unhinted outline has no answer, so it keeps the default.
            */
           dropout: fitted.dropout ?? true,
+
+          /* The scan converter needs the size as well as the scale: above
+           * forty-eight pixels per em it stops rescuing a dropout in a glyph
+           * whose box has not collapsed. See `fillWalked`. */
+          ppem,
           /* A glyph Windows is slanting for us keeps every row it had upright.
            *
            * **Measured**, and it is an invariant rather than a tendency: across

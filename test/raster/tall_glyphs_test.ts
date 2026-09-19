@@ -15,30 +15,42 @@
  * "agree by construction", and that a test which cannot fail is worth less than
  * the recording it is made from.
  *
- * It does not agree by construction. It fails, and the failures are two things
- * the band question was silent about: four stock records this draws as nothing
+ * It did not agree by construction. It failed, and the failures were two things
+ * the band question was silent about: four stock records this drew as nothing
  * at all, and a disagreement about which sub-pixel strokes dropout control
- * rescues at fifty to a hundred and twenty pixels per em.
+ * rescues at fifty to a hundred and twenty pixels per em. Both are now closed,
+ * and each turned out to be a rule of its own.
  *
- * Five more fabrications were made to corner the second of those, all the same
- * bars with a different companion, and between them they isolate it exactly.
- * Windows rescues a sub-pixel bar **when and only when the glyph's box collapses
- * in x**:
+ * **The blank records were a buffer, not a shape.** A glyph too big for the
+ * rasteriser's buffer is not drawn, and this measured that buffer as eight
+ * bytes per row of the cell -- true, but only because every recording behind it
+ * had a cell four bytes wide. It is twice the cell, and at a hundred rows tall
+ * a cell is twelve and sixteen bytes across. See `Surface.outlineText`.
  *
- *     times-bare-hairs   the bar alone                            144 of 144
- *     times-stacked      a second contour above it, same columns  144 of 144
- *     times-near-hairs   a block a hundred units across            70 of 144
- *     times-hairs        a block eleven hundred units across       70 of 144
- *     times-thin-pair    a second sub-pixel bar, which never draws 70 of 144
- *     times-beside       a block on the bar's own rows             70 of 144
+ * **The rescues stop at forty-eight pixels per em.** Five more fabrications
+ * were made to corner that one, all the same bars with a different companion,
+ * and between them they say Windows rescues a sub-pixel bar only when the
+ * glyph's box collapses in x:
+ *
+ *     times-bare-hairs   the bar alone                            rescued
+ *     times-stacked      a second contour above it, same columns  rescued
+ *     times-near-hairs   a block a hundred units across           refused
+ *     times-hairs        a block eleven hundred units across      refused
+ *     times-thin-pair    a second sub-pixel bar, which never draws refused
+ *     times-beside       a block on the bar's own rows            refused
  *
  * `times-stacked` is the one that settles it: two contours, and rescued every
  * time, because the companion sits in the same columns and leaves the box one
  * column wide. It is not the contour count, not whether the companion draws,
  * not whether it shares scanlines, and not how far away it is.
  *
- * This side agrees on both collapsed-box recordings, 144 of 144, and makes 74
- * rescues Windows refuses in each of the other four. See `FONTS.md` 8e.
+ * A sixth, `dropsize`, then swept the bar itself -- its width, its phase, its
+ * height, its position, an arm on it, and the height of the box around it --
+ * and found the answer turns on none of them and on the size alone: the same
+ * bar is rescued at fifty-four device rows and refused at fifty-five, which is
+ * forty-seven pixels per em and forty-eight, for two different box heights.
+ *
+ * All seven recordings are exact. See `FONTS.md` 8e.
  */
 
 'use strict';
@@ -60,6 +72,10 @@ const FONTS = 'oracle/build/fonts';
  * control on to a hundred and twenty-four pixels per em -- which is where the
  * question can actually be asked.
  *
+ * Courier's hairlines are drawn all the same, and that is not a rescue: with
+ * dropout control off the bar is drawn where it covers a pixel centre and not
+ * where it does not, and Windows and this agree on every one of the 144.
+ *
  * Each recording also draws the *other*, unmodified face at the same sizes, so
  * every run carries its own control: 288 records, half of them a stock face.
  */
@@ -75,36 +91,30 @@ const RECORDINGS = [
 
 /* Ceilings, and none may rise.
  *
- * **The stock faces are all but four.** Times New Roman and Courier New, drawn
- * at sixty to a hundred and eighty pixels and a hundred rows tall, agree on 140
- * of 144 records each. That is the result that answers the banding question
- * from this side: a glyph drawn in one pass, with no bands at all, reproduces
- * Windows at ten times the size anything else in the corpus asks for.
+ * **Every record of every recording.** Times New Roman and Courier New, stock
+ * and with sub-pixel hairlines written into them, drawn at sixty to a hundred
+ * and eighty pixels and a hundred rows tall, agree on all 288 records of each
+ * of the seven files. That is the banding question answered from this side: a
+ * glyph drawn in one pass, with no bands at all, reproduces Windows at ten
+ * times the size anything else in the corpus asks for, and dropout control
+ * behaves the same across what would have been a seam.
  *
- * The four are `M` and `W` of Times at a hundred and forty and `A` and `M` of
- * Courier at a hundred and eighty, and all four have the same shape -- Windows
- * draws the glyph and this draws **nothing at all**, no ink in any of the
- * sixty-four columns on any of the two hundred rows. They are the widest
- * letters at the largest size each face is asked for, which is a lead and not
- * yet a reason.
- *
- * **The hairlines are what is really open**, and they are not the band boundary
- * either. Windows leaves 74 of the 144 `times-hairs` records blank and this
- * draws a stroke in every one of them; where the two disagree in `cour-hairs`
- * it is 38 the other way -- Windows draws a stroke this leaves blank -- and 27
- * that differ in some other way. At fifty-two pixels per em and up, with
- * `SCANCTRL` measured on and a stroke a quarter of a pixel wide, Windows is
- * refusing rescues this makes and making rescues this refuses, and no rule
- * already in `FONTS.md` predicts which.
+ * The two rules that got the last of them here are the buffer in
+ * `Surface.outlineText` -- twice the cell, not eight bytes a row -- and the cap
+ * in `glyph-raster`, which stops rescuing a dropout above forty-eight pixels
+ * per em in a glyph whose box has not collapsed. Each is load-bearing: without
+ * the buffer, 38 of the `cour-hairs` hairlines and four stock records are blank;
+ * without the cap, the four wide hairline recordings drop from 144 of 144 to 70
+ * and `cour-hairs` to 77.
  */
 const EXPECTED: Record<string, { stock: number; hairs: number; total: number }> = {
-  'cour-hairs': { stock: 142, hairs: 61, total: 288 },
-  'times-hairs': { stock: 142, hairs: 70, total: 288 },
-  'times-bare-hairs': { stock: 142, hairs: 144, total: 288 },
-  'times-near-hairs': { stock: 142, hairs: 70, total: 288 },
-  'times-thin-pair': { stock: 142, hairs: 70, total: 288 },
-  'times-stacked': { stock: 142, hairs: 144, total: 288 },
-  'times-beside': { stock: 142, hairs: 70, total: 288 },
+  'cour-hairs': { stock: 144, hairs: 144, total: 288 },
+  'times-hairs': { stock: 144, hairs: 144, total: 288 },
+  'times-bare-hairs': { stock: 144, hairs: 144, total: 288 },
+  'times-near-hairs': { stock: 144, hairs: 144, total: 288 },
+  'times-thin-pair': { stock: 144, hairs: 144, total: 288 },
+  'times-stacked': { stock: 144, hairs: 144, total: 288 },
+  'times-beside': { stock: 144, hairs: 144, total: 288 },
 };
 
 function recordings() {

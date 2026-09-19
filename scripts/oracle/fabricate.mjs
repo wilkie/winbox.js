@@ -4469,6 +4469,162 @@ export const FABRICATIONS = [
     ];
   })(),
 
+  /* What about the bar itself decides it.
+   *
+   * Six recordings say the rescue turns on the glyph's box collapsing in `x`
+   * and on nothing about the bar's company -- not the contour count, not
+   * whether the companion draws, not whether it shares scanlines, not how far
+   * away it is. But "the box is wide" cannot be the whole rule: applied on its
+   * own it costs 5,980 fabricated cells, because most of section 6 is rescues
+   * in glyphs whose box is wide. Something about *these* bars is refused, and
+   * every one of them so far has been the same bar -- eighteen hundred design
+   * units tall, spanning the whole glyph, dead vertical.
+   *
+   * So vary the bar and hold everything else. The width is fixed at four units
+   * -- a quarter of a pixel at the largest size here and refused at every phase
+   * in every wide recording -- and the phase at nought. What sweeps instead is
+   * six heights against six positions: the bar slides from the bottom of the
+   * old span to the top, so a short one is asked at the bottom edge of the box,
+   * in the middle, and at the top, and a full-height one is the control that
+   * repeats six times.
+   *
+   * `times-heights` carries the same far ballast the refused recordings use, so
+   * the box is wide. `times-heights-bare` is the identical sweep with nothing
+   * else in the glyph, which gives each cell's column and says the bar is drawn
+   * when it is alone -- without it a blank cell cannot be told from a bar that
+   * fell outside the bitmap.
+   */
+  ...(() => {
+    const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+    const HEIGHTS = [100, 200, 400, 800, 1400, 1800];
+    const PLACES = [0, 1, 2, 3, 4, 5];
+    const LOW = -300;
+    const SPAN = 1800;
+    const WIDTH = 4;
+
+    const sweep = (ballast) => (bytes) => {
+      for (let index = 0; index < WIDE.length; index++) {
+        const height = HEIGHTS[index % HEIGHTS.length];
+        const place = PLACES[Math.floor(index / HEIGHTS.length) % PLACES.length];
+        const left = 600;
+
+        /* `place` slides the bar through what room its height leaves, so nought
+         * is flush with the bottom of the old span and five with the top. */
+        const bottom = LOW + Math.round((place * (SPAN - height)) / 5);
+
+        const bar = [
+          [left, bottom],
+          [left, bottom + height],
+          [left + WIDTH, bottom + height],
+          [left + WIDTH, bottom],
+        ];
+
+        const contours = ballast ? [bar, ballast()] : [bar];
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, contours, program: [] });
+        setBearing(bytes, glyph, left);
+      }
+
+      return bytes;
+    };
+
+    /* The same block the refused recordings carry, well below and well across. */
+    const far = () => [
+      [1700, -700],
+      [1700, -500],
+      [1900, -500],
+      [1900, -700],
+    ];
+
+    return [
+      {
+        name: 'times-heights',
+        from: 'TIMES.TTF',
+        as: 'TIMES.TTF',
+        describe: 'six bar heights against six positions, in a glyph whose box is wide',
+        edit: sweep(far),
+      },
+      {
+        name: 'times-heights-bare',
+        from: 'TIMES.TTF',
+        as: 'TIMES.TTF',
+        describe: 'the same sweep with nothing else in the glyph, to name each bar',
+        edit: sweep(null),
+      },
+    ];
+  })(),
+
+  /* The bar with an arm, which is the one thing left that it could be.
+   *
+   * `times-heights` rules out the bar's own size and place: in a glyph whose box
+   * is wide, a quarter-pixel bar is refused at every height from three device
+   * rows to a hundred and eight and at every position from flush with the bottom
+   * of the box to flush with the top -- a hundred and forty-four cells, not one
+   * drawn -- while the same sweep alone is a hundred and forty-four of a hundred
+   * and forty-four.
+   *
+   * So it is not the box alone, which section 6 refutes outright, and it is not
+   * the bar's extent. What is left is what the bar is *attached* to.
+   * `cour-stubs` already says something about this from the other end: the same
+   * sub-pixel post with an arm on it is drawn where the bare post is not, and
+   * an armed post is a post whose box does not collapse -- so Windows rescues a
+   * sub-pixel stroke in a wide glyph when the stroke has an arm, and refuses one
+   * when the wide part of the glyph is somewhere else entirely.
+   *
+   * This asks it directly and at ten times the size. The bar is the same bar,
+   * and it grows an arm partway up -- one contour, so the arm is part of the
+   * stroke rather than company. Six arm lengths sweep from a fifth of a pixel,
+   * where the arm is as sub-pixel as the bar and can make no run of its own,
+   * to twenty-five pixels; six positions slide the arm from the bottom of the
+   * bar to the top. If the long arms bring the rescue back and the short ones do
+   * not, the missing term is that the stroke has to have real ink somewhere.
+   */
+  {
+    name: 'times-armed',
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: 'the hairline bar with an arm of six lengths at six heights, one contour',
+
+    edit: (bytes) => {
+      const WIDE = 'ABEKMNRSWXZabdefgjkmnostwy0123456789';
+      const ARMS = [20, 60, 150, 300, 600, 1000];
+      const LOW = -300;
+      const HIGH = 1500;
+      const WIDTH = 4;
+      const THICK = 200;
+
+      for (let index = 0; index < WIDE.length; index++) {
+        const arm = ARMS[index % ARMS.length];
+        const place = Math.floor(index / ARMS.length) % 6;
+        const left = 600;
+        const foot = LOW + Math.round((place * (HIGH - LOW - THICK)) / 5);
+
+        /* Up the left side, across the top, down the right to the arm, out
+         * along it and back, then down to the foot -- one contour wound the way
+         * the plain bar is.
+         */
+        const shape = [
+          [left, LOW],
+          [left, HIGH],
+          [left + WIDTH, HIGH],
+          [left + WIDTH, foot + THICK],
+          [left + WIDTH + arm, foot + THICK],
+          [left + WIDTH + arm, foot],
+          [left + WIDTH, foot],
+          [left + WIDTH, LOW],
+        ];
+
+        const glyph = glyphFor(bytes, WIDE.charCodeAt(index));
+
+        setGlyph(bytes, null, glyph, { width: 0, height: 0, contours: [shape], program: [] });
+        setBearing(bytes, glyph, left);
+      }
+
+      return bytes;
+    },
+  },
+
   /* A flat shelf between two scanlines, in a glyph that has scanlines.
    *
    * The bar font asked whether Windows inks a horizontal stroke that misses

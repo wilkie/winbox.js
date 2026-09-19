@@ -16136,7 +16136,7 @@ Courier at a hundred and eighty, and all four are the same shape: Windows draws
 the letter -- 82 to 96 rows of ink -- and this draws **nothing at all**, no ink
 in any of the sixty-four columns on any of the two hundred rows. They are the
 widest letters at the largest size each face is asked for, which is a lead and
-not a reason.
+not a reason. It turned out to be one; see *a buffer, not a shape* below.
 
 **The hairlines are the rest**, and they are not the band boundary either. At
 these sizes a sub-pixel stroke is entirely dropout control's to place, and the
@@ -16208,22 +16208,95 @@ box collapses in `x` skips the stub check -- reached from a second direction, at
 ten times the size, with the confound removed. This side has it right on both
 collapsed-box recordings, 144 of 144 each.
 
-#### And the other half, which is still open
+#### And the other half: the bar itself, swept
 
 When the box does not collapse, this side's stub check runs and *passes*, so it
-makes 74 rescues in each of the four wide recordings that Windows does not. The
+made 74 rescues in each of the four wide recordings that Windows does not. The
 reference's check passes too, so whatever refuses them is not the check as
 written.
 
-The strong form of the measurement was tried and **refused outright**: making a
-horizontal rescue only where the box collapses is 26,414 fabricated cells of
-32,394 with 19,904 wrong pixels, 2,330 of the 2,668 that are not square, and
-5,554 of the recorded 6,046. Horizontal rescues plainly do happen in glyphs
-whose box is wide -- most of section 6 is them -- so the rule that refuses these
-bars is narrower than "the box is wide" and this instrument cannot see its other
-term.
+The strong form of the measurement was tried first and **refused outright**:
+making a horizontal rescue only where the box collapses is 26,414 fabricated
+cells of 32,394 with 19,904 wrong pixels, 2,330 of the 2,668 that are not
+square, and 5,554 of the recorded 6,046. Horizontal rescues plainly do happen in
+glyphs whose box is wide -- most of section 6 is them -- so the rule that
+refuses these bars is narrower than "the box is wide".
 
-`test/raster/tall_glyphs_test.ts` holds all of it where it was measured.
+What had never been varied was **the size**. Every glyph of the recorded corpus
+is drawn at eight to forty pixels per em and dropout control plainly works
+there; every cell of `bands` is fifty-two and up and it plainly does not. So
+`oracle/probes/dropsize.c` draws the same bar at every height from sixteen to
+seventy in twos, and then one at a time across the crossing -- twelve bars at
+each size, against both the fabrication that is the bar alone and the one that
+carries a ballast, so the first is the control that says the bar is where the
+probe is looking. 420 records.
+
+The ink stops between **fifty-four device rows and fifty-five**, which is
+**forty-seven pixels per em and forty-eight**. The bare bar is drawn at every
+size in the sweep, as it should be; the ballasted one is drawn to fifty-four and
+blank from fifty-five on. Two fabrications with box heights of 2,200 and 1,800
+units cross at the same place, so the quantity is the size and not the glyph.
+
+It is not the font's own control. `SCANCTRL` says forty-four for Courier New and
+a hundred and twenty-four for Times New Roman -- eighty pixels apart -- and both
+faces stop here.
+
+So the rule this implements, in `glyph-raster`:
+
+> A run that no sample column covers is rescued only below forty-eight pixels
+> per em, unless the glyph's box has collapsed in `x`, in which case it is
+> rescued at any size.
+
+Whether the size that matters is the vertical one or the horizontal one under a
+stretch is **not known**: every recording behind it is a square pixel.
+
+**It costs nothing and it is load-bearing.** With it the fabricated corpus
+disagrees about nothing at all, `glyphs` is 6,046 of 6,046 on each of four
+displays, `lines` 2,478 and `plotter` 1,584; without it the four wide hairline
+recordings fall from 144 of 144 to 70 apiece and `cour-hairs` to 77.
+
+#### And the four blank records are a buffer, not a shape
+
+The other failure -- Windows draws the letter and this draws no ink at all --
+is not about shape or size in the rasteriser at all. GDI refuses to draw a glyph
+whose bitmap will not fit the buffer it keeps for one, and that refusal was
+already measured and implemented, from `times-reach` and `times-wide`: a bar
+reaching thirty-five rows above the baseline in an eighteen-row cell is drawn
+and one reaching thirty-six is not, and a glyph thirty-six pixels across -- eight
+bytes a row rather than four -- is refused at exactly half as many rows. Both
+say 144 bytes, and it was written down as **eight bytes per row of the cell**.
+
+That is true and it is a coincidence of the instrument. Every recording behind
+it had a cell four bytes wide, and the budget is **twice the cell**: the advance
+by the ascent plus the descent, padded to whole longs, doubled -- which for a
+four-byte cell row *is* eight per row.
+
+`bands` is where the two part, because a hundred-row cell is not four bytes
+across. A Courier cell is twelve bytes wide at a hundred and forty pixels and
+sixteen at a hundred and eighty, and the flat eight refuses glyphs Windows
+draws:
+
+| | rows x bytes | flat 8 x cell | twice the cell | Windows |
+| --- | --- | --- | --- | --- |
+| Courier `E`, h=140 | 95 x 12 = 1,140 | 1,120 -- refused | 3,360 -- drawn | draws it |
+| Courier `E`, h=180 | 123 x 16 = 1,968 | 1,440 -- refused | 5,760 -- drawn | draws it |
+
+That is all four stock records and 38 of the 144 `cour-hairs` hairlines, which
+had been counted as a dropout disagreement and were nothing of the kind: with
+the buffer right, Courier's hairlines are drawn where they cover a sample column
+and blank where they do not, with dropout control off over the whole sweep, and
+Windows and this agree on every one of the 144.
+
+The multiplier is two because that is the smallest factor fitting what is
+recorded: `times-reach` and `times-wide` pin the ceiling at a cell eighteen rows
+by four bytes, and **nothing recorded refuses a glyph at a large cell**, so two
+is a floor from below and not a measured ceiling. A future instrument that walks
+a glyph's height up at a hundred-row cell would settle it.
+
+#### Where that leaves the recordings
+
+All seven, all 288 records each, stock and hairline: **exact**.
+`test/raster/tall_glyphs_test.ts` holds it where it was measured.
 
 #### The moral
 
@@ -16231,7 +16304,11 @@ A recording that is only read is worth less than a recording that is replayed,
 even when replaying it looks certain to agree. The reasoning that it would agree
 by construction was sound about the *band* question and silent about everything
 else the same records happen to answer, and the records answered two more
-questions the moment anything was made to reproduce them.
+questions the moment anything was made to reproduce them -- a size at which
+dropout control stops, and the shape of the buffer that decides whether a glyph
+is drawn at all. Neither is a band. Both had been written down from instruments
+that could not see them: one had never varied the size, the other never had a
+cell wider than four bytes.
 
 ### 8d. The first glyphs drawn on a pixel that is not square
 
@@ -17158,6 +17235,13 @@ four; `plotter` is 1,584 on each and exact on all four; `lines` is 2,478 on each
 and exact on all four; the fabricated corpus is 32,394 cells on a square pixel
 and 2,668 on one that is not, both exact with no wrong pixel anywhere.
 
+The seven `bands` recordings are exact as well -- 288 records each, stock faces
+and fabricated hairlines alike, at sixty to a hundred and eighty pixels and a
+hundred rows of ink. Getting the last of them there took the two rules in 8e:
+the glyph buffer is twice the cell rather than eight bytes a row, and a dropout
+in a glyph whose box has not collapsed is not rescued above forty-eight pixels
+per em.
+
 `KNOWN_GAPS` is empty.
 
 The lesson is worth keeping separately from the fix. Every reading refused on
@@ -17169,7 +17253,7 @@ point the thing to doubt was the arithmetic rather than the model. A quantity
 that is exactly a half in exact arithmetic, and that a double cannot hold, is
 worth checking for before the model is.
 
-#### Four things confirmed getting there#### Four things confirmed getting there
+#### Four things confirmed getting there
 
 Each was swept against the fabricated corpus, the non-square fabricated corpus
 and the recorded glyph sweep at once, and each came back to what is already

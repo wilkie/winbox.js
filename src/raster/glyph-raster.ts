@@ -390,6 +390,7 @@ export function fillWalked(contours, options) {
     dropout = false,
     stubs = true,
     lean = 0,
+    ppem = 0,
   } = options;
 
   const pixels = new Uint8Array(width * height);
@@ -855,6 +856,41 @@ export function fillWalked(contours, options) {
      * has exactly the two crossings the model predicts. See `FONTS.md`
      * section 3.
      */
+    /* Above forty-eight pixels per em a run like this is simply not rescued.
+     *
+     * Not the font's `SCANCTRL`, which says a hundred and twenty-four for Times
+     * New Roman and forty-four for Courier New and would put the two thresholds
+     * eighty pixels apart; both stop here. **Recorded**: the `dropsize` sweep
+     * draws the same quarter-pixel bar at every height from sixteen to seventy
+     * and watches the ink stop between fifty-four and fifty-five, which is
+     * forty-seven pixels per em and forty-eight.
+     *
+     * Everything else about the bar was swept first and ruled out: its width
+     * and phase across six of each, its height from three device rows to a
+     * hundred and eight, its position from the bottom of the box to the top, an
+     * arm on it of six lengths at six heights, and four companions -- near,
+     * far, on its own rows, and one as sub-pixel as itself. None of them moves
+     * the answer, and two boxes of different heights cross at the same place,
+     * so it is the size and not the glyph.
+     *
+     * The narrow case is exempt because it is not this path at all: a glyph
+     * whose box collapses in `x` is drawn a run per column whatever the size,
+     * which is what `times-bare-hairs` and `times-stacked` say -- 144 of 144
+     * each at every size up to a hundred and twenty-three pixels per em.
+     *
+     * **It costs nothing and it is load-bearing.** With it the fabricated
+     * corpus still disagrees about nothing at all, `glyphs` stays 6,046 on each
+     * of four displays, `lines` 2,478 and `plotter` 1,584; without it the four
+     * wide hairline recordings fall from 144 of 144 to 70, and `cour-hairs`
+     * from 144 to 77.
+     *
+     * Whether the size that matters is this one or the horizontal one under a
+     * stretch is **not known**: every recording behind it is a square pixel.
+     */
+    if (!narrow && ppem >= 48) {
+      continue;
+    }
+
     if (!narrow && stubs && (!continues(-1) || !continues(1))) {
       continue;
     }
