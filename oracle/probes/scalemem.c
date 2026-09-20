@@ -169,7 +169,7 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      * cross the same horizontal size on a square pixel, where the cell has to
      * be much taller to reach it.
      */
-    static const int HEIGHTS[] = { 210, 212, 214, 216, 218, 220, 222, 224, 0 };
+    static const int HEIGHTS[] = { 283, 284, 285, 286, 287, 288, 289, 290, 0 };
 
     HDC screen;
     int at;

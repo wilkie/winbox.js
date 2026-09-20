@@ -188,6 +188,19 @@ export class TrueTypeFont {
     return this.has('head') ? this.signed('head', 40) - this.signed('head', 36) : 0;
   }
 
+  /**
+   * The right edge of the box the font declares, in font units.
+   *
+   * Not the width: the scaler compares this one number, scaled by the
+   * horizontal size, against two hundred and fifty-six, and fits the glyph at
+   * half the size when it is over. Arial declares exactly one em, which is why
+   * the rule looked like a rule about the size until the other faces were
+   * asked. See `FONTS.md` 8k.
+   */
+  get boundingRight() {
+    return this.has('head') ? this.signed('head', 40) : 0;
+  }
+
   /** The average character width the font states for itself. */
   get averageAdvance() {
     return this.has('OS/2') ? this.signed('OS/2', 2) : 0;
@@ -815,7 +828,21 @@ export class TrueTypeFont {
     }
 
     try {
-      const hinter = this.hinterAt(ppem, roundPhantoms, stretch);
+      /* A glyph whose face reaches past two hundred and fifty-six pixels across
+       * is fitted at half the size and doubled. See `halves`. */
+      const half = this.halves(ppem, stretch) ? 2 : 1;
+      /* Both sizes halve, each to a whole number of pixels per em on its own,
+       * and the outline is doubled afterwards.
+       *
+       * Rounding them **separately** is what the recording asks for: halving
+       * only the vertical one and letting the stretch carry the horizontal is
+       * 193 of `stemedge`'s 220 and 752 of `stemwide`'s 780 on an EGA, and
+       * halving both is 220 and 779. Rounding down instead of to nearest is 155
+       * and 714, and not rounding at all 180 and 737.
+       */
+      const down = half === 1 ? ppem : Math.round(ppem / 2);
+      const wide = half === 1 ? stretch : Math.round(Math.round(ppem * stretch) / 2) / down;
+      const hinter = this.hinterAt(down, roundPhantoms, wide);
 
       /* A composite is assembled in pixels rather than in design units, so it
        * is put together with the hinter's own scaling and handed over already
@@ -850,10 +877,15 @@ export class TrueTypeFont {
        * only the interpreter has seen.
        */
       return {
-        contours: fitted,
+        contours:
+          half === 1
+            ? fitted
+            : fitted.map((contour) =>
+                contour.map((point) => ({ ...point, x: point.x * half, y: point.y * half }))
+              ),
         hinted: true,
         scaled: true,
-        advance: hinter.advanceExact,
+        advance: hinter.advanceExact * half,
         dropout: hinter.dropout,
       };
     } catch {
@@ -939,6 +971,39 @@ export class TrueTypeFont {
     } catch {
       return undefined;
     }
+  }
+
+  /**
+   * Whether the scaler fits a glyph of this face at half this size.
+   *
+   * **Read out of the scaler's own memory**, not inferred: `scalemem` finds a
+   * flag beside the two sizes in the scaler's buffer, and the glyph's bearing,
+   * width and height beside that holding half of each wherever it is set.
+   *
+   * What sets it is the right edge of the box `head` declares, carried across
+   * the horizontal size, past two hundred and fifty-six pixels -- **strictly**
+   * past: on a square pixel Arial has it off at two hundred and fifty-six and
+   * on at two hundred and fifty-seven.
+   *
+   * It is `xMax` and not the width, and not the height at all. Four
+   * fabrications of Times New Roman that move only the four numbers `head`
+   * declares say so: halved across it never sets the flag at any size asked,
+   * half again across it sets it at every size, and halved or stretched down it
+   * flips exactly where the stock face does.
+   *
+   * Arial declares an `xMax` of exactly one em, so for Arial alone the rule is
+   * the horizontal size -- which is what made it look like a rule about the
+   * size until Times New Roman was asked at the same two hundred and fifty-five
+   * and had it on where Arial had it off.
+   */
+  halves(ppem, stretch = 1) {
+    if (!ppem) {
+      return false;
+    }
+
+    const across = Math.round(ppem * stretch);
+
+    return Math.round((this.boundingRight * across) / this.unitsPerEm) > 256;
   }
 
   hinterAt(ppem, roundPhantoms = true, stretch = 1) {

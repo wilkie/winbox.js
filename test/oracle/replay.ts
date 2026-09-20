@@ -1772,78 +1772,21 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  /* Arial and Times New Roman above a cell of two hundred and twelve, on a
-   * display whose pixel is not square.
+  /* One cell of `stemwide` on an EGA: Arial's `w` at a cell of eighty-eight.
    *
-   * `stemwide` sweeps the three outline faces every eighth cell from
-   * forty-eight to two hundred and forty-eight on both displays. On a **VGA it
-   * is exact**, 780 of 780, which is the first thing said about stock glyphs
-   * anywhere above forty pixels per em and what says the cut-in rule of 8i
-   * generalises past the one face that found it.
+   * What this entry used to hold was the whole of the region above a cell of
+   * two hundred and twelve, 99 records of `stemwide`'s 780 and 98 of
+   * `stemedge`'s 220, and that is closed: reading the scaler's memory found the
+   * half-size fitting of 8k and the `head.xMax` that sets it off, and
+   * `stemedge` is now 220 of 220 and `stemwide` 779 of 780.
    *
-   * On an EGA it is exact to a cell of two hundred and twelve and wrong from
-   * two hundred and fourteen, for Arial and Times New Roman and **not for
-   * Courier New**, which is exact at every size the sweep asks. `stemedge`
-   * walks the crossing by twos and puts it between those two cells exactly:
-   * every one of the twenty records at two hundred and twelve agrees and none
-   * of the twenty at two hundred and fourteen does.
-   *
-   * What crosses there is the horizontal size, 255 pixels per em to 257 -- but
-   * that is **correlated and not explanatory**, because Courier New passes two
-   * hundred and fifty-six in the same sweep and stays exact. The vertical size
-   * crosses 192 at the same cell and Courier New passes that too. So it is
-   * something the two faces' programs do and Courier New's does not, at a size
-   * their nearly equal metrics reach together.
-   *
-   * **It is not the scaling.** `times-ruler` replaces ten Times New Roman glyphs
-   * with plain bars and no instructions at all, fifty design units apart, and
-   * their columns read the horizontal size off the bitmap: it is what this side
-   * uses, at every cell above the boundary and below it.
-   *
-   * **And nothing branches here.** Arial's `B` traced instruction by
-   * instruction at a cell of two hundred and twelve and at two hundred and
-   * fourteen gives the same instructions in the same order, the same control
-   * values scaling smoothly, and the same cut-in decision at every one; the
-   * values `prep` leaves behind scale smoothly too. This side moves smoothly
-   * across the boundary and Windows does not: what it draws at two hundred and
-   * fourteen is bigger in both directions, Arial's `B` 140 rows against 138
-   * here with its stem a column further right.
-   *
-   * Refused by count, on 780 EGA records and 220: the size a program reads
-   * being the vertical one, 429; that size clamped to 255, 681 and 122, which
-   * is no change at all; control values scaled at a size capped at 255, 662 and
-   * 122, and at 256, 665 and 122; control values scaled at the vertical size,
-   * 476 and 91. A single different horizontal size does not explain it either
-   * -- swept whole by whole at the first broken cell, the best agrees on 10 of
-   * 30 where the right answer would agree on 30. See `FONTS.md` 8j.
-   *
-   * **The scaler's memory says what it does, if not yet when.** `scalemem` reads
-   * GDI's blocks after drawing the same letter at cells either side of the
-   * crossing. The scaler's own buffer holds the horizontal size and the
-   * vertical one side by side, both exactly what this side uses; beside them a
-   * flag turns on at the cell the drawing goes wrong; and just above, the
-   * glyph's bitmap metrics -- its left side bearing, width and height -- hold
-   * **half** of each from that cell on. Doubling them predicts what Windows
-   * draws exactly: the stem column 20, 21, 22, 22, 24, 24, 24 and the height
-   * 135, 137, 140, 140, 140, 142, 144 across cells of 210 to 222.
-   *
-   * So the glyph is fitted at half the size and doubled, and at half the size a
-   * cap height of 138.2 pixels grid-fits to a whole 70 where at the full size
-   * it fits to 138. Modelling that -- the interpreter run at half the size,
-   * rounded to a whole number of pixels per em, and the outline doubled -- takes
-   * `stemedge` from 122 to 187 and `stemwide-ega` from 681 to 692, with the VGA
-   * sweep unchanged at 780.
-   *
-   * It is **not shipped because the trigger is unknown**, and with the obvious
-   * guess at it -- the horizontal size past 256 -- it costs Courier New
-   * everything, `stemsize-ega` falling from 238 to 154. The flag refutes the
-   * size outright: Arial at 255 across has it off and Times New Roman at 255
-   * has it on, their `B` advances are the same 1366 units, and Courier New
-   * never sets it at any size asked though its em is larger at every cell than
-   * the two that do. See `FONTS.md` 8k.
+   * The one left is not that rule and is well below its threshold -- eighty-two
+   * pixels per em across, where the flag is off. Arial's `w` there is a
+   * diagonal whose left edge this side walks a sixty-fourth steeper than
+   * Windows does, so its column drifts by one over eight rows and comes back.
+   * One record of 1,798 in the four sweeps.
    */
-  'stemwide-ega:column': '99 of 780 records, Arial and Times above a cell of 212',
-  'stemedge-ega:column': '98 of 220 records, the same crossing walked by twos',
+  'stemwide-ega:column': '1 of 780 records, a diagonal a sixty-fourth out at a cell of 88',
 
   /* The glyph sweep on an EGA, 895 cells of 6,046.
    *

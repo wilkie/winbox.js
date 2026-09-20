@@ -8,7 +8,7 @@
     "display": "egahires",
     "displayDescription": "EGA, 640x350, 16 colours"
   },
-  "font": null,
+  "font": "times-box-taller",
   "records": [
     {
       "function": "block",
@@ -2197,7 +2197,7 @@
     {
       "function": "bytes",
       "args": "h=204,78,+10a0",
-      "result": "88a1433a5c57494e444f57535c535c086a151c15000000007f03cf1057085708",
+      "result": "90a1433a5c57494e444f57535c535c086a151c15000000007f03cf1057085708",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -2281,7 +2281,7 @@
     {
       "function": "bytes",
       "args": "h=204,78,+1260",
-      "result": "63ff0507120846fe210745fe57000b009a053305000025019a0533050000a003",
+      "result": "63ff880a120869fd210745fe57000b009a053305000025019a0533050000a003",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -2401,7 +2401,7 @@
     {
       "function": "bytes",
       "args": "h=204,78,+14e0",
-      "result": "0100dc0200005813010008150804000070170000000300010409000812080507",
+      "result": "0100dc020000581301000815080400007017000000030001040900081208880a",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -2539,7 +2539,7 @@
     {
       "function": "bytes",
       "args": "h=204,78,+17c0",
-      "result": "ffe8b610000039000100000012080507005cffe70068005d007c140d0072154c",
+      "result": "ffe8b61000003900010000001208880a005cffe70068005d007c140d0072154c",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -6037,7 +6037,7 @@
     {
       "function": "bytes",
       "args": "h=206,78,+10a0",
-      "result": "88a1433a5c57494e444f57535c535c086a151c15000000007f03cf1057085708",
+      "result": "90a1433a5c57494e444f57535c535c086a151c15000000007f03cf1057085708",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -6121,7 +6121,7 @@
     {
       "function": "bytes",
       "args": "h=206,78,+1260",
-      "result": "63ff0507120846fe210745fe57000b009a053305000025019a0533050000a003",
+      "result": "63ff880a120869fd210745fe57000b009a053305000025019a0533050000a003",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -6241,7 +6241,7 @@
     {
       "function": "bytes",
       "args": "h=206,78,+14e0",
-      "result": "0100dc0200005813010008150804000070170000000300010409000812080507",
+      "result": "0100dc020000581301000815080400007017000000030001040900081208880a",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -6379,7 +6379,7 @@
     {
       "function": "bytes",
       "args": "h=206,78,+17c0",
-      "result": "ffe8b810000039000100000012080507005cffe70068005d007c140d0072154c",
+      "result": "ffe8b81000003900010000001208880a005cffe70068005d007c140d0072154c",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -9877,7 +9877,7 @@
     {
       "function": "bytes",
       "args": "h=208,78,+10a0",
-      "result": "88a1433a5c57494e444f57535c535c086a151c15000000007f03cf1057085708",
+      "result": "90a1433a5c57494e444f57535c535c086a151c15000000007f03cf1057085708",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -9961,7 +9961,7 @@
     {
       "function": "bytes",
       "args": "h=208,78,+1260",
-      "result": "63ff0507120846fe210745fe57000b009a053305000025019a0533050000a003",
+      "result": "63ff880a120869fd210745fe57000b009a053305000025019a0533050000a003",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -10021,13 +10021,13 @@
     {
       "function": "bytes",
       "args": "h=208,78,+13a0",
-      "result": "b70b001040211414e33140214632ca134b293700f80b00000000c01dca13c813",
+      "result": "b70b001040211414e3314021770024004b293700c00200007700ff57ffff0200",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
       "function": "bytes",
       "args": "h=208,78,+13c0",
-      "result": "0c00deffffff0801000007ff82164f2a0000ffff614f10000500614f514f634f",
+      "result": "dd56deffffff0801000007ff82164f2a0000ffff614f10000500614f514f634f",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -10081,7 +10081,7 @@
     {
       "function": "bytes",
       "args": "h=208,78,+14e0",
-      "result": "0100dc0200005813010008150804000070170000000300010409000812080507",
+      "result": "0100dc020000581301000815080400007017000000030001040900081208880a",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -10219,7 +10219,7 @@
     {
       "function": "bytes",
       "args": "h=208,78,+17c0",
-      "result": "ffe8b910000039000100000012080507005cffe70068005d007c140d0072154c",
+      "result": "ffe8b91000003900010000001208880a005cffe70068005d007c140d0072154c",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -13717,7 +13717,7 @@
     {
       "function": "bytes",
       "args": "h=210,78,+10a0",
-      "result": "88a1433a5c57494e444f57535c535c086a151c15000000007f03cf1057085708",
+      "result": "90a1433a5c57494e444f57535c535c086a151c15000000007f03cf1057085708",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -13801,7 +13801,7 @@
     {
       "function": "bytes",
       "args": "h=210,78,+1260",
-      "result": "63ff0507120846fe210745fe57000b009a053305000025019a0533050000a003",
+      "result": "63ff880a120869fd210745fe57000b009a053305000025019a0533050000a003",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -13921,7 +13921,7 @@
     {
       "function": "bytes",
       "args": "h=210,78,+14e0",
-      "result": "0100dc0200005813010008150804000070170000000300010409000812080507",
+      "result": "0100dc020000581301000815080400007017000000030001040900081208880a",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -14059,7 +14059,7 @@
     {
       "function": "bytes",
       "args": "h=210,78,+17c0",
-      "result": "ffe8bc10000039000100000012080507005cffe70068005d007c140d0072154c",
+      "result": "ffe8bc1000003900010000001208880a005cffe70068005d007c140d0072154c",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -17557,7 +17557,7 @@
     {
       "function": "bytes",
       "args": "h=212,78,+10a0",
-      "result": "88a1433a5c57494e444f57535c535c086a151c15000000007f03cf1057085708",
+      "result": "90a1433a5c57494e444f57535c535c086a151c15000000007f03cf1057085708",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -17641,7 +17641,7 @@
     {
       "function": "bytes",
       "args": "h=212,78,+1260",
-      "result": "63ff0507120846fe210745fe57000b009a053305000025019a0533050000a003",
+      "result": "63ff880a120869fd210745fe57000b009a053305000025019a0533050000a003",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -17761,7 +17761,7 @@
     {
       "function": "bytes",
       "args": "h=212,78,+14e0",
-      "result": "0100dc0200005813010008150804000070170000000300010409000812080507",
+      "result": "0100dc020000581301000815080400007017000000030001040900081208880a",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -17899,7 +17899,7 @@
     {
       "function": "bytes",
       "args": "h=212,78,+17c0",
-      "result": "ffe8bd10000039000100000012080507005cffe70068005d007c140d0072154c",
+      "result": "ffe8bd1000003900010000001208880a005cffe70068005d007c140d0072154c",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -21397,7 +21397,7 @@
     {
       "function": "bytes",
       "args": "h=214,78,+10a0",
-      "result": "88a1433a5c57494e444f57535c535c086a151c15000000007f03cf1057085708",
+      "result": "90a1433a5c57494e444f57535c535c086a151c15000000007f03cf1057085708",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -21481,7 +21481,7 @@
     {
       "function": "bytes",
       "args": "h=214,78,+1260",
-      "result": "63ff0507120846fe210745fe57000b009a053305000025019a0533050000a003",
+      "result": "63ff880a120869fd210745fe57000b009a053305000025019a0533050000a003",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -21601,7 +21601,7 @@
     {
       "function": "bytes",
       "args": "h=214,78,+14e0",
-      "result": "0100dc0200005813010008150804000070170000000300010409000812080507",
+      "result": "0100dc020000581301000815080400007017000000030001040900081208880a",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -21739,7 +21739,7 @@
     {
       "function": "bytes",
       "args": "h=214,78,+17c0",
-      "result": "ffe86010000039000100000012080507005cffe70068005d0068140103721562",
+      "result": "ffe8601000003900010000001208880a005cffe70068005d0068140103721562",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -25237,7 +25237,7 @@
     {
       "function": "bytes",
       "args": "h=216,78,+10a0",
-      "result": "88a1433a5c57494e444f57535c535c086a151c15000000007f03cf1057085708",
+      "result": "90a1433a5c57494e444f57535c535c086a151c15000000007f03cf1057085708",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -25321,7 +25321,7 @@
     {
       "function": "bytes",
       "args": "h=216,78,+1260",
-      "result": "63ff0507120846fe210745fe57000b009a053305000025019a0533050000a003",
+      "result": "63ff880a120869fd210745fe57000b009a053305000025019a0533050000a003",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -25441,7 +25441,7 @@
     {
       "function": "bytes",
       "args": "h=216,78,+14e0",
-      "result": "0100dc0200005813010008150804000070170000000300010409000812080507",
+      "result": "0100dc020000581301000815080400007017000000030001040900081208880a",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -25579,7 +25579,7 @@
     {
       "function": "bytes",
       "args": "h=216,78,+17c0",
-      "result": "ffe86210000039000100000012080507005cffe70068005d0068140103721562",
+      "result": "ffe8621000003900010000001208880a005cffe70068005d0068140103721562",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -29077,7 +29077,7 @@
     {
       "function": "bytes",
       "args": "h=218,78,+10a0",
-      "result": "88a1433a5c57494e444f57535c535c086a151c15000000007f03cf1057085708",
+      "result": "90a1433a5c57494e444f57535c535c086a151c15000000007f03cf1057085708",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -29161,7 +29161,7 @@
     {
       "function": "bytes",
       "args": "h=218,78,+1260",
-      "result": "63ff0507120846fe210745fe57000b009a053305000025019a0533050000a003",
+      "result": "63ff880a120869fd210745fe57000b009a053305000025019a0533050000a003",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -29281,7 +29281,7 @@
     {
       "function": "bytes",
       "args": "h=218,78,+14e0",
-      "result": "0100dc0200005813010008150804000070170000000300010409000812080507",
+      "result": "0100dc020000581301000815080400007017000000030001040900081208880a",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {
@@ -29419,7 +29419,7 @@
     {
       "function": "bytes",
       "args": "h=218,78,+17c0",
-      "result": "ffe86210000039000100000012080507005cffe70068005d0068140103721562",
+      "result": "ffe8621000003900010000001208880a005cffe70068005d0068140103721562",
       "section": "the same letter at four cells, each dumped on its first draw"
     },
     {

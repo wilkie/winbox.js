@@ -6735,6 +6735,47 @@ export const FABRICATIONS = [
     },
   })),
 
+  /* Faces that differ only in the box `head` declares, to find what sets the
+   * scaler's halving flag.
+   *
+   * 8k says the flag is a property of the face and not of the size: Arial has
+   * it off at two hundred and fifty-five pixels per em across and Times New
+   * Roman has it on at the same number, and Courier New -- whose `head` box is
+   * 1345 units wide against 2142 and 2223 -- never sets it at any size asked.
+   * The box is the obvious candidate, and it can be asked directly: leave every
+   * glyph alone and move the four numbers `head` declares.
+   *
+   * If the flip moves with them the scaler reads `head`; if it does not, the
+   * quantity is computed from the outlines and the box is a red herring.
+   */
+  ...[
+    ['times-box-half-wide', 0.5, 1],
+    ['times-box-half-tall', 1, 0.5],
+    ['times-box-wider', 1.5, 1],
+    ['times-box-taller', 1, 1.5],
+  ].map(([name, across, down]) => ({
+    name,
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: `Times New Roman with the box it declares ${across} across and ${down} down`,
+
+    edit: (bytes) => {
+      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+      const head = tablesOf(view).head.offset;
+
+      /* `head` holds xMin, yMin, xMax, yMax at 36 through 42, and nothing here
+       * touches a glyph, so every outline is exactly where it was. */
+      const scale = (at, by) => view.setInt16(at, Math.round(view.getInt16(at, false) * by), false);
+
+      scale(head + 36, across);
+      scale(head + 40, across);
+      scale(head + 38, down);
+      scale(head + 42, down);
+
+      return bytes;
+    },
+  })),
+
   /* A ruler, for reading Windows' horizontal size straight off the bitmap.
    *
    * Above a cell of two hundred and twelve on an EGA, Arial and Times New Roman

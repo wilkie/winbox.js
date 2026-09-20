@@ -16835,7 +16835,62 @@ half the size and doubled**. At half the size the cap height of 138.2 pixels is
 69.1, which grid-fits to a whole 70, and twice that is the 140 Windows draws
 where fitting at the full size gives 138.
 
-#### And modelled, it is worth a great deal -- but the trigger is not the size
+#### What sets it: the right edge of the box the face declares
+
+The flag is a property of the face, so ask the face. Four fabrications of Times
+New Roman move **only the four numbers `head` declares** and leave every glyph
+exactly where it was:
+
+| the box declared | when the flag comes on |
+| --- | --- |
+| stock | from a cell of 214 |
+| half as wide | **never**, at any size asked |
+| half again as wide | **at every size**, from 204 |
+| half as tall, or half again as tall | from 214, exactly as stock |
+
+So it is the width of the box and nothing about its height -- and it is `xMax`
+rather than the width, which the three shipped faces settle between them:
+
+| face | `head.xMax` | flag off at | on at |
+| --- | --- | --- | --- |
+| Arial | 2048, exactly one em | 255 across | 257 |
+| Times New Roman | 2066 | 252 | 255 |
+| Courier New | 1280 | 279, and every size asked | never |
+
+Scale `xMax` by the horizontal size and all three agree: Arial crosses at 255
+and 257, Times New Roman at 254.2 and 257.2, Courier New reaches 174 and stops.
+**Arial declares exactly one em**, which is why the rule looked like a rule
+about the size until another face was asked at the same 255 and had it on.
+
+The comparison is strict. On a square pixel, where Arial's scaled `xMax` is the
+size itself, the flag reads 0, 0, 0, **0**, **1**, 1, 1, 1 across sizes of 254,
+254, 255, **256**, **257**, 257, 259, 260.
+
+#### And both sizes halve, each on its own
+
+> A glyph of a face whose `head.xMax` reaches past two hundred and fifty-six
+> pixels across is fitted at half the size -- each size rounded to a whole
+> number of pixels per em separately -- and the outline doubled.
+
+**Measured**, on the two sweeps that cross it:
+
+| | `stemedge-ega` | `stemwide-ega` |
+| --- | --- | --- |
+| before | 122 of 220 | 681 of 780 |
+| the vertical size halved, the stretch carrying the horizontal | 193 | 752 |
+| **both halved separately, each rounded to nearest** | **220** | **779** |
+| both halved, rounded down | 155 | 714 |
+| both halved, not rounded at all | 180 | 737 |
+
+`stemedge` is exact. `stemwide` has one record left and it is not this rule:
+Arial's `w` at a cell of eighty-eight, eighty-two pixels per em across, where
+the flag is off -- a diagonal whose left edge this side walks a sixty-fourth
+steeper than Windows does. Nothing else in the corpus moves: `stemsize` stays
+238 of 238 on both displays, `stemwide` on a VGA 780 of 780.
+
+#### What the earlier guess cost
+
+
 
 Running the interpreter at half the size and doubling what comes back takes
 `stemedge` from 122 of 220 to **187** and `stemwide` on an EGA from 681 of 780
@@ -16843,9 +16898,11 @@ to **692**, with the VGA sweep unchanged at 780 of 780. Rounding the half to a
 whole number of pixels per em is what does it; the exact half is worth 176 and
 161, the floor 153 and 654.
 
-It is not shipped, because the trigger is wrong and it costs Courier New
-everything: `stemsize` on an EGA falls from 238 of 238 to 154. Reading the flag
-for the other two faces says why, and refutes the size outright:
+Before the trigger was read out of the fabrications, the obvious guess at it --
+the horizontal size past two hundred and fifty-six -- looked close and cost
+Courier New everything: `stemsize` on an EGA fell from 238 of 238 to 154, because
+Courier New passes two hundred and fifty-six in the same sweep and Windows draws
+it exactly. The flag itself is what refuted the guess:
 
 | face | flag off at | flag on at | `B` advance |
 | --- | --- | --- | --- |
@@ -16861,9 +16918,8 @@ New Roman's 2223, never sets it at any size the sweep asks even though its em is
 larger at every cell than the two that do.
 
 Arial and Times New Roman turn it on at the **same cell**, two hundred and
-fourteen, which is the cell `stemedge` says the drawing goes wrong at. So
-whatever sets it is a property of the face rather than of the size or of the
-glyph, and the three faces' own tables are where it will be found.
+fourteen, which is the cell `stemedge` says the drawing goes wrong at -- and
+that is what said to go and ask the face's own tables.
 
 ### 8d. The first glyphs drawn on a pixel that is not square
 
@@ -17816,17 +17872,16 @@ says why that is not a size rule.
 
 `stemwide` sweeps the three outline faces from a cell of forty-eight to one of
 two hundred and forty-eight -- the first question ever asked of stock glyphs
-above forty pixels per em -- and is **780 of 780 on a VGA**.
+above forty pixels per em -- and is **780 of 780 on a VGA** and 779 of 780 on an
+EGA. `stemedge` is 220 of 220 and `stemsize` 238 of 238 on both displays.
 
-`KNOWN_GAPS` holds two entries, and they are the same finding twice: Arial and
-Times New Roman on an EGA above a cell of two hundred and twelve, 99 records of
-`stemwide`'s 780 and 98 of `stemedge`'s 220. 8j has the counts and the readings
-already refused, and 8k has what reading the scaler's memory found: from the
-cell the drawing goes wrong at, the glyph's bitmap metrics hold half of what
-they held, and doubling them predicts what Windows draws exactly. The glyph is
-being fitted at half the size. What sets that off is still open -- it is not the
-size, since Arial at two hundred and fifty-five pixels across has it off and
-Times New Roman at two hundred and fifty-five has it on. Every other record the
+`KNOWN_GAPS` holds one entry, of one record: Arial's `w` at a cell of
+eighty-eight on an EGA, a diagonal this side walks a sixty-fourth steeper than
+Windows does. 8k closed it: reading the scaler's memory found the glyph being
+fitted at half the size, and four fabrications that move only what `head`
+declares found what sets that off -- the right edge of the face's box, carried
+across the horizontal size, past two hundred and fifty-six pixels. `stemedge` is
+220 of 220 and `stemwide` 779 of 780. Every other record the
 harness knows how to replay agrees.
 
 The lesson is worth keeping separately from the fix. Every reading refused on
