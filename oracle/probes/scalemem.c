@@ -27,6 +27,11 @@
 
 #define OUTPUT "C:\\ORACLE\\SCALEMEM.OUT"
 
+/* The face and the cells are the whole of what a run varies, and the structure
+ * this reads is not at a fixed offset between faces -- Arial's sits at +0x1602,
+ * Courier New's one byte further on, Times New Roman's eight. Find it by
+ * looking for the word that rises with the size rather than by an address.
+ */
 #define PROBE_FACE "Arial"
 #define PROBE_CHAR 'B'
 
@@ -43,6 +48,7 @@ static HGLOBAL blocks[MAX_BLOCKS];
 static DWORD sizes[MAX_BLOCKS];
 static HGLOBAL owners[MAX_BLOCKS];
 static WORD selectors[MAX_BLOCKS];
+static WORD kinds[MAX_BLOCKS];
 static int found;
 static HMODULE gdiModule;
 
@@ -65,6 +71,7 @@ static void census(void)
         sizes[found] = entry.dwBlockSize;
         owners[found] = entry.hOwner;
         selectors[found] = GlobalHandleToSel(entry.hBlock);
+        kinds[found] = entry.wType;
 
         wsprintf(probeArgs, "%d", found);
         wsprintf(probeResult, "sel=%04x,size=%lx,flags=%04x,type=%u,owner=%04x",
@@ -162,7 +169,7 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      * cross the same horizontal size on a square pixel, where the cell has to
      * be much taller to reach it.
      */
-    static const int HEIGHTS[] = { 210, 212, 214, 216, 280, 284, 288, 292, 0 };
+    static const int HEIGHTS[] = { 210, 212, 214, 216, 218, 220, 222, 224, 0 };
 
     HDC screen;
     int at;
@@ -206,7 +213,12 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
          * kilobytes, and the largest thing GDI owns that is not the buffer.
          */
         for (index = 0; index < found; index++) {
-            if (owners[index] == gdiModule && sizes[index] == 0x4000L) {
+            /* GDI's own data blocks, which is where the scaler keeps its
+             * per-size state. Its size is not the same for every face -- the
+             * buffer is cut from `maxp` -- so this goes by kind and not by a
+             * length. */
+            if (owners[index] == gdiModule && kinds[index] == 2 &&
+                sizes[index] >= 0x1000L && sizes[index] <= 0x8000L) {
                 dump(index, HEIGHTS[at]);
             }
         }

@@ -1817,23 +1817,30 @@ export const KNOWN_GAPS: Record<string, string> = {
    * -- swept whole by whole at the first broken cell, the best agrees on 10 of
    * 30 where the right answer would agree on 30. See `FONTS.md` 8j.
    *
-   * **The scaler's memory says what changes there, if not yet what it means.**
-   * `scalemem` reads GDI's blocks after drawing the same letter at four cells
-   * either side of the crossing. The scaler's own buffer holds the horizontal
-   * size and the vertical one side by side -- 251, 255, 257, 259 and 188, 191,
-   * 193, 194 -- both exactly what this side uses; and beside them two words
-   * that change at the same cell the drawing does, with three values just above
-   * them that **halve**. Divided by sixty-four those read the height Windows
-   * draws Arial's `B` at below the crossing; divided by thirty-two they read it
-   * above. The unit has lost a bit.
+   * **The scaler's memory says what it does, if not yet when.** `scalemem` reads
+   * GDI's blocks after drawing the same letter at cells either side of the
+   * crossing. The scaler's own buffer holds the horizontal size and the
+   * vertical one side by side, both exactly what this side uses; beside them a
+   * flag turns on at the cell the drawing goes wrong; and just above, the
+   * glyph's bitmap metrics -- its left side bearing, width and height -- hold
+   * **half** of each from that cell on. Doubling them predicts what Windows
+   * draws exactly: the stem column 20, 21, 22, 22, 24, 24, 24 and the height
+   * 135, 137, 140, 140, 140, 142, 144 across cells of 210 to 222.
    *
-   * The threshold is **two hundred and fifty-six pixels per em** and it is not
-   * the stretch: asked for a tall enough cell a VGA does the same thing, the
-   * flag turning on between 254 and 257. Three models of what the lost bit
-   * costs are refused by count -- quantising every conversion to thirty-seconds
-   * (673 and 230 against 681 and 238), the control values only (677 and 233),
-   * the outline coordinates only (677 and 234) -- because Courier New passes
-   * 256 in the same sweep and Windows draws it exactly. See `FONTS.md` 8k.
+   * So the glyph is fitted at half the size and doubled, and at half the size a
+   * cap height of 138.2 pixels grid-fits to a whole 70 where at the full size
+   * it fits to 138. Modelling that -- the interpreter run at half the size,
+   * rounded to a whole number of pixels per em, and the outline doubled -- takes
+   * `stemedge` from 122 to 187 and `stemwide-ega` from 681 to 692, with the VGA
+   * sweep unchanged at 780.
+   *
+   * It is **not shipped because the trigger is unknown**, and with the obvious
+   * guess at it -- the horizontal size past 256 -- it costs Courier New
+   * everything, `stemsize-ega` falling from 238 to 154. The flag refutes the
+   * size outright: Arial at 255 across has it off and Times New Roman at 255
+   * has it on, their `B` advances are the same 1366 units, and Courier New
+   * never sets it at any size asked though its em is larger at every cell than
+   * the two that do. See `FONTS.md` 8k.
    */
   'stemwide-ega:column': '99 of 780 records, Arial and Times above a cell of 212',
   'stemedge-ega:column': '98 of 220 records, the same crossing walked by twos',

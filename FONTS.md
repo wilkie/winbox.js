@@ -16740,7 +16740,7 @@ it, which is what 8k does.
 This is in `KNOWN_GAPS`, with its counts, which is where a measurement that is
 not yet a rule belongs.
 
-### 8k. The scaler keeps one fractional bit fewer above 256 pixels per em
+### 8k. The scaler fits the glyph at half the size, and what that costs
 
 `heap.c` established that the scaler's memory can be read while Windows is
 running -- `TOOLHELP`'s `GlobalFirst`, `GlobalNext`, `GlobalHandleToSel` and
@@ -16785,17 +16785,14 @@ drawing goes wrong. Three words just above change with them:
 | `+0x15e4` | 9856 | 9984 | **5120** | 5184 |
 | `+0x15e6` | 8640 | 8768 | **4480** | 4480 |
 
-They halve. `+0x15e6` divided by sixty-four is 135, 137 at the first two cells,
-which is the height Windows draws Arial's `B` at those cells; divided by
-**thirty-two** it is 140 at the third, which is the height Windows draws it at
-that one, where this side draws 138. So the unit has lost a bit: thirty-seconds
-of a pixel where it was sixty-fourths.
+They halve, and what they are is below. `+0x15e6` divided by sixty-four is 135,
+137 at the first two cells, which is the height Windows draws Arial's `B` at
+those cells; at the third it reads 70 where the glyph is drawn 140 rows tall.
 
-#### The threshold is 256 pixels per em, and it is not the stretch
+#### A VGA does it too, so it is not the stretch
 
-The EGA reaches it at a cell of two hundred and fourteen because its horizontal
-size is four thirds of its vertical. A VGA has to be asked for a much taller
-cell, and when it is, **the same thing happens**:
+The EGA reaches the mode at a cell of two hundred and fourteen. A VGA has to be
+asked for a much taller cell, and when it is, **the same thing happens**:
 
 | VGA cell | 280 | 284 | **288** | 292 |
 | --- | --- | --- | --- | --- |
@@ -16803,34 +16800,70 @@ cell, and when it is, **the same thing happens**:
 | `+0x1606` | 0 | 0 | **1** | 1 |
 | `+0x15e6` | 11,584 | 11,648 | **5,952** | 6,016 |
 
-So the rule is a size and not a shape of pixel: **above two hundred and
-fifty-six pixels per em the scaler keeps thirty-seconds of a pixel rather than
-sixty-fourths**. `stemwide` is exact on a VGA to a cell of two hundred and
-forty-eight because two hundred and forty-eight never reaches it.
+So it is not the shape of the pixel. Two hundred and fifty-six across looked
+like the threshold from Arial alone, and the other two faces refute it below.
+`stemwide` is exact on a VGA to a cell of two hundred and forty-eight because
+nothing there gets near whatever the condition is.
 
-#### What the mode does is still not known
+#### What the three values are
 
-Three models of it, all refused by count:
+They are the glyph's **bitmap metrics**, and the whole-pixel copies of them sit
+a few bytes above:
 
-| | `stemwide-ega` | `stemsize-ega` |
-| --- | --- | --- |
-| **what this does now** | **681** | **238** |
-| quantise every conversion to thirty-seconds | 673 | 230 |
-| quantise the control values only | 677 | 233 |
-| quantise the outline coordinates only | 677 | 234 |
+| | in sixty-fourths | in whole pixels | what it is |
+| --- | --- | --- | --- |
+| | `+0x15e0` | `+0x15d8` | the left side bearing |
+| | `+0x15e4` | `+0x15dc` | the width |
+| | `+0x15e6` | `+0x15de` | the height |
 
-All three are worse, and the reason is Courier New. It passes two hundred and
-fifty-six in the same sweep -- `stemsize` draws it to a cell of two hundred and
-fifty-two, where it is drawn at nearly three hundred across -- and Windows draws
-it **exactly right** there, 238 of 238. Whatever the lost bit costs Arial and
-Times New Roman it does not cost Courier New, so it is not a blanket
-quantisation of everything the interpreter holds.
+Below the flag they hold the glyph as drawn: at a cell of two hundred and twelve
+Arial's `B` reads 19, 156, 137, and Windows draws it 137 rows tall with its stem
+at column 21, which is the pen at 2 plus 19. Above the flag they hold **half of
+each**, and doubling them predicts what Windows draws, exactly, at every cell:
 
-That is where this stands: the flag is found, its threshold is pinned on both
-displays, and what it switches is not. The next reading is of the bytes either
-side of it -- `+0x15e0` through `+0x15e6` are three values that halve together,
-and knowing which three quantities they are would say what the mode is a mode
-of.
+| cell | 210 | 212 | 214 | 216 | 218 | 220 | 222 |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| bearing held | 18 | 19 | **10** | **10** | **11** | **11** | **11** |
+| doubled, plus the pen | 20 | 21 | **22** | **22** | **24** | **24** | **24** |
+| Windows' stem column | 20 | 21 | 22 | 22 | 24 | 24 | 24 |
+| height held | 135 | 137 | **70** | **70** | **70** | **71** | **72** |
+| doubled | 135 | 137 | **140** | **140** | **140** | **142** | **144** |
+| Windows' height | 135 | 137 | 140 | 140 | 140 | 142 | 144 |
+
+So the mode is not a unit that lost a bit; it is the glyph being **fitted at
+half the size and doubled**. At half the size the cap height of 138.2 pixels is
+69.1, which grid-fits to a whole 70, and twice that is the 140 Windows draws
+where fitting at the full size gives 138.
+
+#### And modelled, it is worth a great deal -- but the trigger is not the size
+
+Running the interpreter at half the size and doubling what comes back takes
+`stemedge` from 122 of 220 to **187** and `stemwide` on an EGA from 681 of 780
+to **692**, with the VGA sweep unchanged at 780 of 780. Rounding the half to a
+whole number of pixels per em is what does it; the exact half is worth 176 and
+161, the floor 153 and 654.
+
+It is not shipped, because the trigger is wrong and it costs Courier New
+everything: `stemsize` on an EGA falls from 238 of 238 to 154. Reading the flag
+for the other two faces says why, and refutes the size outright:
+
+| face | flag off at | flag on at | `B` advance |
+| --- | --- | --- | --- |
+| Times New Roman | 252 across | **255** | 1366 units |
+| Arial | **255** across | 257 | 1366 units |
+| Courier New | 279 across, and every size asked | never | 1229 units |
+
+**Arial at two hundred and fifty-five across has the flag off and Times New
+Roman at two hundred and fifty-five has it on**, so it is not the horizontal
+size; their `B` advances are the same number, so it is not the advance; and
+Courier New, whose `head` box is 1345 units wide against Arial's 2142 and Times
+New Roman's 2223, never sets it at any size the sweep asks even though its em is
+larger at every cell than the two that do.
+
+Arial and Times New Roman turn it on at the **same cell**, two hundred and
+fourteen, which is the cell `stemedge` says the drawing goes wrong at. So
+whatever sets it is a property of the face rather than of the size or of the
+glyph, and the three faces' own tables are where it will be found.
 
 ### 8d. The first glyphs drawn on a pixel that is not square
 
@@ -17788,10 +17821,12 @@ above forty pixels per em -- and is **780 of 780 on a VGA**.
 `KNOWN_GAPS` holds two entries, and they are the same finding twice: Arial and
 Times New Roman on an EGA above a cell of two hundred and twelve, 99 records of
 `stemwide`'s 780 and 98 of `stemedge`'s 220. 8j has the counts and the readings
-already refused, and 8k has what reading the scaler's memory found: above two
-hundred and fifty-six pixels per em it keeps thirty-seconds of a pixel rather
-than sixty-fourths, a threshold a VGA crosses too when it is asked for a tall
-enough cell. What the lost bit costs is still open. Every other record the
+already refused, and 8k has what reading the scaler's memory found: from the
+cell the drawing goes wrong at, the glyph's bitmap metrics hold half of what
+they held, and doubling them predicts what Windows draws exactly. The glyph is
+being fitted at half the size. What sets that off is still open -- it is not the
+size, since Arial at two hundred and fifty-five pixels across has it off and
+Times New Roman at two hundred and fifty-five has it on. Every other record the
 harness knows how to replay agrees.
 
 The lesson is worth keeping separately from the fix. Every reading refused on
