@@ -16734,11 +16734,103 @@ agree on 30.
 
 What is left is a difference inside the two faces' programs that this side
 executes without branching and Windows does not -- or a quantity those programs
-read that has not been thought of. The next instrument would be the one that
-reads the scaler's own memory, which section 8 already has for other questions.
+read that has not been thought of. So read the scaler's own memory and look for
+it, which is what 8k does.
 
 This is in `KNOWN_GAPS`, with its counts, which is where a measurement that is
 not yet a rule belongs.
+
+### 8k. The scaler keeps one fractional bit fewer above 256 pixels per em
+
+`heap.c` established that the scaler's memory can be read while Windows is
+running -- `TOOLHELP`'s `GlobalFirst`, `GlobalNext`, `GlobalHandleToSel` and
+`MemoryRead`, nothing written -- and 8j had run out of things to try from the
+outside. So `oracle/probes/scalemem.c` points that instrument at this question.
+Its sweep is in the **size** rather than in the character: the same letter at
+four cells either side of the crossing, each drawn once so that every draw is
+the first of its size and the scaler actually runs, and GDI's blocks dumped
+after each.
+
+**A probe's name has to fit eight characters.** The first version of this was
+called `scalersize.c`, built without complaint, and produced no output at all at
+any size -- which reads exactly like a crash and is DOS refusing to load a name
+it cannot spell. Every other probe in the directory is eight characters or
+fewer.
+
+#### Where the sizes are, and that they are right
+
+GDI's data segment holds the vertical size and nothing else of interest: a word
+that reads 188, 191, 193, 194 across cells of 210, 212, 214 and 216, which is
+exactly what this side computes. No word anywhere in it holds the horizontal
+size.
+
+The scaler's own sixteen-kilobyte buffer holds both, side by side:
+
+    +0x1600      4      4      6      6
+    +0x1602    251    255    257    259     the horizontal size
+    +0x1604    188    191    193    194     the vertical size
+    +0x1606      0      0      1      1
+
+Both are **exactly what this side uses**, at every cell. So the sizes were never
+the gap, which the ruler had already said from outside.
+
+#### And beside them, a mode that changes
+
+`+0x1600` goes from 4 to 6 and `+0x1606` from 0 to 1, at the same cell the
+drawing goes wrong. Three words just above change with them:
+
+| | cell 210 | 212 | **214** | 216 |
+| --- | --- | --- | --- | --- |
+| `+0x15e0` | 1152 | 1216 | **640** | 640 |
+| `+0x15e4` | 9856 | 9984 | **5120** | 5184 |
+| `+0x15e6` | 8640 | 8768 | **4480** | 4480 |
+
+They halve. `+0x15e6` divided by sixty-four is 135, 137 at the first two cells,
+which is the height Windows draws Arial's `B` at those cells; divided by
+**thirty-two** it is 140 at the third, which is the height Windows draws it at
+that one, where this side draws 138. So the unit has lost a bit: thirty-seconds
+of a pixel where it was sixty-fourths.
+
+#### The threshold is 256 pixels per em, and it is not the stretch
+
+The EGA reaches it at a cell of two hundred and fourteen because its horizontal
+size is four thirds of its vertical. A VGA has to be asked for a much taller
+cell, and when it is, **the same thing happens**:
+
+| VGA cell | 280 | 284 | **288** | 292 |
+| --- | --- | --- | --- | --- |
+| size | 252 | 254 | **257** | 261 |
+| `+0x1606` | 0 | 0 | **1** | 1 |
+| `+0x15e6` | 11,584 | 11,648 | **5,952** | 6,016 |
+
+So the rule is a size and not a shape of pixel: **above two hundred and
+fifty-six pixels per em the scaler keeps thirty-seconds of a pixel rather than
+sixty-fourths**. `stemwide` is exact on a VGA to a cell of two hundred and
+forty-eight because two hundred and forty-eight never reaches it.
+
+#### What the mode does is still not known
+
+Three models of it, all refused by count:
+
+| | `stemwide-ega` | `stemsize-ega` |
+| --- | --- | --- |
+| **what this does now** | **681** | **238** |
+| quantise every conversion to thirty-seconds | 673 | 230 |
+| quantise the control values only | 677 | 233 |
+| quantise the outline coordinates only | 677 | 234 |
+
+All three are worse, and the reason is Courier New. It passes two hundred and
+fifty-six in the same sweep -- `stemsize` draws it to a cell of two hundred and
+fifty-two, where it is drawn at nearly three hundred across -- and Windows draws
+it **exactly right** there, 238 of 238. Whatever the lost bit costs Arial and
+Times New Roman it does not cost Courier New, so it is not a blanket
+quantisation of everything the interpreter holds.
+
+That is where this stands: the flag is found, its threshold is pinned on both
+displays, and what it switches is not. The next reading is of the bytes either
+side of it -- `+0x15e0` through `+0x15e6` are three values that halve together,
+and knowing which three quantities they are would say what the mode is a mode
+of.
 
 ### 8d. The first glyphs drawn on a pixel that is not square
 
@@ -17696,7 +17788,11 @@ above forty pixels per em -- and is **780 of 780 on a VGA**.
 `KNOWN_GAPS` holds two entries, and they are the same finding twice: Arial and
 Times New Roman on an EGA above a cell of two hundred and twelve, 99 records of
 `stemwide`'s 780 and 98 of `stemedge`'s 220. 8j has the counts and the readings
-already refused. Every other record the harness knows how to replay agrees.
+already refused, and 8k has what reading the scaler's memory found: above two
+hundred and fifty-six pixels per em it keeps thirty-seconds of a pixel rather
+than sixty-fourths, a threshold a VGA crosses too when it is asked for a tall
+enough cell. What the lost bit costs is still open. Every other record the
+harness knows how to replay agrees.
 
 The lesson is worth keeping separately from the fix. Every reading refused on
 the way to this -- the smart dropout placement, the flattening depth, the norm

@@ -1816,6 +1816,24 @@ export const KNOWN_GAPS: Record<string, string> = {
    * 476 and 91. A single different horizontal size does not explain it either
    * -- swept whole by whole at the first broken cell, the best agrees on 10 of
    * 30 where the right answer would agree on 30. See `FONTS.md` 8j.
+   *
+   * **The scaler's memory says what changes there, if not yet what it means.**
+   * `scalemem` reads GDI's blocks after drawing the same letter at four cells
+   * either side of the crossing. The scaler's own buffer holds the horizontal
+   * size and the vertical one side by side -- 251, 255, 257, 259 and 188, 191,
+   * 193, 194 -- both exactly what this side uses; and beside them two words
+   * that change at the same cell the drawing does, with three values just above
+   * them that **halve**. Divided by sixty-four those read the height Windows
+   * draws Arial's `B` at below the crossing; divided by thirty-two they read it
+   * above. The unit has lost a bit.
+   *
+   * The threshold is **two hundred and fifty-six pixels per em** and it is not
+   * the stretch: asked for a tall enough cell a VGA does the same thing, the
+   * flag turning on between 254 and 257. Three models of what the lost bit
+   * costs are refused by count -- quantising every conversion to thirty-seconds
+   * (673 and 230 against 681 and 238), the control values only (677 and 233),
+   * the outline coordinates only (677 and 234) -- because Courier New passes
+   * 256 in the same sweep and Windows draws it exactly. See `FONTS.md` 8k.
    */
   'stemwide-ega:column': '99 of 780 records, Arial and Times above a cell of 212',
   'stemedge-ega:column': '98 of 220 records, the same crossing walked by twos',
