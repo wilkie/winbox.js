@@ -68,6 +68,7 @@ const PER_DISPLAY = new Set([
   'stemsize',
   'stemwide',
   'stemedge',
+  'stemstyl',
   'scalemem',
   'scalepts',
 ]);

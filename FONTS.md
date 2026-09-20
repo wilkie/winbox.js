@@ -16975,6 +16975,71 @@ Arial and Times New Roman turn it on at the **same cell**, two hundred and
 fourteen, which is the cell `stemedge` says the drawing goes wrong at -- and
 that is what said to go and ask the face's own tables.
 
+### 8l. Above the largest size `VDMX` tabulates, Windows does the work itself
+
+The half-size rule of 8k was found in the three regular faces. The **styled**
+files are a prediction, because they declare different boxes and so should cross
+it at different sizes:
+
+| face | `head.xMax` | halves above |
+| --- | --- | --- |
+| Arial, Arial Bold | 2048 | 256.0 across |
+| Arial Italic | 2174 | 241.2 |
+| Arial Bold Italic | 2209 | 237.3 |
+| Times New Roman, Bold, Bold Italic | 2066, 2067 | 253.8, 253.6 |
+| **Times Italic** | **2020** | **259.5** |
+
+Twenty pixels per em between the extremes, and Times Italic crossing **later**
+than its own regular where Arial Italic crosses earlier -- which no rule about
+the size could produce. `oracle/probes/stemstyl.c` sweeps all six either side of
+every one of them, on both kinds of pixel.
+
+**Every threshold is exact.** What was not was everything above a cell of about
+two hundred and seventy: 723 of 900 on a VGA and 716 on an EGA, degrading from
+that cell and total from two hundred and eighty-six.
+
+#### It is the size, and the table runs out
+
+`VDMX` is a cache of what the hinted outline comes out as, and the four outline
+faces cache eight pixels per em to **two hundred and fifty-five** -- two hundred
+and forty-eight records, the largest a byte can name. Below the smallest the
+implementation already computed the extent rather than looking it up, for a
+reason section 8 gives: Windows plainly answers for those sizes, so it is doing
+the work the table would have saved it. **It does the same above the largest,
+and this did not.** Asked for a cell of two hundred and ninety, the answer
+saturated at two hundred and fifty-four where Windows draws two hundred and
+sixty -- read out of the scaler's own memory with `scalemem`.
+
+#### And an exact fit inside the table does not end the search
+
+Filling those sizes in is not enough on its own, because the table's numbers and
+scaling's do not agree. `VDMX` records the **hinted** extent, which for these
+faces runs a little over the linear one: Arial Bold's table at two hundred and
+fifty pixels per em gives the same ascent and descent -- 232 and 54 -- that
+scaling gives at two hundred and fifty-six.
+
+So a cell of two hundred and eighty-six fits **exactly** at both, and Windows
+takes the larger:
+
+| cell | 270 | 274 | 278 | 282 | 286 | 290 |
+| --- | --- | --- | --- | --- | --- | --- |
+| Windows, read from memory | 236 | 240 | 243 | 247 | **256** | **260** |
+| stopping at the table's exact fit | 236 | 240 | 243 | 247 | 250 | 254 |
+| **letting the search past it** | 236 | 240 | 243 | 247 | **256** | **260** |
+
+The two together take `stemstyl` to 867 of 900 and 859 of 900, and move nothing
+else: `stemwide`, `stemsize` and `stemedge` are unchanged on every display, and
+so is the rest of the corpus.
+
+#### What is left
+
+A tie one pixel per em wide, at four cells just below the top of the table --
+this picks 242 where Windows picks 241 for Times Bold at a cell of two hundred
+and seventy-four, and 255 where Windows picks 254 for Arial Italic at two
+hundred and eighty-two -- and the glyph is a row taller or shorter for it. Every
+cell of two hundred and eighty-six and above is exact, and so is every one of
+the eight thresholds. 33 records of 900 and 41.
+
 ### 8d. The first glyphs drawn on a pixel that is not square
 
 Every glyph ever recorded had been drawn on a VGA. The mapper, the metrics and
@@ -17929,9 +17994,11 @@ two hundred and forty-eight -- the first question ever asked of stock glyphs
 above forty pixels per em -- and is **780 of 780 on a VGA** and 779 of 780 on an
 EGA. `stemedge` is 220 of 220 and `stemsize` 238 of 238 on both displays.
 
-`KNOWN_GAPS` holds one entry, of one record: Arial's `w` at a cell of
-eighty-eight on an EGA, a diagonal this side walks a sixty-fourth steeper than
-Windows does. 8k closed it: reading the scaler's memory found the glyph being
+`KNOWN_GAPS` holds four entries. Two are one record each and the same one:
+Arial's `w` at a cell of eighty-eight, a diagonal this side walks a sixty-fourth
+steeper than Windows does, on both displays whose pixel is not square. The other
+two are `stemstyl`'s 33 of 900 and 41 of 900, a size tie one pixel per em wide
+just below the top of `VDMX`; see 8l. 8k closed it: reading the scaler's memory found the glyph being
 fitted at half the size, and four fabrications that move only what `head`
 declares found what sets that off -- the right edge of the face's box, carried
 across the horizontal size, past two hundred and fifty-six pixels. `stemedge` is

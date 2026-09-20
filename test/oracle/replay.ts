@@ -1810,6 +1810,32 @@ export const KNOWN_GAPS: Record<string, string> = {
    */
   'stemwide-ega:column': '1 of 780 records, a diagonal a sixty-fourth out at a cell of 88',
 
+  /* The same record on the other display whose pixel is not square. `stemwide`
+   * is 780 of 780 on a VGA and on a Super VGA, and 779 on an EGA and on a
+   * Hercules -- the same cell, the same glyph, the same shape of difference,
+   * and the two displays give it the same sizes. */
+  'stemwide-hercules:column': '1 of 780 records, the same diagonal as the EGA',
+
+  /* The styled files at cells of two hundred and seventy-four to two hundred
+   * and eighty-two, where the size chosen is one pixel per em out.
+   *
+   * `stemstyl` sweeps Arial and Times New Roman bold, italic and bold italic
+   * over the cells that cross every one of their half-size thresholds. It was
+   * 723 of 900 on a VGA and 716 on an EGA, and all of that was the size: above
+   * the largest `VDMX` tabulates the answer saturated near the top of the
+   * table. Filling those sizes in, and letting the search past an exact fit
+   * inside the table, is 867 and 859.
+   *
+   * What is left is a tie a pixel per em wide at four cells just below the top
+   * of the table -- ours picks 242 where Windows picks 241 for Times Bold at a
+   * cell of 274, and 255 where Windows picks 254 for Arial Italic at 282 --
+   * with the glyph a row taller or shorter for it. Every cell of 286 and above
+   * is exact, which is what the filling-in fixed; the thresholds themselves are
+   * all exact, which is what `head.xMax` predicted.
+   */
+  'stemstyl-vga:column': '33 of 900 records, a size tie of one pixel per em',
+  'stemstyl-ega:column': '41 of 900 records, the same tie',
+
   /* The glyph sweep on an EGA, 895 cells of 6,046.
    *
    * Recorded for the first time here. Nothing had ever drawn a glyph on a

@@ -34,6 +34,7 @@
  */
 #define PROBE_FACE "Arial"
 #define PROBE_CHAR 'B'
+#define PROBE_WEIGHT FW_BOLD
 
 /* Tall enough to hold the glyph at these cells, and one bit a pixel. */
 #define CELL_WIDTH  64
@@ -92,7 +93,7 @@ static void census(void)
 /* One character at one cell, and nothing else selected around it. */
 static void draw(int height)
 {
-    HFONT font = CreateFont(height, 0, 0, 0, FW_NORMAL, 0, 0, 0, ANSI_CHARSET,
+    HFONT font = CreateFont(height, 0, 0, 0, PROBE_WEIGHT, 0, 0, 0, ANSI_CHARSET,
                             OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
                             DEFAULT_QUALITY, DEFAULT_PITCH, PROBE_FACE);
     HFONT previous;
@@ -173,7 +174,7 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      * VGA, where the same face has to be asked for a much taller cell to reach
      * the same horizontal size.
      */
-    static const int HEIGHTS[] = { 210, 212, 214, 216, 284, 285, 286, 288, 0 };
+    static const int HEIGHTS[] = { 270, 274, 278, 282, 286, 290, 294, 298, 0 };
 
     HDC screen;
     int at;

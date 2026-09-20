@@ -614,11 +614,68 @@ export class TrueTypeFont {
       );
     }
 
+    /* And above the largest size the table covers, the same way.
+     *
+     * `VDMX` is a cache, and the four outline faces cache eight pixels per em
+     * to two hundred and fifty-five -- two hundred and forty-eight records,
+     * with the largest a `uint8` could name. Above that Windows does the work
+     * the table would have saved it, exactly as it does below the smallest.
+     *
+     * **Recorded.** Reading the size out of the scaler's own memory, Arial Bold
+     * at a cell of two hundred and ninety on a VGA is drawn at two hundred and
+     * sixty pixels per em and at a cell of two hundred and eighty-six at two
+     * hundred and fifty-six. Without this the answer saturates near the top of
+     * the table -- 253 and 254 -- and every styled face above a cell of about
+     * two hundred and eighty comes out a little small.
+     */
+    const largest = this._largestTabulated();
+
+    /* An exact fit inside the table does **not** end this search.
+     *
+     * `VDMX` records the *hinted* extent, which for these faces runs a little
+     * over the scaled one -- Arial Bold's table at two hundred and fifty pixels
+     * per em says the same ascent and descent that scaling says at two hundred
+     * and fifty-six. So a cell of two hundred and eighty-six fits exactly at
+     * both, and Windows takes **the larger**: read out of the scaler's memory
+     * it draws that cell at two hundred and fifty-six and not at two hundred
+     * and fifty. Stopping on the table's exact fit answers two hundred and
+     * fifty.
+     */
+    for (let ppem = largest + 1; Number.isFinite(largest); ppem++) {
+      const ascent = Math.round((this.ascender * ppem) / this.unitsPerEm);
+      const descent = Math.round((this.descender * ppem) / this.unitsPerEm);
+
+      if (ascent + descent > height) {
+        break;
+      }
+
+      consider(ppem, ascent, descent);
+    }
+
     /* Asked for a cell smaller than anything fits in, Windows overflows rather
      * than refusing: one pixel of Arial comes back two pixels tall, and keeps
      * the name Arial rather than falling to a strike. **Recorded.**
      */
     return best ?? this.smallestSize();
+  }
+
+  /** The largest size `VDMX` tabulates, or infinity if it tabulates none. */
+  _largestTabulated() {
+    const group = this.vdmxGroup();
+
+    if (group === null) {
+      return Infinity;
+    }
+
+    const records = this._view.getUint16(group, false);
+
+    let largest = 0;
+
+    for (let index = 0; index < records; index++) {
+      largest = Math.max(largest, this._view.getUint16(group + 4 + index * 6, false));
+    }
+
+    return largest;
   }
 
   /** The smallest size `VDMX` tabulates, or infinity if it tabulates none. */
