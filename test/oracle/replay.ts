@@ -1780,11 +1780,28 @@ export const KNOWN_GAPS: Record<string, string> = {
    * half-size fitting of 8k and the `head.xMax` that sets it off, and
    * `stemedge` is now 220 of 220 and `stemwide` 779 of 780.
    *
-   * The one left is not that rule and is well below its threshold -- eighty-two
-   * pixels per em across, where the flag is off. Arial's `w` there is a
-   * diagonal whose left edge this side walks a sixty-fourth steeper than
-   * Windows does, so its column drifts by one over eight rows and comes back.
-   * One record of 1,798 in the four sweeps.
+   * The one left is not that rule and is well below its threshold -- a hundred
+   * and five pixels per em across, where the flag is off -- and it has been
+   * chased as far as this instrument goes.
+   *
+   * It is the outer left edge of Arial's `w`. This side fits it from (-0.5, 42)
+   * to (17.313, 0), a slope of 0.424; Windows draws a slope of **exactly
+   * 0.400**, its leftmost column stepping 3, 2, 3, 2 rows all the way down
+   * where this side's steps 2, 3, 2, 2, 3. That is about a pixel of difference
+   * in the lower vertex and nothing at the upper one.
+   *
+   * Nothing branches. The glyph's instructions at this cell and at the cell
+   * either side -- both of which agree -- are the same instructions in the same
+   * order, with the same `MIAP` and `MIRP` control values scaling smoothly and
+   * the same cut-in decision at every one. At a cell of eighty this side's
+   * slope is 0.4215 and Windows agrees, so it is one rounding that steps at
+   * this size and not a rule.
+   *
+   * Reading Windows' own fitted outline would settle it and cannot be done from
+   * here: `scalemem` reads the scaler's buffer after the call, and by then it
+   * holds the glyph's metrics and not its points -- the only 2,688 in sixteen
+   * kilobytes is the height at `+0x15e6`. That wants a capture during the call,
+   * which is what `stack.c` was built for.
    */
   'stemwide-ega:column': '1 of 780 records, a diagonal a sixty-fourth out at a cell of 88',
 

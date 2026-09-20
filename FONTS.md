@@ -16883,10 +16883,32 @@ size itself, the flag reads 0, 0, 0, **0**, **1**, 1, 1, 1 across sizes of 254,
 | both halved, not rounded at all | 180 | 737 |
 
 `stemedge` is exact. `stemwide` has one record left and it is not this rule:
-Arial's `w` at a cell of eighty-eight, eighty-two pixels per em across, where
-the flag is off -- a diagonal whose left edge this side walks a sixty-fourth
-steeper than Windows does. Nothing else in the corpus moves: `stemsize` stays
-238 of 238 on both displays, `stemwide` on a VGA 780 of 780.
+Arial's `w` at a cell of eighty-eight, where the flag is off. Nothing else in
+the corpus moves: `stemsize` stays 238 of 238 on both displays, `stemwide` on a
+VGA 780 of 780.
+
+#### The one record left, chased as far as this instrument goes
+
+It is the outer left edge of that `w`. This side fits it from (-0.5, 42) to
+(17.313, 0), a slope of 0.424. Windows draws a slope of **exactly 0.400**: its
+leftmost column steps 3, 2, 3, 2 rows all the way down, where this side's steps
+2, 3, 2, 2, 3. That is about a pixel of difference in the lower vertex and none
+at the upper one.
+
+Nothing branches to explain it. The glyph's instructions at this cell and at the
+cells either side -- both of which agree -- are the same instructions in the
+same order, with the same `MIAP` and `MIRP` control values scaling smoothly
+between them and the same cut-in decision at every one. At a cell of eighty this
+side's slope is 0.4215 and Windows agrees with that, so what is wrong is one
+rounding that steps at this size, and not a rule.
+
+**Reading Windows' own fitted outline would settle it, and cannot be done from
+here.** `scalemem` reads the scaler's buffer after the call, and by then the
+buffer holds the glyph's metrics and not its points: the only 2,688 in sixteen
+kilobytes -- forty-two pixels in sixty-fourths, which is the height of this very
+glyph -- is the height field at `+0x15e6`. Catching the points wants a read
+during the call, which is what `stack.c` was built for and what the next attempt
+at this record should use.
 
 #### What the earlier guess cost
 

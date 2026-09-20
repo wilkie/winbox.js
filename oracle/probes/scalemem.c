@@ -169,7 +169,11 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      * cross the same horizontal size on a square pixel, where the cell has to
      * be much taller to reach it.
      */
-    static const int HEIGHTS[] = { 283, 284, 285, 286, 287, 288, 289, 290, 0 };
+/* Four cells that bracket the flip on an EGA and four that bracket it on a
+     * VGA, where the same face has to be asked for a much taller cell to reach
+     * the same horizontal size.
+     */
+    static const int HEIGHTS[] = { 210, 212, 214, 216, 284, 285, 286, 288, 0 };
 
     HDC screen;
     int at;
