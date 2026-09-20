@@ -17008,37 +17008,49 @@ reason section 8 gives: Windows plainly answers for those sizes, so it is doing
 the work the table would have saved it. **It does the same above the largest,
 and this did not.** Asked for a cell of two hundred and ninety, the answer
 saturated at two hundred and fifty-four where Windows draws two hundred and
-sixty -- read out of the scaler's own memory with `scalemem`.
+sixty.
 
-#### And an exact fit inside the table does not end the search
+#### And it does not mix the two
 
-Filling those sizes in is not enough on its own, because the table's numbers and
-scaling's do not agree. `VDMX` records the **hinted** extent, which for these
-faces runs a little over the linear one: Arial Bold's table at two hundred and
-fifty pixels per em gives the same ascent and descent -- 232 and 54 -- that
-scaling gives at two hundred and fifty-six.
+Filling the sizes in is not enough on its own, because the table's numbers and
+scaling's do not agree -- `VDMX` records the **hinted** extent, which for these
+faces runs a little over the linear one. Competing the two size by size, which
+is what the same loop does everywhere else, gets the boundary wrong.
 
-So a cell of two hundred and eighty-six fits **exactly** at both, and Windows
-takes the larger:
+**Read out of the scaler's own memory**, for every cell from 262 to 294 of Times
+New Roman Bold on a VGA, the answer is the best the table can do up to a cell of
+280 and the best scaling can do from 282 -- and 282 is exactly the cell at which
+scaling reaches the top of the table:
 
-| cell | 270 | 274 | 278 | 282 | 286 | 290 |
-| --- | --- | --- | --- | --- | --- | --- |
-| Windows, read from memory | 236 | 240 | 243 | 247 | **256** | **260** |
-| stopping at the table's exact fit | 236 | 240 | 243 | 247 | 250 | 254 |
-| **letting the search past it** | 236 | 240 | 243 | 247 | **256** | **260** |
+| cell | 278 | **280** | **282** | 284 | 286 | 288 | 290 | 294 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| the table's best | 246 | **247** | 250 | 252 | 253 | 255 | 255 | 255 |
+| scaling's best | 251 | 253 | **255** | 256 | 258 | 260 | 262 | 265 |
+| **Windows** | 246 | **247** | **255** | 256 | 258 | 260 | 262 | 265 |
 
-The two together take `stemstyl` to 867 of 900 and 859 of 900, and move nothing
-else: `stemwide`, `stemsize` and `stemedge` are unchanged on every display, and
-so is the rest of the corpus.
+So once the scaled extent reaches the top of the table, the table is not
+consulted at all. Taking the larger of the two instead answers 253 at a cell of
+280 where Windows answers 247.
+
+Arial Italic says the same from its own numbers. Its scaled extent reaches two
+hundred and fifty-five at a cell of 285, and Windows draws 255, 256, 257 and 260
+at cells of 285, 286, 288 and 290 -- scaling's best at every one.
 
 #### What is left
 
-A tie one pixel per em wide, at four cells just below the top of the table --
-this picks 242 where Windows picks 241 for Times Bold at a cell of two hundred
-and seventy-four, and 255 where Windows picks 254 for Arial Italic at two
-hundred and eighty-two -- and the glyph is a row taller or shorter for it. Every
-cell of two hundred and eighty-six and above is exact, and so is every one of
-the eight thresholds. 33 records of 900 and 41.
+A tie **inside** the table, at four cells below where the switch happens.
+Windows takes the *later* of two tabulated sizes that fit the cell exactly:
+Times New Roman Bold has 242 and 243 both tabulated at exactly 274, and at a
+cell of 274 Windows draws 243 where this draws 242, leaving the glyph a row
+short.
+
+That is the opposite of what the small-size corpus says, and the small-size
+corpus is not negotiable -- letting the search past an exact fit costs **272 of
+`font`'s 11,382 records**, which are the ties that demonstrably take the first.
+Whatever separates the two cases is not read.
+
+Every cell above the switch is exact, and so is every one of the eight
+half-size thresholds. 34 records of 900 and 44.
 
 ### 8d. The first glyphs drawn on a pixel that is not square
 
@@ -17997,8 +18009,9 @@ EGA. `stemedge` is 220 of 220 and `stemsize` 238 of 238 on both displays.
 `KNOWN_GAPS` holds four entries. Two are one record each and the same one:
 Arial's `w` at a cell of eighty-eight, a diagonal this side walks a sixty-fourth
 steeper than Windows does, on both displays whose pixel is not square. The other
-two are `stemstyl`'s 33 of 900 and 41 of 900, a size tie one pixel per em wide
-just below the top of `VDMX`; see 8l. 8k closed it: reading the scaler's memory found the glyph being
+two are `stemstyl`'s 34 of 900 and 44 of 900, a tie inside `VDMX` that Windows
+takes the later of where the rest of the corpus says it takes the first; see
+8l. 8k closed it: reading the scaler's memory found the glyph being
 fitted at half the size, and four fabrications that move only what `head`
 declares found what sets that off -- the right edge of the face's box, carried
 across the horizontal size, past two hundred and fifty-six pixels. `stemedge` is

@@ -1826,15 +1826,19 @@ export const KNOWN_GAPS: Record<string, string> = {
    * table. Filling those sizes in, and letting the search past an exact fit
    * inside the table, is 867 and 859.
    *
-   * What is left is a tie a pixel per em wide at four cells just below the top
-   * of the table -- ours picks 242 where Windows picks 241 for Times Bold at a
-   * cell of 274, and 255 where Windows picks 254 for Arial Italic at 282 --
-   * with the glyph a row taller or shorter for it. Every cell of 286 and above
-   * is exact, which is what the filling-in fixed; the thresholds themselves are
-   * all exact, which is what `head.xMax` predicted.
+   * What is left is a tie inside the table, at four cells below where the
+   * switch happens. Windows takes the **later** of two tabulated sizes that fit
+   * the cell exactly -- Times New Roman Bold at a cell of 274 has 242 and 243
+   * both tabulated at exactly 274, and Windows draws 243 where this draws 242.
+   * That is the opposite of what the small-size corpus says, and the small-size
+   * corpus is not negotiable: letting the search past an exact fit costs 272 of
+   * `font`'s 11,382 records. Whatever separates the two cases is not read.
+   *
+   * Every cell above the switch is exact, and so is every one of the eight
+   * half-size thresholds, which is what `head.xMax` predicted.
    */
-  'stemstyl-vga:column': '33 of 900 records, a size tie of one pixel per em',
-  'stemstyl-ega:column': '41 of 900 records, the same tie',
+  'stemstyl-vga:column': '34 of 900 records, a tie inside VDMX taken the other way',
+  'stemstyl-ega:column': '44 of 900 records, the same tie',
 
   /* The glyph sweep on an EGA, 895 cells of 6,046.
    *

@@ -614,42 +614,51 @@ export class TrueTypeFont {
       );
     }
 
-    /* And above the largest size the table covers, the same way.
+    /* And where the size wanted is off the end of the table, the table is not
+     * consulted at all.
      *
-     * `VDMX` is a cache, and the four outline faces cache eight pixels per em
-     * to two hundred and fifty-five -- two hundred and forty-eight records,
-     * with the largest a `uint8` could name. Above that Windows does the work
-     * the table would have saved it, exactly as it does below the smallest.
+     * `VDMX` is a cache of the hinted extent, and the four outline faces cache
+     * eight pixels per em to two hundred and fifty-five -- two hundred and
+     * forty-eight records, the largest a byte can name. Above that Windows does
+     * the work the table would have saved it, exactly as it does below the
+     * smallest; and it does not mix the two. Once the scaled extent reaches the
+     * top of the table the answer is the largest size whose scaled extent still
+     * fits, and what the table says at any size is not looked at.
      *
-     * **Recorded.** Reading the size out of the scaler's own memory, Arial Bold
-     * at a cell of two hundred and ninety on a VGA is drawn at two hundred and
-     * sixty pixels per em and at a cell of two hundred and eighty-six at two
-     * hundred and fifty-six. Without this the answer saturates near the top of
-     * the table -- 253 and 254 -- and every styled face above a cell of about
-     * two hundred and eighty comes out a little small.
+     * **Recorded**, by reading the size out of the scaler's own memory for
+     * every cell from 262 to 294 of Times New Roman Bold on a VGA. Up to a cell
+     * of 280 the answer is the best the table can do; from 282 it is the best
+     * scaling can do, and 282 is exactly the cell at which scaling reaches two
+     * hundred and fifty-five:
+     *
+     *     cell   280   282   284   286   288   290   292   294
+     *     the table's best     247   250   252   253   255   255   255   255
+     *     scaling's best       253   255   256   258   260   262   264   265
+     *     Windows              247   255   256   258   260   262   264   265
+     *
+     * Taking the larger of the two instead is wrong the other way -- at a cell
+     * of 280 that would answer 253 where Windows answers 247 -- and competing
+     * them size by size costs three records of `stemstyl` rather than gaining.
      */
     const largest = this._largestTabulated();
 
-    /* An exact fit inside the table does **not** end this search.
-     *
-     * `VDMX` records the *hinted* extent, which for these faces runs a little
-     * over the scaled one -- Arial Bold's table at two hundred and fifty pixels
-     * per em says the same ascent and descent that scaling says at two hundred
-     * and fifty-six. So a cell of two hundred and eighty-six fits exactly at
-     * both, and Windows takes **the larger**: read out of the scaler's memory
-     * it draws that cell at two hundred and fifty-six and not at two hundred
-     * and fifty. Stopping on the table's exact fit answers two hundred and
-     * fifty.
-     */
-    for (let ppem = largest + 1; Number.isFinite(largest); ppem++) {
-      const ascent = Math.round((this.ascender * ppem) / this.unitsPerEm);
-      const descent = Math.round((this.descender * ppem) / this.unitsPerEm);
+    if (Number.isFinite(largest)) {
+      let top = null;
 
-      if (ascent + descent > height) {
-        break;
+      for (let ppem = largest; ; ppem++) {
+        const ascent = Math.round((this.ascender * ppem) / this.unitsPerEm);
+        const descent = Math.round((this.descender * ppem) / this.unitsPerEm);
+
+        if (ascent + descent > height) {
+          break;
+        }
+
+        top = { ppem, ascent, descent, cell: ascent + descent };
       }
 
-      consider(ppem, ascent, descent);
+      if (top) {
+        return top;
+      }
     }
 
     /* Asked for a cell smaller than anything fits in, Windows overflows rather

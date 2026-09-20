@@ -34,7 +34,8 @@
  */
 #define PROBE_FACE "Arial"
 #define PROBE_CHAR 'B'
-#define PROBE_WEIGHT FW_BOLD
+#define PROBE_WEIGHT FW_NORMAL
+#define PROBE_ITALIC 1
 
 /* Tall enough to hold the glyph at these cells, and one bit a pixel. */
 #define CELL_WIDTH  64
@@ -93,7 +94,7 @@ static void census(void)
 /* One character at one cell, and nothing else selected around it. */
 static void draw(int height)
 {
-    HFONT font = CreateFont(height, 0, 0, 0, PROBE_WEIGHT, 0, 0, 0, ANSI_CHARSET,
+    HFONT font = CreateFont(height, 0, 0, 0, PROBE_WEIGHT, PROBE_ITALIC, 0, 0, ANSI_CHARSET,
                             OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS,
                             DEFAULT_QUALITY, DEFAULT_PITCH, PROBE_FACE);
     HFONT previous;
@@ -174,7 +175,12 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      * VGA, where the same face has to be asked for a much taller cell to reach
      * the same horizontal size.
      */
-    static const int HEIGHTS[] = { 270, 274, 278, 282, 286, 290, 294, 298, 0 };
+/* Either side of where the size stops coming from `VDMX` and starts being
+     * scaled. The face, the weight and the italic flag above are the whole of
+     * what a run varies; the readings in `FONTS.md` 8l were taken for Times
+     * New Roman Bold over 262 to 294 and for Arial Italic over 278 to 290.
+     */
+    static const int HEIGHTS[] = { 278, 280, 282, 284, 285, 286, 288, 290, 0 };
 
     HDC screen;
     int at;
