@@ -16684,6 +16684,59 @@ hundred and fourteen, and starts five rows lower, while this side's grows with
 the cell as it should. Whatever the two faces ask for at that size, Windows
 gives them something short of it.
 
+#### Chased: it is not the scaling, and nothing branches on this side
+
+The next thing to establish was whether the sizes themselves are right, because
+every quantity that could say why is otherwise inside a hint program. So take
+the program away. `times-ruler` replaces ten of Times New Roman's glyphs with a
+single upright bar forty units wide and **no instructions at all**, each at a
+design `x` fifty units further right than the last. The leftmost inked column of
+each is then the scaled `x` and nothing else, and ten of them across a
+sixty-four column bitmap read the horizontal size straight off the recording.
+
+**It is right, at every cell.** Bars at design 40 through 490 come back at
+columns 7, 13, 19, 26, 32, 38, 44, 51, 57, 63 at a cell of two hundred and
+fourteen, which is what two hundred and fifty-seven pixels per em puts them at
+to the column -- and two hundred and fifty-seven is what this side uses. The
+same holds above the boundary and below it. The bars' heights say the same for
+the vertical size, to the row their resolution allows.
+
+So the scaling is not the gap. Nor is anything branching here:
+
+- `Arial`'s `B` traced instruction by instruction at a cell of two hundred and
+  twelve and at two hundred and fourteen gives the **same instructions in the
+  same order**, the same `MIAP` and `MIRP` control values scaling smoothly
+  between them, and the same cut-in decision at every one;
+- the control values `prep` leaves behind scale smoothly too -- no entry jumps,
+  so the prep did not take a different branch.
+
+This side moves smoothly across the boundary and Windows does not. What Windows
+draws at a cell of two hundred and fourteen is **bigger in both directions**:
+Arial's `B` is 140 rows tall where this draws 138, and its stem is a column
+further right.
+
+#### Refused, with counts
+
+On `stemwide`'s 780 EGA records and `stemedge`'s 220:
+
+| reading | `stemwide` | `stemedge` |
+| --- | --- | --- |
+| **what this does** | **681** | **122** |
+| the size a program reads is the vertical one | 429 | -- |
+| that size clamped to 255 | 681 -- no change | 122 -- no change |
+| control values scaled at a size capped at 255 | 662 | 122 |
+| the same capped at 256 | 665 | 122 |
+| control values scaled at the vertical size | 476 | 91 |
+
+A single wrong horizontal size is refused too: swept whole by whole at the first
+broken cell, the best of them agrees on 10 of 30 where the right answer would
+agree on 30.
+
+What is left is a difference inside the two faces' programs that this side
+executes without branching and Windows does not -- or a quantity those programs
+read that has not been thought of. The next instrument would be the one that
+reads the scaler's own memory, which section 8 already has for other questions.
+
 This is in `KNOWN_GAPS`, with its counts, which is where a measurement that is
 not yet a rule belongs.
 

@@ -1795,16 +1795,27 @@ export const KNOWN_GAPS: Record<string, string> = {
    * something the two faces' programs do and Courier New's does not, at a size
    * their nearly equal metrics reach together.
    *
-   * Two readings refused by count on `stemwide`'s 780 EGA records: the size the
-   * program reads being the vertical one rather than the horizontal, 429; and
-   * that size clamped to 255, 681, which is no change at all. A single
-   * different horizontal size does not explain it either -- swept whole by
-   * whole at the first broken cell, the best of them agrees on 10 of 30 where
-   * the right answer would agree on 30.
+   * **It is not the scaling.** `times-ruler` replaces ten Times New Roman glyphs
+   * with plain bars and no instructions at all, fifty design units apart, and
+   * their columns read the horizontal size off the bitmap: it is what this side
+   * uses, at every cell above the boundary and below it.
    *
-   * Windows draws a shorter glyph than the size asks for there: Arial's `A`
-   * spans 124 rows at a cell of two hundred and twelve and 121 at two hundred
-   * and fourteen, starting five rows lower, while this side's grows.
+   * **And nothing branches here.** Arial's `B` traced instruction by
+   * instruction at a cell of two hundred and twelve and at two hundred and
+   * fourteen gives the same instructions in the same order, the same control
+   * values scaling smoothly, and the same cut-in decision at every one; the
+   * values `prep` leaves behind scale smoothly too. This side moves smoothly
+   * across the boundary and Windows does not: what it draws at two hundred and
+   * fourteen is bigger in both directions, Arial's `B` 140 rows against 138
+   * here with its stem a column further right.
+   *
+   * Refused by count, on 780 EGA records and 220: the size a program reads
+   * being the vertical one, 429; that size clamped to 255, 681 and 122, which
+   * is no change at all; control values scaled at a size capped at 255, 662 and
+   * 122, and at 256, 665 and 122; control values scaled at the vertical size,
+   * 476 and 91. A single different horizontal size does not explain it either
+   * -- swept whole by whole at the first broken cell, the best agrees on 10 of
+   * 30 where the right answer would agree on 30. See `FONTS.md` 8j.
    */
   'stemwide-ega:column': '99 of 780 records, Arial and Times above a cell of 212',
   'stemedge-ega:column': '98 of 220 records, the same crossing walked by twos',

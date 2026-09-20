@@ -1,0 +1,1334 @@
+{
+  "probe": "stemedge",
+  "display": "ega",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "egahires",
+    "displayDescription": "EGA, 640x350, 16 colours"
+  },
+  "font": "times-ruler",
+  "records": [
+    {
+      "function": "column",
+      "args": "\"Arial\",h=202,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3f3e3e3d3d3c3c3b3b3a3a39393838373736363535343433333232313130302f2f2e2e2d2d2c2c2b2b2a2a292828272726262525242423232222212120201f1f1e1e1d1d1c1c1b1b1a1a19191818171716161515141413131212111110100f0f0e0e0d0d0c0c0b0b0a0a090808070706060505040403030202ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=202,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff050606060707070808080909090a0a0a0b0b0b0c0c0c0d0d0d0e0e0e0f0f0f10101111111212121313131414141515151616161717171818181919191a1a1a1b1b1b1c1c1d1d1d1e1e1e1f1f1f20202021212122222223232324242425252526262627272828282929292a2a2a2b2b2b2c2c2c2d2d2d2e2e2e2f2f2f3030303131ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=202,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b332e2a272422201e1c1b1a1918171615141413121211111110100f0f141fffffffffffffffffffff3d332c2824211e1c1a1917161514121211100f0f0e0e0d0d0d0c0c0c0c0c0c0c0c0c0c0d0d0d0e0e0f0f1011111213141617191a1c1f22262cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=202,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff36302c29262422201f1d1c1b191817161515141312121110100f0f0e0e0e0d0d0c0c0c0c0b0b0b0b0b0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0b0b0b0b0b0c0c0c0d0d0d0e0e0f0f101011121213141515161718191b1c1d1f20222426292c3036ffffffffffffff0e0e0e0e0e0e0e0f0f0f1010101112121314151617181a1b1d202225282d34",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=202,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3e13131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=202,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff03030404040505060606070708080809090a0a0b0b0b0c0c0d0d0d0e0e0f0f101010111112121213131414141515161617171718181919191a1a1b1b1c1c1c1d1d1e1e1e1f1f202020212122222323232424252525262627272728282929ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=202,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3a332f2c29262422201e1d1b1a1918171615141312121110100f0f0e0e0d0d0d0c0c0c0c0b0b0b0b0b0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0b0b0b0b0b0b0c0c0c0d0d0d0e0e0f0f1010111212131415161718191a1b1d1e20222426282b2f333affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=202,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff312b2623201d1b1a1817151413121211100f0f0e0e0e0e0d0d0d0d0d0d0d0d0e0e0e0f0f101011121314151617191b1d2023262a2e33373cffffffffffffffffff1a0f0a0a0b0b0b0c0c0c0d0d0e0f0f101111121314151618191b1d1f2124282c34ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=202,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b34302c2a272523211f1e1c1b1a1918171615141312121110100f0f0e0e0d0d0d0c0c0c0b0b0b0b0b0b0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0b0b0b0b0b0b0c0c0c0d0d0d0e0e0f0f1010111212131415161718191a1c1d1f20222427292c30343cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=202,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=202,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=202,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=202,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=202,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=202,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=202,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=202,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=202,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=202,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=202,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=204,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3f3e3e3d3d3c3c3b3b3a3a39393838373736363535343433333232313130302f2f2e2e2d2d2c2c2b2b2a2a292828272726262525242423232222212120201f1f1e1e1d1d1c1c1b1b1a1a19191818171716161515141413131212111110100f0f0e0e0d0d0c0c0b0b0a0a090808070706060505040403030202ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=204,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff050606060707070808080909090a0a0a0b0b0b0c0c0c0d0d0e0e0e0f0f0f10101011111112121213131314141415151516161717171818181919191a1a1a1b1b1b1c1c1c1d1d1d1e1e1f1f1f20202021212122222223232324242425252526262627272828282929292a2a2a2b2b2b2c2c2c2d2d2d2e2e2e2f2f303030313131323232ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=204,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3c342f2b272522201e1d1b1a1918171615141413121211111110100f0f141fffffffffffffffffffffff3e342d2825221f1d1b1917161514131211100f0f0e0e0d0d0d0c0c0c0c0c0c0c0c0c0c0d0d0d0e0e0f0f1011121214151617191b1d1f23272dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=204,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff37312d2a272523211f1e1c1b1a191817161514141312111110100f0f0e0e0e0d0d0c0c0c0c0b0b0b0b0b0b0a0a0a0a0a0a0a0a0a0a0a0a0b0b0b0b0b0b0c0c0c0d0d0d0e0e0f0f101011111213131415161718191a1b1c1e1f21222427292c3037ffffffffffffff0e0e0e0e0e0e0f0f0f0f1010111112121314151617191a1c1e20232629",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=204,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=204,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff03030404040505060606070708080809090a0a0a0b0b0c0c0d0d0d0e0e0f0f0f1010111111121213131314141515151616171718181819191a1a1a1b1b1c1c1c1d1d1e1e1e1f1f202021212122222323232424252525262627272728282929ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=204,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3c34302d2a272523211f1e1c1b1918171615141313121111100f0f0e0e0e0d0d0c0c0c0c0b0b0b0b0b0b0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0b0b0b0b0b0b0c0c0c0c0d0d0e0e0e0f0f1011111213131415161718191b1c1d1f21232527292c30343bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=204,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff322b2723201e1c1a181716151313121110100f0f0e0e0e0d0d0d0d0d0d0d0d0e0e0e0e0f0f1011121213141617191b1d1f2225292d31363bffffffffffffffffffff1a0f0a0a0b0b0b0c0c0d0d0e0e0f0f1011121213141517181a1b1d1f2124282d34ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=204,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3c35312d2a28262422201f1d1c1a1918171615141313121111100f0f0e0e0e0d0d0c0c0c0c0b0b0b0b0b0b0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0b0b0b0b0b0c0c0c0c0d0d0e0e0e0f1010111112131414151617191a1b1c1e1f212325272a2d31363dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=204,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=204,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff07070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=204,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=204,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff13131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=204,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff19191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=204,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=204,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff24242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424242424ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=204,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=204,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff30303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=204,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff36363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636363636ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=204,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=206,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3f3e3e3d3d3c3c3b3b3a3a39393838373736363535343433333232313130302f2f2e2e2d2d2c2c2b2a2a29292828272726262525242423232222212120201f1f1e1e1d1d1c1c1b1b1a1a19191818171716161515141413131212111110100f0f0e0e0d0d0c0c0b0a0a090908080707060605050404030302020101ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=206,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff050606060707070808080909090a0a0a0b0b0b0c0c0c0d0d0d0e0e0e0f0f0f10101011111112121213131414141515151616161717171818181919191a1a1a1b1b1b1c1c1c1d1d1d1e1e1e1f1f1f20202021212122222323232424242525252626262727272828282929292a2a2a2b2b2b2c2c2c2d2d2d2e2e2e2f2f2f3030313131323232ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=206,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3d352f2b282523211f1d1c1b191817161615141413121211111110100f0f141fffffffffffffffffffffff362f2a2623201e1c1a1817151413121211100f0f0e0e0d0d0d0c0c0c0c0c0c0c0c0c0c0d0d0d0e0e0e0f101011121314151618191b1d2023272effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=206,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff38322e2b28262422201f1d1c1b1a191817161514131312111110100f0f0e0e0e0d0d0d0c0c0c0c0b0b0b0b0b0b0b0a0a0a0a0a0a0a0a0a0b0b0b0b0b0b0c0c0c0c0d0d0d0e0e0f0f101011111213131415161718191a1b1c1d1e20222325282a2d3238ffffffffffffff0e0e0e0e0e0f0f0f0f0f101011111212131415161718191b1d1f21",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=206,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff13131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=206,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0303030404050505060607070708080909090a0a0b0b0b0c0c0d0d0d0e0e0f0f0f101011111112121313131414151515161617171718181919191a1a1b1b1b1c1c1d1d1d1e1e1f1f1f202021212122222323232424252525262627272728282929ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=206,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3c35312d2a28252321201e1d1b1a1918171615141312121110100f0f0e0e0d0d0d0c0c0c0c0b0b0b0b0b0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0b0b0b0b0b0c0c0c0c0d0d0d0e0e0f0f1010111212131415161718191a1b1c1e1f212325272a2d30353cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=206,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff332c2724211e1c1a191716151413121111100f0f0e0e0e0d0d0d0d0d0d0d0d0d0e0e0e0f0f101011121314151617191b1d2023262a2e32373cffffffffffffffffffff1a0f0a0a0b0b0b0c0c0c0d0d0e0f0f101011121314151617191a1c1e202225292e35ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=206,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3d36312e2b28262422211f1e1c1b1a1917161615141312121110100f0f0e0e0d0d0d0c0c0c0c0b0b0b0b0b0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0b0b0b0b0b0c0c0c0c0d0d0d0e0e0f0f1010111212131415161718191a1b1d1e20222426282b2e31363dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=206,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff14141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=206,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=206,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=206,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=206,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=206,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=206,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=206,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=206,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=206,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=206,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=208,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3f3e3e3d3d3c3c3b3b3a3a39393838373736363535343433333232313130302f2f2e2e2d2d2c2c2b2b2a2a29292828272726262525242423232222212120201f1f1e1e1d1d1c1c1b1b1a1a191918181716161515141413131212111110100f0f0e0e0d0d0c0c0b0b0a0a09090808070706060505040403030202ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=208,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff050606060707070808080909090a0a0a0b0b0b0c0c0c0d0d0d0e0e0e0f0f0f10101011111112121213131314141415151516161617171718181819191a1a1a1b1b1b1c1c1c1d1d1d1e1e1e1f1f1f2020202121212222222323232424242525252626262727272828282929292a2a2a2b2b2b2c2c2c2d2d2d2e2e2f2f2f303030313131323232ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=208,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3d35302c282623211f1d1c1b191817161615141413121211111110100f0f141fffffffffffffffffffffff372f2a2623201e1c1a1817161413121211100f0f0e0e0d0d0d0c0c0c0c0c0c0c0c0c0c0d0d0d0e0e0f0f1010111213141517181a1b1e2023282effffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=208,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff38322e2b28262422201f1d1c1b1a191817161514141312121110100f0f0f0e0e0d0d0d0c0c0c0c0b0b0b0b0b0b0b0b0a0a0a0a0a0a0b0b0b0b0b0b0b0b0c0c0c0c0d0d0e0e0e0f0f101011111213141415161718191a1b1c1d1f20222325282a2e3238ffffffffffffff0e0e0e0e0f0f0f0f0f101010111112121314151617181a1b1d",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=208,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff13131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=208,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff03030404040505060606070708080909090a0a0b0b0b0c0c0d0d0d0e0e0f0f101010111112121213131414151515161617171718181919191a1a1b1b1c1c1c1d1d1e1e1e1f1f2020212121222223232324242525252626272728282829292a2a2affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=208,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3d35312d2a28262322201e1d1b1a1918171615141312121110100f0f0e0e0d0d0d0c0c0c0c0b0b0b0b0b0b0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0b0b0b0b0b0c0c0c0c0d0d0d0e0e0f0f1010111212131415161718191a1b1d1e20212325272a2d30353cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=208,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff332c2724211e1c1b191716151413121111100f0f0e0e0e0e0d0d0d0d0d0d0d0d0e0e0e0f0f101011121213141617181a1c1e2124282c3035393effffffffffffffffff1a0f0a0a0b0b0b0c0c0c0d0d0e0f0f101011121314151617191a1c1e202225292e35ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=208,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3d37322f2c2927252321201e1d1c1b19181716161514131312111110100f0f0e0e0e0d0d0d0d0c0c0c0c0c0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0c0c0c0c0c0d0d0d0d0e0e0e0f0f101011111213131415161718191a1b1c1e1f21222426292b2e32373effffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=208,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=208,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=208,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=208,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=208,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=208,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=208,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525252525ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=208,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2bffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=208,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=208,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737373737ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=208,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3d3dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=210,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3f3e3e3d3d3c3c3b3b3a3a39393838373736363535343433333232313130302f2f2e2e2d2d2c2b2b2a2a29292828272726262525242423232222212120201f1f1e1e1d1d1c1c1b1b1a1a19191818171716161515141413131212111110100f0f0e0e0d0d0c0b0b0a0a09090808070706060505040403030202ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=210,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff050606060707070808080909090a0a0a0b0b0b0c0c0c0d0d0d0e0e0e0f0f10101011111112121213131314141415151516161617171718181819191a1a1a1b1b1b1c1c1c1d1d1d1e1e1e1f1f1f20202021212122222223232424242525252626262727272828282929292a2a2a2b2b2b2c2c2d2d2d2e2e2e2f2f2f303030313131323232333333ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=210,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3e36302c292623211f1e1c1b1a1918171615141413121211111110100f0f141fffffffffffffffffffffffff38302b2723211e1c1a1917161514131211100f0f0e0e0d0d0d0d0c0c0c0c0c0c0c0c0c0d0d0d0e0e0f0f1010111213141517181a1c1e2124282fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=210,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3a342f2c2927252321201e1d1c1a19181716161514131312111110100f0f0e0e0e0d0d0d0c0c0c0c0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0c0c0c0c0d0d0d0e0e0f0f10101111121313141516171718191a1c1d1e1f21232527292c2f333affffffffffffff0e0e0f0f0f0f0f0f0f101010111112131314151617191a1c",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=210,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=210,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff03030404040505060606070708080809090a0a0a0b0b0c0c0d0d0d0e0e0f0f0f1010111111121213131314141515161616171718181819191a1a1a1b1b1c1c1c1d1d1e1e1f1f1f2020212121222223232324242525252626272728282829292a2a2affffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=210,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3d36322e2b28262422201f1d1c1a191817161514131312111110100f0f0e0e0d0d0d0c0c0c0b0b0b0b0b0b0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0b0b0b0b0b0b0c0c0c0d0d0d0e0e0f0f101011111213131415161718191a1c1d1f20222426282b2e31363dffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=210,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff342d2925221f1d1c1a1917161514131212111010100f0f0f0e0e0e0e0e0e0e0e0e0f0f0f10101112121314151617191a1c1e2124272b2f33383dffffffffffffffffffff1b100b0b0c0c0c0d0d0d0e0e0f10101111121314151617181a1b1d1f2123262a2f36ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=210,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3e37332f2c2a28262422201f1e1c1b1a191817161514141312121110100f0f0f0e0e0e0d0d0d0c0c0c0c0c0c0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0c0c0c0c0c0d0d0d0d0e0e0f0f0f101011121213141415161718191a1b1d1e2021232527292c2f33383fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=210,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=210,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=210,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=210,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=210,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=210,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=210,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=210,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=210,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=210,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=210,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=212,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3f3e3e3d3d3c3c3b3b3a3a39393838373736363535343433333232313130302f2f2e2e2d2d2c2c2b2b2a2a29292828272726262525242423232222212120201f1f1e1e1d1d1c1c1b1b1a1a19191818171716161515141413131212111110100f0f0e0e0d0d0c0c0b0b0a0a09090808070706060505040403030202ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=212,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff050606060707070808080909090a0a0a0b0b0b0c0c0c0d0d0e0e0e0f0f0f10101011111112121213131314141415151616161717171818181919191a1a1a1b1b1b1c1c1d1d1d1e1e1e1f1f1f20202021212122222223232324242525252626262727272828282929292a2a2a2b2b2b2c2c2d2d2d2e2e2e2f2f2f303030313131323232333333343435ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=212,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f37312d2a272422201e1d1c1a191817161615141413121211111110100f0f1520ffffffffffffffffffffffff39312c2724211f1d1b191816151413121110100f0f0e0e0d0d0d0c0c0c0c0c0c0c0c0c0d0d0d0d0e0e0f0f1011121213151617191a1c1e2124292fffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=212,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b34302d2a28262422201f1e1c1b1a19181716151514131312111110100f0f0f0e0e0d0d0d0d0c0c0c0c0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0c0c0c0c0d0d0d0e0e0e0f0f10101111121313141515161718191a1b1c1d1f20222325272a2c30343affffffffffffff0f0f0f0f0f0f0f0f1010101111111213131415161718",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=212,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff14141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=212,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0303030404050505060607070708080909090a0a0b0b0b0c0c0d0d0d0e0e0f0f0f101011111112121313131414151515161617171718181919191a1a1b1b1b1c1c1d1d1d1e1e1f1f1f202021212122222323232424252525262627272728282929292a2affffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=212,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3e37332f2c29272523211f1e1c1b1a1918171615141312121110100f0f0e0e0e0d0d0c0c0c0c0b0b0b0b0b0b0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0b0b0b0b0b0b0c0c0c0c0d0d0e0e0e0f0f1010111212131415161718191a1b1c1e1f21232427292b2e32373effffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=212,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff352e292623201e1c1a1918161514141312111110100f0f0f0e0e0e0e0e0e0e0e0e0f0f0f1010111112131314151718191b1d1f2225282c3035393effffffffffffffffffff1c110b0b0c0c0c0d0d0d0e0e0f0f10111112131415161718191a1c1e1f2224272b3037ffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=212,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3834302d2b2826242321201e1d1c1a19181716161514131312111110100f0f0f0e0e0d0d0d0d0c0c0c0c0c0c0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0c0c0c0c0c0d0d0d0d0e0e0e0f0f101011111213131415161718191a1b1c1d1f20222426282a2d303438ffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=212,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515151515ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=212,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=212,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=212,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=212,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919191919ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=212,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=212,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=212,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2cffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=212,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=212,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838383838ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=212,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3effffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=214,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3f3e3e3d3d3c3c3b3b3a3a393938383737363635343433333232313130302f2f2e2e2d2d2c2c2b2b2a29292828272726262525242423232222212120201f1f1e1d1d1c1c1b1b1a1a191918181717161615151414131212111110100f0f0e0e0d0d0c0c0b0b0a0a0909080707060605050404030302020101ffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=214,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff060707070808080909090a0a0b0b0b0c0c0c0d0d0d0e0e0f0f0f101010111111121212131314141415151516161617171818181919191a1a1a1b1b1c1c1c1d1d1d1e1e1e1f1f202020212121222222232323242425252526262627272728282929292a2a2a2b2b2b2c2c2d2d2d2e2e2e2f2f2f30303131313232323333333434343535363636373737383838ffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=214,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff38332e2b282523211f1e1c1b1a191817161515141413131212111110101520ffffffffffffffffffffffffffff3b322c282522201d1b1a1817161413121211100f0f0e0e0d0d0d0d0c0c0c0c0c0c0c0c0c0d0d0d0d0e0e0f0f1011121314151617191a1c1f2125292fffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=214,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3a34302d2a28252422201f1e1c1b1a1918171616151414131212111110100f0f0e0e0e0d0d0d0d0c0c0c0c0c0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0c0c0c0c0c0d0d0d0e0e0e0f0f1010111112121314141516171819191a1c1d1e1f21222426282a2d30343bffffffffffff0f0f0f0f0f0f0f0f10101011111112121314151516",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=214,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414ffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=214,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01020202030304040505050606070708080809090a0a0b0b0b0c0c0d0d0d0e0e0f0f1010101111121213131314141515161616171718181819191a1a1b1b1b1c1c1d1d1e1e1e1f1f2020212121222223232324242525262626272728282929292a2a2b2b2c2cffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=214,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3935312e2c2927252322201f1d1c1b1a1918171615151413131212111110100f0f0f0e0e0e0e0d0d0d0d0d0d0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0d0d0d0d0d0d0e0e0e0e0f0f0f1010111112121313141515161718191a1b1c1d1f2022232527292b2e313439ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=214,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff352f2a2623211e1d1b1a1817161514131212111110100f0f0f0e0e0e0e0e0e0e0e0e0f0f0f1010101112121314151617181a1c1d202225292d31353a3effffffffffffffffff1a0f0a0a0b0b0b0c0c0c0d0d0e0e0f10101112121314151618191a1c1d1f2224272b3038ffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=214,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3934302d2b28262423211f1e1d1b1a191817161514141312111110100f0f0e0e0d0d0d0c0c0c0c0b0b0b0b0b0b0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0b0b0b0b0b0c0c0c0c0d0d0d0e0e0f0f101011121213141515161718191b1c1d1f20222426282a2d303439ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=214,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616ffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=214,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=214,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0dffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=214,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=214,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1affffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=214,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=214,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626262626ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=214,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2cffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=214,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=214,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939393939ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=214,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=216,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3f3e3e3d3d3c3c3b3a3a393938383737363635353433333232313130302f2f2e2d2d2c2c2b2b2a2a2929282827262625252424232322222121201f1f1e1e1d1d1c1c1b1b1a1a1918181717161615151414131312111110100f0f0e0e0d0d0c0b0b0a0a0909080807070606050404030302020101ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=216,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff060707070808080909090a0a0b0b0b0c0c0c0d0d0d0e0e0f0f0f101010111111121212131314141415151516161617171818181919191a1a1a1b1b1c1c1c1d1d1d1e1e1e1f1f202020212121222222232323242425252526262627272728282929292a2a2a2b2b2b2c2c2d2d2d2e2e2e2f2f2f30303131313232323333333434343535363636373737383838ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=216,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff38332e2b282523211f1e1c1b1a191817161515141413131212111110101622ffffffffffffffffffffffffffff3a322c2824221f1d1b191817151413121111100f0f0e0e0d0d0d0d0c0c0c0c0c0c0c0c0c0d0d0d0d0e0e0f0f1011121214151617191a1c1e2124282fffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=216,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3a34302d2a28262422201f1e1c1b1a1918171716151414131212111110100f0f0f0e0e0d0d0d0d0c0c0c0c0c0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0c0c0c0c0c0c0d0d0d0e0e0e0f0f10101111121213141415161718191a1b1c1d1e1f21222426282a2d30343bffffffffffff0f0f0f0f0f0f0f10101010111112121313141516",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=216,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=216,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0102020203030404040505060606070708080809090a0a0a0b0b0c0c0c0d0d0d0e0e0f0f0f101011111112121313131414151515161617171718181919191a1a1b1b1b1c1c1d1d1d1e1e1f1f1f20202121212222222323242424252526262627272828282929ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=216,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3935312e2c2927252322201f1d1c1b1a1918171615151413131212111110100f0f0f0e0e0e0e0d0d0d0d0d0d0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0d0d0d0d0d0d0e0e0e0e0f0f0f1010111112121313141515161718191a1b1c1d1f2022232527292b2e313439ffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=216,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff352f2a2623211e1d1b1a1817161514131212111110100f0f0f0e0e0e0e0e0e0e0e0e0f0f0f1010111112121314151618191a1c1e2123262a2e32363a3effffffffffffffffff1c100a0a0b0b0b0c0c0c0d0d0e0e0f10101112121314151618191a1c1d1f2224272b3038ffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=216,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3934302d2b28262423211f1e1d1b1a191817161514141312111110100f0f0e0e0d0d0d0c0c0c0c0b0b0b0b0b0b0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0b0b0b0b0b0c0c0c0c0d0d0d0e0e0f0f101011121213141515161718191b1c1d1f20222426282a2d303439ffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=216,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=216,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=216,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0dffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=216,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=216,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1affffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=216,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020202020ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=216,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=216,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2dffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=216,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333ffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=216,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3affffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=216,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=218,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3f3e3e3d3d3c3c3b3a3a393938383737363635353433333232313130302f2f2e2e2d2c2c2b2b2a2a2929282827262625252424232322222121201f1f1e1e1d1d1c1c1b1b1a1a1918181717161615151414131312111110100f0f0e0e0d0d0c0c0b0a0a0909080807070606050404030302020101ffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=218,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff060707070808080909090a0a0b0b0b0c0c0c0d0d0d0e0e0f0f0f101010111111121212131314141415151516161617171818181919191a1a1a1b1b1c1c1c1d1d1d1e1e1e1f1f202020212121222222232323242425252526262627272728282929292a2a2a2b2b2b2c2c2d2d2d2e2e2e2f2f2f30303131313232323333333434343535363636373737383838ffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=218,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff39332f2c29262422201f1d1c1b1a19181716161514141313121211111110101622ffffffffffffffffffffffff3a322c2824221f1d1b191817151413121111100f0f0e0e0d0d0d0d0c0c0c0c0c0c0c0c0c0d0d0d0d0e0e0f0f1011121214151617191a1c1e2124282fffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=218,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3a34302d2a28262422211f1e1d1b1a1918171716151414131312111110100f0f0f0e0e0e0d0d0d0d0c0c0c0c0c0b0b0b0b0b0b0b0b0b0b0b0b0b0b0c0c0c0c0c0c0d0d0d0d0e0e0f0f0f10101111121313141515161718191a1b1c1d1e1f21222426282a2d30343bffffffffffff0f0f0f0f0f0f0f1010101011111212131314",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=218,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414ffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=218,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0102020203030404040505060606070708080809090a0a0a0b0b0c0c0c0d0d0e0e0e0f0f0f101011111112121313131414151515161617171718181919191a1a1b1b1b1c1c1d1d1d1e1e1f1f1f20202121212222232323242425252526262727272828292929ffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=218,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3a35322f2c2a28262422201f1e1c1b1a1918171616151413131212111110100f0f0f0e0e0e0e0d0d0d0d0d0d0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0d0d0d0d0d0d0e0e0e0e0f0f0f1010111112121314141516161718191a1b1c1e1f2022242527292c2e31353affffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=218,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff352f2a2623211e1d1b1a1817161514131212111110100f0f0f0e0e0e0e0e0e0e0e0e0f0f0f1010111112121314151618191a1c1e2123262a2e32363a3effffffffffffffffff1c100a0a0b0b0b0c0c0c0d0d0e0e0f10101112131314151718191b1c1e202225282c3139ffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=218,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3935312e2b2927252321201e1d1c1a191817161515141312121110100f0f0e0e0e0d0d0c0c0c0c0b0b0b0b0b0b0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0a0b0b0b0b0b0c0c0c0c0d0d0d0e0e0f0f1010111212131415161717191a1b1c1e1f20222426282b2d313539ffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=218,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818ffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=218,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707ffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=218,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0dffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=218,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414ffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=218,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1affffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=218,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121ffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=218,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727ffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=218,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2dffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=218,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434ffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=218,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3affffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=218,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=220,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3f3e3d3d3c3c3b3b3a3a3939383737363635353434333232313130302f2f2e2e2d2c2c2b2b2a2a2929282827262625252424232322222120201f1f1e1e1d1d1c1c1b1a1a1919181817171615151414131312121111100f0f0e0e0d0d0c0c0b0b0a090908080707060605050403030202010100000000ffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=220,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff060707070808080909090a0a0a0b0b0c0c0c0d0d0d0e0e0e0f0f0f101010111112121213131314141415151516161717171818181919191a1a1a1b1b1b1c1c1d1d1d1e1e1e1f1f1f202020212122222223232324242425252526262727272828282929292a2a2a2b2b2b2c2c2d2d2d2e2e2e2f2f2f30303031313232323333333434343535353636363737383838ffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=220,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff39332f2c29262422201f1d1c1b1a19181716161514141313121211111110101622ffffffffffffffffffffffff3b332d292523201e1c1a191716151413121110100f0f0e0e0d0d0d0d0c0c0c0c0c0c0c0c0c0d0d0d0d0e0e0f0f101011121314151617191b1d1f2124292fffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=220,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b35312e2b2927252321201f1d1c1b1a1918171616151414131212111110100f0f0f0e0e0e0d0d0d0d0c0c0c0c0c0c0b0b0b0b0b0b0b0b0b0b0b0b0b0c0c0c0c0c0c0d0d0d0e0e0e0f0f0f1010111112121314141516171818191a1b1c1e1f2022232527292b2e31353cffffffffffffffff0f0f0f0f0f0f101010101111111212",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=220,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414ffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=220,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0102020203030404050505060607070708080909090a0a0b0b0c0c0c0d0d0e0e0e0f0f1010111111121213131314141515151616171718181819191a1a1a1b1b1c1c1c1d1d1e1e1f1f1f2020212121222223232424242525262626272728282829292a2a2b2b2b2cffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=220,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3a36322f2c2a28262422211f1e1d1c1a191818171615141413131211111110100f0f0f0e0e0e0e0d0d0d0d0d0d0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0d0d0d0d0d0d0e0e0e0e0f0f0f101011111112131314141516171818191a1c1d1e1f21222426272a2c2e31353affffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=220,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff37302c282522201f1d1b1a191817161515141313121211111110101010101010101010111111121213131415151617181a1b1d1e202326292c3033373bffffffffffffffffffffff1e120c0c0d0d0d0e0e0e0f0f1010111212131414151617181a1b1c1e1f212426292d323affffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=220,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b3632302d2b2927252322201f1e1c1b1a191818171615141413131212111110100f0f0f0e0e0e0e0d0d0d0d0d0d0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0d0d0d0d0d0d0e0e0e0f0f0f1010111111121313141515161718191a1b1c1d1e2021222426282a2c2f32363bffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=220,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff18181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818ffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=220,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707ffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=220,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0effffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=220,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414ffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=220,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1affffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=220,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121ffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=220,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727ffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=220,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2effffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=220,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434ffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=220,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3bffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=220,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=222,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3f3f3e3e3d3d3c3b3b3a3a393938383737363635343433333232313130302f2f2e2d2d2c2c2b2b2a2a2929282827262625252424232322222120201f1f1e1e1d1d1c1c1b1b1a191918181717161615151414131212111110100f0f0e0e0d0d0c0b0b0a0a090908080707060605040403030202010100000000ffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=222,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff060707070808080909090a0a0a0b0b0b0c0c0c0d0d0e0e0e0f0f0f10101011111112121213131414141515151616161717171818181919191a1a1b1b1b1c1c1c1d1d1d1e1e1e1f1f1f202020212122222223232324242425252526262627272828282929292a2a2a2b2b2b2c2c2c2d2d2d2e2e2f2f2f3030303131313232323333333434343535363636373737383838ffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=222,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3934302c29272422211f1e1c1b1a19181716161514141313121212111110101622ffffffffffffffffffffffff3c342e292623201e1c1b191816151413121111100f0f0e0e0d0d0d0d0c0c0c0c0c0c0c0c0c0d0d0d0d0e0e0f0f101011121314151618191b1d1f22252930ffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=222,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3c35312e2b2927252322201f1d1c1b1a191817171615141413131211111010100f0f0e0e0e0d0d0d0d0c0c0c0c0c0c0c0b0b0b0b0b0b0b0b0b0b0b0c0c0c0c0c0c0d0d0d0d0e0e0e0f0f0f10101111121313141515161718191a1a1c1d1e1f2022232527292b2e31363cffffffffffffffff0f0f0f0f0f101010101011111112",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=222,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414ffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=222,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01020202030304040505050606070707080809090a0a0a0b0b0c0c0c0d0d0e0e0e0f0f1010111111121213131314141515161616171718181819191a1a1b1b1b1c1c1d1d1d1e1e1f1f1f2020212122222223232424242525262627272728282929292a2a2b2b2c2cffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=222,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b36332f2d2a2826242321201e1d1c1b1a1918171615151413131212111110100f0f0f0e0e0e0e0d0d0d0d0d0d0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0d0d0d0d0d0d0e0e0e0e0f0f0f1010111112121313141515161718191a1b1c1d1e2021232426282a2c2f32363affffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=222,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff37312c282523211f1d1c1a191817161515141313121211111110101010101010101010111111121213131415161617191a1b1d1f212326292c3034383cffffffffffffffffffffff1e120c0c0d0d0d0e0e0e0f0f1010111212131415151617191a1b1d1e202224272a2e333bffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=222,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b3733302d2b2927252422211f1e1d1c1b1a1918171615151413131212111110100f0f0f0e0e0e0e0d0d0d0d0d0d0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0d0d0d0d0d0e0e0e0e0f0f0f1010111112121313141515161718191a1b1c1d1e2021232526282b2d3033373cffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Arial\",h=222,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818181818ffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=222,weight=400,italic=0,'A'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707070707ffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=222,weight=400,italic=0,'W'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0e0effffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=222,weight=400,italic=0,'a'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414141414ffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=222,weight=400,italic=0,'g'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1affffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=222,weight=400,italic=0,'n'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121212121ffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=222,weight=400,italic=0,'w'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727272727ffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=222,weight=400,italic=0,'o'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2effffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=222,weight=400,italic=0,'s'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434ffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=222,weight=400,italic=0,'e'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3bffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    },
+    {
+      "function": "column",
+      "args": "\"Times New Roman\",h=222,weight=400,italic=0,'B'",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "the two faces that break, every other cell across the boundary"
+    }
+  ]
+}

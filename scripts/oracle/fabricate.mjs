@@ -6735,6 +6735,49 @@ export const FABRICATIONS = [
     },
   })),
 
+  /* A ruler, for reading Windows' horizontal size straight off the bitmap.
+   *
+   * Above a cell of two hundred and twelve on an EGA, Arial and Times New Roman
+   * are drawn wider than this side draws them, and every quantity that could
+   * say why is inside a hint program. So take the program away: each of these
+   * glyphs is one upright bar forty units wide, with no instructions at all, at
+   * a design `x` that steps by fifty units from glyph to glyph. The leftmost
+   * inked column of each is then the scaled `x` and nothing else, and ten of
+   * them across the bitmap give the horizontal size to better than a pixel.
+   */
+  {
+    name: 'times-ruler',
+    from: 'TIMES.TTF',
+    as: 'TIMES.TTF',
+    describe: 'ten plain bars at fifty-unit steps, to read the horizontal size off the bitmap',
+
+    edit: (bytes) => {
+      const CHARS = 'AWagnwoseB';
+
+      for (let index = 0; index < CHARS.length; index++) {
+        const left = 40 + index * 50;
+
+        setGlyph(bytes, null, glyphFor(bytes, CHARS.charCodeAt(index)), {
+          width: 0,
+          height: 0,
+          program: [],
+          contours: [
+            [
+              [left, 0],
+              [left, 1400],
+              [left + 40, 1400],
+              [left + 40, 0],
+            ],
+          ],
+        });
+
+        setBearing(bytes, glyphFor(bytes, CHARS.charCodeAt(index)), left);
+      }
+
+      return bytes;
+    },
+  },
+
   /* And how big the buffer actually is, which the first sweep never reached.
    *
    * `times-buffer` gives every character the same block and finds Windows
