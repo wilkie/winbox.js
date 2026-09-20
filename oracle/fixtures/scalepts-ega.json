@@ -1,0 +1,110 @@
+{
+  "probe": "scalepts",
+  "display": "ega",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "egahires",
+    "displayDescription": "EGA, 640x350, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "census",
+      "args": "all",
+      "result": "blocks=233",
+      "section": "one draw at a size the hunt does not use, then the census"
+    },
+    {
+      "function": "hunt",
+      "args": "h=88,want=2688",
+      "result": "blocks=45,hits=0",
+      "section": "the cell that disagrees"
+    },
+    {
+      "function": "where",
+      "args": "h=80,177,size=1000,seen=4",
+      "result": "bea,bf8,cc8,d5e,",
+      "section": "and the cell that agrees"
+    },
+    {
+      "function": "window",
+      "args": "h=80,177,+0b6a",
+      "result": "2b2b2b21350623222626272635113311141716163332363635113311033f7cd5",
+      "section": "and the cell that agrees"
+    },
+    {
+      "function": "window",
+      "args": "h=80,177,+0b8a",
+      "result": "5ea34f100bb40b116e51518e3bb49cb4486d4f35730292fdb38d314751538f88",
+      "section": "and the cell that agrees"
+    },
+    {
+      "function": "window",
+      "args": "h=80,177,+0baa",
+      "result": "0239fbda0001001a000003e80426000a015cb7350501002211390ab8ffde400d",
+      "section": "and the cell that agrees"
+    },
+    {
+      "function": "window",
+      "args": "h=80,177,+0bca",
+      "result": "11390916121c340816121c3402b8ffeab3121c3401b8ffeab3121c340ab8ffd8",
+      "section": "and the cell that agrees"
+    },
+    {
+      "function": "window",
+      "args": "h=80,177,+0bea",
+      "result": "40091e213400281e21340ab8ffe8400922253400162225340ab8ffda40b3282e",
+      "section": "and the cell that agrees"
+    },
+    {
+      "function": "window",
+      "args": "h=80,177,+0c0a",
+      "result": "340020282e3429002809260a3900350a4800470a560156025908580966016602",
+      "section": "and the cell that agrees"
+    },
+    {
+      "function": "window",
+      "args": "h=80,177,+0c2a",
+      "result": "6908690978007701770279087809770a870187028603890788088a099d009809",
+      "section": "and the cell that agrees"
+    },
+    {
+      "function": "window",
+      "args": "h=80,177,+0c4a",
+      "result": "910aac00a20abd00b707b10ac900c50ada00d50aec00e30afb00f40a2b0a0005",
+      "section": "and the cell that agrees"
+    },
+    {
+      "function": "window",
+      "args": "h=80,177,+0c6a",
+      "result": "0a1800160a2800260a370a4f00400a09054012163405400b0d340a0708082509",
+      "section": "and the cell that agrees"
+    },
+    {
+      "function": "window",
+      "args": "h=80,177,+0c8a",
+      "result": "0a1409090a0003020225010014010100050a0a000a09080802020106070a0903",
+      "section": "and the cell that agrees"
+    },
+    {
+      "function": "window",
+      "args": "h=80,177,+0caa",
+      "result": "0001052f0c010c22084040400980090209b8011bb5400580050205b8011b4009",
+      "section": "and the cell that agrees"
+    },
+    {
+      "function": "window",
+      "args": "h=80,177,+0cca",
+      "result": "20024001220bead2182b10f6ed1a19fd5dfd5d1a18ede45d1112393912393900",
+      "section": "and the cell that agrees"
+    },
+    {
+      "function": "hunt",
+      "args": "h=80,want=2368",
+      "result": "blocks=45,hits=1",
+      "section": "and the cell that agrees"
+    }
+  ]
+}

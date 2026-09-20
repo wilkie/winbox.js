@@ -16902,13 +16902,45 @@ between them and the same cut-in decision at every one. At a cell of eighty this
 side's slope is 0.4215 and Windows agrees with that, so what is wrong is one
 rounding that steps at this size, and not a rule.
 
-**Reading Windows' own fitted outline would settle it, and cannot be done from
-here.** `scalemem` reads the scaler's buffer after the call, and by then the
-buffer holds the glyph's metrics and not its points: the only 2,688 in sixteen
-kilobytes -- forty-two pixels in sixty-fourths, which is the height of this very
-glyph -- is the height field at `+0x15e6`. Catching the points wants a read
-during the call, which is what `stack.c` was built for and what the next attempt
-at this record should use.
+**Reading Windows' own fitted outline would settle it, and it cannot be read
+after the call.** `scalemem` reads the scaler's buffer once `TextOut` has
+returned and the buffer holds the glyph's metrics, not its points: the only
+2,688 in sixteen kilobytes -- forty-two pixels in sixty-fourths, which is the
+height of this very glyph -- is the height field at `+0x15e6`.
+
+`oracle/probes/scalepts.c` takes that further and settles it. `heap.c` says a
+buffer freed at the end of a call is a free block afterwards **holding exactly
+what it held**, and that `scalemem`'s census asked only for GDI's blocks; so
+this one asks everyone's, and looks for the outline by its shape -- six of the
+glyph's nineteen points sit on that forty-two pixel top edge. Forty-five blocks
+in the plausible size range read cleanly and the top edge is in none of them.
+The one block that matched at the cell that agrees turns out to hold the font's
+own bytecode, where the pair falls out of `b8 ff de 40 0d` and the like. **The
+points are gone by the time the call returns.**
+
+Three further ways of reading are spent, and are written into the probe so that
+the next attempt does not spend them again:
+
+- `AllocSelector(0)` with `SetSelectorBase` and `SetSelectorLimit` over a
+  block's linear address -- which is what `heap.c` reaches for behind an
+  `#ifdef` -- **hangs the guest**. Reading through such a selector faults, and a
+  fault under Windows 3.1 is a message box: a run that never finishes rather
+  than one that fails, which is how it presents.
+- `MemoryRead` through a selector the program made for itself answers nought
+  every time; it validates what it is given against the global heap. Two hundred
+  and twenty-seven blocks, not one byte read.
+- `MemoryRead` on `0x00bc`, the fixed stack the scaler's thunk switches to,
+  answers nought as well. That selector is named in `heap.c`'s reading of the
+  thunk and nothing has ever read through it.
+
+What does work, and is the one thing this adds to the toolkit, is
+`GlobalHandleToSel` on the handle `GlobalFirst` reports for **any** block and
+not only an owned one.
+
+So catching the points wants a read *during* the call -- a hook or a breakpoint
+rather than a census -- which is a different order of instrument from anything
+section 8 has built. One record of forty thousand is not the occasion to build
+it.
 
 #### What the earlier guess cost
 

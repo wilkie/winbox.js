@@ -1797,11 +1797,16 @@ export const KNOWN_GAPS: Record<string, string> = {
    * slope is 0.4215 and Windows agrees, so it is one rounding that steps at
    * this size and not a rule.
    *
-   * Reading Windows' own fitted outline would settle it and cannot be done from
-   * here: `scalemem` reads the scaler's buffer after the call, and by then it
-   * holds the glyph's metrics and not its points -- the only 2,688 in sixteen
-   * kilobytes is the height at `+0x15e6`. That wants a capture during the call,
-   * which is what `stack.c` was built for.
+   * Reading Windows' own fitted outline would settle it, and it cannot be read
+   * after the call. `scalemem` finds the glyph's metrics in the scaler's buffer
+   * and not its points, and `scalepts` walks **every** block rather than GDI's
+   * -- a freed buffer still holds what it held -- and finds the glyph's top
+   * edge in none of the forty-five in range. The points are gone by the time
+   * `TextOut` returns. Three further readings are spent and written into
+   * `scalepts`: a selector made with `AllocSelector` over a linear address
+   * hangs the guest, `MemoryRead` refuses a selector the program made itself,
+   * and `MemoryRead` on the scaler's own stack selector answers nought.
+   * Catching the points wants a read during the call. See `FONTS.md` 8k.
    */
   'stemwide-ega:column': '1 of 780 records, a diagonal a sixty-fourth out at a cell of 88',
 
