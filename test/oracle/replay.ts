@@ -1592,6 +1592,10 @@ const ADAPTERS: Record<
           : args.slice(1, -1).includes('symbol')
             ? 2
             : 0,
+
+        /* The two rules, which only `rules` asks for. */
+        lfUnderline: fields.under ?? 0,
+        lfStrikeOut: fields.strike ?? 0,
         lfFaceName: String(args[0]),
       });
 
@@ -1848,6 +1852,29 @@ export const KNOWN_GAPS: Record<string, string> = {
    * Every cell above the switch is exact, and so is every one of the eight
    * half-size thresholds, which is what `head.xMax` predicted.
    */
+  /* Where a strike's strikeout goes, which is not read.
+   *
+   * `rules` is the first probe to draw an underline or a strikeout at all --
+   * the corpus carried both only through what `GetTextMetrics` reports about
+   * them. Three of the four things it asks are now read out of the fonts
+   * themselves and drawn: the underline's place and thickness from `post`, the
+   * strikeout's from `OS/2`, and a strike's underline, which sits one row below
+   * the baseline at every size with a thickness of `round(cell / 16)`.
+   *
+   * The fourth is where a **strike's** strikeout goes, and nothing found fits
+   * it. Measured above the baseline it is 3, 3, 4, 4, 6, 8 and 9 rows for cells
+   * of 13, 13, 16, 20, 24, 32 and 40 -- not a constant fraction of the cell,
+   * the ascent or the descent, and not the design strike's own offset carried
+   * across the multiple either: MS Sans Serif at a cell of forty is the twenty
+   * pixel strike twice over, whose own offset is four, and twice four is eight
+   * where Windows draws nine. Drawing it wrong would be worse than leaving it,
+   * so it is left.
+   *
+   * All sixty are strikeout records of a face answered by a strike, Arial at a
+   * cell of ten included -- it is answered by one.
+   */
+  'rules-vga:glyph': '60 of 224 records, where a strike puts its strikeout',
+
   'stemstyl-vga:column': '34 of 900 records, a tie inside VDMX taken the other way',
   'stemstyl-ega:column': '44 of 900 records, the same tie',
 

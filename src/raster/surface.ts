@@ -299,16 +299,92 @@ export class Surface {
     this._stale = true;
   }
 
+  /**
+   * The underline and the strikeout, which GDI draws and the glyph does not.
+   *
+   * Both run from the pen to the end of the string's advance and are filled
+   * solid, and both take their place and their thickness from the **font**
+   * where the font has an answer:
+   *
+   *     underline   `post`'s position, negated, below the baseline
+   *                 `post`'s thickness
+   *     strikeout   `OS/2`'s position above the baseline
+   *                 `OS/2`'s size
+   *
+   * scaled at the size and rounded, with a thickness of at least one row. The
+   * three outline families say very different things -- Arial -217 and 150,
+   * Courier New -477 and 84 -- and every row of `rules` follows them.
+   *
+   * A strike has no such tables, and its underline sits **one row below the
+   * baseline** whatever the size, with a thickness that follows the cell.
+   *
+   * **Recorded.** `oracle/probes/rules.c` draws four kinds of face at seven
+   * sizes with each rule on and off; before this nothing had ever drawn either,
+   * and the corpus carried them only through what `GetTextMetrics` reports.
+   */
+  rules(x, y, text) {
+    const font: any = this._font;
+    const style = (font && font.style) ?? {};
+
+    if (!style.underline && !style.strikeout) {
+      return;
+    }
+
+    const outline = font.outline;
+    const ppem = font.ppem;
+    const width = font.measure(text).width;
+
+    /* A strike keeps its ascent in the file rather than on the style, and a
+     * stretched one has it scaled the way `GetTextMetrics` scales it -- the
+     * design value carried to the cell being drawn and rounded on its own. */
+    const header = outline ? null : entryOf(font).header;
+    const cell = header ? Math.round(header.dfPixHeight * (font.scale ?? 1)) : 0;
+    const ascent = outline
+      ? (style.ascent ?? 0)
+      : (font.scale ?? 1) === 1
+        ? header.dfAscent
+        : Math.round((header.dfAscent * cell) / header.dfPixHeight);
+
+    const baseline = y + ascent;
+
+    const across = (units) => Math.round((units * ppem) / outline.unitsPerEm);
+    const thick = (rows) => Math.max(1, rows);
+
+    this.context.fillStyle = 'black';
+
+    if (style.underline) {
+      const top = outline ? baseline + across(-outline.underlinePosition) : baseline + 1;
+      const rows = outline
+        ? thick(across(outline.underlineThickness))
+        : thick(Math.round(cell / 16));
+
+      this.context.fillRect(x, top, width, rows);
+    }
+
+    /* A strike's strikeout is **not read**: its underline is a row below the
+     * baseline at every size, and where the strikeout goes does not follow the
+     * ascent, the cell or the descent in any way this has found. See
+     * `FONTS.md` 8n. Drawing it wrong would be worse than not drawing it.
+     */
+    if (style.strikeout && outline) {
+      const top = baseline - across(outline.strikeoutPosition);
+
+      this.context.fillRect(x, top, width, thick(across(outline.strikeoutSize)));
+    }
+  }
+
   fillText(x, y, text) {
     // TODO: backcolor
     if (this._font instanceof LogicalFont && this._font.outline) {
       this.outlineText(x, y, text);
+      this.rules(x, y, text);
       this._stale = true;
       return;
     }
 
     if (this._font instanceof LogicalFont && this._font.isVector) {
       this.strokeText(x, y, text);
+      this.rules(x, y, text);
       this._stale = true;
       return;
     }
@@ -347,6 +423,7 @@ export class Surface {
       this.context.fillStyle = 'white';
       this.context.fillRect(x, y, metrics.width, metrics.height);
       font.draw(this.context, x, y, text, options);
+      this.rules(x, y, text);
     } else {
       // Normal text draw
       this.context.font = this._font;

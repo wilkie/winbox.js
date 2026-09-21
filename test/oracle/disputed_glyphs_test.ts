@@ -175,7 +175,16 @@ function disagreementsIn(replayed: Replayed[]) {
   return rows;
 }
 
-const fixtures = loadFixtures();
+/* Every fixture that draws a glyph, which is not quite every fixture.
+ *
+ * `rules` writes `glyph` records too, and what it draws is not a glyph: it is
+ * the underline and the strikeout GDI puts over one. Its remainder is a
+ * statement about those rules rather than about the corpus -- 60 records of
+ * 224, all of them where a strike puts its strikeout -- and it is counted in
+ * `KNOWN_GAPS` under its own name. Letting it in here would raise this file's
+ * ceilings, which exist to say that the glyph corpus itself is exact.
+ */
+const fixtures = loadFixtures().filter((fixture: any) => fixture.probe !== 'rules');
 
 if (fixtures.length === 0) {
   describe('the outline glyphs still in dispute', () => {

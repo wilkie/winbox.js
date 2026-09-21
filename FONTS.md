@@ -17150,6 +17150,66 @@ A recording that comes back nothing-agrees is worth suspecting the reader of
 before the code under test -- the same lesson as the scrambled printout in 8g
 and the apostrophe in 8f, three times now from three different directions.
 
+### 8n. The underline and the strikeout, which nothing had ever drawn
+
+`LOGFONT` has `lfUnderline` and `lfStrikeOut`, and the corpus carried them only
+through the metrics: `font` asks `CreateFont` for an underlined face and records
+what `GetTextMetrics` says about it -- fifteen records of `underlined` and
+`struckout` -- and then nobody drew one. Whether GDI puts a rule under the text
+at all, how thick it is, where it sits and how far it runs were all unrecorded,
+and this drew **neither**.
+
+`oracle/probes/rules.c` draws four kinds of face -- a raster family, two outline
+families and the system face -- at seven sizes, with each rule on and off, into
+a cell of sixty-four so that there is room below the baseline to see one. The
+first replay was 56 of 224, which is exactly the quarter that asks for no rule
+at all.
+
+#### Both run the advance, and both are read out of the font
+
+They fill from the pen to the end of the string's advance, solid, and they take
+their place and their thickness from the font's own tables:
+
+| | from | Arial | Courier New | Times New Roman |
+| --- | --- | --- | --- | --- |
+| underline position | `post` +8 | -217 | -477 | -223 |
+| underline thickness | `post` +10 | 150 | 84 | 100 |
+| strikeout position | `OS/2` +28 | 530 | 530 | 530 |
+| strikeout size | `OS/2` +26 | 102 | 102 | 102 |
+
+Scaled at the size and rounded, with a thickness of at least one row. The
+position is a distance from the baseline -- down for the underline, which is why
+`post` states it negative, and up for the strikeout. Every row of every outline
+record follows them: Arial's underline sits 1, 1, 2, 2, 3 and 4 rows below the
+baseline at nine, thirteen, seventeen, twenty-one, twenty-seven and thirty-five
+pixels per em, which is 217 over 2048 rounded at each; Courier New's sits 2, 2,
+3, 4, 5, 7 and 9, which is 477 over 2048.
+
+That the two faces disagree so widely -- more than twice the offset for Courier
+New -- is what says the numbers are read and not computed.
+
+#### A strike has no tables, and its underline is a row below the baseline
+
+At every size, whatever the face: MS Sans Serif at cells of 13, 16, 20, 24, 32
+and 40 and the System font at 16 and 32 all put it exactly one row under. The
+thickness follows the cell instead, `round(cell / 16)` and at least one -- 1, 1,
+1, 2, 2, 3 across those cells.
+
+#### Where a strike puts its strikeout is not read
+
+Measured above the baseline it is 3, 3, 4, 4, 6, 8 and 9 rows for cells of 13,
+13, 16, 20, 24, 32 and 40. That is not a constant fraction of the cell, of the
+ascent or of the descent, and it is not the design strike's own offset carried
+across the multiple either: MS Sans Serif at a cell of forty is the twenty pixel
+strike twice over, whose own offset is four, and twice four is eight where
+Windows draws nine. Drawing it wrong would be worse than leaving it, so it is
+left, and it is the whole of what `rules` still misses -- **60 records of 224**,
+every one of them a strikeout on a face answered by a strike. Arial at a cell of
+ten is among them, because a strike is what answers it.
+
+`rules` is 164 of 224 and the glyph corpus is untouched: `glyphs` stays 6,046 on
+each of four displays and `plotter` 1,584.
+
 ### 8d. The first glyphs drawn on a pixel that is not square
 
 Every glyph ever recorded had been drawn on a VGA. The mapper, the metrics and
@@ -18113,7 +18173,7 @@ Arial's `w` at a cell of eighty-eight, a diagonal this side walks a sixty-fourth
 steeper than Windows does, on both displays whose pixel is not square. The other
 two are `stemstyl`'s 34 of 900 and 44 of 900, a tie inside `VDMX` that Windows
 takes the later of where the rest of the corpus says it takes the first; see
-8l. 8k closed it: reading the scaler's memory found the glyph being
+8l. A fifth is `rules`' 60 of 224, where a strike puts its strikeout; see 8n. 8k closed it: reading the scaler's memory found the glyph being
 fitted at half the size, and four fabrications that move only what `head`
 declares found what sets that off -- the right edge of the face's box, carried
 across the horizontal size, past two hundred and fifty-six pixels. `stemedge` is

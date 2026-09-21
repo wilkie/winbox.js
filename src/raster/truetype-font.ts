@@ -201,6 +201,33 @@ export class TrueTypeFont {
     return this.has('head') ? this.signed('head', 40) : 0;
   }
 
+  /**
+   * Where the underline sits and how thick it is, in font units.
+   *
+   * `post` holds both, the position as a **negative** number of units below the
+   * baseline. Arial says -217 and 150, Courier New -477 and 84, Times New Roman
+   * -223 and 100 -- the three are as different from one another as the faces
+   * are, which is what says the numbers are read and not computed.
+   */
+  get underlinePosition() {
+    return this.has('post') ? this.signed('post', 8) : 0;
+  }
+
+  /** How thick that underline is, in font units. */
+  get underlineThickness() {
+    return this.has('post') ? this.signed('post', 10) : 0;
+  }
+
+  /** Where the strikeout sits above the baseline, in font units. */
+  get strikeoutPosition() {
+    return this.has('OS/2') ? this.signed('OS/2', 28) : 0;
+  }
+
+  /** How thick that strikeout is, in font units. */
+  get strikeoutSize() {
+    return this.has('OS/2') ? this.signed('OS/2', 26) : 0;
+  }
+
   /** The average character width the font states for itself. */
   get averageAdvance() {
     return this.has('OS/2') ? this.signed('OS/2', 2) : 0;
