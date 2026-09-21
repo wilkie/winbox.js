@@ -70,6 +70,7 @@ const PER_DISPLAY = new Set([
   'stemedge',
   'stemstyl',
   'plotbig',
+  'symbig',
   'scalemem',
   'scalepts',
 ]);

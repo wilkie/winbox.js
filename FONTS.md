@@ -17076,7 +17076,7 @@ separates them is not read.
 Every cell above the switch is exact, and so is every one of the eight
 half-size thresholds. 34 records of 900 and 44.
 
-### 8m. The stroke faces above forty pixels per em
+### 8m. The stroke and symbolic faces above forty pixels per em
 
 Everything 8j to 8l asked was of outline faces. The plotter faces -- Modern,
 Roman and Script -- are a different path entirely: a stroke face has no outline
@@ -17094,6 +17094,23 @@ leftmost inked column of each row.
 Hercules, 2,496 in all, and not one disagreement. The stroke path scales past
 six times the largest size anything had recorded of it, on the display whose
 line rules are its own, without a rule being added.
+
+#### And the symbolic faces, which are neither
+
+`oracle/probes/symbig.c` asks the same of Symbol and Wingdings. They are worth
+asking apart from the text faces: a symbolic face is mapped by name rather than
+by charset, its glyphs are shapes no letter resembles, and Symbol is the face
+installed twice -- a strike of its own beside the outline -- which is a choice
+the mapper has to make at every size. `glyphs` draws Symbol at eight to forty
+and Wingdings not at all; neither had ever been drawn above forty.
+
+**Also exact.** 416 records on each of the four displays, 1,664 in all.
+
+That the two resolved to different faces rather than both falling back to the
+same one is worth saying, because agreement alone would not prove it: at a cell
+of ninety-six Symbol's `A` inks rows 26 to 78 over columns 3 to 29 and
+Wingdings' inks rows 16 to 76 over columns 2 to 27, and Symbol's `m` is three
+columns wide where Wingdings' is eighteen.
 
 #### One adapter bug, and it looked like a total failure
 
@@ -18062,7 +18079,8 @@ two hundred and forty-eight -- the first question ever asked of stock glyphs
 above forty pixels per em -- and is **780 of 780 on a VGA** and 779 of 780 on an
 EGA. `stemedge` is 220 of 220 and `stemsize` 238 of 238 on both displays.
 `plotbig` asks the same of the stroke faces and is **624 of 624 on each of the
-four displays**.
+four displays**; `symbig` asks it of Symbol and Wingdings and is **416 of 416 on
+each**.
 
 `KNOWN_GAPS` holds four entries. Two are one record each and the same one:
 Arial's `w` at a cell of eighty-eight, a diagonal this side walks a sixty-fourth
