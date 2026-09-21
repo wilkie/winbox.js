@@ -1655,7 +1655,18 @@ const ADAPTERS: Record<
       lfWidth: fields.w ?? 0,
       lfWeight: fields.weight ?? 0,
       lfItalic: fields.italic ?? 0,
-      lfCharSet: 0,
+
+      /* The same marker the `glyph` adapter reads: the plotter faces are only
+       * reachable through `OEM_CHARSET`, and the probe writes `oem` among the
+       * fields rather than a number. Hard-coding the ANSI charset here maps
+       * every one of them to something else, which is 624 records of `plotbig`
+       * disagreeing without a single pixel being drawn wrong.
+       */
+      lfCharSet: args.slice(1, -1).includes('oem')
+        ? 255
+        : args.slice(1, -1).includes('symbol')
+          ? 2
+          : 0,
       lfFaceName: String(args[0]),
     });
 

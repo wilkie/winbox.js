@@ -17076,6 +17076,38 @@ separates them is not read.
 Every cell above the switch is exact, and so is every one of the eight
 half-size thresholds. 34 records of 900 and 44.
 
+### 8m. The stroke faces above forty pixels per em
+
+Everything 8j to 8l asked was of outline faces. The plotter faces -- Modern,
+Roman and Script -- are a different path entirely: a stroke face has no outline
+to fill and no hint program to run, and its glyphs are drawn as lines, with
+their own rules about which pixel a line ends on, what a driver does at the edge
+of a cell, and how a run is clipped. `plotter` draws them at every height from
+eight to forty and the corpus is exact on all four displays; above forty nothing
+had ever asked.
+
+`oracle/probes/plotbig.c` asks, the same way `stemwide` does -- every eighth
+cell from forty-eight to two hundred and forty-eight, eight characters, the
+leftmost inked column of each row.
+
+**It is exact.** 624 records on each of a VGA, a Super VGA, an EGA and a
+Hercules, 2,496 in all, and not one disagreement. The stroke path scales past
+six times the largest size anything had recorded of it, on the display whose
+line rules are its own, without a rule being added.
+
+#### One adapter bug, and it looked like a total failure
+
+The first replay was **0 of 624**. Not a pixel of it was the rasteriser: the
+`column` adapter hard-coded `lfCharSet` to nought, and the plotter faces are
+only reachable through `OEM_CHARSET`. The `glyph` adapter has read the `oem`
+marker out of the record since those faces were first recorded; the newer
+adapter, written for the outline sweeps, never needed it and so never had it.
+Every one of the 624 was a different font drawn correctly.
+
+A recording that comes back nothing-agrees is worth suspecting the reader of
+before the code under test -- the same lesson as the scrambled printout in 8g
+and the apostrophe in 8f, three times now from three different directions.
+
 ### 8d. The first glyphs drawn on a pixel that is not square
 
 Every glyph ever recorded had been drawn on a VGA. The mapper, the metrics and
@@ -18029,6 +18061,8 @@ says why that is not a size rule.
 two hundred and forty-eight -- the first question ever asked of stock glyphs
 above forty pixels per em -- and is **780 of 780 on a VGA** and 779 of 780 on an
 EGA. `stemedge` is 220 of 220 and `stemsize` 238 of 238 on both displays.
+`plotbig` asks the same of the stroke faces and is **624 of 624 on each of the
+four displays**.
 
 `KNOWN_GAPS` holds four entries. Two are one record each and the same one:
 Arial's `w` at a cell of eighty-eight, a diagonal this side walks a sixty-fourth
