@@ -554,6 +554,26 @@ export class TrueTypeFont {
         return false;
       }
 
+      /* A tie in the cell keeps the first, and the search stops at an exact
+       * fit, which is the same statement twice.
+       *
+       * The **ascent** is what a tie could be broken by instead, and it is
+       * worth writing down why it is not. Two sizes a pixel apart often fit the
+       * same cell, and nearly always with the same ascent and descent -- Arial
+       * has forty such pairs and one where they differ, Courier New sixty and
+       * none. Where the ascent differs the *larger* one would explain the four
+       * cells `stemstyl` still misses: Times New Roman Bold tabulates 242 as
+       * 221 over 53 and 243 as 222 over 52, both a cell of 274, and at a cell
+       * of 274 Windows draws 243.
+       *
+       * **Refused by count.** Breaking only the exact ties by the ascent costs
+       * 37 of `font`'s 11,382 records on two displays and 75 on the other two,
+       * and 10 of `stemwide`'s 780, against 5 gained in `stemstyl`. Breaking
+       * every tie that way costs 141 and 153. So there are ties whose ascents
+       * differ that demonstrably take the first, and the rule that would
+       * explain `stemstyl` contradicts them. What separates the two is **not
+       * read**.
+       */
       if (!best || cell >= best.cell) {
         best = { ppem, ascent, descent, cell };
       }

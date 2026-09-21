@@ -17047,7 +17047,31 @@ short.
 That is the opposite of what the small-size corpus says, and the small-size
 corpus is not negotiable -- letting the search past an exact fit costs **272 of
 `font`'s 11,382 records**, which are the ties that demonstrably take the first.
-Whatever separates the two cases is not read.
+
+#### The ascent is what would separate them, and it does not
+
+The two cases are not identical, which is worth knowing even though it does not
+resolve them. A tie in the cell is usually a tie in everything: two sizes a
+pixel apart fit the same cell with the **same ascent and descent** in almost
+every case -- Arial has forty such pairs and one where they differ, Courier New
+sixty and none, Times New Roman forty-one and three. Times New Roman Bold's 274
+is one of the exceptions: 242 is tabulated as 221 over 53 and 243 as 222 over
+52. The larger ascent is the later one, and the later one is what Windows draws.
+
+So "a tie in the cell keeps the first unless the ascent differs, in which case
+the larger ascent wins" explains `stemstyl` without touching the ties that are
+ties in everything -- and it is **refused by count**:
+
+| | `font` | `stemwide` | `stemstyl` |
+| --- | --- | --- | --- |
+| **keeping the first** | **11,382 of 11,382** | **779 and 780** | 866 and 856 |
+| the ascent breaking exact ties | 11,345 and 11,307 | 769 and 770 | 866 and 861 |
+| the ascent breaking every tie | 11,241 and 11,229 | 683 and 671 | 840 and 826 |
+
+Thirty-seven records of `font` on two displays and seventy-five on the other two
+are ties whose ascents differ and which take the **first** all the same. So the
+rule that would explain the large cells contradicts the small ones, and what
+separates them is not read.
 
 Every cell above the switch is exact, and so is every one of the eight
 half-size thresholds. 34 records of 900 and 44.
