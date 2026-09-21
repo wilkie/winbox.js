@@ -17076,7 +17076,7 @@ separates them is not read.
 Every cell above the switch is exact, and so is every one of the eight
 half-size thresholds. 34 records of 900 and 44.
 
-### 8m. The stroke and symbolic faces above forty pixels per em
+### 8m. Every other kind of face above forty pixels per em
 
 Everything 8j to 8l asked was of outline faces. The plotter faces -- Modern,
 Roman and Script -- are a different path entirely: a stroke face has no outline
@@ -17111,6 +17111,31 @@ same one is worth saying, because agreement alone would not prove it: at a cell
 of ninety-six Symbol's `A` inks rows 26 to 78 over columns 3 to 29 and
 Wingdings' inks rows 16 to 76 over columns 2 to 27, and Symbol's `m` is three
 columns wide where Wingdings' is eighteen.
+
+#### And the raster faces, which cannot scale at all
+
+Everything above scales by being redrawn at the size asked for. A strike cannot:
+it is a bitmap cut at a fixed size, and a cell the family has no strike for is
+answered by drawing one of them **more than once over**, so the glyph comes out
+in whole multiples. `glyphs` covers these faces at eight to forty, where the
+multiple is one or two.
+
+`oracle/probes/strikbig.c` sweeps MS Sans Serif, MS Serif and Courier the same
+way. **Exact**: 624 records on each of the four displays, 2,496 in all.
+
+The multiples it reaches are two to eight, traced at the four corners of the
+sweep:
+
+| cell | 48 | 96 | 160 | 248 |
+| --- | --- | --- | --- | --- |
+| MS Sans Serif | 2 | 4 | 4 | 8 |
+| MS Serif | 3 | 5 | 6 | 7 |
+| Courier | 3 | 6 | 8 | **an outline face** |
+
+The last of those is the sweep catching something else for free: at a cell of
+two hundred and forty-eight the mapper stops answering *Courier* with a
+multiplied strike and answers it with Courier New instead, and the crossover is
+reproduced without being asked for.
 
 #### One adapter bug, and it looked like a total failure
 
@@ -18080,6 +18105,7 @@ above forty pixels per em -- and is **780 of 780 on a VGA** and 779 of 780 on an
 EGA. `stemedge` is 220 of 220 and `stemsize` 238 of 238 on both displays.
 `plotbig` asks the same of the stroke faces and is **624 of 624 on each of the
 four displays**; `symbig` asks it of Symbol and Wingdings and is **416 of 416 on
+each**; `strikbig` asks it of three raster families and is **624 of 624 on
 each**.
 
 `KNOWN_GAPS` holds four entries. Two are one record each and the same one:
