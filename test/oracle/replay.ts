@@ -562,10 +562,19 @@ export class Context {
     return this.readCell(surface);
   }
 
-  drawGlyph(font: any, character: string, cell = 32) {
+  drawGlyph(font: any, character: string, cell = 32, ground: any = {}) {
     const surface: any = Surface.offscreen(cell, cell);
 
     surface.font = font;
+
+    /* What the probe told the device context about the ground behind the text.
+     * Only `textbk` sets either; everything else leaves a fresh context's
+     * white and `OPAQUE`, which is what these default to. */
+    if (ground.back) {
+      surface.backcolor = new Color(0x00, 0x00, 0x00);
+    }
+
+    surface.backMode = ground.opaque === 0 ? 1 : 2;
 
     /* The plotter faces are drawn as lines, and a line is the driver's -- and
      * a line that leaves the cell is GDI's, on the driver that cannot clip. */
@@ -1616,7 +1625,24 @@ const ADAPTERS: Record<
         .slice(5) ?? 32
     );
 
-    return context.drawGlyph(font, character, cell);
+    return context.drawGlyph(font, character, cell, {
+      back: Number(
+        args
+          .slice(1, -1)
+          .find((field) => String(field).startsWith('back='))
+          ?.toString()
+          .slice(5) ?? 0
+      ),
+      opaque: args.slice(1, -1).some((field) => String(field).startsWith('opaque='))
+        ? Number(
+            args
+              .slice(1, -1)
+              .find((field) => String(field).startsWith('opaque='))
+              ?.toString()
+              .slice(7)
+          )
+        : 1,
+    });
   },
 
   /* One line, from the middle of the cell to an offset given as two numbers. */
@@ -1874,6 +1900,23 @@ export const KNOWN_GAPS: Record<string, string> = {
    * cell of ten included -- it is answered by one.
    */
   'rules-vga:glyph': '60 of 224 records, where a strike puts its strikeout',
+
+  /* Three cells where the ground painted behind the text is the wrong size.
+   *
+   * `textbk` is the first probe to set a background colour or a background
+   * mode at all -- every other one leaves a fresh context's white and `OPAQUE`,
+   * where a white rectangle on a white cell cannot be told from no rectangle.
+   * It was 48 of 64; honouring both is 61.
+   *
+   * The three left are all the same case, an opaque black ground behind an
+   * outline face at a small size, and in each the rectangle this paints is
+   * smaller than the one Windows paints: Arial at a cell of twelve, 73 pixels
+   * against 84, and Courier New at twelve and twenty-four, 60 against 72 and
+   * 314 against 360. The width and height come from the string's own extent,
+   * which the glyph corpus says is right for the advance, so what is wrong is
+   * which extent GDI fills rather than the measuring of it. Not read.
+   */
+  'textbk-vga:glyph': '3 of 64 records, the ground painted a little small',
 
   'stemstyl-vga:column': '34 of 900 records, a tie inside VDMX taken the other way',
   'stemstyl-ega:column': '44 of 900 records, the same tie',

@@ -17210,6 +17210,70 @@ ten is among them, because a strike is what answers it.
 `rules` is 164 of 224 and the glyph corpus is untouched: `glyphs` stays 6,046 on
 each of four displays and `plotter` 1,584.
 
+### 8o. The ground behind the text, and the mode that decides whether to paint it
+
+`TextOut` paints the cell behind the glyph before it paints the glyph, in the
+background colour, unless the background mode says not to. **Every probe in the
+corpus sets the background white and leaves the mode `OPAQUE`**, so the two had
+never been separated: a white rectangle painted onto a white cell cannot be told
+from no rectangle at all, and the colour had never been anything but the colour
+already there.
+
+This side had `SetBkColor` implemented and no `SetBkMode` at all, and the
+drawing painted the rectangle **white whatever the colour said** -- there was a
+`TODO` beside it -- and painted it whatever the mode. Both were invisible for
+the same reason nobody had asked.
+
+`oracle/probes/textbk.c` asks. The cell starts white and the text is black; with
+the background black the two modes are plainly different and with it white they
+are the same, which is the control that says the difference is the mode and not
+the colour:
+
+| | background white | background black |
+| --- | --- | --- |
+| `TRANSPARENT` | a white cell, a black glyph | a white cell, a black glyph |
+| `OPAQUE` | a white cell, a black glyph | **a black rectangle**, the glyph lost in it |
+
+Measured on four faces at four sizes, and the first replay was 48 of 64 -- the
+three of every four that ask for something invisible.
+
+#### Three things were wrong, and two of them had never been visible
+
+- **The mode did not exist.** `SetBkMode` is now an export and a state on the
+  surface, and `TRANSPARENT` paints nothing.
+- **The colour was ignored.** The rectangle is the background colour now.
+- **A fresh context's background was black here and is white in Windows.** That
+  had been harmless precisely because the drawing painted white regardless;
+  honouring the colour made the default visible, and every probe that draws text
+  without touching `SetBkColor` comes back on a white ground.
+
+And the ground is painted on **every** path. It was painted only where a strike
+was drawn; an outline or a stroke face got none, which nothing had ever noticed
+for the same reason.
+
+#### Two things about the export table, learned the hard way
+
+Adding `SetBkMode` to `Gdi.exports` broke seven tests before it fixed any, and
+neither reason is obvious from the table:
+
+- **The third field is the parameter size in bytes, not an ordinal.** `HDC` and
+  `INT` are two apiece, so `SetBkMode` is four. Putting the ordinal there sends
+  the emulator off the end of a segment, which surfaces as *access outside a
+  segment* in a program that never calls it.
+- **The `// n //` markers through the table count the entries before them**, and
+  `dump-exports` refuses a table that disagrees with them. A row added anywhere
+  but after the last marker means renumbering every marker past it, so the entry
+  goes at the end.
+
+#### What is left
+
+Three records of sixty-four, all the same case: an opaque black ground behind an
+outline face at a small size, where the rectangle this paints is smaller than
+Windows'. Arial at a cell of twelve is 73 pixels against 84, Courier New at
+twelve and twenty-four 60 against 72 and 314 against 360. The extent comes from
+the string's own measurement, which the glyph corpus says is right for the
+advance, so what is not read is which extent GDI fills. **61 of 64.**
+
 ### 8d. The first glyphs drawn on a pixel that is not square
 
 Every glyph ever recorded had been drawn on a VGA. The mapper, the metrics and
@@ -18173,7 +18237,8 @@ Arial's `w` at a cell of eighty-eight, a diagonal this side walks a sixty-fourth
 steeper than Windows does, on both displays whose pixel is not square. The other
 two are `stemstyl`'s 34 of 900 and 44 of 900, a tie inside `VDMX` that Windows
 takes the later of where the rest of the corpus says it takes the first; see
-8l. A fifth is `rules`' 60 of 224, where a strike puts its strikeout; see 8n. 8k closed it: reading the scaler's memory found the glyph being
+8l. A fifth is `rules`' 60 of 224, where a strike puts its strikeout; see 8n. A
+sixth is `textbk`'s 3 of 64, a ground painted a little small; see 8o. 8k closed it: reading the scaler's memory found the glyph being
 fitted at half the size, and four fabrications that move only what `head`
 declares found what sets that off -- the right edge of the face's box, carried
 across the horizontal size, past two hundred and fifty-six pixels. `stemedge` is

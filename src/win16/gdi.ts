@@ -65,6 +65,7 @@ import { Rectangle } from './gdi/Rectangle.js';
 import { SelectObject } from './gdi/SelectObject.js';
 import { SetBitmapBits } from './gdi/SetBitmapBits.js';
 import { SetBkColor } from './gdi/SetBkColor.js';
+import { SetBkMode } from './gdi/SetBkMode.js';
 import { SetPixel } from './gdi/SetPixel.js';
 import { SetTextColor } from './gdi/SetTextColor.js';
 import { TextOut } from './gdi/TextOut.js';
@@ -689,6 +690,16 @@ export class Gdi extends Module {
       [Gdi.stub, 'ScaleViewportExtEx', 14],
       [Gdi.stub, 'ScaleWindowExtEx', 14],
       [Gdi.stub, 'GetAspectRatioFilterEx', 6],
+
+      /* After the last checkpoint on purpose.
+       *
+       * The `// n //` markers through this table count the entries before them
+       * and `dump-exports` refuses a table that disagrees with them, so adding
+       * a row anywhere else means renumbering every marker after it. The third
+       * field is the parameter size in bytes, not an ordinal: `HDC` and `INT`
+       * are two apiece.
+       */
+      [SetBkMode, 'SetBkMode', 4, [HDC, INT], INT],
     ];
   }
 

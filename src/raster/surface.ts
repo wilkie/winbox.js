@@ -87,6 +87,10 @@ export class Surface {
    */
 
   declare _backcolor: any;
+
+  /* `OPAQUE`, which is what a fresh device context starts at. `TRANSPARENT` is
+   * one; see `SetBkMode`. */
+  backMode: number = 2;
   declare _bitmap: any;
   declare _brush: any;
   declare _canvas: any;
@@ -107,7 +111,14 @@ export class Surface {
     // TODO: what are the default pen/brush?
     this.brush = new Brush(new Color(0xff, 0xff, 0xff, 0xff));
     this.pen = new Pen(new Color(0x00, 0x00, 0x00, 0xff));
-    this.backcolor = new Color(0x00, 0x00, 0x00, 0xff);
+    /* White, which is what a fresh device context's background colour is.
+     *
+     * It was black here, and harmless while the text drawing painted its cell
+     * white whatever the colour said. Honouring the colour makes the default
+     * visible, and Windows' default is white -- every probe that draws text
+     * without touching `SetBkColor` comes back on a white ground.
+     */
+    this.backcolor = new Color(0xff, 0xff, 0xff, 0xff);
     this.forecolor = new Color(0xff, 0xff, 0xff, 0xff);
 
     // We start stale
@@ -322,6 +333,27 @@ export class Surface {
    * sizes with each rule on and off; before this nothing had ever drawn either,
    * and the corpus carried them only through what `GetTextMetrics` reports.
    */
+  /**
+   * The cell behind the text, painted before the text is.
+   *
+   * In the background colour, and only where the background mode says to paint
+   * it at all. This painted it **white** whatever `SetBkColor` had been told,
+   * and painted it whatever the mode, and both were invisible until something
+   * asked: every probe before `textbk` left the colour white and the mode
+   * `OPAQUE`, and a white rectangle on a white cell is indistinguishable from
+   * no rectangle at all. See `FONTS.md` 8o.
+   */
+  ground(x, y, text) {
+    if (this.backMode === 1) {
+      return;
+    }
+
+    const metrics = this._font.measure(text);
+
+    this.context.fillStyle = this.backcolor.css;
+    this.context.fillRect(x, y, metrics.width, metrics.height);
+  }
+
   rules(x, y, text) {
     const font: any = this._font;
     const style = (font && font.style) ?? {};
@@ -376,6 +408,7 @@ export class Surface {
   fillText(x, y, text) {
     // TODO: backcolor
     if (this._font instanceof LogicalFont && this._font.outline) {
+      this.ground(x, y, text);
       this.outlineText(x, y, text);
       this.rules(x, y, text);
       this._stale = true;
@@ -383,6 +416,7 @@ export class Surface {
     }
 
     if (this._font instanceof LogicalFont && this._font.isVector) {
+      this.ground(x, y, text);
       this.strokeText(x, y, text);
       this.rules(x, y, text);
       this._stale = true;
@@ -417,11 +451,9 @@ export class Surface {
 
       // Fill the rectangle behind it
       const font = entryOf(this._font);
-      const metrics =
-        this._font instanceof LogicalFont ? this._font.measure(text) : font.measure(text, options);
 
-      this.context.fillStyle = 'white';
-      this.context.fillRect(x, y, metrics.width, metrics.height);
+      this.ground(x, y, text);
+
       font.draw(this.context, x, y, text, options);
       this.rules(x, y, text);
     } else {
