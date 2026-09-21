@@ -575,6 +575,7 @@ export class Context {
     }
 
     surface.backMode = ground.opaque === 0 ? 1 : 2;
+    surface.textAlign = ground.align ?? 0;
 
     /* The plotter faces are drawn as lines, and a line is the driver's -- and
      * a line that leaves the cell is GDI's, on the driver that cannot clip. */
@@ -586,7 +587,11 @@ export class Context {
     surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
     surface.fillRect(0, 0, cell, cell);
 
-    surface.fillText(2, 0, character);
+    /* The corner unless the record says otherwise: `textalin` draws in the
+     * middle of the cell so an alignment has somewhere to move the text to. */
+    const at = ground.at ?? null;
+
+    surface.fillText(at ?? 2, at ?? 0, character);
 
     return this.readCell(surface, cell);
   }
@@ -1633,6 +1638,22 @@ const ADAPTERS: Record<
           ?.toString()
           .slice(5) ?? 0
       ),
+      align: Number(
+        args
+          .slice(1, -1)
+          .find((field) => String(field).startsWith('align='))
+          ?.toString()
+          .slice(6) ?? 0
+      ),
+      at: args.slice(1, -1).some((field) => String(field).startsWith('at='))
+        ? Number(
+            args
+              .slice(1, -1)
+              .find((field) => String(field).startsWith('at='))
+              ?.toString()
+              .slice(3)
+          )
+        : null,
       opaque: args.slice(1, -1).some((field) => String(field).startsWith('opaque='))
         ? Number(
             args

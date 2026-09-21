@@ -66,6 +66,7 @@ import { SelectObject } from './gdi/SelectObject.js';
 import { SetBitmapBits } from './gdi/SetBitmapBits.js';
 import { SetBkColor } from './gdi/SetBkColor.js';
 import { SetBkMode } from './gdi/SetBkMode.js';
+import { SetTextAlign } from './gdi/SetTextAlign.js';
 import { SetPixel } from './gdi/SetPixel.js';
 import { SetTextColor } from './gdi/SetTextColor.js';
 import { TextOut } from './gdi/TextOut.js';
@@ -535,7 +536,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'GetTextAlign', 2],
-      [Gdi.stub, 'SetTextAlign', 4],
+      [SetTextAlign, 'SetTextAlign', 4, [HDC, UINT], UINT],
       [Gdi.stub, 'unknown'],
       [Gdi.stub, 'Chord', 18],
       [Gdi.stub, 'SetMapperFlags', 6],

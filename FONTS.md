@@ -17274,6 +17274,45 @@ twelve and twenty-four 60 against 72 and 314 against 360. The extent comes from
 the string's own measurement, which the glyph corpus says is right for the
 advance, so what is not read is which extent GDI fills. **61 of 64.**
 
+### 8p. Where the text lands, which nothing had ever moved
+
+`SetTextAlign` says what the point handed to `TextOut` means -- left, centre or
+right across, top, bottom or baseline down. Every probe in the corpus leaves it
+alone, so every record says only what the default does, and the default is the
+one combination that cannot show the rest: the point is the top left. It was a
+stub on this side and the drawing had no notion of alignment at all.
+
+`oracle/probes/textalin.c` draws a character in the **middle** of the cell
+rather than at its corner, so a shift has somewhere to go, at all nine
+combinations. Reading the ink's box straight off the recording gives the rules
+whole:
+
+| flag | what moves | by |
+| --- | --- | --- |
+| `TA_RIGHT` (2) | the text, left | the whole advance |
+| `TA_CENTER` (6) | the text, left | half the advance, truncated |
+| `TA_BOTTOM` (8) | the text, up | the cell height |
+| `TA_BASELINE` (24) | the text, up | the ascent |
+
+MS Sans Serif at a cell of twelve puts its `A` at columns 32 to 38 under
+`TA_LEFT` and 25 to 31 under `TA_RIGHT`, which is the advance of seven, and 29
+to 35 under `TA_CENTER`, which is three; and rows 34 to 42 under `TA_TOP`, 21 to
+29 under `TA_BOTTOM`, thirteen higher and the cell is thirteen, and 23 to 31
+under `TA_BASELINE`, eleven higher and the ascent is eleven.
+
+**36 of 36 on the first implementation**, on a VGA and on an EGA, and nothing
+else in the corpus moves. `TA_UPDATECP` is left out: it changes what the point
+*is* rather than where the text goes from it, and wants a probe that draws
+twice.
+
+#### A third thing about the export table
+
+8o names two. The third: **the type names available in `gdi.ts` are only the
+ones it imports.** `WORD` is not among them, and using it in a table row is a
+`ReferenceError` raised when the table is built -- which fails as nine tests
+about running Windows programs, none of which mentions the table. `UINT` is
+there and is the same two bytes.
+
 ### 8d. The first glyphs drawn on a pixel that is not square
 
 Every glyph ever recorded had been drawn on a VGA. The mapper, the metrics and
@@ -18238,7 +18277,8 @@ steeper than Windows does, on both displays whose pixel is not square. The other
 two are `stemstyl`'s 34 of 900 and 44 of 900, a tie inside `VDMX` that Windows
 takes the later of where the rest of the corpus says it takes the first; see
 8l. A fifth is `rules`' 60 of 224, where a strike puts its strikeout; see 8n. A
-sixth is `textbk`'s 3 of 64, a ground painted a little small; see 8o. 8k closed it: reading the scaler's memory found the glyph being
+sixth is `textbk`'s 3 of 64, a ground painted a little small; see 8o.
+`textalin` is exact, 36 of 36 on both displays it was recorded on; see 8p. 8k closed it: reading the scaler's memory found the glyph being
 fitted at half the size, and four fabrications that move only what `head`
 declares found what sets that off -- the right edge of the face's box, carried
 across the horizontal size, past two hundred and fifty-six pixels. `stemedge` is

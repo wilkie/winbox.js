@@ -91,6 +91,10 @@ export class Surface {
   /* `OPAQUE`, which is what a fresh device context starts at. `TRANSPARENT` is
    * one; see `SetBkMode`. */
   backMode: number = 2;
+
+  /* `TA_LEFT | TA_TOP`, which is what a fresh device context starts at and the
+   * one combination that cannot show the others. See `SetTextAlign`. */
+  textAlign: number = 0;
   declare _bitmap: any;
   declare _brush: any;
   declare _canvas: any;
@@ -343,6 +347,62 @@ export class Surface {
    * `OPAQUE`, and a white rectangle on a white cell is indistinguishable from
    * no rectangle at all. See `FONTS.md` 8o.
    */
+  /**
+   * The ascent of whatever is selected, which the style holds for an outline
+   * face and the strike's own file for a raster one.
+   *
+   * A stretched strike has it scaled the way `GetTextMetrics` scales it: the
+   * design value carried to the cell being drawn and rounded on its own.
+   */
+  ascentOf() {
+    const font: any = this._font;
+    const style = (font && font.style) ?? {};
+
+    if (font.outline) {
+      return style.ascent ?? 0;
+    }
+
+    const header = entryOf(font).header;
+    const scale = font.scale ?? 1;
+
+    return scale === 1
+      ? header.dfAscent
+      : Math.round((header.dfAscent * Math.round(header.dfPixHeight * scale)) / header.dfPixHeight);
+  }
+
+  /**
+   * Where the point handed to `TextOut` puts the text.
+   *
+   * `SetTextAlign` names it: left, centre or right across, and top, bottom or
+   * baseline down. **Measured** by `textalin`, which draws in the middle of the
+   * cell so that a shift has somewhere to go -- right moves the text left by
+   * the whole advance, centre by half of it truncated, bottom moves it up by
+   * the cell and baseline by the ascent.
+   */
+  aligned(x, y, text) {
+    if (!this.textAlign) {
+      return [x, y];
+    }
+
+    const metrics = this._font.measure(text);
+    const across = this.textAlign & 6;
+    const down = this.textAlign & 24;
+
+    if (across === 2) {
+      x -= metrics.width;
+    } else if (across === 6) {
+      x -= Math.floor(metrics.width / 2);
+    }
+
+    if (down === 8) {
+      y -= metrics.height;
+    } else if (down === 24) {
+      y -= this.ascentOf();
+    }
+
+    return [x, y];
+  }
+
   ground(x, y, text) {
     if (this.backMode === 1) {
       return;
@@ -371,11 +431,7 @@ export class Surface {
      * design value carried to the cell being drawn and rounded on its own. */
     const header = outline ? null : entryOf(font).header;
     const cell = header ? Math.round(header.dfPixHeight * (font.scale ?? 1)) : 0;
-    const ascent = outline
-      ? (style.ascent ?? 0)
-      : (font.scale ?? 1) === 1
-        ? header.dfAscent
-        : Math.round((header.dfAscent * cell) / header.dfPixHeight);
+    const ascent = this.ascentOf();
 
     const baseline = y + ascent;
 
@@ -407,6 +463,8 @@ export class Surface {
 
   fillText(x, y, text) {
     // TODO: backcolor
+    [x, y] = this.aligned(x, y, text);
+
     if (this._font instanceof LogicalFont && this._font.outline) {
       this.ground(x, y, text);
       this.outlineText(x, y, text);
