@@ -78,6 +78,7 @@ const PER_DISPLAY = new Set([
   'textxtra',
   'scalemem',
   'scalepts',
+  'tiepick',
 ]);
 
 /** Where a probe writes, on the guest and on the host. */

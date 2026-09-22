@@ -284,6 +284,9 @@ export async function prepareFonts(display = 'vga') {
  */
 const FONT_SPECIMEN = 'Wg jpq 128';
 
+/** What `tiepick` measures the extent of. */
+const TIE_SPECIMEN = 'Windows';
+
 /** Thrown by an adapter that cannot run without the drive image. */
 export class NeedsDrive extends Error {}
 
@@ -1389,6 +1392,53 @@ const ADAPTERS: Record<
     );
   },
 
+  /* `tiepick` names only a face, a cell height, a weight and an italic flag,
+   * and asks the same two questions of every cell from eight to three hundred.
+   * The internal leading is the cell less the pixel size, so a record of this
+   * shape names the size Windows fitted the request at outright.
+   */
+  'tie heights'(context, args) {
+    const tm = context.mappedFont([
+      args[0],
+      args[1],
+      'w=0',
+      args[2],
+      args[3],
+      'under=0',
+      'strike=0',
+      'charset=0',
+      'pitch=0',
+    ]).metrics;
+
+    return (
+      `height=${tm.tmHeight},ascent=${tm.tmAscent},descent=${tm.tmDescent},` +
+      `internal=${tm.tmInternalLeading},external=${tm.tmExternalLeading}`
+    );
+  },
+
+  'tie extent'(context, args) {
+    const { hdc } = context.mappedFont([
+      args[0],
+      args[1],
+      'w=0',
+      args[2],
+      args[3],
+      'under=0',
+      'strike=0',
+      'charset=0',
+      'pitch=0',
+    ]);
+
+    const extent = GetTextExtent.call(
+      context,
+      hdc,
+      context.lpcstr(TIE_SPECIMEN),
+      TIE_SPECIMEN.length
+    );
+
+    return `width=${extent & 0xffff},height=${(extent >> 16) & 0xffff}`;
+  },
+
   /* The dense maximum width sweep. The arguments name only a face, a height
    * and a width, so the rest of the request is the probe's own defaults.
    */
@@ -1947,8 +1997,24 @@ export const KNOWN_GAPS: Record<string, string> = {
    */
   'textbk-vga:glyph': '3 of 64 records, the ground painted a little small',
 
-  'stemstyl-vga:column': '34 of 900 records, a tie inside VDMX taken the other way',
-  'stemstyl-ega:column': '44 of 900 records, the same tie',
+  'stemstyl-vga:column': '28 of 900 records, a tie inside VDMX taken the other way',
+  'stemstyl-ega:column': '38 of 900 records, the same tie',
+
+  /* The same tie, asked of the metrics instead of the pixels.
+   *
+   * `tiepick` sweeps every cell from eight to three hundred in six faces and
+   * reports the metrics, and `tmInternalLeading` is the cell less the pixel
+   * size -- so each record names the size Windows fitted the request at. 1,717
+   * of the 1,758 agree, and where they do not, the pixels `stemstyl` recorded
+   * agree with the metrics, so the two probes are short of the same thing.
+   *
+   * Fifteen of them are an exact tie inside the table taken the other way, and
+   * 8r says at length what has been refused as an explanation. The rest are
+   * widths: sixteen of Symbol above the largest size the table names, and its
+   * cells of 170 and 190, where the size is right and the advance is not.
+   */
+  'tiepick-vga:tie heights': '22 of 1,758 records, the tie of 8r',
+  'tiepick-vga:tie extent': '37 of 1,758 records, the same tie and Symbol\'s widths above the table',
 
   /* The glyph sweep on an EGA, 895 cells of 6,046.
    *

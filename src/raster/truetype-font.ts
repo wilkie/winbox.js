@@ -651,7 +651,25 @@ export class TrueTypeFont {
       );
     }
 
-    for (let index = 0; !exact && index < records; index++) {
+    /* The last size the table names is never the answer.
+     *
+     * All four outline faces tabulate eight pixels per em to two hundred and
+     * fifty-five, and Courier New's last two rows are the same: 254 and 255
+     * both grid-fit to a cell of 273. Asked for cells of 274 to 288 -- every
+     * one of them a short fit, where a tie inside the table takes the *last*
+     * of the run, 145 times without exception -- Windows answers 254 at all
+     * fifteen. Arial says the same from the other side: asked for a cell of
+     * 284, which 255 fits exactly, it answers 254 and reports 283.
+     *
+     * **Measured**, over `tiepick`'s sweep of every cell from 8 to 300 in six
+     * faces: the table's last row is a candidate in 1,758 requests and wins
+     * none of them.
+     *
+     * Whether the rule is about the row or about the size cannot be told
+     * apart here, because every face shipped with 3.1 stops at 255, which is
+     * also the largest size a byte can name.
+     */
+    for (let index = 0; !exact && index < records - 1; index++) {
       const at = group + 4 + index * 6;
 
       exact = consider(

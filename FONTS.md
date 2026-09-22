@@ -17352,6 +17352,101 @@ ground transparent, no rule and the default alignment, so it asks none of them.
 Whether the gap after the *last* character counts toward the width is therefore
 unknown, and nothing here depends on it yet.
 
+### 8r. Which of two tied sizes, asked of the metrics rather than the pixels
+
+`stemstyl` drew four cells that only the *second* of a tied pair of sizes
+reproduces, where 8f had measured -- over forty-eight ties -- that an exact fit
+takes the *first*. A recording of pixels cannot say whether Windows **chose**
+the second size or merely **drew** at it, so the question went to the metrics.
+
+#### The instrument: the internal leading names the size
+
+`tmInternalLeading` is the cell less the em, and the em is the pixel size, so
+
+    ppem = tmHeight - tmInternalLeading
+
+reads the chosen size straight out of a `GetTextMetrics`. Checked against the
+table it is exact: Times New Roman Bold asked for a cell of 274 reports 222 and
+52, which is the `VDMX` row for 243 and not the one for 242.
+
+So `oracle/probes/tiepick.c` sweeps **every** cell from 8 to 300 in six faces --
+Arial, Arial Bold Italic, Times New Roman Bold, Times New Roman Italic, Courier
+New and Symbol -- and reports the metrics and an extent for each. 1,758
+requests, and the step from one size to the next can be read off directly.
+
+**The metrics agree with the pixels.** All four cells `stemstyl` drew the other
+way report the second size, and where the two probes overlap with `font` -- 192
+requests -- every answer is the same. The choice is a property of the request,
+not of what was asked before it: three recordings made in three different orders
+give one map from cell to size.
+
+#### What the sweep says, as a tally
+
+Sorting every answer by where it falls in its **run** -- the stretch of
+consecutive sizes that grid-fit to the same cell -- gives:
+
+| | the run's first | the run's last | inside it |
+| --- | --- | --- | --- |
+| the cell fits exactly | **227** | 14 | 1 |
+| the cell falls short | 15 | **145** | 0 |
+
+The two large numbers are 8f's rule, restated and now measured over four times
+as many cases: an exact fit takes the first of the run, a short fit the last.
+
+#### The fifteen short fits that take the first are the top of the table
+
+Every one of them ends at the largest size the table names. Courier New's last
+two rows are the same -- 254 and 255 both grid-fit to a cell of 273 -- and asked
+for cells of 274 to 288, all fifteen short fits, Windows answers **254**. Arial
+says it from the other side: a cell of 284, which 255 fits **exactly**, is
+answered 254 and reported as 283.
+
+So **the last size the table names is never the answer**. It is a candidate in
+all 1,758 requests and wins none of them. Whether the rule is about the row or
+about the size cannot be told apart here, because every face shipped with 3.1
+tabulates 8 to 255 and 255 is also the largest size a byte can name.
+
+Worth 6 records of `stemstyl` on each display and 16 of `tiepick`.
+
+#### The fifteen exact fits that take the last are not explained
+
+They are listed in `KNOWN_GAPS`, and this is what has been refused:
+
+**The ascent.** Where a tied pair's ascents differ the larger would explain
+Times New Roman Bold at 274. Restricted to two tabulated sizes -- a tie between
+a computed size and a tabulated one goes to the tabulated one, which is a
+separate measurement -- it costs 84 records of `font`: 24 on two displays and 60
+on the other two, against 5 gained. And it is refuted outright by Times Bold
+Italic at the same cell, whose tie is 244 at 221 over 53 and 245 at 221 over 53
+-- **the same ascent and the same descent** -- where Windows takes 245.
+
+**The largest size that fits.** 1,398 of 1,658.
+
+**A binary search over the table**, which would land on different members of a
+run for different cells and looked like the shape of the thing: 1,516 of 1,671,
+in three variants.
+
+**A size computed from the cell and then walked down to fit.** For each face the
+answers fix an interval the constant would have to lie in; for all six faces the
+interval is **empty**, and not narrowly -- Arial needs a constant above 0.902 of
+the cell for one request and below 0.844 for another.
+
+**And no scaling of any constant can separate them**, which is a proof rather
+than a count. Arial Bold Italic ties twice, and both times the two rows are
+identical, so nothing in the table distinguishes them:
+
+    cell 253    222: 205+48    223: 205+48    Windows takes 222
+    cell 258    227: 210+48    228: 210+48    Windows takes 228
+
+A rule of the form "take the largest size whose `A` scaled by the size fits the
+cell" would need `A/2048 x 223 > 253` and `A/2048 x 228 <= 258`; that is `A`
+above 2323.5 and at or below 2317.5. The only quantities left that vary with the
+size are scalings of the face's own numbers, and every one of them is of that
+form.
+
+So what decides is **not read**, and the fifteen cells stay in `KNOWN_GAPS` with
+their count.
+
 ### 8d. The first glyphs drawn on a pixel that is not square
 
 Every glyph ever recorded had been drawn on a VGA. The mapper, the metrics and
