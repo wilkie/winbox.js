@@ -17447,6 +17447,74 @@ form.
 So what decides is **not read**, and the fifteen cells stay in `KNOWN_GAPS` with
 their count.
 
+### 8s. Symbol's advances past its own half-size crossing
+
+`tiepick` left sixteen cells of Symbol whose measured string was too wide -- by
+two to nine pixels over seven characters -- from a cell of 285 upward, with the
+size itself right. A string's extent is a sum, so it cannot say which glyph is
+wrong. `oracle/probes/symadv.c` asks `GetCharWidth` for each character of that
+string, one cell at a time from 160 to 300, and records the extent beside them
+so the sum can be checked against its parts. **It is exactly the sum**, at all
+141 cells.
+
+#### Only the two characters that reach the program
+
+Five of the seven are answered by `LTSH` -- the table that says where hinting
+stops moving the advance -- and go on being right past the crossing, at the
+whole size. The other two are delta, whose threshold is 253, and omega, whose
+threshold is 250; above 232 pixels per em they are the only characters in the
+specimen whose program is actually run, and they are the only two that were
+wrong.
+
+Symbol declares the widest box of the four outline faces -- `head.xMax` of 2279
+against Arial's 2048 -- so it crosses 8k's half-size threshold earliest, at
+**231** pixels per em. The advances go wrong at 232. That is the whole of it:
+where the glyph is fitted at half the size and doubled, so is its advance.
+
+#### Doubled before it is rounded, not after
+
+An advance doubled from whole pixels is even, and delta's are not: 117 pixels at
+a size of 235 and 119 at 243. Doubling the sixty-fourths and rounding once gives
+those, and gives omega's plateaus with them --
+
+| size | 232 | 233 | 234 | 235 | 236 | 237 | 238 | 240 | 241 | 242 | 243 | 244 | 245 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| omega | 150 | 150 | 150 | 154 | 154 | 154 | 154 | 154 | 158 | 158 | 158 | 158 | 158 |
+
+-- which are wider apart than any scaling would put them and exactly what the
+half-size run doubled says. Both characters are right at every one of the
+fourteen sizes above the crossing, where the full-size run is wrong at eleven
+of them and the design advance scaled at all fourteen.
+
+Below the crossing the two readings are the same arithmetic, so nothing else
+moved: `hinting`, `glyphs`, `widths`, `charscal` and `maxwidth` are unchanged,
+and `tiepick`'s sixteen cells are closed.
+
+#### And a dip in the table, which is not closed
+
+Symbol's `VDMX` does not climb with the size. It fits 155 pixels per em into a
+cell of 191 and 156 into 190:
+
+    153:188  154:189  155:191  156:190  157:192
+
+Asked for a cell of 190, Windows answers **154** -- the last size before the dip
+-- where an exact answer, 156, is sitting two rows further on. Times New Roman
+Italic dips the same way, 189 into 211 and 190 into 210, and asked for 212
+Windows answers 190: the last that fits rather than the one that fits best.
+
+Both are what a scan that **gives up at the first size too tall** would say, and
+that is **refused by count**: giving up there costs 124 records of `hinting`, 6
+of `font`, 12 of `stemstyl` and 10 of `tiepick`, against 3 of `symadv` gained.
+So the scan carries on and Symbol's cell of 190 stays in `KNOWN_GAPS`.
+
+#### One glyph at one size
+
+Omega at 139 pixels per em, well below the crossing, where both sides run the
+program at the full size and this one comes out a pixel wider: 91 against 90.
+The advance lands on a whole number of sixty-fourths, so it is not a rounding,
+and the three advances in the sweep that do land on a half -- delta at 163, 167
+and 171 -- all round **up** and all agree. One size of 141, and the only one.
+
 ### 8d. The first glyphs drawn on a pixel that is not square
 
 Every glyph ever recorded had been drawn on a VGA. The mapper, the metrics and

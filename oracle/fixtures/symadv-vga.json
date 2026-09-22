@@ -1,0 +1,2552 @@
+{
+  "probe": "symadv",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "symbol size",
+      "args": "h=160",
+      "result": "height=160,ascent=131,descent=29,internal=30",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=160",
+      "result": "W=100,i=43,n=69,d=63,o=71,w=86,s=78",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=160",
+      "result": "width=510,height=160",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=161",
+      "result": "height=161,ascent=132,descent=29,internal=29",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=161",
+      "result": "W=101,i=43,n=70,d=65,o=72,w=86,s=80",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=161",
+      "result": "width=517,height=161",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=162",
+      "result": "height=161,ascent=132,descent=29,internal=29",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=162",
+      "result": "W=101,i=43,n=70,d=65,o=72,w=86,s=80",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=162",
+      "result": "width=517,height=161",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=163",
+      "result": "height=163,ascent=134,descent=29,internal=30",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=163",
+      "result": "W=102,i=44,n=71,d=64,o=73,w=88,s=80",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=163",
+      "result": "width=522,height=163",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=164",
+      "result": "height=164,ascent=135,descent=29,internal=30",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=164",
+      "result": "W=103,i=44,n=71,d=66,o=74,w=88,s=81",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=164",
+      "result": "width=527,height=164",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=165",
+      "result": "height=165,ascent=136,descent=29,internal=30",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=165",
+      "result": "W=104,i=44,n=72,d=67,o=74,w=88,s=81",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=165",
+      "result": "width=530,height=165",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=166",
+      "result": "height=165,ascent=136,descent=29,internal=30",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=166",
+      "result": "W=104,i=44,n=72,d=67,o=74,w=88,s=81",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=166",
+      "result": "width=530,height=165",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=167",
+      "result": "height=167,ascent=137,descent=30,internal=31",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=167",
+      "result": "W=104,i=45,n=72,d=67,o=75,w=88,s=82",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=167",
+      "result": "width=533,height=167",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=168",
+      "result": "height=168,ascent=138,descent=30,internal=31",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=168",
+      "result": "W=105,i=45,n=73,d=68,o=75,w=88,s=83",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=168",
+      "result": "width=537,height=168",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=169",
+      "result": "height=169,ascent=139,descent=30,internal=31",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=169",
+      "result": "W=106,i=45,n=73,d=67,o=76,w=88,s=83",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=169",
+      "result": "width=538,height=169",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=170",
+      "result": "height=170,ascent=139,descent=31,internal=31",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=170",
+      "result": "W=107,i=46,n=74,d=69,o=76,w=90,s=84",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=170",
+      "result": "width=546,height=170",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=171",
+      "result": "height=171,ascent=140,descent=31,internal=31",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=171",
+      "result": "W=108,i=46,n=74,d=69,o=77,w=93,s=84",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=171",
+      "result": "width=551,height=171",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=172",
+      "result": "height=172,ascent=141,descent=31,internal=31",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=172",
+      "result": "W=108,i=46,n=75,d=69,o=77,w=93,s=85",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=172",
+      "result": "width=553,height=172",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=173",
+      "result": "height=172,ascent=141,descent=31,internal=31",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=173",
+      "result": "W=108,i=46,n=75,d=69,o=77,w=93,s=85",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=173",
+      "result": "width=553,height=172",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=174",
+      "result": "height=172,ascent=141,descent=31,internal=31",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=174",
+      "result": "W=108,i=46,n=75,d=69,o=77,w=93,s=85",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=174",
+      "result": "width=553,height=172",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=175",
+      "result": "height=175,ascent=143,descent=32,internal=33",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=175",
+      "result": "W=109,i=47,n=76,d=69,o=78,w=93,s=86",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=175",
+      "result": "width=558,height=175",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=176",
+      "result": "height=176,ascent=144,descent=32,internal=33",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=176",
+      "result": "W=110,i=47,n=76,d=70,o=78,w=93,s=86",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=176",
+      "result": "width=560,height=176",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=177",
+      "result": "height=176,ascent=145,descent=31,internal=32",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=177",
+      "result": "W=111,i=47,n=76,d=71,o=79,w=93,s=87",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=177",
+      "result": "width=564,height=176",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=178",
+      "result": "height=178,ascent=146,descent=32,internal=33",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=178",
+      "result": "W=111,i=48,n=77,d=71,o=80,w=95,s=87",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=178",
+      "result": "width=569,height=178",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=179",
+      "result": "height=179,ascent=147,descent=32,internal=33",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=179",
+      "result": "W=112,i=48,n=78,d=72,o=80,w=95,s=88",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=179",
+      "result": "width=573,height=179",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=180",
+      "result": "height=180,ascent=148,descent=32,internal=33",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=180",
+      "result": "W=113,i=48,n=78,d=72,o=81,w=95,s=89",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=180",
+      "result": "width=576,height=180",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=181",
+      "result": "height=181,ascent=148,descent=33,internal=33",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=181",
+      "result": "W=114,i=49,n=78,d=72,o=81,w=95,s=89",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=181",
+      "result": "width=578,height=181",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=182",
+      "result": "height=182,ascent=149,descent=33,internal=33",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=182",
+      "result": "W=114,i=49,n=79,d=73,o=82,w=95,s=90",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=182",
+      "result": "width=582,height=182",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=183",
+      "result": "height=182,ascent=149,descent=33,internal=33",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=183",
+      "result": "W=114,i=49,n=79,d=73,o=82,w=95,s=90",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=183",
+      "result": "width=582,height=182",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=184",
+      "result": "height=184,ascent=151,descent=33,internal=34",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=184",
+      "result": "W=115,i=49,n=80,d=73,o=82,w=95,s=90",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=184",
+      "result": "width=584,height=184",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=185",
+      "result": "height=184,ascent=151,descent=33,internal=34",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=185",
+      "result": "W=115,i=49,n=80,d=73,o=82,w=95,s=90",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=185",
+      "result": "width=584,height=184",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=186",
+      "result": "height=186,ascent=152,descent=34,internal=35",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=186",
+      "result": "W=116,i=50,n=79,d=75,o=83,w=98,s=91",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=186",
+      "result": "width=592,height=186",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=187",
+      "result": "height=187,ascent=153,descent=34,internal=35",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=187",
+      "result": "W=117,i=50,n=79,d=74,o=83,w=100,s=92",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=187",
+      "result": "width=595,height=187",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=188",
+      "result": "height=188,ascent=154,descent=34,internal=35",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=188",
+      "result": "W=118,i=50,n=80,d=75,o=84,w=100,s=92",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=188",
+      "result": "width=599,height=188",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=189",
+      "result": "height=189,ascent=155,descent=34,internal=35",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=189",
+      "result": "W=118,i=51,n=80,d=75,o=85,w=100,s=93",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=189",
+      "result": "width=602,height=189",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=190",
+      "result": "height=189,ascent=155,descent=34,internal=35",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=190",
+      "result": "W=118,i=51,n=80,d=75,o=85,w=100,s=93",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=190",
+      "result": "width=602,height=189",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=191",
+      "result": "height=191,ascent=156,descent=35,internal=36",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=191",
+      "result": "W=119,i=51,n=81,d=76,o=85,w=100,s=93",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=191",
+      "result": "width=605,height=191",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=192",
+      "result": "height=192,ascent=157,descent=35,internal=35",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=192",
+      "result": "W=121,i=52,n=82,d=76,o=86,w=100,s=95",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=192",
+      "result": "width=612,height=192",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=193",
+      "result": "height=193,ascent=159,descent=34,internal=35",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=193",
+      "result": "W=121,i=52,n=82,d=77,o=87,w=102,s=95",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=193",
+      "result": "width=616,height=193",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=194",
+      "result": "height=193,ascent=159,descent=34,internal=35",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=194",
+      "result": "W=121,i=52,n=82,d=77,o=87,w=102,s=95",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=194",
+      "result": "width=616,height=193",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=195",
+      "result": "height=195,ascent=160,descent=35,internal=36",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=195",
+      "result": "W=122,i=52,n=83,d=78,o=87,w=104,s=96",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=195",
+      "result": "width=622,height=195",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=196",
+      "result": "height=196,ascent=161,descent=35,internal=36",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=196",
+      "result": "W=123,i=53,n=83,d=79,o=88,w=104,s=96",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=196",
+      "result": "width=626,height=196",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=197",
+      "result": "height=197,ascent=162,descent=35,internal=36",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=197",
+      "result": "W=124,i=53,n=84,d=78,o=88,w=104,s=97",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=197",
+      "result": "width=628,height=197",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=198",
+      "result": "height=197,ascent=162,descent=35,internal=36",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=198",
+      "result": "W=124,i=53,n=84,d=78,o=88,w=104,s=97",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=198",
+      "result": "width=628,height=197",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=199",
+      "result": "height=199,ascent=163,descent=36,internal=37",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=199",
+      "result": "W=124,i=53,n=84,d=78,o=89,w=104,s=98",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=199",
+      "result": "width=630,height=199",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=200",
+      "result": "height=200,ascent=164,descent=36,internal=37",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=200",
+      "result": "W=125,i=54,n=85,d=80,o=89,w=107,s=98",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=200",
+      "result": "width=638,height=200",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=201",
+      "result": "height=201,ascent=165,descent=36,internal=37",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=201",
+      "result": "W=126,i=54,n=85,d=81,o=90,w=109,s=99",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=201",
+      "result": "width=644,height=201",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=202",
+      "result": "height=201,ascent=165,descent=36,internal=36",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=202",
+      "result": "W=127,i=54,n=86,d=82,o=91,w=110,s=99",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=202",
+      "result": "width=649,height=201",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=203",
+      "result": "height=203,ascent=167,descent=36,internal=37",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=203",
+      "result": "W=127,i=55,n=86,d=81,o=91,w=110,s=100",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=203",
+      "result": "width=650,height=203",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=204",
+      "result": "height=204,ascent=168,descent=36,internal=37",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=204",
+      "result": "W=128,i=55,n=87,d=82,o=92,w=111,s=101",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=204",
+      "result": "width=656,height=204",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=205",
+      "result": "height=205,ascent=169,descent=36,internal=37",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=205",
+      "result": "W=129,i=55,n=88,d=83,o=92,w=111,s=101",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=205",
+      "result": "width=659,height=205",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=206",
+      "result": "height=205,ascent=169,descent=36,internal=37",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=206",
+      "result": "W=129,i=55,n=88,d=83,o=92,w=111,s=101",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=206",
+      "result": "width=659,height=205",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=207",
+      "result": "height=207,ascent=170,descent=37,internal=38",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=207",
+      "result": "W=130,i=56,n=88,d=83,o=93,w=111,s=102",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=207",
+      "result": "width=663,height=207",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=208",
+      "result": "height=208,ascent=171,descent=37,internal=38",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=208",
+      "result": "W=131,i=56,n=89,d=83,o=93,w=113,s=103",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=208",
+      "result": "width=668,height=208",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=209",
+      "result": "height=208,ascent=171,descent=37,internal=38",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=209",
+      "result": "W=131,i=56,n=89,d=83,o=93,w=113,s=103",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=209",
+      "result": "width=668,height=208",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=210",
+      "result": "height=210,ascent=172,descent=38,internal=39",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=210",
+      "result": "W=131,i=56,n=89,d=84,o=94,w=115,s=103",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=210",
+      "result": "width=672,height=210",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=211",
+      "result": "height=211,ascent=173,descent=38,internal=38",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=211",
+      "result": "W=133,i=57,n=90,d=85,o=95,w=115,s=104",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=211",
+      "result": "width=679,height=211",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=212",
+      "result": "height=211,ascent=173,descent=38,internal=38",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=212",
+      "result": "W=133,i=57,n=90,d=85,o=95,w=115,s=104",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=212",
+      "result": "width=679,height=211",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=213",
+      "result": "height=213,ascent=175,descent=38,internal=39",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=213",
+      "result": "W=134,i=57,n=91,d=85,o=95,w=117,s=105",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=213",
+      "result": "width=684,height=213",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=214",
+      "result": "height=214,ascent=176,descent=38,internal=39",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=214",
+      "result": "W=134,i=58,n=91,d=85,o=96,w=117,s=106",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=214",
+      "result": "width=687,height=214",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=215",
+      "result": "height=214,ascent=176,descent=38,internal=39",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=215",
+      "result": "W=134,i=58,n=91,d=85,o=96,w=117,s=106",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=215",
+      "result": "width=687,height=214",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=216",
+      "result": "height=216,ascent=177,descent=39,internal=40",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=216",
+      "result": "W=135,i=58,n=92,d=86,o=97,w=119,s=106",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=216",
+      "result": "width=693,height=216",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=217",
+      "result": "height=217,ascent=178,descent=39,internal=40",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=217",
+      "result": "W=136,i=58,n=92,d=87,o=97,w=119,s=107",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=217",
+      "result": "width=696,height=217",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=218",
+      "result": "height=218,ascent=179,descent=39,internal=40",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=218",
+      "result": "W=137,i=59,n=93,d=87,o=98,w=119,s=107",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=218",
+      "result": "width=700,height=218",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=219",
+      "result": "height=219,ascent=180,descent=39,internal=40",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=219",
+      "result": "W=137,i=59,n=93,d=88,o=98,w=119,s=108",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=219",
+      "result": "width=702,height=219",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=220",
+      "result": "height=219,ascent=180,descent=39,internal=40",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=220",
+      "result": "W=137,i=59,n=93,d=88,o=98,w=119,s=108",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=220",
+      "result": "width=702,height=219",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=221",
+      "result": "height=221,ascent=181,descent=40,internal=41",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=221",
+      "result": "W=138,i=59,n=94,d=88,o=99,w=119,s=109",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=221",
+      "result": "width=706,height=221",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=222",
+      "result": "height=222,ascent=182,descent=40,internal=41",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=222",
+      "result": "W=139,i=60,n=94,d=88,o=99,w=118,s=109",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=222",
+      "result": "width=707,height=222",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=223",
+      "result": "height=223,ascent=183,descent=40,internal=41",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=223",
+      "result": "W=140,i=60,n=95,d=89,o=100,w=120,s=110",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=223",
+      "result": "width=714,height=223",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=224",
+      "result": "height=224,ascent=184,descent=40,internal=41",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=224",
+      "result": "W=141,i=60,n=95,d=89,o=100,w=120,s=110",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=224",
+      "result": "width=715,height=224",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=225",
+      "result": "height=225,ascent=185,descent=40,internal=41",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=225",
+      "result": "W=141,i=61,n=96,d=90,o=101,w=120,s=111",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=225",
+      "result": "width=720,height=225",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=226",
+      "result": "height=225,ascent=185,descent=40,internal=41",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=226",
+      "result": "W=141,i=61,n=96,d=90,o=101,w=120,s=111",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=226",
+      "result": "width=720,height=225",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=227",
+      "result": "height=227,ascent=186,descent=41,internal=42",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=227",
+      "result": "W=142,i=61,n=96,d=90,o=102,w=122,s=112",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=227",
+      "result": "width=725,height=227",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=228",
+      "result": "height=228,ascent=187,descent=41,internal=42",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=228",
+      "result": "W=143,i=61,n=97,d=90,o=102,w=122,s=112",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=228",
+      "result": "width=727,height=228",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=229",
+      "result": "height=229,ascent=188,descent=41,internal=42",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=229",
+      "result": "W=144,i=62,n=97,d=91,o=103,w=122,s=113",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=229",
+      "result": "width=732,height=229",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=230",
+      "result": "height=229,ascent=188,descent=41,internal=42",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=230",
+      "result": "W=144,i=62,n=97,d=91,o=103,w=122,s=113",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=230",
+      "result": "width=732,height=229",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=231",
+      "result": "height=231,ascent=189,descent=42,internal=43",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=231",
+      "result": "W=144,i=62,n=98,d=92,o=103,w=123,s=113",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=231",
+      "result": "width=735,height=231",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=232",
+      "result": "height=232,ascent=190,descent=42,internal=43",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=232",
+      "result": "W=145,i=62,n=98,d=92,o=104,w=125,s=114",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=232",
+      "result": "width=740,height=232",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=233",
+      "result": "height=232,ascent=191,descent=41,internal=42",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=233",
+      "result": "W=146,i=63,n=99,d=92,o=104,w=126,s=115",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=233",
+      "result": "width=745,height=232",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=234",
+      "result": "height=234,ascent=192,descent=42,internal=43",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=234",
+      "result": "W=147,i=63,n=100,d=93,o=105,w=126,s=115",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=234",
+      "result": "width=749,height=234",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=235",
+      "result": "height=235,ascent=193,descent=42,internal=43",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=235",
+      "result": "W=147,i=63,n=100,d=94,o=105,w=127,s=116",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=235",
+      "result": "width=752,height=235",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=236",
+      "result": "height=236,ascent=194,descent=42,internal=43",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=236",
+      "result": "W=148,i=64,n=101,d=95,o=106,w=127,s=116",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=236",
+      "result": "width=757,height=236",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=237",
+      "result": "height=236,ascent=194,descent=42,internal=43",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=237",
+      "result": "W=148,i=64,n=101,d=95,o=106,w=127,s=116",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=237",
+      "result": "width=757,height=236",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=238",
+      "result": "height=238,ascent=195,descent=43,internal=44",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=238",
+      "result": "W=149,i=64,n=101,d=95,o=106,w=129,s=117",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=238",
+      "result": "width=761,height=238",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=239",
+      "result": "height=239,ascent=196,descent=43,internal=44",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=239",
+      "result": "W=150,i=64,n=102,d=95,o=107,w=131,s=118",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=239",
+      "result": "width=767,height=239",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=240",
+      "result": "height=240,ascent=197,descent=43,internal=44",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=240",
+      "result": "W=151,i=65,n=102,d=97,o=108,w=133,s=118",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=240",
+      "result": "width=774,height=240",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=241",
+      "result": "height=240,ascent=197,descent=43,internal=44",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=241",
+      "result": "W=151,i=65,n=102,d=97,o=108,w=133,s=118",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=241",
+      "result": "width=774,height=240",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=242",
+      "result": "height=242,ascent=198,descent=44,internal=45",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=242",
+      "result": "W=151,i=65,n=103,d=97,o=108,w=133,s=119",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=242",
+      "result": "width=776,height=242",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=243",
+      "result": "height=243,ascent=199,descent=44,internal=45",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=243",
+      "result": "W=152,i=65,n=103,d=97,o=109,w=134,s=119",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=243",
+      "result": "width=779,height=243",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=244",
+      "result": "height=243,ascent=200,descent=43,internal=44",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=244",
+      "result": "W=153,i=65,n=104,d=97,o=109,w=134,s=120",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=244",
+      "result": "width=782,height=243",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=245",
+      "result": "height=245,ascent=201,descent=44,internal=45",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=245",
+      "result": "W=154,i=66,n=104,d=98,o=110,w=134,s=121",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=245",
+      "result": "width=787,height=245",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=246",
+      "result": "height=246,ascent=202,descent=44,internal=45",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=246",
+      "result": "W=154,i=66,n=105,d=99,o=110,w=136,s=121",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=246",
+      "result": "width=791,height=246",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=247",
+      "result": "height=247,ascent=203,descent=44,internal=45",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=247",
+      "result": "W=155,i=66,n=105,d=99,o=111,w=136,s=122",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=247",
+      "result": "width=794,height=247",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=248",
+      "result": "height=248,ascent=204,descent=44,internal=45",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=248",
+      "result": "W=156,i=67,n=106,d=99,o=111,w=136,s=122",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=248",
+      "result": "width=797,height=248",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=249",
+      "result": "height=249,ascent=205,descent=44,internal=45",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=249",
+      "result": "W=157,i=67,n=106,d=100,o=112,w=136,s=123",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=249",
+      "result": "width=801,height=249",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=250",
+      "result": "height=250,ascent=206,descent=44,internal=45",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=250",
+      "result": "W=157,i=67,n=107,d=100,o=113,w=136,s=124",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=250",
+      "result": "width=804,height=250",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=251",
+      "result": "height=250,ascent=206,descent=44,internal=45",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=251",
+      "result": "W=157,i=67,n=107,d=100,o=113,w=136,s=124",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=251",
+      "result": "width=804,height=250",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=252",
+      "result": "height=250,ascent=206,descent=44,internal=45",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=252",
+      "result": "W=157,i=67,n=107,d=100,o=113,w=136,s=124",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=252",
+      "result": "width=804,height=250",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=253",
+      "result": "height=253,ascent=208,descent=45,internal=47",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=253",
+      "result": "W=158,i=68,n=107,d=101,o=113,w=136,s=124",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=253",
+      "result": "width=807,height=253",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=254",
+      "result": "height=254,ascent=209,descent=45,internal=46",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=254",
+      "result": "W=160,i=68,n=108,d=102,o=114,w=140,s=125",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=254",
+      "result": "width=817,height=254",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=255",
+      "result": "height=254,ascent=209,descent=45,internal=46",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=255",
+      "result": "W=160,i=68,n=108,d=102,o=114,w=140,s=125",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=255",
+      "result": "width=817,height=254",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=256",
+      "result": "height=256,ascent=210,descent=46,internal=47",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=256",
+      "result": "W=161,i=69,n=109,d=102,o=115,w=140,s=126",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=256",
+      "result": "width=822,height=256",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=257",
+      "result": "height=257,ascent=211,descent=46,internal=47",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=257",
+      "result": "W=161,i=69,n=109,d=103,o=115,w=139,s=127",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=257",
+      "result": "width=823,height=257",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=258",
+      "result": "height=258,ascent=212,descent=46,internal=47",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=258",
+      "result": "W=162,i=69,n=110,d=103,o=116,w=140,s=127",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=258",
+      "result": "width=827,height=258",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=259",
+      "result": "height=258,ascent=212,descent=46,internal=47",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=259",
+      "result": "W=162,i=69,n=110,d=103,o=116,w=140,s=127",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=259",
+      "result": "width=827,height=258",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=260",
+      "result": "height=260,ascent=213,descent=47,internal=48",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=260",
+      "result": "W=163,i=70,n=110,d=103,o=116,w=140,s=128",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=260",
+      "result": "width=830,height=260",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=261",
+      "result": "height=260,ascent=214,descent=46,internal=47",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=261",
+      "result": "W=164,i=70,n=111,d=104,o=117,w=142,s=128",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=261",
+      "result": "width=836,height=260",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=262",
+      "result": "height=262,ascent=216,descent=46,internal=48",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=262",
+      "result": "W=164,i=70,n=111,d=104,o=117,w=143,s=129",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=262",
+      "result": "width=838,height=262",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=263",
+      "result": "height=263,ascent=216,descent=47,internal=48",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=263",
+      "result": "W=165,i=71,n=112,d=105,o=118,w=144,s=130",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=263",
+      "result": "width=845,height=263",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=264",
+      "result": "height=264,ascent=217,descent=47,internal=48",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=264",
+      "result": "W=166,i=71,n=113,d=106,o=119,w=145,s=130",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=264",
+      "result": "width=850,height=264",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=265",
+      "result": "height=265,ascent=218,descent=47,internal=48",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=265",
+      "result": "W=167,i=71,n=113,d=106,o=119,w=145,s=131",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=265",
+      "result": "width=852,height=265",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=266",
+      "result": "height=265,ascent=218,descent=47,internal=48",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=266",
+      "result": "W=167,i=71,n=113,d=106,o=119,w=145,s=131",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=266",
+      "result": "width=852,height=265",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=267",
+      "result": "height=267,ascent=219,descent=48,internal=49",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=267",
+      "result": "W=167,i=72,n=114,d=106,o=120,w=146,s=131",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=267",
+      "result": "width=856,height=267",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=268",
+      "result": "height=268,ascent=220,descent=48,internal=49",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=268",
+      "result": "W=168,i=72,n=114,d=106,o=120,w=150,s=132",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=268",
+      "result": "width=862,height=268",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=269",
+      "result": "height=269,ascent=221,descent=48,internal=49",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=269",
+      "result": "W=169,i=72,n=115,d=108,o=121,w=150,s=133",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=269",
+      "result": "width=868,height=269",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=270",
+      "result": "height=269,ascent=221,descent=48,internal=49",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=270",
+      "result": "W=169,i=72,n=115,d=108,o=121,w=150,s=133",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=270",
+      "result": "width=868,height=269",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=271",
+      "result": "height=271,ascent=222,descent=49,internal=50",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=271",
+      "result": "W=170,i=73,n=115,d=108,o=121,w=150,s=133",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=271",
+      "result": "width=870,height=271",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=272",
+      "result": "height=271,ascent=222,descent=49,internal=50",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=272",
+      "result": "W=170,i=73,n=115,d=108,o=121,w=150,s=133",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=272",
+      "result": "width=870,height=271",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=273",
+      "result": "height=273,ascent=224,descent=49,internal=51",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=273",
+      "result": "W=171,i=73,n=116,d=108,o=122,w=150,s=134",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=273",
+      "result": "width=874,height=273",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=274",
+      "result": "height=274,ascent=225,descent=49,internal=51",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=274",
+      "result": "W=171,i=73,n=116,d=109,o=122,w=150,s=134",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=274",
+      "result": "width=875,height=274",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=275",
+      "result": "height=275,ascent=225,descent=50,internal=51",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=275",
+      "result": "W=172,i=74,n=117,d=111,o=123,w=150,s=135",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=275",
+      "result": "width=882,height=275",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=276",
+      "result": "height=276,ascent=227,descent=49,internal=50",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=276",
+      "result": "W=174,i=74,n=118,d=110,o=124,w=152,s=136",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=276",
+      "result": "width=888,height=276",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=277",
+      "result": "height=276,ascent=227,descent=49,internal=50",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=277",
+      "result": "W=174,i=74,n=118,d=110,o=124,w=152,s=136",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=277",
+      "result": "width=888,height=276",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=278",
+      "result": "height=278,ascent=228,descent=50,internal=51",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=278",
+      "result": "W=174,i=75,n=118,d=111,o=125,w=152,s=137",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=278",
+      "result": "width=892,height=278",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=279",
+      "result": "height=279,ascent=229,descent=50,internal=51",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=279",
+      "result": "W=175,i=75,n=119,d=112,o=125,w=152,s=137",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=279",
+      "result": "width=895,height=279",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=280",
+      "result": "height=280,ascent=230,descent=50,internal=51",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=280",
+      "result": "W=176,i=75,n=119,d=113,o=126,w=152,s=138",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=280",
+      "result": "width=899,height=280",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=281",
+      "result": "height=280,ascent=230,descent=50,internal=51",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=281",
+      "result": "W=176,i=75,n=119,d=113,o=126,w=152,s=138",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=281",
+      "result": "width=899,height=280",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=282",
+      "result": "height=280,ascent=230,descent=50,internal=51",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=282",
+      "result": "W=176,i=75,n=119,d=113,o=126,w=152,s=138",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=282",
+      "result": "width=899,height=280",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=283",
+      "result": "height=283,ascent=232,descent=51,internal=53",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=283",
+      "result": "W=177,i=76,n=120,d=113,o=126,w=155,s=139",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=283",
+      "result": "width=906,height=283",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=284",
+      "result": "height=284,ascent=233,descent=51,internal=52",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=284",
+      "result": "W=178,i=76,n=121,d=114,o=127,w=150,s=140",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=284",
+      "result": "width=906,height=284",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=285",
+      "result": "height=284,ascent=233,descent=51,internal=52",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=285",
+      "result": "W=178,i=76,n=121,d=114,o=127,w=150,s=140",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=285",
+      "result": "width=906,height=284",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=286",
+      "result": "height=286,ascent=234,descent=52,internal=53",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=286",
+      "result": "W=179,i=77,n=121,d=114,o=128,w=150,s=141",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=286",
+      "result": "width=910,height=286",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=287",
+      "result": "height=287,ascent=235,descent=52,internal=53",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=287",
+      "result": "W=180,i=77,n=122,d=114,o=128,w=150,s=141",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=287",
+      "result": "width=912,height=287",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=288",
+      "result": "height=288,ascent=236,descent=52,internal=53",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=288",
+      "result": "W=180,i=77,n=122,d=117,o=129,w=154,s=142",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=288",
+      "result": "width=921,height=288",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=289",
+      "result": "height=289,ascent=237,descent=52,internal=53",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=289",
+      "result": "W=181,i=78,n=123,d=117,o=130,w=154,s=142",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=289",
+      "result": "width=925,height=289",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=290",
+      "result": "height=290,ascent=238,descent=52,internal=53",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=290",
+      "result": "W=182,i=78,n=123,d=115,o=130,w=154,s=143",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=290",
+      "result": "width=925,height=290",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=291",
+      "result": "height=290,ascent=238,descent=52,internal=53",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=291",
+      "result": "W=182,i=78,n=123,d=115,o=130,w=154,s=143",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=291",
+      "result": "width=925,height=290",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=292",
+      "result": "height=292,ascent=240,descent=52,internal=54",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=292",
+      "result": "W=183,i=78,n=124,d=115,o=131,w=154,s=144",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=292",
+      "result": "width=929,height=292",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=293",
+      "result": "height=292,ascent=240,descent=52,internal=54",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=293",
+      "result": "W=183,i=78,n=124,d=115,o=131,w=154,s=144",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=293",
+      "result": "width=929,height=292",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=294",
+      "result": "height=294,ascent=242,descent=52,internal=54",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=294",
+      "result": "W=184,i=79,n=125,d=118,o=132,w=154,s=145",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=294",
+      "result": "width=937,height=294",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=295",
+      "result": "height=294,ascent=242,descent=52,internal=53",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=295",
+      "result": "W=185,i=79,n=126,d=118,o=132,w=158,s=145",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=295",
+      "result": "width=943,height=294",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=296",
+      "result": "height=296,ascent=243,descent=53,internal=54",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=296",
+      "result": "W=186,i=80,n=126,d=118,o=133,w=158,s=146",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=296",
+      "result": "width=947,height=296",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=297",
+      "result": "height=297,ascent=244,descent=53,internal=54",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=297",
+      "result": "W=187,i=80,n=127,d=119,o=133,w=158,s=147",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=297",
+      "result": "width=951,height=297",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=298",
+      "result": "height=297,ascent=244,descent=53,internal=54",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=298",
+      "result": "W=187,i=80,n=127,d=119,o=133,w=158,s=147",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=298",
+      "result": "width=951,height=297",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=299",
+      "result": "height=299,ascent=245,descent=54,internal=55",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=299",
+      "result": "W=187,i=80,n=127,d=119,o=134,w=158,s=147",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=299",
+      "result": "width=952,height=299",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol size",
+      "args": "h=300",
+      "result": "height=299,ascent=246,descent=53,internal=54",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol advances",
+      "args": "h=300",
+      "result": "W=188,i=81,n=128,d=121,o=134,w=158,s=148",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    },
+    {
+      "function": "symbol extent",
+      "args": "h=300",
+      "result": "width=958,height=299",
+      "section": "Symbol's advances one character at a time, through the half-size crossing"
+    }
+  ]
+}

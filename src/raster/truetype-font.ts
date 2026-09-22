@@ -578,6 +578,21 @@ export class TrueTypeFont {
       const cell = ascent + descent;
 
       if (cell > height) {
+        /* And it does **not** stop here.
+         *
+         * The table's cells climb with the size nearly everywhere, and where
+         * they climb it makes no difference whether a scan that meets a size
+         * too tall gives up or carries on. Where the table dips it does.
+         * Symbol fits 155 pixels per em into a cell of 191 and 156 into 190, so
+         * a scan that carries on finds 156 an exact answer for a cell of 190 --
+         * and Windows answers 154, the last size before the dip, which is what
+         * giving up would say.
+         *
+         * **Refused by count.** Giving up there costs 124 records of `hinting`,
+         * 6 of `font`, 12 of `stemstyl` and 10 of `tiepick`, against 3 of
+         * `symadv` gained. So the scan carries on, and Symbol at a cell of 190
+         * is in `KNOWN_GAPS` with the tie of 8r.
+         */
         return false;
       }
 
@@ -1032,6 +1047,26 @@ export class TrueTypeFont {
    * it does not. Windows measures a string at an uncovered size by running the
    * program, since that is what the table would have been a cache of.
    *
+   * Where the face is fitted at half the size, so is the advance -- and it is
+   * **doubled before it is rounded**, not after.
+   *
+   * Symbol declares the widest box of the four faces, so it crosses 8k's
+   * threshold earliest, at two hundred and thirty-one pixels per em, and it is
+   * the only face whose advances anything has recorded past its own crossing.
+   * Only two characters of `symadv`'s specimen reach this at all -- `LTSH`
+   * answers for the other five, at the *whole* size, and goes on being right
+   * there -- and for both of them the half-size run doubled is exact at every
+   * one of the fourteen sizes above the crossing.
+   *
+   * Rounding first and doubling after cannot be what happens: delta comes out
+   * 117 pixels at two hundred and thirty-five and 119 at two hundred and
+   * forty-three, and an advance doubled from whole pixels is even. Doubling the
+   * sixty-fourths and rounding once gives both, and omega's plateaus -- 150
+   * across three sizes, 154 across five, 158 across five -- with it.
+   *
+   * Below the crossing the two readings are the same arithmetic, so this says
+   * nothing new there.
+   *
    * @returns {number|null} The advance in whole pixels, or null if the glyph
    *                        has no program to run.
    */
@@ -1049,16 +1084,19 @@ export class TrueTypeFont {
     }
 
     try {
-      const hinter = this.hinterAt(ppem, roundPhantoms, stretch);
+      const half = this.halves(ppem, stretch) ? 2 : 1;
+      const down = half === 1 ? ppem : Math.round(ppem / 2);
+      const wide = half === 1 ? stretch : Math.round(Math.round(ppem * stretch) / 2) / down;
+      const hinter = this.hinterAt(down, roundPhantoms, wide);
 
       const assembly = program.composite
         ? this.compositeInPixels(
             glyph,
-            ppem,
+            down,
             roundPhantoms,
             (units) => hinter.toPixels(units),
             (shift) => hinter.carry(shift),
-            stretch,
+            wide,
             (units) => hinter.toPixelsX(units)
           )
         : null;
@@ -1074,7 +1112,9 @@ export class TrueTypeFont {
         assembly
       );
 
-      return hinter.advance ?? null;
+      return hinter.advanceExact == null
+        ? (hinter.advance ?? null)
+        : Math.round((hinter.advanceExact * half) / 64);
     } catch {
       return null;
     }

@@ -1439,6 +1439,50 @@ const ADAPTERS: Record<
     return `width=${extent & 0xffff},height=${(extent >> 16) & 0xffff}`;
   },
 
+  /* `symadv` asks Symbol alone, one cell at a time, and records the size it
+   * was fitted at, the advance of each character of its specimen, and the
+   * extent of the whole string -- so the sum can be checked against its parts.
+   */
+  'symbol size'(context, args) {
+    const tm = context.mappedFont(['Symbol', ...args, 'w=0', 'weight=400', 'italic=0']).metrics;
+
+    return (
+      `height=${tm.tmHeight},ascent=${tm.tmAscent},descent=${tm.tmDescent},` +
+      `internal=${tm.tmInternalLeading}`
+    );
+  },
+
+  'symbol advances'(context, args) {
+    const widths = charWidths(context, ['Symbol', ...args, 'w=0']);
+
+    if (typeof widths === 'string') {
+      return widths;
+    }
+
+    return [...TIE_SPECIMEN]
+      .map((character) => `${character}=${widths[character.charCodeAt(0) - 32]}`)
+      .join(',');
+  },
+
+  'symbol extent'(context, args) {
+    const { hdc } = context.mappedFont([
+      'Symbol',
+      ...args,
+      'w=0',
+      'weight=400',
+      'italic=0',
+    ]);
+
+    const extent = GetTextExtent.call(
+      context,
+      hdc,
+      context.lpcstr(TIE_SPECIMEN),
+      TIE_SPECIMEN.length
+    );
+
+    return `width=${extent & 0xffff},height=${(extent >> 16) & 0xffff}`;
+  },
+
   /* The dense maximum width sweep. The arguments name only a face, a height
    * and a width, so the rest of the request is the probe's own defaults.
    */
@@ -2009,12 +2053,28 @@ export const KNOWN_GAPS: Record<string, string> = {
    * agree with the metrics, so the two probes are short of the same thing.
    *
    * Fifteen of them are an exact tie inside the table taken the other way, and
-   * 8r says at length what has been refused as an explanation. The rest are
-   * widths: sixteen of Symbol above the largest size the table names, and its
-   * cells of 170 and 190, where the size is right and the advance is not.
+   * 8r says at length what has been refused as an explanation. Six more are
+   * Symbol, whose table dips -- 8s -- and the widths that follow from both.
+   *
+   * Symbol's sixteen cells above its half-size crossing came out of here: the
+   * advance is fitted at half the size and doubled **before** it is rounded,
+   * which is `TrueTypeFont.hintedAdvance`.
    */
-  'tiepick-vga:tie heights': '22 of 1,758 records, the tie of 8r',
-  'tiepick-vga:tie extent': '37 of 1,758 records, the same tie and Symbol\'s widths above the table',
+  'tiepick-vga:tie heights': '22 of 1,758 records, the tie of 8r and the dip of 8s',
+  'tiepick-vga:tie extent': '23 of 1,758 records, the widths that follow from them',
+
+  /* Symbol's own advances, swept through the half-size crossing.
+   *
+   * 8s. Two cells are the 8r tie and one is the dip, and the advances and
+   * extents at those cells follow from the size being wrong. The eleventh is
+   * omega at a hundred and thirty-nine pixels per em, where the program is run
+   * at the full size on both sides and this one comes out a pixel wider: 91
+   * against 90, and the advance is a whole number of pixels, so it is not a
+   * rounding. One size of the 141, and the only one in the sweep.
+   */
+  'symadv-vga:symbol size': '3 of 141 records, the tie of 8r twice and the dip once',
+  'symadv-vga:symbol advances': '4 of 141 records, those three and omega at 139 pixels per em',
+  'symadv-vga:symbol extent': '4 of 141 records, the sums of those advances',
 
   /* The glyph sweep on an EGA, 895 cells of 6,046.
    *
