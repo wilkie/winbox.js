@@ -1,0 +1,254 @@
+{
+  "probe": "dipcell",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "dip heights",
+      "args": "\"Arial\",h=118,weight=700,italic=1",
+      "result": "height=118,ascent=95,descent=23,internal=14,external=3",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Arial\",h=119,weight=700,italic=1",
+      "result": "height=118,ascent=95,descent=23,internal=14,external=3",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Arial\",h=120,weight=700,italic=1",
+      "result": "height=120,ascent=97,descent=23,internal=14,external=3",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Arial\",h=121,weight=700,italic=1",
+      "result": "height=121,ascent=97,descent=24,internal=16,external=3",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Arial\",h=122,weight=700,italic=1",
+      "result": "height=122,ascent=98,descent=24,internal=15,external=4",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Arial\",h=189,weight=700,italic=1",
+      "result": "height=189,ascent=154,descent=35,internal=22,external=5",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Arial\",h=190,weight=700,italic=1",
+      "result": "height=189,ascent=154,descent=35,internal=22,external=5",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Arial\",h=191,weight=700,italic=1",
+      "result": "height=191,ascent=155,descent=36,internal=22,external=6",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Arial\",h=192,weight=700,italic=1",
+      "result": "height=192,ascent=155,descent=37,internal=24,external=5",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Arial\",h=193,weight=700,italic=1",
+      "result": "height=193,ascent=157,descent=36,internal=23,external=6",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Courier New\",h=119,weight=400,italic=1",
+      "result": "height=119,ascent=90,descent=29,internal=11,external=0",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Courier New\",h=120,weight=400,italic=1",
+      "result": "height=119,ascent=90,descent=29,internal=10,external=0",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Courier New\",h=121,weight=400,italic=1",
+      "result": "height=119,ascent=90,descent=29,internal=10,external=0",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Courier New\",h=122,weight=400,italic=1",
+      "result": "height=122,ascent=92,descent=30,internal=12,external=0",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Courier New\",h=123,weight=400,italic=1",
+      "result": "height=123,ascent=92,descent=31,internal=10,external=0",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Times New Roman\",h=88,weight=700,italic=0",
+      "result": "height=88,ascent=71,descent=17,internal=10,external=3",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Times New Roman\",h=89,weight=700,italic=0",
+      "result": "height=88,ascent=71,descent=17,internal=10,external=3",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Times New Roman\",h=90,weight=700,italic=0",
+      "result": "height=90,ascent=73,descent=17,internal=10,external=3",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Times New Roman\",h=91,weight=700,italic=0",
+      "result": "height=91,ascent=73,descent=18,internal=12,external=3",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Times New Roman\",h=92,weight=700,italic=0",
+      "result": "height=92,ascent=74,descent=18,internal=11,external=3",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Times New Roman\",h=125,weight=700,italic=0",
+      "result": "height=124,ascent=100,descent=24,internal=14,external=5",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Times New Roman\",h=126,weight=700,italic=0",
+      "result": "height=126,ascent=102,descent=24,internal=15,external=5",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Times New Roman\",h=127,weight=700,italic=0",
+      "result": "height=127,ascent=103,descent=24,internal=14,external=5",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Times New Roman\",h=128,weight=700,italic=0",
+      "result": "height=128,ascent=103,descent=25,internal=16,external=5",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Times New Roman\",h=129,weight=700,italic=0",
+      "result": "height=129,ascent=104,descent=25,internal=15,external=5",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Times New Roman\",h=208,weight=400,italic=1",
+      "result": "height=208,ascent=167,descent=41,internal=21,external=8",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Times New Roman\",h=209,weight=400,italic=1",
+      "result": "height=209,ascent=168,descent=41,internal=21,external=8",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Times New Roman\",h=210,weight=400,italic=1",
+      "result": "height=210,ascent=169,descent=41,internal=20,external=8",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Times New Roman\",h=211,weight=400,italic=1",
+      "result": "height=211,ascent=169,descent=42,internal=22,external=8",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Times New Roman\",h=212,weight=400,italic=1",
+      "result": "height=210,ascent=169,descent=41,internal=20,external=8",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Symbol\",h=76,weight=400,italic=0",
+      "result": "height=76,ascent=62,descent=14,internal=15,external=0",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Symbol\",h=77,weight=400,italic=0",
+      "result": "height=77,ascent=63,descent=14,internal=15,external=0",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Symbol\",h=78,weight=400,italic=0",
+      "result": "height=78,ascent=64,descent=14,internal=14,external=0",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Symbol\",h=79,weight=400,italic=0",
+      "result": "height=79,ascent=64,descent=15,internal=16,external=0",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Symbol\",h=80,weight=400,italic=0",
+      "result": "height=80,ascent=66,descent=14,internal=14,external=0",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Symbol\",h=188,weight=400,italic=0",
+      "result": "height=188,ascent=154,descent=34,internal=35,external=0",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Symbol\",h=189,weight=400,italic=0",
+      "result": "height=189,ascent=155,descent=34,internal=35,external=0",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Symbol\",h=190,weight=400,italic=0",
+      "result": "height=189,ascent=155,descent=34,internal=35,external=0",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Symbol\",h=191,weight=400,italic=0",
+      "result": "height=191,ascent=156,descent=35,internal=36,external=0",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    },
+    {
+      "function": "dip heights",
+      "args": "\"Symbol\",h=192,weight=400,italic=0",
+      "result": "height=192,ascent=157,descent=35,internal=35,external=0",
+      "section": "the eight cells where VDMX dips, and the two either side of each"
+    }
+  ]
+}

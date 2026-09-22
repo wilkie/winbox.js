@@ -566,11 +566,17 @@ export class TrueTypeFont {
      * styles of each, with no exception.
      *
      * Stated as a rule that sounds arbitrary; stated as a loop it is the
-     * obvious thing to write. Walk the sizes upward keeping the best fit so
-     * far, let a later size of equal cell replace an earlier one, and stop as
-     * soon as something fits exactly -- there is nothing better to find. The
-     * scan that stops early keeps the first of the tie; the scan that runs to
-     * the end keeps the last.
+     * obvious thing to write. Walk the sizes upward keeping the **last** one
+     * that fits, and stop as soon as something fits exactly -- there is nothing
+     * better to find. The scan that stops early keeps the first of the tie; the
+     * scan that runs to the end keeps the last.
+     *
+     * The last that fits, not the best fit. The two are the same wherever the
+     * cells climb with the size, and differ where the table dips: Times New
+     * Roman Italic fits 189 pixels per em into a cell of 211 and 190 into 210,
+     * and asked for 212 -- which neither fits exactly -- Windows answers 190.
+     * The larger size, with the *worse* fit. Keeping the best cell instead
+     * costs 2 records of `tiepick` and 1 of `dipcell` and gains none.
      *
      * The sizes below the table are the exception, and the loop below says why.
      */
@@ -616,9 +622,7 @@ export class TrueTypeFont {
        * explain `stemstyl` contradicts them. What separates the two is **not
        * read**.
        */
-      if (!best || cell >= best.cell) {
-        best = { ppem, ascent, descent, cell };
-      }
+      best = { ppem, ascent, descent, cell };
 
       return cell === height;
     };

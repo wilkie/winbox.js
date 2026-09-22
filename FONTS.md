@@ -17490,22 +17490,71 @@ Below the crossing the two readings are the same arithmetic, so nothing else
 moved: `hinting`, `glyphs`, `widths`, `charscal` and `maxwidth` are unchanged,
 and `tiepick`'s sixteen cells are closed.
 
-#### And a dip in the table, which is not closed
+#### And a dip in the table, which is a census of its own
 
 Symbol's `VDMX` does not climb with the size. It fits 155 pixels per em into a
 cell of 191 and 156 into 190:
 
     153:188  154:189  155:191  156:190  157:192
 
-Asked for a cell of 190, Windows answers **154** -- the last size before the dip
--- where an exact answer, 156, is sitting two rows further on. Times New Roman
-Italic dips the same way, 189 into 211 and 190 into 210, and asked for 212
-Windows answers 190: the last that fits rather than the one that fits best.
+So a scan walking upward meets a row too tall and an exact answer sits two rows
+further on. Whether it gets there is a question, and `oracle/probes/dipcell.c`
+asks it of every dip there is.
 
-Both are what a scan that **gives up at the first size too tall** would say, and
-that is **refused by count**: giving up there costs 124 records of `hinting`, 6
-of `font`, 12 of `stemstyl` and 10 of `tiepick`, against 3 of `symadv` gained.
-So the scan carries on and Symbol's cell of 190 stays in `KNOWN_GAPS`.
+**Eight dips are decisive**, in the sixteen outline faces -- eight where the
+exact answer lies past the dip and no size below it fits exactly, so which side
+is taken shows. With the two cells either side of each for company:
+
+| | the dip | cell | Windows |
+| --- | --- | --- | --- |
+| Arial Bold Italic | 105:121 → 106:120 | 120 | **106**, past it |
+| Arial Bold Italic | 168:192 → 169:191 | 191 | **169**, past it |
+| Times Bold | 79:91 → 80:90 | 90 | **80**, past it |
+| Times Bold | 112:128 → 113:127 | 127 | **113**, past it |
+| Times Italic | 189:211 → 190:210 | 210 | **190**, past it |
+| Symbol | 63:79 → 64:78 | 78 | **64**, past it |
+| Symbol | 155:191 → 156:190 | 190 | **154**, short of it |
+| Courier New Italic | 111:122 → 112:121 | 121 | **109**, short of it |
+
+Six go past the dip and two stop short, and the two that stop are the gap. The
+six that go past are what a scan carrying on says, which is what this does.
+
+#### What a dip settles as well: the last that fits, not the best fit
+
+A dip also puts two sizes that both fit on either side of a row that does not,
+and then "the largest cell that fits" and "the last size that fits" part
+company. Times Italic asked for a cell of **212** -- 189 fits it at 211, 190 at
+210 -- is answered **190**: the larger size, with the worse fit.
+
+So the scan keeps the last size that fits rather than the best fit, which is
+also one less thing to carry. Worth 2 records of `tiepick` and 1 of `dipcell`,
+and it costs none.
+
+#### Four readings refused
+
+Each by count, and each would have settled the two that stop short:
+
+**Give up at the first size too tall.** Says both of them, and costs 124 records
+of `hinting`, 6 of `font`, 12 of `stemstyl` and 10 of `tiepick` against 3
+gained.
+
+**Require the candidate's scaled cell to fit as well.** Separates all seven that
+`tiepick` covers, and is wrong everywhere else: Courier New's hinted cell runs
+fifteen pixels below its scaled one, so the test throws away the right answer at
+almost every size. `stemsize` 0 of 238.
+
+**Cap the scan at the size the height scales to.** The same arithmetic the sizes
+below the table are answered by, rounded -- and it separates all eight, which is
+what makes it worth writing down. It fails for the same reason: 0 of 238 again.
+
+**Start at that size and walk, up while the next still fits and down until one
+does.** Reproduces all eight dips and the tie rule with them, and scores 1,662
+of the 1,697 tabulated answers against this scan's 1,677. Its misses are the
+mirror image -- it walks *over* a dip to the last of an exact tie where Windows
+takes the first.
+
+So what separates the six from the two is **not read**, and the two cells are in
+`KNOWN_GAPS` with their count.
 
 #### One glyph at one size, and where it was
 

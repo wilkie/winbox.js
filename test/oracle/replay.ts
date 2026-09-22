@@ -1439,6 +1439,28 @@ const ADAPTERS: Record<
     return `width=${extent & 0xffff},height=${(extent >> 16) & 0xffff}`;
   },
 
+  /* `dipcell` asks the eight cells where `VDMX` dips -- where a size fits a
+   * taller cell than the size above it -- and the two either side of each. 8s.
+   */
+  'dip heights'(context, args) {
+    const tm = context.mappedFont([
+      args[0],
+      args[1],
+      'w=0',
+      args[2],
+      args[3],
+      'under=0',
+      'strike=0',
+      'charset=0',
+      'pitch=0',
+    ]).metrics;
+
+    return (
+      `height=${tm.tmHeight},ascent=${tm.tmAscent},descent=${tm.tmDescent},` +
+      `internal=${tm.tmInternalLeading},external=${tm.tmExternalLeading}`
+    );
+  },
+
   /* `symadv` asks Symbol alone, one cell at a time, and records the size it
    * was fitted at, the advance of each character of its specimen, and the
    * extent of the whole string -- so the sum can be checked against its parts.
@@ -2060,8 +2082,8 @@ export const KNOWN_GAPS: Record<string, string> = {
    * advance is fitted at half the size and doubled **before** it is rounded,
    * which is `TrueTypeFont.hintedAdvance`.
    */
-  'tiepick-vga:tie heights': '22 of 1,758 records, the tie of 8r and the dip of 8s',
-  'tiepick-vga:tie extent': '22 of 1,758 records, the widths that follow from them',
+  'tiepick-vga:tie heights': '21 of 1,758 records, the tie of 8r and the dip of 8s',
+  'tiepick-vga:tie extent': '21 of 1,758 records, the widths that follow from them',
 
   /* Symbol's own advances, swept through the half-size crossing.
    *
@@ -2071,6 +2093,16 @@ export const KNOWN_GAPS: Record<string, string> = {
    * and it was where the advance phantom's original is scaled -- see
    * `Hinter.hint`.
    */
+  /* The dips, where the cells the table names do not climb with the size.
+   *
+   * 8s. Eight of them in the sixteen outline faces are decisive -- the exact
+   * answer lies past the dip and there is none before it -- and Windows takes
+   * it six times and refuses it twice, at Symbol's cell of 190 and Courier New
+   * Italic's of 121. Four readings have been refused as the difference, each
+   * by count, and what separates the six from the two is **not read**.
+   */
+  'dipcell-vga:dip heights': '2 of 40 records, the two dips whose exact answer Windows refuses',
+
   'symadv-vga:symbol size': '3 of 141 records, the tie of 8r twice and the dip once',
   'symadv-vga:symbol advances': '3 of 141 records, the advances at those three cells',
   'symadv-vga:symbol extent': '3 of 141 records, the sums of those advances',
