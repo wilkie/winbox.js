@@ -121,7 +121,17 @@ export class BitmapFontEntry {
      * measured without it -- so the top of every letter fell off the end,
      * which looked exactly like a glyph whose right-hand side was missing.
      */
-    const width = metrics.width * across + (italic ? overhang : 0);
+    /* And room for the gaps `SetTextCharacterExtra` asks for.
+     *
+     * The region pulled out of the canvas has to hold everything that will be
+     * written into it, and the measurement it is sized from does not know
+     * about the spacing. Without this the second character of a spaced string
+     * is written outside the region and lost, which looks exactly like the
+     * spacing being ignored: the ink stops at the same column whether the gap
+     * is two or five.
+     */
+    const width =
+      metrics.width * across + (italic ? overhang : 0) + (options.extra || 0) * text.length;
 
     // Pull out the image data for that region
     const imageData = ctx.getImageData(x, y, width, height);
@@ -216,7 +226,7 @@ export class BitmapFontEntry {
       }
 
       // Go to next character
-      relativeX += charWidth;
+      relativeX += charWidth + (options.extra || 0);
     }
 
     ctx.putImageData(imageData, x, y);

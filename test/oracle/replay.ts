@@ -576,6 +576,7 @@ export class Context {
 
     surface.backMode = ground.opaque === 0 ? 1 : 2;
     surface.textAlign = ground.align ?? 0;
+    surface.charExtra = ground.extra ?? 0;
 
     /* The plotter faces are drawn as lines, and a line is the driver's -- and
      * a line that leaves the cell is GDI's, on the driver that cannot clip. */
@@ -1637,6 +1638,13 @@ const ADAPTERS: Record<
           .find((field) => String(field).startsWith('back='))
           ?.toString()
           .slice(5) ?? 0
+      ),
+      extra: Number(
+        args
+          .slice(1, -1)
+          .find((field) => String(field).startsWith('extra='))
+          ?.toString()
+          .slice(6) ?? 0
       ),
       align: Number(
         args

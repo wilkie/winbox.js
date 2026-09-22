@@ -17313,6 +17313,45 @@ ones it imports.** `WORD` is not among them, and using it in a table row is a
 about running Windows programs, none of which mentions the table. `UINT` is
 there and is the same two bytes.
 
+### 8q. The gap after every character
+
+`SetTextCharacterExtra` adds a gap after each character GDI draws. Nothing in
+the corpus had ever set it, so every record said what nought does, and nought is
+the one value that cannot show the rest. It was a stub here and the drawing knew
+nothing of it.
+
+A single character cannot show it either -- the gap goes *after* each one, so it
+moves the next and the string's width and nothing else. `oracle/probes/
+textxtra.c` draws **two**, at spacings of nought, one, two and five, on three
+faces at two sizes.
+
+The rule is as plain as a rule gets: the ink's right edge moves by exactly the
+spacing, in all twenty-four records. Two characters, one gap.
+
+**24 of 24** on a VGA and on an EGA.
+
+#### The strike drew it and then threw it away
+
+The first implementation advanced the pen correctly on both paths and still
+missed four records -- MS Sans Serif at spacings of two and five, at both sizes,
+where the ink stopped at the same column whether the gap was two or five.
+
+A strike is drawn by pulling a region out of the canvas, painting into it and
+putting it back, and the region is sized from the string's **measurement**,
+which does not know about the spacing. The second character was being written
+outside the region and dropped on the floor. It looked exactly like the spacing
+being ignored, and the spacing was not being ignored; the room for it was
+missing.
+
+#### What is not measured
+
+The string's **width** under a non-zero spacing. It decides three things -- the
+ground painted behind the text, how far the underline and strikeout run, and
+where `TA_RIGHT` and `TA_CENTER` put the string -- and `textxtra` draws with the
+ground transparent, no rule and the default alignment, so it asks none of them.
+Whether the gap after the *last* character counts toward the width is therefore
+unknown, and nothing here depends on it yet.
+
 ### 8d. The first glyphs drawn on a pixel that is not square
 
 Every glyph ever recorded had been drawn on a VGA. The mapper, the metrics and
@@ -18278,7 +18317,8 @@ two are `stemstyl`'s 34 of 900 and 44 of 900, a tie inside `VDMX` that Windows
 takes the later of where the rest of the corpus says it takes the first; see
 8l. A fifth is `rules`' 60 of 224, where a strike puts its strikeout; see 8n. A
 sixth is `textbk`'s 3 of 64, a ground painted a little small; see 8o.
-`textalin` is exact, 36 of 36 on both displays it was recorded on; see 8p. 8k closed it: reading the scaler's memory found the glyph being
+`textalin` is exact, 36 of 36 on both displays it was recorded on; see 8p, and
+so is `textxtra`, 24 of 24 on both; see 8q. 8k closed it: reading the scaler's memory found the glyph being
 fitted at half the size, and four fabrications that move only what `head`
 declares found what sets that off -- the right edge of the face's box, carried
 across the horizontal size, past two hundred and fifty-six pixels. `stemedge` is

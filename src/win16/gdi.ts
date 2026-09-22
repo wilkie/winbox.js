@@ -67,6 +67,7 @@ import { SetBitmapBits } from './gdi/SetBitmapBits.js';
 import { SetBkColor } from './gdi/SetBkColor.js';
 import { SetBkMode } from './gdi/SetBkMode.js';
 import { SetTextAlign } from './gdi/SetTextAlign.js';
+import { SetTextCharacterExtra } from './gdi/SetTextCharacterExtra.js';
 import { SetPixel } from './gdi/SetPixel.js';
 import { SetTextColor } from './gdi/SetTextColor.js';
 import { TextOut } from './gdi/TextOut.js';
@@ -158,7 +159,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'SetRelAbs', 6],
       [Gdi.stub, 'SetPolyFillMode', 4],
       [Gdi.stub, 'SetStretchBltMode', 4],
-      [Gdi.stub, 'SetTextCharacterExtra', 4],
+      [SetTextCharacterExtra, 'SetTextCharacterExtra', 4, [HDC, INT], INT],
       [SetTextColor, 'SetTextColor', 6, [HDC, COLORREF], COLORREF],
       // 10 //
       [Gdi.stub, 'SetTextJustification', 6],

@@ -75,6 +75,7 @@ const PER_DISPLAY = new Set([
   'rules',
   'textbk',
   'textalin',
+  'textxtra',
   'scalemem',
   'scalepts',
 ]);

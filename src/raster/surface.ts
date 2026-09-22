@@ -95,6 +95,10 @@ export class Surface {
   /* `TA_LEFT | TA_TOP`, which is what a fresh device context starts at and the
    * one combination that cannot show the others. See `SetTextAlign`. */
   textAlign: number = 0;
+
+  /* The gap added after every character, which starts at none -- the one value
+   * that cannot show itself. See `SetTextCharacterExtra`. */
+  charExtra: number = 0;
   declare _bitmap: any;
   declare _brush: any;
   declare _canvas: any;
@@ -505,6 +509,9 @@ export class Surface {
          */
         scale: this._font instanceof LogicalFont ? this._font.scale : 1,
         horizontal: this._font instanceof LogicalFont ? this._font.horizontal : 1,
+
+        /* The gap after every character; see `SetTextCharacterExtra`. */
+        extra: this.charExtra,
       };
 
       // Fill the rectangle behind it
@@ -1018,7 +1025,8 @@ export class Surface {
        * on an EGA 24 of its 29 pairs were in the wrong column, and with the one
        * rule they are in the right one.
        */
-      pen += font.outlineAdvance(character.charCodeAt(0));
+      /* And the gap `SetTextCharacterExtra` asks for after every character. */
+      pen += font.outlineAdvance(character.charCodeAt(0)) + this.charExtra;
     }
   }
 
