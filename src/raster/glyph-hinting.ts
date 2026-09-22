@@ -952,7 +952,32 @@ export class Hinter {
      * phantom itself; at the vertical one, a stretched `MIRP` from it with an
      * empty control value measured the wrong distance and put the right side
      * of Arial's `E` three widths out instead of two. */
-    zone.originalX[zone.x.length - 3] = origin + this.toPixelsX(advance);
+    /* And it is scaled where the **outline** is, not where the pen is: from
+     * its position in the glyph's own coordinates, which is the advance less
+     * the bearing's own shift, and then carried across the bearing like every
+     * other point. One rounding, in the same place as the outline's.
+     *
+     * Which is not what the line above says about the phantom's *current*
+     * position, and the two are not in contradiction: that one is rounded to a
+     * whole pixel from the pen, measured on Times New Roman Italic's `j`, and
+     * this one is the place the scaling left it, which is a different number
+     * and is only ever read by an instruction that measures an original
+     * distance.
+     *
+     * Symbol's omega at a hundred and thirty-nine pixels per em is what
+     * separates them. Its advance phantom is placed by a `MIRP` from a point of
+     * the outline whose control value the cut-in throws away, so the distance
+     * used is the outline's own -- and that distance is 352 sixty-fourths this
+     * way and 351 the other. 352 is five and a half pixels exactly, which
+     * `RoundToGrid` takes **up**, so the letter comes out 91 pixels wide where
+     * Windows makes it 90. It is the only cell in `symadv`'s sweep of 141 where
+     * the two readings differ at all.
+     *
+     * Worth 3 records and costs none: `hinting`'s 14,928, `glyphs`'s 6,046,
+     * `widths`, `charscal`, `maxwidth` and the fabricated corpus are all
+     * unmoved.
+     */
+    zone.originalX[zone.x.length - 3] = this.toPixelsX(advance - shift) + bearing - whole;
 
     /* A composite has no design coordinates, so its scaled ones stand in.
      *

@@ -17507,13 +17507,56 @@ that is **refused by count**: giving up there costs 124 records of `hinting`, 6
 of `font`, 12 of `stemstyl` and 10 of `tiepick`, against 3 of `symadv` gained.
 So the scan carries on and Symbol's cell of 190 stays in `KNOWN_GAPS`.
 
-#### One glyph at one size
+#### One glyph at one size, and where it was
 
 Omega at 139 pixels per em, well below the crossing, where both sides run the
-program at the full size and this one comes out a pixel wider: 91 against 90.
-The advance lands on a whole number of sixty-fourths, so it is not a rounding,
-and the three advances in the sweep that do land on a half -- delta at 163, 167
-and 171 -- all round **up** and all agree. One size of 141, and the only one.
+program at the full size and this one came out a pixel wider: 91 against 90.
+The advance lands on a whole number of sixty-fourths, so it was not the advance
+being rounded, and the three advances in the sweep that do land on a half --
+delta at 163, 167 and 171 -- all round **up** and all agree.
+
+Tracing it, one instruction moves the advance phantom: a `MIRP` of `0xe6` from
+point 5 of the outline, rounding, whose control value the cut-in throws away --
+so the distance used is the **outline's own**, measured between the phantom's
+original position and point 5's. That distance is
+
+    352 sixty-fourths     five and a half pixels exactly
+
+and the scaler's `RoundToGrid` is `(x + engine + 32) & ~63`, which takes a half
+**up**: six pixels, and an advance of 91. For Windows to answer 90 the distance
+has to be 351 or less, so the question is where the phantom's original is.
+
+#### Scaled where the outline is, not where the pen is
+
+The phantom is a point of the glyph like any other. In the glyph's own
+coordinates its position is the advance less the bearing's shift -- `xMin - lsb
++ aw`, which for omega is 1405 - 80 -- and it is carried across the bearing
+afterwards like every other point. One rounding, in the same place as the
+outline's:
+
+    toPixelsX(advance - shift) + bearing - whole        5782, and 351
+
+against scaling the advance on its own and adding an origin already rounded to
+a whole pixel:
+
+    -whole + toPixelsX(advance)                         5783, and 352
+
+Both are two roundings; they differ only in where the split falls, and they
+differ at all in exactly one cell of `symadv`'s 141.
+
+**This is not the rule above it.** The phantom's *current* position is rounded
+to a whole pixel **from the pen**, which Times New Roman Italic's `j` measured:
+adding the bearing and `xMin` before rounding carries an advance of 9.4531 over
+the half and Windows answers nine. That is a different number from this one --
+the place the rounding put it, against the place the scaling left it -- and only
+an instruction that measures an *original* distance ever reads this one.
+
+Worth 3 records and costs none: `hinting`'s 14,928 and `glyphs`'s 6,046 are
+unmoved, and so are `widths`, `charscal`, `maxwidth` and the fabricated corpus.
+
+`symadv` is 414 of 423, and the nine left are the three cells whose **size** is
+wrong -- two from 8r's tie and one from the dip -- with their advances and
+their sums.
 
 ### 8d. The first glyphs drawn on a pixel that is not square
 
