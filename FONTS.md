@@ -17501,13 +17501,14 @@ So a scan walking upward meets a row too tall and an exact answer sits two rows
 further on. Whether it gets there is a question, and `oracle/probes/dipcell.c`
 asks it of every dip there is.
 
-**Eight dips are decisive**, in the sixteen outline faces -- eight where the
-exact answer lies past the dip and no size below it fits exactly, so which side
-is taken shows. With the two cells either side of each for company:
+**Nine dips are decisive**, in the sixteen outline faces -- nine where the exact
+answer lies past the dip and no size below it fits exactly, so which side is
+taken shows. With the two cells either side of each for company:
 
 | | the dip | cell | Windows |
 | --- | --- | --- | --- |
 | Arial Bold Italic | 105:121 → 106:120 | 120 | **106**, past it |
+| Arial Bold Italic | 150:172 → 151:171 | 171 | **151**, past it |
 | Arial Bold Italic | 168:192 → 169:191 | 191 | **169**, past it |
 | Times Bold | 79:91 → 80:90 | 90 | **80**, past it |
 | Times Bold | 112:128 → 113:127 | 127 | **113**, past it |
@@ -17516,8 +17517,20 @@ is taken shows. With the two cells either side of each for company:
 | Symbol | 155:191 → 156:190 | 190 | **154**, short of it |
 | Courier New Italic | 111:122 → 112:121 | 121 | **109**, short of it |
 
-Six go past the dip and two stop short, and the two that stop are the gap. The
-six that go past are what a scan carrying on says, which is what this does.
+Seven go past the dip and two stop short, and the two that stop are the gap. The
+seven that go past are what a scan carrying on says, which is what this does.
+
+The second of Arial Bold Italic's is decisive only on a display whose pixel is
+not square. The table is one list per aspect ratio, and the lists are not the
+same list: a square pixel reads the catch-all group and an EGA reads the 4:3
+one, whose rows differ. In the catch-all a size below that dip already fits a
+cell of 171 exactly, so nothing shows; in the 4:3 group none does, and Windows
+answers 151 -- past it.
+
+**And the same two stop short on both displays.** `dipcell` is recorded on the
+VGA and on the EGA, 45 records each, and both come back 43. Two different
+groups, two different tables, the same two cells: so it is not the group, and it
+is not the shape of the pixel.
 
 #### What a dip settles as well: the last that fits, not the best fit
 

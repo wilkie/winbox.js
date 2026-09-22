@@ -1,25 +1,25 @@
 {
   "probe": "dipcell",
-  "display": "vga",
+  "display": "ega",
   "source": {
     "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
     "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
     "host": "dosbox, standard mode",
-    "display": "vga",
-    "displayDescription": "VGA, 640x480, 16 colours"
+    "display": "egahires",
+    "displayDescription": "EGA, 640x350, 16 colours"
   },
   "font": null,
   "records": [
     {
       "function": "dip heights",
       "args": "\"Arial\",h=118,weight=700,italic=1",
-      "result": "height=118,ascent=95,descent=23,internal=14,external=3",
+      "result": "height=118,ascent=95,descent=23,internal=15,external=3",
       "section": "the eight cells where VDMX dips, and the two either side of each"
     },
     {
       "function": "dip heights",
       "args": "\"Arial\",h=119,weight=700,italic=1",
-      "result": "height=118,ascent=95,descent=23,internal=14,external=3",
+      "result": "height=119,ascent=96,descent=23,internal=15,external=3",
       "section": "the eight cells where VDMX dips, and the two either side of each"
     },
     {
@@ -43,19 +43,19 @@
     {
       "function": "dip heights",
       "args": "\"Arial\",h=169,weight=700,italic=1",
-      "result": "height=169,ascent=136,descent=33,internal=21,external=5",
+      "result": "height=168,ascent=136,descent=32,internal=20,external=5",
       "section": "the eight cells where VDMX dips, and the two either side of each"
     },
     {
       "function": "dip heights",
       "args": "\"Arial\",h=170,weight=700,italic=1",
-      "result": "height=169,ascent=136,descent=33,internal=21,external=5",
+      "result": "height=170,ascent=138,descent=32,internal=21,external=5",
       "section": "the eight cells where VDMX dips, and the two either side of each"
     },
     {
       "function": "dip heights",
       "args": "\"Arial\",h=171,weight=700,italic=1",
-      "result": "height=171,ascent=138,descent=33,internal=22,external=5",
+      "result": "height=171,ascent=139,descent=32,internal=20,external=5",
       "section": "the eight cells where VDMX dips, and the two either side of each"
     },
     {

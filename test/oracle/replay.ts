@@ -2095,13 +2095,18 @@ export const KNOWN_GAPS: Record<string, string> = {
    */
   /* The dips, where the cells the table names do not climb with the size.
    *
-   * 8s. Eight of them in the sixteen outline faces are decisive -- the exact
+   * 8s. Nine of them in the sixteen outline faces are decisive -- the exact
    * answer lies past the dip and there is none before it -- and Windows takes
-   * it six times and refuses it twice, at Symbol's cell of 190 and Courier New
-   * Italic's of 121. Four readings have been refused as the difference, each
-   * by count, and what separates the six from the two is **not read**.
+   * it seven times and refuses it twice, at Symbol's cell of 190 and Courier
+   * New Italic's of 121. Four readings have been refused as the difference,
+   * each by count, and what separates the seven from the two is **not read**.
+   *
+   * The same two on both displays, which read different groups of the table: a
+   * square pixel takes the catch-all and an EGA's the 4:3, and the two tables
+   * are not the same one. So it is not the group and it is not the pixel.
    */
-  'dipcell-vga:dip heights': '2 of 40 records, the two dips whose exact answer Windows refuses',
+  'dipcell-vga:dip heights': '2 of 45 records, the two dips whose exact answer Windows refuses',
+  'dipcell-ega:dip heights': '2 of 45 records, the same two in the 4:3 group',
 
   'symadv-vga:symbol size': '3 of 141 records, the tie of 8r twice and the dip once',
   'symadv-vga:symbol advances': '3 of 141 records, the advances at those three cells',
