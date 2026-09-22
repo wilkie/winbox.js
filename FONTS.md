@@ -17444,8 +17444,58 @@ above 2323.5 and at or below 2317.5. The only quantities left that vary with the
 size are scalings of the face's own numbers, and every one of them is of that
 form.
 
-So what decides is **not read**, and the fifteen cells stay in `KNOWN_GAPS` with
-their count.
+So what decides is **not read**. What follows is how much further the question
+has been taken since.
+
+#### The census widened: 587 ties, two displays, two groups
+
+`tiepick` recorded on the EGA as well, and `oracle/probes/tiewide.c` sweeps the
+tie region -- cells 228 to 300 -- in the five faces `tiepick` leaves out. The
+EGA matters for more than a second opinion: the table is one list per aspect
+ratio and a display whose pixel is not square reads the **4:3** group, whose
+rows are not the catch-all's. Times New Roman's two groups differ in 55 rows
+above two hundred pixels per em.
+
+| | |
+| --- | --- |
+| ties recorded | **587** |
+| take the run's **first** | 521 |
+| take the run's **last** | 64 |
+| take one in the **middle** | 2 |
+
+**Every one of the 64 is at a cell of 255 or more**, and 35 of the ties at those
+cells take the first, so the cell is not the whole of it. Six faces switch over
+between a cell of 253 and one of 255 -- Arial Bold, Arial Bold Italic, Courier
+New Bold, and all of Times New Roman but its italic -- and three never switch at
+all: Arial, Courier New and Courier New Italic take the first at every cell they
+were asked, up to 279.
+
+#### The two in the middle, which say something
+
+Symbol asked for a cell of 294 has a run of **three** -- 239, 240 and 241 all
+grid-fit to 294 -- and Windows answers **240**. Not the first, not the last. The
+scaled cell says why: 239 scales to 293, 240 to 294 and 241 to 295, so 240 is
+the largest of the run whose *unhinted* extent still fits the cell asked for.
+
+That reading -- **the largest of the run whose scaled cell fits** -- gives all 64
+of the last-taken as well, and it is still not the rule: it takes the last at
+226 of the 521 that take the first, most of them small, and Symbol refutes it
+from inside its own face. At a cell of 275 its run is 224 and 225, 225 scales to
+exactly 275, and Windows answers 224; at a cell of 284 its run is 231 and 232,
+232 scales to exactly 284, and Windows answers 232. The same face, the same
+arithmetic landing on the same equality, and opposite answers.
+
+#### And the readings refused, by count, over all 587
+
+| | |
+| --- | --- |
+| the ascent | 84 records of `font`, and a tie with equal ascents takes the last |
+| the run's last where it fits under the scaled size | 64 right, 319 wrong |
+| the run's last where the cell is 255 or more | 64 right, 35 wrong |
+| the largest whose scaled cell fits | 66 right, 226 wrong |
+
+So the fifteen cells are now sixty-six, they are in `KNOWN_GAPS` with their
+counts, and what decides is still **not read**.
 
 ### 8s. Symbol's advances past its own half-size crossing
 

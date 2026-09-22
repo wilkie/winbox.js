@@ -1,0 +1,2204 @@
+{
+  "probe": "tiewide",
+  "display": "ega",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "egahires",
+    "displayDescription": "EGA, 640x350, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=228,weight=400,italic=0",
+      "result": "height=228,ascent=183,descent=45,internal=24,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=228,weight=700,italic=1",
+      "result": "height=228,ascent=184,descent=44,internal=24,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=228,weight=700,italic=0",
+      "result": "height=228,ascent=168,descent=60,internal=27,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=228,weight=400,italic=1",
+      "result": "height=228,ascent=171,descent=57,internal=16,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=228,weight=700,italic=0",
+      "result": "height=228,ascent=185,descent=43,internal=28,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=229,weight=400,italic=0",
+      "result": "height=229,ascent=184,descent=45,internal=24,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=229,weight=700,italic=1",
+      "result": "height=228,ascent=184,descent=44,internal=23,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=229,weight=700,italic=0",
+      "result": "height=228,ascent=168,descent=60,internal=27,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=229,weight=400,italic=1",
+      "result": "height=228,ascent=171,descent=57,internal=16,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=229,weight=700,italic=0",
+      "result": "height=229,ascent=186,descent=43,internal=28,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=230,weight=400,italic=0",
+      "result": "height=229,ascent=184,descent=45,internal=24,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=230,weight=700,italic=1",
+      "result": "height=230,ascent=186,descent=44,internal=24,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=230,weight=700,italic=0",
+      "result": "height=230,ascent=169,descent=61,internal=28,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=230,weight=400,italic=1",
+      "result": "height=228,ascent=171,descent=57,internal=16,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=230,weight=700,italic=0",
+      "result": "height=230,ascent=187,descent=43,internal=28,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=231,weight=400,italic=0",
+      "result": "height=231,ascent=185,descent=46,internal=25,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=231,weight=700,italic=1",
+      "result": "height=230,ascent=186,descent=44,internal=24,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=231,weight=700,italic=0",
+      "result": "height=231,ascent=170,descent=61,internal=27,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=231,weight=400,italic=1",
+      "result": "height=231,ascent=172,descent=59,internal=18,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=231,weight=700,italic=0",
+      "result": "height=230,ascent=187,descent=43,internal=28,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=232,weight=400,italic=0",
+      "result": "height=232,ascent=186,descent=46,internal=25,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=232,weight=700,italic=1",
+      "result": "height=232,ascent=187,descent=45,internal=25,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=232,weight=700,italic=0",
+      "result": "height=231,ascent=170,descent=61,internal=27,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=232,weight=400,italic=1",
+      "result": "height=232,ascent=173,descent=59,internal=18,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=232,weight=700,italic=0",
+      "result": "height=230,ascent=187,descent=43,internal=28,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=233,weight=400,italic=0",
+      "result": "height=233,ascent=187,descent=46,internal=24,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=233,weight=700,italic=1",
+      "result": "height=233,ascent=188,descent=45,internal=24,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=233,weight=700,italic=0",
+      "result": "height=231,ascent=170,descent=61,internal=27,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=233,weight=400,italic=1",
+      "result": "height=233,ascent=174,descent=59,internal=17,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=233,weight=700,italic=0",
+      "result": "height=233,ascent=189,descent=44,internal=30,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=234,weight=400,italic=0",
+      "result": "height=233,ascent=187,descent=46,internal=24,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=234,weight=700,italic=1",
+      "result": "height=234,ascent=189,descent=45,internal=24,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=234,weight=700,italic=0",
+      "result": "height=234,ascent=172,descent=62,internal=29,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=234,weight=400,italic=1",
+      "result": "height=233,ascent=174,descent=59,internal=17,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=234,weight=700,italic=0",
+      "result": "height=234,ascent=190,descent=44,internal=29,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=235,weight=400,italic=0",
+      "result": "height=235,ascent=188,descent=47,internal=25,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=235,weight=700,italic=1",
+      "result": "height=234,ascent=189,descent=45,internal=24,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=235,weight=700,italic=0",
+      "result": "height=235,ascent=173,descent=62,internal=28,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=235,weight=400,italic=1",
+      "result": "height=235,ascent=175,descent=60,internal=18,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=235,weight=700,italic=0",
+      "result": "height=235,ascent=191,descent=44,internal=29,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=236,weight=400,italic=0",
+      "result": "height=235,ascent=188,descent=47,internal=25,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=236,weight=700,italic=1",
+      "result": "height=236,ascent=190,descent=46,internal=25,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=236,weight=700,italic=0",
+      "result": "height=236,ascent=174,descent=62,internal=28,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=236,weight=400,italic=1",
+      "result": "height=235,ascent=175,descent=60,internal=18,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=236,weight=700,italic=0",
+      "result": "height=236,ascent=192,descent=44,internal=29,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=237,weight=400,italic=0",
+      "result": "height=237,ascent=190,descent=47,internal=26,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=237,weight=700,italic=1",
+      "result": "height=237,ascent=191,descent=46,internal=24,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=237,weight=700,italic=0",
+      "result": "height=237,ascent=174,descent=63,internal=28,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=237,weight=400,italic=1",
+      "result": "height=237,ascent=177,descent=60,internal=19,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=237,weight=700,italic=0",
+      "result": "height=237,ascent=193,descent=44,internal=29,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=238,weight=400,italic=0",
+      "result": "height=237,ascent=191,descent=46,internal=24,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=238,weight=700,italic=1",
+      "result": "height=237,ascent=191,descent=46,internal=24,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=238,weight=700,italic=0",
+      "result": "height=238,ascent=175,descent=63,internal=28,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=238,weight=400,italic=1",
+      "result": "height=238,ascent=178,descent=60,internal=19,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=238,weight=700,italic=0",
+      "result": "height=237,ascent=193,descent=44,internal=29,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=239,weight=400,italic=0",
+      "result": "height=239,ascent=192,descent=47,internal=25,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=239,weight=700,italic=1",
+      "result": "height=239,ascent=193,descent=46,internal=25,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=239,weight=700,italic=0",
+      "result": "height=238,ascent=175,descent=63,internal=27,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=239,weight=400,italic=1",
+      "result": "height=239,ascent=179,descent=60,internal=19,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=239,weight=700,italic=0",
+      "result": "height=239,ascent=194,descent=45,internal=30,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=240,weight=400,italic=0",
+      "result": "height=240,ascent=193,descent=47,internal=25,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=240,weight=700,italic=1",
+      "result": "height=240,ascent=194,descent=46,internal=25,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=240,weight=700,italic=0",
+      "result": "height=240,ascent=176,descent=64,internal=28,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=240,weight=400,italic=1",
+      "result": "height=239,ascent=179,descent=60,internal=18,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=240,weight=700,italic=0",
+      "result": "height=240,ascent=195,descent=45,internal=30,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=241,weight=400,italic=0",
+      "result": "height=240,ascent=193,descent=47,internal=24,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=241,weight=700,italic=1",
+      "result": "height=240,ascent=194,descent=46,internal=25,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=241,weight=700,italic=0",
+      "result": "height=240,ascent=176,descent=64,internal=28,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=241,weight=400,italic=1",
+      "result": "height=239,ascent=179,descent=60,internal=18,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=241,weight=700,italic=0",
+      "result": "height=240,ascent=195,descent=45,internal=30,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=242,weight=400,italic=0",
+      "result": "height=242,ascent=195,descent=47,internal=25,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=242,weight=700,italic=1",
+      "result": "height=242,ascent=195,descent=47,internal=26,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=242,weight=700,italic=0",
+      "result": "height=240,ascent=176,descent=64,internal=28,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=242,weight=400,italic=1",
+      "result": "height=242,ascent=181,descent=61,internal=20,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=242,weight=700,italic=0",
+      "result": "height=242,ascent=196,descent=46,internal=31,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=243,weight=400,italic=0",
+      "result": "height=242,ascent=195,descent=47,internal=25,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=243,weight=700,italic=1",
+      "result": "height=243,ascent=196,descent=47,internal=26,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=243,weight=700,italic=0",
+      "result": "height=243,ascent=179,descent=64,internal=30,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=243,weight=400,italic=1",
+      "result": "height=243,ascent=182,descent=61,internal=20,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=243,weight=700,italic=0",
+      "result": "height=243,ascent=197,descent=46,internal=31,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=244,weight=400,italic=0",
+      "result": "height=244,ascent=196,descent=48,internal=26,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=244,weight=700,italic=1",
+      "result": "height=244,ascent=197,descent=47,internal=26,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=244,weight=700,italic=0",
+      "result": "height=243,ascent=179,descent=64,internal=29,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=244,weight=400,italic=1",
+      "result": "height=244,ascent=183,descent=61,internal=19,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=244,weight=700,italic=0",
+      "result": "height=244,ascent=198,descent=46,internal=30,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=245,weight=400,italic=0",
+      "result": "height=245,ascent=197,descent=48,internal=25,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=245,weight=700,italic=1",
+      "result": "height=244,ascent=197,descent=47,internal=25,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=245,weight=700,italic=0",
+      "result": "height=243,ascent=179,descent=64,internal=29,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=245,weight=400,italic=1",
+      "result": "height=245,ascent=183,descent=62,internal=19,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=245,weight=700,italic=0",
+      "result": "height=245,ascent=199,descent=46,internal=30,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=246,weight=400,italic=0",
+      "result": "height=246,ascent=198,descent=48,internal=25,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=246,weight=700,italic=1",
+      "result": "height=246,ascent=198,descent=48,internal=26,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=246,weight=700,italic=0",
+      "result": "height=246,ascent=181,descent=65,internal=31,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=246,weight=400,italic=1",
+      "result": "height=246,ascent=184,descent=62,internal=19,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=246,weight=700,italic=0",
+      "result": "height=245,ascent=199,descent=46,internal=30,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=247,weight=400,italic=0",
+      "result": "height=246,ascent=198,descent=48,internal=25,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=247,weight=700,italic=1",
+      "result": "height=247,ascent=199,descent=48,internal=26,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=247,weight=700,italic=0",
+      "result": "height=247,ascent=182,descent=65,internal=31,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=247,weight=400,italic=1",
+      "result": "height=247,ascent=185,descent=62,internal=19,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=247,weight=700,italic=0",
+      "result": "height=247,ascent=201,descent=46,internal=31,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=248,weight=400,italic=0",
+      "result": "height=248,ascent=199,descent=49,internal=26,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=248,weight=700,italic=1",
+      "result": "height=248,ascent=200,descent=48,internal=26,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=248,weight=700,italic=0",
+      "result": "height=248,ascent=183,descent=65,internal=30,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=248,weight=400,italic=1",
+      "result": "height=247,ascent=185,descent=62,internal=18,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=248,weight=700,italic=0",
+      "result": "height=248,ascent=202,descent=46,internal=31,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=249,weight=400,italic=0",
+      "result": "height=249,ascent=200,descent=49,internal=26,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=249,weight=700,italic=1",
+      "result": "height=248,ascent=200,descent=48,internal=25,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=249,weight=700,italic=0",
+      "result": "height=248,ascent=183,descent=65,internal=30,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=249,weight=400,italic=1",
+      "result": "height=247,ascent=185,descent=62,internal=18,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=249,weight=700,italic=0",
+      "result": "height=249,ascent=202,descent=47,internal=31,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=250,weight=400,italic=0",
+      "result": "height=250,ascent=201,descent=49,internal=26,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=250,weight=700,italic=1",
+      "result": "height=250,ascent=201,descent=49,internal=26,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=250,weight=700,italic=0",
+      "result": "height=250,ascent=184,descent=66,internal=31,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=250,weight=400,italic=1",
+      "result": "height=250,ascent=187,descent=63,internal=20,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=250,weight=700,italic=0",
+      "result": "height=250,ascent=203,descent=47,internal=31,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=251,weight=400,italic=0",
+      "result": "height=251,ascent=202,descent=49,internal=26,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=251,weight=700,italic=1",
+      "result": "height=250,ascent=201,descent=49,internal=26,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=251,weight=700,italic=0",
+      "result": "height=251,ascent=185,descent=66,internal=30,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=251,weight=400,italic=1",
+      "result": "height=251,ascent=188,descent=63,internal=20,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=251,weight=700,italic=0",
+      "result": "height=251,ascent=204,descent=47,internal=31,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=252,weight=400,italic=0",
+      "result": "height=251,ascent=202,descent=49,internal=26,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=252,weight=700,italic=1",
+      "result": "height=252,ascent=203,descent=49,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=252,weight=700,italic=0",
+      "result": "height=251,ascent=185,descent=66,internal=30,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=252,weight=400,italic=1",
+      "result": "height=252,ascent=189,descent=63,internal=19,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=252,weight=700,italic=0",
+      "result": "height=251,ascent=204,descent=47,internal=31,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=253,weight=400,italic=0",
+      "result": "height=253,ascent=203,descent=50,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=253,weight=700,italic=1",
+      "result": "height=253,ascent=204,descent=49,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=253,weight=700,italic=0",
+      "result": "height=253,ascent=186,descent=67,internal=31,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=253,weight=400,italic=1",
+      "result": "height=252,ascent=189,descent=63,internal=19,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=253,weight=700,italic=0",
+      "result": "height=253,ascent=205,descent=48,internal=32,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=254,weight=400,italic=0",
+      "result": "height=254,ascent=204,descent=50,internal=26,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=254,weight=700,italic=1",
+      "result": "height=254,ascent=205,descent=49,internal=26,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=254,weight=700,italic=0",
+      "result": "height=254,ascent=187,descent=67,internal=30,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=254,weight=400,italic=1",
+      "result": "height=254,ascent=190,descent=64,internal=20,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=254,weight=700,italic=0",
+      "result": "height=253,ascent=205,descent=48,internal=31,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=255,weight=400,italic=0",
+      "result": "height=254,ascent=204,descent=50,internal=26,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=255,weight=700,italic=1",
+      "result": "height=254,ascent=205,descent=49,internal=26,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=255,weight=700,italic=0",
+      "result": "height=254,ascent=187,descent=67,internal=30,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=255,weight=400,italic=1",
+      "result": "height=255,ascent=191,descent=64,internal=19,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=255,weight=700,italic=0",
+      "result": "height=255,ascent=207,descent=48,internal=32,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=256,weight=400,italic=0",
+      "result": "height=256,ascent=206,descent=50,internal=26,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=256,weight=700,italic=1",
+      "result": "height=256,ascent=207,descent=49,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=256,weight=700,italic=0",
+      "result": "height=254,ascent=187,descent=67,internal=30,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=256,weight=400,italic=1",
+      "result": "height=256,ascent=191,descent=65,internal=19,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=256,weight=700,italic=0",
+      "result": "height=256,ascent=208,descent=48,internal=32,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=257,weight=400,italic=0",
+      "result": "height=256,ascent=206,descent=50,internal=26,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=257,weight=700,italic=1",
+      "result": "height=257,ascent=207,descent=50,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=257,weight=700,italic=0",
+      "result": "height=257,ascent=189,descent=68,internal=31,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=257,weight=400,italic=1",
+      "result": "height=257,ascent=192,descent=65,internal=19,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=257,weight=700,italic=0",
+      "result": "height=257,ascent=209,descent=48,internal=32,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=258,weight=400,italic=0",
+      "result": "height=258,ascent=207,descent=51,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=258,weight=700,italic=1",
+      "result": "height=258,ascent=208,descent=50,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=258,weight=700,italic=0",
+      "result": "height=257,ascent=189,descent=68,internal=31,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=258,weight=400,italic=1",
+      "result": "height=257,ascent=192,descent=65,internal=19,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=258,weight=700,italic=0",
+      "result": "height=257,ascent=209,descent=48,internal=32,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=259,weight=400,italic=0",
+      "result": "height=259,ascent=208,descent=51,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=259,weight=700,italic=1",
+      "result": "height=259,ascent=209,descent=50,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=259,weight=700,italic=0",
+      "result": "height=259,ascent=191,descent=68,internal=32,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=259,weight=400,italic=1",
+      "result": "height=257,ascent=192,descent=65,internal=19,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=259,weight=700,italic=0",
+      "result": "height=259,ascent=210,descent=49,internal=32,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=260,weight=400,italic=0",
+      "result": "height=260,ascent=209,descent=51,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=260,weight=700,italic=1",
+      "result": "height=260,ascent=210,descent=50,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=260,weight=700,italic=0",
+      "result": "height=260,ascent=192,descent=68,internal=32,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=260,weight=400,italic=1",
+      "result": "height=260,ascent=194,descent=66,internal=21,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=260,weight=700,italic=0",
+      "result": "height=260,ascent=211,descent=49,internal=32,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=261,weight=400,italic=0",
+      "result": "height=261,ascent=209,descent=52,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=261,weight=700,italic=1",
+      "result": "height=261,ascent=210,descent=51,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=261,weight=700,italic=0",
+      "result": "height=260,ascent=192,descent=68,internal=32,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=261,weight=400,italic=1",
+      "result": "height=261,ascent=195,descent=66,internal=20,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=261,weight=700,italic=0",
+      "result": "height=261,ascent=212,descent=49,internal=32,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=262,weight=400,italic=0",
+      "result": "height=261,ascent=209,descent=52,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=262,weight=700,italic=1",
+      "result": "height=261,ascent=210,descent=51,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=262,weight=700,italic=0",
+      "result": "height=262,ascent=193,descent=69,internal=33,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=262,weight=400,italic=1",
+      "result": "height=262,ascent=196,descent=66,internal=20,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=262,weight=700,italic=0",
+      "result": "height=261,ascent=212,descent=49,internal=32,external=7",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=263,weight=400,italic=0",
+      "result": "height=261,ascent=209,descent=52,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=263,weight=700,italic=1",
+      "result": "height=263,ascent=212,descent=51,internal=28,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=263,weight=700,italic=0",
+      "result": "height=263,ascent=194,descent=69,internal=33,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=263,weight=400,italic=1",
+      "result": "height=263,ascent=196,descent=67,internal=20,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=263,weight=700,italic=0",
+      "result": "height=263,ascent=214,descent=49,internal=32,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=264,weight=400,italic=0",
+      "result": "height=264,ascent=211,descent=53,internal=29,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=264,weight=700,italic=1",
+      "result": "height=264,ascent=213,descent=51,internal=28,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=264,weight=700,italic=0",
+      "result": "height=264,ascent=195,descent=69,internal=33,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=264,weight=400,italic=1",
+      "result": "height=264,ascent=197,descent=67,internal=20,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=264,weight=700,italic=0",
+      "result": "height=263,ascent=214,descent=49,internal=32,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=265,weight=400,italic=0",
+      "result": "height=265,ascent=212,descent=53,internal=29,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=265,weight=700,italic=1",
+      "result": "height=265,ascent=214,descent=51,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=265,weight=700,italic=0",
+      "result": "height=265,ascent=195,descent=70,internal=33,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=265,weight=400,italic=1",
+      "result": "height=265,ascent=198,descent=67,internal=20,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=265,weight=700,italic=0",
+      "result": "height=265,ascent=215,descent=50,internal=33,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=266,weight=400,italic=0",
+      "result": "height=266,ascent=213,descent=53,internal=28,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=266,weight=700,italic=1",
+      "result": "height=265,ascent=214,descent=51,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=266,weight=700,italic=0",
+      "result": "height=266,ascent=196,descent=70,internal=33,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=266,weight=400,italic=1",
+      "result": "height=265,ascent=198,descent=67,internal=19,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=266,weight=700,italic=0",
+      "result": "height=265,ascent=215,descent=50,internal=33,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=267,weight=400,italic=0",
+      "result": "height=267,ascent=214,descent=53,internal=28,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=267,weight=700,italic=1",
+      "result": "height=267,ascent=215,descent=52,internal=28,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=267,weight=700,italic=0",
+      "result": "height=267,ascent=197,descent=70,internal=33,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=267,weight=400,italic=1",
+      "result": "height=267,ascent=199,descent=68,internal=20,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=267,weight=700,italic=0",
+      "result": "height=267,ascent=216,descent=51,internal=34,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=268,weight=400,italic=0",
+      "result": "height=268,ascent=215,descent=53,internal=28,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=268,weight=700,italic=1",
+      "result": "height=268,ascent=216,descent=52,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=268,weight=700,italic=0",
+      "result": "height=267,ascent=197,descent=70,internal=33,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=268,weight=400,italic=1",
+      "result": "height=268,ascent=200,descent=68,internal=20,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=268,weight=700,italic=0",
+      "result": "height=268,ascent=217,descent=51,internal=34,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=269,weight=400,italic=0",
+      "result": "height=269,ascent=217,descent=52,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=269,weight=700,italic=1",
+      "result": "height=269,ascent=217,descent=52,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=269,weight=700,italic=0",
+      "result": "height=269,ascent=198,descent=71,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=269,weight=400,italic=1",
+      "result": "height=269,ascent=201,descent=68,internal=20,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=269,weight=700,italic=0",
+      "result": "height=269,ascent=218,descent=51,internal=34,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=270,weight=400,italic=0",
+      "result": "height=269,ascent=217,descent=52,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=270,weight=700,italic=1",
+      "result": "height=269,ascent=217,descent=52,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=270,weight=700,italic=0",
+      "result": "height=270,ascent=199,descent=71,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=270,weight=400,italic=1",
+      "result": "height=270,ascent=202,descent=68,internal=20,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=270,weight=700,italic=0",
+      "result": "height=270,ascent=219,descent=51,internal=34,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=271,weight=400,italic=0",
+      "result": "height=271,ascent=218,descent=53,internal=28,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=271,weight=700,italic=1",
+      "result": "height=271,ascent=219,descent=52,internal=28,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=271,weight=700,italic=0",
+      "result": "height=270,ascent=199,descent=71,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=271,weight=400,italic=1",
+      "result": "height=270,ascent=202,descent=68,internal=19,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=271,weight=700,italic=0",
+      "result": "height=271,ascent=220,descent=51,internal=34,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=272,weight=400,italic=0",
+      "result": "height=272,ascent=219,descent=53,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=272,weight=700,italic=1",
+      "result": "height=271,ascent=219,descent=52,internal=28,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=272,weight=700,italic=0",
+      "result": "height=272,ascent=201,descent=71,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=272,weight=400,italic=1",
+      "result": "height=270,ascent=202,descent=68,internal=19,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=272,weight=700,italic=0",
+      "result": "height=272,ascent=221,descent=51,internal=34,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=273,weight=400,italic=0",
+      "result": "height=273,ascent=220,descent=53,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=273,weight=700,italic=1",
+      "result": "height=273,ascent=220,descent=53,internal=29,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=273,weight=700,italic=0",
+      "result": "height=272,ascent=201,descent=71,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=273,weight=400,italic=1",
+      "result": "height=270,ascent=202,descent=68,internal=19,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=273,weight=700,italic=0",
+      "result": "height=273,ascent=222,descent=51,internal=34,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=274,weight=400,italic=0",
+      "result": "height=273,ascent=220,descent=53,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=274,weight=700,italic=1",
+      "result": "height=274,ascent=221,descent=53,internal=29,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=274,weight=700,italic=0",
+      "result": "height=274,ascent=202,descent=72,internal=35,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=274,weight=400,italic=1",
+      "result": "height=274,ascent=205,descent=69,internal=22,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=274,weight=700,italic=0",
+      "result": "height=274,ascent=223,descent=51,internal=34,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=275,weight=400,italic=0",
+      "result": "height=273,ascent=220,descent=53,internal=27,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=275,weight=700,italic=1",
+      "result": "height=274,ascent=221,descent=53,internal=29,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=275,weight=700,italic=0",
+      "result": "height=275,ascent=203,descent=72,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=275,weight=400,italic=1",
+      "result": "height=275,ascent=206,descent=69,internal=22,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=275,weight=700,italic=0",
+      "result": "height=275,ascent=223,descent=52,internal=34,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=276,weight=400,italic=0",
+      "result": "height=276,ascent=222,descent=54,internal=29,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=276,weight=700,italic=1",
+      "result": "height=276,ascent=222,descent=54,internal=30,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=276,weight=700,italic=0",
+      "result": "height=275,ascent=203,descent=72,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=276,weight=400,italic=1",
+      "result": "height=275,ascent=206,descent=69,internal=21,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=276,weight=700,italic=0",
+      "result": "height=276,ascent=224,descent=52,internal=34,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=277,weight=400,italic=0",
+      "result": "height=277,ascent=223,descent=54,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=277,weight=700,italic=1",
+      "result": "height=277,ascent=223,descent=54,internal=30,external=10",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=277,weight=700,italic=0",
+      "result": "height=277,ascent=204,descent=73,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=277,weight=400,italic=1",
+      "result": "height=275,ascent=206,descent=69,internal=21,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=277,weight=700,italic=0",
+      "result": "height=276,ascent=224,descent=52,internal=34,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=278,weight=400,italic=0",
+      "result": "height=278,ascent=224,descent=54,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=278,weight=700,italic=1",
+      "result": "height=278,ascent=224,descent=54,internal=29,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=278,weight=700,italic=0",
+      "result": "height=278,ascent=205,descent=73,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=278,weight=400,italic=1",
+      "result": "height=275,ascent=206,descent=69,internal=21,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=278,weight=700,italic=0",
+      "result": "height=278,ascent=225,descent=53,internal=35,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=279,weight=400,italic=0",
+      "result": "height=278,ascent=224,descent=54,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=279,weight=700,italic=1",
+      "result": "height=279,ascent=225,descent=54,internal=29,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=279,weight=700,italic=0",
+      "result": "height=278,ascent=205,descent=73,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=279,weight=400,italic=1",
+      "result": "height=275,ascent=206,descent=69,internal=21,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=279,weight=700,italic=0",
+      "result": "height=278,ascent=225,descent=53,internal=35,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=280,weight=400,italic=0",
+      "result": "height=280,ascent=225,descent=55,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=280,weight=700,italic=1",
+      "result": "height=280,ascent=226,descent=54,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=280,weight=700,italic=0",
+      "result": "height=278,ascent=205,descent=73,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=280,weight=400,italic=1",
+      "result": "height=275,ascent=206,descent=69,internal=21,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=280,weight=700,italic=0",
+      "result": "height=280,ascent=227,descent=53,internal=35,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=281,weight=400,italic=0",
+      "result": "height=280,ascent=225,descent=55,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=281,weight=700,italic=1",
+      "result": "height=280,ascent=226,descent=54,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=281,weight=700,italic=0",
+      "result": "height=281,ascent=207,descent=74,internal=35,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=281,weight=400,italic=1",
+      "result": "height=275,ascent=206,descent=69,internal=21,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=281,weight=700,italic=0",
+      "result": "height=281,ascent=228,descent=53,internal=35,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=282,weight=400,italic=0",
+      "result": "height=282,ascent=227,descent=55,internal=27,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=282,weight=700,italic=1",
+      "result": "height=282,ascent=227,descent=55,internal=27,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=282,weight=700,italic=0",
+      "result": "height=282,ascent=208,descent=74,internal=35,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=282,weight=400,italic=1",
+      "result": "height=275,ascent=206,descent=69,internal=21,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=282,weight=700,italic=0",
+      "result": "height=282,ascent=229,descent=53,internal=35,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=283,weight=400,italic=0",
+      "result": "height=283,ascent=228,descent=55,internal=27,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=283,weight=700,italic=1",
+      "result": "height=283,ascent=228,descent=55,internal=27,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=283,weight=700,italic=0",
+      "result": "height=283,ascent=209,descent=74,internal=35,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=283,weight=400,italic=1",
+      "result": "height=275,ascent=206,descent=69,internal=21,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=283,weight=700,italic=0",
+      "result": "height=283,ascent=230,descent=53,internal=35,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=284,weight=400,italic=0",
+      "result": "height=283,ascent=228,descent=55,internal=27,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=284,weight=700,italic=1",
+      "result": "height=283,ascent=228,descent=55,internal=27,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=284,weight=700,italic=0",
+      "result": "height=284,ascent=209,descent=75,internal=35,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=284,weight=400,italic=1",
+      "result": "height=275,ascent=206,descent=69,internal=21,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=284,weight=700,italic=0",
+      "result": "height=283,ascent=230,descent=53,internal=35,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=285,weight=400,italic=0",
+      "result": "height=285,ascent=229,descent=56,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=285,weight=700,italic=1",
+      "result": "height=285,ascent=229,descent=56,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=285,weight=700,italic=0",
+      "result": "height=285,ascent=210,descent=75,internal=35,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=285,weight=400,italic=1",
+      "result": "height=275,ascent=206,descent=69,internal=21,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=285,weight=700,italic=0",
+      "result": "height=285,ascent=231,descent=54,internal=30,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=286,weight=400,italic=0",
+      "result": "height=286,ascent=230,descent=56,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=286,weight=700,italic=1",
+      "result": "height=286,ascent=230,descent=56,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=286,weight=700,italic=0",
+      "result": "height=285,ascent=210,descent=75,internal=35,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=286,weight=400,italic=1",
+      "result": "height=275,ascent=206,descent=69,internal=21,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=286,weight=700,italic=0",
+      "result": "height=286,ascent=232,descent=54,internal=30,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=287,weight=400,italic=0",
+      "result": "height=287,ascent=231,descent=56,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=287,weight=700,italic=1",
+      "result": "height=287,ascent=231,descent=56,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=287,weight=700,italic=0",
+      "result": "height=287,ascent=212,descent=75,internal=36,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=287,weight=400,italic=1",
+      "result": "height=275,ascent=206,descent=69,internal=21,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=287,weight=700,italic=0",
+      "result": "height=287,ascent=233,descent=54,internal=30,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=288,weight=400,italic=0",
+      "result": "height=288,ascent=232,descent=56,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=288,weight=700,italic=1",
+      "result": "height=288,ascent=232,descent=56,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=288,weight=700,italic=0",
+      "result": "height=288,ascent=212,descent=76,internal=36,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=288,weight=400,italic=1",
+      "result": "height=275,ascent=206,descent=69,internal=21,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=288,weight=700,italic=0",
+      "result": "height=287,ascent=233,descent=54,internal=30,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=289,weight=400,italic=0",
+      "result": "height=289,ascent=233,descent=56,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=289,weight=700,italic=1",
+      "result": "height=289,ascent=233,descent=56,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=289,weight=700,italic=0",
+      "result": "height=289,ascent=212,descent=77,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=289,weight=400,italic=1",
+      "result": "height=289,ascent=212,descent=77,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=289,weight=700,italic=0",
+      "result": "height=289,ascent=234,descent=55,internal=30,external=8",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=290,weight=400,italic=0",
+      "result": "height=290,ascent=233,descent=57,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=290,weight=700,italic=1",
+      "result": "height=290,ascent=233,descent=57,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=290,weight=700,italic=0",
+      "result": "height=290,ascent=213,descent=77,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=290,weight=400,italic=1",
+      "result": "height=290,ascent=213,descent=77,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=290,weight=700,italic=0",
+      "result": "height=290,ascent=235,descent=55,internal=30,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=291,weight=400,italic=0",
+      "result": "height=291,ascent=234,descent=57,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=291,weight=700,italic=1",
+      "result": "height=291,ascent=234,descent=57,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=291,weight=700,italic=0",
+      "result": "height=291,ascent=214,descent=77,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=291,weight=400,italic=1",
+      "result": "height=291,ascent=214,descent=77,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=291,weight=700,italic=0",
+      "result": "height=291,ascent=236,descent=55,internal=30,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=292,weight=400,italic=0",
+      "result": "height=292,ascent=235,descent=57,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=292,weight=700,italic=1",
+      "result": "height=292,ascent=235,descent=57,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=292,weight=700,italic=0",
+      "result": "height=292,ascent=215,descent=77,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=292,weight=400,italic=1",
+      "result": "height=292,ascent=215,descent=77,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=292,weight=700,italic=0",
+      "result": "height=291,ascent=236,descent=55,internal=30,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=293,weight=400,italic=0",
+      "result": "height=293,ascent=236,descent=57,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=293,weight=700,italic=1",
+      "result": "height=293,ascent=236,descent=57,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=293,weight=700,italic=0",
+      "result": "height=292,ascent=215,descent=77,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=293,weight=400,italic=1",
+      "result": "height=292,ascent=215,descent=77,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=293,weight=700,italic=0",
+      "result": "height=293,ascent=237,descent=56,internal=31,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=294,weight=400,italic=0",
+      "result": "height=293,ascent=236,descent=57,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=294,weight=700,italic=1",
+      "result": "height=293,ascent=236,descent=57,internal=28,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=294,weight=700,italic=0",
+      "result": "height=294,ascent=216,descent=78,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=294,weight=400,italic=1",
+      "result": "height=294,ascent=216,descent=78,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=294,weight=700,italic=0",
+      "result": "height=294,ascent=238,descent=56,internal=31,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=295,weight=400,italic=0",
+      "result": "height=295,ascent=237,descent=58,internal=29,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=295,weight=700,italic=1",
+      "result": "height=295,ascent=237,descent=58,internal=29,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=295,weight=700,italic=0",
+      "result": "height=295,ascent=217,descent=78,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=295,weight=400,italic=1",
+      "result": "height=295,ascent=217,descent=78,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=295,weight=700,italic=0",
+      "result": "height=295,ascent=239,descent=56,internal=31,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=296,weight=400,italic=0",
+      "result": "height=296,ascent=238,descent=58,internal=29,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=296,weight=700,italic=1",
+      "result": "height=296,ascent=238,descent=58,internal=29,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=296,weight=700,italic=0",
+      "result": "height=295,ascent=217,descent=78,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=296,weight=400,italic=1",
+      "result": "height=295,ascent=217,descent=78,internal=34,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=296,weight=700,italic=0",
+      "result": "height=296,ascent=240,descent=56,internal=31,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=297,weight=400,italic=0",
+      "result": "height=297,ascent=239,descent=58,internal=29,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=297,weight=700,italic=1",
+      "result": "height=297,ascent=239,descent=58,internal=29,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=297,weight=700,italic=0",
+      "result": "height=297,ascent=218,descent=79,internal=35,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=297,weight=400,italic=1",
+      "result": "height=297,ascent=218,descent=79,internal=35,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=297,weight=700,italic=0",
+      "result": "height=297,ascent=241,descent=56,internal=31,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=298,weight=400,italic=0",
+      "result": "height=298,ascent=240,descent=58,internal=29,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=298,weight=700,italic=1",
+      "result": "height=298,ascent=240,descent=58,internal=29,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=298,weight=700,italic=0",
+      "result": "height=298,ascent=219,descent=79,internal=35,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=298,weight=400,italic=1",
+      "result": "height=298,ascent=219,descent=79,internal=35,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=298,weight=700,italic=0",
+      "result": "height=297,ascent=241,descent=56,internal=31,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=299,weight=400,italic=0",
+      "result": "height=299,ascent=241,descent=58,internal=29,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=299,weight=700,italic=1",
+      "result": "height=299,ascent=241,descent=58,internal=29,external=11",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=299,weight=700,italic=0",
+      "result": "height=299,ascent=220,descent=79,internal=35,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=299,weight=400,italic=1",
+      "result": "height=299,ascent=220,descent=79,internal=35,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=299,weight=700,italic=0",
+      "result": "height=299,ascent=242,descent=57,internal=32,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=300,weight=400,italic=0",
+      "result": "height=300,ascent=241,descent=59,internal=29,external=12",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Times New Roman\",h=300,weight=700,italic=1",
+      "result": "height=300,ascent=241,descent=59,internal=29,external=12",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=300,weight=700,italic=0",
+      "result": "height=299,ascent=220,descent=79,internal=35,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Courier New\",h=300,weight=400,italic=1",
+      "result": "height=299,ascent=220,descent=79,internal=35,external=0",
+      "section": "the tie region in the five faces tiepick leaves out"
+    },
+    {
+      "function": "wide heights",
+      "args": "\"Arial\",h=300,weight=700,italic=0",
+      "result": "height=300,ascent=243,descent=57,internal=32,external=9",
+      "section": "the tie region in the five faces tiepick leaves out"
+    }
+  ]
+}

@@ -1439,6 +1439,28 @@ const ADAPTERS: Record<
     return `width=${extent & 0xffff},height=${(extent >> 16) & 0xffff}`;
   },
 
+  /* `tiewide` asks the tie region of 8r in the five faces `tiepick` leaves
+   * out, on both displays -- which read different groups of the table.
+   */
+  'wide heights'(context, args) {
+    const tm = context.mappedFont([
+      args[0],
+      args[1],
+      'w=0',
+      args[2],
+      args[3],
+      'under=0',
+      'strike=0',
+      'charset=0',
+      'pitch=0',
+    ]).metrics;
+
+    return (
+      `height=${tm.tmHeight},ascent=${tm.tmAscent},descent=${tm.tmDescent},` +
+      `internal=${tm.tmInternalLeading},external=${tm.tmExternalLeading}`
+    );
+  },
+
   /* `dipcell` asks the eight cells where `VDMX` dips -- where a size fits a
    * taller cell than the size above it -- and the two either side of each. 8s.
    */
@@ -2084,6 +2106,18 @@ export const KNOWN_GAPS: Record<string, string> = {
    */
   'tiepick-vga:tie heights': '21 of 1,758 records, the tie of 8r and the dip of 8s',
   'tiepick-vga:tie extent': '21 of 1,758 records, the widths that follow from them',
+  'tiepick-ega:tie heights': '21 of 1,758 records, the same, in the 4:3 group',
+  'tiepick-ega:tie extent': '21 of 1,758 records, the same',
+
+  /* The tie region in the five faces `tiepick` leaves out, on both displays.
+   *
+   * 8r. Between them the two probes put 587 ties on the record, and 64 of them
+   * take the *last* of the run where 521 take the first. Every one of the 64 is
+   * at a cell of 255 or more, and 35 of the ties at those cells still take the
+   * first, so the cell is not the whole of it.
+   */
+  'tiewide-vga:wide heights': '23 of 365 records, the tie of 8r',
+  'tiewide-ega:wide heights': '23 of 365 records, the same, in the 4:3 group',
 
   /* Symbol's own advances, swept through the half-size crossing.
    *

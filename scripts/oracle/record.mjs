@@ -81,6 +81,7 @@ const PER_DISPLAY = new Set([
   'tiepick',
   'symadv',
   'dipcell',
+  'tiewide',
 ]);
 
 /** Where a probe writes, on the guest and on the host. */
