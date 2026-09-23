@@ -2142,12 +2142,18 @@ export const KNOWN_GAPS: Record<string, string> = {
    * faces and every cell from eight to forty-eight, so the rectangle is all
    * that comes back. A strike is the advance at every one of its cells; an
    * outline face reaches with the glyph, and uniting the advance with the
-   * fitted outline's box takes it from 361 of 656 to 565. What is left is
-   * nearly all a single column short on the right, and most of it `l`, whose
-   * advance is wider than its ink so the box never decides.
+   * fitted outline's box takes it from 361 of 656 to 565.
+   *
+   * What is left is never narrower than the extent and up to four columns
+   * wider, never a strike and never a space, and it gathers on the glyphs whose
+   * ink is narrow against their advance -- Arial's `l` at 35 of its 41 cells
+   * and Courier New's at all 41. It does not grow smoothly with the size --
+   * Arial's `l` wants two more at 40 pixels per em and three at 38 and at 41 --
+   * so whatever sets it is decided by the fitting rather than by arithmetic on
+   * the size.
    */
-  'groundbx-vga:ground': '91 of 656 records, a column of the ground on an outline face',
-  'textbk-vga:glyph': '1 of 64 records, the same column',
+  'groundbx-vga:ground': '91 of 656 records, the ground short of the box a glyph is blitted into',
+  'textbk-vga:glyph': '1 of 64 records, the same',
 
   /* The same tie, asked of the metrics instead of the pixels.
    *

@@ -17326,14 +17326,31 @@ font file unscaled, so MS Sans Serif asked for a cell of 26 -- the 13 pixel
 strike doubled -- answered 7 for `A` where Windows answers 14. The extent beside
 it was right all along, because that path scales. `groundw` is **820 of 820**.
 
-#### What is left
+#### What is left, stated properly
 
-91 of `groundbx`'s 656 and one of `textbk`'s 64, and they are one thing: a
-single column short on the right, always an outline face, and most of them `l`
--- a bar whose advance is wider than its ink, so the glyph's box never decides
-and the advance does. Arial's `l` agrees at cells of 10, 11, 12 and 14 and is a
-column short at 13 and at every cell from 15 to 21, which is not a threshold in
-the size.
+Not "a column". Over all 656, the rectangle's width against what
+`GetTextExtent` answers for the same request:
+
+| wider by | 0 | 1 | 2 | 3 | 4 |
+| --- | --- | --- | --- | --- | --- |
+| records | **529** | 54 | 53 | 16 | 4 |
+
+Never narrower, never a strike, and never a **space** -- a glyph with no ink is
+the extent at all 82 of its cells. The excess gathers on the glyphs whose ink is
+narrow against their advance: Arial's `l` at 35 of its 41 cells and Courier
+New's at all 41, against Arial's `A` at 6 and its `W` at 3.
+
+And it does not grow smoothly with the size. Arial's `l` wants the extent plus
+three at 38 pixels per em, plus two at 40 and plus three at 41 -- so whatever
+sets it is decided by the **fitting**, not by arithmetic on the size.
+
+So the rectangle is not the string's extent. `groundw` proves that on its own:
+at Arial's cell of 27 the extent of `l` is 6, `GetCharWidth` says 6, and the
+rectangle is 8. It is the box the glyph is **blitted** into, and the union with
+the fitted outline's extremes gets 565 of the 656 -- every case where the ink
+reaches past the advance, which is what Courier New's serifs and Arial's
+diagonals do. What the box is for a glyph whose ink reaches nowhere near its
+advance is **not read**.
 
 Refused, by count, each measured through the whole pipeline: the outline's
 extremes **floored and ceiled** rather than rounded, 536 of 656 against 565; the
