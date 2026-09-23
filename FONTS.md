@@ -17470,32 +17470,71 @@ New Bold, and all of Times New Roman but its italic -- and three never switch at
 all: Arial, Courier New and Courier New Italic take the first at every cell they
 were asked, up to 279.
 
-#### The two in the middle, which say something
+#### The two in the middle, which gave it away
 
 Symbol asked for a cell of 294 has a run of **three** -- 239, 240 and 241 all
 grid-fit to 294 -- and Windows answers **240**. Not the first, not the last. The
 scaled cell says why: 239 scales to 293, 240 to 294 and 241 to 295, so 240 is
 the largest of the run whose *unhinted* extent still fits the cell asked for.
 
-That reading -- **the largest of the run whose scaled cell fits** -- gives all 64
-of the last-taken as well, and it is still not the rule: it takes the last at
-226 of the 521 that take the first, most of them small, and Symbol refutes it
-from inside its own face. At a cell of 275 its run is 224 and 225, 225 scales to
-exactly 275, and Windows answers 224; at a cell of 284 its run is 231 and 232,
-232 scales to exactly 284, and Windows answers 232. The same face, the same
-arithmetic landing on the same equality, and opposite answers.
+**And that is the rule**, at a cell of 255 or more:
 
-#### And the readings refused, by count, over all 587
+> The size taken is the largest of the run whose scaled extent still fits the
+> cell -- the face's own ascender and descender added in design units, carried
+> across the size, and rounded **once**. Where none of them fits, the first is
+> kept.
+
+Rounded once from the sum, and not each of the two separately. Symbol settles
+that on its own, between two cells eight apart:
+
+| | the run | scales to | Windows |
+| --- | --- | --- | --- |
+| cell 275 | 224, 225 | 225 → 275.65 | **224** |
+| cell 284 | 231, 232 | 232 → 284.23 | **232** |
+
+Round the ascent and the descent apart and both of those come to exactly the
+cell asked for, and nothing separates them -- which is where this sat for a
+while. Round the sum and the first is 276, over the cell, and the second 284,
+under it: the answer twice.
+
+**Measured** over all 587 ties, on two displays reading two different groups of
+the table: every one of the 313 at a cell of 255 or more is this, and every one
+of the 274 below it takes the first. The boundary is sharp -- at a cell of 253
+this rule would move eight ties and Windows moves none -- and it is the **cell**
+that draws it, not the size: Symbol reaches 255 at 208 pixels per em and Courier
+New at 238.
+
+#### What it was worth
+
+| | before | after |
+| --- | --- | --- |
+| `stemstyl`, each display | 872 and 862 of 900 | **900 of 900** |
+| `tiewide`, each display | 342 of 365 | **365 of 365** |
+| `tiepick`, each display | 3,474 of 3,516 | **3,514 of 3,516** |
+| `symadv` | 414 of 423 | **420 of 423** |
+
+and `font`, `hinting`, `glyphs`, `widths`, `charscal` and `maxwidth` did not
+move. The two `tiepick` records left are Symbol's cell of 190, which is 8s's
+dip, and `stemstyl` -- the probe this whole question came out of -- is exact.
+
+#### And one more thing it uncovered
+
+The last cells to come right were not the tie at all: Times New Roman at a cell
+of 282, Arial at 285, Courier New at 289. Those are exactly the cells at which
+**scaling reaches the top of the table**, and 8l says that there the table is
+not consulted -- the answer is the largest size whose scaled extent fits. It was
+being consulted anyway, one step later: the mapper read the extent back out of
+the table at the size it had just chosen. Windows reports 227 over 55 for Times
+at that cell and the table's row 255 holds 233 over 55.
+
+#### The readings refused on the way
 
 | | |
 | --- | --- |
 | the ascent | 84 records of `font`, and a tie with equal ascents takes the last |
 | the run's last where it fits under the scaled size | 64 right, 319 wrong |
 | the run's last where the cell is 255 or more | 64 right, 35 wrong |
-| the largest whose scaled cell fits | 66 right, 226 wrong |
-
-So the fifteen cells are now sixty-six, they are in `KNOWN_GAPS` with their
-counts, and what decides is still **not read**.
+| the largest whose ascent and descent scale and round **apart** | 2 wrong of 313 -- the Symbol pair above |
 
 ### 8s. Symbol's advances past its own half-size crossing
 

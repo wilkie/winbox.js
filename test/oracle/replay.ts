@@ -2085,9 +2085,6 @@ export const KNOWN_GAPS: Record<string, string> = {
    */
   'textbk-vga:glyph': '3 of 64 records, the ground painted a little small',
 
-  'stemstyl-vga:column': '28 of 900 records, a tie inside VDMX taken the other way',
-  'stemstyl-ega:column': '38 of 900 records, the same tie',
-
   /* The same tie, asked of the metrics instead of the pixels.
    *
    * `tiepick` sweeps every cell from eight to three hundred in six faces and
@@ -2096,28 +2093,15 @@ export const KNOWN_GAPS: Record<string, string> = {
    * of the 1,758 agree, and where they do not, the pixels `stemstyl` recorded
    * agree with the metrics, so the two probes are short of the same thing.
    *
-   * Fifteen of them are an exact tie inside the table taken the other way, and
-   * 8r says at length what has been refused as an explanation. Six more are
-   * Symbol, whose table dips -- 8s -- and the widths that follow from both.
-   *
-   * Symbol's sixteen cells above its half-size crossing came out of here: the
-   * advance is fitted at half the size and doubled **before** it is rounded,
-   * which is `TrueTypeFont.hintedAdvance`.
+   * All that is left of it is Symbol's cell of 190, which is 8s's dip. The tie
+   * of 8r closed: at a cell of 255 or more the run is settled by the scaled
+   * extent, rounded once from the sum, and `tiewide`'s 365 records on each
+   * display and `stemstyl`'s 900 came with it.
    */
-  'tiepick-vga:tie heights': '21 of 1,758 records, the tie of 8r and the dip of 8s',
-  'tiepick-vga:tie extent': '21 of 1,758 records, the widths that follow from them',
-  'tiepick-ega:tie heights': '21 of 1,758 records, the same, in the 4:3 group',
-  'tiepick-ega:tie extent': '21 of 1,758 records, the same',
-
-  /* The tie region in the five faces `tiepick` leaves out, on both displays.
-   *
-   * 8r. Between them the two probes put 587 ties on the record, and 64 of them
-   * take the *last* of the run where 521 take the first. Every one of the 64 is
-   * at a cell of 255 or more, and 35 of the ties at those cells still take the
-   * first, so the cell is not the whole of it.
-   */
-  'tiewide-vga:wide heights': '23 of 365 records, the tie of 8r',
-  'tiewide-ega:wide heights': '23 of 365 records, the same, in the 4:3 group',
+  'tiepick-vga:tie heights': '1 of 1,758 records, the dip of 8s',
+  'tiepick-vga:tie extent': '1 of 1,758 records, the width that follows from it',
+  'tiepick-ega:tie heights': '1 of 1,758 records, the same, in the 4:3 group',
+  'tiepick-ega:tie extent': '1 of 1,758 records, the same',
 
   /* Symbol's own advances, swept through the half-size crossing.
    *
@@ -2142,9 +2126,9 @@ export const KNOWN_GAPS: Record<string, string> = {
   'dipcell-vga:dip heights': '2 of 45 records, the two dips whose exact answer Windows refuses',
   'dipcell-ega:dip heights': '2 of 45 records, the same two in the 4:3 group',
 
-  'symadv-vga:symbol size': '3 of 141 records, the tie of 8r twice and the dip once',
-  'symadv-vga:symbol advances': '3 of 141 records, the advances at those three cells',
-  'symadv-vga:symbol extent': '3 of 141 records, the sums of those advances',
+  'symadv-vga:symbol size': '1 of 141 records, the dip of 8s',
+  'symadv-vga:symbol advances': '1 of 141 records, the advances at that cell',
+  'symadv-vga:symbol extent': '1 of 141 records, the sum of those advances',
 
   /* The glyph sweep on an EGA, 895 cells of 6,046.
    *

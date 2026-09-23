@@ -1528,7 +1528,19 @@ export class FontManager {
       return null;
     }
 
-    const fitted = font.extentAt(found.ppem, ...ratioOf(found.ppem)) ?? found;
+    /* And the extent is read again from the table -- except where the size did
+     * not come from the table at all.
+     *
+     * Above the largest size it names, 8l, the table is not consulted: the
+     * answer is the largest size whose *scaled* extent fits, and the extent
+     * reported is that scaled one. Reading the table again at that size undoes
+     * it, and says so at exactly the cell where scaling reaches the top -- 282
+     * for Times New Roman, 285 for Arial, 289 for Courier New. Windows reports
+     * 227 over 55 for the first of those and the table's row holds 233 over 55.
+     */
+    const fitted = found.computed
+      ? found
+      : (font.extentAt(found.ppem, ...ratioOf(found.ppem)) ?? found);
 
     /* A slant Windows synthesises keeps the upright's size and loses its
      * hinting.

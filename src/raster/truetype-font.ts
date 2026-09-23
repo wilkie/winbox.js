@@ -64,6 +64,9 @@ export class TrueTypeFont {
    */
   static MIN_PPEM = 2;
 
+  /** The cell at which a tie stops being settled by taking the first size. */
+  static SCALED_TIE_CELL = 255;
+
   /** Whether the bytes look like a TrueType font at all. */
   static looksLikeFont(view: DataView) {
     if (view.byteLength < 12) {
@@ -605,23 +608,52 @@ export class TrueTypeFont {
       /* A tie in the cell keeps the first, and the search stops at an exact
        * fit, which is the same statement twice.
        *
-       * The **ascent** is what a tie could be broken by instead, and it is
-       * worth writing down why it is not. Two sizes a pixel apart often fit the
-       * same cell, and nearly always with the same ascent and descent -- Arial
-       * has forty such pairs and one where they differ, Courier New sixty and
-       * none. Where the ascent differs the *larger* one would explain the four
-       * cells `stemstyl` still misses: Times New Roman Bold tabulates 242 as
-       * 221 over 53 and 243 as 222 over 52, both a cell of 274, and at a cell
-       * of 274 Windows draws 243.
+       * **Below a cell of two hundred and fifty-five.** At or above it the run
+       * is not left at its first size: the one taken is the **largest of the
+       * run whose scaled extent still fits the cell** -- the face's own ascent
+       * and descent added in design units, carried across the size, and rounded
+       * **once**. Where none of them fits, the first is kept.
        *
-       * **Refused by count.** Breaking only the exact ties by the ascent costs
-       * 37 of `font`'s 11,382 records on two displays and 75 on the other two,
-       * and 10 of `stemwide`'s 780, against 5 gained in `stemstyl`. Breaking
-       * every tie that way costs 141 and 153. So there are ties whose ascents
-       * differ that demonstrably take the first, and the rule that would
-       * explain `stemstyl` contradicts them. What separates the two is **not
-       * read**.
+       * Rounded once, from the sum, and not each of the two separately, which
+       * Symbol settles on its own between two cells eight apart:
+       *
+       *     cell 275   run 224, 225   225 scales to 275.65   Windows takes 224
+       *     cell 284   run 231, 232   232 scales to 284.23   Windows takes 232
+       *
+       * Rounding the ascent and the descent apart makes both of those exactly
+       * the cell asked for, and then nothing separates them; rounding the sum
+       * makes the first 276 and the second 284, which is the answer twice.
+       *
+       * It also answers a run of three. Symbol asked for a cell of 294 fits it
+       * at 239, 240 and 241, which scale to 293, 294 and 295, and Windows takes
+       * **240** -- neither end of the run.
+       *
+       * **Measured**, over 587 ties recorded by `tiepick` and `tiewide` on two
+       * displays, which read different groups of the table: every one of the
+       * 313 at a cell of 255 or more is this, and every one of the 274 below it
+       * takes the first. The boundary is sharp -- at a cell of 253 this rule
+       * would move eight of them and Windows moves none -- and it is the cell
+       * that draws it, not the size: Symbol reaches it at 208 pixels per em and
+       * Courier New at 238.
+       *
+       * The **ascent** is what a tie could be broken by instead, and it is not:
+       * breaking only the exact ties by the ascent costs 84 records of `font`,
+       * and Times Bold Italic at a cell of 274 ties two sizes with the same
+       * ascent *and* the same descent and takes the second, which no reading of
+       * the ascent can say.
        */
+      if (cell === height && height >= TrueTypeFont.SCALED_TIE_CELL) {
+        const scaled = Math.round(
+          ((this.ascender + this.descender) * ppem) / this.unitsPerEm
+        );
+
+        if (!best || best.cell !== height || scaled <= height) {
+          best = { ppem, ascent, descent, cell };
+        }
+
+        return false;
+      }
+
       best = { ppem, ascent, descent, cell };
 
       return cell === height;
@@ -737,7 +769,7 @@ export class TrueTypeFont {
           break;
         }
 
-        top = { ppem, ascent, descent, cell: ascent + descent };
+        top = { ppem, ascent, descent, cell: ascent + descent, computed: true };
       }
 
       if (top) {
