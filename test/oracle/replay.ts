@@ -608,7 +608,7 @@ export class Context {
    * has to hand them on.
    */
   drawExt(font: any, call: any) {
-    const surface: any = Surface.offscreen(64, 48);
+    const surface: any = Surface.offscreen(call.width ?? 64, call.height ?? 48);
 
     surface.font = font;
     surface.backcolor = call.dark ? new Color(0x00, 0x00, 0x00) : new Color(0xff, 0xff, 0xff);
@@ -619,26 +619,31 @@ export class Context {
     surface.boldOverhang = this.display.boldOverhang;
 
     surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
-    surface.fillRect(0, 0, 64, 48);
+    surface.fillRect(0, 0, call.width ?? 64, call.height ?? 48);
 
-    const text = 'AB';
+    const text = call.text ?? 'AB';
     const pen = [8, 4];
 
     if (call.textout) {
       surface.fillText(pen[0], pen[1], text);
     } else {
       const rect = call.use ? call.rect : null;
+      let ink = false;
 
-      if (rect && call.options & 0x0002) {
-        surface.paintGround(rect);
+      if (call.options & 0x0002) {
+        if (rect) {
+          surface.paintGround(rect);
+        }
+
+        ink = true;
       }
 
       surface.withClip(rect && call.options & 0x0004 ? rect : null, () => {
-        surface.extText(pen[0], pen[1], text, call.dx ?? null);
+        surface.extText(pen[0], pen[1], text, call.dx ?? null, ink);
       });
     }
 
-    return this.readCell(surface, 64, 48);
+    return this.readCell(surface, call.width ?? 64, call.height ?? 48);
   }
 
   /**
@@ -1513,6 +1518,55 @@ const ADAPTERS: Record<
     );
   },
 
+  /* `groundrn` sweeps the ground behind a **run**: four faces, ten cells, five
+   * runs, and an advance array, all painted in the background's own colour so
+   * that the rectangle is all that comes back. 8o.
+   */
+  run(context, args) {
+    if (!context.fonts) {
+      throw new NeedsDrive('the fonts live on the drive image; run the oracle pipeline');
+    }
+
+    const fields: Record<string, string> = {};
+
+    for (const field of args.slice(1)) {
+      const [name, value] = String(field).split('=');
+
+      if (value !== undefined) {
+        fields[name] = value;
+      }
+    }
+
+    const handle = CreateFontIndirect.call(context, {
+      lfHeight: Number(fields.h ?? 0),
+      lfWidth: 0,
+      lfWeight: 400,
+      lfItalic: 0,
+      lfCharSet: 0,
+      lfUnderline: 0,
+      lfStrikeOut: 0,
+      lfFaceName: String(args[0]),
+    });
+
+    if (!handle) {
+      throw new Unimplemented('no font mapped');
+    }
+
+    return context.drawExt(context.handles.resolve(handle), {
+      width: 96,
+      height: 56,
+      text: String(fields.s ?? ''),
+      textout: !fields.dx,
+      options: 0,
+      use: 0,
+      rect: { left: 0, top: 0, right: 0, bottom: 0 },
+      mode: 2,
+      dark: 1,
+      extra: 0,
+      dx: fields.dx ? String(fields.dx).split(':').map(Number) : null,
+    });
+  },
+
   /* `extout` draws two characters through `ExtTextOut` at every combination of
    * its rectangle, its flags and its advance array, and through `TextOut` as
    * the control. Every argument is in the record. 8t.
@@ -2146,26 +2200,6 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  /* `ExtTextOut`'s ground behind a **run**, which is 8o's question again.
-   *
-   * 8t settles the call itself: the flags, the rectangle's edges, the clip and
-   * the advance array all reproduce. The seven left are the opaque ground
-   * behind two characters of an outline face, where the width 8o measured on
-   * single characters does not carry over --
-   *
-   *     Arial `AB` at a cell of 16    advances 9 and 9, painted over 18
-   *     Courier New `AB` at 20        advances 10 and 10, painted over 19
-   *
-   * -- and where an advance array makes a strike and an outline face differ
-   * from each other: MS Sans Serif with 20 and 20 is painted over 29, which is
-   * the pens and the last glyph's own advance, and Courier New over 40, which
-   * is the array's own sum.
-   *
-   * 8o's rule came from `groundbx`, a sweep of one character over four faces
-   * and every cell from eight to forty-eight. The run wants the same treatment
-   * and seven records are not it.
-   */
-  'extout-vga:cell': '7 of 51 records, the ground behind a run of an outline face',
 
 
   /* The styled files at cells of two hundred and seventy-four to two hundred

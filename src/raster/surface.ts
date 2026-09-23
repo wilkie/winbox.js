@@ -458,14 +458,36 @@ export class Surface {
    * the design advance carried across the size and rounded **up**, alone or
    * united with the rest, which takes `textbk` from 63 to 61.
    */
-  groundBox(text) {
+  groundBox(text, dx = null, inkOnly = false) {
     const font: any = this._font;
     const outline = font.outline;
 
     const metrics = font.measure(text);
+    const characters = [...String(text)];
 
+    const advanceOf = (character) =>
+      font.outlineAdvance ? font.outlineAdvance(character.charCodeAt(0)) : metrics.width;
+
+    /* A strike is the advance, and with an array it is the pens the array
+     * makes plus the **last glyph's own advance** -- which is where the two
+     * kinds of face part company, because an outline face takes the array's own
+     * sum. **Measured** by `groundrn`: MS Sans Serif at a cell of sixteen with
+     * twenty and twenty is painted over twenty-nine and Arial over forty.
+     */
     if (!outline) {
-      return { left: 0, right: metrics.width, height: metrics.height };
+      if (!dx || characters.length === 0) {
+        return { left: 0, right: metrics.width, height: metrics.height };
+      }
+
+      let width = 0;
+
+      for (let index = 0; index < characters.length - 1; index++) {
+        width += dx[index] + this.charExtra;
+      }
+
+      width += font.measure(characters[characters.length - 1]).width;
+
+      return { left: 0, right: width, height: metrics.height };
     }
 
     const scale = font.ppem / outline.unitsPerEm;
@@ -474,9 +496,10 @@ export class Surface {
     let left = 0;
     let right = 0;
     let pen = 0;
-    let bearing: number | null = null;
+    let first: any = null;
 
-    for (const character of String(text)) {
+    for (let index = 0; index < characters.length; index++) {
+      const character = characters[index];
       const glyph = outline.cmap.get(character.charCodeAt(0)) ?? 0;
 
       let fitted: any = null;
@@ -491,50 +514,59 @@ export class Surface {
 
       if (reach.length) {
         const up = fitted.scaled ? 1 : scale;
-        const reachRight = Math.round(Math.max(...reach.map((p: any) => p.x)) * up);
 
-        /* The **first** glyph's left edge, and only that one: the rectangle
-         * starts where the run's first character starts and runs the whole
-         * run's advance from there. A two character string is what says so --
-         * Arial's `AB` at a cell of sixteen advances nine and nine and is
-         * painted over eighteen columns, not nineteen, though its `B` bears a
-         * pixel of its own.
-         */
-        if (bearing === null) {
-          bearing = Math.round(Math.min(...reach.map((p: any) => p.x)) * up);
+        if (first === null) {
+          first = {
+            bearing: Math.round(Math.min(...reach.map((p: any) => p.x)) * up),
+            advance: advanceOf(character),
+          };
+
+          left = Math.min(0, first.bearing);
         }
 
-        /* The rectangle starts at the glyph's own left edge where that is left
-         * of the pen, and it runs the advance from *there* -- so a glyph with a
-         * bearing is that much wider than its advance, whether or not its ink
-         * reaches. That is what the narrow letters were short of: Arial's `l`
-         * at a cell of forty-seven advances ten pixels, bears three, and is
-         * painted over thirteen.
-         *
-         * **Read out of the scaler**, whose buffer holds the bitmap's bearing,
-         * width and height in whole pixels and again in sixty-fourths -- 8k
-         * found them. At nine cells of Arial's `l` the bearing there is 0, 1, 0,
-         * 1, 1, 2, 3, 2, 3 and the rectangle is wider than the advance by
-         * exactly those.
-         */
-        left = Math.min(left, bearing);
-        right = Math.max(right, pen + reachRight);
-      } else {
-        /* A glyph with no ink has no left edge to start from, and the rectangle
-         * is its advance. Every space in the sweep is exactly that. */
-        right = Math.max(
-          right,
-          pen + (font.outlineAdvance ? font.outlineAdvance(character.charCodeAt(0)) : metrics.width)
-        );
+        right = Math.max(right, pen + Math.round(Math.max(...reach.map((p: any) => p.x)) * up));
       }
 
-      pen += font.outlineAdvance
-        ? font.outlineAdvance(character.charCodeAt(0))
-        : metrics.width;
+      pen += dx ? dx[index] + this.charExtra : advanceOf(character);
     }
 
-    /* The run's own advance, carried from where the first glyph starts. */
-    right = Math.max(right, (bearing ?? 0) + pen);
+    /* The greatest of three: the **first** glyph's box -- its left edge plus its
+     * own advance -- the furthest any glyph's ink reaches, and, where there is
+     * more than one glyph, the run's own advance from the pen.
+     *
+     * **Measured** by `groundrn`, which sweeps four faces, ten cells and five
+     * runs with the text painted in the background's own colour so that the
+     * rectangle is all that comes back: all 90 of the outline records, left
+     * edge and right.
+     *
+     * Only the first glyph's box, which is what the single character sweep of
+     * 8o could not see. Arial's `l` at a cell of forty-eight advances ten and
+     * bears three, and alone it is painted over thirteen; two of them are
+     * painted over twenty, not twenty-three. The bearing enters once.
+     *
+     * And the run's advance enters only where there **is** a run. One glyph is
+     * its own box and nothing else: Courier New's `W` at a cell of forty-four
+     * advances twenty-five and bears minus one, and is painted over twenty-four
+     * -- where two characters of the same face at a cell of twenty-four take
+     * the whole of their advance and not the shifted one.
+     */
+    /* A run with no ink anywhere -- a space -- has no box to take, and it is
+     * its advance. */
+    if (inkOnly) {
+      /* `ETO_OPAQUE` paints the glyphs' own boxes and not the run's rectangle:
+       * Arial's `AB` at a cell of sixteen is painted over seventeen columns
+       * under the flag and eighteen without it, and Courier New's at twenty
+       * over nineteen against twenty. A strike is its advance either way,
+       * because a strike's bitmap fills its own cell.
+       */
+      return { left, right, height: metrics.height };
+    }
+
+    right = Math.max(
+      right,
+      first === null || characters.length > 1 ? pen : 0,
+      first ? first.bearing + first.advance : 0
+    );
 
     return { left, right, height: metrics.height };
   }
@@ -698,29 +730,21 @@ export class Surface {
    * **Recorded** by `extout`, on a strike, an outline face and a fixed-pitch
    * outline face.
    */
-  extText(x, y, text, dx) {
+  extText(x, y, text, dx, inkOnly = false) {
     const characters = [...String(text)];
 
-    if (!dx || characters.length === 0) {
+    if ((!dx && !inkOnly) || characters.length === 0) {
       this.fillText(x, y, text);
       return;
     }
 
-    const steps = characters.map((character, index) =>
-      index === characters.length - 1
-        ? this._font.measure(character).width
-        : dx[index] + this.charExtra
-    );
+    const box = this.groundBox(text, dx, inkOnly);
 
-    const width = steps.reduce((total, step) => total + step, 0);
-
-    [x, y] = this.aligned(x, y, text, width);
-
-    const height = this._font.measure(text).height;
+    [x, y] = this.aligned(x, y, text, box.right - box.left);
 
     if (this.backMode !== 1) {
       this.context.fillStyle = this.backcolor.css;
-      this.context.fillRect(x, y, width, height);
+      this.context.fillRect(x + box.left, y, box.right - box.left, box.height);
     }
 
     this._runOnly = true;
@@ -729,12 +753,14 @@ export class Surface {
 
     for (let index = 0; index < characters.length; index++) {
       this.fillText(pen, y, characters[index]);
-      pen += steps[index];
+      pen += dx
+        ? dx[index] + this.charExtra
+        : this._font.measure(characters[index]).width + this.charExtra;
     }
 
     this._runOnly = false;
 
-    this.rules(x, y, text, width);
+    this.rules(x, y, text, box.right - box.left);
 
     this._stale = true;
   }

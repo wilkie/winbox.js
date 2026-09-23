@@ -75,12 +75,17 @@ export function ExtTextOut(
 
   const dx = lpDx ? Array.from({ length: text.length }, (_, index) => word(lpDx, index)) : null;
 
-  if (rect && fuOptions & 0x0002) {
+  /* `ETO_OPAQUE` paints the rectangle it is given, and changes what the text
+   * paints behind itself: the glyphs' own boxes rather than the run's
+   * rectangle. Arial's `AB` at a cell of sixteen is painted over seventeen
+   * columns under the flag and eighteen without it. **Recorded.**
+   */
+  if (fuOptions & 0x0002 && rect) {
     surface.paintGround(rect);
   }
 
   surface.withClip(rect && fuOptions & 0x0004 ? rect : null, () => {
-    surface.extText(nXStart, nYStart, text, dx);
+    surface.extText(nXStart, nYStart, text, dx, (fuOptions & 0x0002) !== 0);
   });
 
   return TRUE;

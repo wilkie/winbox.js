@@ -17530,19 +17530,47 @@ And `SetTextCharacterExtra` is **added to** each entry rather than replaced by
 it: three pixels of extra against an array of twenty puts the second character
 twenty-three across.
 
-#### What is left
+#### And the ground behind a run, which is 8o's question again
 
-Seven records of the fifty-one, and they are 8o's question in a new place: the
-opaque ground behind a **run** of an outline face. Arial's `AB` at a cell of
-sixteen advances nine and nine and is painted over eighteen columns; Courier
-New's at twenty advances ten and ten and is painted over **nineteen**. And an
-advance array makes the two kinds of face differ from each other -- MS Sans
-Serif with twenty and twenty is painted over twenty-nine, which is the pens and
-the last glyph's own advance, and Courier New over forty, which is the array's
-own sum.
+Seven of the fifty-one were the opaque ground behind a **run**, where the width
+8o measured on single characters did not carry over. So
+`oracle/probes/groundrn.c` sweeps it the way `groundbx` swept the single
+character: four faces, ten cells, five runs chosen for their bearings, and the
+text painted in the background's own colour so that the rectangle is all that
+comes back. 212 records.
 
-8o's rule came from `groundbx`: one character, four faces, every cell from eight
-to forty-eight. The run wants the same sweep, and seven records are not it.
+The rectangle is the greatest of three:
+
+    the first glyph's own box -- its left edge plus its own advance
+    the furthest any glyph's ink reaches
+    the run's own advance from the pen, where there is more than one glyph
+
+with its left edge at `min(pen, pen + the first glyph's bearing)`. **All 90 of
+the outline records, left edge and right**, and the strikes are their advance as
+they always were.
+
+Two things in that the single character could not say. The bearing enters
+**once**: Arial's `l` at a cell of forty-eight advances ten and bears three, and
+alone it is painted over thirteen -- but two of them are painted over twenty,
+not twenty-three. And the run's advance enters only where there **is** a run:
+Courier New's `W` at a cell of forty-four advances twenty-five, bears minus one,
+and is painted over twenty-four, where two characters of the same face take the
+whole of their advance and not the shifted one.
+
+#### What `ETO_OPAQUE` does to the ground
+
+It paints the rectangle it is given -- and it also changes what the *text*
+paints behind itself, from the run's rectangle to the glyphs' own boxes. Arial's
+`AB` at a cell of sixteen is painted over **seventeen** columns under the flag
+and eighteen without it; Courier New's at twenty over nineteen against twenty. A
+strike is its advance either way, because a strike's bitmap fills its own cell.
+
+With no rectangle at all the flag still does that, which is how it shows: the
+same call with and without it differs by a column with nothing else to explain
+it.
+
+`extout` is **51 of 51**, `groundrn` **212 of 212**, and `groundbx` and `textbk`
+are unmoved at 656 and 64.
 
 ### 8p. Where the text lands, which nothing had ever moved
 
