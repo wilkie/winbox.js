@@ -2853,6 +2853,23 @@ export class Hinter {
             )
           : null;
 
+      /* And where the design path does not apply, the scaled originals stand
+       * in -- which is also the measurement `MD[1]` makes.
+       *
+       * The two part company by a sixty-fourth, and Arial's `w` at a cell of
+       * eighty-eight on an EGA is where that sixty-fourth decides a pixel. The
+       * design path measures 64 there and the scaled originals 63; the round
+       * state is `RDTG`, so the first keeps a whole pixel and the second takes
+       * it to nought, and nought is what Windows draws. At the sizes either
+       * side the two agree -- 62 and 62 at seventy-seven, 65 and 65 at eighty
+       * -- which is why only this one cell shows it.
+       *
+       * **Refused by count.** Measuring on the scaled originals everywhere
+       * costs 20 records of `stemstyl`, 19 of `styles`, 6 of `widths`, 5 of
+       * `stemwide`, 3 of `stemedge` and 1 of `symbig`, against the one it
+       * gains. So the design path is right in general and the scaled originals
+       * are right at this cell, and what chooses between them is **not read**.
+       */
       const original =
         design ??
         this.projectDual(

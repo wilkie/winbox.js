@@ -17044,9 +17044,33 @@ Three sizes of one glyph, and it fits all three. **Refused by count**: it costs
 171 records of `stemstyl`, 65 of `stemwide`, 35 of `stemedge`, 42 of `glyphs`,
 20 of `widths` and 55 of `symbig`, against the one it gains.
 
-So what separates them is still **not read**, and the four readouts stay in the
-corpus as the instrument for the next attempt: two points, one vector, and the
-cut that puts them either side of anything.
+#### The instruction's own measurement, which is the whole of it
+
+One quantity is left. An `MDRP` moves a point until its distance from the
+reference matches a measured one, rounded; the reference, the vector and the
+point all agree, so the measurement is the only thing that can differ -- and it
+can be computed two ways, which is a distinction this already knew about:
+
+|  | at 77 | at **79** | at 80 |
+| --- | --- | --- | --- |
+| the design delta, scaled once | 62 | **64** | 65 |
+| the scaled originals, which is what `MD[1]` measures | 62 | **63** | 65 |
+
+The round state here is `RDTG`. 64 keeps a whole pixel and 63 takes it to
+nought, and **nought is what Windows draws**. At the two sizes either side the
+two measurements agree, which is why one cell in the corpus shows it at all.
+
+So the gap is not a mystery about a vector or a rounding any more. It is:
+**which of two measurements the instruction uses.**
+
+And neither is the rule on its own. Measuring on the scaled originals everywhere
+costs 20 records of `stemstyl`, 19 of `styles`, 6 of `widths`, 5 of `stemwide`,
+3 of `stemedge` and 1 of `symbig`, against the one it gains -- and the design
+path is there because Courier New's `w` measures a sixty-fourth that way and
+nought the other. What chooses between them is **not read**.
+
+The four readouts stay in the corpus as the instrument for the next attempt: two
+points, one vector, and the cut that puts them either side of anything.
 
 ### 8l. Above the largest size `VDMX` tabulates, Windows does the work itself
 
