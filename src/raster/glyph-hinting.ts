@@ -2837,20 +2837,41 @@ export class Hinter {
        */
       const design =
         state.zp0 !== 0 && state.zp1 !== 0 && !this.composite
-          ? scaleToPixels(
-              /* The design vector belongs to the square domain and the dual
-               * projection to the stretched one, so the design x is stretched
-               * before it is projected. At a stretch of one this is the line
-               * above it; under a width it is what put the top of Times New
-               * Roman's N diagonal three pixels out, read off a readout of
-               * that point at every width. */
-              this.projectDesign(
-                (zoneOne.unscaledX[index] - zoneZero.unscaledX[state.rp0]) * this.stretch,
-                zoneOne.unscaledY[index] - zoneZero.unscaledY[state.rp0]
-              ),
-              this.pixels,
-              this.font.unitsPerEm
-            )
+          ? this.stretch === 1
+            ? scaleToPixels(
+                this.projectDual(
+                  zoneOne.unscaledX[index] - zoneZero.unscaledX[state.rp0],
+                  zoneOne.unscaledY[index] - zoneZero.unscaledY[state.rp0]
+                ),
+                this.pixels,
+                this.font.unitsPerEm
+              )
+            : /* Where the two sizes differ, each component is carried to pixels
+               * **on its own** and the projection is done on those -- not
+               * stretched in design units and scaled once afterwards.
+               *
+               * The two are the same arithmetic in a different order and they
+               * part company by a sixty-fourth. Arial's `w` at a cell of
+               * eighty-eight on an EGA is where that sixty-fourth decides a
+               * pixel: the delta is (325, -1062) at a hundred and five across
+               * by seventy-nine down, which this way measures 63 sixty-fourths
+               * and the other way 64, and the round state is `RDTG` -- so one
+               * keeps a whole pixel and the other takes it to nought. Windows
+               * draws nought.
+               *
+               * **Read out of a running Windows**, with the glyph's own program
+               * cut either side of this one instruction: the point going in is
+               * 1082 sixty-fourths on both sides, the projection vector is
+               * (15373, 5666) on both, and the point coming out is 991 against
+               * this side's 1060. Same point, same vector; the measurement is
+               * the whole of the difference.
+               */
+              this.projectDual(
+                this.toPixelsX(
+                  zoneOne.unscaledX[index] - zoneZero.unscaledX[state.rp0]
+                ),
+                this.toPixels(zoneOne.unscaledY[index] - zoneZero.unscaledY[state.rp0])
+              )
           : null;
 
       /* And where the design path does not apply, the scaled originals stand

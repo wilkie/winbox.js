@@ -2055,59 +2055,6 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  /* One cell of `stemwide` on an EGA: Arial's `w` at a cell of eighty-eight.
-   *
-   * What this entry used to hold was the whole of the region above a cell of
-   * two hundred and twelve, 99 records of `stemwide`'s 780 and 98 of
-   * `stemedge`'s 220, and that is closed: reading the scaler's memory found the
-   * half-size fitting of 8k and the `head.xMax` that sets it off, and
-   * `stemedge` is now 220 of 220 and `stemwide` 779 of 780.
-   *
-   * The one left is not that rule and is well below its threshold -- a hundred
-   * and five pixels per em across, where the flag is off -- and it has been
-   * chased as far as this instrument goes.
-   *
-   * It is the outer left edge of Arial's `w`. This side fits it from (-0.5, 42)
-   * to (17.313, 0), a slope of 0.424; Windows draws a slope of **exactly
-   * 0.400**, its leftmost column stepping 3, 2, 3, 2 rows all the way down
-   * where this side's steps 2, 3, 2, 2, 3. That is about a pixel of difference
-   * in the lower vertex and nothing at the upper one.
-   *
-   * Nothing branches. The glyph's instructions at this cell and at the cell
-   * either side -- both of which agree -- are the same instructions in the same
-   * order, with the same `MIAP` and `MIRP` control values scaling smoothly and
-   * the same cut-in decision at every one. At a cell of eighty this side's
-   * slope is 0.4215 and Windows agrees, so it is one rounding that steps at
-   * this size and not a rule.
-   *
-   * Reading Windows' own fitted outline settles which end moves, and it cannot
-   * be read *after* the call -- `scalepts` walks every block in range and the
-   * points are already gone. So it is read **during** it, by the glyph itself:
-   * `arial-w-p0x` and `arial-w-p1x` copy the `w` onto the `7` the sweep asks
-   * upright and append a readout that moves the advance phantom onto the point,
-   * so what Windows reports as the width is the point's own coordinate.
-   *
-   * The head of the edge agrees exactly -- -0.5 pixels on both sides, at every
-   * size. The **foot** is the one that moves: Windows puts it at 16.2344 where
-   * this side puts it at 17.3125, and at every other size from 68 to 88 pixels
-   * per em the two agree to the sixty-fourth.
-   *
-   * On this side three instructions touch it: an `IP`, an `MDRP` under a round
-   * state of `RDTG`, and a `SHPIX` that adds three quarters of a pixel at every
-   * size. The `MDRP` measures a design distance whose projection is a small
-   * remainder of two large numbers -- 26.02 units out of a delta of (325,
-   * -1062) -- and scales to 64.244 sixty-fourths, which floors to exactly one
-   * pixel. A size either side scales to 63.42 and 65.22. So the point turns on
-   * a projection that is 1% different, not on a rounding that is a sixty-fourth
-   * different, and what makes it so is **not read**. See `FONTS.md` 8k.
-   */
-  'stemwide-ega:column': '1 of 780 records, a diagonal a sixty-fourth out at a cell of 88',
-
-  /* The same record on the other display whose pixel is not square. `stemwide`
-   * is 780 of 780 on a VGA and on a Super VGA, and 779 on an EGA and on a
-   * Hercules -- the same cell, the same glyph, the same shape of difference,
-   * and the two displays give it the same sizes. */
-  'stemwide-hercules:column': '1 of 780 records, the same diagonal as the EGA',
 
   /* The styled files at cells of two hundred and seventy-four to two hundred
    * and eighty-two, where the size chosen is one pixel per em out.

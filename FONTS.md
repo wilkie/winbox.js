@@ -17044,33 +17044,50 @@ Three sizes of one glyph, and it fits all three. **Refused by count**: it costs
 171 records of `stemstyl`, 65 of `stemwide`, 35 of `stemedge`, 42 of `glyphs`,
 20 of `widths` and 55 of `symbig`, against the one it gains.
 
-#### The instruction's own measurement, which is the whole of it
+#### The instruction's own measurement, which was the whole of it
 
-One quantity is left. An `MDRP` moves a point until its distance from the
-reference matches a measured one, rounded; the reference, the vector and the
-point all agree, so the measurement is the only thing that can differ -- and it
-can be computed two ways, which is a distinction this already knew about:
+One quantity was left. An `MDRP` moves a point until its distance from the
+reference matches a **measured** one, rounded; the reference, the vector and the
+point all agreed, so the measurement was the only thing that could differ. And
+it can be computed two ways, in either order:
 
-|  | at 77 | at **79** | at 80 |
-| --- | --- | --- | --- |
-| the design delta, scaled once | 62 | **64** | 65 |
-| the scaled originals, which is what `MD[1]` measures | 62 | **63** | 65 |
+    stretch the design x, project, scale the answer to pixels
+    scale each component to pixels, then project
 
-The round state here is `RDTG`. 64 keeps a whole pixel and 63 takes it to
-nought, and **nought is what Windows draws**. At the two sizes either side the
-two measurements agree, which is why one cell in the corpus shows it at all.
+The same arithmetic, and not the same number. At this cell the delta is (325,
+-1062) at a hundred and five across by seventy-nine down: taken the first way it
+measures **64** sixty-fourths and the second way **63**. The round state is
+`RDTG`, so the first keeps a whole pixel and the second takes it to nought --
+and nought is what Windows draws.
 
-So the gap is not a mystery about a vector or a rounding any more. It is:
-**which of two measurements the instruction uses.**
+So where the two sizes differ, **each component is carried to pixels on its own
+and the projection is done on those**. Where they are the same the two orders
+are the same arithmetic and nothing moves, which is why every square pixel in
+the corpus was already right.
 
-And neither is the rule on its own. Measuring on the scaled originals everywhere
-costs 20 records of `stemstyl`, 19 of `styles`, 6 of `widths`, 5 of `stemwide`,
-3 of `stemedge` and 1 of `symbig`, against the one it gains -- and the design
-path is there because Courier New's `w` measures a sixty-fourth that way and
-nought the other. What chooses between them is **not read**.
+`stemwide` is **780 of 780 on all three displays**, and with it `stemedge`,
+`stemsize`, `stemstyl`, `glyphs`, `hinting`, `styles`, `widths` and `symbig` are
+exact. Nothing anywhere moved the other way.
 
-The four readouts stay in the corpus as the instrument for the next attempt: two
-points, one vector, and the cut that puts them either side of anything.
+#### What the readouts had to say first
+
+None of it could have been guessed from the pixels. The instrument was four
+readouts and a cut, and each one removed a candidate:
+
+| | | |
+| --- | --- | --- |
+| the point going in | 1082 on both sides | the divergence is not before |
+| the projection vector, by `GPV` | (15373, 5666) on both | it is not the vector |
+| the point coming out | 991 against 1060 | it is this one instruction |
+| the two orders, computed | 63 against 64 | and this is the arithmetic |
+
+Two readings were refused by count along the way: truncating the stretched
+design x to a whole unit, which fits all three sizes of this glyph and costs 171
+records of `stemstyl`, 65 of `stemwide`, 35 of `stemedge`, 42 of `glyphs`, 20 of
+`widths` and 55 of `symbig`; and measuring on the scaled originals instead --
+what `MD[1]` reads -- which also fits all three and costs 20 of `stemstyl`, 19
+of `styles`, 6 of `widths`, 5 of `stemwide`, 3 of `stemedge` and 1 of `symbig`.
+Both are the right answer at this cell for the wrong reason.
 
 ### 8l. Above the largest size `VDMX` tabulates, Windows does the work itself
 
