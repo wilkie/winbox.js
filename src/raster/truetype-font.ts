@@ -583,26 +583,54 @@ export class TrueTypeFont {
      *
      * The sizes below the table are the exception, and the loop below says why.
      */
+    let stepped = false;
+
     const consider = (ppem, ascent, descent) => {
       const cell = ascent + descent;
 
       if (cell > height) {
-        /* And it does **not** stop here.
+        /* It does not stop here -- it steps over, and what it may step onto is
+         * below.
          *
          * The table's cells climb with the size nearly everywhere, and where
          * they climb it makes no difference whether a scan that meets a size
          * too tall gives up or carries on. Where the table dips it does.
-         * Symbol fits 155 pixels per em into a cell of 191 and 156 into 190, so
-         * a scan that carries on finds 156 an exact answer for a cell of 190 --
-         * and Windows answers 154, the last size before the dip, which is what
-         * giving up would say.
          *
-         * **Refused by count.** Giving up there costs 124 records of `hinting`,
-         * 6 of `font`, 12 of `stemstyl` and 10 of `tiepick`, against 3 of
-         * `symadv` gained. So the scan carries on, and Symbol at a cell of 190
-         * is in `KNOWN_GAPS` with the tie of 8r.
+         * **Refused by count**: giving up here costs 124 records of `hinting`,
+         * 6 of `font`, 12 of `stemstyl` and 10 of `tiepick` against 3 gained.
          */
+        stepped = true;
+
         return false;
+      }
+
+      /* Having stepped over a size too tall, the scan only lands on one whose
+       * **scaled** extent fits the cell as well.
+       *
+       * Nine dips in the sixteen outline faces are decisive -- the exact answer
+       * lies past the dip and no size below it fits exactly -- and this is all
+       * nine, on both displays and in both groups of the table:
+       *
+       *     Symbol             cell 190   past the dip is 156, which scales to 191   refused
+       *     Courier New Italic cell 121   past the dip is 112, which scales to 127   refused
+       *     Symbol             cell  78   past the dip is  64, which scales to  78   taken
+       *     Times Italic       cell 210   past the dip is 190, which scales to 210   taken
+       *
+       * and five more taken, every one of them scaling to at or under the cell.
+       *
+       * The scaled extent is the same number 8r settles a tie with: the face's
+       * ascender and descender added in design units, carried across the size,
+       * rounded **once**. It grows with the size, so nothing above this can
+       * pass either and the scan is done.
+       *
+       * This is a rule about stepping over, and not a rule about candidates in
+       * general: Courier New's hinted cells run fifteen pixels below its scaled
+       * ones, so requiring every candidate to pass costs `stemsize` all 238 of
+       * its records. A size reached without stepping over anything is taken on
+       * the table's word.
+       */
+      if (stepped && Math.round(((this.ascender + this.descender) * ppem) / this.unitsPerEm) > height) {
+        return true;
       }
 
       /* A tie in the cell keeps the first, and the search stops at an exact

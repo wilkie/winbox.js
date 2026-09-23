@@ -2093,42 +2093,6 @@ export const KNOWN_GAPS: Record<string, string> = {
    * of the 1,758 agree, and where they do not, the pixels `stemstyl` recorded
    * agree with the metrics, so the two probes are short of the same thing.
    *
-   * All that is left of it is Symbol's cell of 190, which is 8s's dip. The tie
-   * of 8r closed: at a cell of 255 or more the run is settled by the scaled
-   * extent, rounded once from the sum, and `tiewide`'s 365 records on each
-   * display and `stemstyl`'s 900 came with it.
-   */
-  'tiepick-vga:tie heights': '1 of 1,758 records, the dip of 8s',
-  'tiepick-vga:tie extent': '1 of 1,758 records, the width that follows from it',
-  'tiepick-ega:tie heights': '1 of 1,758 records, the same, in the 4:3 group',
-  'tiepick-ega:tie extent': '1 of 1,758 records, the same',
-
-  /* Symbol's own advances, swept through the half-size crossing.
-   *
-   * 8s. Two cells are the 8r tie and one is the dip, and the advances and
-   * extents at those cells follow from the size being wrong. Nothing else is
-   * left: omega at a hundred and thirty-nine pixels per em came out of here,
-   * and it was where the advance phantom's original is scaled -- see
-   * `Hinter.hint`.
-   */
-  /* The dips, where the cells the table names do not climb with the size.
-   *
-   * 8s. Nine of them in the sixteen outline faces are decisive -- the exact
-   * answer lies past the dip and there is none before it -- and Windows takes
-   * it seven times and refuses it twice, at Symbol's cell of 190 and Courier
-   * New Italic's of 121. Four readings have been refused as the difference,
-   * each by count, and what separates the seven from the two is **not read**.
-   *
-   * The same two on both displays, which read different groups of the table: a
-   * square pixel takes the catch-all and an EGA's the 4:3, and the two tables
-   * are not the same one. So it is not the group and it is not the pixel.
-   */
-  'dipcell-vga:dip heights': '2 of 45 records, the two dips whose exact answer Windows refuses',
-  'dipcell-ega:dip heights': '2 of 45 records, the same two in the 4:3 group',
-
-  'symadv-vga:symbol size': '1 of 141 records, the dip of 8s',
-  'symadv-vga:symbol advances': '1 of 141 records, the advances at that cell',
-  'symadv-vga:symbol extent': '1 of 141 records, the sum of those advances',
 
   /* The glyph sweep on an EGA, 895 cells of 6,046.
    *

@@ -17579,7 +17579,7 @@ Below the crossing the two readings are the same arithmetic, so nothing else
 moved: `hinting`, `glyphs`, `widths`, `charscal` and `maxwidth` are unchanged,
 and `tiepick`'s sixteen cells are closed.
 
-#### And a dip in the table, which is a census of its own
+#### And a dip in the table, which is a census and a rule
 
 Symbol's `VDMX` does not climb with the size. It fits 155 pixels per em into a
 cell of 191 and 156 into 190:
@@ -17606,20 +17606,42 @@ taken shows. With the two cells either side of each for company:
 | Symbol | 155:191 → 156:190 | 190 | **154**, short of it |
 | Courier New Italic | 111:122 → 112:121 | 121 | **109**, short of it |
 
-Seven go past the dip and two stop short, and the two that stop are the gap. The
-seven that go past are what a scan carrying on says, which is what this does.
+Seven go past the dip and two stop short, and what separates them is the
+**scaled** extent of the size on the far side:
 
-The second of Arial Bold Italic's is decisive only on a display whose pixel is
-not square. The table is one list per aspect ratio, and the lists are not the
-same list: a square pixel reads the catch-all group and an EGA reads the 4:3
-one, whose rows differ. In the catch-all a size below that dip already fits a
-cell of 171 exactly, so nothing shows; in the 4:3 group none does, and Windows
-answers 151 -- past it.
+| | past the dip | scales to | |
+| --- | --- | --- | --- |
+| Symbol, cell 78 | 64 | 78 | taken |
+| Times Italic, cell 210 | 190 | 210 | taken |
+| Symbol, cell 190 | 156 | **191** | refused |
+| Courier New Italic, cell 121 | 112 | **127** | refused |
 
-**And the same two stop short on both displays.** `dipcell` is recorded on the
-VGA and on the EGA, 45 records each, and both come back 43. Two different
-groups, two different tables, the same two cells: so it is not the group, and it
-is not the shape of the pixel.
+and five more taken, every one of them scaling to at or under the cell. So:
+
+> Having stepped over a size too tall, the scan only lands on one whose scaled
+> extent fits the cell as well.
+
+The scaled extent is the same number 8r settles a tie with -- the face's
+ascender and descender added in design units, carried across the size, rounded
+once -- and it grows with the size, so nothing above a size that fails it can
+pass either and the scan is done.
+
+**It is a rule about stepping over, not a rule about candidates.** Courier New's
+hinted cells run fifteen pixels below its scaled ones, so requiring *every*
+candidate to pass costs `stemsize` all 238 of its records. A size reached
+without stepping over anything is taken on the table's word.
+
+That is all nine dips, on both displays and in both groups of the table.
+
+#### The second of Arial Bold Italic's, and what it took to see
+
+That dip is decisive only on a display whose pixel is not square. The table is
+one list per aspect ratio and the lists are not the same list: a square pixel
+reads the catch-all group and an EGA reads the 4:3 one, whose rows differ. In
+the catch-all a size below that dip already fits a cell of 171 exactly, so
+nothing shows; in the 4:3 group none does, and Windows answers 151 -- past it.
+
+`dipcell` is recorded on both displays, 45 records each, and both are exact.
 
 #### What a dip settles as well: the last that fits, not the best fit
 
@@ -17632,31 +17654,18 @@ So the scan keeps the last size that fits rather than the best fit, which is
 also one less thing to carry. Worth 2 records of `tiepick` and 1 of `dipcell`,
 and it costs none.
 
-#### Four readings refused
+#### Three readings refused on the way
 
-Each by count, and each would have settled the two that stop short:
+| | |
+| --- | --- |
+| give up at the first size too tall | 124 records of `hinting`, 6 of `font`, 12 of `stemstyl`, 10 of `tiepick` against 3 |
+| require *every* candidate's scaled cell to fit | `stemsize` 0 of 238 |
+| cap the scan at the size the height scales to | `stemsize` 0 of 238 |
+| start at that size and walk both ways | 1,662 of 1,697 against this scan's 1,677 |
 
-**Give up at the first size too tall.** Says both of them, and costs 124 records
-of `hinting`, 6 of `font`, 12 of `stemstyl` and 10 of `tiepick` against 3
-gained.
-
-**Require the candidate's scaled cell to fit as well.** Separates all seven that
-`tiepick` covers, and is wrong everywhere else: Courier New's hinted cell runs
-fifteen pixels below its scaled one, so the test throws away the right answer at
-almost every size. `stemsize` 0 of 238.
-
-**Cap the scan at the size the height scales to.** The same arithmetic the sizes
-below the table are answered by, rounded -- and it separates all eight, which is
-what makes it worth writing down. It fails for the same reason: 0 of 238 again.
-
-**Start at that size and walk, up while the next still fits and down until one
-does.** Reproduces all eight dips and the tie rule with them, and scores 1,662
-of the 1,697 tabulated answers against this scan's 1,677. Its misses are the
-mirror image -- it walks *over* a dip to the last of an exact tie where Windows
-takes the first.
-
-So what separates the six from the two is **not read**, and the two cells are in
-`KNOWN_GAPS` with their count.
+The second of those is the rule above with the word *stepped* taken out of it,
+and the difference between 238 records and none is the whole of what that word
+is doing.
 
 #### One glyph at one size, and where it was
 
