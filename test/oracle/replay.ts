@@ -2093,14 +2093,6 @@ export const KNOWN_GAPS: Record<string, string> = {
    * which the glyph corpus says is right for the advance, so what is wrong is
    * which extent GDI fills rather than the measuring of it. Not read.
    */
-  /* The ground behind the text, one record of `groundbx`'s 656.
-   *
-   * 8o. The rectangle is the advance run from the glyph's own left edge, united
-   * with the box the glyph is blitted into -- and Courier New's `W` at a cell
-   * of forty-four is a column wider on this side than on Windows', which is the
-   * only cell in the sweep where the two disagree at all.
-   */
-  'groundbx-vga:ground': '1 of 656 records, a column of the ground on Courier New\'s W',
 
   /* The same tie, asked of the metrics instead of the pixels.
    *

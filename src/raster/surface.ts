@@ -469,7 +469,7 @@ export class Surface {
     const stretch = font instanceof LogicalFont ? font.stretch : 1;
 
     let left = 0;
-    let right = metrics.width;
+    let right = 0;
     let pen = 0;
 
     for (const character of String(text)) {
@@ -508,6 +508,13 @@ export class Surface {
          */
         left = Math.min(left, pen + bearing);
         right = Math.max(right, pen + advance + bearing, pen + reachRight);
+      } else {
+        /* A glyph with no ink has no left edge to start from, and the rectangle
+         * is its advance. Every space in the sweep is exactly that. */
+        right = Math.max(
+          right,
+          pen + (font.outlineAdvance ? font.outlineAdvance(character.charCodeAt(0)) : metrics.width)
+        );
       }
 
       pen += font.outlineAdvance

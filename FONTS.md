@@ -17464,19 +17464,29 @@ So the rectangle **starts at the glyph's own left edge and runs the advance from
 there**, united with the box the glyph is blitted into:
 
     left  = min(pen, pen + bearing)
-    right = max(pen + advance, pen + bearing + advance, pen + bearing + width)
+    right = max(pen + bearing + advance, pen + bearing + width)
 
-A strike never needs any of it -- its glyphs are laid out in their own cells and
+and a glyph with **no ink** has no left edge to start from, so its rectangle is
+its advance from the pen. Every space in the sweep is exactly that.
+
+The advance is run from the bearing and **not** from the pen, which the last
+cell of the sweep settles on its own. Courier New's `W` at a cell of forty-four
+advances twenty-five pixels and bears minus one, and Windows paints twenty-five
+columns starting one to the left of the pen -- not twenty-six from the pen's own
+column to the glyph's right edge. Uniting the rectangle with a plain `[pen, pen
++ advance)` as well costs exactly that one record of the 656.
+
+A strike never needs any of it: its glyphs are laid out in their own cells and
 its 328 records were the advance all along.
 
-`groundbx` is **655 of 656** and `textbk` **64 of 64**. The one left is Courier
-New's `W` at a cell of forty-four, a column wider here than on Windows, and it
-is the only cell in the sweep where the two disagree at all.
+`groundbx` is **656 of 656** and `textbk` **64 of 64**.
 
 Refused, by count, each measured through the whole pipeline: the outline's
 extremes floored and ceiled rather than rounded, 536 of 656; the design advance
-rounded up, which took `textbk` backwards; and the advance run from the bearing
-*without* the union with the glyph's box, 625 of 656 and 62 of 64.
+carried across the size and rounded up, which took `textbk` backwards; the
+advance run from the bearing with no union with the glyph's box, 625 of 656 and
+62 of 64; and the advance run from the pen as well as from the bearing, 655 of
+656.
 
 ### 8p. Where the text lands, which nothing had ever moved
 
