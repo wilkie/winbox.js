@@ -110,6 +110,9 @@ export class Surface {
   declare _forecolor: any;
   declare _pen: any;
   declare _stale: any;
+
+  /** Set while `extText` draws the characters of a run one at a time. */
+  declare _runOnly: any;
   declare _view: any;
   constructor(canvas) {
     this._canvas = canvas;
@@ -401,12 +404,12 @@ export class Surface {
    * the whole advance, centre by half of it truncated, bottom moves it up by
    * the cell and baseline by the ascent.
    */
-  aligned(x, y, text) {
+  aligned(x, y, text, runWidth = null) {
     if (!this.textAlign) {
       return [x, y];
     }
 
-    const metrics = this._font.measure(text);
+    const metrics = { ...this._font.measure(text), width: runWidth ?? this._font.measure(text).width };
     const across = this.textAlign & 6;
     const down = this.textAlign & 24;
 
@@ -471,6 +474,7 @@ export class Surface {
     let left = 0;
     let right = 0;
     let pen = 0;
+    let bearing: number | null = null;
 
     for (const character of String(text)) {
       const glyph = outline.cmap.get(character.charCodeAt(0)) ?? 0;
@@ -487,11 +491,18 @@ export class Surface {
 
       if (reach.length) {
         const up = fitted.scaled ? 1 : scale;
-        const bearing = Math.round(Math.min(...reach.map((p: any) => p.x)) * up);
         const reachRight = Math.round(Math.max(...reach.map((p: any) => p.x)) * up);
-        const advance = font.outlineAdvance
-          ? font.outlineAdvance(character.charCodeAt(0))
-          : metrics.width;
+
+        /* The **first** glyph's left edge, and only that one: the rectangle
+         * starts where the run's first character starts and runs the whole
+         * run's advance from there. A two character string is what says so --
+         * Arial's `AB` at a cell of sixteen advances nine and nine and is
+         * painted over eighteen columns, not nineteen, though its `B` bears a
+         * pixel of its own.
+         */
+        if (bearing === null) {
+          bearing = Math.round(Math.min(...reach.map((p: any) => p.x)) * up);
+        }
 
         /* The rectangle starts at the glyph's own left edge where that is left
          * of the pen, and it runs the advance from *there* -- so a glyph with a
@@ -506,8 +517,8 @@ export class Surface {
          * 1, 1, 2, 3, 2, 3 and the rectangle is wider than the advance by
          * exactly those.
          */
-        left = Math.min(left, pen + bearing);
-        right = Math.max(right, pen + advance + bearing, pen + reachRight);
+        left = Math.min(left, bearing);
+        right = Math.max(right, pen + reachRight);
       } else {
         /* A glyph with no ink has no left edge to start from, and the rectangle
          * is its advance. Every space in the sweep is exactly that. */
@@ -522,11 +533,14 @@ export class Surface {
         : metrics.width;
     }
 
+    /* The run's own advance, carried from where the first glyph starts. */
+    right = Math.max(right, (bearing ?? 0) + pen);
+
     return { left, right, height: metrics.height };
   }
 
   ground(x, y, text) {
-    if (this.backMode === 1) {
+    if (this.backMode === 1 || this._runOnly) {
       return;
     }
 
@@ -536,17 +550,17 @@ export class Surface {
     this.context.fillRect(x + box.left, y, box.right - box.left, box.height);
   }
 
-  rules(x, y, text) {
+  rules(x, y, text, runWidth = null) {
     const font: any = this._font;
     const style = (font && font.style) ?? {};
 
-    if (!style.underline && !style.strikeout) {
+    if ((!style.underline && !style.strikeout) || (this._runOnly && runWidth === null)) {
       return;
     }
 
     const outline = font.outline;
     const ppem = font.ppem;
-    const width = font.measure(text).width;
+    const width = runWidth ?? font.measure(text).width;
 
     /* A strike keeps its ascent in the file rather than on the style, and a
      * stretched one has it scaled the way `GetTextMetrics` scales it -- the
@@ -606,6 +620,123 @@ export class Surface {
 
       this.context.fillRect(x, top, width, rows);
     }
+  }
+
+  /**
+   * `ExtTextOut`'s rectangle, painted in the background colour.
+   *
+   * It is painted whatever the background mode says -- `TRANSPARENT` does not
+   * stop it, which is the one thing the flag settles that the mode cannot. Its
+   * right and bottom edges are **outside** it, the way a `RECT` always is.
+   *
+   * **Recorded** by `extout`: a rectangle of (4, 2) to (40, 22) comes back as
+   * rows 2 to 21 and columns 4 to 39, under both modes.
+   */
+  paintGround(rect) {
+    this.context.fillStyle = this.backcolor.css;
+    this.context.fillRect(rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
+    this._stale = true;
+  }
+
+  /**
+   * Draws with everything outside a rectangle put back as it was.
+   *
+   * `ETO_CLIPPED` clips the whole drawing -- the ground the mode paints as well
+   * as the glyphs -- and not just the ink. **Recorded**: the same request with
+   * and without the flag differs only in that everything outside the rectangle
+   * is gone, ground included.
+   */
+  withClip(rect, draw) {
+    if (!rect) {
+      draw();
+      return;
+    }
+
+    const before = this.context.getImageData(0, 0, this.width, this.height);
+
+    draw();
+
+    const after = this.context.getImageData(0, 0, this.width, this.height);
+
+    for (let row = 0; row < this.height; row++) {
+      for (let column = 0; column < this.width; column++) {
+        if (
+          column >= rect.left &&
+          column < rect.right &&
+          row >= rect.top &&
+          row < rect.bottom
+        ) {
+          continue;
+        }
+
+        const at = (row * this.width + column) * 4;
+
+        for (let byte = 0; byte < 4; byte++) {
+          after.data[at + byte] = before.data[at + byte];
+        }
+      }
+    }
+
+    this.context.putImageData(after, 0, 0);
+    this._stale = true;
+  }
+
+  /**
+   * One run of text with the pen moved by an array of advances.
+   *
+   * `ExtTextOut`'s last argument is one distance per character, and each is
+   * what the pen moves by after that character rather than what the character
+   * advances -- so the last of them is never used. The ground behind the run
+   * and any rule under it run from the pen to the last character's own
+   * advance past its own pen, which is to say the array decides where the
+   * characters are and the font decides how far the run reaches.
+   *
+   * `SetTextCharacterExtra` is **added to** each of them rather than replaced
+   * by them: three pixels of extra against an array of twenty puts the second
+   * character twenty-three across.
+   *
+   * **Recorded** by `extout`, on a strike, an outline face and a fixed-pitch
+   * outline face.
+   */
+  extText(x, y, text, dx) {
+    const characters = [...String(text)];
+
+    if (!dx || characters.length === 0) {
+      this.fillText(x, y, text);
+      return;
+    }
+
+    const steps = characters.map((character, index) =>
+      index === characters.length - 1
+        ? this._font.measure(character).width
+        : dx[index] + this.charExtra
+    );
+
+    const width = steps.reduce((total, step) => total + step, 0);
+
+    [x, y] = this.aligned(x, y, text, width);
+
+    const height = this._font.measure(text).height;
+
+    if (this.backMode !== 1) {
+      this.context.fillStyle = this.backcolor.css;
+      this.context.fillRect(x, y, width, height);
+    }
+
+    this._runOnly = true;
+
+    let pen = x;
+
+    for (let index = 0; index < characters.length; index++) {
+      this.fillText(pen, y, characters[index]);
+      pen += steps[index];
+    }
+
+    this._runOnly = false;
+
+    this.rules(x, y, text, width);
+
+    this._stale = true;
   }
 
   fillText(x, y, text) {

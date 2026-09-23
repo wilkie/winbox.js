@@ -17488,6 +17488,62 @@ advance run from the bearing with no union with the glyph's box, 625 of 656 and
 62 of 64; and the advance run from the pen as well as from the bearing, 655 of
 656.
 
+### 8t. `ExtTextOut`, which nothing had ever called
+
+The corpus drew all its text with `TextOut`, and `ExtTextOut` is the same call
+with the three arguments `TextOut` has not got: a rectangle, two flags that say
+what to do with it, and an array of distances one per character. On this side it
+was a **stub in the export table** -- a program that called it got nothing.
+
+`oracle/probes/extout.c` draws two characters through both calls at every
+combination of those, on a strike, an outline face and a fixed-pitch outline
+face, and writes every argument into the record so the replay does not have to
+carry a copy of the table.
+
+#### `TextOut` is this call with nothing passed
+
+`ExtTextOut` with no flags, no rectangle and no array comes back **pixel for
+pixel identical** to `TextOut` at the same place, under both background modes.
+So the ground behind the text is the mode's doing and not the flag's, and
+everything 8o measured carries over unchanged.
+
+#### The rectangle, and the two flags
+
+| | |
+| --- | --- |
+| passed with neither flag | **not read at all** -- the drawing is the plain one |
+| `ETO_OPAQUE` | filled with the background colour first, and the mode's own ground painted over it afterwards |
+| `ETO_OPAQUE` under `TRANSPARENT` | **still filled** -- the flag decides, not the mode |
+| `ETO_OPAQUE` with a null rectangle | nothing extra; the plain drawing |
+| `ETO_CLIPPED` | nothing outside it is drawn, **the ground included** |
+
+and its right and bottom edges are outside it, the way a `RECT` always is: (4,
+2) to (40, 22) comes back as rows 2 to 21 and columns 4 to 39.
+
+#### The array is what the pen moves by
+
+Not what the character advances -- so its last entry is never used for placing
+anything. Twenty and twenty puts the second character twenty across; four and
+four overlaps them; nought and nought draws them on top of each other.
+
+And `SetTextCharacterExtra` is **added to** each entry rather than replaced by
+it: three pixels of extra against an array of twenty puts the second character
+twenty-three across.
+
+#### What is left
+
+Seven records of the fifty-one, and they are 8o's question in a new place: the
+opaque ground behind a **run** of an outline face. Arial's `AB` at a cell of
+sixteen advances nine and nine and is painted over eighteen columns; Courier
+New's at twenty advances ten and ten and is painted over **nineteen**. And an
+advance array makes the two kinds of face differ from each other -- MS Sans
+Serif with twenty and twenty is painted over twenty-nine, which is the pens and
+the last glyph's own advance, and Courier New over forty, which is the array's
+own sum.
+
+8o's rule came from `groundbx`: one character, four faces, every cell from eight
+to forty-eight. The run wants the same sweep, and seven records are not it.
+
 ### 8p. Where the text lands, which nothing had ever moved
 
 `SetTextAlign` says what the point handed to `TextOut` means -- left, centre or

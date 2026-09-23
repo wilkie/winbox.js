@@ -1,0 +1,320 @@
+{
+  "probe": "extout",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "cell",
+      "args": "\"MS Sans Serif\",h=16,textout,mode=2,dark=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"MS Sans Serif\",h=16,textout,mode=1,dark=1",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7c0fffffffffffff7df7fffffffffffebdf7fffffffffffebdf7fffffffffffddc0ffffffffffffdddf7fffffffffff80df7fffffffffffbedf7fffffffffff7f5f7fffffffffff7f40ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"MS Sans Serif\",h=16,plain,opt=0,rect=0:0:0:0,use=0,mode=2,dark=1,extra=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"MS Sans Serif\",h=16,plain,opt=0,rect=0:0:0:0,use=0,mode=1,dark=1,extra=0",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7c0fffffffffffff7df7fffffffffffebdf7fffffffffffebdf7fffffffffffddc0ffffffffffffdddf7fffffffffff80df7fffffffffffbedf7fffffffffff7f5f7fffffffffff7f40ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"MS Sans Serif\",h=16,rect-noflag,opt=0,rect=4:2:40:22,use=1,mode=2,dark=1,extra=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"MS Sans Serif\",h=16,opaque-big,opt=2,rect=4:2:40:22,use=1,mode=2,dark=1,extra=0",
+      "result": "fffffffffffffffffffffffffffffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"MS Sans Serif\",h=16,opaque-small,opt=2,rect=10:6:20:14,use=1,mode=2,dark=1,extra=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"MS Sans Serif\",h=16,clipped,opt=4,rect=10:6:20:14,use=1,mode=2,dark=1,extra=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"MS Sans Serif\",h=16,both,opt=6,rect=10:6:20:14,use=1,mode=2,dark=1,extra=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"MS Sans Serif\",h=16,opaque-transparent,opt=2,rect=4:2:40:22,use=1,mode=1,dark=1,extra=0",
+      "result": "fffffffffffffffffffffffffffffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"MS Sans Serif\",h=16,opaque-norect,opt=2,rect=0:0:0:0,use=0,mode=2,dark=1,extra=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"MS Sans Serif\",h=16,dx-wide,opt=0,rect=0:0:0:0,use=0,mode=1,dark=1,extra=0,dx=20:20",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fff81ffffffffff7fffbefffffffffebfffbefffffffffebfffbefffffffffddfff81fffffffffddfffbefffffffff80fffbefffffffffbefffbefffffffff7f7ffbefffffffff7f7ff81fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"MS Sans Serif\",h=16,dx-narrow,opt=0,rect=0:0:0:0,use=0,mode=1,dark=1,extra=0,dx=4:4",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01ffffffffffffff3efffffffffffffebefffffffffffffebefffffffffffffd81fffffffffffffd9efffffffffffff80efffffffffffffbaefffffffffffff7b6fffffffffffff781fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"MS Sans Serif\",h=16,dx-nought,opt=0,rect=0:0:0:0,use=0,mode=1,dark=1,extra=0,dx=0:0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff81ffffffffffffffb6ffffffffffffffaaffffffffffffffaaffffffffffffff81ffffffffffffff9cffffffffffffff80ffffffffffffffbeffffffffffffff3e7fffffffffffff017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"MS Sans Serif\",h=16,dx-wide-opaque,opt=0,rect=0:0:0:0,use=0,mode=2,dark=1,extra=0,dx=20:20",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000007ffffffff00000007ffffffff00000007ffffffff00000007ffffffff00000007ffffffff00000007ffffffff00000007ffffffff00000007ffffffff00000007ffffffff00000007ffffffff00000007ffffffff00000007ffffffff00000007ffffffff00000007ffffffff00000007ffffffff00000007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"MS Sans Serif\",h=16,dx-wide-extra,opt=0,rect=0:0:0:0,use=0,mode=1,dark=1,extra=3,dx=20:20",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffff03fffffffff7ffff7dffffffffebffff7dffffffffebffff7dffffffffddffff03ffffffffddffff7dffffffff80ffff7dffffffffbeffff7dffffffff7f7fff7dffffffff7f7fff03ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"MS Sans Serif\",h=16,extra,opt=0,rect=0:0:0:0,use=0,mode=1,dark=1,extra=3",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f81ffffffffffff7fbefffffffffffebfbefffffffffffebfbefffffffffffddf81fffffffffffddfbefffffffffff80fbefffffffffffbefbefffffffffff7f7befffffffffff7f781fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Arial\",h=16,textout,mode=2,dark=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Arial\",h=16,textout,mode=1,dark=1",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7c0ffffffffffffebdf7fffffffffffebdf7fffffffffffebdf7fffffffffffddc0ffffffffffffdddf7fffffffffff80df7fffffffffffbedf7fffffffffff7f5f7fffffffffff7f40ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Arial\",h=16,plain,opt=0,rect=0:0:0:0,use=0,mode=2,dark=1,extra=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Arial\",h=16,plain,opt=0,rect=0:0:0:0,use=0,mode=1,dark=1,extra=0",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7c0ffffffffffffebdf7fffffffffffebdf7fffffffffffebdf7fffffffffffddc0ffffffffffffdddf7fffffffffff80df7fffffffffffbedf7fffffffffff7f5f7fffffffffff7f40ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Arial\",h=16,rect-noflag,opt=0,rect=4:2:40:22,use=1,mode=2,dark=1,extra=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffff00003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Arial\",h=16,opaque-big,opt=2,rect=4:2:40:22,use=1,mode=2,dark=1,extra=0",
+      "result": "fffffffffffffffffffffffffffffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Arial\",h=16,opaque-small,opt=2,rect=10:6:20:14,use=1,mode=2,dark=1,extra=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Arial\",h=16,clipped,opt=4,rect=10:6:20:14,use=1,mode=2,dark=1,extra=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Arial\",h=16,both,opt=6,rect=10:6:20:14,use=1,mode=2,dark=1,extra=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Arial\",h=16,opaque-transparent,opt=2,rect=4:2:40:22,use=1,mode=1,dark=1,extra=0",
+      "result": "fffffffffffffffffffffffffffffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Arial\",h=16,opaque-norect,opt=2,rect=0:0:0:0,use=0,mode=2,dark=1,extra=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffff00007fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Arial\",h=16,dx-wide,opt=0,rect=0:0:0:0,use=0,mode=1,dark=1,extra=0,dx=20:20",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7fff81fffffffffebfffbefffffffffebfffbefffffffffebfffbefffffffffddfff81fffffffffddfffbefffffffff80fffbefffffffffbefffbefffffffff7f7ffbefffffffff7f7ff81fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Arial\",h=16,dx-narrow,opt=0,rect=0:0:0:0,use=0,mode=1,dark=1,extra=0,dx=4:4",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff01fffffffffffffebefffffffffffffebefffffffffffffebefffffffffffffd81fffffffffffffd9efffffffffffff80efffffffffffffbaefffffffffffff7b6fffffffffffff781fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Arial\",h=16,dx-nought,opt=0,rect=0:0:0:0,use=0,mode=1,dark=1,extra=0,dx=0:0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff81ffffffffffffffaaffffffffffffffaaffffffffffffffaaffffffffffffff81ffffffffffffff9cffffffffffffff80ffffffffffffffbeffffffffffffff3e7fffffffffffff017fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Arial\",h=16,dx-wide-opaque,opt=0,rect=0:0:0:0,use=0,mode=2,dark=1,extra=0,dx=20:20",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Arial\",h=16,dx-wide-extra,opt=0,rect=0:0:0:0,use=0,mode=1,dark=1,extra=3,dx=20:20",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7ffff03ffffffffebffff7dffffffffebffff7dffffffffebffff7dffffffffddffff03ffffffffddffff7dffffffff80ffff7dffffffffbeffff7dffffffff7f7fff7dffffffff7f7fff03ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Arial\",h=16,extra,opt=0,rect=0:0:0:0,use=0,mode=1,dark=1,extra=3",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff7f81fffffffffffebfbefffffffffffebfbefffffffffffebfbefffffffffffddf81fffffffffffddfbefffffffffff80fbefffffffffffbefbefffffffffff7f7befffffffffff7f781fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Courier New\",h=20,textout,mode=2,dark=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Courier New\",h=20,textout,mode=1,dark=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff83e07ffffffffffff3f7bfffffffffffedf7bfffffffffffedf7bfffffffffffedf07fffffffffffdef7bfffffffffffc0f7dfffffffffffdef7dfffffffffffbf77dfffffffffff1e203fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Courier New\",h=20,plain,opt=0,rect=0:0:0:0,use=0,mode=2,dark=1,extra=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Courier New\",h=20,plain,opt=0,rect=0:0:0:0,use=0,mode=1,dark=1,extra=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff83e07ffffffffffff3f7bfffffffffffedf7bfffffffffffedf7bfffffffffffedf07fffffffffffdef7bfffffffffffc0f7dfffffffffffdef7dfffffffffffbf77dfffffffffff1e203fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Courier New\",h=20,rect-noflag,opt=0,rect=4:2:40:22,use=1,mode=2,dark=1,extra=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffff00000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Courier New\",h=20,opaque-big,opt=2,rect=4:2:40:22,use=1,mode=2,dark=1,extra=0",
+      "result": "fffffffffffffffffffffffffffffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000ffffffff00001fffffffffff00001fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Courier New\",h=20,opaque-small,opt=2,rect=10:6:20:14,use=1,mode=2,dark=1,extra=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Courier New\",h=20,clipped,opt=4,rect=10:6:20:14,use=1,mode=2,dark=1,extra=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Courier New\",h=20,both,opt=6,rect=10:6:20:14,use=1,mode=2,dark=1,extra=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffc00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Courier New\",h=20,opaque-transparent,opt=2,rect=4:2:40:22,use=1,mode=1,dark=1,extra=0",
+      "result": "fffffffffffffffffffffffffffffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000fffffff000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Courier New\",h=20,opaque-norect,opt=2,rect=0:0:0:0,use=0,mode=2,dark=1,extra=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffff00001fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Courier New\",h=20,dx-wide,opt=0,rect=0:0:0:0,use=0,mode=1,dark=1,extra=0,dx=20:20",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff83fff81ffffffffff3fffdefffffffffedfffdefffffffffedfffdefffffffffedfffc1fffffffffdefffdefffffffffc0fffdf7ffffffffdefffdf7ffffffffbf7ffdf7ffffffff1e3ff80fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Courier New\",h=20,dx-narrow,opt=0,rect=0:0:0:0,use=0,mode=1,dark=1,extra=0,dx=4:4",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff801ffffffffffffff1efffffffffffffedefffffffffffffedefffffffffffffec1fffffffffffffdcefffffffffffffc0f7ffffffffffffdcf7ffffffffffffbd77ffffffffffff180fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Courier New\",h=20,dx-nought,opt=0,rect=0:0:0:0,use=0,mode=1,dark=1,extra=0,dx=0:0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff81ffffffffffffffd2ffffffffffffffccffffffffffffffccffffffffffffffc1ffffffffffffffdeffffffffffffffc07fffffffffffffde7fffffffffffff9f7fffffffffffff003fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Courier New\",h=20,dx-wide-opaque,opt=0,rect=0:0:0:0,use=0,mode=2,dark=1,extra=0,dx=20:20",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffff0000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Courier New\",h=20,dx-wide-extra,opt=0,rect=0:0:0:0,use=0,mode=1,dark=1,extra=3,dx=20:20",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff83ffff03fffffffff3ffffbdffffffffedffffbdffffffffedffffbdffffffffedffff83ffffffffdeffffbdffffffffc0ffffbeffffffffdeffffbeffffffffbf7fffbeffffffff1e3fff01ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    },
+    {
+      "function": "cell",
+      "args": "\"Courier New\",h=20,extra,opt=0,rect=0:0:0:0,use=0,mode=1,dark=1,extra=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff83fc0ffffffffffff3fef7ffffffffffedfef7ffffffffffedfef7ffffffffffedfe0fffffffffffdefef7ffffffffffc0fefbffffffffffdefefbffffffffffbf7efbffffffffff1e3c07ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "ExtTextOut: the rectangle, the flags and the advance array"
+    }
+  ]
+}

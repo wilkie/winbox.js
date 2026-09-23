@@ -601,6 +601,47 @@ export class Context {
   }
 
   /**
+   * One `ExtTextOut`, or the `TextOut` it is compared against, into a cell
+   * sixty-four by forty-eight. 8t.
+   *
+   * The probe writes every argument of the call into the record, so this only
+   * has to hand them on.
+   */
+  drawExt(font: any, call: any) {
+    const surface: any = Surface.offscreen(64, 48);
+
+    surface.font = font;
+    surface.backcolor = call.dark ? new Color(0x00, 0x00, 0x00) : new Color(0xff, 0xff, 0xff);
+    surface.backMode = call.mode;
+    surface.charExtra = call.extra ?? 0;
+    surface.context.lineTie = this.display.lineTie;
+    surface.context.clipCaps = this.display.clipCaps;
+    surface.boldOverhang = this.display.boldOverhang;
+
+    surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
+    surface.fillRect(0, 0, 64, 48);
+
+    const text = 'AB';
+    const pen = [8, 4];
+
+    if (call.textout) {
+      surface.fillText(pen[0], pen[1], text);
+    } else {
+      const rect = call.use ? call.rect : null;
+
+      if (rect && call.options & 0x0002) {
+        surface.paintGround(rect);
+      }
+
+      surface.withClip(rect && call.options & 0x0004 ? rect : null, () => {
+        surface.extText(pen[0], pen[1], text, call.dx ?? null);
+      });
+    }
+
+    return this.readCell(surface, 64, 48);
+  }
+
+  /**
    * A whole path, drawn as a chain of `LineTo` calls, into the same cell.
    *
    * Deliberately *not* a polyline in the sense `Surface.strokeText` means: this
@@ -675,12 +716,12 @@ export class Context {
   }
 
   /** The cell as the probes write it: one bit a pixel, white set. */
-  readCell(surface: any, cell = 32) {
+  readCell(surface: any, cell = 32, rows = cell) {
     const pixels = surface.context.pixels;
 
     let hex = '';
 
-    for (let row = 0; row < cell; row++) {
+    for (let row = 0; row < rows; row++) {
       for (let group = 0; group < cell / 8; group++) {
         let byte = 0;
 
@@ -1472,6 +1513,56 @@ const ADAPTERS: Record<
     );
   },
 
+  /* `extout` draws two characters through `ExtTextOut` at every combination of
+   * its rectangle, its flags and its advance array, and through `TextOut` as
+   * the control. Every argument is in the record. 8t.
+   */
+  cell(context, args) {
+    if (!context.fonts) {
+      throw new NeedsDrive('the fonts live on the drive image; run the oracle pipeline');
+    }
+
+    const fields: Record<string, string> = {};
+
+    for (const field of args.slice(1)) {
+      const [name, value] = String(field).split('=');
+
+      if (value !== undefined) {
+        fields[name] = value;
+      }
+    }
+
+    const handle = CreateFontIndirect.call(context, {
+      lfHeight: Number(fields.h ?? 0),
+      lfWidth: 0,
+      lfWeight: 400,
+      lfItalic: 0,
+      lfCharSet: 0,
+      lfUnderline: 0,
+      lfStrikeOut: 0,
+      lfFaceName: String(args[0]),
+    });
+
+    if (!handle) {
+      throw new Unimplemented('no font mapped');
+    }
+
+    const rect = String(fields.rect ?? '0:0:0:0')
+      .split(':')
+      .map(Number);
+
+    return context.drawExt(context.handles.resolve(handle), {
+      textout: args.slice(1).includes('textout'),
+      options: Number(fields.opt ?? 0),
+      use: Number(fields.use ?? 0),
+      rect: { left: rect[0], top: rect[1], right: rect[2], bottom: rect[3] },
+      mode: Number(fields.mode ?? 2),
+      dark: Number(fields.dark ?? 0),
+      extra: Number(fields.extra ?? 0),
+      dx: fields.dx ? String(fields.dx).split(':').map(Number) : null,
+    });
+  },
+
   /* `groundbx` draws one character in the background's own colour, so the
    * glyph adds nothing and the rectangle is all that comes back. 8o.
    */
@@ -2055,6 +2146,27 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* `ExtTextOut`'s ground behind a **run**, which is 8o's question again.
+   *
+   * 8t settles the call itself: the flags, the rectangle's edges, the clip and
+   * the advance array all reproduce. The seven left are the opaque ground
+   * behind two characters of an outline face, where the width 8o measured on
+   * single characters does not carry over --
+   *
+   *     Arial `AB` at a cell of 16    advances 9 and 9, painted over 18
+   *     Courier New `AB` at 20        advances 10 and 10, painted over 19
+   *
+   * -- and where an advance array makes a strike and an outline face differ
+   * from each other: MS Sans Serif with 20 and 20 is painted over 29, which is
+   * the pens and the last glyph's own advance, and Courier New over 40, which
+   * is the array's own sum.
+   *
+   * 8o's rule came from `groundbx`, a sweep of one character over four faces
+   * and every cell from eight to forty-eight. The run wants the same treatment
+   * and seven records are not it.
+   */
+  'extout-vga:cell': '7 of 51 records, the ground behind a run of an outline face',
+
 
   /* The styled files at cells of two hundred and seventy-four to two hundred
    * and eighty-two, where the size chosen is one pixel per em out.

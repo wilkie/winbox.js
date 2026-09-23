@@ -71,6 +71,7 @@ import { SetTextCharacterExtra } from './gdi/SetTextCharacterExtra.js';
 import { SetPixel } from './gdi/SetPixel.js';
 import { SetTextColor } from './gdi/SetTextColor.js';
 import { TextOut } from './gdi/TextOut.js';
+import { ExtTextOut } from './gdi/ExtTextOut.js';
 
 /**
  * The Win16 GDI library.
@@ -543,7 +544,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'SetMapperFlags', 6],
       // 350 //
       [GetCharWidth, 'GetCharWidth', 10, [HDC, UINT, UINT, FARPTR], BOOL],
-      [Gdi.stub, 'ExtTextOut', 22],
+      [ExtTextOut, 'ExtTextOut', 22, [HDC, INT, INT, UINT, FARPTR, LPCSTR, UINT, FARPTR], BOOL],
       [Gdi.stub, 'GetPhysicalFontHandle', 2],
       [Gdi.stub, 'GetAspectRatioFilter', 2],
       [Gdi.stub, 'ShrinkGDIHeap', 0],
