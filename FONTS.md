@@ -17440,36 +17440,43 @@ font file unscaled, so MS Sans Serif asked for a cell of 26 -- the 13 pixel
 strike doubled -- answered 7 for `A` where Windows answers 14. The extent beside
 it was right all along, because that path scales. `groundw` is **820 of 820**.
 
-#### What is left, stated properly
+#### The advance, run from the glyph's own left edge
 
-Not "a column". Over all 656, the rectangle's width against what
-`GetTextExtent` answers for the same request:
+The rectangle is wider than the advance and the union with the glyph's ink box
+accounts for only part of it. What accounts for the rest is the **bearing**, and
+the scaler says so itself: 8k found the bitmap's bearing, width and height in
+its buffer, in whole pixels and again in sixty-fourths, and
+`oracle/probes/groundsc.c` points that instrument at the cells this could not
+explain.
 
-| wider by | 0 | 1 | 2 | 3 | 4 |
-| --- | --- | --- | --- | --- | --- |
-| records | **529** | 54 | 53 | 16 | 4 |
+| Arial's `l`, cell | 12 | 13 | 14 | 15 | 21 | 27 | 43 | 45 | 47 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| advance | 2 | 2 | 2 | 3 | 4 | 6 | 9 | 8 | 10 |
+| the scaler's bearing | 0 | 1 | 0 | 1 | 1 | 2 | 3 | 2 | 3 |
+| the rectangle | **2** | **3** | **2** | **4** | **5** | **8** | **12** | **10** | **13** |
 
-Never narrower, never a strike, and never a **space** -- a glyph with no ink is
-the extent at all 82 of its cells. The excess gathers on the glyphs whose ink is
-narrow against their advance: Arial's `l` at 35 of its 41 cells and Courier
-New's at all 41, against Arial's `A` at 6 and its `W` at 3.
+The advance plus the bearing, at all nine -- and that is what the narrow letters
+were short of. They are the ones that show it because a bearing is the only
+thing that widens them: their ink reaches nowhere near their advance, so the
+box never decides.
 
-And it does not grow smoothly with the size. Arial's `l` wants the extent plus
-three at 38 pixels per em, plus two at 40 and plus three at 41 -- so whatever
-sets it is decided by the **fitting**, not by arithmetic on the size.
+So the rectangle **starts at the glyph's own left edge and runs the advance from
+there**, united with the box the glyph is blitted into:
 
-So the rectangle is not the string's extent. `groundw` proves that on its own:
-at Arial's cell of 27 the extent of `l` is 6, `GetCharWidth` says 6, and the
-rectangle is 8. It is the box the glyph is **blitted** into, and the union with
-the fitted outline's extremes gets 565 of the 656 -- every case where the ink
-reaches past the advance, which is what Courier New's serifs and Arial's
-diagonals do. What the box is for a glyph whose ink reaches nowhere near its
-advance is **not read**.
+    left  = min(pen, pen + bearing)
+    right = max(pen + advance, pen + bearing + advance, pen + bearing + width)
+
+A strike never needs any of it -- its glyphs are laid out in their own cells and
+its 328 records were the advance all along.
+
+`groundbx` is **655 of 656** and `textbk` **64 of 64**. The one left is Courier
+New's `W` at a cell of forty-four, a column wider here than on Windows, and it
+is the only cell in the sweep where the two disagree at all.
 
 Refused, by count, each measured through the whole pipeline: the outline's
-extremes **floored and ceiled** rather than rounded, 536 of 656 against 565; the
-design advance carried across the size and **rounded up**, which fixes Courier
-New at a cell of twelve and takes `textbk` from 63 to 61.
+extremes floored and ceiled rather than rounded, 536 of 656; the design advance
+rounded up, which took `textbk` backwards; and the advance run from the bearing
+*without* the union with the glyph's box, 625 of 656 and 62 of 64.
 
 ### 8p. Where the text lands, which nothing had ever moved
 

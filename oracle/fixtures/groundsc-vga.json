@@ -1,0 +1,829 @@
+{
+  "probe": "groundsc",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "census",
+      "args": "all",
+      "result": "blocks=228"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=10,'l',114,+1540",
+      "result": "621500000000433a5c57494e444f57535c53595354454d5c415249414c2e5454",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=10,'l',114,+1560",
+      "result": "46003e15e71b00000000000000001016e317e317ef1bb726be3b363cda3dd814",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=10,'l',114,+1580",
+      "result": "00006f000000000000000a6a01004e000000000000000000c80aff147800a401",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=10,'l',114,+15a0",
+      "result": "0000520073040000000000000000000000000000000000000000000000000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=10,'l',114,+15c0",
+      "result": "0000000000001f00000000000000020000001e00be3b0400020000001d001e00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=10,'l',114,+15e0",
+      "result": "80000000400780070000000001000200eb24a325ef21fd215b26df28d8146f00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=10,'l',114,+1600",
+      "result": "040037003700000000000000e0000000d8140000962e2001520001006e15001d",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=10,'l',114,+1620",
+      "result": "fff9000000004321632103212321c320e3208321bf20c120ad20eb24a3257b23",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=10,'l',114,+1640",
+      "result": "33240b22c3225b26ef21fd2193214321632103212321c320e3208321bf20c120",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=12,'l',114,+1540",
+      "result": "621500000000433a5c57494e444f57535c53595354454d5c415249414c2e5454",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=12,'l',114,+1560",
+      "result": "46003e15e71b00000000000000001016e317e317ef1bb726be3bda3b203cd814",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=12,'l',114,+1580",
+      "result": "00006c000000000000000a6a01004e000000000000000000c80aff141c004600",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=12,'l',114,+15a0",
+      "result": "0a004f0073040000000000000000000000000000000000000000000000000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=12,'l',114,+15c0",
+      "result": "0000000000000200000000000000000000000700be3b04000000000001000700",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=12,'l',114,+15e0",
+      "result": "000000004000c0010000000001000100eb24a325ef21fd215b26df28d8146c00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=12,'l',114,+1600",
+      "result": "040009000900000000000000e0000000d8140000962e20014f0001006e15001d",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=12,'l',114,+1620",
+      "result": "fff9000000004321632103212321c320e3208321bf20c120ad20eb24a3257b23",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=12,'l',114,+1640",
+      "result": "33240b22c3225b26ef21fd2193214321632103212321c320e3208321bf20c120",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=13,'l',114,+1540",
+      "result": "621500000000433a5c57494e444f57535c53595354454d5c415249414c2e5454",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=13,'l',114,+1560",
+      "result": "46003e15e71b00000000000000001016e317e317ef1bb726be3bda3b203cd814",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=13,'l',114,+1580",
+      "result": "00006c000000000000000a6a01004e000000000000000000c80aff141c004600",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=13,'l',114,+15a0",
+      "result": "0a004f0073040000000000000000000000000000000000000000000000000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=13,'l',114,+15c0",
+      "result": "0000000000000200000000000000010000000700be3b04000100000002000700",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=13,'l',114,+15e0",
+      "result": "400000008000c0010000000001000100eb24a325ef21fd215b26df28d8146c00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=13,'l',114,+1600",
+      "result": "04000a000a00000000000000e0000000d8140000962e20014f0001006e15001d",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=13,'l',114,+1620",
+      "result": "fff9000000004321632103212321c320e3208321bf20c120ad20eb24a3257b23",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=13,'l',114,+1640",
+      "result": "33240b22c3225b26ef21fd2193214321632103212321c320e3208321bf20c120",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=14,'l',114,+1540",
+      "result": "621500000000433a5c57494e444f57535c53595354454d5c415249414c2e5454",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=14,'l',114,+1560",
+      "result": "46003e15e71b00000000000000001016e317e317ef1bb726be3bde3b2e3cd814",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=14,'l',114,+1580",
+      "result": "00006c000000000000000a6a01004e000000000000000000c80aff1420005000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=14,'l',114,+15a0",
+      "result": "0a004f0073040000000000000000000000000000000000000000000000000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=14,'l',114,+15c0",
+      "result": "0000000000000200000000000000000000000800be3b04000000000001000800",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=14,'l',114,+15e0",
+      "result": "00000000400000020000000001000100eb24a325ef21fd215b26df28d8146c00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=14,'l',114,+1600",
+      "result": "04000b000b00000084d30000e0000000d8140000962e20014f0001006e15001d",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=14,'l',114,+1620",
+      "result": "fff9000000004321632103212321c320e3208321bf20c120ad20eb24a3257b23",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=14,'l',114,+1640",
+      "result": "33240b22c3225b26ef21fd2193214321632103212321c320e3208321bf20c120",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=15,'l',114,+1540",
+      "result": "621500000000433a5c57494e444f57535c53595354454d5c415249414c2e5454",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=15,'l',114,+1560",
+      "result": "46003e15e71b00000000000000001016e317e317ef1bb726be3be23b3c3cd814",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=15,'l',114,+1580",
+      "result": "00006c000000000000000a6a01004e000000000000000000c80aff1424005a00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=15,'l',114,+15a0",
+      "result": "0a004f0073040000000000000000000000000000000000000000000000000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=15,'l',114,+15c0",
+      "result": "0000000000000300000000000000010000000900be3b04000100000002000900",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=15,'l',114,+15e0",
+      "result": "40000000800040020000000001000100eb24a325ef21fd215b26df28d8146c00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=15,'l',114,+1600",
+      "result": "04000c000c00000064d40000e0000000d8140000962e20014f0001006e15001d",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=15,'l',114,+1620",
+      "result": "fff9000000004321632103212321c320e3208321bf20c120ad20eb24a3257b23",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=15,'l',114,+1640",
+      "result": "33240b22c3225b26ef21fd2193214321632103212321c320e3208321bf20c120",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=21,'l',114,+1540",
+      "result": "621500000000433a5c57494e444f57535c53595354454d5c415249414c2e5454",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=21,'l',114,+1560",
+      "result": "46003e15e71b00000000000000001016e317e317ef1bb726be3bf23b743cd814",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=21,'l',114,+1580",
+      "result": "00006c000000000000000a6a01004e000000000000000000c80aff1434008200",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=21,'l',114,+15a0",
+      "result": "00004f0073040000000000000000000000000000000000000000000000000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=21,'l',114,+15c0",
+      "result": "0000000000000400000000000000010000000d00be3b04000100000003000d00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=21,'l',114,+15e0",
+      "result": "40000000c00040030000000001000100eb24a325ef21fd215b26df28d8146c00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=21,'l',114,+1600",
+      "result": "040012001200000000000000e0000000d8140000962e20014f0001006e15001d",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=21,'l',114,+1620",
+      "result": "fff9000000004321632103212321c320e3208321bf20c120ad20eb24a3257b23",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=21,'l',114,+1640",
+      "result": "33240b22c3225b26ef21fd2193214321632103212321c320e3208321bf20c120",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=27,'l',114,+1540",
+      "result": "621500000000433a5c57494e444f57535c53595354454d5c415249414c2e5454",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=27,'l',114,+1560",
+      "result": "46003e15e71b00000000000000001016e317e317ef1bb726be3b023cac3cd814",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=27,'l',114,+1580",
+      "result": "00006c000000000000000a6a01004e000000000000000000c80aff144400aa00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=27,'l',114,+15a0",
+      "result": "00004f0073040000000000000000000000000000000000000000000000000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=27,'l',114,+15c0",
+      "result": "0000000000000600000000000000020000001100be3b04000200000004001100",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=27,'l',114,+15e0",
+      "result": "80000000000140040000000001000100eb24a325ef21fd215b26df28d8146c00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=27,'l',114,+1600",
+      "result": "040018001800000084da0000e0000000d8140000962e20014f0001006e15001d",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=27,'l',114,+1620",
+      "result": "fff9000000004321632103212321c320e3208321bf20c120ad20eb24a3257b23",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=27,'l',114,+1640",
+      "result": "33240b22c3225b26ef21fd2193214321632103212321c320e3208321bf20c120",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=43,'l',114,+1540",
+      "result": "621500000000433a5c57494e444f57535c53595354454d5c415249414c2e5454",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=43,'l',114,+1560",
+      "result": "46003e15e71b00000000000000001016e317e317ef1bb726be3b2a3c383dd814",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=43,'l',114,+1580",
+      "result": "00006c000000000000000a6a01004e000000000000000000c80aff146c000e01",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=43,'l',114,+15a0",
+      "result": "00004f0073040000000000000000000000000000000000000000000000000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=43,'l',114,+15c0",
+      "result": "0000000000000900000000000000030000001b00be3b04000300000006001b00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=43,'l',114,+15e0",
+      "result": "c00000008001c0060000000001000100eb24a325ef21fd215b26df28d8146c00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=43,'l',114,+1600",
+      "result": "040026002600000000000000e0000000d8140000962e20014f0001006e15001d",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=43,'l',114,+1620",
+      "result": "fff9000000004321632103212321c320e3208321bf20c120ad20eb24a3257b23",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=43,'l',114,+1640",
+      "result": "33240b22c3225b26ef21fd2193214321632103212321c320e3208321bf20c120",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=45,'l',114,+1540",
+      "result": "621500000000433a5c57494e444f57535c53595354454d5c415249414c2e5454",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=45,'l',114,+1560",
+      "result": "46003e15e71b00000000000000001016e317e317ef1bb726be3b323c543dd814",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=45,'l',114,+1580",
+      "result": "00006c000000000000000a6a01004e000000000000000000c80aff1474002201",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=45,'l',114,+15a0",
+      "result": "00004f0073040000000000000000000000000000000000000000000000000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=45,'l',114,+15c0",
+      "result": "0000000000000800000000000000020000001d00be3b04000200000006001d00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=45,'l',114,+15e0",
+      "result": "80000000800140070000000001000100eb24a325ef21fd215b26df28d8146c00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=45,'l',114,+1600",
+      "result": "040028002800000000000000e0000000d8140000962e20014f0001006e15001d",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=45,'l',114,+1620",
+      "result": "fff9000000004321632103212321c320e3208321bf20c120ad20eb24a3257b23",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=45,'l',114,+1640",
+      "result": "33240b22c3225b26ef21fd2193214321632103212321c320e3208321bf20c120",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=47,'l',114,+1540",
+      "result": "621500000000433a5c57494e444f57535c53595354454d5c415249414c2e5454",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=47,'l',114,+1560",
+      "result": "46003e15e71b00000000000000001016e317e317ef1bb726be3b363c623dd814",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=47,'l',114,+1580",
+      "result": "00006c000000000000000a6a01004e000000000000000000c80aff1478002c01",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=47,'l',114,+15a0",
+      "result": "00004f0073040000000000000000000000000000000000000000000000000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=47,'l',114,+15c0",
+      "result": "0000000000000a00000000000000030000001e00be3b04000300000007001e00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=47,'l',114,+15e0",
+      "result": "c0000000c00180070000000001000100eb24a325ef21fd215b26df28d8146c00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=47,'l',114,+1600",
+      "result": "040029002900000000000000e0000000d8140000962e20014f0001006e15001d",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=47,'l',114,+1620",
+      "result": "fff9000000004321632103212321c320e3208321bf20c120ad20eb24a3257b23",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=47,'l',114,+1640",
+      "result": "33240b22c3225b26ef21fd2193214321632103212321c320e3208321bf20c120",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=12,'l',114,+1540",
+      "result": "621500000000433a5c57494e444f57535c53595354454d5c434f55522e545446",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=12,'l',114,+1560",
+      "result": "00003e15d21500000000ae15ec001200a41a0100ffffffff000000000000c8e2",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=12,'l',114,+1580",
+      "result": "000070170000000300010409000800054306433a5c57494e444f57535c535953",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=12,'l',114,+15a0",
+      "result": "54454d5c434f55522e54544600005e0c00000000000000000000960c00000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=12,'l',114,+15c0",
+      "result": "00000000000000000000760c7e0c660c6e0c6215571c00000000000000008016",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=12,'l',114,+15e0",
+      "result": "531853185f1c3b28d23bea3b263c6a1500006c000000000000000a6a01004e00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=12,'l',114,+1600",
+      "result": "0000000000000000dc0b8f1318003c002a004f00cd0400000000000000000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=12,'l',114,+1620",
+      "result": "0000000000000000000000000000000000000000000005000000000000000100",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=12,'l',114,+1640",
+      "result": "00000600d23b0400010000000400060040000000000180010000000001000100",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=14,'l',114,+1540",
+      "result": "621500000000433a5c57494e444f57535c53595354454d5c434f55522e545446",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=14,'l',114,+1560",
+      "result": "00003e15d21500000000ae15ec001200a41a0100ffffffff000000000000c8e2",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=14,'l',114,+1580",
+      "result": "000070170000000300010409000800054306433a5c57494e444f57535c535953",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=14,'l',114,+15a0",
+      "result": "54454d5c434f55522e54544600005e0c00000000000000000000960c00000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=14,'l',114,+15c0",
+      "result": "00000000000000000000760c7e0c660c6e0c6215571c00000000000000008016",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=14,'l',114,+15e0",
+      "result": "531853185f1c3b28d23bee3b343c6a1500006c000000000000000a6a01004e00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=14,'l',114,+1600",
+      "result": "0000000000000000dc0b8f131c00460046004f00cd0400000000000000000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=14,'l',114,+1620",
+      "result": "0000000000000000000000000000000000000000000007000000000000000100",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=14,'l',114,+1640",
+      "result": "00000700d23b04000100000006000700400000008001c0010000000001000100",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=24,'l',114,+1540",
+      "result": "621500000000433a5c57494e444f57535c53595354454d5c434f55522e545446",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=24,'l',114,+1560",
+      "result": "00003e15d21500000000ae15ec001200a41a0100ffffffff000000000000c8e2",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=24,'l',114,+1580",
+      "result": "000070170000000300010409000800054306433a5c57494e444f57535c535953",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=24,'l',114,+15a0",
+      "result": "54454d5c434f55522e54544600005e0c00000000000000000000960c00000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=24,'l',114,+15c0",
+      "result": "00000000000000000000760c7e0c660c6e0c6215571c00000000000000008016",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=24,'l',114,+15e0",
+      "result": "531853185f1c3b28d23b0a3c963c6a1500006c000000000000000a6a01004e00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=24,'l',114,+1600",
+      "result": "0000000000000000dc0b8f1338008c007e004f00cd0400000000000000000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=24,'l',114,+1620",
+      "result": "000000000000000000000000000000000000000000000d000000000000000200",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Courier New\",h=24,'l',114,+1640",
+      "result": "00000e00d23b0400020000000b000e0080000000c00280030000000001000100",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=12,'A',114,+1540",
+      "result": "621500000000433a5c57494e444f57535c53595354454d5c415249414c2e5454",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=12,'A',114,+1560",
+      "result": "46003e15d21500000000ae15ec001200a41a0100ffffffff000000000000c8e2",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=12,'A',114,+1580",
+      "result": "000070170000000300010409000800054306433a5c57494e444f57535c535953",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=12,'A',114,+15a0",
+      "result": "54454d5c434f55522e54544600005e0c00000000000000000000960c00000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=12,'A',114,+15c0",
+      "result": "00000000000000000000760c7e0c660c6e0c6215571c00000000000000008016",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=12,'A',114,+15e0",
+      "result": "531853185f1c27272e3c4a3cc83cd814000041000000000000000a6a01004e00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=12,'A',114,+1600",
+      "result": "0000000000000000c80aff141c007e0062002400000000000000000000000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=12,'A',114,+1620",
+      "result": "0000000000000000000000000000000000000000000006000000000000000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=12,'A',114,+1640",
+      "result": "000007002e3c0400000000000700070000000000c001c0010000000001000200",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=16,'A',114,+1540",
+      "result": "621500000000433a5c57494e444f57535c53595354454d5c415249414c2e5454",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=16,'A',114,+1560",
+      "result": "46003e15d21500000000ae15ec001200a41a0100ffffffff000000000000c8e2",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=16,'A',114,+1580",
+      "result": "000070170000000300010409000800054306433a5c57494e444f57535c535953",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=16,'A',114,+15a0",
+      "result": "54454d5c434f55522e54544600005e0c00000000000000000000960c00000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=16,'A',114,+15c0",
+      "result": "00000000000000000000760c7e0c660c6e0c6215571c00000000000000008016",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=16,'A',114,+15e0",
+      "result": "531853185f1c27272e3c563c0a3dd814000041000000000000000a6a01004e00",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=16,'A',114,+1600",
+      "result": "0000000000000000c80aff142800b4007e002400000000000000000000000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=16,'A',114,+1620",
+      "result": "0000000000000000000000000000000000000000000009000000000000000000",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    },
+    {
+      "function": "bytes",
+      "args": "\"Arial\",h=16,'A',114,+1640",
+      "result": "00000a002e3c04000000000009000a00f9ff0000470280020000000001000200",
+      "section": "the scaler's bitmap metrics at the cells the ground rectangle disagrees about"
+    }
+  ]
+}

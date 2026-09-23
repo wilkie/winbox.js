@@ -2093,24 +2093,14 @@ export const KNOWN_GAPS: Record<string, string> = {
    * which the glyph corpus says is right for the advance, so what is wrong is
    * which extent GDI fills rather than the measuring of it. Not read.
    */
-  /* The ground behind the text, where the glyph reaches past its advance.
+  /* The ground behind the text, one record of `groundbx`'s 656.
    *
-   * 8o. `groundbx` draws one character in the background's own colour at four
-   * faces and every cell from eight to forty-eight, so the rectangle is all
-   * that comes back. A strike is the advance at every one of its cells; an
-   * outline face reaches with the glyph, and uniting the advance with the
-   * fitted outline's box takes it from 361 of 656 to 565.
-   *
-   * What is left is never narrower than the extent and up to four columns
-   * wider, never a strike and never a space, and it gathers on the glyphs whose
-   * ink is narrow against their advance -- Arial's `l` at 35 of its 41 cells
-   * and Courier New's at all 41. It does not grow smoothly with the size --
-   * Arial's `l` wants two more at 40 pixels per em and three at 38 and at 41 --
-   * so whatever sets it is decided by the fitting rather than by arithmetic on
-   * the size.
+   * 8o. The rectangle is the advance run from the glyph's own left edge, united
+   * with the box the glyph is blitted into -- and Courier New's `W` at a cell
+   * of forty-four is a column wider on this side than on Windows', which is the
+   * only cell in the sweep where the two disagree at all.
    */
-  'groundbx-vga:ground': '91 of 656 records, the ground short of the box a glyph is blitted into',
-  'textbk-vga:glyph': '1 of 64 records, the same',
+  'groundbx-vga:ground': '1 of 656 records, a column of the ground on Courier New\'s W',
 
   /* The same tie, asked of the metrics instead of the pixels.
    *

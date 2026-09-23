@@ -487,9 +487,27 @@ export class Surface {
 
       if (reach.length) {
         const up = fitted.scaled ? 1 : scale;
+        const bearing = Math.round(Math.min(...reach.map((p: any) => p.x)) * up);
+        const reachRight = Math.round(Math.max(...reach.map((p: any) => p.x)) * up);
+        const advance = font.outlineAdvance
+          ? font.outlineAdvance(character.charCodeAt(0))
+          : metrics.width;
 
-        left = Math.min(left, pen + Math.round(Math.min(...reach.map((p: any) => p.x)) * up));
-        right = Math.max(right, pen + Math.round(Math.max(...reach.map((p: any) => p.x)) * up));
+        /* The rectangle starts at the glyph's own left edge where that is left
+         * of the pen, and it runs the advance from *there* -- so a glyph with a
+         * bearing is that much wider than its advance, whether or not its ink
+         * reaches. That is what the narrow letters were short of: Arial's `l`
+         * at a cell of forty-seven advances ten pixels, bears three, and is
+         * painted over thirteen.
+         *
+         * **Read out of the scaler**, whose buffer holds the bitmap's bearing,
+         * width and height in whole pixels and again in sixty-fourths -- 8k
+         * found them. At nine cells of Arial's `l` the bearing there is 0, 1, 0,
+         * 1, 1, 2, 3, 2, 3 and the rectangle is wider than the advance by
+         * exactly those.
+         */
+        left = Math.min(left, pen + bearing);
+        right = Math.max(right, pen + advance + bearing, pen + reachRight);
       }
 
       pen += font.outlineAdvance
