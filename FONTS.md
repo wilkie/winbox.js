@@ -16975,6 +16975,45 @@ Arial and Times New Roman turn it on at the **same cell**, two hundred and
 fourteen, which is the cell `stemedge` says the drawing goes wrong at -- and
 that is what said to go and ask the face's own tables.
 
+#### The one cell left, and Windows' own point read out of it
+
+`stemwide` has one cell left on a pixel that is not square: Arial's `w` at a
+cell of eighty-eight, seventy-nine pixels per em down and a hundred and five
+across. The outer left edge is fitted here from (-0.5, 42) to (17.313, 0), a
+slope of 0.4241, where Windows draws exactly 0.400.
+
+Reading Windows' own fitted points settles which end moves, and they cannot be
+read after the call -- `scalepts` walks every block in range and finds them
+already gone. So they are read **during** it, by the glyph itself.
+`arial-w-p0x` and `arial-w-p1x` copy the `w` onto the `7` -- the one Arial
+character the `hinting` sweep asks upright, where the program actually runs --
+and append a readout that moves the advance phantom onto the point, so what
+Windows reports as the width *is* the point's own coordinate. The foot needs
+sixteen pixels taken off first, because sixty-four times a coordinate past eight
+does not fit the word a width is reported in.
+
+| pixels per em | 68 | 70 | 73 | 76 | 77 | **79** | 80 | 83 | 85 | 88 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Windows' foot | 13.73 | 15.11 | 13.67 | 14.95 | 16.31 | **16.23** | 17.28 | 17.23 | 18.64 | 19.88 |
+| this side | 13.73 | 15.11 | 13.67 | 14.95 | 16.31 | **17.31** | 17.28 | 17.23 | 18.64 | 19.88 |
+
+The **head** agrees exactly -- -0.5 pixels on both sides at every size -- and
+every size but one agrees to the sixty-fourth. It is one point at one size.
+
+#### And what moves it here
+
+Three instructions touch that point: an `IP`, an `MDRP` under a round state of
+`RDTG`, and a `SHPIX` that adds three quarters of a pixel at every size. The
+`MDRP` measures a design distance whose projection is a **small remainder of two
+large numbers** -- 26.02 units out of a delta of (325, -1062) -- and scales to
+64.244 sixty-fourths, which floors to exactly one pixel. The sizes either side
+scale to 63.42 and 65.22 and round the same way on both sides.
+
+So the point does not turn on a rounding that is a sixty-fourth different; it
+turns on a projection that is a per cent different, and what makes it so is
+**not read**. The two readouts stay in the corpus as the instrument that would
+settle the next attempt.
+
 ### 8l. Above the largest size `VDMX` tabulates, Windows does the work itself
 
 The half-size rule of 8k was found in the three regular faces. The **styled**

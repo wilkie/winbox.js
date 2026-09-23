@@ -2080,16 +2080,26 @@ export const KNOWN_GAPS: Record<string, string> = {
    * slope is 0.4215 and Windows agrees, so it is one rounding that steps at
    * this size and not a rule.
    *
-   * Reading Windows' own fitted outline would settle it, and it cannot be read
-   * after the call. `scalemem` finds the glyph's metrics in the scaler's buffer
-   * and not its points, and `scalepts` walks **every** block rather than GDI's
-   * -- a freed buffer still holds what it held -- and finds the glyph's top
-   * edge in none of the forty-five in range. The points are gone by the time
-   * `TextOut` returns. Three further readings are spent and written into
-   * `scalepts`: a selector made with `AllocSelector` over a linear address
-   * hangs the guest, `MemoryRead` refuses a selector the program made itself,
-   * and `MemoryRead` on the scaler's own stack selector answers nought.
-   * Catching the points wants a read during the call. See `FONTS.md` 8k.
+   * Reading Windows' own fitted outline settles which end moves, and it cannot
+   * be read *after* the call -- `scalepts` walks every block in range and the
+   * points are already gone. So it is read **during** it, by the glyph itself:
+   * `arial-w-p0x` and `arial-w-p1x` copy the `w` onto the `7` the sweep asks
+   * upright and append a readout that moves the advance phantom onto the point,
+   * so what Windows reports as the width is the point's own coordinate.
+   *
+   * The head of the edge agrees exactly -- -0.5 pixels on both sides, at every
+   * size. The **foot** is the one that moves: Windows puts it at 16.2344 where
+   * this side puts it at 17.3125, and at every other size from 68 to 88 pixels
+   * per em the two agree to the sixty-fourth.
+   *
+   * On this side three instructions touch it: an `IP`, an `MDRP` under a round
+   * state of `RDTG`, and a `SHPIX` that adds three quarters of a pixel at every
+   * size. The `MDRP` measures a design distance whose projection is a small
+   * remainder of two large numbers -- 26.02 units out of a delta of (325,
+   * -1062) -- and scales to 64.244 sixty-fourths, which floors to exactly one
+   * pixel. A size either side scales to 63.42 and 65.22. So the point turns on
+   * a projection that is 1% different, not on a rounding that is a sixty-fourth
+   * different, and what makes it so is **not read**. See `FONTS.md` 8k.
    */
   'stemwide-ega:column': '1 of 780 records, a diagonal a sixty-fourth out at a cell of 88',
 

@@ -2322,6 +2322,40 @@ export const FABRICATIONS = [
    * takes a branch no square recording ever ran, and the square run is no
    * reference for what these points do. The hinting probe's stretched pass
    * draws the readout at several widths. */
+  /* Arial's `w`, reporting the two ends of its outer left edge along x.
+   *
+   * `stemwide` has one cell left on a pixel that is not square: the `w` at a
+   * cell of eighty-eight, seventy-nine pixels per em down and a hundred and
+   * five across, whose outer left edge this side fits from (-0.5, 42) to
+   * (17.313, 0) -- a slope of 0.4241 -- where Windows draws exactly 0.400. The
+   * cells either side agree, and the program takes the same branch at all
+   * three, so it is one rounding that steps at this size.
+   *
+   * Reading Windows' own fitted points settles which end moves. They cannot be
+   * read after the call -- `scalepts` walks every block in range and the points
+   * are already gone -- so they are read *during* it, by the glyph itself.
+   */
+  pointReporter('arial-w-p0x', {
+    font: 'ARIAL.TTF',
+    character: '7',
+    copyFrom: 'w',
+    point: 0,
+    axis: 'x',
+    /* Sixteen pixels off first: the foot sits past seventeen and sixty-four
+     * times that does not fit the word the advance is reported in. */
+    base: 16 * 64,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial's w reporting the foot of its outer left edge, along x",
+  }),
+  pointReporter('arial-w-p1x', {
+    font: 'ARIAL.TTF',
+    character: '7',
+    copyFrom: 'w',
+    point: 1,
+    axis: 'x',
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial's w reporting the head of its outer left edge, along x",
+  }),
   pointReporter('times-N-diag-p1x', {
     character: 'N',
     point: 1,
