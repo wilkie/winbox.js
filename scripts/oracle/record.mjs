@@ -88,6 +88,7 @@ const PER_DISPLAY = new Set([
   'groundsc',
   'extout',
   'groundrn',
+  'clipedge',
 ]);
 
 /** Where a probe writes, on the guest and on the host. */

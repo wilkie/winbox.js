@@ -1518,6 +1518,56 @@ const ADAPTERS: Record<
     );
   },
 
+  /* `clipedge` walks `ETO_CLIPPED`'s edges across the text a column at a time,
+   * and asks the degenerate rectangles on purpose. 8t.
+   */
+  clip(context, args) {
+    if (!context.fonts) {
+      throw new NeedsDrive('the fonts live on the drive image; run the oracle pipeline');
+    }
+
+    const fields: Record<string, string> = {};
+
+    for (const field of args.slice(1)) {
+      const [name, value] = String(field).split('=');
+
+      if (value !== undefined) {
+        fields[name] = value;
+      }
+    }
+
+    const handle = CreateFontIndirect.call(context, {
+      lfHeight: Number(fields.h ?? 0),
+      lfWidth: 0,
+      lfWeight: 400,
+      lfItalic: 0,
+      lfCharSet: 0,
+      lfUnderline: 0,
+      lfStrikeOut: 0,
+      lfFaceName: String(args[0]),
+    });
+
+    if (!handle) {
+      throw new Unimplemented('no font mapped');
+    }
+
+    const rect = String(fields.rect ?? '0:0:0:0')
+      .split(':')
+      .map(Number);
+
+    return context.drawExt(context.handles.resolve(handle), {
+      text: 'AB',
+      textout: false,
+      options: Number(fields.opt ?? 0),
+      use: 1,
+      rect: { left: rect[0], top: rect[1], right: rect[2], bottom: rect[3] },
+      mode: 1,
+      dark: 0,
+      extra: 0,
+      dx: null,
+    });
+  },
+
   /* `groundrn` sweeps the ground behind a **run**: four faces, ten cells, five
    * runs, and an advance array, all painted in the background's own colour so
    * that the rectangle is all that comes back. 8o.

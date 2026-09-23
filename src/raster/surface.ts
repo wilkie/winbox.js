@@ -678,11 +678,26 @@ export class Surface {
    * and without the flag differs only in that everything outside the rectangle
    * is gone, ground included.
    */
-  withClip(rect, draw) {
-    if (!rect) {
+  withClip(box, draw) {
+    if (!box) {
       draw();
       return;
     }
+
+    /* A rectangle whose edges are the wrong way round is **normalised**, not
+     * refused: (20, 6) to (10, 14) clips exactly as (10, 6) to (20, 14) does,
+     * and so does (10, 14) to (20, 6). One whose edges are equal clips
+     * everything away, which falls out of the comparison below.
+     *
+     * **Recorded** by `clipedge`, which walks each edge across the text a
+     * column at a time and asks the degenerate rectangles on purpose.
+     */
+    const rect = {
+      left: Math.min(box.left, box.right),
+      right: Math.max(box.left, box.right),
+      top: Math.min(box.top, box.bottom),
+      bottom: Math.max(box.top, box.bottom),
+    };
 
     const before = this.context.getImageData(0, 0, this.width, this.height);
 

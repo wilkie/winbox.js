@@ -17572,6 +17572,63 @@ it.
 `extout` is **51 of 51**, `groundrn` **212 of 212**, and `groundbx` and `textbk`
 are unmoved at 656 and 64.
 
+#### Where `ETO_CLIPPED`'s edges fall, asked a column at a time
+
+The table above says the flag clips and that its right and bottom edges are
+outside it, but it says so from **one** rectangle. A single rectangle cannot
+tell an edge that is exclusive from one that is inclusive and happens to land
+where no ink is, so `oracle/probes/clipedge.c` walks each edge across the text
+instead: "AB" at a pen of (8, 4) in a 64 by 48 cell, drawn transparent so that
+only glyph ink comes back, with the right edge swept from 8 to 28, the left from
+6 to 26, the bottom from 4 to 22 and the top from 4 to 22, in MS Sans Serif and
+Arial. 178 records.
+
+Arial's ink runs from column 8 to column 24, and the sweeps bracket both edges
+to the column:
+
+| the rectangle | what is drawn |
+| --- | --- |
+| `right = 8` | **nothing** |
+| `right = 9` | column 8 alone |
+| `right = 25` | columns 8 to 24 -- all of it |
+| `left = 24` | column 24 alone |
+| `left = 25` | **nothing** |
+
+> **A pixel is kept when `left <= x < right` and `top <= y < bottom`.** The
+> rectangle's own edges, in other words, exactly as a `RECT` is drawn
+> everywhere else: the top left corner is inside it and the bottom right corner
+> is not.
+
+#### The degenerate rectangles, which is why the sweep was worth recording
+
+Four of the eight asked on purpose come back as the comparison above already
+gives them, and the fifth does not.
+
+| | |
+| --- | --- |
+| **empty**, left equal to right | nothing drawn |
+| **flat**, top equal to bottom | nothing drawn |
+| **clear**, wholly past the text | nothing drawn |
+| **negative**, corners left of the origin | clipped at the right edge like any other |
+| **huge**, far outside on all four sides | the whole drawing, unclipped |
+| **inverted**, `(20, 6)` to `(10, 14)` | drawn -- columns 10 to 19, rows 7 to 13 |
+| **upside**, `(10, 14)` to `(20, 6)` | **the same drawing** |
+
+The last two are the finding. A rectangle whose edges are the wrong way round
+is **normalised** before it is used, not refused: both of them clip exactly as
+`(10, 6)` to `(20, 14)` does, and neither the horizontal swap nor the vertical
+one nor both together makes any difference to the ink. That is not what the
+comparison gives -- with `left` greater than `right` no column satisfies it and
+the drawing would vanish, the way the empty rectangle does. **Refusing to
+normalise costs four of the 178**, the two inverted cases in each of the two
+faces, and nothing else moves.
+
+So the empty rectangle and the inverted one are not the same case, though a
+careless reading of `left >= right` makes them one: the first clips everything
+away and the second clips nothing at all.
+
+`clipedge` is **178 of 178**.
+
 ### 8p. Where the text lands, which nothing had ever moved
 
 `SetTextAlign` says what the point handed to `TextOut` means -- left, centre or
