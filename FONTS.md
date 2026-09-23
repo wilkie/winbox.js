@@ -17290,14 +17290,55 @@ neither reason is obvious from the table:
   but after the last marker means renumbering every marker past it, so the entry
   goes at the end.
 
+#### The ground is not the advance: it reaches with the glyph
+
+Three of `textbk`'s sixty-four were a rectangle narrower than Windows', and the
+string's own measurement was not the reason -- `oracle/probes/groundw.c` asks
+`GetTextExtent` and `GetCharWidth` of the same requests and both answer what
+this side computes, at all three.
+
+So `oracle/probes/groundbx.c` asks the rectangle by itself: the text is painted
+in the **background's own colour**, so the glyph adds nothing and what comes back
+is the rectangle and nothing else. Four faces, every cell from eight to
+forty-eight, four characters.
+
+A **strike** is the advance at every one of its cells -- MS Sans Serif and the
+System font, 328 records, no exception. An **outline face** is not:
+
+| | the advance | the ground |
+| --- | --- | --- |
+| Arial, cell 12, `A` | 6 | **7** |
+| Courier New, cell 24, `A` | 13 | **15**, and it starts a column left of the pen |
+| Arial, cell 28, `A` | 17 | **18** |
+
+Courier New's serifs at that size reach a column either side of the advance, and
+the ground reaches with them. So the rectangle is the advance **united with the
+glyph's box** -- the same box the buffer gate of 8g counts, the fitted outline's
+extremes carried to pixels and rounded to the nearest column. That takes
+`groundbx` from 361 of 656 to 565 and `textbk` from 61 of 64 to 63.
+
+#### And a width that was wrong for eight years of stretched strikes
+
+`groundw` was recorded to rule the advance out and found something else: 195 of
+its 820 records disagreed, every one of them `GetCharWidth` on a strike at a
+cell it had to be **stretched** to reach. The width was being read out of the
+font file unscaled, so MS Sans Serif asked for a cell of 26 -- the 13 pixel
+strike doubled -- answered 7 for `A` where Windows answers 14. The extent beside
+it was right all along, because that path scales. `groundw` is **820 of 820**.
+
 #### What is left
 
-Three records of sixty-four, all the same case: an opaque black ground behind an
-outline face at a small size, where the rectangle this paints is smaller than
-Windows'. Arial at a cell of twelve is 73 pixels against 84, Courier New at
-twelve and twenty-four 60 against 72 and 314 against 360. The extent comes from
-the string's own measurement, which the glyph corpus says is right for the
-advance, so what is not read is which extent GDI fills. **61 of 64.**
+91 of `groundbx`'s 656 and one of `textbk`'s 64, and they are one thing: a
+single column short on the right, always an outline face, and most of them `l`
+-- a bar whose advance is wider than its ink, so the glyph's box never decides
+and the advance does. Arial's `l` agrees at cells of 10, 11, 12 and 14 and is a
+column short at 13 and at every cell from 15 to 21, which is not a threshold in
+the size.
+
+Refused, by count, each measured through the whole pipeline: the outline's
+extremes **floored and ceiled** rather than rounded, 536 of 656 against 565; the
+design advance carried across the size and **rounded up**, which fixes Courier
+New at a cell of twelve and takes `textbk` from 63 to 61.
 
 ### 8p. Where the text lands, which nothing had ever moved
 

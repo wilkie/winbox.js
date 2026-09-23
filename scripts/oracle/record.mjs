@@ -83,6 +83,8 @@ const PER_DISPLAY = new Set([
   'dipcell',
   'tiewide',
   'strikout',
+  'groundw',
+  'groundbx',
 ]);
 
 /** Where a probe writes, on the guest and on the host. */

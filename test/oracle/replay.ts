@@ -1439,6 +1439,53 @@ const ADAPTERS: Record<
     return `width=${extent & 0xffff},height=${(extent >> 16) & 0xffff}`;
   },
 
+  /* `groundw` asks the three widths that could be the ground's -- what
+   * `GetTextExtent` answers for the character, what `GetCharWidth` answers for
+   * it, and the overhang -- of the same request. 8o.
+   */
+  width(context, args) {
+    const character = String(args[2]).replace(/^'|'$/g, '');
+
+    const fields = [args[0], args[1], 'w=0', 'weight=400', 'italic=0'];
+    const mapped = context.mappedFont([
+      ...fields,
+      'under=0',
+      'strike=0',
+      'charset=0',
+      'pitch=0',
+    ]);
+    const tm = mapped.metrics;
+
+    const extent = GetTextExtent.call(
+      context,
+      mapped.hdc,
+      context.lpcstr(character),
+      character.length
+    );
+
+    const widths = charWidths(context, fields);
+
+    return (
+      `extent=${extent & 0xffff},` +
+      `charwidth=${typeof widths === 'string' ? -1 : widths[character.charCodeAt(0) - 32]},` +
+      `overhang=${tm.tmOverhang},ave=${tm.tmAveCharWidth}`
+    );
+  },
+
+  /* `groundbx` draws one character in the background's own colour, so the
+   * glyph adds nothing and the rectangle is all that comes back. 8o.
+   */
+  ground(context, args) {
+    return ADAPTERS.glyph(context, [
+      args[0],
+      args[1],
+      'back=1',
+      'opaque=1',
+      'cell=64',
+      args[2],
+    ]);
+  },
+
   /* `strikout` draws a full stop with the strikeout off and on, over every
    * strike the installation has at eighteen sizes, so the rows the rule adds
    * are the rows the rule is. 8n.
@@ -2089,7 +2136,18 @@ export const KNOWN_GAPS: Record<string, string> = {
    * which the glyph corpus says is right for the advance, so what is wrong is
    * which extent GDI fills rather than the measuring of it. Not read.
    */
-  'textbk-vga:glyph': '3 of 64 records, the ground painted a little small',
+  /* The ground behind the text, where the glyph reaches past its advance.
+   *
+   * 8o. `groundbx` draws one character in the background's own colour at four
+   * faces and every cell from eight to forty-eight, so the rectangle is all
+   * that comes back. A strike is the advance at every one of its cells; an
+   * outline face reaches with the glyph, and uniting the advance with the
+   * fitted outline's box takes it from 361 of 656 to 565. What is left is
+   * nearly all a single column short on the right, and most of it `l`, whose
+   * advance is wider than its ink so the box never decides.
+   */
+  'groundbx-vga:ground': '91 of 656 records, a column of the ground on an outline face',
+  'textbk-vga:glyph': '1 of 64 records, the same column',
 
   /* The same tie, asked of the metrics instead of the pixels.
    *

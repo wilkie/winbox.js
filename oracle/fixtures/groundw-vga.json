@@ -1,0 +1,4934 @@
+{
+  "probe": "groundw",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=8,'A'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=8,'W'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=8,'i'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=8,'l'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=8,' '",
+      "result": "extent=3,charwidth=3,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=9,'A'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=9,'W'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=9,'i'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=9,'l'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=9,' '",
+      "result": "extent=3,charwidth=3,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=10,'A'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=10,'W'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=10,'i'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=10,'l'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=10,' '",
+      "result": "extent=3,charwidth=3,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=11,'A'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=11,'W'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=11,'i'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=11,'l'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=11,' '",
+      "result": "extent=3,charwidth=3,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=12,'A'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=12,'W'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=12,'i'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=12,'l'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=12,' '",
+      "result": "extent=3,charwidth=3,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=13,'A'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=13,'W'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=13,'i'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=13,'l'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=13,' '",
+      "result": "extent=3,charwidth=3,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=14,'A'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=14,'W'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=14,'i'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=14,'l'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=14,' '",
+      "result": "extent=3,charwidth=3,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=15,'A'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=15,'W'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=15,'i'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=15,'l'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=15,' '",
+      "result": "extent=3,charwidth=3,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=16,'A'",
+      "result": "extent=9,charwidth=9,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=16,'W'",
+      "result": "extent=13,charwidth=13,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=16,'i'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=16,'l'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=16,' '",
+      "result": "extent=3,charwidth=3,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=17,'A'",
+      "result": "extent=9,charwidth=9,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=17,'W'",
+      "result": "extent=13,charwidth=13,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=17,'i'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=17,'l'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=17,' '",
+      "result": "extent=3,charwidth=3,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=18,'A'",
+      "result": "extent=9,charwidth=9,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=18,'W'",
+      "result": "extent=13,charwidth=13,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=18,'i'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=18,'l'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=18,' '",
+      "result": "extent=3,charwidth=3,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=19,'A'",
+      "result": "extent=9,charwidth=9,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=19,'W'",
+      "result": "extent=13,charwidth=13,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=19,'i'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=19,'l'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=19,' '",
+      "result": "extent=3,charwidth=3,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=20,'A'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=20,'W'",
+      "result": "extent=15,charwidth=15,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=20,'i'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=20,'l'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=20,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=21,'A'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=21,'W'",
+      "result": "extent=15,charwidth=15,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=21,'i'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=21,'l'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=21,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=22,'A'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=22,'W'",
+      "result": "extent=15,charwidth=15,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=22,'i'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=22,'l'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=22,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=23,'A'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=23,'W'",
+      "result": "extent=15,charwidth=15,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=23,'i'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=23,'l'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=23,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=24,'A'",
+      "result": "extent=13,charwidth=13,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=24,'W'",
+      "result": "extent=18,charwidth=18,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=24,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=24,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=24,' '",
+      "result": "extent=5,charwidth=5,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=25,'A'",
+      "result": "extent=13,charwidth=13,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=25,'W'",
+      "result": "extent=18,charwidth=18,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=25,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=25,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=25,' '",
+      "result": "extent=5,charwidth=5,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=26,'A'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=26,'W'",
+      "result": "extent=22,charwidth=22,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=26,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=26,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=26,' '",
+      "result": "extent=6,charwidth=6,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=27,'A'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=27,'W'",
+      "result": "extent=22,charwidth=22,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=27,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=27,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=27,' '",
+      "result": "extent=6,charwidth=6,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=28,'A'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=28,'W'",
+      "result": "extent=22,charwidth=22,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=28,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=28,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=28,' '",
+      "result": "extent=6,charwidth=6,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=29,'A'",
+      "result": "extent=15,charwidth=15,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=29,'W'",
+      "result": "extent=22,charwidth=22,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=29,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=29,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=29,' '",
+      "result": "extent=6,charwidth=6,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=30,'A'",
+      "result": "extent=15,charwidth=15,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=30,'W'",
+      "result": "extent=22,charwidth=22,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=30,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=30,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=30,' '",
+      "result": "extent=6,charwidth=6,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=31,'A'",
+      "result": "extent=15,charwidth=15,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=31,'W'",
+      "result": "extent=22,charwidth=22,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=31,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=31,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=31,' '",
+      "result": "extent=6,charwidth=6,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=32,'A'",
+      "result": "extent=18,charwidth=18,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=32,'W'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=32,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=32,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=32,' '",
+      "result": "extent=6,charwidth=6,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=33,'A'",
+      "result": "extent=18,charwidth=18,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=33,'W'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=33,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=33,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=33,' '",
+      "result": "extent=6,charwidth=6,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=34,'A'",
+      "result": "extent=18,charwidth=18,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=34,'W'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=34,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=34,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=34,' '",
+      "result": "extent=6,charwidth=6,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=35,'A'",
+      "result": "extent=18,charwidth=18,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=35,'W'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=35,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=35,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=35,' '",
+      "result": "extent=6,charwidth=6,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=36,'A'",
+      "result": "extent=18,charwidth=18,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=36,'W'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=36,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=36,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=36,' '",
+      "result": "extent=6,charwidth=6,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=37,'A'",
+      "result": "extent=22,charwidth=22,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=37,'W'",
+      "result": "extent=31,charwidth=31,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=37,'i'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=37,'l'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=37,' '",
+      "result": "extent=9,charwidth=9,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=38,'A'",
+      "result": "extent=22,charwidth=22,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=38,'W'",
+      "result": "extent=31,charwidth=31,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=38,'i'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=38,'l'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=38,' '",
+      "result": "extent=9,charwidth=9,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=39,'A'",
+      "result": "extent=21,charwidth=21,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=39,'W'",
+      "result": "extent=33,charwidth=33,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=39,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=39,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=39,' '",
+      "result": "extent=9,charwidth=9,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=40,'A'",
+      "result": "extent=22,charwidth=22,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=40,'W'",
+      "result": "extent=30,charwidth=30,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=40,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=40,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=40,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=41,'A'",
+      "result": "extent=22,charwidth=22,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=41,'W'",
+      "result": "extent=30,charwidth=30,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=41,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=41,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=41,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=42,'A'",
+      "result": "extent=22,charwidth=22,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=42,'W'",
+      "result": "extent=30,charwidth=30,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=42,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=42,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=42,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=43,'A'",
+      "result": "extent=22,charwidth=22,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=43,'W'",
+      "result": "extent=30,charwidth=30,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=43,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=43,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=43,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=44,'A'",
+      "result": "extent=22,charwidth=22,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=44,'W'",
+      "result": "extent=30,charwidth=30,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=44,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=44,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=44,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=45,'A'",
+      "result": "extent=22,charwidth=22,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=45,'W'",
+      "result": "extent=30,charwidth=30,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=45,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=45,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=45,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=46,'A'",
+      "result": "extent=22,charwidth=22,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=46,'W'",
+      "result": "extent=30,charwidth=30,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=46,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=46,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=46,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=47,'A'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=47,'W'",
+      "result": "extent=36,charwidth=36,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=47,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=47,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=47,' '",
+      "result": "extent=10,charwidth=10,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=48,'A'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=48,'W'",
+      "result": "extent=36,charwidth=36,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=48,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=48,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"MS Sans Serif\",h=48,' '",
+      "result": "extent=10,charwidth=10,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=8,'A'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=8,'W'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=8,'i'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=8,'l'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=8,' '",
+      "result": "extent=1,charwidth=1,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=9,'A'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=3",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=9,'W'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=3",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=9,'i'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=3",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=9,'l'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=3",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=9,' '",
+      "result": "extent=2,charwidth=2,overhang=0,ave=3",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=10,'A'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=10,'W'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=10,'i'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=10,'l'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=10,' '",
+      "result": "extent=2,charwidth=2,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=11,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=11,'W'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=11,'i'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=11,'l'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=11,' '",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=12,'A'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=12,'W'",
+      "result": "extent=9,charwidth=9,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=12,'i'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=12,'l'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=12,' '",
+      "result": "extent=3,charwidth=3,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=13,'A'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=13,'W'",
+      "result": "extent=9,charwidth=9,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=13,'i'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=13,'l'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=13,' '",
+      "result": "extent=3,charwidth=3,overhang=0,ave=4",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=14,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=14,'W'",
+      "result": "extent=10,charwidth=10,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=14,'i'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=14,'l'",
+      "result": "extent=2,charwidth=2,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=14,' '",
+      "result": "extent=3,charwidth=3,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=15,'A'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=15,'W'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=15,'i'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=15,'l'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=15,' '",
+      "result": "extent=3,charwidth=3,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=16,'A'",
+      "result": "extent=9,charwidth=9,overhang=0,ave=6",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=16,'W'",
+      "result": "extent=13,charwidth=13,overhang=0,ave=6",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=16,'i'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=6",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=16,'l'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=6",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=16,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=6",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=17,'A'",
+      "result": "extent=9,charwidth=9,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=17,'W'",
+      "result": "extent=15,charwidth=15,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=17,'i'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=17,'l'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=17,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=18,'A'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=18,'W'",
+      "result": "extent=15,charwidth=15,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=18,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=18,'l'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=18,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=19,'A'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=19,'W'",
+      "result": "extent=17,charwidth=17,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=19,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=19,'l'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=19,' '",
+      "result": "extent=5,charwidth=5,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=20,'A'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=20,'W'",
+      "result": "extent=17,charwidth=17,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=20,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=20,'l'",
+      "result": "extent=3,charwidth=3,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=20,' '",
+      "result": "extent=5,charwidth=5,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=21,'A'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=21,'W'",
+      "result": "extent=17,charwidth=17,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=21,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=21,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=21,' '",
+      "result": "extent=5,charwidth=5,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=22,'A'",
+      "result": "extent=13,charwidth=13,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=22,'W'",
+      "result": "extent=19,charwidth=19,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=22,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=22,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=22,' '",
+      "result": "extent=5,charwidth=5,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=23,'A'",
+      "result": "extent=13,charwidth=13,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=23,'W'",
+      "result": "extent=19,charwidth=19,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=23,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=23,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=23,' '",
+      "result": "extent=6,charwidth=6,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=24,'A'",
+      "result": "extent=13,charwidth=13,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=24,'W'",
+      "result": "extent=21,charwidth=21,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=24,'i'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=24,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=24,' '",
+      "result": "extent=6,charwidth=6,overhang=0,ave=9",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=25,'A'",
+      "result": "extent=15,charwidth=15,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=25,'W'",
+      "result": "extent=21,charwidth=21,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=25,'i'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=25,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=25,' '",
+      "result": "extent=6,charwidth=6,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=26,'A'",
+      "result": "extent=15,charwidth=15,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=26,'W'",
+      "result": "extent=23,charwidth=23,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=26,'i'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=26,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=26,' '",
+      "result": "extent=6,charwidth=6,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=27,'A'",
+      "result": "extent=15,charwidth=15,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=27,'W'",
+      "result": "extent=23,charwidth=23,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=27,'i'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=27,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=27,' '",
+      "result": "extent=7,charwidth=7,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=28,'A'",
+      "result": "extent=17,charwidth=17,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=28,'W'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=28,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=28,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=28,' '",
+      "result": "extent=7,charwidth=7,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=29,'A'",
+      "result": "extent=17,charwidth=17,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=29,'W'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=29,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=29,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=29,' '",
+      "result": "extent=7,charwidth=7,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=30,'A'",
+      "result": "extent=17,charwidth=17,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=30,'W'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=30,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=30,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=30,' '",
+      "result": "extent=7,charwidth=7,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=31,'A'",
+      "result": "extent=17,charwidth=17,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=31,'W'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=31,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=31,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=31,' '",
+      "result": "extent=7,charwidth=7,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=32,'A'",
+      "result": "extent=18,charwidth=18,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=32,'W'",
+      "result": "extent=28,charwidth=28,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=32,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=32,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=32,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=33,'A'",
+      "result": "extent=19,charwidth=19,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=33,'W'",
+      "result": "extent=30,charwidth=30,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=33,'i'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=33,'l'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=33,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=34,'A'",
+      "result": "extent=19,charwidth=19,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=34,'W'",
+      "result": "extent=30,charwidth=30,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=34,'i'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=34,'l'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=34,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=35,'A'",
+      "result": "extent=19,charwidth=19,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=35,'W'",
+      "result": "extent=30,charwidth=30,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=35,'i'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=35,'l'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=35,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=36,'A'",
+      "result": "extent=21,charwidth=21,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=36,'W'",
+      "result": "extent=32,charwidth=32,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=36,'i'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=36,'l'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=36,' '",
+      "result": "extent=9,charwidth=9,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=37,'A'",
+      "result": "extent=21,charwidth=21,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=37,'W'",
+      "result": "extent=32,charwidth=32,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=37,'i'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=37,'l'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=37,' '",
+      "result": "extent=9,charwidth=9,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=38,'A'",
+      "result": "extent=22,charwidth=22,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=38,'W'",
+      "result": "extent=34,charwidth=34,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=38,'i'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=38,'l'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=38,' '",
+      "result": "extent=9,charwidth=9,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=39,'A'",
+      "result": "extent=23,charwidth=23,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=39,'W'",
+      "result": "extent=34,charwidth=34,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=39,'i'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=39,'l'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=39,' '",
+      "result": "extent=9,charwidth=9,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=40,'A'",
+      "result": "extent=23,charwidth=23,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=40,'W'",
+      "result": "extent=36,charwidth=36,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=40,'i'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=40,'l'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=40,' '",
+      "result": "extent=10,charwidth=10,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=41,'A'",
+      "result": "extent=23,charwidth=23,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=41,'W'",
+      "result": "extent=36,charwidth=36,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=41,'i'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=41,'l'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=41,' '",
+      "result": "extent=10,charwidth=10,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=42,'A'",
+      "result": "extent=25,charwidth=25,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=42,'W'",
+      "result": "extent=38,charwidth=38,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=42,'i'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=42,'l'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=42,' '",
+      "result": "extent=10,charwidth=10,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=43,'A'",
+      "result": "extent=25,charwidth=25,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=43,'W'",
+      "result": "extent=38,charwidth=38,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=43,'i'",
+      "result": "extent=9,charwidth=9,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=43,'l'",
+      "result": "extent=9,charwidth=9,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=43,' '",
+      "result": "extent=11,charwidth=11,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=44,'A'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=44,'W'",
+      "result": "extent=38,charwidth=38,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=44,'i'",
+      "result": "extent=9,charwidth=9,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=44,'l'",
+      "result": "extent=9,charwidth=9,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=44,' '",
+      "result": "extent=11,charwidth=11,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=45,'A'",
+      "result": "extent=27,charwidth=27,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=45,'W'",
+      "result": "extent=40,charwidth=40,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=45,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=45,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=45,' '",
+      "result": "extent=11,charwidth=11,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=46,'A'",
+      "result": "extent=27,charwidth=27,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=46,'W'",
+      "result": "extent=40,charwidth=40,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=46,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=46,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=46,' '",
+      "result": "extent=11,charwidth=11,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=47,'A'",
+      "result": "extent=27,charwidth=27,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=47,'W'",
+      "result": "extent=40,charwidth=40,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=47,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=47,'l'",
+      "result": "extent=10,charwidth=10,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=47,' '",
+      "result": "extent=11,charwidth=11,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=48,'A'",
+      "result": "extent=28,charwidth=28,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=48,'W'",
+      "result": "extent=42,charwidth=42,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=48,'i'",
+      "result": "extent=10,charwidth=10,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=48,'l'",
+      "result": "extent=10,charwidth=10,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Arial\",h=48,' '",
+      "result": "extent=12,charwidth=12,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=8,'A'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=8,'W'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=8,'i'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=8,'l'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=8,' '",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=9,'A'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=9,'W'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=9,'i'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=9,'l'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=9,' '",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=10,'A'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=10,'W'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=10,'i'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=10,'l'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=10,' '",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=11,'A'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=11,'W'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=11,'i'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=11,'l'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=11,' '",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=12,'A'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=12,'W'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=12,'i'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=12,'l'",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=12,' '",
+      "result": "extent=5,charwidth=5,overhang=0,ave=5",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=13,'A'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=6",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=13,'W'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=6",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=13,'i'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=6",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=13,'l'",
+      "result": "extent=6,charwidth=6,overhang=0,ave=6",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=13,' '",
+      "result": "extent=6,charwidth=6,overhang=0,ave=6",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=14,'A'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=14,'W'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=14,'i'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=14,'l'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=14,' '",
+      "result": "extent=7,charwidth=7,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=15,'A'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=15,'W'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=15,'i'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=15,'l'",
+      "result": "extent=7,charwidth=7,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=15,' '",
+      "result": "extent=7,charwidth=7,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=16,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=16,'W'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=16,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=16,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=16,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=17,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=17,'W'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=17,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=17,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=17,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=8",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=18,'A'",
+      "result": "extent=10,charwidth=10,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=18,'W'",
+      "result": "extent=10,charwidth=10,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=18,'i'",
+      "result": "extent=10,charwidth=10,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=18,'l'",
+      "result": "extent=10,charwidth=10,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=18,' '",
+      "result": "extent=10,charwidth=10,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=19,'A'",
+      "result": "extent=10,charwidth=10,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=19,'W'",
+      "result": "extent=10,charwidth=10,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=19,'i'",
+      "result": "extent=10,charwidth=10,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=19,'l'",
+      "result": "extent=10,charwidth=10,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=19,' '",
+      "result": "extent=10,charwidth=10,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=20,'A'",
+      "result": "extent=10,charwidth=10,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=20,'W'",
+      "result": "extent=10,charwidth=10,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=20,'i'",
+      "result": "extent=10,charwidth=10,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=20,'l'",
+      "result": "extent=10,charwidth=10,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=20,' '",
+      "result": "extent=10,charwidth=10,overhang=0,ave=10",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=21,'A'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=21,'W'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=21,'i'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=21,'l'",
+      "result": "extent=11,charwidth=11,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=21,' '",
+      "result": "extent=11,charwidth=11,overhang=0,ave=11",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=22,'A'",
+      "result": "extent=12,charwidth=12,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=22,'W'",
+      "result": "extent=12,charwidth=12,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=22,'i'",
+      "result": "extent=12,charwidth=12,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=22,'l'",
+      "result": "extent=12,charwidth=12,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=22,' '",
+      "result": "extent=12,charwidth=12,overhang=0,ave=12",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=23,'A'",
+      "result": "extent=13,charwidth=13,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=23,'W'",
+      "result": "extent=13,charwidth=13,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=23,'i'",
+      "result": "extent=13,charwidth=13,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=23,'l'",
+      "result": "extent=13,charwidth=13,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=23,' '",
+      "result": "extent=13,charwidth=13,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=24,'A'",
+      "result": "extent=13,charwidth=13,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=24,'W'",
+      "result": "extent=13,charwidth=13,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=24,'i'",
+      "result": "extent=13,charwidth=13,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=24,'l'",
+      "result": "extent=13,charwidth=13,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=24,' '",
+      "result": "extent=13,charwidth=13,overhang=0,ave=13",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=25,'A'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=25,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=25,'i'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=25,'l'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=25,' '",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=26,'A'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=26,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=26,'i'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=26,'l'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=26,' '",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=27,'A'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=27,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=27,'i'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=27,'l'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=27,' '",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=28,'A'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=28,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=28,'i'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=28,'l'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=28,' '",
+      "result": "extent=14,charwidth=14,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=29,'A'",
+      "result": "extent=15,charwidth=15,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=29,'W'",
+      "result": "extent=15,charwidth=15,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=29,'i'",
+      "result": "extent=15,charwidth=15,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=29,'l'",
+      "result": "extent=15,charwidth=15,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=29,' '",
+      "result": "extent=15,charwidth=15,overhang=0,ave=15",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=30,'A'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=30,'W'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=30,'i'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=30,'l'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=30,' '",
+      "result": "extent=16,charwidth=16,overhang=0,ave=16",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=31,'A'",
+      "result": "extent=17,charwidth=17,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=31,'W'",
+      "result": "extent=17,charwidth=17,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=31,'i'",
+      "result": "extent=17,charwidth=17,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=31,'l'",
+      "result": "extent=17,charwidth=17,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=31,' '",
+      "result": "extent=17,charwidth=17,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=32,'A'",
+      "result": "extent=17,charwidth=17,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=32,'W'",
+      "result": "extent=17,charwidth=17,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=32,'i'",
+      "result": "extent=17,charwidth=17,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=32,'l'",
+      "result": "extent=17,charwidth=17,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=32,' '",
+      "result": "extent=17,charwidth=17,overhang=0,ave=17",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=33,'A'",
+      "result": "extent=18,charwidth=18,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=33,'W'",
+      "result": "extent=18,charwidth=18,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=33,'i'",
+      "result": "extent=18,charwidth=18,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=33,'l'",
+      "result": "extent=18,charwidth=18,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=33,' '",
+      "result": "extent=18,charwidth=18,overhang=0,ave=18",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=34,'A'",
+      "result": "extent=19,charwidth=19,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=34,'W'",
+      "result": "extent=19,charwidth=19,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=34,'i'",
+      "result": "extent=19,charwidth=19,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=34,'l'",
+      "result": "extent=19,charwidth=19,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=34,' '",
+      "result": "extent=19,charwidth=19,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=35,'A'",
+      "result": "extent=19,charwidth=19,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=35,'W'",
+      "result": "extent=19,charwidth=19,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=35,'i'",
+      "result": "extent=19,charwidth=19,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=35,'l'",
+      "result": "extent=19,charwidth=19,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=35,' '",
+      "result": "extent=19,charwidth=19,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=36,'A'",
+      "result": "extent=19,charwidth=19,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=36,'W'",
+      "result": "extent=19,charwidth=19,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=36,'i'",
+      "result": "extent=19,charwidth=19,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=36,'l'",
+      "result": "extent=19,charwidth=19,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=36,' '",
+      "result": "extent=19,charwidth=19,overhang=0,ave=19",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=37,'A'",
+      "result": "extent=20,charwidth=20,overhang=0,ave=20",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=37,'W'",
+      "result": "extent=20,charwidth=20,overhang=0,ave=20",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=37,'i'",
+      "result": "extent=20,charwidth=20,overhang=0,ave=20",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=37,'l'",
+      "result": "extent=20,charwidth=20,overhang=0,ave=20",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=37,' '",
+      "result": "extent=20,charwidth=20,overhang=0,ave=20",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=38,'A'",
+      "result": "extent=20,charwidth=20,overhang=0,ave=20",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=38,'W'",
+      "result": "extent=20,charwidth=20,overhang=0,ave=20",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=38,'i'",
+      "result": "extent=20,charwidth=20,overhang=0,ave=20",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=38,'l'",
+      "result": "extent=20,charwidth=20,overhang=0,ave=20",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=38,' '",
+      "result": "extent=20,charwidth=20,overhang=0,ave=20",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=39,'A'",
+      "result": "extent=21,charwidth=21,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=39,'W'",
+      "result": "extent=21,charwidth=21,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=39,'i'",
+      "result": "extent=21,charwidth=21,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=39,'l'",
+      "result": "extent=21,charwidth=21,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=39,' '",
+      "result": "extent=21,charwidth=21,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=40,'A'",
+      "result": "extent=23,charwidth=23,overhang=0,ave=23",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=40,'W'",
+      "result": "extent=23,charwidth=23,overhang=0,ave=23",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=40,'i'",
+      "result": "extent=23,charwidth=23,overhang=0,ave=23",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=40,'l'",
+      "result": "extent=23,charwidth=23,overhang=0,ave=23",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=40,' '",
+      "result": "extent=23,charwidth=23,overhang=0,ave=23",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=41,'A'",
+      "result": "extent=23,charwidth=23,overhang=0,ave=23",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=41,'W'",
+      "result": "extent=23,charwidth=23,overhang=0,ave=23",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=41,'i'",
+      "result": "extent=23,charwidth=23,overhang=0,ave=23",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=41,'l'",
+      "result": "extent=23,charwidth=23,overhang=0,ave=23",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=41,' '",
+      "result": "extent=23,charwidth=23,overhang=0,ave=23",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=42,'A'",
+      "result": "extent=23,charwidth=23,overhang=0,ave=23",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=42,'W'",
+      "result": "extent=23,charwidth=23,overhang=0,ave=23",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=42,'i'",
+      "result": "extent=23,charwidth=23,overhang=0,ave=23",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=42,'l'",
+      "result": "extent=23,charwidth=23,overhang=0,ave=23",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=42,' '",
+      "result": "extent=23,charwidth=23,overhang=0,ave=23",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=43,'A'",
+      "result": "extent=24,charwidth=24,overhang=0,ave=24",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=43,'W'",
+      "result": "extent=24,charwidth=24,overhang=0,ave=24",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=43,'i'",
+      "result": "extent=24,charwidth=24,overhang=0,ave=24",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=43,'l'",
+      "result": "extent=24,charwidth=24,overhang=0,ave=24",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=43,' '",
+      "result": "extent=24,charwidth=24,overhang=0,ave=24",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=44,'A'",
+      "result": "extent=25,charwidth=25,overhang=0,ave=25",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=44,'W'",
+      "result": "extent=25,charwidth=25,overhang=0,ave=25",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=44,'i'",
+      "result": "extent=25,charwidth=25,overhang=0,ave=25",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=44,'l'",
+      "result": "extent=25,charwidth=25,overhang=0,ave=25",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=44,' '",
+      "result": "extent=25,charwidth=25,overhang=0,ave=25",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=45,'A'",
+      "result": "extent=25,charwidth=25,overhang=0,ave=25",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=45,'W'",
+      "result": "extent=25,charwidth=25,overhang=0,ave=25",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=45,'i'",
+      "result": "extent=25,charwidth=25,overhang=0,ave=25",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=45,'l'",
+      "result": "extent=25,charwidth=25,overhang=0,ave=25",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=45,' '",
+      "result": "extent=25,charwidth=25,overhang=0,ave=25",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=46,'A'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=26",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=46,'W'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=26",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=46,'i'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=26",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=46,'l'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=26",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=46,' '",
+      "result": "extent=26,charwidth=26,overhang=0,ave=26",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=47,'A'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=26",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=47,'W'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=26",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=47,'i'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=26",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=47,'l'",
+      "result": "extent=26,charwidth=26,overhang=0,ave=26",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=47,' '",
+      "result": "extent=26,charwidth=26,overhang=0,ave=26",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=48,'A'",
+      "result": "extent=27,charwidth=27,overhang=0,ave=27",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=48,'W'",
+      "result": "extent=27,charwidth=27,overhang=0,ave=27",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=48,'i'",
+      "result": "extent=27,charwidth=27,overhang=0,ave=27",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=48,'l'",
+      "result": "extent=27,charwidth=27,overhang=0,ave=27",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"Courier New\",h=48,' '",
+      "result": "extent=27,charwidth=27,overhang=0,ave=27",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=8,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=8,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=8,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=8,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=8,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=9,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=9,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=9,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=9,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=9,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=10,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=10,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=10,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=10,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=10,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=11,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=11,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=11,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=11,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=11,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=12,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=12,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=12,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=12,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=12,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=13,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=13,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=13,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=13,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=13,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=14,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=14,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=14,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=14,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=14,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=15,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=15,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=15,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=15,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=15,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=16,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=16,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=16,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=16,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=16,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=17,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=17,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=17,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=17,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=17,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=18,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=18,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=18,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=18,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=18,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=19,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=19,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=19,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=19,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=19,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=20,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=20,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=20,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=20,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=20,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=21,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=21,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=21,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=21,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=21,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=22,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=22,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=22,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=22,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=22,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=23,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=23,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=23,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=23,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=23,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=24,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=24,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=24,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=24,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=24,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=25,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=25,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=25,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=25,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=25,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=26,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=26,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=26,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=26,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=26,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=27,'A'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=27,'W'",
+      "result": "extent=14,charwidth=14,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=27,'i'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=27,'l'",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=27,' '",
+      "result": "extent=4,charwidth=4,overhang=0,ave=7",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=28,'A'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=28,'W'",
+      "result": "extent=28,charwidth=28,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=28,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=28,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=28,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=29,'A'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=29,'W'",
+      "result": "extent=28,charwidth=28,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=29,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=29,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=29,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=30,'A'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=30,'W'",
+      "result": "extent=28,charwidth=28,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=30,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=30,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=30,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=31,'A'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=31,'W'",
+      "result": "extent=28,charwidth=28,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=31,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=31,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=31,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=32,'A'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=32,'W'",
+      "result": "extent=28,charwidth=28,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=32,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=32,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=32,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=33,'A'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=33,'W'",
+      "result": "extent=28,charwidth=28,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=33,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=33,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=33,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=34,'A'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=34,'W'",
+      "result": "extent=28,charwidth=28,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=34,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=34,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=34,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=35,'A'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=35,'W'",
+      "result": "extent=28,charwidth=28,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=35,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=35,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=35,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=36,'A'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=36,'W'",
+      "result": "extent=28,charwidth=28,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=36,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=36,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=36,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=37,'A'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=37,'W'",
+      "result": "extent=28,charwidth=28,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=37,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=37,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=37,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=38,'A'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=38,'W'",
+      "result": "extent=28,charwidth=28,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=38,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=38,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=38,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=39,'A'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=39,'W'",
+      "result": "extent=28,charwidth=28,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=39,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=39,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=39,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=40,'A'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=40,'W'",
+      "result": "extent=28,charwidth=28,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=40,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=40,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=40,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=41,'A'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=41,'W'",
+      "result": "extent=28,charwidth=28,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=41,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=41,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=41,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=42,'A'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=42,'W'",
+      "result": "extent=28,charwidth=28,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=42,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=42,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=42,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=43,'A'",
+      "result": "extent=16,charwidth=16,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=43,'W'",
+      "result": "extent=28,charwidth=28,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=43,'i'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=43,'l'",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=43,' '",
+      "result": "extent=8,charwidth=8,overhang=0,ave=14",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=44,'A'",
+      "result": "extent=24,charwidth=24,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=44,'W'",
+      "result": "extent=42,charwidth=42,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=44,'i'",
+      "result": "extent=12,charwidth=12,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=44,'l'",
+      "result": "extent=12,charwidth=12,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=44,' '",
+      "result": "extent=12,charwidth=12,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=45,'A'",
+      "result": "extent=24,charwidth=24,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=45,'W'",
+      "result": "extent=42,charwidth=42,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=45,'i'",
+      "result": "extent=12,charwidth=12,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=45,'l'",
+      "result": "extent=12,charwidth=12,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=45,' '",
+      "result": "extent=12,charwidth=12,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=46,'A'",
+      "result": "extent=24,charwidth=24,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=46,'W'",
+      "result": "extent=42,charwidth=42,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=46,'i'",
+      "result": "extent=12,charwidth=12,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=46,'l'",
+      "result": "extent=12,charwidth=12,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=46,' '",
+      "result": "extent=12,charwidth=12,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=47,'A'",
+      "result": "extent=24,charwidth=24,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=47,'W'",
+      "result": "extent=42,charwidth=42,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=47,'i'",
+      "result": "extent=12,charwidth=12,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=47,'l'",
+      "result": "extent=12,charwidth=12,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=47,' '",
+      "result": "extent=12,charwidth=12,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=48,'A'",
+      "result": "extent=24,charwidth=24,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=48,'W'",
+      "result": "extent=42,charwidth=42,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=48,'i'",
+      "result": "extent=12,charwidth=12,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=48,'l'",
+      "result": "extent=12,charwidth=12,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    },
+    {
+      "function": "width",
+      "args": "\"System\",h=48,' '",
+      "result": "extent=12,charwidth=12,overhang=0,ave=21",
+      "section": "the extent, the character width and the overhang of one character"
+    }
+  ]
+}

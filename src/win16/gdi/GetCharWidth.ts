@@ -54,11 +54,25 @@ export function GetCharWidth(hdc, wFirstChar, wLastChar, lpBuffer) {
   const segment = (lpBuffer >> 16) & 0xffff;
   let offset = lpBuffer & 0xffff;
 
+  /* A strike's width is the one in its file carried across the width the
+   * realisation ended up at -- the same `round(width * horizontal)` a string
+   * of one character measures. Reading it out of the file unscaled answers the
+   * design strike rather than the realised one, and a stretched strike is
+   * exactly where the two part company: MS Sans Serif asked for a cell of 26 is
+   * the 13 pixel strike doubled, whose `A` is 7 in the file and 14 on the
+   * screen. **Measured** by `groundw` over four faces and every cell from eight
+   * to forty-eight -- 195 of its 820 records, all of them a strike at a cell it
+   * had to be stretched to reach.
+   */
+  const horizontal = font instanceof LogicalFont ? (font.widthScale ?? 1) : 1;
+
   for (let code = wFirstChar; code <= wLastChar; code++) {
     cpu.write16(
       segment,
       offset,
-      outline ? outline.outlineAdvance(code) : entry.characterEntryFor(code).width
+      outline
+        ? outline.outlineAdvance(code)
+        : Math.round(entry.characterEntryFor(code).width * horizontal)
     );
     offset += 2;
   }

@@ -425,15 +425,90 @@ export class Surface {
     return [x, y];
   }
 
+  /**
+   * The cell behind the text, painted before the text is.
+   *
+   * It runs from the pen for the string's advance -- except where a glyph
+   * reaches past it, and then it reaches with the glyph. `groundbx` draws four
+   * faces at every cell from eight to forty-eight in the background's own
+   * colour, so that the glyph adds nothing and what comes back is the rectangle
+   * alone: nineteen of the outline cells are wider than the advance, and Courier
+   * New above a cell of thirty-six starts a column to the **left** of the pen,
+   * where its serifs do.
+   *
+   * The box is the one the buffer gate already counts -- the fitted outline's
+   * extremes carried to pixels and rounded to the nearest column, which is what
+   * `columns` is measured as in `outlineText` -- united with the advance. A
+   * strike never needs it: MS Sans Serif and the System font are the advance at
+   * every one of their cells, and their glyphs never leave it.
+   *
+   * **Measured**, and **not finished**: the union takes `groundbx` to 565 of
+   * its 656 and `textbk` to 63 of 64, and the 91 that are left are nearly all a
+   * single column short on the right, of an outline face, and most of them of
+   * `l` -- a bar whose advance is wider than its ink, so the box does not reach
+   * and the advance decides. Arial's `l` agrees at cells of 10, 11, 12 and 14
+   * and is a column short at 13 and at every cell from 15 to 21, which is not a
+   * threshold in the size.
+   *
+   * Refused, by count, each measured through the whole pipeline: the outline's
+   * extremes floored and ceiled rather than rounded, 536 of 656 against 565;
+   * the design advance carried across the size and rounded **up**, alone or
+   * united with the rest, which takes `textbk` from 63 to 61.
+   */
+  groundBox(text) {
+    const font: any = this._font;
+    const outline = font.outline;
+
+    const metrics = font.measure(text);
+
+    if (!outline) {
+      return { left: 0, right: metrics.width, height: metrics.height };
+    }
+
+    const scale = font.ppem / outline.unitsPerEm;
+    const stretch = font instanceof LogicalFont ? font.stretch : 1;
+
+    let left = 0;
+    let right = metrics.width;
+    let pen = 0;
+
+    for (const character of String(text)) {
+      const glyph = outline.cmap.get(character.charCodeAt(0)) ?? 0;
+
+      let fitted: any = null;
+
+      try {
+        fitted = outline.hintedOutline(glyph, font.ppem, true, stretch);
+      } catch {
+        fitted = null;
+      }
+
+      const reach = fitted && fitted.contours ? fitted.contours.flat() : [];
+
+      if (reach.length) {
+        const up = fitted.scaled ? 1 : scale;
+
+        left = Math.min(left, pen + Math.round(Math.min(...reach.map((p: any) => p.x)) * up));
+        right = Math.max(right, pen + Math.round(Math.max(...reach.map((p: any) => p.x)) * up));
+      }
+
+      pen += font.outlineAdvance
+        ? font.outlineAdvance(character.charCodeAt(0))
+        : metrics.width;
+    }
+
+    return { left, right, height: metrics.height };
+  }
+
   ground(x, y, text) {
     if (this.backMode === 1) {
       return;
     }
 
-    const metrics = this._font.measure(text);
+    const box = this.groundBox(text);
 
     this.context.fillStyle = this.backcolor.css;
-    this.context.fillRect(x, y, metrics.width, metrics.height);
+    this.context.fillRect(x + box.left, y, box.right - box.left, box.height);
   }
 
   rules(x, y, text) {
