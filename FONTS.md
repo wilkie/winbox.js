@@ -17009,10 +17009,44 @@ large numbers** -- 26.02 units out of a delta of (325, -1062) -- and scales to
 64.244 sixty-fourths, which floors to exactly one pixel. The sizes either side
 scale to 63.42 and 65.22 and round the same way on both sides.
 
-So the point does not turn on a rounding that is a sixty-fourth different; it
-turns on a projection that is a per cent different, and what makes it so is
-**not read**. The two readouts stay in the corpus as the instrument that would
-settle the next attempt.
+#### Bisected to one instruction, with its inputs read as well
+
+The readout cuts the program where it likes, so the point can be read on either
+side of a single instruction -- everything before the cut runs untouched. Read
+at 429 bytes in, just before that `MDRP`, and at 430, just after it:
+
+| pixels per em | 77 | **79** | 80 |
+| --- | --- | --- | --- |
+| before, Windows and this side | 1061 | **1082** | 1103 |
+| after, Windows | 996 | **991** | 1058 |
+| after, this side | 996 | **1060** | 1058 |
+
+And `vectorReporter` reads what it is measuring **along**: the same cut, with
+`GPV` in the ending instead of `GC`, sends a component of the projection vector
+out through the advance. Windows carries (15373, 5666) there at seventy-nine
+pixels per em, and so does this side -- and (15269, 5940) and (15374, 5663) at
+the sizes either side, also both.
+
+**Same point, same vector, different answer.** The difference is in the
+arithmetic between them and nowhere else, which is as far in as this can be
+pushed without the interpreter's own intermediate values.
+
+#### And the arithmetic that would explain it, refused
+
+The design delta is (325, -1062) and the stretch 105/79, so the stretched design
+x is 431.96. Truncating it to a whole design unit before projecting scales the
+distance to 62 sixty-fourths where keeping the fraction gives 64, and `RDTG`
+turns that into nought against a whole pixel -- which is Windows' answer here,
+and at the two sizes either side as well, where truncating gives 60 and 64
+against 62 and 65 and both readings round the same way.
+
+Three sizes of one glyph, and it fits all three. **Refused by count**: it costs
+171 records of `stemstyl`, 65 of `stemwide`, 35 of `stemedge`, 42 of `glyphs`,
+20 of `widths` and 55 of `symbig`, against the one it gains.
+
+So what separates them is still **not read**, and the four readouts stay in the
+corpus as the instrument for the next attempt: two points, one vector, and the
+cut that puts them either side of anything.
 
 ### 8l. Above the largest size `VDMX` tabulates, Windows does the work itself
 

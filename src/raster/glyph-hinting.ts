@@ -1208,6 +1208,30 @@ export class Hinter {
       return this.projectDual(x, y);
     }
 
+    /* Kept fractional, and the fraction is **not** thrown away.
+     *
+     * Arial's `w` at a cell of eighty-eight on an EGA is the last cell of
+     * `stemwide`, and it turns on exactly this. The foot of the outer left edge
+     * is placed by an `MDRP` under `RDTG`, and the whole question is whether
+     * the distance it measures reaches a pixel. Windows' own points, read out
+     * of a running Windows with the program cut either side of that one
+     * instruction, give 1082 sixty-fourths before it on both sides and 991
+     * against this side's 1060 after; and the projection vector it measures
+     * along, read the same way with `GPV`, is (15373, 5666) on both sides.
+     * Same point, same vector, different answer -- so the difference is in the
+     * arithmetic between them and nowhere else.
+     *
+     * The design delta is (325, -1062) and the stretch 105/79, so the stretched
+     * x is 431.96. Truncating it to 431 scales the distance to 62 sixty-fourths
+     * where keeping the fraction gives 64, and `RDTG` turns that into nought
+     * against a whole pixel -- which is Windows' answer, at this size and at
+     * the two either side.
+     *
+     * **Refused by count.** Truncating costs 171 records of `stemstyl`, 65 of
+     * `stemwide`, 35 of `stemedge`, 42 of `glyphs`, 20 of `widths` and 55 of
+     * `symbig`, against the one it gains. So three sizes of one glyph are not
+     * the rule, and what is remains **not read**.
+     */
     return (x * this.state.dual.x + y * this.state.dual.y) / UNIT;
   }
 
@@ -2871,6 +2895,15 @@ export class Hinter {
         zoneOne.x[index] - zoneZero.x[state.rp0],
         zoneOne.y[index] - zoneZero.y[state.rp0]
       );
+
+      if ((globalThis as any).__TRACE_V && index === 0) {
+        (globalThis as any).__TRACE_V({
+          projection: { ...state.projection },
+          dual: state.dualProjection ? { ...state.dualProjection } : null,
+          freedom: { ...state.freedom },
+          original, distance, current,
+        });
+      }
 
       this.movePoint(zoneOne, index, distance - current);
 

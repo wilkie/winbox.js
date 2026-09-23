@@ -233,6 +233,12 @@ export const ops = {
   duplicate: () => [0x20],
   pop: () => [0x21],
   swap: () => [0x23],
+
+  /** Push the projection vector's two components, x first, in F2Dot14. */
+  getProjection: () => [0x0c],
+
+  /** Point both vectors along the x axis. */
+  xAxis: () => [0x01],
 };
 
 /**
@@ -561,13 +567,17 @@ export function glyphProgram(bytes, glyph) {
  * @param {number} phantom - The index of the advance phantom.
  * @param {number} magnify - How much to multiply the coordinate by.
  */
-export function reportPoint(point, phantom, magnify) {
+export function reportPoint(point, phantom, magnify, base = 0) {
   return [
     // Both vectors along x, so a coordinate means the x coordinate.
     0x01,
     ...ops.byte(phantom),
     ...ops.byte(point),
     0x46,
+
+    /* A base taken off first, so a coordinate past eight pixels still fits the
+     * word the advance comes back in. */
+    ...(base === 0 ? [] : [...ops.word(base), ...ops.subtract()]),
 
     /* The multiply is what buys the resolution, and it is also a step that can
      * be wrong on its own -- so a magnification of one leaves it out entirely
@@ -1145,7 +1155,7 @@ function stackReporter(
  */
 function reporter(
   name,
-  { font = 'TIMES.TTF', character, point, constant, storage, cut, magnify, describe }
+  { font = 'TIMES.TTF', character, copyFrom, point, constant, storage, cut, magnify, base = 0, drop, describe }
 ) {
   return {
     name,
@@ -1154,6 +1164,10 @@ function reporter(
     describe,
 
     edit: (bytes) => {
+      if (copyFrom) {
+        bytes = copyGlyph(bytes, copyFrom.charCodeAt(0), character.charCodeAt(0));
+      }
+
       const glyph = glyphFor(bytes, character.charCodeAt(0));
       const full = glyphProgram(bytes, glyph);
 
@@ -1178,7 +1192,7 @@ function reporter(
         storage !== undefined
           ? reportStorage(storage, pointCount(bytes, glyph) + 1)
           : constant === undefined
-            ? reportPoint(point, pointCount(bytes, glyph) + 1, magnify)
+            ? reportPoint(point, pointCount(bytes, glyph) + 1, magnify, base)
             : reportConstant(constant, pointCount(bytes, glyph) + 1);
 
       const code = [...full.slice(0, cut), ...ending];
@@ -1187,7 +1201,93 @@ function reporter(
         throw new Error(`readout of ${code.length} does not fit in ${full.length}`);
       }
 
-      return setGlyphProgram(bytes, glyph, code);
+      const edited = setGlyphProgram(bytes, glyph, code);
+      const view = new DataView(edited.buffer, edited.byteOffset, edited.byteLength);
+      const present = tablesOf(view);
+
+      for (const tag of drop ?? []) {
+        if (present[tag]) {
+          dropTable(edited, tag);
+        }
+      }
+
+      return edited;
+    },
+  };
+}
+
+/**
+ * A letter reporting the **projection vector** it is carrying at one point in
+ * its own program.
+ *
+ * `pointReporter` says where a point ended up; this says what the interpreter
+ * was measuring along when it got there, which is the other half of an `MDRP`.
+ * The program is cut at the instruction in question -- everything before it
+ * runs untouched, so the vector is the one that instruction would have used --
+ * and the ending reads it with `GPV` and sends one component out through the
+ * advance.
+ *
+ * The cut has to be at an instruction boundary the program is statically
+ * balanced at, the same rule `reporter` follows. Whatever the cut instruction
+ * would have popped is left on the stack below the readout's own values, which
+ * nothing here touches.
+ *
+ * A component is an F2Dot14, so it is a number around sixteen thousand and the
+ * whole of the interesting range is a few hundred wide. A base is taken off
+ * before the magnification for the same reason it is for a coordinate: the
+ * advance comes back in a sixteen bit word.
+ */
+function vectorReporter(
+  name,
+  { font = 'TIMES.TTF', character, copyFrom, cut, component = 'x', base = 0, magnify = 64, drop, describe }
+) {
+  return {
+    name,
+    from: font,
+    as: font,
+
+    describe,
+
+    edit: (bytes) => {
+      if (copyFrom) {
+        bytes = copyGlyph(bytes, copyFrom.charCodeAt(0), character.charCodeAt(0));
+      }
+
+      const glyph = glyphFor(bytes, character.charCodeAt(0));
+      const full = glyphProgram(bytes, glyph);
+      const phantom = pointCount(bytes, glyph) + 1;
+
+      const ending = [
+        ...ops.getProjection(),
+        // `GPV` pushes x then y, so the one not wanted comes off the top.
+        ...(component === 'y' ? [...ops.swap(), ...ops.pop()] : ops.pop()),
+        ...(base === 0 ? [] : [...ops.word(base), ...ops.subtract()]),
+        ...(magnify === 1 ? [] : [...ops.word(magnify * 64), ...ops.multiply()]),
+        // The phantom goes under the value, which is the order `SCFS` wants.
+        ...ops.byte(phantom),
+        ...ops.swap(),
+        // And along x, so the coordinate set is the one the advance is made of.
+        ...ops.xAxis(),
+        ...ops.setCoordinate(),
+      ];
+
+      const code = [...full.slice(0, cut), ...ending];
+
+      if (code.length > full.length) {
+        throw new Error(`readout of ${code.length} does not fit in ${full.length}`);
+      }
+
+      const edited = setGlyphProgram(bytes, glyph, code);
+      const view = new DataView(edited.buffer, edited.byteOffset, edited.byteLength);
+      const present = tablesOf(view);
+
+      for (const tag of drop ?? []) {
+        if (present[tag]) {
+          dropTable(edited, tag);
+        }
+      }
+
+      return edited;
     },
   };
 }
@@ -2335,6 +2435,59 @@ export const FABRICATIONS = [
    * read after the call -- `scalepts` walks every block in range and the points
    * are already gone -- so they are read *during* it, by the glyph itself.
    */
+  /* And the vector that `MDRP` is measuring along when it places that foot.
+   *
+   * The instruction sits 429 bytes into the `w`'s program, at a boundary the
+   * program is statically balanced at, and this side carries (15373, 5666)
+   * there at seventy-nine pixels per em against (15374, 5663) at eighty --
+   * which is to say the vector barely moves while the answer moves a pixel.
+   */
+  /* The foot itself, read at the same cut: everything before the `MDRP` has
+   * run and nothing after it has, so this is the point it starts from. */
+  reporter('arial-w-p0x-cut', {
+    font: 'ARIAL.TTF',
+    character: '7',
+    copyFrom: 'w',
+    point: 0,
+    cut: 429,
+    magnify: 64,
+    base: 16 * 64,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial's w reporting its foot along x before the MDRP that moves it",
+  }),
+  /* And again just *after* the `MDRP`, which is the bisection: the two cuts
+   * either side of one instruction. */
+  reporter('arial-w-p0x-after', {
+    font: 'ARIAL.TTF',
+    character: '7',
+    copyFrom: 'w',
+    point: 0,
+    cut: 430,
+    magnify: 64,
+    base: 16 * 64,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial's w reporting its foot along x just after the MDRP that moves it",
+  }),
+  vectorReporter('arial-w-gpvx', {
+    font: 'ARIAL.TTF',
+    character: '7',
+    copyFrom: 'w',
+    cut: 429,
+    component: 'x',
+    base: 15200,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial's w reporting the projection vector's x where its foot is placed",
+  }),
+  vectorReporter('arial-w-gpvy', {
+    font: 'ARIAL.TTF',
+    character: '7',
+    copyFrom: 'w',
+    cut: 429,
+    component: 'y',
+    base: 5600,
+    drop: ['hdmx', 'LTSH'],
+    describe: "Arial's w reporting the projection vector's y where its foot is placed",
+  }),
   pointReporter('arial-w-p0x', {
     font: 'ARIAL.TTF',
     character: '7',
