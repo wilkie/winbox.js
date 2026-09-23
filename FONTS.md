@@ -17192,23 +17192,48 @@ New -- is what says the numbers are read and not computed.
 
 At every size, whatever the face: MS Sans Serif at cells of 13, 16, 20, 24, 32
 and 40 and the System font at 16 and 32 all put it exactly one row under. The
-thickness follows the cell instead, `round(cell / 16)` and at least one -- 1, 1,
-1, 2, 2, 3 across those cells.
+thickness follows the cell instead, and it is **a twelfth of the cell**, at
+least one row.
 
-#### Where a strike puts its strikeout is not read
+#### Where a strike puts its strikeout, which took a sweep of its own
 
-Measured above the baseline it is 3, 3, 4, 4, 6, 8 and 9 rows for cells of 13,
-13, 16, 20, 24, 32 and 40. That is not a constant fraction of the cell, of the
-ascent or of the descent, and it is not the design strike's own offset carried
-across the multiple either: MS Sans Serif at a cell of forty is the twenty pixel
-strike twice over, whose own offset is four, and twice four is eight where
-Windows draws nine. Drawing it wrong would be worse than leaving it, so it is
-left, and it is the whole of what `rules` still misses -- **60 records of 224**,
-every one of them a strikeout on a face answered by a strike. Arial at a cell of
-ten is among them, because a strike is what answers it.
+`rules` had six distinct strikes to look at, and against those six the offset
+above the baseline -- 3, 3, 4, 4, 6, 8, 9 rows -- is no constant fraction of the
+cell, the ascent or the descent, and is not the design strike's own offset
+carried across the multiple either. It stayed unread, and it was the whole of
+what `rules` missed: 60 records of 224.
 
-`rules` is 164 of 224 and the glyph corpus is untouched: `glyphs` stays 6,046 on
-each of four displays and `plotter` 1,584.
+So `oracle/probes/strikout.c` asks it properly: every raster face the
+installation has and the vector ones beside them, eighteen sizes each, drawn
+twice with the strikeout off and on. **136 readings, 32 distinct realisations.**
+The character is a full stop, whose ink is a blob on the baseline and nothing
+near the middle of the cell -- drawn with `A` the sweep loses a row wherever the
+rule lands on the crossbar.
+
+The rule sits a **third of the way up from the baseline to the top of the
+internal leading**:
+
+    centre = (2 * ascent + internal leading) / 3, floored
+    top    = centre - thickness / 2, floored
+    rows   = cell / 12, floored, at least one
+
+Three things had hidden it. The formula gives the rule's **centre**, not its
+top, and the thickness grows *upward* first -- two rows put the centre at the
+bottom, four put it second from the bottom -- so every reading with a thick rule
+looked a row out. The **internal leading** is in it, which is why Courier and MS
+Sans Serif part company at the same ascent: Courier at a cell of 16 has none and
+rules at row 8, MS Sans Serif at a cell of 20 has four rows of it and rules at
+12, and their ascents are 13 and 16. And a **stretched** strike is not the
+unstretched one doubled: MS Sans Serif at a cell of 40 rules at rows 23 to 25
+where twice the cell-20 answer would be rows 24 and 25. It is this arithmetic
+done again at the stretched numbers.
+
+The thickness came out of the same sweep. A sixteenth of the cell rounded fits
+every reading up to a cell of 45 and fails at 48, which is the one cell `rules`
+never reached; a twelfth floored fits all 136.
+
+`rules` is **224 of 224** and `strikout` **540 of 540**, and the glyph corpus is
+untouched: `glyphs` stays 6,046 on each of four displays and `plotter` 1,584.
 
 ### 8o. The ground behind the text, and the mode that decides whether to paint it
 

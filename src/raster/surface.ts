@@ -374,6 +374,24 @@ export class Surface {
       : Math.round((header.dfAscent * Math.round(header.dfPixHeight * scale)) / header.dfPixHeight);
   }
 
+  /** The internal leading of a strike, scaled the way its ascent is. */
+  internalOf() {
+    const font: any = this._font;
+
+    if (font.outline) {
+      return 0;
+    }
+
+    const header = entryOf(font).header;
+    const scale = font.scale ?? 1;
+
+    return scale === 1
+      ? header.dfInternalLeading
+      : Math.round(
+          (header.dfInternalLeading * Math.round(header.dfPixHeight * scale)) / header.dfPixHeight
+        );
+  }
+
   /**
    * Where the point handed to `TextOut` puts the text.
    *
@@ -444,24 +462,49 @@ export class Surface {
 
     this.context.fillStyle = 'black';
 
+    /* A strike's rules are a twelfth of the cell thick, at least a row.
+     *
+     * **Measured** by `strikout` over every strike the installation has at
+     * eighteen sizes -- 136 readings, 32 distinct realisations -- where the
+     * thickness steps at cells of 24, 36 and 48. A sixteenth of the cell
+     * rounded fits every one of them up to a cell of 45 and not the cell of 48,
+     * which is the only one the earlier sweep never reached.
+     */
+    const strikeRows = thick(Math.floor(cell / 12));
+
     if (style.underline) {
       const top = outline ? baseline + across(-outline.underlinePosition) : baseline + 1;
-      const rows = outline
-        ? thick(across(outline.underlineThickness))
-        : thick(Math.round(cell / 16));
+      const rows = outline ? thick(across(outline.underlineThickness)) : strikeRows;
 
       this.context.fillRect(x, top, width, rows);
     }
 
-    /* A strike's strikeout is **not read**: its underline is a row below the
-     * baseline at every size, and where the strikeout goes does not follow the
-     * ascent, the cell or the descent in any way this has found. See
-     * `FONTS.md` 8n. Drawing it wrong would be worse than not drawing it.
-     */
-    if (style.strikeout && outline) {
-      const top = baseline - across(outline.strikeoutPosition);
+    if (style.strikeout) {
+      /* A strike has no `OS/2` to ask, and the rule is a third of the way up
+       * from the baseline to the top of the internal leading:
+       *
+       *     centre = (2 * ascent + internal leading) / 3, floored
+       *
+       * and the band is that row and the thickness grown **upward first** --
+       * a thickness of two puts the centre at the bottom, three puts it in the
+       * middle, four puts it second from the bottom. So the top is the centre
+       * less half the thickness, floored.
+       *
+       * **Measured** by `strikout` on all 136 readings, with no exception:
+       * Courier at a cell of 16 has no internal leading and rules at row 8,
+       * MS Sans Serif at a cell of 20 has four rows of it and rules at 12, and
+       * the two ascents are 13 and 16. A stretched strike is not the unstretched
+       * one doubled -- MS Sans Serif at a cell of 40 rules at rows 23 to 25
+       * where twice the cell-20 answer would be 24 and 25 -- it is this
+       * arithmetic done again at the stretched numbers.
+       */
+      const top = outline
+        ? baseline - across(outline.strikeoutPosition)
+        : Math.floor((2 * ascent + this.internalOf()) / 3) - (strikeRows >> 1);
 
-      this.context.fillRect(x, top, width, thick(across(outline.strikeoutSize)));
+      const rows = outline ? thick(across(outline.strikeoutSize)) : strikeRows;
+
+      this.context.fillRect(x, top, width, rows);
     }
   }
 

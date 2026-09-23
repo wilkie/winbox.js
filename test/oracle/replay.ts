@@ -1439,6 +1439,34 @@ const ADAPTERS: Record<
     return `width=${extent & 0xffff},height=${(extent >> 16) & 0xffff}`;
   },
 
+  /* `strikout` draws a full stop with the strikeout off and on, over every
+   * strike the installation has at eighteen sizes, so the rows the rule adds
+   * are the rows the rule is. 8n.
+   */
+  band(context, args) {
+    return ADAPTERS.glyph(context, [args[0], args[1], 'under=0', args[2], 'cell=64', "'.'"]);
+  },
+
+  'band metrics'(context, args) {
+    const mapped = context.mappedFont([
+      args[0],
+      args[1],
+      'w=0',
+      'weight=400',
+      'italic=0',
+      'under=0',
+      'strike=0',
+      'charset=0',
+      'pitch=0',
+    ]);
+    const tm = mapped.metrics;
+
+    return (
+      `face=${quoted(mapped.face)},height=${tm.tmHeight},ascent=${tm.tmAscent},` +
+      `descent=${tm.tmDescent},internal=${tm.tmInternalLeading},external=${tm.tmExternalLeading}`
+    );
+  },
+
   /* `tiewide` asks the tie region of 8r in the five faces `tiepick` leaves
    * out, on both displays -- which read different groups of the table.
    */
@@ -2045,28 +2073,6 @@ export const KNOWN_GAPS: Record<string, string> = {
    * Every cell above the switch is exact, and so is every one of the eight
    * half-size thresholds, which is what `head.xMax` predicted.
    */
-  /* Where a strike's strikeout goes, which is not read.
-   *
-   * `rules` is the first probe to draw an underline or a strikeout at all --
-   * the corpus carried both only through what `GetTextMetrics` reports about
-   * them. Three of the four things it asks are now read out of the fonts
-   * themselves and drawn: the underline's place and thickness from `post`, the
-   * strikeout's from `OS/2`, and a strike's underline, which sits one row below
-   * the baseline at every size with a thickness of `round(cell / 16)`.
-   *
-   * The fourth is where a **strike's** strikeout goes, and nothing found fits
-   * it. Measured above the baseline it is 3, 3, 4, 4, 6, 8 and 9 rows for cells
-   * of 13, 13, 16, 20, 24, 32 and 40 -- not a constant fraction of the cell,
-   * the ascent or the descent, and not the design strike's own offset carried
-   * across the multiple either: MS Sans Serif at a cell of forty is the twenty
-   * pixel strike twice over, whose own offset is four, and twice four is eight
-   * where Windows draws nine. Drawing it wrong would be worse than leaving it,
-   * so it is left.
-   *
-   * All sixty are strikeout records of a face answered by a strike, Arial at a
-   * cell of ten included -- it is answered by one.
-   */
-  'rules-vga:glyph': '60 of 224 records, where a strike puts its strikeout',
 
   /* Three cells where the ground painted behind the text is the wrong size.
    *
