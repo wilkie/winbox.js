@@ -18204,7 +18204,38 @@ fits section 3's "a Hercules draws it wherever the smear reaches", but
 seg16 `0030` itself has not been read.
 
 Where the turned glyph's second pixel comes from has not been
-read, and it stays a measurement.
+read, and it stays a measurement. How far the reading has got:
+
+- **Turned text is GDI's own drawing.** With the realised font's turned flag
+  (`0x10` at `+0x33`) GDI's TrueType text ends in seg8 `024b` rather than the
+  driver's `ExtTextOut`. That routine turns the width array into running
+  totals (`01c7`), rotates each total onto the baseline (`01e1`, `01f0`,
+  through seg33's multiplies), and blits each glyph's bitmap from the cache
+  with `BitBlt`'s raster operation for the drawing mode (`2ed4`). The array
+  is the one above, so the step it gives a turned smeared glyph is its width
+  plus **one** bold pixel. Nothing in the loop smears.
+- **The bitmap comes from the engine untouched.** The glyph cache (seg1
+  `7010`) fills a missing character through one of two producers (`75da`,
+  `7222`). For a turned font `7222` has the engine (seg36 `00a2`, a stack
+  switch into entry `0x10` of the far table in seg47, which is seg36 `0aa3`)
+  write the bitmap straight into the cache, and only does bookkeeping after
+  it. An upright glyph is instead transposed into the `.FNT` column layout,
+  and its width and bearing are the engine's advance and origin, rounded
+  (`7300`).
+- **The engine does not embolden by weight when asked directly.**
+  `oracle/probes/smearglf.c` asks `GetGlyphOutline` for "A" and "l" in four
+  faces at two cells, plain and at the smeared weight, upright and at thirty
+  and ninety degrees. All 48 pairs are byte for byte the same, box, origin,
+  advance and bitmap. It also answers with the unturned outline at every
+  escapement (`inc=9:0` at ninety degrees), so it cannot see the turned
+  realisation; what it does show is that weight alone changes nothing the
+  engine returns.
+
+So the turned smear and its second pixel are in the bitmap and advance the
+engine hands `7222`, and weight alone does not produce them. What asks the
+engine for them is still to find: the request `7451` builds for it
+(`[bp-0x3a]`, whose first word is `0x12`, with a request code of `0xc` or
+`0x2c` at `[bp-0x36]`) is the next place to read.
 
 That closes `rotstyle`: **190 of 190**. `smearrun` and `smearmod` are 640 of 640
 each, and the glyph and style corpora the single-glyph rule came from are

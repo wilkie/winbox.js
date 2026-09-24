@@ -1,0 +1,590 @@
+{
+  "probe": "smearglf",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=16,weight=400,esc=0,'A'",
+      "result": "box=9:10,origin=0:10,inc=9:0,size=40,bits=0800000014000000140000001400000022000000220000007f000000410000008080000080800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=16,weight=600,esc=0,'A'",
+      "result": "box=9:10,origin=0:10,inc=9:0,size=40,bits=0800000014000000140000001400000022000000220000007f000000410000008080000080800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=16,weight=400,esc=0,'A'",
+      "result": "box=10:10,origin=0:10,inc=9:0,size=40,bits=0800000008000000140000001400000022000000220000003e0000004100000041000000e3800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=16,weight=600,esc=0,'A'",
+      "result": "box=10:10,origin=0:10,inc=9:0,size=40,bits=0800000008000000140000001400000022000000220000003e0000004100000041000000e3800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=16,weight=400,esc=0,'A'",
+      "result": "box=8:8,origin=0:8,inc=8:0,size=32,bits=38000000180000001800000024000000240000003c00000042000000e7000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=16,weight=600,esc=0,'A'",
+      "result": "box=8:8,origin=0:8,inc=8:0,size=32,bits=38000000180000001800000024000000240000003c00000042000000e7000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=16,weight=400,esc=0,'A'",
+      "result": "failed",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=16,weight=700,esc=0,'A'",
+      "result": "failed",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=16,weight=400,esc=0,'l'",
+      "result": "box=1:10,origin=1:10,inc=3:0,size=40,bits=80000000800000008000000080000000800000008000000080000000800000008000000080000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=16,weight=600,esc=0,'l'",
+      "result": "box=1:10,origin=1:10,inc=3:0,size=40,bits=80000000800000008000000080000000800000008000000080000000800000008000000080000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=16,weight=400,esc=0,'l'",
+      "result": "box=3:10,origin=0:10,inc=3:0,size=40,bits=40000000c000000040000000400000004000000040000000400000004000000040000000e0000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=16,weight=600,esc=0,'l'",
+      "result": "box=3:10,origin=0:10,inc=3:0,size=40,bits=40000000c000000040000000400000004000000040000000400000004000000040000000e0000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=16,weight=400,esc=0,'l'",
+      "result": "box=5:8,origin=2:8,inc=8:0,size=32,bits=60000000200000002000000020000000200000002000000020000000f8000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=16,weight=600,esc=0,'l'",
+      "result": "box=5:8,origin=2:8,inc=8:0,size=32,bits=60000000200000002000000020000000200000002000000020000000f8000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=16,weight=400,esc=0,'l'",
+      "result": "failed",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=16,weight=700,esc=0,'l'",
+      "result": "failed",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=16,weight=400,esc=300,'A'",
+      "result": "box=9:10,origin=0:10,inc=9:0,size=40,bits=0800000014000000140000001400000022000000220000007f000000410000008080000080800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=16,weight=600,esc=300,'A'",
+      "result": "box=9:10,origin=0:10,inc=9:0,size=40,bits=0800000014000000140000001400000022000000220000007f000000410000008080000080800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=16,weight=400,esc=300,'A'",
+      "result": "box=11:10,origin=0:10,inc=11:0,size=40,bits=04000000040000000a0000000a00000011000000110000001f0000002080000020800000f1e00000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=16,weight=600,esc=300,'A'",
+      "result": "box=11:10,origin=0:10,inc=11:0,size=40,bits=04000000040000000a0000000a00000011000000110000001f0000002080000020800000f1e00000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=16,weight=400,esc=300,'A'",
+      "result": "box=8:8,origin=0:8,inc=8:0,size=32,bits=38000000180000001800000024000000240000003c00000042000000e7000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=16,weight=600,esc=300,'A'",
+      "result": "box=8:8,origin=0:8,inc=8:0,size=32,bits=38000000180000001800000024000000240000003c00000042000000e7000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=16,weight=400,esc=300,'A'",
+      "result": "box=9:9,origin=0:9,inc=9:0,size=36,bits=08000000140000001400000014000000220000003e0000002200000041000000e3800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=16,weight=700,esc=300,'A'",
+      "result": "box=9:9,origin=0:9,inc=9:0,size=36,bits=08000000140000001400000014000000220000003e0000002200000041000000e3800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=16,weight=400,esc=300,'l'",
+      "result": "box=1:10,origin=1:10,inc=3:0,size=40,bits=80000000800000008000000080000000800000008000000080000000800000008000000080000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=16,weight=600,esc=300,'l'",
+      "result": "box=1:10,origin=1:10,inc=3:0,size=40,bits=80000000800000008000000080000000800000008000000080000000800000008000000080000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=16,weight=400,esc=300,'l'",
+      "result": "box=3:11,origin=0:11,inc=3:0,size=44,bits=40000000c00000004000000040000000400000004000000040000000400000004000000040000000e0000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=16,weight=600,esc=300,'l'",
+      "result": "box=3:11,origin=0:11,inc=3:0,size=44,bits=40000000c00000004000000040000000400000004000000040000000400000004000000040000000e0000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=16,weight=400,esc=300,'l'",
+      "result": "box=7:9,origin=1:9,inc=8:0,size=36,bits=3000000010000000100000001000000010000000100000001000000010000000fe000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=16,weight=600,esc=300,'l'",
+      "result": "box=7:9,origin=1:9,inc=8:0,size=36,bits=3000000010000000100000001000000010000000100000001000000010000000fe000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=16,weight=400,esc=300,'l'",
+      "result": "box=6:9,origin=0:9,inc=6:0,size=36,bits=60000000a00000001000000030000000300000003000000050000000540000008c000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=16,weight=700,esc=300,'l'",
+      "result": "box=6:9,origin=0:9,inc=6:0,size=36,bits=60000000a00000001000000030000000300000003000000050000000540000008c000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=16,weight=400,esc=900,'A'",
+      "result": "box=9:10,origin=0:10,inc=9:0,size=40,bits=0800000014000000140000001400000022000000220000007f000000410000008080000080800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=16,weight=600,esc=900,'A'",
+      "result": "box=9:10,origin=0:10,inc=9:0,size=40,bits=0800000014000000140000001400000022000000220000007f000000410000008080000080800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=16,weight=400,esc=900,'A'",
+      "result": "box=11:10,origin=0:10,inc=11:0,size=40,bits=04000000040000000a0000000a00000011000000110000001f0000002080000020800000f1e00000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=16,weight=600,esc=900,'A'",
+      "result": "box=11:10,origin=0:10,inc=11:0,size=40,bits=04000000040000000a0000000a00000011000000110000001f0000002080000020800000f1e00000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=16,weight=400,esc=900,'A'",
+      "result": "box=8:8,origin=0:8,inc=8:0,size=32,bits=38000000180000001800000024000000240000003c00000042000000e7000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=16,weight=600,esc=900,'A'",
+      "result": "box=8:8,origin=0:8,inc=8:0,size=32,bits=38000000180000001800000024000000240000003c00000042000000e7000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=16,weight=400,esc=900,'A'",
+      "result": "box=9:9,origin=0:9,inc=9:0,size=36,bits=08000000140000001400000014000000220000003e0000002200000041000000e3800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=16,weight=700,esc=900,'A'",
+      "result": "box=9:9,origin=0:9,inc=9:0,size=36,bits=08000000140000001400000014000000220000003e0000002200000041000000e3800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=16,weight=400,esc=900,'l'",
+      "result": "box=1:10,origin=1:10,inc=3:0,size=40,bits=80000000800000008000000080000000800000008000000080000000800000008000000080000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=16,weight=600,esc=900,'l'",
+      "result": "box=1:10,origin=1:10,inc=3:0,size=40,bits=80000000800000008000000080000000800000008000000080000000800000008000000080000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=16,weight=400,esc=900,'l'",
+      "result": "box=3:11,origin=0:11,inc=3:0,size=44,bits=40000000c00000004000000040000000400000004000000040000000400000004000000040000000e0000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=16,weight=600,esc=900,'l'",
+      "result": "box=3:11,origin=0:11,inc=3:0,size=44,bits=40000000c00000004000000040000000400000004000000040000000400000004000000040000000e0000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=16,weight=400,esc=900,'l'",
+      "result": "box=7:9,origin=1:9,inc=8:0,size=36,bits=3000000010000000100000001000000010000000100000001000000010000000fe000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=16,weight=600,esc=900,'l'",
+      "result": "box=7:9,origin=1:9,inc=8:0,size=36,bits=3000000010000000100000001000000010000000100000001000000010000000fe000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=16,weight=400,esc=900,'l'",
+      "result": "box=6:9,origin=0:9,inc=6:0,size=36,bits=60000000a00000001000000030000000300000003000000050000000540000008c000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=16,weight=700,esc=900,'l'",
+      "result": "box=6:9,origin=0:9,inc=6:0,size=36,bits=60000000a00000001000000030000000300000003000000050000000540000008c000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=24,weight=400,esc=0,'A'",
+      "result": "box=13:15,origin=0:15,inc=13:0,size=60,bits=07000000070000000d8000000d8000000d80000018c0000018c0000018c000003fe000003fe00000603000006030000060300000c0180000c0180000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=24,weight=600,esc=0,'A'",
+      "result": "box=13:15,origin=0:15,inc=13:0,size=60,bits=07000000070000000d8000000d8000000d80000018c0000018c0000018c000003fe000003fe00000603000006030000060300000c0180000c0180000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=24,weight=400,esc=0,'A'",
+      "result": "box=14:14,origin=0:14,inc=14:0,size=56,bits=0100000003000000038000000580000004c0000004c0000008c00000086000001fe0000010600000203000002030000060380000f07c0000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=24,weight=600,esc=0,'A'",
+      "result": "box=14:14,origin=0:14,inc=14:0,size=56,bits=0100000003000000038000000580000004c0000004c0000008c00000086000001fe0000010600000203000002030000060380000f07c0000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=24,weight=400,esc=0,'A'",
+      "result": "box=15:13,origin=-1:13,inc=13:0,size=52,bits=1f800000028000000440000004400000044000000820000008200000082000001ff00000101000001010000020080000f83e0000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=24,weight=600,esc=0,'A'",
+      "result": "box=15:13,origin=-1:13,inc=13:0,size=52,bits=1f800000028000000440000004400000044000000820000008200000082000001ff00000101000001010000020080000f83e0000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=24,weight=400,esc=0,'A'",
+      "result": "box=14:14,origin=0:14,inc=14:0,size=56,bits=030000000300000003000000058000000580000008c0000008c0000008c000001fe0000010600000203000002030000060380000f07c0000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=24,weight=700,esc=0,'A'",
+      "result": "box=14:14,origin=0:14,inc=14:0,size=56,bits=030000000300000003000000058000000580000008c0000008c0000008c000001fe0000010600000203000002030000060380000f07c0000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=24,weight=400,esc=0,'l'",
+      "result": "box=2:15,origin=1:15,inc=4:0,size=60,bits=c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=24,weight=600,esc=0,'l'",
+      "result": "box=2:15,origin=1:15,inc=4:0,size=60,bits=c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=24,weight=400,esc=0,'l'",
+      "result": "box=4:15,origin=1:15,inc=6:0,size=60,bits=60000000e0000000600000006000000060000000600000006000000060000000600000006000000060000000600000006000000060000000f0000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=24,weight=600,esc=0,'l'",
+      "result": "box=4:15,origin=1:15,inc=6:0,size=60,bits=60000000e0000000600000006000000060000000600000006000000060000000600000006000000060000000600000006000000060000000f0000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=24,weight=400,esc=0,'l'",
+      "result": "box=9:14,origin=2:14,inc=13:0,size=56,bits=78000000080000000800000008000000080000000800000008000000080000000800000008000000080000000800000008000000ff800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=24,weight=600,esc=0,'l'",
+      "result": "box=9:14,origin=2:14,inc=13:0,size=56,bits=78000000080000000800000008000000080000000800000008000000080000000800000008000000080000000800000008000000ff800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=24,weight=400,esc=0,'l'",
+      "result": "box=10:14,origin=1:14,inc=12:0,size=56,bits=30000000480000004800000004000000040000000c0000000c0000001c0000001a00000032000000320000006240000062400000c1800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=24,weight=700,esc=0,'l'",
+      "result": "box=10:14,origin=1:14,inc=12:0,size=56,bits=30000000480000004800000004000000040000000c0000000c0000001c0000001a00000032000000320000006240000062400000c1800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=24,weight=400,esc=300,'A'",
+      "result": "box=13:15,origin=0:15,inc=13:0,size=60,bits=07000000070000000d8000000d8000000d80000018c0000018c0000018c000003fe000003fe00000603000006030000060300000c0180000c0180000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=24,weight=600,esc=300,'A'",
+      "result": "box=13:15,origin=0:15,inc=13:0,size=60,bits=07000000070000000d8000000d8000000d80000018c0000018c0000018c000003fe000003fe00000603000006030000060300000c0180000c0180000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=24,weight=400,esc=300,'A'",
+      "result": "box=14:14,origin=0:14,inc=14:0,size=56,bits=0100000003000000038000000580000004c0000004c0000008c00000086000001fe0000010600000203000002030000060380000f07c0000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=24,weight=600,esc=300,'A'",
+      "result": "box=14:14,origin=0:14,inc=14:0,size=56,bits=0100000003000000038000000580000004c0000004c0000008c00000086000001fe0000010600000203000002030000060380000f07c0000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=24,weight=400,esc=300,'A'",
+      "result": "box=13:12,origin=0:12,inc=13:0,size=48,bits=3f0000000500000008800000088000000880000010400000104000003fe00000202000002020000040100000f0780000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=24,weight=600,esc=300,'A'",
+      "result": "box=13:12,origin=0:12,inc=13:0,size=48,bits=3f0000000500000008800000088000000880000010400000104000003fe00000202000002020000040100000f0780000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=24,weight=400,esc=300,'A'",
+      "result": "box=14:14,origin=0:14,inc=14:0,size=56,bits=030000000300000003000000058000000580000008c0000008c0000008c000001fe0000010600000203000002030000060380000f07c0000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=24,weight=700,esc=300,'A'",
+      "result": "box=14:14,origin=0:14,inc=14:0,size=56,bits=030000000300000003000000058000000580000008c0000008c0000008c000001fe0000010600000203000002030000060380000f07c0000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=24,weight=400,esc=300,'l'",
+      "result": "box=2:15,origin=1:15,inc=4:0,size=60,bits=c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=24,weight=600,esc=300,'l'",
+      "result": "box=2:15,origin=1:15,inc=4:0,size=60,bits=c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=24,weight=400,esc=300,'l'",
+      "result": "box=4:15,origin=1:15,inc=6:0,size=60,bits=60000000e0000000600000006000000060000000600000006000000060000000600000006000000060000000600000006000000060000000f0000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=24,weight=600,esc=300,'l'",
+      "result": "box=4:15,origin=1:15,inc=6:0,size=60,bits=60000000e0000000600000006000000060000000600000006000000060000000600000006000000060000000600000006000000060000000f0000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=24,weight=400,esc=300,'l'",
+      "result": "box=9:13,origin=2:13,inc=13:0,size=52,bits=780000000800000008000000080000000800000008000000080000000800000008000000080000000800000008000000ff800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=24,weight=600,esc=300,'l'",
+      "result": "box=9:13,origin=2:13,inc=13:0,size=52,bits=780000000800000008000000080000000800000008000000080000000800000008000000080000000800000008000000ff800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=24,weight=400,esc=300,'l'",
+      "result": "box=10:14,origin=1:14,inc=12:0,size=56,bits=30000000480000004800000004000000040000000c0000000c0000001c0000001a00000032000000320000006240000062400000c1800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=24,weight=700,esc=300,'l'",
+      "result": "box=10:14,origin=1:14,inc=12:0,size=56,bits=30000000480000004800000004000000040000000c0000000c0000001c0000001a00000032000000320000006240000062400000c1800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=24,weight=400,esc=900,'A'",
+      "result": "box=13:15,origin=0:15,inc=13:0,size=60,bits=07000000070000000d8000000d8000000d80000018c0000018c0000018c000003fe000003fe00000603000006030000060300000c0180000c0180000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=24,weight=600,esc=900,'A'",
+      "result": "box=13:15,origin=0:15,inc=13:0,size=60,bits=07000000070000000d8000000d8000000d80000018c0000018c0000018c000003fe000003fe00000603000006030000060300000c0180000c0180000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=24,weight=400,esc=900,'A'",
+      "result": "box=14:14,origin=0:14,inc=14:0,size=56,bits=0100000003000000038000000580000004c0000004c0000008c00000086000001fe0000010600000203000002030000060380000f07c0000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=24,weight=600,esc=900,'A'",
+      "result": "box=14:14,origin=0:14,inc=14:0,size=56,bits=0100000003000000038000000580000004c0000004c0000008c00000086000001fe0000010600000203000002030000060380000f07c0000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=24,weight=400,esc=900,'A'",
+      "result": "box=13:12,origin=0:12,inc=13:0,size=48,bits=3f0000000500000008800000088000000880000010400000104000003fe00000202000002020000040100000f0780000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=24,weight=600,esc=900,'A'",
+      "result": "box=13:12,origin=0:12,inc=13:0,size=48,bits=3f0000000500000008800000088000000880000010400000104000003fe00000202000002020000040100000f0780000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=24,weight=400,esc=900,'A'",
+      "result": "box=14:14,origin=0:14,inc=14:0,size=56,bits=030000000300000003000000058000000580000008c0000008c0000008c000001fe0000010600000203000002030000060380000f07c0000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=24,weight=700,esc=900,'A'",
+      "result": "box=14:14,origin=0:14,inc=14:0,size=56,bits=030000000300000003000000058000000580000008c0000008c0000008c000001fe0000010600000203000002030000060380000f07c0000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=24,weight=400,esc=900,'l'",
+      "result": "box=2:15,origin=1:15,inc=4:0,size=60,bits=c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Arial\",h=24,weight=600,esc=900,'l'",
+      "result": "box=2:15,origin=1:15,inc=4:0,size=60,bits=c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000c0000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=24,weight=400,esc=900,'l'",
+      "result": "box=4:15,origin=1:15,inc=6:0,size=60,bits=60000000e0000000600000006000000060000000600000006000000060000000600000006000000060000000600000006000000060000000f0000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Times New Roman\",h=24,weight=600,esc=900,'l'",
+      "result": "box=4:15,origin=1:15,inc=6:0,size=60,bits=60000000e0000000600000006000000060000000600000006000000060000000600000006000000060000000600000006000000060000000f0000000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=24,weight=400,esc=900,'l'",
+      "result": "box=9:13,origin=2:13,inc=13:0,size=52,bits=780000000800000008000000080000000800000008000000080000000800000008000000080000000800000008000000ff800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Courier New\",h=24,weight=600,esc=900,'l'",
+      "result": "box=9:13,origin=2:13,inc=13:0,size=52,bits=780000000800000008000000080000000800000008000000080000000800000008000000080000000800000008000000ff800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=24,weight=400,esc=900,'l'",
+      "result": "box=10:14,origin=1:14,inc=12:0,size=56,bits=30000000480000004800000004000000040000000c0000000c0000001c0000001a00000032000000320000006240000062400000c1800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    },
+    {
+      "function": "glyph outline",
+      "args": "\"Symbol\",h=24,weight=700,esc=900,'l'",
+      "result": "box=10:14,origin=1:14,inc=12:0,size=56,bits=30000000480000004800000004000000040000000c0000000c0000001c0000001a00000032000000320000006240000062400000c1800000",
+      "section": "the engine's own metrics and bitmap for a plain and a smeared glyph"
+    }
+  ]
+}
