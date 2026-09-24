@@ -9347,7 +9347,7 @@ can see it.
 **Dropout control was hardcoded on.** `Surface.outlineText` passed `dropout:
 true` to every fill, while the interpreter has been computing the real answer
 from `SCANCTRL` all along and handing it back as `fitted.dropout`. It is not
-always yes: **Arial turns dropout control off above sixteen pixels per em**, so
+always yes: **Arial turns dropout control off above seventeen pixels per em**, so
 `lfHeight` 24 -- twenty-one pixels per em, forty-two of the recorded glyphs -- was
 being drawn as though the font had asked for rescues it explicitly declined.
 
@@ -16519,7 +16519,7 @@ glyph with **no** program never runs anything, and is scan-converted with
 This asked `prep` only where a glyph had a program to run. Where it did not,
 `hintedOutline` came back with no answer at all and the caller fell back to
 dropout control being **on**. That is wrong for every face that gives it up at a
-size: Courier New above forty-four pixels per em, Arial above sixteen.
+size: Courier New above forty-four pixels per em, Arial above seventeen.
 
 It had never shown, because on a square pixel the forty-eight pixel cap of 8e
 refuses the same rescues for a different reason. 8g takes that cap off on a

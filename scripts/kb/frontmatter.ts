@@ -111,15 +111,27 @@ export function parsePage(file: string, text: string): { front: FrontMatter; bod
       throw new Error(`${where}: no field "${key}" in the schema; see kb/README.md`);
     }
 
-    if (value === '') {
+    /* A list too long for one line is the way Prettier wraps it: the key on
+     * its own, then the brackets and one item a line, indented. */
+    let list = value;
+
+    if (value === '' && lines[index + 1]?.trim().startsWith('[')) {
+      list = '';
+
+      while (index + 1 < end && !list.endsWith(']')) {
+        list += lines[++index].trim();
+      }
+    }
+
+    if (list === '') {
       raw[key] = {};
       nested = key;
-    } else if (value.startsWith('[')) {
-      if (!value.endsWith(']')) {
-        throw new Error(`${where}: a list is written on one line, [a, b]`);
+    } else if (list.startsWith('[')) {
+      if (!list.endsWith(']')) {
+        throw new Error(`${where}: a list is not closed with ]`);
       }
 
-      raw[key] = value
+      raw[key] = list
         .slice(1, -1)
         .split(',')
         .map((item) => item.trim())

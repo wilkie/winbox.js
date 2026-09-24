@@ -53,7 +53,8 @@ lands in both.
 ## Front matter
 
 Every page starts with a front matter block. It is a strict subset of YAML --
-`key: value`, `key: [a, b]`, and one level of nesting for `versions` -- and a
+`key: value`, `key: [a, b]` (or that list wrapped one item a line, as
+Prettier writes a long one), and one level of nesting for `versions` -- and a
 field the schema does not name is an error, not something ignored.
 
 ```yaml

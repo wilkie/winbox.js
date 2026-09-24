@@ -156,10 +156,25 @@ describe('the knowledge base', () => {
     });
 
     it('reads a version quoted either way, as Prettier may write it', () => {
-      const double = parsePage('kb/x.md', '---\nkind: topic\nname: x\nversions:\n  "3.1": exact\n---\n');
-      const single = parsePage('kb/x.md', "---\nkind: topic\nname: x\nversions:\n  '3.1': exact\n---\n");
+      const double = parsePage(
+        'kb/x.md',
+        '---\nkind: topic\nname: x\nversions:\n  "3.1": exact\n---\n'
+      );
+      const single = parsePage(
+        'kb/x.md',
+        "---\nkind: topic\nname: x\nversions:\n  '3.1': exact\n---\n"
+      );
 
       expect(single.front.versions).toEqual(double.front.versions);
+    });
+
+    it('reads a list wrapped one item a line, as Prettier writes a long one', () => {
+      const wrapped = parsePage(
+        'kb/x.md',
+        '---\nkind: topic\nname: x\nprobes:\n  [\n    font,\n    glyphs,\n  ]\n---\n'
+      );
+
+      expect(wrapped.front.probes).toEqual(['font', 'glyphs']);
     });
 
     it('refuses a version that is not one', () => {
