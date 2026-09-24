@@ -1821,10 +1821,13 @@ export class Surface {
                * masked off: the transparent rule. With `ETO_OPAQUE` and a
                * rectangle covering the rows, `0744` carries the end on to the
                * next byte boundary but not past the rectangle, whose right is
-               * the bold cell: the opaque rule, byte and cell both. That GDI
-               * passes the array is read from the behaviour, not the code: the
-               * loop without one would add the bold column to every cell,
-               * the last one's included.
+               * the bold cell: the opaque rule, byte and cell both. GDI's side
+               * is `GDI.EXE` seg1 `6223`: the array is a character's width
+               * plus a pixel when the device has `TC_EA_DOUBLE` (`6b73`), and
+               * in `OPAQUE` mode the rectangle is those widths summed. A
+               * Hercules has no `TC_EA_DOUBLE`, so its smear is left to GDI
+               * (seg16 `0030`, not yet read) and the driver's end never cuts
+               * it.
                *
                * The stack-probe cell is kept because it is that rectangle, and
                * the transparent one is refused at 312 of 640 as a clip at the

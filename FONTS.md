@@ -18180,10 +18180,30 @@ reaches:
   memory: **the opaque rule**, byte and cell both, and the destination's
   byte, which is why it is the one rule here that depends on the pen.
 
-That GDI passes the array is read from the behaviour and not from GDI's code.
-The loop without one would add the bold column to every cell, the last one's
-included, and the last overhang would be drawn when the transparent records
-say it never is. Where the turned glyph's second pixel comes from has not been
+**And GDI's side, read out of `GDI.EXE` seg1.** A DC holding a TrueType font
+does not send its text straight to the driver: `397a` routes it to `6223`,
+GDI's own TrueType text, which realises the glyphs into a font the driver can
+draw (`7010`) and builds a **width array on the stack**, one word a character
+(`633b`). `6874` fills it: each character's width from the realised font's
+table, plus one pixel when the text transform asks for double weight
+(`txfAccelerator & 0x200`) **and the device's `TEXTCAPS` has
+`TC_EA_DOUBLE`** (`6b73`), plus the character extra (`6c9d`). Then it
+corrects each width by the difference between consecutive characters'
+signed bearing bytes (`69a9`), since the driver's glyph bitmaps begin at the
+box, not at the pen. `65be` hands the array to the driver's `ExtTextOut`
+(`call far [bx+0x34]`). In `OPAQUE` mode (`637f`: the drawing mode's
+background mode is 2) GDI sums the same widths into the text's box and
+passes it as the opaque rectangle with `ETO_OPAQUE` (`63b9`–`64d2`). That is
+the rectangle `0744` stops at.
+
+The same test explains the Hercules. Its `TEXTCAPS` lacks `TC_EA_DOUBLE`,
+so its widths get no bold pixel and its driver no double-weight request. The
+accelerator bit the driver cannot do is left for GDI (`35a9`–`3748`, into
+seg16 `0030`), so the smear there is GDI's own and not the driver's. That
+fits section 3's "a Hercules draws it wherever the smear reaches", but
+seg16 `0030` itself has not been read.
+
+Where the turned glyph's second pixel comes from has not been
 read, and it stays a measurement.
 
 That closes `rotstyle`: **190 of 190**. `smearrun` and `smearmod` are 640 of 640
