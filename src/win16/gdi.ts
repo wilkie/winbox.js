@@ -50,6 +50,7 @@ import { CreateSolidBrush } from './gdi/CreateSolidBrush.js';
 import { DeleteDC } from './gdi/DeleteDC.js';
 import { DeleteObject } from './gdi/DeleteObject.js';
 import { GetBitmapBits } from './gdi/GetBitmapBits.js';
+import { GetGlyphOutline } from './gdi/GetGlyphOutline.js';
 import { GetDeviceCaps } from './gdi/GetDeviceCaps.js';
 import { GetObject } from './gdi/GetObject.js';
 import { GetRasterizerCaps } from './gdi/GetRasterizerCaps.js';
@@ -497,7 +498,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'EngineMakeFontDir', 10],
       [Gdi.stub, 'GetCharAbcWidths', 10],
       [Gdi.stub, 'GetOutlineTextMetrics', 8],
-      [Gdi.stub, 'GetGlyphOutline', 22],
+      [GetGlyphOutline, 'GetGlyphOutline', 22, [HDC, UINT, UINT, [GLYPHMETRICS], DWORD, FARPTR, [MAT2]], DWORD],
       // 310 //
       [Gdi.stub, 'CreateScalableFontResource', 12],
       [Gdi.stub, 'GetFontData', 18],
@@ -728,6 +729,47 @@ export class RASTERIZER_STATUS extends Struct {
       ['nSize', INT],
       ['wFlags', INT],
       ['nLanguageID', INT],
+    ]);
+  }
+}
+
+/**
+ * The **GLYPHMETRICS** structure contains information about the placement and
+ * orientation of a glyph in a character cell, as `GetGlyphOutline` returns it.
+ *
+ * gmBlackBoxX, gmBlackBoxY: the smallest rectangle that encloses the glyph.
+ * gmptGlyphOriginX, gmptGlyphOriginY: the upper left corner of that
+ * rectangle, from the character's origin -- the `POINT` `gmptGlyphOrigin`.
+ * gmCellIncX, gmCellIncY: how far the origin moves to the next character.
+ */
+export class GLYPHMETRICS extends Struct {
+  constructor() {
+    super([
+      ['gmBlackBoxX', UINT],
+      ['gmBlackBoxY', UINT],
+      ['gmptGlyphOriginX', INT],
+      ['gmptGlyphOriginY', INT],
+      ['gmCellIncX', INT],
+      ['gmCellIncY', INT],
+    ]);
+  }
+}
+
+/**
+ * The **MAT2** structure is the transformation matrix `GetGlyphOutline` is
+ * given: four `FIXED` values, each a fraction word and then a value word.
+ */
+export class MAT2 extends Struct {
+  constructor() {
+    super([
+      ['eM11fract', UINT],
+      ['eM11value', INT],
+      ['eM12fract', UINT],
+      ['eM12value', INT],
+      ['eM21fract', UINT],
+      ['eM21value', INT],
+      ['eM22fract', UINT],
+      ['eM22value', INT],
     ]);
   }
 }

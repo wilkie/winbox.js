@@ -18368,6 +18368,32 @@ sum instead was a pixel or two short on 28 of the 32. The alignment's width is t
 same `GetTextExtent`, so it follows. With it both displays are 192 of 192;
 the Symbol slants agreed from the start.
 
+**`GetGlyphOutline`, which had been a stub.** `smearglf` was recorded to ask
+the engine about a smeared glyph, and it answers a second question too: what
+the function returns at all. Its 96 records say that the bitmap is the
+character exactly as `TextOut` draws it upright at the realised font's size,
+hinted -- one-pixel strokes for Arial's `A` at fourteen per em, as drawn --
+and nothing else:
+
+- **Not turned.** At every escapement the advance comes back across the page,
+  `inc=9:0` at ninety degrees, and the bitmap is the upright glyph. The size
+  is still the turned font's own, so Times New Roman at sixteen answers eleven
+  wide turned and ten upright.
+- **Not smeared.** Every plain and smeared pair is byte for byte the same.
+- **The box is the scan converter's**, across: Times New Roman's `A` at
+  sixteen is ten wide with nine columns inked, the blank column section 9
+  describes.
+- **A strike has no outline.** Symbol at sixteen upright fails: the mapper
+  hands out the bitmap face there, and `GetGlyphOutline` answers only for
+  TrueType.
+
+The rows are one bit a pixel, top first, each padded to a doubleword, and the
+return value is their size. So it is implemented as that: the character drawn
+upright and unsmeared into a scratch surface, read back, with the box across
+taken from the scan converter. 96 of 96. `GGO_NATIVE` and any matrix but the
+identity have not been recorded and are not implemented; the first fails, the
+second is drawn as the identity.
+
 That closes `rotstyle`: **190 of 190**. `smearrun` and `smearmod` are 640 of 640
 each, and the glyph and style corpora the single-glyph rule came from are
 unchanged.

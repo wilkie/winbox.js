@@ -26,6 +26,7 @@ function entryOf(font) {
 
 export class Surface {
   declare boldOverhang: any;
+  declare _glyphBox: any;
 
 
   /* **And the shear is very probably not this at all.**
@@ -795,6 +796,99 @@ export class Surface {
     return {
       toAcross: (value) => (H === V ? value : Math.floor((value * across) / 256)),
       toDown: (value) => (H === V ? value : Math.floor((value * down) / 256)),
+    };
+  }
+
+  /**
+   * One character of the selected outline face as `GetGlyphOutline` answers
+   * for it: its box, the box's corner from the character's origin, its
+   * advance, and its rows.
+   *
+   * **Recorded** by `smearglf`: the glyph is the one `TextOut` draws upright
+   * at the realised font's own size, hinted, and nothing else -- not turned
+   * by the font's escapement (the advance comes back across the page at every
+   * angle) and not smeared by a bold GDI would synthesise (every plain and
+   * smeared pair is byte for byte the same). The size is still the turned
+   * font's, which is why Times New Roman at sixteen answers eleven wide
+   * turned and ten upright. So it is drawn here, upright and unsmeared, into
+   * a scratch surface, and read back.
+   */
+  glyphOutline(code) {
+    const font: any = this._font;
+
+    if (!font?.outline) {
+      return null;
+    }
+
+    const style = font.style ?? {};
+    const synthesised = (style.weight ?? 0) > 550 && !style.faceBold;
+    const upright = Object.create(font, {
+      style: { value: { ...style, weight: synthesised ? 400 : style.weight } },
+      escapement: { value: 0 },
+    });
+
+    const size = Math.max(64, font.ppem * 4);
+    const pad = Math.floor(size / 4);
+    const scratch: any = Surface.offscreen(size, size);
+
+    scratch.font = upright;
+    scratch.backMode = 1;
+    scratch.brush = new Brush(new Color(0xff, 0xff, 0xff));
+    scratch.fillRect(0, 0, size, size);
+    scratch.outlineText(pad, pad, String.fromCharCode(code));
+
+    const view = scratch.lock(0, 0, size, size);
+    const inked = (column, row) => view.getUint8((row * size + column) * 4) < 0x80;
+
+    let left = size;
+    let top = size;
+    let right = -1;
+    let bottom = -1;
+
+    for (let row = 0; row < size; row++) {
+      for (let column = 0; column < size; column++) {
+        if (inked(column, row)) {
+          left = Math.min(left, column);
+          right = Math.max(right, column);
+          top = Math.min(top, row);
+          bottom = Math.max(bottom, row);
+        }
+      }
+    }
+
+    const advance = font.outlineAdvance(code);
+
+    /* Across, the box is the scan converter's, which can carry a blank column
+     * the ink does not reach -- Times New Roman's `A` at sixteen is ten wide
+     * with nine columns inked. See FONTS.md section 9. */
+    if (right >= 0 && scratch._glyphBox) {
+      left = scratch._glyphBox.left;
+      right = scratch._glyphBox.right - 1;
+    }
+
+    if (right < 0) {
+      return { width: 0, height: 0, originX: 0, originY: 0, advance, rows: [] };
+    }
+
+    const rows: number[][] = [];
+
+    for (let row = top; row <= bottom; row++) {
+      const bits: number[] = [];
+
+      for (let column = left; column <= right; column++) {
+        bits.push(inked(column, row) ? 1 : 0);
+      }
+
+      rows.push(bits);
+    }
+
+    return {
+      width: right - left + 1,
+      height: bottom - top + 1,
+      originX: left - pad,
+      originY: pad + style.ascent - top,
+      advance,
+      rows,
     };
   }
 
@@ -1900,6 +1994,9 @@ export class Surface {
         });
 
         const box = (inked as any).box ?? { left: 0, right: this.width };
+
+        /* Kept for `glyphOutline`, whose black box is this and not the ink. */
+        this._glyphBox = box;
 
         /* The cell GDI lays the glyph out in: the box's left edge plus the
          * device advance. Read out of GDI's memory beside the box, it is

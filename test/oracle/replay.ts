@@ -13,6 +13,7 @@ import { Brush } from '../../src/raster/brush.js';
 import { Color } from '../../src/raster/color.js';
 import { GetStockObject } from '../../src/win16/gdi/GetStockObject.js';
 import { SelectObject } from '../../src/win16/gdi/SelectObject.js';
+import { GetGlyphOutline } from '../../src/win16/gdi/GetGlyphOutline.js';
 import { GetTextExtent } from '../../src/win16/gdi/GetTextExtent.js';
 import { GetTextFace } from '../../src/win16/gdi/GetTextFace.js';
 import { GetTextMetrics } from '../../src/win16/gdi/GetTextMetrics.js';
@@ -2333,6 +2334,34 @@ const ADAPTERS: Record<
     return [...TIE_SPECIMEN]
       .map((character) => `${character}=${widths[character.charCodeAt(0) - 32]}`)
       .join(',');
+  },
+
+  /* `smearglf` asks `GetGlyphOutline` for a bitmap with the identity matrix
+   * and writes back the metrics, the size and the bytes. */
+  'glyph outline'(context, args) {
+    const character = String(args[args.length - 1]).replace(/^'|'$/g, '');
+    const { hdc } = context.mappedFont([
+      ...args.slice(0, -1),
+      String(args[0]).replace(/^"|"$/g, '') === 'Symbol' ? 'charset=2' : 'charset=0',
+      'ori=' + String(args.find((field) => /^esc=/.test(String(field))) ?? 'esc=0').slice(4),
+    ]);
+    const metrics: any = {};
+    const identity = { eM11fract: 0, eM11value: 1, eM12fract: 0, eM12value: 0, eM21fract: 0, eM21value: 0, eM22fract: 0, eM22value: 1 };
+    const buffer = context.place('', 1024);
+    const size = GetGlyphOutline.call(context, hdc, character.charCodeAt(0), 1, metrics, 1024, buffer.far, identity) >>> 0;
+
+    if (size === 0xffffffff) {
+      return 'failed';
+    }
+
+    const core = context.machine.cpu.core;
+    let bits = '';
+
+    for (let at = 0; at < Math.min(size, 1024); at++) {
+      bits += core.read8(buffer.segment, buffer.offset + at).toString(16).padStart(2, '0');
+    }
+
+    return `box=${metrics.gmBlackBoxX}:${metrics.gmBlackBoxY},origin=${metrics.gmptGlyphOriginX}:${metrics.gmptGlyphOriginY},inc=${metrics.gmCellIncX}:${metrics.gmCellIncY},size=${size},bits=${bits}`;
   },
 
   /* `simext` asks only `GetTextExtent`, of plain, smeared and slanted
