@@ -1309,6 +1309,7 @@ export class Surface {
 
     let pen = x;
     let index = 0;
+    const count = [...String(text)].length;
 
     for (const character of String(text)) {
       const glyph = outline.glyphFor(character.charCodeAt(0));
@@ -1410,7 +1411,22 @@ export class Surface {
       /* A rotated glyph is carried through the scaler's own transform, from
        * the design outline, and arrives in pixels already turned. See
        * `Surface.turnOutline`. */
-      const fitted = rotated
+      /* A made-up slant turned goes through the same transform, with the
+       * shear in the matrix rather than applied to the outline afterwards; see
+       * `Surface.slantedTurn`. */
+      const fitted = turn && italic
+        ? {
+            ...raw,
+            hinted: true,
+            scaled: true,
+            turnedAlready: true,
+            contours: Surface.transformOutline(
+              outline.outlineOf(glyph),
+              Surface.slantedTurn(entryCos, entrySin),
+              outline.unitsPerEm
+            ),
+          }
+        : rotated
         ? {
             ...raw,
             hinted: true,
@@ -1627,7 +1643,7 @@ export class Surface {
          * across, and slanting leans it over by an amount proportional to how
          * far above the baseline each point sits.
          */
-        const slanted = italic
+        const slanted = italic && !fitted.turnedAlready
           ? this.slant(contours, fitted.scaled ? 1 : scale, ppem, acrossPixels)
           : contours;
 
@@ -1697,7 +1713,7 @@ export class Surface {
           /* And the box is built from the sheared corners of the glyph's
            * bounding box rather than from the outline's own extent; see
            * `leanOf` and the note in `glyph-raster`. */
-          lean: italic ? Surface.leanOf(ppem, acrossPixels) : 0,
+          lean: italic && !fitted.turnedAlready ? Surface.leanOf(ppem, acrossPixels) : 0,
         });
 
         const box = (inked as any).box ?? { left: 0, right: this.width };
@@ -1715,6 +1731,10 @@ export class Surface {
          * the cell too narrow on an EGA, which clipped the bold overhang. On a
          * square pixel the two are the same number. */
         const cell = box.left + font.outlineAdvance(character.charCodeAt(0));
+
+        /* The glyph the string ends on, whose overhang is the only one with a
+         * rule to it; see below. */
+        const lastGlyph = index === count - 1;
 
         /* Whether this driver draws the emboldening overhang where the colour
          * drivers drop it; see the condition below.
@@ -1773,7 +1793,36 @@ export class Surface {
                * closes seven of the ten and dropping only the cell test closes
                * three, against ten for drawing it always.
                */
-              if (bold && (spills || column + 1 < box.right || (box.right <= cell && box.right % 8 !== 0))) {
+              /* Both of those conditions are the **last** glyph's, and only
+               * when the ground is opaque -- which every bold glyph above was
+               * drawn with, one to a string.
+               *
+               * **Recorded** by `smearrun` and `smearmod`, strings of one to
+               * three and four glyphs in four faces at every byte phase of the
+               * pen, 1,280 records. Every glyph but the last draws its whole
+               * overhang, into the next one's cell, in both modes and at every
+               * phase: 0 of those columns is dropped. The last glyph keeps the
+               * cell and the byte when the ground is opaque -- each of the 47
+               * columns it loses there is one of the two -- and when it is
+               * transparent it loses the column past its box at every phase,
+               * in all 640 transparent records; its overhang inside the box is
+               * drawn. What the driver does to make that difference is not
+               * read out yet: that is the measurement, not the mechanism.
+               * The stack-probe cell is kept because it is what sorts the
+               * opaque records, and the transparent one is refused at 312 of
+               * 640 as a clip at the pen plus the plain advances and at 320
+               * as one at the ground's right.
+               *
+               * Turned, none of it: the overhang is a column to the right on
+               * the device and not along the text, and it is always drawn --
+               * the cell turns with the text and clips nothing (above). All
+               * 320 of `smearmod`'s turned records in both modes, and
+               * `rotstyle`'s fifteen; a smear along the text, with the same
+               * advance, is refused at 0 of either.
+               */
+              const cellRule = column + 1 < box.right || (box.right <= cell && box.right % 8 !== 0);
+              const overhangRule = !lastGlyph ? true : this.backMode === 2 ? cellRule : column + 1 < box.right;
+              if (bold && (turn || spills || overhangRule)) {
                 this.context.setPixel(column + 1, row, colour);
               }
             }
@@ -1806,14 +1855,20 @@ export class Surface {
        * a weight of 600 is its regular file smeared, and Windows draws the `B`
        * of "AB" a column further on. **Recorded** by `rotstyle`, upright as
        * well as turned; nothing before it drew two smeared outline characters
-       * in a row. */
+       * in a row.
+       *
+       * Turned it is **two**. `rotstyle`'s "AB" puts the `B` two pixels further
+       * along than the plain one at all four angles, and `smearmod`'s three-
+       * glyph strings say it is two a glyph and not one a glyph and one more:
+       * all 320 of its turned records at two, 70 at one. Why a turned bold
+       * glyph costs the extra pixel is not read out; it is measured. */
       /* The same advance a turned glyph steps by as an upright one. The
        * design advance scaled and left fractional, which is what an unfitted
        * glyph would carry, is refused: the letters are 768 wrong pixels with
        * it and `rotangle` 32 of its 40 oblique boxes. Rounded, it is this. */
       pen += run.advances
         ? run.advances[index] + this.charExtra
-        : font.outlineAdvance(character.charCodeAt(0)) + this.charExtra + (bold ? 1 : 0);
+        : font.outlineAdvance(character.charCodeAt(0)) + this.charExtra + (bold ? (turn ? 2 : 1) : 0);
       index++;
     }
   }
@@ -1829,6 +1884,24 @@ export class Surface {
    * sixteen and the away-from-nought are the last ten of `rotpen`'s: at
    * thirty-three per em and thirty degrees the sine entry is exactly 16.5.
    */
+  /**
+   * A made-up slant turned: the turn's whole-pixel matrix with a third of its
+   * first row, floored, added to its second. 8u.
+   *
+   * Upright that is the lean section 3 measured, `floor(ppem / 3)` pixels per
+   * em. Turned, the third is taken of the matrix's own entries and floored as
+   * a signed number, which at a half turn -- where the entry is minus the
+   * size -- leans a pixel further than the upright lean turned would.
+   *
+   * **Recorded** by `rotstyle`, Symbol slanted at two sizes and five angles:
+   * ten of ten. Shearing by the upright lean and then turning, each entry
+   * rounded, is nine; composing the upright lean with the turn's rounded
+   * entries is eight, and loses both half turns.
+   */
+  static slantedTurn(entryCos, entrySin) {
+    return [entryCos, entrySin, -entrySin + Math.floor(entryCos / 3), entryCos + Math.floor(entrySin / 3)];
+  }
+
   static turnEntries(ppem, radians) {
     const fixed = (value) => Math.round(value * 65536) / 65536;
     const away = (value) => Math.sign(value) * Math.round(Math.abs(value));
@@ -1871,22 +1944,40 @@ export class Surface {
    * phantom points would move nothing.
    */
   static turnOutline(contours, entryCos, entrySin, unitsPerEm) {
-    const stretch = Math.max(Math.abs(entryCos), Math.abs(entrySin));
+    return Surface.transformOutline(contours, [entryCos, entrySin, -entrySin, entryCos], unitsPerEm);
+  }
+
+  /**
+   * An outline carried through any matrix of whole-pixel entries, as the
+   * scaler carries it: each row scaled at its own stretch -- the larger of its
+   * two entries -- and turned by the entries divided by it. `matrix` is
+   * `[m00, m01, m10, m11]`, where across is `x * m00 + y * m10` and up is
+   * `x * m01 + y * m11`, per em. See `turnOutline` for what was read and where.
+   */
+  static transformOutline(contours, matrix, unitsPerEm) {
+    const [e00, e01, e10, e11] = matrix;
+    const stretchX = Math.max(Math.abs(e00), Math.abs(e01));
+    const stretchY = Math.max(Math.abs(e10), Math.abs(e11));
 
     /* The scale into sixty-fourths, reduced the way `3f55` reduces it. */
-    let multiplier = stretch * 64;
-    let divisor = unitsPerEm;
+    const scaler = (stretch) => {
+      let multiplier = stretch * 64;
+      let divisor = unitsPerEm;
 
-    while (multiplier % 2 === 0 && divisor % 2 === 0) {
-      multiplier /= 2;
-      divisor /= 2;
-    }
+      while (multiplier % 2 === 0 && divisor % 2 === 0) {
+        multiplier /= 2;
+        divisor /= 2;
+      }
 
-    const shifted = (divisor & (divisor - 1)) === 0;
-    const scale = (value) =>
-      shifted || value >= 0
-        ? Math.floor((value * multiplier + Math.floor(divisor / 2)) / divisor)
-        : -Math.floor((-value * multiplier + Math.floor(divisor / 2)) / divisor);
+      const shifted = (divisor & (divisor - 1)) === 0;
+
+      return (value) =>
+        shifted || value >= 0
+          ? Math.floor((value * multiplier + Math.floor(divisor / 2)) / divisor)
+          : -Math.floor((-value * multiplier + Math.floor(divisor / 2)) / divisor);
+    };
+    const scaleX = scaler(stretchX);
+    const scaleY = scaler(stretchY);
 
     const fixDiv = (numerator, denominator) =>
       Math.sign(numerator) *
@@ -1894,10 +1985,10 @@ export class Surface {
       Math.floor((Math.abs(numerator) * 65536 + Math.floor(Math.abs(denominator) / 2)) / Math.abs(denominator));
     const fixMul = (value, factor) => Math.floor((value * factor + 32768) / 65536);
 
-    const m00 = fixDiv(entryCos, stretch);
-    const m01 = fixDiv(entrySin, stretch);
-    const m10 = fixDiv(-entrySin, stretch);
-    const m11 = fixDiv(entryCos, stretch);
+    const m00 = fixDiv(e00, stretchX);
+    const m01 = fixDiv(e01, stretchX);
+    const m10 = fixDiv(e10, stretchY);
+    const m11 = fixDiv(e11, stretchY);
 
     /* And on a diagonal the whole outline is nudged a sixty-fourth across.
      *
@@ -1909,13 +2000,13 @@ export class Surface {
      * and 315 degrees were every one of `rotate`'s draws still wrong without
      * it.
      */
-    const diagonal = Math.abs(entryCos) === Math.abs(entrySin);
+    const diagonal = Math.abs(e00) === Math.abs(e01) || Math.abs(e10) === Math.abs(e11);
     const nudge = diagonal ? 1 : 0;
 
     return contours.map((contour) =>
       contour.map((point) => {
-        const x = scale(point.x);
-        const y = scale(point.y);
+        const x = scaleX(point.x);
+        const y = scaleY(point.y);
 
         return {
           ...point,

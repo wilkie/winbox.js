@@ -1745,6 +1745,98 @@ const ADAPTERS: Record<
     return turnedBox(context.drawSquare(args));
   },
 
+  /* `smearrun` draws a made-up bold, one to four glyphs, with the pen at every
+   * phase of a byte, and writes the ink and what the string measures. */
+  'smear ink'(context, args) {
+    const fields: Record<string, string> = {};
+
+    for (const field of args.slice(1)) {
+      const [name, value] = String(field).split('=');
+
+      if (value !== undefined) {
+        fields[name] = value;
+      }
+    }
+
+    const face = String(args[0]).replace(/^"|"$/g, '');
+    const text = String(fields.text).replace(/^"|"$/g, '');
+    const handle = CreateFontIndirect.call(context, {
+      lfHeight: Number(fields.h),
+      lfWidth: 0,
+      lfEscapement: Number(fields.esc ?? 0),
+      lfOrientation: Number(fields.esc ?? 0),
+      lfWeight: Number(fields.weight),
+      lfItalic: 0,
+      lfUnderline: 0,
+      lfStrikeOut: 0,
+      lfCharSet: face === 'Symbol' ? 2 : 0,
+      lfPitchAndFamily: 0,
+      lfFaceName: face,
+    });
+
+    if (!handle) {
+      throw new Unimplemented('no font mapped');
+    }
+
+    /* `smearrun` draws upright on a canvas 48 high with the pen's row fixed;
+     * `smearmod` names both halves of the pen and turns, on a square one. */
+    const [penX, penY] = String(fields.pen).includes(':') ? String(fields.pen).split(':').map(Number) : [Number(fields.pen), 4];
+    const height = fields.mode === undefined ? 48 : 128;
+    const surface: any = Surface.offscreen(128, height);
+
+    surface.font = context.handles.resolve(handle);
+    surface.backcolor = new Color(0xff, 0xff, 0xff);
+    surface.backMode = Number(fields.mode ?? 1);
+    surface.context.lineTie = context.display.lineTie;
+    surface.context.clipCaps = context.display.clipCaps;
+    surface.boldOverhang = context.display.boldOverhang;
+    surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
+    surface.fillRect(0, 0, 128, height);
+    surface.fillText(penX, penY, text);
+
+    const bytes = Buffer.from(context.readCell(surface, 128, height), 'hex');
+    const ink = (column: number, row: number) => !(bytes[row * 16 + (column >> 3)] & (0x80 >> (column & 7)));
+    let left = 128;
+    let top = height;
+    let right = -1;
+    let bottom = -1;
+
+    for (let row = 0; row < height; row++) {
+      for (let column = 0; column < 128; column++) {
+        if (ink(column, row)) {
+          left = Math.min(left, column);
+          right = Math.max(right, column);
+          top = Math.min(top, row);
+          bottom = Math.max(bottom, row);
+        }
+      }
+    }
+
+    const rows: string[] = [];
+
+    for (let row = top; right >= 0 && row <= bottom; row++) {
+      let line = '';
+
+      for (let column = left; column <= right; column += 4) {
+        let nibble = 0;
+
+        for (let bit = 0; bit < 4; bit++) {
+          nibble = (nibble << 1) | (column + bit <= right && ink(column + bit, row) ? 1 : 0);
+        }
+
+        line += nibble.toString(16);
+      }
+
+      rows.push(line);
+    }
+
+    const hdc = context.handles.allocate(surface);
+    SelectObject.call(context, hdc, handle);
+    const extent = GetTextExtent.call(context, hdc, context.lpcstr(text), text.length) & 0xffff;
+
+    return `box=${left}:${top}:${right}:${bottom},rows=${rows.join('/')},extent=${extent}`;
+  },
+
   /* `polyfill` draws `Polygon` with a null pen and a black brush on a canvas
    * a hundred and twenty-eight square. What it measures is GDI's own fill,
    * which `Surface.fillPolygon` is; the API around it -- pens, brushes, the
@@ -2715,25 +2807,6 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  /* Turned text with a smeared bold or a made-up slant.
-   *
-   * `rotstyle` draws "AB" turned one variation at a time, 190 records, and 169
-   * agree: the ground, both rules at either thickness, the alignments,
-   * `ExtTextOut` with either flag, a bold file, and everything upright but the
-   * smear. The 21 left are two things, neither guessed at:
-   *
-   * - **The smear, fifteen.** Upright as well as turned: in "AB" Windows draws
-   *   the first glyph's overhang and drops the last one's, in both faces, where
-   *   the single-glyph rule of section 3 says otherwise for Courier New's `A`.
-   *   The last glyph's smear stops at the pen plus the plain advances in all
-   *   three records that show it; three records are not enough to write it.
-   * - **The made-up slant, six.** Symbol italic turned at thirty, forty-five
-   *   and a hundred and eighty degrees. Not yet looked at.
-   */
-  'rotstyle:style ink': 'the smear in a string of more than one glyph, and the made-up slant turned',
-
-
-
   /* The styled files at cells of two hundred and seventy-four to two hundred
    * and eighty-two, where the size chosen is one pixel per em out.
    *

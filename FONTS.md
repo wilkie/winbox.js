@@ -18067,12 +18067,63 @@ box**: the scan converter returned before attaching it, and the smear's bounds
 fell back to the whole surface above the size a face gives dropout up at. Neither
 moves any other recording.
 
-What `rotstyle` leaves is 21 of its 190, in `KNOWN_GAPS`: the smear, whose
-overhang in a string of more than one glyph does not follow the single-glyph rule of section 3
--- the first glyph's is drawn and the last one's dropped, in both faces, and the
-last stops at the pen plus the plain advances in all three records that show it,
-which is not yet enough to write down; and the made-up slant turned, not yet
-looked at.
+**A made-up slant turned is one matrix, not a shear and then a turn.** Symbol
+has no italic file, so its slant is synthesised, and upright that is the lean
+section 3 measured, `floor(ppem / 3)` pixels per em. Turned, GDI hands the
+scaler the turn's whole-pixel matrix `[a, b; -b, a]` with a third of its first
+row added to its second, each third **floored as a signed number**:
+`[a, b; -b + floor(a / 3), a + floor(b / 3)]`. At a half turn, where `a` is
+minus the size, that floors away from nought and leans a pixel further than
+the upright lean turned. The scaler then takes each row's stretch separately
+-- the larger of that row's two entries -- which a pure turn never needed,
+since both its rows are the same length. Ten of ten of `rotstyle`'s slants;
+shearing by the upright lean and then turning, each entry rounded, is nine, and
+composing the upright lean with the turn's rounded entries is eight, losing
+both half turns.
+
+**The smear across a string.** Section 3's rule for the overhang column -- drawn
+inside the glyph's bold cell and where it does not begin a new byte -- was
+read one glyph at a time, and every one of those glyphs was drawn with an
+opaque ground. `rotstyle`'s "AB" is transparent, and there the first glyph's
+overhang was drawn where the rule said not to and the last one's dropped where
+it said to draw it. Two probes separate the readings.
+`oracle/probes/smearrun.c` draws one to four glyphs smeared -- "A", "AB",
+"ABA", "ABAB", "l" to "lll", "W", "WW", "BA" -- in Arial, Times New Roman and
+Courier New at 600 and Symbol at 700, at two cells, transparent, with the pen
+at every phase of a byte: 640 records. `oracle/probes/smearmod.c` draws "A",
+"AB", "ABA", "ll" and "lll" the same way opaque at every phase, and turned at
+four angles in both modes: 640 more. What they say:
+
+- **Every glyph but the last draws its whole overhang**, into the next one's
+  cell, in both modes, at every phase. Not one of those columns is dropped in
+  1,280 records.
+- **The last glyph's overhang column, the one past its box, follows the mode.**
+  Opaque, it is section 3's rule unchanged -- each of the 47 opaque records
+  that loses it loses it to the cell or the byte. Transparent, it is dropped
+  at every phase, in all 640 transparent records; whatever of the overhang
+  lies inside the box is drawn. The output does not depend on the pen's
+  phase in either mode.
+- **Turned, the overhang is a column to the right on the device**, not along
+  the text, and nothing clips it: the cell turns with the text and clips
+  nothing turned. A smear along the text is 0 of `rotstyle`'s fifteen.
+- **A turned smeared glyph advances two pixels more, not one.** With two
+  glyphs "two a glyph" and "one a glyph and one more" put the `B` in the same
+  place; the three-glyph strings say two a glyph -- all 320 turned records at
+  two, 70 at one.
+
+Clipping the last glyph's overhang at the pen plus the plain advances is
+refused at 312 of `smearrun`'s 640, and at the ground's right edge at 320;
+counting the byte from the pen is 200, from the glyph's origin 168 and from
+the box's left 152. These
+are measurements and not a mechanism. `VGA.DRV`'s `StrBlt` sets a bold flag
+when the text transform's weight is at least 700 and the font's is below it,
+and adds a column to the last character's cell and a pixel to the extent. But
+weight 600 does not reach that test, so the transparent drop, the opaque byte,
+and the turned glyph's extra pixel are not yet read out of any binary.
+
+That closes `rotstyle`: **190 of 190**. `smearrun` and `smearmod` are 640 of 640
+each, and the glyph and style corpora the single-glyph rule came from are
+unchanged.
 
 ### 8p. Where the text lands, which nothing had ever moved
 
