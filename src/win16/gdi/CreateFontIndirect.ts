@@ -82,10 +82,14 @@ export function CreateFontIndirect(lplf) {
     pitchAndFamily,
 
     /* The angle the baseline runs at, in tenths of a degree counter-clockwise.
-     * `lfOrientation` is deliberately not read: 8u measured that Windows 3.1
-     * decides on the escapement alone.
+     *
+     * And `lfOrientation`, which the *drawing* never reads -- 8u swept the two
+     * apart and the ink follows the escapement alone -- but the mapper does:
+     * `seg3:0f98` refuses an exact strike, and `203d` charges a synthesised
+     * one, when either angle is not nought. See `FontManager.map`.
      */
     escapement: lplf.lfEscapement ?? 0,
+    orientation: lplf.lfOrientation ?? 0,
 
     /* Proof quality refuses a stretched strike outright; see
      * `FontManager.choose`.

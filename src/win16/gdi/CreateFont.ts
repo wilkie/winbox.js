@@ -66,11 +66,10 @@ export function CreateFont(
   fbPitchAndFamily,
   lpszFace
 ) {
-  /* The escapement is carried; the orientation is not, and that is measured
-   * rather than assumed. 8u sweeps the two apart -- an escapement of nought
-   * with an orientation of a right angle, and the reverse, and each of them
-   * against a pair that agree -- and the drawing is decided by the escapement
-   * alone, pixel for pixel, in a face that turns and in one that cannot.
+  /* Both angles are carried. The drawing is decided by the escapement alone,
+   * which 8u measured by sweeping the two apart, pixel for pixel, in a face
+   * that turns and in one that cannot -- but the mapper reads the orientation
+   * as well, so it goes into the request. See `CreateFontIndirect`.
    *
    * Precision and quality are still carried no further.
    */
@@ -78,6 +77,7 @@ export function CreateFont(
     lfHeight: nHeight,
     lfWidth: nWidth,
     lfEscapement: nEscapement,
+    lfOrientation: nOrientation,
     lfWeight: fnWeight,
     lfItalic: fbItalic,
     lfUnderline: fbUnderline,

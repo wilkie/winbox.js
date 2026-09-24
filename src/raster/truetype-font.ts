@@ -431,6 +431,64 @@ export class TrueTypeFont {
   }
 
   /**
+   * The full name -- "Arial Bold" where the family is "Arial" -- which is the
+   * second of the two names a TrueType entry in GDI's directory carries.
+   *
+   * The `.FOT` stub each file is installed through holds the family as its
+   * `FONTDIRENTRY` face and then, past it, this and the style name. GDI's
+   * penalty routine compares a request against **both** at `seg3:1862`, which
+   * is how a request for "Arial Bold" is answered by the bold file. See
+   * `FontManager._compete` and FONTS.md 8u.
+   */
+  get fullName() {
+    if (!this.has('name')) {
+      return this.faceName;
+    }
+
+    const base = this._tables['name'].offset;
+    const count = this._view.getUint16(base + 2, false);
+    const storage = base + this._view.getUint16(base + 4, false);
+
+    /* The Windows platform's US English entry, which is what the stub
+     * carries. The fonts hold the name in several languages -- the last
+     * Windows entry in Arial's bold file is "Arial Gras" -- so the language
+     * has to be asked for, not just the platform. */
+    let best = '';
+    let rank = -1;
+
+    for (let index = 0; index < count; index++) {
+      const at = base + 6 + index * 12;
+      const platform = this._view.getUint16(at, false);
+      const language = this._view.getUint16(at + 4, false);
+      const length = this._view.getUint16(at + 8, false);
+      const offset = this._view.getUint16(at + 10, false);
+
+      if (this._view.getUint16(at + 6, false) !== 4 || (platform !== 3 && platform !== 1)) {
+        continue;
+      }
+
+      const score = platform === 3 ? (language === 0x0409 ? 2 : 1) : 0;
+
+      if (score <= rank) {
+        continue;
+      }
+
+      let text = '';
+
+      for (let byte = platform === 3 ? 1 : 0; byte < length; byte += platform === 3 ? 2 : 1) {
+        text += String.fromCharCode(this._view.getUint8(storage + offset + byte));
+      }
+
+      if (text) {
+        best = text;
+        rank = score;
+      }
+    }
+
+    return best || this.faceName;
+  }
+
+  /**
    * Where in `VDMX` the group for this device's pixels starts.
    *
    * The table is not one list of sizes, it is one per aspect ratio, and which

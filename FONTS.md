@@ -17647,12 +17647,16 @@ beside the pixels: the pen sits in the middle of a sixty-four square cell so
 the text can leave it in any direction, and the mode is `TRANSPARENT` so the
 ink is the whole of what comes back. 321 records.
 
-#### `lfOrientation` is not read
+#### `lfOrientation` is not read by the drawing
 
 The two angles are swept apart -- an escapement of nought with an orientation
 of a right angle, the reverse, and each against a pair that agree -- and the
 drawing is decided by the **escapement alone**, ink for ink, in a face that
 turns and in one that cannot. Five pairs, identical bitmaps.
+
+The *mapper* reads it, though, which the first version of this section missed:
+the exact-strike arm refuses a request with either angle, and the penalty
+routine tests both. See below.
 
 #### A strike never turns, and is not asked to
 
@@ -17749,16 +17753,76 @@ hinting, same advances, same placement, in all three functions. So a turn
 changes the size the font is realised at and, at an angle of nothing, changes
 nothing else.
 
-#### The mapper reads the escapement too
+#### The mapper reads both angles, in three places
 
-Ten of `rotsize`'s 520 say so. At cells of eight, nine, ten and eleven a request
-for Arial upright is answered by Small Fonts or MS Serif, and the same request
-turned is answered by Arial. A strike cannot be turned, so a face that can wins
-where it would otherwise have lost -- and it is a penalty rather than a bar,
-because `Modern` and `Roman`, which name no outline family, still get MS Sans
-Serif at every angle. What the penalty *is* wants the mapper swept with an
-escapement the way `font` sweeps it without one, and that recording does not
-exist yet.
+Ten of `rotsize`'s 520 said so from outside. At cells of eight, ten and eleven a
+request for Arial upright is answered by Small Fonts or MS Serif, and the same
+request turned is answered by Arial; Symbol turned at sixteen is its outline,
+where upright it is the sixteen row strike; and `Modern` and `Roman`, which name
+no outline family, are MS Sans Serif at every angle. The first reading of that
+was "a penalty the strikes pay", with a sweep to follow. It is not a penalty,
+and no sweep was needed: all three places are in the image, and the realiser's
+copy of the `LOGFONT` at `[bp-0xe8]` puts `lfEscapement` at `[bp-0xe4]` and
+`lfOrientation` at `[bp-0xe2]`, which is what to look for.
+
+- **The exact-strike arm refuses any angle.** Its loop at `0ef6` accepts an entry
+  only past `0f91` and `0f98`, which want **both** angles nought. So a face's own
+  strike never answers a turned request outright -- which is Symbol at sixteen.
+- **The small lookup refuses the escapement.** `126a` begins `cmp word
+  [bp-0xe4],0 / jnz 12be`: turned, Arial at eight, ten or eleven pixels is not
+  handed to Small Fonts or MS Serif but realised, and at nine it was never going
+  to be. The orientation is not tested here.
+- **A strike made bold or slanted pays one more.** The penalty routine keeps the
+  synthesis it has decided on as flags in the low bits of the running penalty,
+  which every weight leaves clear by being a multiple of 1024: `1ef5` sets
+  `0x100` for a bold it will smear and `1f82` sets `0x200` for a slant it will
+  shear. `202d` tests the two, `2036` and `203d` test both angles, and `2044`
+  charges `w[0x5c]` to a candidate whose `dfType & 3` is nought or one -- a
+  raster or vector face. The table at `0x39c` is in data segment 48, and read a
+  word at a time its entries sit where the known ones say: strikeout at `0x54`
+  is 3, the slant at `0x48` 1, the weight at `0x4c` 3, the flat charge at `0x68`
+  2. `0x5c` is **1** -- the smallest weight in the table.
+
+So `Modern` turned is MS Sans Serif because nothing is being synthesised and
+nothing is charged: the angle only costs a strike something when it would have
+to be altered to answer.
+
+And after the exact arm refuses, what answers Symbol is the TrueType directory
+arm at `1145`, which matches the name with the charset, weight and slant equal
+to the request's and realises the outline there and then -- the strike and the
+outline never get as far as tying. The competition this implementation had been
+running for every face with a strike of its own name is right only for a style
+the family has no file for, which is what its own comment's example was.
+
+#### A name that is only a full name
+
+`rotsize` asked for "Arial Bold" to see a bold file turned, and no file is called
+that. Upright it is Small Fonts at eight, MS Serif at ten and eleven, Times New
+Roman from twelve -- and **Arial Bold** at nine, seven pixels per em, reported by
+that name. Turned it is Times New Roman at every size.
+
+All of it is `0e95` again. A name the directory arm does not match reaches `126a`
+from `125e`; the small lookup runs only upright at eleven pixels or fewer, and
+where it finds no strike -- nine -- it returns nought and the competition at
+`0550` runs. Turned, or at twelve and up, it jumps to `12be` and the defaults
+arm answers with Times New Roman before any competition.
+
+In the competition the name is found. For a scalable candidate the face term at
+`1862` compares the request's atom against **two** of the entry's,
+`[es:si+0x26]` and `[es:si+0x28]`, and the alias against the same two at
+`1879`. The two are in each `.FOT` stub: its `FONTDIRENTRY` has an empty device
+name, then the face -- the family, "Arial", which `dfFace` points at -- and past
+it the TrueType full name and style, "Arial Bold" and "Bold". So the bold file
+pays nothing for its name and ninety for its weight, wins, and is reported by the
+name that matched. Arial winning the competition for Terminal, Wingdings or
+Roman reports "Arial"; an earlier attempt that echoed the requested name instead
+broke all sixteen of those records.
+
+The full name is the fonts' US English one. Arial's bold file carries it in
+several languages, and the last Windows-platform entry is "Arial Gras".
+
+**`rotsize` is 520 of 520**, and `font` on four displays, `styles` and
+`strikout` are unmoved.
 
 #### The oblique angles, read off a square
 
@@ -17862,10 +17926,9 @@ roundings is refused as the cause: scaling by the matrix's stretch and turning
 by the unit rotation is 70 of 91 again, and rounding to sixty-fourths before the
 turn as well as after is 73.
 
-One thing is known and not closed: at a cell of sixteen this implementation
-still answers a turned Symbol request with the strike where Windows uses the
-outline -- the mapper's gap from `rotsize`, above -- so the instruments replay
-with Symbol's strikes set aside.
+At a cell of sixteen the turned squares are Symbol's outline, as Windows draws
+them, because the exact-strike arm refuses an angle and the directory arm
+answers; the instruments replay through the mapper as it is.
 
 ### 8p. Where the text lands, which nothing had ever moved
 

@@ -2602,24 +2602,6 @@ export const KNOWN_GAPS: Record<string, string> = {
   'rotate:rotate box': 'oblique angles: a tip or corner a pixel out, at the scan converter',
   'rotangle:angle box': 'oblique angles: a tip or corner a pixel out, at the scan converter',
 
-  /* Which face answers a turned request at a cell too small for an outline.
-   *
-   * The escapement reaches the mapper's penalties as well as the realiser, and
-   * `rotsize` caught it in ten of its 520: at cells of eight, nine, ten and
-   * eleven a request for Arial upright is answered by Small Fonts or MS Serif,
-   * and the same request turned is answered by Arial itself. A strike cannot be
-   * turned, so a face that can wins where it would otherwise have lost.
-   *
-   * It is a penalty rather than a bar. `Modern` and `Roman` name no outline
-   * family, and they are answered by MS Sans Serif at every one of fourteen
-   * angles -- drawn upright, metrics and pixels identical to the upright
-   * request. So a strike still wins where nothing else is close; it is only
-   * beaten where an outline was already the name match.
-   *
-   * What the penalty *is* wants the mapper swept with an escapement the way
-   * `font` sweeps it without one, which is a recording this does not have.
-   */
-  'rotsize:rotate heights': 'the mapper prefers a face that can turn, by an amount not yet swept',
 
   /* The styled files at cells of two hundred and seventy-four to two hundred
    * and eighty-two, where the size chosen is one pixel per em out.

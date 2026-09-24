@@ -232,6 +232,9 @@ export class FontManager {
   /** `1fe0` and `201c`: an underline or a strikeout that does not match. */
   static UNDERLINE_PENALTY = 3 * 1024;
   static STRIKEOUT_PENALTY = 3 * 1024;
+  /** `2052`: a raster or vector candidate made bold or slanted for turned
+   * text. The smallest weight in the table; see `_named`. */
+  static TURNED_PENALTY = 1 * 1024;
 
   /** `1ee8`: over this much heavier than the candidate and a bold is made. */
   static SMEAR_ABOVE = 150;
@@ -651,11 +654,35 @@ export class FontManager {
     }
 
     const slanted = !!header.dfItalic;
+    const sheared = !!request.italic && !slanted;
 
-    if (request.italic && !slanted) {
+    if (sheared) {
       cost += FontManager.SLANT_PENALTY;
     } else if (!!request.italic !== slanted) {
       cost += FontManager.ITALIC_PENALTY;
+    }
+
+    /* A strike that would have to be made bold or slanted, for text that is
+     * turned, pays one more.
+     *
+     * **Read out of `GDI.EXE`.** The penalty routine keeps the synthesis it
+     * decides on as flags in the low bits of the running penalty, which every
+     * weight leaves clear by being a multiple of 1024: `1ef5` sets `0x100` for
+     * a bold it will smear and `1f82` sets `0x200` for a slant it will shear.
+     * `202d` tests the two, `2036` and `203d` test `lfEscapement` and
+     * `lfOrientation`, and `2044` charges `w[0x5c]` -- the twenty-fourth word
+     * of the table at `0x39c`, which is 1 -- to a candidate whose `dfType & 3`
+     * is nought or one, a raster or vector face. A scalable one never pays it.
+     *
+     * The twenty-fourth word is identified the way the others were, by where
+     * the known ones sit: strikeout at `0x54` is 3, the slant at `0x48` 1, the
+     * weight at `0x4c` 3 and the flat charge at `0x68` 2, four bytes apart
+     * each, all as the table holds them. 8u.
+     */
+    const turned = !!request.escapement || !!request.orientation;
+
+    if (turned && (smeared || sheared) && !header.scalable && ((header.dfType ?? 0) & 3) <= 1) {
+      cost += FontManager.TURNED_PENALTY;
     }
 
     /* An underline or a strikeout the candidate does not have is drawn on
@@ -731,9 +758,35 @@ export class FontManager {
           dfItalic: font.italicFace ? 1 : 0,
           dfUnderline: 0,
           dfStrikeOut: 0,
+          scalable: true,
         };
 
-        const { cost } = FontManager._named(header, installed, request);
+        /* Each TrueType entry carries two names, the family and the full
+         * name, and the face term is waived for a request matching either.
+         *
+         * **Read out of `GDI.EXE`.** For a scalable candidate the penalty
+         * routine compares the request's atom against `[es:si+0x26]` and
+         * `[es:si+0x28]` at `1869` and `1873`, and the alias against the same
+         * two at `1879` and `187f`; a strike carries one. The two are the
+         * `.FOT` stub's face and its full name -- "Arial" and "Arial Bold".
+         *
+         * Only the competition asks it. The directory arm at `1145` matches the
+         * family, so "Arial Bold" -- no file's family -- falls past it, and at
+         * twelve pixels and up the defaults arm answers it with Times New Roman
+         * before this runs. At a cell of nine, upright, there is no small
+         * strike, the competition runs, and the bold file pays nothing for its
+         * name and only ninety for its weight. **Recorded** by `rotsize`; and
+         * it is reported by the name that matched, "Arial Bold", where Arial
+         * winning for Terminal, Wingdings or Roman reports "Arial". 8u.
+         */
+        const full = typeof font.fullName === 'string' ? font.fullName : installed;
+        const byFull =
+          !!request.face &&
+          full.toLowerCase() !== installed.toLowerCase() &&
+          (String(request.face).toLowerCase() === full.toLowerCase() ||
+            String(FontManager.SUBSTITUTES[String(request.face).toLowerCase()] ?? '').toLowerCase() ===
+              full.toLowerCase());
+        const { cost } = FontManager._named(header, byFull ? full : installed, request);
 
         /* A scalable candidate pays nothing at all for size, except where the
          * request is within two pixels of nothing; `1e9e`. A height of nought
@@ -749,7 +802,12 @@ export class FontManager {
             : 0);
 
         if ((!outline || total < outline.total) && (!best || total < best.total)) {
-          outline = { total, name: installed, font };
+          outline = {
+            total,
+            name: installed,
+            font,
+            reported: byFull && String(request.face).toLowerCase() === full.toLowerCase() ? full : installed,
+          };
         }
       }
     }
@@ -761,7 +819,10 @@ export class FontManager {
         return {
           ...chosen,
           outline: outline.font,
-          face: outline.name,
+
+          /* Reported by the name that matched: the full name where that is
+           * what the request gave, the family otherwise. See the walk above. */
+          face: outline.reported ?? outline.name,
 
           /* Whether the file that won is the style that was asked for, which is
            * what decides whether a slant or a smear has to be made. The
@@ -995,8 +1056,22 @@ export class FontManager {
       const slanted =
         !wantsItalic || (this.lookup(own) ?? []).some((entry) => entry.header.dfItalic);
 
+      /* Turned text is answered by a strike ahead of the competition only
+       * where Windows would have.
+       *
+       * **Read out of `GDI.EXE`.** The exact-match arm's loop at `0ef6` accepts
+       * an entry only past `0f91` and `0f98`, which require `lfEscapement` and
+       * `lfOrientation` both to be nought -- so a face's own strike never
+       * answers a turned request outright, and Symbol turned at a cell of
+       * sixteen is its outline, not the sixteen row strike. And the small
+       * lookup at `126a` begins `cmp word [bp-0xe4],0 / jnz 12be`, the
+       * escapement alone: a turned Arial at eight, ten or eleven pixels is not
+       * Small Fonts or MS Serif but Arial. **Recorded** before it was read:
+       * those are the ten of `rotsize`'s 520 that disagreed. 8u.
+       */
+      const angled = !!request.escapement || !!request.orientation;
       const strike =
-        (own && !symbolic && slanted
+        (own && !symbolic && slanted && !angled
           ? this._strikeAt(
               request.height ?? 0,
               charset,
@@ -1007,7 +1082,7 @@ export class FontManager {
               request.width || 0
             )
           : null) ??
-        (request.width || (symbolic ? !slanted : !small)
+        (request.width || (symbolic ? !slanted || angled : !small || !!request.escapement)
           ? null
           : this._strikeAt(
               request.height ?? 0,
@@ -1100,11 +1175,49 @@ export class FontManager {
        * 210 for being off square and the outline takes it. **Recorded**, thirty
        * records of the EGA sweep and thirteen glyph cells of the VGA's.
        */
-      /* Only where the outline is the face that was asked for. A name nothing
-       * is installed under is answered by Times New Roman outright and never
-       * reaches the competition; see `FALLBACK_OUTLINE`.
+      /* Only where the outline is the face that was asked for -- or where a
+       * name nothing is installed under is small and upright.
+       *
+       * Such a name is answered by Times New Roman outright at twelve pixels
+       * and up, which is the defaults arm at `seg3:12c8`. Below that it never
+       * gets there. **Read out of `GDI.EXE`:** a name that matched nothing
+       * reaches `126a` from `125e`, and `126a` runs the small lookup only for
+       * an escapement of nought and a height of eleven or fewer -- `cmp
+       * ax,0xb / jna`, or a negative height of ten or fewer -- and when that
+       * finds no strike it returns nought, and `0550` competes. Turned, or
+       * taller, it jumps to `12be` and the defaults instead.
+       *
+       * **Recorded** by `rotsize` before it was read: "Arial Bold", which no
+       * file is called, is Small Fonts at eight, MS Serif at ten and eleven,
+       * **Arial** at nine -- where no small strike exists and the competition
+       * keeps the first of equal outlines -- and Times New Roman at twelve and
+       * up and at every size turned. 8u.
        */
-      const competed = named && own ? this._compete(request) : null;
+      const height = request.height ?? 0;
+      const unmatchedSmall =
+        !named &&
+        !!face &&
+        !this.lookup(face) &&
+        !request.escapement &&
+        ((height >= 0 && height <= 11) || (height >= -10 && height <= -1));
+      /* And a name the TrueType directory matches outright never competes.
+       *
+       * `0e95`'s arm at `1145` walks the directory for the name's atom with
+       * `dfCharSet`, `dfItalic` and `dfWeight` equal to the request's --
+       * nought reading as 400, `DEFAULT_CHARSET` matching anything -- and a
+       * match is realised there and then. Only a style the family has no file
+       * for falls through to `0550`. So a turned request for Symbol at sixteen,
+       * which the exact arm refuses for its angle, is Symbol's outline: the
+       * directory answers before the strike and the outline could ever tie.
+       * 8u.
+       */
+      const weightAsked = request.weight || 400;
+      const directoryMatch =
+        !!named &&
+        weightAsked === (named.font.boldFace ? 700 : 400) &&
+        !!request.italic === !!named.font.italicFace;
+      const competed =
+        (named && own && !directoryMatch) || unmatchedSmall ? this._compete(request) : null;
 
       if (competed) {
         return competed;

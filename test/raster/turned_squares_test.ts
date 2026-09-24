@@ -13,10 +13,9 @@
  * replay. So this does, as a ratchet: the totals may improve and must not
  * quietly get worse.
  *
- * Symbol's strikes are taken out of the mapper while they replay. At a cell of
- * sixteen Windows answers a *turned* request with the outline and this answers
- * it with the strike -- the mapper's own gap, `rotsize` in `KNOWN_GAPS` -- and
- * the question here is the drawing, not the choice.
+ * At a cell of sixteen the turned squares are Symbol's outline and not its
+ * sixteen row strike, because the exact-strike arm refuses any request with an
+ * angle; see `FontManager.map`. These replay through the mapper as it is.
  */
 
 'use strict';
@@ -67,19 +66,16 @@ async function withSquares(run: () => Promise<void>) {
   const font: any = new TrueTypeFont(new Uint8Array(readFileSync(join(FONTS, readdirSync(FONTS)[0]))));
   const face = font.faceName;
   const installed = manager._outlines[face];
-  const strikes = manager._fonts[face];
 
   manager._outlines[face] = {
     ...(installed ?? {}),
     [FontManager.styleKey(font.boldFace, font.italicFace)]: font,
   };
-  delete manager._fonts[face];
 
   try {
     await run();
   } finally {
     manager._outlines[face] = installed;
-    manager._fonts[face] = strikes;
   }
 }
 
