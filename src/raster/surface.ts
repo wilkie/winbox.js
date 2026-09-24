@@ -411,46 +411,114 @@ export class Surface {
    * the cell and baseline by the ascent.
    */
   /**
-   * A quadrilateral filled together with its own outline, for turned rules
-   * and grounds. 8u.
+   * A polygon filled the way GDI fills one for a display driver that takes
+   * only scanlines. 8u.
    *
-   * Each edge is walked to the nearest pixel, both ends included, and every
-   * row is filled from the leftmost pixel any edge put on it to the rightmost.
-   * A band one row thick collapses onto its line.
+   * **Read out of `GDI.EXE`.** A VGA reports `POLYGONALCAPS` 8, scanlines
+   * alone, so `Polygon` never reaches the driver: at `seg24:06e3` GDI finds the
+   * driver cannot take it, brackets its own conversion with `Output` begin and
+   * end, and converts at `0bcb`. Every edge that is not horizontal runs from
+   * its upper point down to, but not including, its lower one; `030e` sets it
+   * up as a Bresenham with its major axis the longer of the two, an error term
+   * `2 * minor - major + bias`, and a bias of one except for an edge whose
+   * major axis is `y` and which steps left, which gets nothing. Each row, the
+   * active edges' `x` are sorted and handed to the driver in pairs, each pair
+   * half-open; then each edge steps -- one pixel at most for a `y`-major edge,
+   * while its error is positive, and for an `x`-major one at least one pixel
+   * and on while the error stays at or below nought.
+   *
+   * **Recorded** by `polyfill`, 117 quadrilaterals under both fill modes -- a
+   * rectangle turned every five degrees, bands two and three pixels thick, and
+   * the corners of every turned ground `rotstyle` drew: **234 of 234** exact.
+   *
+   * What is not here: the winding rule, and what `094f` does with two edges
+   * meeting at a vertex, neither of which a convex quadrilateral can ask.
    */
-  turnedBand(corners, color) {
-    const rows = new Map();
-    const mark = (x, y) => {
-      const span = rows.get(y);
+  fillPolygon(points, color) {
+    const edges: any[] = [];
 
-      if (!span) {
-        rows.set(y, [x, x]);
-      } else {
-        span[0] = Math.min(span[0], x);
-        span[1] = Math.max(span[1], x);
+    for (let index = 0; index < points.length; index++) {
+      const a = points[index];
+      const b = points[(index + 1) % points.length];
+
+      if (a[1] === b[1]) {
+        continue;
       }
-    };
 
-    for (let index = 0; index < corners.length; index++) {
-      const [x0, y0] = corners[index];
-      const [x1, y1] = corners[(index + 1) % corners.length];
-      const steps = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+      const [upper, lower] = a[1] < b[1] ? [a, b] : [b, a];
+      const dx = lower[0] - upper[0];
+      const dy = lower[1] - upper[1];
+      const yMajor = Math.abs(dx) <= dy;
+      const major = yMajor ? dy : Math.abs(dx);
+      const minor = yMajor ? Math.abs(dx) : dy;
+      const bias = yMajor ? (dx >= 0 ? 1 : 0) : 1;
 
-      for (let step = 0; step <= steps; step++) {
-        const t = steps ? step / steps : 0;
-        mark(Math.round(x0 + (x1 - x0) * t), Math.round(y0 + (y1 - y0) * t));
-      }
+      edges.push({
+        x: upper[0],
+        top: upper[1],
+        bottom: lower[1],
+        step: Math.sign(dx),
+        yMajor,
+        error: 2 * minor - major + bias,
+        up: 2 * minor,
+        down: 2 * minor - 2 * major,
+      });
+    }
+
+    if (!edges.length) {
+      return;
     }
 
     const rgba = [color.red, color.green, color.blue, 0xff];
+    const top = Math.min(...edges.map((edge) => edge.top));
+    const bottom = Math.max(...edges.map((edge) => edge.bottom));
 
-    for (const [y, [from, to]] of rows) {
-      for (let x = from; x <= to; x++) {
-        if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
-          this.context.setPixel(x, y, rgba);
+    for (let y = top; y < bottom; y++) {
+      const xs = edges.filter((edge) => y >= edge.top && y < edge.bottom).map((edge) => edge.x);
+
+      xs.sort((one, other) => one - other);
+
+      for (let index = 0; index + 1 < xs.length; index += 2) {
+        for (let x = xs[index]; x < xs[index + 1]; x++) {
+          if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
+            this.context.setPixel(x, y, rgba);
+          }
+        }
+      }
+
+      for (const edge of edges) {
+        if (y < edge.top || y >= edge.bottom || edge.step === 0) {
+          continue;
+        }
+
+        if (edge.yMajor) {
+          if (edge.error > 0) {
+            edge.x += edge.step;
+            edge.error += edge.down;
+          } else {
+            edge.error += edge.up;
+          }
+        } else {
+          edge.error += edge.down;
+          edge.x += edge.step;
+
+          while (edge.error <= 0) {
+            edge.x += edge.step;
+            edge.error += edge.up;
+          }
         }
       }
     }
+
+    this._stale = true;
+  }
+
+  /** The escapement's sine and cosine as the placement takes them. */
+  turnedTrig() {
+    const radians = ((this._font as any).escapement * Math.PI) / 1800;
+    const fixed = (value) => Math.round(value * 65536) / 65536;
+
+    return { sine: fixed(Math.sin(radians)), cosine: fixed(Math.cos(radians)) };
   }
 
   /** Whether text drawn now is turned: an outline face with an escapement. */
@@ -653,12 +721,43 @@ export class Surface {
     return { left, right, height: metrics.height };
   }
 
-  ground(x, y, text) {
+  ground(x, y, text, runWidth = null) {
     if (this.backMode === 1 || this._runOnly) {
       return;
     }
 
     const box = this.groundBox(text);
+
+    /* Turned, the ground is `Polygon` with no pen: the ground rectangle turned,
+     * its corners whole pixels -- the reference point, and that carried along
+     * the baseline by the ground's width and down by the cell, each carry
+     * rounded on its own. **Recorded** by `rotstyle` and `polyfill`: all
+     * twelve turned grounds are pixel for pixel GDI's `Polygon` on exactly
+     * those corners, and so is this. 8u.
+     */
+    if (this.turnedText) {
+      const away = (value) => Math.sign(value) * Math.round(Math.abs(value));
+      const { sine, cosine } = this.turnedTrig();
+      const reference = this.turnedAlign(text, runWidth);
+      const left = reference.across + box.left;
+      const width = (runWidth ?? box.right - box.left);
+      const down = reference.down - (this._font as any).style.ascent;
+      const originX = x + away(left * cosine) + away(down * sine);
+      const originY = y - away(left * sine) + away(down * cosine);
+      const alongX = originX + away(width * cosine);
+      const alongY = originY - away(width * sine);
+
+      this.fillPolygon(
+        [
+          [originX, originY],
+          [alongX, alongY],
+          [alongX + away(box.height * sine), alongY + away(box.height * cosine)],
+          [originX + away(box.height * sine), originY + away(box.height * cosine)],
+        ],
+        this.backcolor
+      );
+      return;
+    }
 
     this.context.fillStyle = this.backcolor.css;
     this.context.fillRect(x + box.left, y, box.right - box.left, box.height);
@@ -748,16 +847,38 @@ export class Surface {
           return;
         }
 
-        const last = ends(down + rows - 1);
-        this.turnedBand(
-          [
-            [first[0], first[1]],
-            [first[2], first[3]],
-            [last[2], last[3]],
-            [last[0], last[1]],
-          ],
-          this.textColor ?? new Color(0, 0, 0)
-        );
+        /* Thicker, it is `Polygon` drawn with a pen a pixel wide: the far
+         * edge is the near one carried down by the thickness less one, the
+         * inside is GDI's own fill, and the outline is the driver's lines. A
+         * band one row thick is the same polygon collapsed onto its line.
+         *
+         * **Recorded** by `rotstyle`: carrying the far edge from the pen
+         * rather than from the near edge puts Arial's two-row underline at
+         * thirty degrees a pixel short on every row, and filling between two
+         * lines without GDI's fill leaves a gap at half a right angle. */
+        const [ax, ay, bx, by] = first;
+        const shiftX = away((rows - 1) * sine);
+        const shiftY = away((rows - 1) * cosine);
+        const corners = [
+          [ax, ay],
+          [bx, by],
+          [bx + shiftX, by + shiftY],
+          [ax + shiftX, ay + shiftY],
+        ];
+
+        this.fillPolygon(corners, this.textColor ?? new Color(0, 0, 0));
+        this.context.strokeStyle = this.textColor ? this.textColor.css : 'black';
+        this.context.excludeLast = false;
+
+        for (let index = 0; index < corners.length; index++) {
+          const [fromX, fromY] = corners[index];
+          const [toX, toY] = corners[(index + 1) % corners.length];
+
+          this.context.beginPath();
+          this.context.moveTo(fromX, fromY);
+          this.context.lineTo(toX, toY);
+          this.context.stroke();
+        }
       };
 
       if (style.underline) {
@@ -915,7 +1036,9 @@ export class Surface {
         dx ? dx[index] : this._font.measure(character).width
       );
 
+      this.ground(x, y, text, box.right - box.left);
       this.outlineText(x, y, text, { advances, runWidth: box.right - box.left });
+      this.rules(x, y, text, box.right - box.left);
       this._stale = true;
       return;
     }

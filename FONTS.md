@@ -18016,19 +18016,48 @@ vector -- the ascent and the rule's offset together -- and then along the
 baseline by the run's width; between them it is the display driver's own line,
 ties and all. Every rule one row thick is exact.
 
-A rule two rows thick is not two lines. At half a right angle Windows fills
-three pixels a row, where two lines a pixel apart would give two: it is a
-filled polygon, the rule's rectangle turned. So is the **opaque ground**, and
-the ground says what the polygon is. Its corners are whole pixels -- the pen,
-the pen carried along the baseline by the run's width, and the pen carried down
-by the cell -- and at a right angle, a half turn and half a right angle the
-fill is the ordinary half-open one, row for row. At thirty degrees it is not:
-pixel centres sampled at each row's top reproduce eight of the twelve turned
-grounds and leave 21 pixels wrong, and truncating the spans, fractional corners
-and carrying the far corner as a single vector are all worse. That is a
-polygon rasteriser with an edge walk of its own, GDI fills polygons for the
-display drivers itself, and nothing in this implementation has ever drawn one.
-It is the next thing to read out of `GDI.EXE`, not to fit.
+A rule two rows thick is not two lines, and the opaque ground is not a
+rectangle: both are GDI's `Polygon`, and `Polygon` had never been drawn here.
+
+**`Polygon` on a VGA is GDI's, not the driver's.** The display reports
+`POLYGONALCAPS` 8 -- scanlines alone -- and GDI converts every polygon itself.
+It was read out of `GDI.EXE`, where `Polygon` is ordinal 36 at `seg24:0000`:
+the front end at `0396` finds the bounds, `06e3` finds the driver cannot take
+the polygon, and GDI brackets its own conversion at `0bcb` with the driver's
+`Output` begin and end. That conversion splits the outline into runs that only
+go down (`0a00`, `0a4b`), sets each edge up at `0b33` and `030e`, and walks
+the rows:
+
+- an edge that is not horizontal runs from its upper point down to, but not
+  including, its lower one;
+- it is a Bresenham whose major axis is the longer of the two, with an error
+  term of `2 * minor - major + bias`, where the bias is one -- except for an
+  edge whose major axis is `y` and which steps left, which gets nothing;
+- each row the active edges' `x` are sorted and handed to the driver in pairs,
+  each pair half-open;
+- then each edge steps: a `y`-major one by one pixel if its error is positive,
+  an `x`-major one by at least one and on while its error stays at or below
+  nought.
+
+`oracle/probes/polyfill.c` draws `Polygon` with a null pen on 117
+quadrilaterals under both fill modes -- a rectangle turned every five degrees,
+bands two and three pixels thick, and the corners of every turned ground
+`rotstyle` drew -- and this reproduces **234 of 234**. Half-open pairs matter:
+filling them inclusively is none. What is not implemented is the winding rule
+and `094f`'s handling of two edges meeting at a vertex, which no convex
+quadrilateral asks.
+
+**The turned ground is exactly that polygon with no pen**, on whole-pixel
+corners: the reference point, and that carried along the baseline by the
+ground's width and down by the cell, each carry rounded on its own. All twelve
+turned grounds are pixel for pixel `Polygon` on those corners.
+
+**A turned rule thicker than a row is `Polygon` with a pen a pixel wide.** Its
+near edge is the one-row rule's line; its far edge is that line carried down
+by the thickness less one -- *from the near edge*, not from the pen, which at
+thirty degrees puts the far edge a pixel further on; the inside is GDI's fill
+and the outline the driver's lines. A rule one row thick is the same polygon
+collapsed onto its line, which is why the thin rules looked like lines.
 
 Two things turned up upright and are fixed for both. **A smeared outline glyph
 advances a pixel more**: `LogicalFont.measure` had always charged a synthesised
@@ -18038,9 +18067,8 @@ box**: the scan converter returned before attaching it, and the smear's bounds
 fell back to the whole surface above the size a face gives dropout up at. Neither
 moves any other recording.
 
-What `rotstyle` leaves is 34 of its 190, in `KNOWN_GAPS`: the turned ground and
-the one thick rule, which wait on the polygon; the smear, whose overhang in a
-string of more than one glyph does not follow the single-glyph rule of section 3
+What `rotstyle` leaves is 21 of its 190, in `KNOWN_GAPS`: the smear, whose
+overhang in a string of more than one glyph does not follow the single-glyph rule of section 3
 -- the first glyph's is drawn and the last one's dropped, in both faces, and the
 last stops at the pen plus the plain advances in all three records that show it,
 which is not yet enough to write down; and the made-up slant turned, not yet

@@ -1,0 +1,1418 @@
+{
+  "probe": "polyfill",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "polygon ink",
+      "args": "\"ground Arial 16\",esc=300,mode=1,pts=64:64:80:55:88:69:72:78",
+      "result": "box=64:56:87:77,rows=000380/000f80/003fc0/007fc0/01ffe0/07ffe0/1ffff0/7ffff8/fffff8/7ffffc/7ffffc/3ffffe/3ffffe/1fffff/1ffffc/0ffff0/07ffc0/07ff80/03fe00/03f800/01e000/018000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Arial 16\",esc=300,mode=2,pts=64:64:80:55:88:69:72:78",
+      "result": "box=64:56:87:77,rows=000380/000f80/003fc0/007fc0/01ffe0/07ffe0/1ffff0/7ffff8/fffff8/7ffffc/7ffffc/3ffffe/3ffffe/1fffff/1ffffc/0ffff0/07ffc0/07ff80/03fe00/03f800/01e000/018000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Arial 16\",esc=450,mode=1,pts=64:64:77:51:88:62:75:75",
+      "result": "box=64:52:87:74,rows=000c00/001e00/003f00/007f80/00ffc0/01ffe0/03fff0/07fff8/0ffffc/1ffffe/3fffff/7ffffe/fffffc/7ffff8/3ffff0/1fffe0/0fffc0/07ff80/03ff00/01fe00/00fc00/007800/003000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Arial 16\",esc=450,mode=2,pts=64:64:77:51:88:62:75:75",
+      "result": "box=64:52:87:74,rows=000c00/001e00/003f00/007f80/00ffc0/01ffe0/03fff0/07fff8/0ffffc/1ffffe/3fffff/7ffffe/fffffc/7ffff8/3ffff0/1fffe0/0fffc0/07ff80/03ff00/01fe00/00fc00/007800/003000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Arial 16\",esc=900,mode=1,pts=64:64:64:46:80:46:80:64",
+      "result": "box=64:46:79:63,rows=ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Arial 16\",esc=900,mode=2,pts=64:64:64:46:80:46:80:64",
+      "result": "box=64:46:79:63,rows=ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Arial 16\",esc=1800,mode=1,pts=64:64:46:64:46:48:64:48",
+      "result": "box=46:48:63:63,rows=ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Arial 16\",esc=1800,mode=2,pts=64:64:46:64:46:48:64:48",
+      "result": "box=46:48:63:63,rows=ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Arial 24\",esc=300,mode=1,pts=64:64:87:50:99:70:76:84",
+      "result": "box=64:51:98:83,rows=000007000/00001f000/00003f800/0000ff800/0003ffc00/0007ffe00/001fffe00/003ffff00/00fffff00/03fffff80/07fffffc0/1ffffffc0/7ffffffe0/fffffffe0/7fffffff0/7fffffff8/3fffffff8/3fffffffc/1fffffffc/0fffffffe/0fffffff8/07fffffe0/07fffffc0/03fffff00/01ffffc00/01ffff800/00fffe000/00fffc000/007ff0000/003fc0000/003f80000/001e00000/001800000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Arial 24\",esc=300,mode=2,pts=64:64:87:50:99:70:76:84",
+      "result": "box=64:51:98:83,rows=000007000/00001f000/00003f800/0000ff800/0003ffc00/0007ffe00/001fffe00/003ffff00/00fffff00/03fffff80/07fffffc0/1ffffffc0/7ffffffe0/fffffffe0/7fffffff0/7fffffff8/3fffffff8/3fffffffc/1fffffffc/0fffffffe/0fffffff8/07fffffe0/07fffffc0/03fffff00/01ffffc00/01ffff800/00fffe000/00fffc000/007ff0000/003fc0000/003f80000/001e00000/001800000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Arial 24\",esc=450,mode=1,pts=64:64:83:45:99:61:80:80",
+      "result": "box=64:46:98:79,rows=000030000/000078000/0000fc000/0001fe000/0003ff000/0007ff800/000fffc00/001fffe00/003ffff00/007ffff80/00fffffc0/01fffffe0/03ffffff0/07ffffff8/0fffffffc/1fffffffe/3fffffffc/7fffffff8/ffffffff0/7ffffffe0/3ffffffc0/1ffffff80/0ffffff00/07ffffe00/03ffffc00/01ffff800/00ffff000/007ffe000/003ffc000/001ff8000/000ff0000/0007e0000/0003c0000/000180000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Arial 24\",esc=450,mode=2,pts=64:64:83:45:99:61:80:80",
+      "result": "box=64:46:98:79,rows=000030000/000078000/0000fc000/0001fe000/0003ff000/0007ff800/000fffc00/001fffe00/003ffff00/007ffff80/00fffffc0/01fffffe0/03ffffff0/07ffffff8/0fffffffc/1fffffffe/3fffffffc/7fffffff8/ffffffff0/7ffffffe0/3ffffffc0/1ffffff80/0ffffff00/07ffffe00/03ffffc00/01ffff800/00ffff000/007ffe000/003ffc000/001ff8000/000ff0000/0007e0000/0003c0000/000180000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Arial 24\",esc=900,mode=1,pts=64:64:64:37:87:37:87:64",
+      "result": "box=64:37:86:63,rows=fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Arial 24\",esc=900,mode=2,pts=64:64:64:37:87:37:87:64",
+      "result": "box=64:37:86:63,rows=fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe/fffffe",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Arial 24\",esc=1800,mode=1,pts=64:64:37:64:37:41:64:41",
+      "result": "box=37:41:63:63,rows=ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Arial 24\",esc=1800,mode=2,pts=64:64:37:64:37:41:64:41",
+      "result": "box=37:41:63:63,rows=ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Courier New 16\",esc=300,mode=1,pts=64:64:78:56:86:70:72:78",
+      "result": "box=64:57:85:77,rows=000e00/003e00/00ff00/01ff00/07ff80/1fff80/7fffc0/ffffe0/7fffe0/7ffff0/3ffff0/3ffff8/1ffff8/1ffffc/0ffff0/07ffc0/07ff00/03fe00/03f800/01e000/018000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Courier New 16\",esc=300,mode=2,pts=64:64:78:56:86:70:72:78",
+      "result": "box=64:57:85:77,rows=000e00/003e00/00ff00/01ff00/07ff80/1fff80/7fffc0/ffffe0/7fffe0/7ffff0/3ffff0/3ffff8/1ffff8/1ffffc/0ffff0/07ffc0/07ff00/03fe00/03f800/01e000/018000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Courier New 16\",esc=450,mode=1,pts=64:64:75:53:86:64:75:75",
+      "result": "box=64:54:85:74,rows=003000/007800/00fc00/01fe00/03ff00/07ff80/0fffc0/1fffe0/3ffff0/7ffff8/fffffc/7ffff8/3ffff0/1fffe0/0fffc0/07ff80/03ff00/01fe00/00fc00/007800/003000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Courier New 16\",esc=450,mode=2,pts=64:64:75:53:86:64:75:75",
+      "result": "box=64:54:85:74,rows=003000/007800/00fc00/01fe00/03ff00/07ff80/0fffc0/1fffe0/3ffff0/7ffff8/fffffc/7ffff8/3ffff0/1fffe0/0fffc0/07ff80/03ff00/01fe00/00fc00/007800/003000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Courier New 16\",esc=900,mode=1,pts=64:64:64:48:80:48:80:64",
+      "result": "box=64:48:79:63,rows=ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Courier New 16\",esc=900,mode=2,pts=64:64:64:48:80:48:80:64",
+      "result": "box=64:48:79:63,rows=ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Courier New 16\",esc=1800,mode=1,pts=64:64:48:64:48:48:64:48",
+      "result": "box=48:48:63:63,rows=ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"ground Courier New 16\",esc=1800,mode=2,pts=64:64:48:64:48:48:64:48",
+      "result": "box=48:48:63:63,rows=ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=50,mode=1,pts=64:64:82:62:83:78:65:80",
+      "result": "box=64:63:82:79,rows=07ffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffe/ffffe/7fffe/7fffe/7fffe/7fffe/7fffe/7fffe/7fffe/7c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=50,mode=2,pts=64:64:82:62:83:78:65:80",
+      "result": "box=64:63:82:79,rows=07ffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffe/ffffe/7fffe/7fffe/7fffe/7fffe/7fffe/7fffe/7fffe/7c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=100,mode=1,pts=64:64:82:61:85:77:67:80",
+      "result": "box=64:62:84:79,rows=003fc0/0fffc0/ffffe0/ffffe0/ffffe0/7fffe0/7fffe0/7ffff0/7ffff0/7ffff0/3ffff0/3ffff0/3ffff0/3ffff8/3ffff8/3ffff8/1ff800/1e0000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=100,mode=2,pts=64:64:82:61:85:77:67:80",
+      "result": "box=64:62:84:79,rows=003fc0/0fffc0/ffffe0/ffffe0/ffffe0/7fffe0/7fffe0/7ffff0/7ffff0/7ffff0/3ffff0/3ffff0/3ffff0/3ffff8/3ffff8/3ffff8/1ff800/1e0000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=150,mode=1,pts=64:64:81:59:85:74:68:79",
+      "result": "box=64:60:84:78,rows=000f80/007fc0/03ffc0/3fffc0/ffffc0/ffffe0/7fffe0/7fffe0/7fffe0/7ffff0/3ffff0/3ffff0/3ffff0/3ffff8/1ffff8/1fff00/1ff800/1fc000/0c0000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=150,mode=2,pts=64:64:81:59:85:74:68:79",
+      "result": "box=64:60:84:78,rows=000f80/007fc0/03ffc0/3fffc0/ffffc0/ffffe0/7fffe0/7fffe0/7fffe0/7ffff0/3ffff0/3ffff0/3ffff0/3ffff8/1ffff8/1fff00/1ff800/1fc000/0c0000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=200,mode=1,pts=64:64:81:58:86:73:69:79",
+      "result": "box=64:59:85:78,rows=000780/003fc0/00ffc0/07ffc0/3fffe0/ffffe0/ffffe0/7ffff0/7ffff0/7ffff0/3ffff8/3ffff8/3ffff8/1ffffc/1ffffc/1fffc0/0ffe00/0ff800/0fc000/060000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=200,mode=2,pts=64:64:81:58:86:73:69:79",
+      "result": "box=64:59:85:78,rows=000780/003fc0/00ffc0/07ffc0/3fffe0/ffffe0/ffffe0/7ffff0/7ffff0/7ffff0/3ffff8/3ffff8/3ffff8/1ffffc/1ffffc/1fffc0/0ffe00/0ff800/0fc000/060000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=250,mode=1,pts=64:64:80:56:87:71:71:79",
+      "result": "box=64:57:86:78,rows=000300/000f80/003f80/00ffc0/03ffc0/0fffe0/3fffe0/fffff0/fffff0/7ffff8/7ffff8/3ffffc/3ffffc/1ffffe/1ffffe/0ffff8/0fffe0/07ff80/07fe00/03f800/03e000/018000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=250,mode=2,pts=64:64:80:56:87:71:71:79",
+      "result": "box=64:57:86:78,rows=000300/000f80/003f80/00ffc0/03ffc0/0fffe0/3fffe0/fffff0/fffff0/7ffff8/7ffff8/3ffffc/3ffffc/1ffffe/1ffffe/0ffff8/0fffe0/07ff80/07fe00/03f800/03e000/018000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=300,mode=1,pts=64:64:80:55:88:69:72:78",
+      "result": "box=64:56:87:77,rows=000380/000f80/003fc0/007fc0/01ffe0/07ffe0/1ffff0/7ffff8/fffff8/7ffffc/7ffffc/3ffffe/3ffffe/1fffff/1ffffc/0ffff0/07ffc0/07ff80/03fe00/03f800/01e000/018000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=300,mode=2,pts=64:64:80:55:88:69:72:78",
+      "result": "box=64:56:87:77,rows=000380/000f80/003fc0/007fc0/01ffe0/07ffe0/1ffff0/7ffff8/fffff8/7ffffc/7ffffc/3ffffe/3ffffe/1fffff/1ffffc/0ffff0/07ffc0/07ff80/03fe00/03f800/01e000/018000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=350,mode=1,pts=64:64:79:54:88:67:73:77",
+      "result": "box=64:55:87:76,rows=000700/000f00/003f80/007fc0/01ffc0/03ffe0/0ffff0/1ffff8/7ffff8/fffffc/7ffffe/7ffffe/3fffff/1ffffc/1ffff8/0fffe0/07ffc0/03ff00/03fe00/01f800/00f000/00c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=350,mode=2,pts=64:64:79:54:88:67:73:77",
+      "result": "box=64:55:87:76,rows=000700/000f00/003f80/007fc0/01ffc0/03ffe0/0ffff0/1ffff8/7ffff8/fffffc/7ffffe/7ffffe/3fffff/1ffffc/1ffff8/0fffe0/07ffc0/03ff00/03fe00/01f800/00f000/00c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=400,mode=1,pts=64:64:78:52:88:64:74:76",
+      "result": "box=64:53:87:75,rows=000600/000f00/003f80/007f80/00ffc0/01ffe0/03fff0/07fff8/1ffffc/3ffffc/7ffffe/ffffff/7ffffe/3ffffc/1ffff0/1fffe0/0fffc0/07ff80/03ff00/01fe00/00f800/00f000/006000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=400,mode=2,pts=64:64:78:52:88:64:74:76",
+      "result": "box=64:53:87:75,rows=000600/000f00/003f80/007f80/00ffc0/01ffe0/03fff0/07fff8/1ffffc/3ffffc/7ffffe/ffffff/7ffffe/3ffffc/1ffff0/1fffe0/0fffc0/07ff80/03ff00/01fe00/00f800/00f000/006000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=450,mode=1,pts=64:64:77:51:88:62:75:75",
+      "result": "box=64:52:87:74,rows=000c00/001e00/003f00/007f80/00ffc0/01ffe0/03fff0/07fff8/0ffffc/1ffffe/3fffff/7ffffe/fffffc/7ffff8/3ffff0/1fffe0/0fffc0/07ff80/03ff00/01fe00/00fc00/007800/003000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=450,mode=2,pts=64:64:77:51:88:62:75:75",
+      "result": "box=64:52:87:74,rows=000c00/001e00/003f00/007f80/00ffc0/01ffe0/03fff0/07fff8/0ffffc/1ffffe/3fffff/7ffffe/fffffc/7ffff8/3ffff0/1fffe0/0fffc0/07ff80/03ff00/01fe00/00fc00/007800/003000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=500,mode=1,pts=64:64:76:50:88:60:76:74",
+      "result": "box=64:51:87:73,rows=001800/003c00/007f00/007f80/00ffc0/01ffe0/03fff0/07fffc/0ffffe/1fffff/1ffffe/3ffffc/7ffff8/fffff8/7ffff0/3fffe0/0fffc0/07ff80/03ff00/01fe00/00fe00/003c00/001800",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=500,mode=2,pts=64:64:76:50:88:60:76:74",
+      "result": "box=64:51:87:73,rows=001800/003c00/007f00/007f80/00ffc0/01ffe0/03fff0/07fffc/0ffffe/1fffff/1ffffe/3ffffc/7ffff8/fffff8/7ffff0/3fffe0/0fffc0/07ff80/03ff00/01fe00/00fe00/003c00/001800",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=550,mode=1,pts=64:64:74:49:87:58:77:73",
+      "result": "box=64:50:86:72,rows=007000/007800/00fe00/01ff00/01ff80/03ffe0/07fff0/07fffc/0ffffe/1ffffc/1ffffc/3ffff8/7ffff0/7ffff0/ffffe0/3fffc0/1fffc0/07ff80/03ff00/01ff00/007e00/003c00/000c00",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=550,mode=2,pts=64:64:74:49:87:58:77:73",
+      "result": "box=64:50:86:72,rows=007000/007800/00fe00/01ff00/01ff80/03ffe0/07fff0/07fffc/0ffffe/1ffffc/1ffffc/3ffff8/7ffff0/7ffff0/ffffe0/3fffc0/1fffc0/07ff80/03ff00/01ff00/007e00/003c00/000c00",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=600,mode=1,pts=64:64:73:48:87:56:78:72",
+      "result": "box=64:49:86:71,rows=00e000/00f800/01fe00/01ff00/03ffc0/03fff0/07fffc/07fffe/0ffffc/1ffffc/1ffff8/3ffff8/3ffff0/7ffff0/7fffe0/ffffe0/3fffc0/0fff80/03ff80/01ff00/007f00/001e00/000600",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=600,mode=2,pts=64:64:73:48:87:56:78:72",
+      "result": "box=64:49:86:71,rows=00e000/00f800/01fe00/01ff00/03ffc0/03fff0/07fffc/07fffe/0ffffc/1ffffc/1ffff8/3ffff8/3ffff0/7ffff0/7fffe0/ffffe0/3fffc0/0fff80/03ff80/01ff00/007f00/001e00/000600",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=650,mode=1,pts=64:64:72:48:87:55:79:71",
+      "result": "box=64:49:86:70,rows=00e000/01f800/01fe00/03ff80/03ffe0/07fff8/07fffe/0ffffe/0ffffc/1ffffc/1ffff8/3ffff8/3ffff0/7ffff0/7fffe0/ffffe0/1fffc0/07ffc0/01ff80/007f80/001f00/000700",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=650,mode=2,pts=64:64:72:48:87:55:79:71",
+      "result": "box=64:49:86:70,rows=00e000/01f800/01fe00/03ff80/03ffe0/07fff8/07fffe/0ffffe/0ffffc/1ffffc/1ffff8/3ffff8/3ffff0/7ffff0/7fffe0/ffffe0/1fffc0/07ffc0/01ff80/007f80/001f00/000700",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=700,mode=1,pts=64:64:70:47:85:52:79:69",
+      "result": "box=64:48:84:68,rows=03c000/07f800/07ff00/07ffe0/0ffff8/0ffff8/0ffff0/1ffff0/1ffff0/3fffe0/3fffe0/3fffe0/7fffc0/7fffc0/7fff80/ffff80/ffff80/0fff00/01ff00/003f00/000600",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=700,mode=2,pts=64:64:70:47:85:52:79:69",
+      "result": "box=64:48:84:68,rows=03c000/07f800/07ff00/07ffe0/0ffff8/0ffff8/0ffff0/1ffff0/1ffff0/3fffe0/3fffe0/3fffe0/7fffc0/7fffc0/7fff80/ffff80/ffff80/0fff00/01ff00/003f00/000600",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=750,mode=1,pts=64:64:69:47:84:51:79:68",
+      "result": "box=64:48:83:67,rows=07c00/0ffc0/0fffc/0ffff/0ffff/1fffe/1fffe/1fffe/3fffe/3fffc/3fffc/7fffc/7fff8/7fff8/7fff8/ffff0/ffff0/07ff0/007f0/00060",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=750,mode=2,pts=64:64:69:47:84:51:79:68",
+      "result": "box=64:48:83:67,rows=07c00/0ffc0/0fffc/0ffff/0ffff/1fffe/1fffe/1fffe/3fffe/3fffc/3fffc/7fffc/7fff8/7fff8/7fff8/ffff0/ffff0/07ff0/007f0/00060",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=800,mode=1,pts=64:64:67:46:83:49:80:67",
+      "result": "box=64:47:82:66,rows=1fc00/1fff0/1fffe/3fffe/3fffe/3fffe/3fffc/3fffc/3fffc/7fffc/7fffc/7fffc/7fff8/7fff8/7fff8/ffff8/ffff8/ffff8/01ff0/00070",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=800,mode=2,pts=64:64:67:46:83:49:80:67",
+      "result": "box=64:47:82:66,rows=1fc00/1fff0/1fffe/3fffe/3fffe/3fffe/3fffc/3fffc/3fffc/7fffc/7fffc/7fffc/7fff8/7fff8/7fff8/ffff8/ffff8/ffff8/01ff0/00070",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=850,mode=1,pts=64:64:66:46:82:47:80:65",
+      "result": "box=64:47:81:64,rows=3fffc/3fffc/3fffc/3fffc/7fffc/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/ffff8/ffff0/ffff0/ffff0/ffff0",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=850,mode=2,pts=64:64:66:46:82:47:80:65",
+      "result": "box=64:47:81:64,rows=3fffc/3fffc/3fffc/3fffc/7fffc/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/ffff8/ffff0/ffff0/ffff0/ffff0",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=900,mode=1,pts=64:64:64:46:80:46:80:64",
+      "result": "box=64:46:79:63,rows=ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=900,mode=2,pts=64:64:64:46:80:46:80:64",
+      "result": "box=64:46:79:63,rows=ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=950,mode=1,pts=64:64:62:46:78:45:80:63",
+      "result": "box=62:46:79:63,rows=ffff0/ffff0/ffff0/ffff0/ffff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fffc/3fffc/3fffc/3fffc/3fffc",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=950,mode=2,pts=64:64:62:46:78:45:80:63",
+      "result": "box=62:46:79:63,rows=ffff0/ffff0/ffff0/ffff0/ffff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fffc/3fffc/3fffc/3fffc/3fffc",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1000,mode=1,pts=64:64:61:46:77:43:80:61",
+      "result": "box=61:44:79:63,rows=007f0/1fff0/ffff8/ffff8/ffff8/7fff8/7fff8/7fff8/7fffc/7fffc/7fffc/3fffc/3fffc/3fffc/3fffe/3fffe/3fffe/1fffe/1ff00/1c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1000,mode=2,pts=64:64:61:46:77:43:80:61",
+      "result": "box=61:44:79:63,rows=007f0/1fff0/ffff8/ffff8/ffff8/7fff8/7fff8/7fff8/7fffc/7fffc/7fffc/3fffc/3fffc/3fffc/3fffe/3fffe/3fffe/1fffe/1ff00/1c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1050,mode=1,pts=64:64:59:47:74:43:79:60",
+      "result": "box=59:44:78:63,rows=003e0/03ff0/3fff0/ffff0/ffff0/7fff8/7fff8/7fff8/7fffc/3fffc/3fffc/3fffe/1fffe/1fffe/1fffe/0ffff/0ffff/0ffe0/0fe00/06000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1050,mode=2,pts=64:64:59:47:74:43:79:60",
+      "result": "box=59:44:78:63,rows=003e0/03ff0/3fff0/ffff0/ffff0/7fff8/7fff8/7fff8/7fffc/3fffc/3fffc/3fffe/1fffe/1fffe/1fffe/0ffff/0ffff/0ffe0/0fe00/06000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1100,mode=1,pts=64:64:58:47:73:42:79:59",
+      "result": "box=58:43:78:63,rows=001e00/00ff00/07ff00/3fff00/ffff80/ffff80/7fff80/7fffc0/7fffc0/3fffe0/3fffe0/3fffe0/1ffff0/1ffff0/0ffff0/0ffff8/0ffff8/07ff80/07fc00/07e000/030000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1100,mode=2,pts=64:64:58:47:73:42:79:59",
+      "result": "box=58:43:78:63,rows=001e00/00ff00/07ff00/3fff00/ffff80/ffff80/7fff80/7fffc0/7fffc0/3fffe0/3fffe0/3fffe0/1ffff0/1ffff0/0ffff0/0ffff8/0ffff8/07ff80/07fc00/07e000/030000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1150,mode=1,pts=64:64:56:48:71:41:79:57",
+      "result": "box=56:42:78:63,rows=000f00/003f00/00ff80/03ff80/0fffc0/3fffc0/ffffe0/7fffe0/7ffff0/3ffff0/3ffff8/1ffff8/1ffffc/0ffffc/0ffffe/07fffe/07fff0/03ffc0/03ff00/01fc00/01f000/00c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1150,mode=2,pts=64:64:56:48:71:41:79:57",
+      "result": "box=56:42:78:63,rows=000f00/003f00/00ff80/03ff80/0fffc0/3fffc0/ffffe0/7fffe0/7ffff0/3ffff0/3ffff8/1ffff8/1ffffc/0ffffc/0ffffe/07fffe/07fff0/03ffc0/03ff00/01fc00/01f000/00c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1200,mode=1,pts=64:64:55:48:69:40:78:56",
+      "result": "box=55:41:77:63,rows=000e00/003e00/00ff00/01ff00/07ff80/1fff80/7fffc0/ffffe0/7fffe0/7ffff0/3ffff0/3ffff8/1ffff8/1ffffc/0ffffc/07fffe/07fff8/03ffe0/03ff80/01ff00/01fc00/00f000/00c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1200,mode=2,pts=64:64:55:48:69:40:78:56",
+      "result": "box=55:41:77:63,rows=000e00/003e00/00ff00/01ff00/07ff80/1fff80/7fffc0/ffffe0/7fffe0/7ffff0/3ffff0/3ffff8/1ffff8/1ffffc/0ffffc/07fffe/07fff8/03ffe0/03ff80/01ff00/01fc00/00f000/00c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1250,mode=1,pts=64:64:54:49:67:40:77:55",
+      "result": "box=54:41:76:63,rows=001c00/003c00/00fe00/01ff00/03ff00/0fff80/1fffc0/7fffc0/ffffe0/7ffff0/7ffff0/3ffff8/1ffffc/1ffffc/0ffffe/07fff8/07fff0/03ffc0/01ff80/01ff00/00fc00/007800/006000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1250,mode=2,pts=64:64:54:49:67:40:77:55",
+      "result": "box=54:41:76:63,rows=001c00/003c00/00fe00/01ff00/03ff00/0fff80/1fffc0/7fffc0/ffffe0/7ffff0/7ffff0/3ffff8/1ffffc/1ffffc/0ffffe/07fff8/07fff0/03ffc0/01ff80/01ff00/00fc00/007800/006000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1300,mode=1,pts=64:64:52:50:64:40:76:54",
+      "result": "box=52:41:75:63,rows=001800/003c00/00fe00/01fe00/03ff00/07ff80/0fffc0/3fffe0/7ffff0/fffff8/7ffff8/3ffffc/1ffffe/1fffff/0ffffe/07fffc/03fff0/01ffe0/00ffc0/007f80/007f00/003c00/001800",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1300,mode=2,pts=64:64:52:50:64:40:76:54",
+      "result": "box=52:41:75:63,rows=001800/003c00/00fe00/01fe00/03ff00/07ff80/0fffc0/3fffe0/7ffff0/fffff8/7ffff8/3ffffc/1ffffe/1fffff/0ffffe/07fffc/03fff0/01ffe0/00ffc0/007f80/007f00/003c00/001800",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1350,mode=1,pts=64:64:51:51:62:40:75:53",
+      "result": "box=51:41:74:63,rows=003000/007800/00fc00/01fe00/03ff00/07ff80/0fffc0/1fffe0/3ffff0/7ffff8/fffffc/7ffffe/3fffff/1ffffe/0ffffc/07fff8/03fff0/01ffe0/00ffc0/007f80/003f00/001e00/000c00",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1350,mode=2,pts=64:64:51:51:62:40:75:53",
+      "result": "box=51:41:74:63,rows=003000/007800/00fc00/01fe00/03ff00/07ff80/0fffc0/1fffe0/3ffff0/7ffff8/fffffc/7ffffe/3fffff/1ffffe/0ffffc/07fff8/03fff0/01ffe0/00ffc0/007f80/003f00/001e00/000c00",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1400,mode=1,pts=64:64:50:52:60:40:74:52",
+      "result": "box=50:41:73:63,rows=006000/00f000/00fc00/01fe00/03ff00/07ff80/0fffc0/1fffe0/1ffff8/3ffffc/7ffffe/ffffff/7ffffe/3ffffc/0ffffc/07fff8/03fff0/01ffe0/00ffc0/007f80/001f80/000f00/000600",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1400,mode=2,pts=64:64:50:52:60:40:74:52",
+      "result": "box=50:41:73:63,rows=006000/00f000/00fc00/01fe00/03ff00/07ff80/0fffc0/1fffe0/1ffff8/3ffffc/7ffffe/ffffff/7ffffe/3ffffc/0ffffc/07fff8/03fff0/01ffe0/00ffc0/007f80/001f80/000f00/000600",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1450,mode=1,pts=64:64:49:54:58:41:73:51",
+      "result": "box=49:42:72:63,rows=00e000/00f000/01fc00/03fe00/03ff80/07ffc0/0ffff0/1ffff8/1ffffe/3fffff/7ffffe/7ffffe/fffffc/3ffff8/1ffff8/07fff0/03ffe0/00ffc0/007fc0/001f80/000f00/000300",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1450,mode=2,pts=64:64:49:54:58:41:73:51",
+      "result": "box=49:42:72:63,rows=00e000/00f000/01fc00/03fe00/03ff80/07ffc0/0ffff0/1ffff8/1ffffe/3fffff/7ffffe/7ffffe/fffffc/3ffff8/1ffff8/07fff0/03ffe0/00ffc0/007fc0/001f80/000f00/000300",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1500,mode=1,pts=64:64:48:55:56:41:72:50",
+      "result": "box=48:42:71:63,rows=01c000/01f000/03fc00/03fe00/07ff80/07ffe0/0ffff8/1ffffe/1fffff/3ffffe/3ffffe/7ffffc/7ffffc/fffff8/3ffff8/0ffff0/03ffe0/01ffe0/007fc0/001fc0/000780/000180",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1500,mode=2,pts=64:64:48:55:56:41:72:50",
+      "result": "box=48:42:71:63,rows=01c000/01f000/03fc00/03fe00/07ff80/07ffe0/0ffff8/1ffffe/1fffff/3ffffe/3ffffe/7ffffc/7ffffc/fffff8/3ffff8/0ffff0/03ffe0/01ffe0/007fc0/001fc0/000780/000180",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1550,mode=1,pts=64:64:48:56:55:41:71:49",
+      "result": "box=48:42:70:63,rows=018000/03e000/03f800/07fe00/07ff80/0fffe0/0ffff8/1ffffe/1ffffe/3ffffc/3ffffc/7ffff8/7ffff8/fffff0/fffff0/3fffe0/0fffe0/03ffc0/00ffc0/003f80/000f80/000300",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1550,mode=2,pts=64:64:48:56:55:41:71:49",
+      "result": "box=48:42:70:63,rows=018000/03e000/03f800/07fe00/07ff80/0fffe0/0ffff8/1ffffe/1ffffe/3ffffc/3ffffc/7ffff8/7ffff8/fffff0/fffff0/3fffe0/0fffe0/03ffc0/00ffc0/003f80/000f80/000300",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1600,mode=1,pts=64:64:47:58:52:43:69:49",
+      "result": "box=47:44:68:63,rows=078000/0ff000/0ffc00/0fff80/1ffff0/1ffffc/1ffffc/3ffff8/3ffff8/3ffff8/7ffff0/7ffff0/7ffff0/ffffe0/ffffe0/0fffe0/01ffc0/007fc0/000fc0/000180",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1600,mode=2,pts=64:64:47:58:52:43:69:49",
+      "result": "box=47:44:68:63,rows=078000/0ff000/0ffc00/0fff80/1ffff0/1ffffc/1ffffc/3ffff8/3ffff8/3ffff8/7ffff0/7ffff0/7ffff0/ffffe0/ffffe0/0fffe0/01ffc0/007fc0/000fc0/000180",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1650,mode=1,pts=64:64:47:59:51:44:68:49",
+      "result": "box=47:45:67:63,rows=0f8000/1ff000/1ffe00/1fffe0/1ffff8/3ffff8/3ffff0/3ffff0/3ffff0/7ffff0/7fffe0/7fffe0/7fffe0/ffffe0/ffffc0/07ffc0/00ffc0/001fc0/000180",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1650,mode=2,pts=64:64:47:59:51:44:68:49",
+      "result": "box=47:45:67:63,rows=0f8000/1ff000/1ffe00/1fffe0/1ffff8/3ffff8/3ffff0/3ffff0/3ffff0/7ffff0/7fffe0/7fffe0/7fffe0/ffffe0/ffffc0/07ffc0/00ffc0/001fc0/000180",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1700,mode=1,pts=64:64:46:61:49:45:67:48",
+      "result": "box=46:46:66:63,rows=1fe000/1fff80/3ffff8/3ffff8/3ffff8/3ffff0/3ffff0/3ffff0/7ffff0/7ffff0/7ffff0/7fffe0/7fffe0/ffffe0/ffffe0/ffffe0/00ffc0/0003c0",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1700,mode=2,pts=64:64:46:61:49:45:67:48",
+      "result": "box=46:46:66:63,rows=1fe000/1fff80/3ffff8/3ffff8/3ffff8/3ffff0/3ffff0/3ffff0/7ffff0/7ffff0/7ffff0/7fffe0/7fffe0/ffffe0/ffffe0/ffffe0/00ffc0/0003c0",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1750,mode=1,pts=64:64:46:62:47:46:65:48",
+      "result": "box=46:47:64:63,rows=7ffc0/7fffe/7fffe/7fffe/7fffe/7fffe/7fffe/7fffe/ffffe/ffffe/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/0007c",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1750,mode=2,pts=64:64:46:62:47:46:65:48",
+      "result": "box=46:47:64:63,rows=7ffc0/7fffe/7fffe/7fffe/7fffe/7fffe/7fffe/7fffe/ffffe/ffffe/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/0007c",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1800,mode=1,pts=64:64:46:64:46:48:64:48",
+      "result": "box=46:48:63:63,rows=ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1800,mode=2,pts=64:64:46:64:46:48:64:48",
+      "result": "box=46:48:63:63,rows=ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1850,mode=1,pts=64:64:46:66:45:50:63:48",
+      "result": "box=45:49:63:65,rows=07ffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffe/ffffe/7fffe/7fffe/7fffe/7fffe/7fffe/7fffe/7fffe/7c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1850,mode=2,pts=64:64:46:66:45:50:63:48",
+      "result": "box=45:49:63:65,rows=07ffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/ffffe/ffffe/7fffe/7fffe/7fffe/7fffe/7fffe/7fffe/7fffe/7c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1900,mode=1,pts=64:64:46:67:43:51:61:48",
+      "result": "box=43:49:63:66,rows=003fc0/0fffc0/ffffe0/ffffe0/ffffe0/7fffe0/7fffe0/7ffff0/7ffff0/7ffff0/3ffff0/3ffff0/3ffff0/3ffff8/3ffff8/3ffff8/1ff800/1e0000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1900,mode=2,pts=64:64:46:67:43:51:61:48",
+      "result": "box=43:49:63:66,rows=003fc0/0fffc0/ffffe0/ffffe0/ffffe0/7fffe0/7fffe0/7ffff0/7ffff0/7ffff0/3ffff0/3ffff0/3ffff0/3ffff8/3ffff8/3ffff8/1ff800/1e0000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1950,mode=1,pts=64:64:47:69:43:54:60:49",
+      "result": "box=43:50:63:68,rows=000f80/007fc0/03ffc0/3fffc0/ffffc0/ffffe0/7fffe0/7fffe0/7fffe0/7ffff0/3ffff0/3ffff0/3ffff0/3ffff8/1ffff8/1fff00/1ff800/1fc000/0c0000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=1950,mode=2,pts=64:64:47:69:43:54:60:49",
+      "result": "box=43:50:63:68,rows=000f80/007fc0/03ffc0/3fffc0/ffffc0/ffffe0/7fffe0/7fffe0/7fffe0/7ffff0/3ffff0/3ffff0/3ffff0/3ffff8/1ffff8/1fff00/1ff800/1fc000/0c0000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2000,mode=1,pts=64:64:47:70:42:55:59:49",
+      "result": "box=42:50:63:69,rows=000780/003fc0/00ffc0/07ffc0/3fffe0/ffffe0/ffffe0/7ffff0/7ffff0/7ffff0/3ffff8/3ffff8/3ffff8/1ffffc/1ffffc/1fffc0/0ffe00/0ff800/0fc000/060000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2000,mode=2,pts=64:64:47:70:42:55:59:49",
+      "result": "box=42:50:63:69,rows=000780/003fc0/00ffc0/07ffc0/3fffe0/ffffe0/ffffe0/7ffff0/7ffff0/7ffff0/3ffff8/3ffff8/3ffff8/1ffffc/1ffffc/1fffc0/0ffe00/0ff800/0fc000/060000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2050,mode=1,pts=64:64:48:72:41:57:57:49",
+      "result": "box=41:50:63:71,rows=000300/000f80/003f80/00ffc0/03ffc0/0fffe0/3fffe0/fffff0/fffff0/7ffff8/7ffff8/3ffffc/3ffffc/1ffffe/1ffffe/0ffff8/0fffe0/07ff80/07fe00/03f800/03e000/018000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2050,mode=2,pts=64:64:48:72:41:57:57:49",
+      "result": "box=41:50:63:71,rows=000300/000f80/003f80/00ffc0/03ffc0/0fffe0/3fffe0/fffff0/fffff0/7ffff8/7ffff8/3ffffc/3ffffc/1ffffe/1ffffe/0ffff8/0fffe0/07ff80/07fe00/03f800/03e000/018000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2100,mode=1,pts=64:64:48:73:40:59:56:50",
+      "result": "box=40:51:63:72,rows=000380/000f80/003fc0/007fc0/01ffe0/07ffe0/1ffff0/7ffff8/fffff8/7ffffc/7ffffc/3ffffe/3ffffe/1fffff/1ffffc/0ffff0/07ffc0/07ff80/03fe00/03f800/01e000/018000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2100,mode=2,pts=64:64:48:73:40:59:56:50",
+      "result": "box=40:51:63:72,rows=000380/000f80/003fc0/007fc0/01ffe0/07ffe0/1ffff0/7ffff8/fffff8/7ffffc/7ffffc/3ffffe/3ffffe/1fffff/1ffffc/0ffff0/07ffc0/07ff80/03fe00/03f800/01e000/018000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2150,mode=1,pts=64:64:49:74:40:61:55:51",
+      "result": "box=40:52:63:73,rows=000700/000f00/003f80/007fc0/01ffc0/03ffe0/0ffff0/1ffff8/7ffff8/fffffc/7ffffe/7ffffe/3fffff/1ffffc/1ffff8/0fffe0/07ffc0/03ff00/03fe00/01f800/00f000/00c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2150,mode=2,pts=64:64:49:74:40:61:55:51",
+      "result": "box=40:52:63:73,rows=000700/000f00/003f80/007fc0/01ffc0/03ffe0/0ffff0/1ffff8/7ffff8/fffffc/7ffffe/7ffffe/3fffff/1ffffc/1ffff8/0fffe0/07ffc0/03ff00/03fe00/01f800/00f000/00c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2200,mode=1,pts=64:64:50:76:40:64:54:52",
+      "result": "box=40:53:63:75,rows=000600/000f00/003f80/007f80/00ffc0/01ffe0/03fff0/07fff8/1ffffc/3ffffc/7ffffe/ffffff/7ffffe/3ffffc/1ffff0/1fffe0/0fffc0/07ff80/03ff00/01fe00/00f800/00f000/006000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2200,mode=2,pts=64:64:50:76:40:64:54:52",
+      "result": "box=40:53:63:75,rows=000600/000f00/003f80/007f80/00ffc0/01ffe0/03fff0/07fff8/1ffffc/3ffffc/7ffffe/ffffff/7ffffe/3ffffc/1ffff0/1fffe0/0fffc0/07ff80/03ff00/01fe00/00f800/00f000/006000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2250,mode=1,pts=64:64:51:77:40:66:53:53",
+      "result": "box=40:54:63:76,rows=000c00/001e00/003f00/007f80/00ffc0/01ffe0/03fff0/07fff8/0ffffc/1ffffe/3fffff/7ffffe/fffffc/7ffff8/3ffff0/1fffe0/0fffc0/07ff80/03ff00/01fe00/00fc00/007800/003000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2250,mode=2,pts=64:64:51:77:40:66:53:53",
+      "result": "box=40:54:63:76,rows=000c00/001e00/003f00/007f80/00ffc0/01ffe0/03fff0/07fff8/0ffffc/1ffffe/3fffff/7ffffe/fffffc/7ffff8/3ffff0/1fffe0/0fffc0/07ff80/03ff00/01fe00/00fc00/007800/003000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2300,mode=1,pts=64:64:52:78:40:68:52:54",
+      "result": "box=40:55:63:77,rows=001800/003c00/007f00/007f80/00ffc0/01ffe0/03fff0/07fffc/0ffffe/1fffff/1ffffe/3ffffc/7ffff8/fffff8/7ffff0/3fffe0/0fffc0/07ff80/03ff00/01fe00/00fe00/003c00/001800",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2300,mode=2,pts=64:64:52:78:40:68:52:54",
+      "result": "box=40:55:63:77,rows=001800/003c00/007f00/007f80/00ffc0/01ffe0/03fff0/07fffc/0ffffe/1fffff/1ffffe/3ffffc/7ffff8/fffff8/7ffff0/3fffe0/0fffc0/07ff80/03ff00/01fe00/00fe00/003c00/001800",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2350,mode=1,pts=64:64:54:79:41:70:51:55",
+      "result": "box=41:56:63:78,rows=007000/007800/00fe00/01ff00/01ff80/03ffe0/07fff0/07fffc/0ffffe/1ffffc/1ffffc/3ffff8/7ffff0/7ffff0/ffffe0/3fffc0/1fffc0/07ff80/03ff00/01ff00/007e00/003c00/000c00",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2350,mode=2,pts=64:64:54:79:41:70:51:55",
+      "result": "box=41:56:63:78,rows=007000/007800/00fe00/01ff00/01ff80/03ffe0/07fff0/07fffc/0ffffe/1ffffc/1ffffc/3ffff8/7ffff0/7ffff0/ffffe0/3fffc0/1fffc0/07ff80/03ff00/01ff00/007e00/003c00/000c00",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2400,mode=1,pts=64:64:55:80:41:72:50:56",
+      "result": "box=41:57:63:79,rows=00e000/00f800/01fe00/01ff00/03ffc0/03fff0/07fffc/07fffe/0ffffc/1ffffc/1ffff8/3ffff8/3ffff0/7ffff0/7fffe0/ffffe0/3fffc0/0fff80/03ff80/01ff00/007f00/001e00/000600",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2400,mode=2,pts=64:64:55:80:41:72:50:56",
+      "result": "box=41:57:63:79,rows=00e000/00f800/01fe00/01ff00/03ffc0/03fff0/07fffc/07fffe/0ffffc/1ffffc/1ffff8/3ffff8/3ffff0/7ffff0/7fffe0/ffffe0/3fffc0/0fff80/03ff80/01ff00/007f00/001e00/000600",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2450,mode=1,pts=64:64:56:80:41:73:49:57",
+      "result": "box=41:58:63:79,rows=00e000/01f800/01fe00/03ff80/03ffe0/07fff8/07fffe/0ffffe/0ffffc/1ffffc/1ffff8/3ffff8/3ffff0/7ffff0/7fffe0/ffffe0/1fffc0/07ffc0/01ff80/007f80/001f00/000700",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2450,mode=2,pts=64:64:56:80:41:73:49:57",
+      "result": "box=41:58:63:79,rows=00e000/01f800/01fe00/03ff80/03ffe0/07fff8/07fffe/0ffffe/0ffffc/1ffffc/1ffff8/3ffff8/3ffff0/7ffff0/7fffe0/ffffe0/1fffc0/07ffc0/01ff80/007f80/001f00/000700",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2500,mode=1,pts=64:64:58:81:43:76:49:59",
+      "result": "box=43:60:63:80,rows=03c000/07f800/07ff00/07ffe0/0ffff8/0ffff8/0ffff0/1ffff0/1ffff0/3fffe0/3fffe0/3fffe0/7fffc0/7fffc0/7fff80/ffff80/ffff80/0fff00/01ff00/003f00/000600",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2500,mode=2,pts=64:64:58:81:43:76:49:59",
+      "result": "box=43:60:63:80,rows=03c000/07f800/07ff00/07ffe0/0ffff8/0ffff8/0ffff0/1ffff0/1ffff0/3fffe0/3fffe0/3fffe0/7fffc0/7fffc0/7fff80/ffff80/ffff80/0fff00/01ff00/003f00/000600",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2550,mode=1,pts=64:64:59:81:44:77:49:60",
+      "result": "box=44:61:63:80,rows=07c00/0ffc0/0fffc/0ffff/0ffff/1fffe/1fffe/1fffe/3fffe/3fffc/3fffc/7fffc/7fff8/7fff8/7fff8/ffff0/ffff0/07ff0/007f0/00060",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2550,mode=2,pts=64:64:59:81:44:77:49:60",
+      "result": "box=44:61:63:80,rows=07c00/0ffc0/0fffc/0ffff/0ffff/1fffe/1fffe/1fffe/3fffe/3fffc/3fffc/7fffc/7fff8/7fff8/7fff8/ffff0/ffff0/07ff0/007f0/00060",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2600,mode=1,pts=64:64:61:82:45:79:48:61",
+      "result": "box=45:62:63:81,rows=1fc00/1fff0/1fffe/3fffe/3fffe/3fffe/3fffc/3fffc/3fffc/7fffc/7fffc/7fffc/7fff8/7fff8/7fff8/ffff8/ffff8/ffff8/01ff0/00070",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2600,mode=2,pts=64:64:61:82:45:79:48:61",
+      "result": "box=45:62:63:81,rows=1fc00/1fff0/1fffe/3fffe/3fffe/3fffe/3fffc/3fffc/3fffc/7fffc/7fffc/7fffc/7fff8/7fff8/7fff8/ffff8/ffff8/ffff8/01ff0/00070",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2650,mode=1,pts=64:64:62:82:46:81:48:63",
+      "result": "box=46:64:63:81,rows=3fffc/3fffc/3fffc/3fffc/7fffc/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/ffff8/ffff0/ffff0/ffff0/ffff0",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2650,mode=2,pts=64:64:62:82:46:81:48:63",
+      "result": "box=46:64:63:81,rows=3fffc/3fffc/3fffc/3fffc/7fffc/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/ffff8/ffff0/ffff0/ffff0/ffff0",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2700,mode=1,pts=64:64:64:82:48:82:48:64",
+      "result": "box=48:64:63:81,rows=ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2700,mode=2,pts=64:64:64:82:48:82:48:64",
+      "result": "box=48:64:63:81,rows=ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff/ffff",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2750,mode=1,pts=64:64:66:82:50:83:48:65",
+      "result": "box=48:65:65:82,rows=ffff0/ffff0/ffff0/ffff0/ffff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fffc/3fffc/3fffc/3fffc/3fffc",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2750,mode=2,pts=64:64:66:82:50:83:48:65",
+      "result": "box=48:65:65:82,rows=ffff0/ffff0/ffff0/ffff0/ffff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fff8/7fffc/3fffc/3fffc/3fffc/3fffc",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2800,mode=1,pts=64:64:67:82:51:85:48:67",
+      "result": "box=48:65:66:84,rows=007f0/1fff0/ffff8/ffff8/ffff8/7fff8/7fff8/7fff8/7fffc/7fffc/7fffc/3fffc/3fffc/3fffc/3fffe/3fffe/3fffe/1fffe/1ff00/1c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2800,mode=2,pts=64:64:67:82:51:85:48:67",
+      "result": "box=48:65:66:84,rows=007f0/1fff0/ffff8/ffff8/ffff8/7fff8/7fff8/7fff8/7fffc/7fffc/7fffc/3fffc/3fffc/3fffc/3fffe/3fffe/3fffe/1fffe/1ff00/1c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2850,mode=1,pts=64:64:69:81:54:85:49:68",
+      "result": "box=49:65:68:84,rows=003e0/03ff0/3fff0/ffff0/ffff0/7fff8/7fff8/7fff8/7fffc/3fffc/3fffc/3fffe/1fffe/1fffe/1fffe/0ffff/0ffff/0ffe0/0fe00/06000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2850,mode=2,pts=64:64:69:81:54:85:49:68",
+      "result": "box=49:65:68:84,rows=003e0/03ff0/3fff0/ffff0/ffff0/7fff8/7fff8/7fff8/7fffc/3fffc/3fffc/3fffe/1fffe/1fffe/1fffe/0ffff/0ffff/0ffe0/0fe00/06000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2900,mode=1,pts=64:64:70:81:55:86:49:69",
+      "result": "box=49:65:69:85,rows=001e00/00ff00/07ff00/3fff00/ffff80/ffff80/7fff80/7fffc0/7fffc0/3fffe0/3fffe0/3fffe0/1ffff0/1ffff0/0ffff0/0ffff8/0ffff8/07ff80/07fc00/07e000/030000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2900,mode=2,pts=64:64:70:81:55:86:49:69",
+      "result": "box=49:65:69:85,rows=001e00/00ff00/07ff00/3fff00/ffff80/ffff80/7fff80/7fffc0/7fffc0/3fffe0/3fffe0/3fffe0/1ffff0/1ffff0/0ffff0/0ffff8/0ffff8/07ff80/07fc00/07e000/030000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2950,mode=1,pts=64:64:72:80:57:87:49:71",
+      "result": "box=49:65:71:86,rows=000f00/003f00/00ff80/03ff80/0fffc0/3fffc0/ffffe0/7fffe0/7ffff0/3ffff0/3ffff8/1ffff8/1ffffc/0ffffc/0ffffe/07fffe/07fff0/03ffc0/03ff00/01fc00/01f000/00c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=2950,mode=2,pts=64:64:72:80:57:87:49:71",
+      "result": "box=49:65:71:86,rows=000f00/003f00/00ff80/03ff80/0fffc0/3fffc0/ffffe0/7fffe0/7ffff0/3ffff0/3ffff8/1ffff8/1ffffc/0ffffc/0ffffe/07fffe/07fff0/03ffc0/03ff00/01fc00/01f000/00c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3000,mode=1,pts=64:64:73:80:59:88:50:72",
+      "result": "box=50:65:72:87,rows=000e00/003e00/00ff00/01ff00/07ff80/1fff80/7fffc0/ffffe0/7fffe0/7ffff0/3ffff0/3ffff8/1ffff8/1ffffc/0ffffc/07fffe/07fff8/03ffe0/03ff80/01ff00/01fc00/00f000/00c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3000,mode=2,pts=64:64:73:80:59:88:50:72",
+      "result": "box=50:65:72:87,rows=000e00/003e00/00ff00/01ff00/07ff80/1fff80/7fffc0/ffffe0/7fffe0/7ffff0/3ffff0/3ffff8/1ffff8/1ffffc/0ffffc/07fffe/07fff8/03ffe0/03ff80/01ff00/01fc00/00f000/00c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3050,mode=1,pts=64:64:74:79:61:88:51:73",
+      "result": "box=51:65:73:87,rows=001c00/003c00/00fe00/01ff00/03ff00/0fff80/1fffc0/7fffc0/ffffe0/7ffff0/7ffff0/3ffff8/1ffffc/1ffffc/0ffffe/07fff8/07fff0/03ffc0/01ff80/01ff00/00fc00/007800/006000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3050,mode=2,pts=64:64:74:79:61:88:51:73",
+      "result": "box=51:65:73:87,rows=001c00/003c00/00fe00/01ff00/03ff00/0fff80/1fffc0/7fffc0/ffffe0/7ffff0/7ffff0/3ffff8/1ffffc/1ffffc/0ffffe/07fff8/07fff0/03ffc0/01ff80/01ff00/00fc00/007800/006000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3100,mode=1,pts=64:64:76:78:64:88:52:74",
+      "result": "box=52:65:75:87,rows=001800/003c00/00fe00/01fe00/03ff00/07ff80/0fffc0/3fffe0/7ffff0/fffff8/7ffff8/3ffffc/1ffffe/1fffff/0ffffe/07fffc/03fff0/01ffe0/00ffc0/007f80/007f00/003c00/001800",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3100,mode=2,pts=64:64:76:78:64:88:52:74",
+      "result": "box=52:65:75:87,rows=001800/003c00/00fe00/01fe00/03ff00/07ff80/0fffc0/3fffe0/7ffff0/fffff8/7ffff8/3ffffc/1ffffe/1fffff/0ffffe/07fffc/03fff0/01ffe0/00ffc0/007f80/007f00/003c00/001800",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3150,mode=1,pts=64:64:77:77:66:88:53:75",
+      "result": "box=53:65:76:87,rows=003000/007800/00fc00/01fe00/03ff00/07ff80/0fffc0/1fffe0/3ffff0/7ffff8/fffffc/7ffffe/3fffff/1ffffe/0ffffc/07fff8/03fff0/01ffe0/00ffc0/007f80/003f00/001e00/000c00",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3150,mode=2,pts=64:64:77:77:66:88:53:75",
+      "result": "box=53:65:76:87,rows=003000/007800/00fc00/01fe00/03ff00/07ff80/0fffc0/1fffe0/3ffff0/7ffff8/fffffc/7ffffe/3fffff/1ffffe/0ffffc/07fff8/03fff0/01ffe0/00ffc0/007f80/003f00/001e00/000c00",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3200,mode=1,pts=64:64:78:76:68:88:54:76",
+      "result": "box=54:65:77:87,rows=006000/00f000/00fc00/01fe00/03ff00/07ff80/0fffc0/1fffe0/1ffff8/3ffffc/7ffffe/ffffff/7ffffe/3ffffc/0ffffc/07fff8/03fff0/01ffe0/00ffc0/007f80/001f80/000f00/000600",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3200,mode=2,pts=64:64:78:76:68:88:54:76",
+      "result": "box=54:65:77:87,rows=006000/00f000/00fc00/01fe00/03ff00/07ff80/0fffc0/1fffe0/1ffff8/3ffffc/7ffffe/ffffff/7ffffe/3ffffc/0ffffc/07fff8/03fff0/01ffe0/00ffc0/007f80/001f80/000f00/000600",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3250,mode=1,pts=64:64:79:74:70:87:55:77",
+      "result": "box=55:65:78:86,rows=00e000/00f000/01fc00/03fe00/03ff80/07ffc0/0ffff0/1ffff8/1ffffe/3fffff/7ffffe/7ffffe/fffffc/3ffff8/1ffff8/07fff0/03ffe0/00ffc0/007fc0/001f80/000f00/000300",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3250,mode=2,pts=64:64:79:74:70:87:55:77",
+      "result": "box=55:65:78:86,rows=00e000/00f000/01fc00/03fe00/03ff80/07ffc0/0ffff0/1ffff8/1ffffe/3fffff/7ffffe/7ffffe/fffffc/3ffff8/1ffff8/07fff0/03ffe0/00ffc0/007fc0/001f80/000f00/000300",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3300,mode=1,pts=64:64:80:73:72:87:56:78",
+      "result": "box=56:65:79:86,rows=01c000/01f000/03fc00/03fe00/07ff80/07ffe0/0ffff8/1ffffe/1fffff/3ffffe/3ffffe/7ffffc/7ffffc/fffff8/3ffff8/0ffff0/03ffe0/01ffe0/007fc0/001fc0/000780/000180",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3300,mode=2,pts=64:64:80:73:72:87:56:78",
+      "result": "box=56:65:79:86,rows=01c000/01f000/03fc00/03fe00/07ff80/07ffe0/0ffff8/1ffffe/1fffff/3ffffe/3ffffe/7ffffc/7ffffc/fffff8/3ffff8/0ffff0/03ffe0/01ffe0/007fc0/001fc0/000780/000180",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3350,mode=1,pts=64:64:80:72:73:87:57:79",
+      "result": "box=57:65:79:86,rows=018000/03e000/03f800/07fe00/07ff80/0fffe0/0ffff8/1ffffe/1ffffe/3ffffc/3ffffc/7ffff8/7ffff8/fffff0/fffff0/3fffe0/0fffe0/03ffc0/00ffc0/003f80/000f80/000300",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3350,mode=2,pts=64:64:80:72:73:87:57:79",
+      "result": "box=57:65:79:86,rows=018000/03e000/03f800/07fe00/07ff80/0fffe0/0ffff8/1ffffe/1ffffe/3ffffc/3ffffc/7ffff8/7ffff8/fffff0/fffff0/3fffe0/0fffe0/03ffc0/00ffc0/003f80/000f80/000300",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3400,mode=1,pts=64:64:81:70:76:85:59:79",
+      "result": "box=59:65:80:84,rows=078000/0ff000/0ffc00/0fff80/1ffff0/1ffffc/1ffffc/3ffff8/3ffff8/3ffff8/7ffff0/7ffff0/7ffff0/ffffe0/ffffe0/0fffe0/01ffc0/007fc0/000fc0/000180",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3400,mode=2,pts=64:64:81:70:76:85:59:79",
+      "result": "box=59:65:80:84,rows=078000/0ff000/0ffc00/0fff80/1ffff0/1ffffc/1ffffc/3ffff8/3ffff8/3ffff8/7ffff0/7ffff0/7ffff0/ffffe0/ffffe0/0fffe0/01ffc0/007fc0/000fc0/000180",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3450,mode=1,pts=64:64:81:69:77:84:60:79",
+      "result": "box=60:65:80:83,rows=0f8000/1ff000/1ffe00/1fffe0/1ffff8/3ffff8/3ffff0/3ffff0/3ffff0/7ffff0/7fffe0/7fffe0/7fffe0/ffffe0/ffffc0/07ffc0/00ffc0/001fc0/000180",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3450,mode=2,pts=64:64:81:69:77:84:60:79",
+      "result": "box=60:65:80:83,rows=0f8000/1ff000/1ffe00/1fffe0/1ffff8/3ffff8/3ffff0/3ffff0/3ffff0/7ffff0/7fffe0/7fffe0/7fffe0/ffffe0/ffffc0/07ffc0/00ffc0/001fc0/000180",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3500,mode=1,pts=64:64:82:67:79:83:61:80",
+      "result": "box=61:65:81:82,rows=1fe000/1fff80/3ffff8/3ffff8/3ffff8/3ffff0/3ffff0/3ffff0/7ffff0/7ffff0/7ffff0/7fffe0/7fffe0/ffffe0/ffffe0/ffffe0/00ffc0/0003c0",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3500,mode=2,pts=64:64:82:67:79:83:61:80",
+      "result": "box=61:65:81:82,rows=1fe000/1fff80/3ffff8/3ffff8/3ffff8/3ffff0/3ffff0/3ffff0/7ffff0/7ffff0/7ffff0/7fffe0/7fffe0/ffffe0/ffffe0/ffffe0/00ffc0/0003c0",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3550,mode=1,pts=64:64:82:66:81:82:63:80",
+      "result": "box=63:65:81:81,rows=7ffc0/7fffe/7fffe/7fffe/7fffe/7fffe/7fffe/7fffe/ffffe/ffffe/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/0007c",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"rect 18x16\",esc=3550,mode=2,pts=64:64:82:66:81:82:63:80",
+      "result": "box=63:65:81:81,rows=7ffc0/7fffe/7fffe/7fffe/7fffe/7fffe/7fffe/7fffe/ffffe/ffffe/ffffc/ffffc/ffffc/ffffc/ffffc/ffffc/0007c",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=50,mode=1,pts=64:64:91:62:91:64:64:66",
+      "result": "box=64:63:90:65,rows=01ffffe/ffffffe/fe00000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=50,mode=2,pts=64:64:91:62:91:64:64:66",
+      "result": "box=64:63:90:65,rows=01ffffe/ffffffe/fe00000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=50,mode=1,pts=64:64:91:62:91:65:64:67",
+      "result": "box=64:63:90:66,rows=01ffffe/ffffffe/ffffffe/fe00000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=50,mode=2,pts=64:64:91:62:91:65:64:67",
+      "result": "box=64:63:90:66,rows=01ffffe/ffffffe/ffffffe/fe00000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=100,mode=1,pts=64:64:91:59:91:61:64:66",
+      "result": "box=64:60:90:65,rows=00001fe/0003ffe/007fe00/1ffc000/ff80000/e000000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=100,mode=2,pts=64:64:91:59:91:61:64:66",
+      "result": "box=64:60:90:65,rows=00001fe/0003ffe/007fe00/1ffc000/ff80000/e000000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=100,mode=1,pts=64:64:91:59:92:62:65:67",
+      "result": "box=64:60:91:66,rows=00001fe/0003fff/007ffff/1ffff00/fffe000/ffc0000/7000000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=100,mode=2,pts=64:64:91:59:92:62:65:67",
+      "result": "box=64:60:91:66,rows=00001fe/0003fff/007ffff/1ffff00/fffe000/ffc0000/7000000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=150,mode=1,pts=64:64:90:57:91:59:65:66",
+      "result": "box=64:58:90:65,rows=000007e/00007fe/0003fc0/003fc00/03fe000/3fe0000/fe00000/6000000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=150,mode=2,pts=64:64:90:57:91:59:65:66",
+      "result": "box=64:58:90:65,rows=000007e/00007fe/0003fc0/003fc00/03fe000/3fe0000/fe00000/6000000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=150,mode=1,pts=64:64:90:57:91:60:65:67",
+      "result": "box=64:58:90:66,rows=000007c/00007fe/0003ffe/003ffc0/03ffc00/3ffe000/ffe0000/fe00000/6000000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=150,mode=2,pts=64:64:90:57:91:60:65:67",
+      "result": "box=64:58:90:66,rows=000007c/00007fe/0003ffe/003ffc0/03ffc00/3ffe000/ffe0000/fe00000/6000000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=200,mode=1,pts=64:64:89:55:90:57:65:66",
+      "result": "box=64:56:89:65,rows=000007c/00001fc/0000fc0/0007f00/003f800/01fc000/07e0000/3f00000/fc00000/6000000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=200,mode=2,pts=64:64:89:55:90:57:65:66",
+      "result": "box=64:56:89:65,rows=000007c/00001fc/0000fc0/0007f00/003f800/01fc000/07e0000/3f00000/fc00000/6000000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=200,mode=1,pts=64:64:89:55:90:58:65:67",
+      "result": "box=64:56:89:66,rows=0000078/00001fc/0000ffc/0007fc0/003ff00/01ff800/07fc000/3fe0000/ff00000/fc00000/6000000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=200,mode=2,pts=64:64:89:55:90:58:65:67",
+      "result": "box=64:56:89:66,rows=0000078/00001fc/0000ffc/0007fc0/003ff00/01ff800/07fc000/3fe0000/ff00000/fc00000/6000000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=250,mode=1,pts=64:64:88:53:89:55:65:66",
+      "result": "box=64:54:88:65,rows=0000078/00001f8/00007c0/0001f00/0007c00/003f000/00fc000/03e0000/0f80000/3e00000/f800000/6000000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=250,mode=2,pts=64:64:88:53:89:55:65:66",
+      "result": "box=64:54:88:65,rows=0000078/00001f8/00007c0/0001f00/0007c00/003f000/00fc000/03e0000/0f80000/3e00000/f800000/6000000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=250,mode=1,pts=64:64:88:53:89:56:65:67",
+      "result": "box=64:54:88:66,rows=0000070/00001f8/00007f8/0001fc0/0007f00/003fc00/00ff000/03fc000/0fe0000/3f80000/fe00000/f800000/6000000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=250,mode=2,pts=64:64:88:53:89:56:65:67",
+      "result": "box=64:54:88:66,rows=0000070/00001f8/00007f8/0001fc0/0007f00/003fc00/00ff000/03fc000/0fe0000/3f80000/fe00000/f800000/6000000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=300,mode=1,pts=64:64:87:50:88:52:65:66",
+      "result": "box=64:51:87:65,rows=000007/00001f/00003c/0000f0/0003e0/000780/001e00/003c00/00f000/03e000/078000/1e0000/7c0000/f00000/400000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=300,mode=2,pts=64:64:87:50:88:52:65:66",
+      "result": "box=64:51:87:65,rows=000007/00001f/00003c/0000f0/0003e0/000780/001e00/003c00/00f000/03e000/078000/1e0000/7c0000/f00000/400000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=300,mode=1,pts=64:64:87:50:89:53:66:67",
+      "result": "box=64:51:88:66,rows=0000070/00001f0/00003f8/0000fe0/0003f80/0007f00/001fc00/003f000/00fe000/03f8000/07f0000/1fc0000/7f00000/fe00000/7800000/6000000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=300,mode=2,pts=64:64:87:50:89:53:66:67",
+      "result": "box=64:51:88:66,rows=0000070/00001f0/00003f8/0000fe0/0003f80/0007f00/001fc00/003f000/00fe000/03f8000/07f0000/1fc0000/7f00000/fe00000/7800000/6000000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=350,mode=1,pts=64:64:86:49:87:51:65:66",
+      "result": "box=64:50:86:65,rows=00000e/00001e/000078/0000f0/0003c0/000780/000e00/003c00/007800/01e000/03c000/0f0000/1e0000/780000/f00000/400000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=350,mode=2,pts=64:64:86:49:87:51:65:66",
+      "result": "box=64:50:86:65,rows=00000e/00001e/000078/0000f0/0003c0/000780/000e00/003c00/007800/01e000/03c000/0f0000/1e0000/780000/f00000/400000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=350,mode=1,pts=64:64:86:49:88:51:66:66",
+      "result": "box=64:50:87:65,rows=00000e/00001f/00007c/0000f8/0003e0/0007c0/000f00/003e00/007c00/01f000/03e000/0f8000/1f0000/7c0000/f80000/600000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=350,mode=2,pts=64:64:86:49:88:51:66:66",
+      "result": "box=64:50:87:65,rows=00000e/00001f/00007c/0000f8/0003e0/0007c0/000f00/003e00/007c00/01f000/03e000/0f8000/1f0000/7c0000/f80000/600000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=400,mode=1,pts=64:64:85:47:86:49:65:66",
+      "result": "box=64:48:85:65,rows=00000c/00003c/000078/0000e0/0001c0/000780/000f00/001c00/003800/007000/01e000/03c000/070000/0e0000/3c0000/780000/e00000/400000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=400,mode=2,pts=64:64:85:47:86:49:65:66",
+      "result": "box=64:48:85:65,rows=00000c/00003c/000078/0000e0/0001c0/000780/000f00/001c00/003800/007000/01e000/03c000/070000/0e0000/3c0000/780000/e00000/400000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=400,mode=1,pts=64:64:85:47:87:49:66:66",
+      "result": "box=64:48:86:65,rows=00000c/00003e/00007c/0000f0/0001e0/0007c0/000f80/001e00/003c00/007800/01f000/03e000/078000/0f0000/3e0000/7c0000/f00000/600000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=400,mode=2,pts=64:64:85:47:87:49:66:66",
+      "result": "box=64:48:86:65,rows=00000c/00003e/00007c/0000f0/0001e0/0007c0/000f80/001e00/003c00/007800/01f000/03e000/078000/0f0000/3e0000/7c0000/f00000/600000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=450,mode=1,pts=64:64:83:45:84:46:65:65",
+      "result": "box=64:46:83:64,rows=00003/00006/0000c/00018/00030/00060/000c0/00180/00300/00600/00c00/01800/03000/06000/0c000/18000/30000/60000/c0000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=450,mode=2,pts=64:64:83:45:84:46:65:65",
+      "result": "box=64:46:83:64,rows=00003/00006/0000c/00018/00030/00060/000c0/00180/00300/00600/00c00/01800/03000/06000/0c000/18000/30000/60000/c0000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=450,mode=1,pts=64:64:83:45:85:47:66:66",
+      "result": "box=64:46:84:65,rows=000030/000078/0000f0/0001e0/0003c0/000780/000f00/001e00/003c00/007800/00f000/01e000/03c000/078000/0f0000/1e0000/3c0000/780000/f00000/600000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=450,mode=2,pts=64:64:83:45:85:47:66:66",
+      "result": "box=64:46:84:65,rows=000030/000078/0000f0/0001e0/0003c0/000780/000f00/001e00/003c00/007800/00f000/01e000/03c000/078000/0f0000/1e0000/3c0000/780000/f00000/600000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=500,mode=1,pts=64:64:81:43:83:44:66:65",
+      "result": "box=64:44:82:64,rows=0000e/0001c/00018/00038/00070/000e0/001c0/00180/00380/00700/00e00/01c00/03800/03000/07000/0e000/1c000/38000/30000/70000/e0000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=500,mode=2,pts=64:64:81:43:83:44:66:65",
+      "result": "box=64:44:82:64,rows=0000e/0001c/00018/00038/00070/000e0/001c0/00180/00380/00700/00e00/01c00/03800/03000/07000/0e000/1c000/38000/30000/70000/e0000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=500,mode=1,pts=64:64:81:43:83:45:66:66",
+      "result": "box=64:44:82:65,rows=0000c/0001e/0001c/00038/00078/000f0/001e0/001c0/00380/00780/00f00/01e00/03c00/03800/07000/0f000/1e000/3c000/38000/70000/f0000/60000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=500,mode=2,pts=64:64:81:43:83:45:66:66",
+      "result": "box=64:44:82:65,rows=0000c/0001e/0001c/00038/00078/000f0/001e0/001c0/00380/00780/00f00/01e00/03c00/03800/07000/0f000/1e000/3c000/38000/70000/f0000/60000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=550,mode=1,pts=64:64:79:42:81:43:66:65",
+      "result": "box=64:43:80:64,rows=00038/00030/00070/000e0/000c0/001c0/00380/00300/00700/00e00/00c00/01c00/03800/07000/06000/0e000/1c000/18000/38000/70000/60000/e0000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=550,mode=2,pts=64:64:79:42:81:43:66:65",
+      "result": "box=64:43:80:64,rows=00038/00030/00070/000e0/000c0/001c0/00380/00300/00700/00e00/00c00/01c00/03800/07000/06000/0e000/1c000/18000/38000/70000/60000/e0000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=550,mode=1,pts=64:64:79:42:81:44:66:66",
+      "result": "box=64:43:80:65,rows=00030/00038/00070/000f0/000e0/001c0/003c0/00380/00700/00f00/00e00/01c00/03c00/07800/07000/0e000/1e000/1c000/38000/78000/70000/e0000/60000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=550,mode=2,pts=64:64:79:42:81:44:66:66",
+      "result": "box=64:43:80:65,rows=00030/00038/00070/000f0/000e0/001c0/003c0/00380/00700/00f00/00e00/01c00/03c00/07800/07000/0e000/1e000/1c000/38000/78000/70000/e0000/60000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=600,mode=1,pts=64:64:78:41:80:42:66:65",
+      "result": "box=64:42:79:64,rows=0007/0006/000e/000c/001c/0038/0030/0070/0060/00e0/01c0/0180/0380/0700/0600/0e00/0c00/1c00/3800/3000/7000/6000/e000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=600,mode=2,pts=64:64:78:41:80:42:66:65",
+      "result": "box=64:42:79:64,rows=0007/0006/000e/000c/001c/0038/0030/0070/0060/00e0/01c0/0180/0380/0700/0600/0e00/0c00/1c00/3800/3000/7000/6000/e000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=600,mode=1,pts=64:64:78:41:81:43:67:66",
+      "result": "box=64:42:80:65,rows=00070/00078/000f0/000f0/001e0/003e0/003c0/00780/00780/00f00/01f00/01e00/03c00/07c00/07800/0f000/0f000/1e000/3e000/3c000/78000/78000/f0000/30000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=600,mode=2,pts=64:64:78:41:81:43:67:66",
+      "result": "box=64:42:80:65,rows=00070/00078/000f0/000f0/001e0/003e0/003c0/00780/00780/00f00/01f00/01e00/03c00/07c00/07800/0f000/0f000/1e000/3e000/3c000/78000/78000/f0000/30000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=650,mode=1,pts=64:64:75:40:77:41:66:65",
+      "result": "box=64:41:76:64,rows=0018/0038/0030/0070/0060/00e0/00c0/01c0/0180/0380/0300/0300/0700/0600/0e00/0c00/1c00/1800/3800/3000/7000/6000/e000/c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=650,mode=2,pts=64:64:75:40:77:41:66:65",
+      "result": "box=64:41:76:64,rows=0018/0038/0030/0070/0060/00e0/00c0/01c0/0180/0380/0300/0300/0700/0600/0e00/0c00/1c00/1800/3800/3000/7000/6000/e000/c000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=650,mode=1,pts=64:64:75:40:78:41:67:65",
+      "result": "box=64:41:77:64,rows=001c/003c/0038/0078/0070/00f0/00e0/01e0/01c0/03c0/0380/0380/0780/0700/0f00/0e00/1e00/1c00/3c00/3800/7800/7000/f000/e000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=650,mode=2,pts=64:64:75:40:78:41:67:65",
+      "result": "box=64:41:77:64,rows=001c/003c/0038/0078/0070/00f0/00e0/01e0/01c0/03c0/0380/0380/0780/0700/0f00/0e00/1e00/1c00/3c00/3800/7800/7000/f000/e000",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=700,mode=1,pts=64:64:73:39:75:40:66:65",
+      "result": "box=64:40:74:64,rows=006/00e/00c/00c/01c/018/038/030/030/070/060/060/0e0/0c0/0c0/1c0/180/180/380/300/700/600/600/e00/c00",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=700,mode=2,pts=64:64:73:39:75:40:66:65",
+      "result": "box=64:40:74:64,rows=006/00e/00c/00c/01c/018/038/030/030/070/060/060/0e0/0c0/0c0/1c0/180/180/380/300/700/600/600/e00/c00",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=700,mode=1,pts=64:64:73:39:76:40:67:65",
+      "result": "box=64:40:75:64,rows=007/00f/00e/00e/01e/01c/03c/038/038/078/070/070/0f0/0e0/0e0/1e0/1c0/1c0/3c0/380/780/700/700/f00/e00",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=700,mode=2,pts=64:64:73:39:76:40:67:65",
+      "result": "box=64:40:75:64,rows=007/00f/00e/00e/01e/01c/03c/038/038/078/070/070/0f0/0e0/0e0/1e0/1c0/1c0/3c0/380/780/700/700/f00/e00",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=750,mode=1,pts=64:64:71:38:73:39:66:65",
+      "result": "box=64:39:72:64,rows=018/038/030/030/030/070/060/060/060/0e0/0c0/0c0/0c0/1c0/180/180/380/300/300/300/700/600/600/600/e00/c00",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=750,mode=2,pts=64:64:71:38:73:39:66:65",
+      "result": "box=64:39:72:64,rows=018/038/030/030/030/070/060/060/060/0e0/0c0/0c0/0c0/1c0/180/180/380/300/300/300/700/600/600/600/e00/c00",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=750,mode=1,pts=64:64:71:38:74:39:67:65",
+      "result": "box=64:39:73:64,rows=01c/03c/038/038/038/078/070/070/070/0f0/0e0/0e0/0e0/1e0/1c0/1c0/3c0/380/380/380/780/700/700/700/f00/e00",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=750,mode=2,pts=64:64:71:38:74:39:67:65",
+      "result": "box=64:39:73:64,rows=01c/03c/038/038/038/078/070/070/070/0f0/0e0/0e0/0e0/1e0/1c0/1c0/3c0/380/380/380/780/700/700/700/f00/e00",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=800,mode=1,pts=64:64:69:37:71:37:66:64",
+      "result": "box=64:37:70:63,rows=06/06/06/0c/0c/0c/0c/0c/0c/18/18/18/18/18/30/30/30/30/30/60/60/60/60/60/60/c0/c0",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=800,mode=2,pts=64:64:69:37:71:37:66:64",
+      "result": "box=64:37:70:63,rows=06/06/06/0c/0c/0c/0c/0c/0c/18/18/18/18/18/30/30/30/30/30/60/60/60/60/60/60/c0/c0",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=800,mode=1,pts=64:64:69:37:72:38:67:65",
+      "result": "box=64:38:71:64,rows=07/07/0f/0e/0e/0e/0e/0e/1e/1c/1c/1c/1c/3c/38/38/38/38/78/70/70/70/70/70/f0/e0/e0",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=800,mode=2,pts=64:64:69:37:72:38:67:65",
+      "result": "box=64:38:71:64,rows=07/07/0f/0e/0e/0e/0e/0e/1e/1c/1c/1c/1c/3c/38/38/38/38/78/70/70/70/70/70/f0/e0/e0",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=850,mode=1,pts=64:64:66:37:68:37:66:64",
+      "result": "box=64:37:67:63,rows=3/3/3/3/3/3/3/6/6/6/6/6/6/6/6/6/6/6/6/6/6/c/c/c/c/c/c",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x2\",esc=850,mode=2,pts=64:64:66:37:68:37:66:64",
+      "result": "box=64:37:67:63,rows=3/3/3/3/3/3/3/6/6/6/6/6/6/6/6/6/6/6/6/6/6/c/c/c/c/c/c",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=850,mode=1,pts=64:64:66:37:69:37:67:64",
+      "result": "box=64:37:68:63,rows=38/38/38/38/38/38/38/70/70/70/70/70/70/70/70/70/70/70/70/70/70/e0/e0/e0/e0/e0/e0",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon ink",
+      "args": "\"band 27x3\",esc=850,mode=2,pts=64:64:66:37:69:37:67:64",
+      "result": "box=64:37:68:63,rows=38/38/38/38/38/38/38/70/70/70/70/70/70/70/70/70/70/70/70/70/70/e0/e0/e0/e0/e0/e0",
+      "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    }
+  ]
+}
