@@ -18116,8 +18116,8 @@ refused at 312 of `smearrun`'s 640, and at the ground's right edge at 320;
 counting the byte from the pen is 200, from the glyph's origin 168 and from
 the box's left 152.
 
-These are measurements. Read out of the binaries, most of the mechanism is
-the display driver's:
+These started as measurements. Read out of the binaries, all three upright
+rules are the display driver's:
 
 - **GDI turns the synthesis into weight.** Where the mapper realises a font
   it had to embolden (flag `0x100`, `GDI.EXE` seg3 at `07e1`, `098e` and, for
@@ -18136,9 +18136,9 @@ the display driver's:
   - with no width array it is **added to the character extra** (`0970`:
     `cmp word [bp+0xe],0` then `add cx,[bp-0xe]`), so every glyph is laid
     out a column wider -- the pixel a smeared glyph advances by;
-  - the layout loop adds it again to the **last** character's cell (`cmp
-    cx,1` then `add dx,[bp-0xe]`, `0286` and `0359`); and the extent it
-    reports carries it (`0b97`);
+  - the loop for extra spacing without an array adds it again to the
+    **last** character's cell (`cmp cx,1` then `add dx,[bp-0xe]`, `0286`
+    and `0359`); and the extent it reports carries it (`0b97`);
   - and it sends the glyphs to their own compositor (`13de` to `17c2`),
     which ORs each piece of a glyph into the string buffer **twice**: once
     at its bit phase and once at the phase plus one (`ror eax,1` then `ror
@@ -18156,11 +18156,35 @@ the display driver's:
   (`cmp si,0x42`, `cmp word [0x0],0x300`, seg2 `099b`); anything else returns
   `0x80000000`.
 
-So the smear is the driver's own, and all of it is in the buffer. The last
-glyph's overhang is dropped later, when the buffer is copied to the
-destination: transparent always, opaque by the cell and the byte. That copy
-has not been read yet, and it is where the three rules above should come
-from.
+So the smear is the driver's own, and all of it is in the buffer. What drops
+the last glyph's overhang is the copy to the page, which is masked to where
+the layout ends (`11b4`: a routine for the partial first and last bytes and
+one for the whole ones, chosen by the mode, with masks `0ceb` makes from the
+span). And where the layout ends is decided by a loop the bold flag never
+reaches:
+
+- **GDI hands TrueType text over with a width array.** The loop that walks
+  one (`0424`) lays each glyph but the last at its array width. As above, it
+  widens the glyph into the spare bits of its last byte first and leaves the
+  rest blank. The **last** glyph skips the array (`cmp cx,1`) and is laid at
+  its own bitmap's width, and nothing in the loop reads `[bp-0xe]`. So the
+  string ends at the last glyph's box, and the overhang past it is masked
+  off: **the transparent rule**, at every phase.
+- **An opaque draw carries the end on.** After the layout, `0744` pads the
+  string to its next byte boundary. When the options have `ETO_OPAQUE` with
+  a rectangle (`[bp-7]` bit 0, set at `0abe` from the options' `2`) and the
+  rectangle covers the text's rows (bit 2, `0afe`), the padding is drawn as
+  far as the rectangle's right (`[bp-0x6c]`) and no further. The last
+  overhang therefore survives when it does not begin a new byte and lies
+  inside the rectangle, whose right is the bold cell section 3 found in GDI's
+  memory: **the opaque rule**, byte and cell both, and the destination's
+  byte, which is why it is the one rule here that depends on the pen.
+
+That GDI passes the array is read from the behaviour and not from GDI's code.
+The loop without one would add the bold column to every cell, the last one's
+included, and the last overhang would be drawn when the transparent records
+say it never is. Where the turned glyph's second pixel comes from has not been
+read, and it stays a measurement.
 
 That closes `rotstyle`: **190 of 190**. `smearrun` and `smearmod` are 640 of 640
 each, and the glyph and style corpora the single-glyph rule came from are

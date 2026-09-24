@@ -1806,12 +1806,30 @@ export class Surface {
                * columns it loses there is one of the two -- and when it is
                * transparent it loses the column past its box at every phase,
                * in all 640 transparent records; its overhang inside the box is
-               * drawn. What the driver does to make that difference is not
-               * read out yet: that is the measurement, not the mechanism.
-               * The stack-probe cell is kept because it is what sorts the
-               * opaque records, and the transparent one is refused at 312 of
-               * 640 as a clip at the pen plus the plain advances and at 320
-               * as one at the ground's right.
+               * drawn.
+               *
+               * **Read out of `VGA.DRV`'s 386 `StrBlt`** (seg2), which is what
+               * draws these. Its bold compositor (`17c2`) ORs every glyph into
+               * the string buffer at its phase and the next, not cut to its width,
+               * so every overhang reaches the buffer; what reaches the page is
+               * masked to where the layout ends. GDI hands TrueType text over
+               * with a width array, and the loop that walks one (`0424`) lays
+               * each glyph but the last at its array width -- widening the
+               * glyph into its byte's spare bits first -- and the last at its
+               * own bitmap's width, never reading the bold flag. So the string
+               * ends at the last glyph's box, and the overhang past it is
+               * masked off: the transparent rule. With `ETO_OPAQUE` and a
+               * rectangle covering the rows, `0744` carries the end on to the
+               * next byte boundary but not past the rectangle, whose right is
+               * the bold cell: the opaque rule, byte and cell both. That GDI
+               * passes the array is read from the behaviour, not the code: the
+               * loop without one would add the bold column to every cell,
+               * the last one's included.
+               *
+               * The stack-probe cell is kept because it is that rectangle, and
+               * the transparent one is refused at 312 of 640 as a clip at the
+               * pen plus the plain advances and at 320 as one at the ground's
+               * right.
                *
                * Turned, none of it: the overhang is a column to the right on
                * the device and not along the text, and it is always drawn --
