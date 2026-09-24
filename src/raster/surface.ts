@@ -96,6 +96,12 @@ export class Surface {
    * one combination that cannot show the others. See `SetTextAlign`. */
   textAlign: number = 0;
 
+  /* The colour outline text is drawn in, where something has said: `null`
+   * draws black, which is what every probe before `rotstyle` asked for.
+   * `SetTextColor` does not reach this yet -- it sets `forecolor`, which a
+   * fresh surface starts white for reasons of its own. */
+  textColor: any = null;
+
   /* The gap added after every character, which starts at none -- the one value
    * that cannot show itself. See `SetTextCharacterExtra`. */
   charExtra: number = 0;
@@ -404,7 +410,83 @@ export class Surface {
    * the whole advance, centre by half of it truncated, bottom moves it up by
    * the cell and baseline by the ascent.
    */
+  /**
+   * A quadrilateral filled together with its own outline, for turned rules
+   * and grounds. 8u.
+   *
+   * Each edge is walked to the nearest pixel, both ends included, and every
+   * row is filled from the leftmost pixel any edge put on it to the rightmost.
+   * A band one row thick collapses onto its line.
+   */
+  turnedBand(corners, color) {
+    const rows = new Map();
+    const mark = (x, y) => {
+      const span = rows.get(y);
+
+      if (!span) {
+        rows.set(y, [x, x]);
+      } else {
+        span[0] = Math.min(span[0], x);
+        span[1] = Math.max(span[1], x);
+      }
+    };
+
+    for (let index = 0; index < corners.length; index++) {
+      const [x0, y0] = corners[index];
+      const [x1, y1] = corners[(index + 1) % corners.length];
+      const steps = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0));
+
+      for (let step = 0; step <= steps; step++) {
+        const t = steps ? step / steps : 0;
+        mark(Math.round(x0 + (x1 - x0) * t), Math.round(y0 + (y1 - y0) * t));
+      }
+    }
+
+    const rgba = [color.red, color.green, color.blue, 0xff];
+
+    for (const [y, [from, to]] of rows) {
+      for (let x = from; x <= to; x++) {
+        if (x >= 0 && x < this.width && y >= 0 && y < this.height) {
+          this.context.setPixel(x, y, rgba);
+        }
+      }
+    }
+  }
+
+  /** Whether text drawn now is turned: an outline face with an escapement. */
+  get turnedText() {
+    return this._font instanceof LogicalFont && !!this._font.outline && !!this._font.escapement;
+  }
+
+  /**
+   * The alignment of turned text, in the text's own frame. 8u.
+   *
+   * `across` is how far along the baseline the reference point moves the
+   * string back -- its width for `TA_RIGHT`, half of it for `TA_CENTER` -- and
+   * `down` is how far the baseline sits below the reference point: the ascent
+   * for `TA_TOP`, nothing for `TA_BASELINE`, and minus the descent for
+   * `TA_BOTTOM`. **Recorded** by `rotstyle`: Windows turns the alignment with
+   * the text, so `TA_CENTER` at a right angle slides the string down its own
+   * baseline, not across the page.
+   */
+  turnedAlign(text, runWidth = null) {
+    const font: any = this._font;
+    const width = runWidth ?? font.measure(text).width;
+    const across = this.textAlign & 6;
+    const down = this.textAlign & 24;
+
+    return {
+      across: across === 2 ? -width : across === 6 ? -Math.floor(width / 2) : 0,
+      down: down === 8 ? -font.style.descent : down === 24 ? 0 : font.style.ascent,
+      bottom: down === 8,
+    };
+  }
+
   aligned(x, y, text, runWidth = null) {
+    if (this.turnedText) {
+      return [x, y];
+    }
+
     if (!this.textAlign) {
       return [x, y];
     }
@@ -618,6 +700,77 @@ export class Surface {
      */
     const strikeRows = thick(Math.floor(cell / 12));
 
+    /* Turned, a rule is a line along the turned baseline, and each row of its
+     * thickness is one. 8u.
+     *
+     * **Recorded** by `rotstyle`. At every angle Windows draws both ends: an
+     * eighteen pixel run's underline is nineteen pixels long at a right angle
+     * and at a half turn, fourteen diagonal pixels at half a right angle, and
+     * seventeen at thirty degrees. The ends are the pen carried down to the
+     * rule by *one* rounded vector -- the ascent and the rule's own offset
+     * together, fourteen at Arial's cell of sixteen -- and then along the
+     * baseline by the run's width, rounded again. Between them it is the
+     * display driver's own line, ties and all.
+     *
+     * Only a rule one row thick has been recorded turned, and only at the
+     * default alignment. A thicker one is drawn as that many lines a row apart
+     * down the text, and another alignment carries the rule from the same
+     * reference point as the glyphs; neither has been asked.
+     */
+    if (outline && this.turnedText) {
+      const radians = (font.escapement * Math.PI) / 1800;
+      const fixed = (value) => Math.round(value * 65536) / 65536;
+      const away = (value) => Math.sign(value) * Math.round(Math.abs(value));
+      const sine = fixed(Math.sin(radians));
+      const cosine = fixed(Math.cos(radians));
+      const reference = this.turnedAlign(text, runWidth);
+      const startX = x + away(reference.across * cosine);
+      const startY = y - away(reference.across * sine);
+      const shift = reference.down - font.style.ascent;
+
+      const ends = (down) => {
+        const fromX = startX + away((shift + down) * sine);
+        const fromY = startY + away((shift + down) * cosine);
+
+        return [fromX, fromY, fromX + away(width * cosine), fromY - away(width * sine)];
+      };
+
+      const band = (down, rows) => {
+        const first = ends(down);
+
+        if (rows <= 1) {
+          this.context.strokeStyle = this.textColor ? this.textColor.css : 'black';
+          this.context.beginPath();
+          this.context.excludeLast = false;
+          this.context.moveTo(first[0], first[1]);
+          this.context.lineTo(first[2], first[3]);
+          this.context.stroke();
+          return;
+        }
+
+        const last = ends(down + rows - 1);
+        this.turnedBand(
+          [
+            [first[0], first[1]],
+            [first[2], first[3]],
+            [last[2], last[3]],
+            [last[0], last[1]],
+          ],
+          this.textColor ?? new Color(0, 0, 0)
+        );
+      };
+
+      if (style.underline) {
+        band(font.style.ascent + across(-outline.underlinePosition), thick(across(outline.underlineThickness)));
+      }
+
+      if (style.strikeout) {
+        band(font.style.ascent - across(outline.strikeoutPosition), thick(across(outline.strikeoutSize)));
+      }
+
+      return;
+    }
+
     if (style.underline) {
       const top = outline ? baseline + across(-outline.underlinePosition) : baseline + 1;
       const rows = outline ? thick(across(outline.underlineThickness)) : strikeRows;
@@ -755,6 +908,18 @@ export class Surface {
 
     const box = this.groundBox(text, dx, inkOnly);
 
+    /* Turned, the run is one walk along the turned baseline, the array's
+     * distances in place of the advances. */
+    if (this.turnedText) {
+      const advances = characters.map((character, index) =>
+        dx ? dx[index] : this._font.measure(character).width
+      );
+
+      this.outlineText(x, y, text, { advances, runWidth: box.right - box.left });
+      this._stale = true;
+      return;
+    }
+
     [x, y] = this.aligned(x, y, text, box.right - box.left);
 
     if (this.backMode !== 1) {
@@ -855,7 +1020,7 @@ export class Surface {
    * places sounds wrong and is not: the advance is a fact the font states, and
    * the shape is something a rasteriser works out.
    */
-  outlineText(x, y, text) {
+  outlineText(x, y, text, run: any = {}) {
     const font = this._font;
     const outline = font.outline;
     const ppem = font.ppem;
@@ -886,7 +1051,9 @@ export class Surface {
      * on a fresh surface, which paints nothing onto the white a text draw has
      * just laid down.
      */
-    const colour = BitmapContext.toRGBA('black');
+    const colour = this.textColor
+      ? [this.textColor.red, this.textColor.green, this.textColor.blue, 0xff]
+      : BitmapContext.toRGBA('black');
 
     const style = font.style ?? {};
 
@@ -988,10 +1155,37 @@ export class Surface {
     const pathSine = fixed(Math.sin(radians));
     const pathCosine = turn ? fixed(Math.cos(radians)) : 1;
 
-    const baseX = x + away(font.style.ascent * pathSine);
-    const baseY = y + away(font.style.ascent * pathCosine);
+    /* Where the reference point is, in the text's own frame: `across` along
+     * the baseline, from the alignment, and `down` from the reference point to
+     * the baseline -- the ascent for `TA_TOP`, nothing for `TA_BASELINE`, the
+     * descent back up for `TA_BOTTOM`. Upright these are what `aligned` moves
+     * the pen by; turned, they turn with the text. See `Surface.turnedAlign`.
+     */
+    const reference = turn ? this.turnedAlign(text, run.runWidth) : { across: 0, down: font.style.ascent };
+    const cell = font.style.ascent + font.style.descent;
+
+    /* Each carry is rounded on its own -- the alignment's along the baseline
+     * apart from the one down to it -- and `TA_BOTTOM`'s is two: down to the
+     * baseline by the ascent as usual, and back up by the whole cell.
+     *
+     * **Recorded** by `rotstyle`. Rounding the alignment's carry together with
+     * the ascent's loses `TA_CENTER` at half a right angle on every face, and
+     * `TA_BOTTOM` carried as one vector of minus the descent is wrong at thirty
+     * degrees, where three times the sine is minus one and a half: two carries,
+     * seven less eight, make it minus one, which is where Windows puts it.
+     */
+    const downX = reference.bottom
+      ? away(font.style.ascent * pathSine) - away(cell * pathSine)
+      : away(reference.down * pathSine);
+    const downY = reference.bottom
+      ? away(font.style.ascent * pathCosine) - away(cell * pathCosine)
+      : away(reference.down * pathCosine);
+
+    const baseX = x + away(reference.across * pathCosine) + downX;
+    const baseY = y - away(reference.across * pathSine) + downY;
 
     let pen = x;
+    let index = 0;
 
     for (const character of String(text)) {
       const glyph = outline.glyphFor(character.charCodeAt(0));
@@ -1484,11 +1678,20 @@ export class Surface {
        * rule they are in the right one.
        */
       /* And the gap `SetTextCharacterExtra` asks for after every character. */
+      /* And the pixel a synthesised bold costs each character, which
+       * `LogicalFont.measure` charges and the pen had not: Arial asked for at
+       * a weight of 600 is its regular file smeared, and Windows draws the `B`
+       * of "AB" a column further on. **Recorded** by `rotstyle`, upright as
+       * well as turned; nothing before it drew two smeared outline characters
+       * in a row. */
       /* The same advance a turned glyph steps by as an upright one. The
        * design advance scaled and left fractional, which is what an unfitted
        * glyph would carry, is refused: the letters are 768 wrong pixels with
        * it and `rotangle` 32 of its 40 oblique boxes. Rounded, it is this. */
-      pen += font.outlineAdvance(character.charCodeAt(0)) + this.charExtra;
+      pen += run.advances
+        ? run.advances[index] + this.charExtra
+        : font.outlineAdvance(character.charCodeAt(0)) + this.charExtra + (bold ? 1 : 0);
+      index++;
     }
   }
 

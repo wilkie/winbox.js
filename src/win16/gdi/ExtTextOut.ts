@@ -84,7 +84,12 @@ export function ExtTextOut(
     surface.paintGround(rect);
   }
 
-  surface.withClip(rect && fuOptions & 0x0004 ? rect : null, () => {
+  /* And `ETO_CLIPPED` does nothing to turned text. **Recorded** by `rotstyle`:
+   * at every one of twelve turned draws, three faces and four angles, the
+   * clipped string is pixel for pixel the unclipped one, reaching well past a
+   * rectangle that upright clips it exactly. See FONTS.md 8u.
+   */
+  surface.withClip(rect && fuOptions & 0x0004 && !surface.turnedText ? rect : null, () => {
     surface.extText(nXStart, nYStart, text, dx, (fuOptions & 0x0002) !== 0);
   });
 

@@ -17977,6 +17977,75 @@ At a cell of sixteen the turned squares are Symbol's outline, as Windows draws
 them, because the exact-strike arm refuses an angle and the directory arm
 answers; the instruments replay through the mapper as it is.
 
+#### Everything else a turned string does
+
+The drawing above is `TextOut` at its plainest. `oracle/probes/rotstyle.c` asks
+the rest, one variation at a time: "AB" in Arial at two cells and Courier New,
+at nought, thirty, forty-five, ninety and a hundred and eighty degrees, with an
+opaque ground, an underline, a strikeout, a smeared bold, a bold file, each of
+`TA_CENTER`, `TA_RIGHT`, `TA_BASELINE` and `TA_BOTTOM`, and `ExtTextOut` with an
+opaque rectangle and with a clipping one -- and Symbol slanted, which has no
+italic file. 190 records on a canvas a hundred and twenty-eight square, the ink
+box and its rows written down. Each variation had an upright answer from an
+earlier section; whether Windows turns it, leaves it upright or drops it is
+what was asked.
+
+**The alignment turns with the text.** `TA_CENTER` at a right angle slides the
+string down its own baseline, not across the page. In the text's own frame the
+reference point is moved back along the baseline by the width or half of it,
+and the baseline sits below it by the ascent, by nothing, or by minus the
+descent -- and each of those carries is turned and rounded **on its own**, the
+same way the ascent's is. Rounding the alignment's carry together with the
+ascent's loses `TA_CENTER` at forty-five degrees in every face. `TA_BOTTOM` is
+two carries rather than one: down by the ascent as usual and back up by the
+whole cell, which at thirty degrees makes seven less eight, minus one, where a
+single carry of minus the descent is minus one and a half and rounds away to
+minus two. All four alignments are exact at every angle.
+
+**`ExtTextOut` walks the turned baseline too**, its array's distances in place
+of the advances, and is exact with either flag. And **`ETO_CLIPPED` does nothing
+to turned text**: at every one of twelve turned draws the clipped string is
+pixel for pixel the unclipped one, reaching well past a rectangle that clips it
+exactly upright.
+
+**A rule is a line along the turned baseline, with both ends drawn.** An
+eighteen pixel run's underline is nineteen pixels long at a right angle and a
+half turn, fourteen diagonal pixels at half a right angle, and seventeen at
+thirty degrees. Its ends are the pen carried down to the rule by one rounded
+vector -- the ascent and the rule's offset together -- and then along the
+baseline by the run's width; between them it is the display driver's own line,
+ties and all. Every rule one row thick is exact.
+
+A rule two rows thick is not two lines. At half a right angle Windows fills
+three pixels a row, where two lines a pixel apart would give two: it is a
+filled polygon, the rule's rectangle turned. So is the **opaque ground**, and
+the ground says what the polygon is. Its corners are whole pixels -- the pen,
+the pen carried along the baseline by the run's width, and the pen carried down
+by the cell -- and at a right angle, a half turn and half a right angle the
+fill is the ordinary half-open one, row for row. At thirty degrees it is not:
+pixel centres sampled at each row's top reproduce eight of the twelve turned
+grounds and leave 21 pixels wrong, and truncating the spans, fractional corners
+and carrying the far corner as a single vector are all worse. That is a
+polygon rasteriser with an edge walk of its own, GDI fills polygons for the
+display drivers itself, and nothing in this implementation has ever drawn one.
+It is the next thing to read out of `GDI.EXE`, not to fit.
+
+Two things turned up upright and are fixed for both. **A smeared outline glyph
+advances a pixel more**: `LogicalFont.measure` had always charged a synthesised
+bold a pixel a character and the pen had not, so Arial at a weight of 600 drew
+its `B` a column short. And **a glyph drawn without dropout control lost its
+box**: the scan converter returned before attaching it, and the smear's bounds
+fell back to the whole surface above the size a face gives dropout up at. Neither
+moves any other recording.
+
+What `rotstyle` leaves is 34 of its 190, in `KNOWN_GAPS`: the turned ground and
+the one thick rule, which wait on the polygon; the smear, whose overhang in a
+string of more than one glyph does not follow the single-glyph rule of section 3
+-- the first glyph's is drawn and the last one's dropped, in both faces, and the
+last stops at the pen plus the plain advances in all three records that show it,
+which is not yet enough to write down; and the made-up slant turned, not yet
+looked at.
+
 ### 8p. Where the text lands, which nothing had ever moved
 
 `SetTextAlign` says what the point handed to `TextOut` means -- left, centre or

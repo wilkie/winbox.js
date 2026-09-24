@@ -290,6 +290,48 @@ const TIE_SPECIMEN = 'Windows';
 /** What `rotate` draws and measures at every angle. */
 const ROTATE_SPECIMEN = 'AB';
 
+/** A canvas's ink as `rotstyle` writes it: the box, then its rows in hex. */
+function inkRows(hex: string, size: number) {
+  const bytes = Buffer.from(hex, 'hex');
+  const stride = size / 8;
+  const ink = (column: number, row: number) => !(bytes[row * stride + (column >> 3)] & (0x80 >> (column & 7)));
+  let left = size;
+  let top = size;
+  let right = -1;
+  let bottom = -1;
+
+  for (let row = 0; row < size; row++) {
+    for (let column = 0; column < size; column++) {
+      if (ink(column, row)) {
+        left = Math.min(left, column);
+        right = Math.max(right, column);
+        top = Math.min(top, row);
+        bottom = Math.max(bottom, row);
+      }
+    }
+  }
+
+  const rows: string[] = [];
+
+  for (let row = top; right >= 0 && row <= bottom; row++) {
+    let text = '';
+
+    for (let column = left; column <= right; column += 4) {
+      let nibble = 0;
+
+      for (let bit = 0; bit < 4; bit++) {
+        nibble = (nibble << 1) | (column + bit <= right && ink(column + bit, row) ? 1 : 0);
+      }
+
+      text += nibble.toString(16);
+    }
+
+    rows.push(text);
+  }
+
+  return `box=${left}:${top}:${right}:${bottom},rows=${rows.join('/')}`;
+}
+
 /**
  * The ink box of a cell `drawTurned` read back, in the shape `rotate` writes
  * it: the extent of the clear bits, and how many there are.
@@ -674,7 +716,7 @@ export class Context {
         ink = true;
       }
 
-      surface.withClip(rect && call.options & 0x0004 ? rect : null, () => {
+      surface.withClip(rect && call.options & 0x0004 && !surface.turnedText ? rect : null, () => {
         surface.extText(pen[0], pen[1], text, call.dx ?? null, ink);
       });
     }
@@ -1703,6 +1745,74 @@ const ADAPTERS: Record<
     return turnedBox(context.drawSquare(args));
   },
 
+  /* `rotstyle` draws "AB" turned, one variation at a time: the opaque ground,
+   * the rules, a smeared and a filed bold, a synthesised slant, the
+   * alignments, and `ExtTextOut`'s rectangle. 8u.
+   */
+  'style ink'(context, args) {
+    const what = String(args[0]);
+    const fields: Record<string, string> = {};
+
+    for (const field of args.slice(2)) {
+      const [name, value] = String(field).split('=');
+
+      if (value !== undefined) {
+        fields[name] = value;
+      }
+    }
+
+    const face = String(args[1]).replace(/^"|"$/g, '');
+    const handle = CreateFontIndirect.call(context, {
+      lfHeight: Number(fields.h),
+      lfWidth: 0,
+      lfEscapement: Number(fields.esc),
+      lfOrientation: Number(fields.esc),
+      lfWeight: Number(fields.weight),
+      lfItalic: Number(fields.italic),
+      lfUnderline: Number(fields.under),
+      lfStrikeOut: Number(fields.strike),
+      lfCharSet: face === 'Symbol' ? 2 : 0,
+      lfPitchAndFamily: 0,
+      lfFaceName: face,
+    });
+
+    if (!handle) {
+      throw new Unimplemented('no font mapped');
+    }
+
+    const opaque = Number(fields.mode) === 2;
+    const surface: any = Surface.offscreen(128, 128);
+
+    surface.font = context.handles.resolve(handle);
+    surface.backcolor = opaque ? new Color(0, 0, 0) : new Color(0xff, 0xff, 0xff);
+    surface.textColor = opaque ? new Color(0xff, 0xff, 0xff) : null;
+    surface.backMode = Number(fields.mode);
+    surface.textAlign = Number(fields.align);
+    surface.context.lineTie = context.display.lineTie;
+    surface.context.clipCaps = context.display.clipCaps;
+    surface.boldOverhang = context.display.boldOverhang;
+    surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
+    surface.fillRect(0, 0, 128, 128);
+
+    if (what === 'ext') {
+      const [dl, dt, dr, db] = String(fields.rect).split(':').map(Number);
+      const rect = { left: 64 + dl, top: 64 + dt, right: 64 + dr, bottom: 64 + db };
+      const options = Number(fields.opt);
+
+      if (options & 0x0002) {
+        surface.paintGround(rect);
+      }
+
+      surface.withClip(options & 0x0004 && !surface.turnedText ? rect : null, () => {
+        surface.extText(64, 64, 'AB', null, (options & 0x0002) !== 0);
+      });
+    } else {
+      surface.fillText(64, 64, 'AB');
+    }
+
+    return inkRows(context.readCell(surface, 128, 128), 128);
+  },
+
   /* `rotpen` draws one, two and three squares on a canvas a hundred and sixty
    * square with the pen in the middle, and writes the size, the ascent, the
    * ink box and the box's rows. 8u.
@@ -2578,6 +2688,35 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* Turned text with a ground, a thick rule, a smeared bold or a made-up slant.
+   *
+   * `rotstyle` draws "AB" turned one variation at a time, 190 records, and 156
+   * agree: the alignments, `ExtTextOut` with either flag, both rules one row
+   * thick, a bold file, and everything upright but the smear. The 34 left are
+   * four things, none of them guessed at:
+   *
+   * - **The opaque ground, twelve.** Windows fills it as the ground rectangle
+   *   turned, a polygon whose corners are whole pixels -- the pen, and the pen
+   *   carried along the baseline and down the cell -- with a fill rule of its
+   *   own. Pixel centres at each row's top reproduce eight of twelve turned
+   *   grounds and 21 pixels wrong; truncated spans, fractional corners, the far
+   *   corner carried as one vector and centre sampling all do worse. GDI fills
+   *   polygons for the display drivers itself, and that rasteriser is in
+   *   `GDI.EXE` to be read; nothing here implements `Polygon` yet.
+   * - **A rule two rows thick, one.** Arial at a cell of twenty-four, at thirty
+   *   degrees. It is the same polygon, the rule's rectangle turned, and it is
+   *   drawn meanwhile as a band between its two edge lines -- which is right at
+   *   every other angle and is not the rule, only the nearest thing to it.
+   * - **The smear, fifteen.** Upright as well as turned: in "AB" Windows draws
+   *   the first glyph's overhang and drops the last one's, in both faces, where
+   *   the single-glyph rule of section 3 says otherwise for Courier New's `A`.
+   *   The last glyph's smear stops at the pen plus the plain advances in all
+   *   three records that show it; three records are not enough to write it.
+   * - **The made-up slant, six.** Symbol italic turned at thirty, forty-five
+   *   and a hundred and eighty degrees. Not yet looked at.
+   */
+  'rotstyle:style ink': 'turned ground and thick rules (a polygon fill), the smear, the made-up slant',
+
 
 
   /* The styled files at cells of two hundred and seventy-four to two hundred

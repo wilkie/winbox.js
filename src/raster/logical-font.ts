@@ -332,8 +332,9 @@ export class LogicalFont extends Font {
       }
 
       /* A bold that had to be synthesised costs a pixel a character, which is
-       * what makes the string longer as well as each letter wider. Only Symbol
-       * reaches this; the other outline families have a bold file of their own.
+       * what makes the string longer as well as each letter wider. Symbol
+       * reaches it at any bold weight, having no bold file, and every family
+       * reaches it between 551 and 600, where the regular file is smeared.
        *
        * And one more for the whole string where the driver keeps the
        * emboldening overhang. The last character's smear reaches a column past

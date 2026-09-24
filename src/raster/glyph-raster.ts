@@ -969,6 +969,14 @@ export function fillWalked(contours, options) {
    * they are sorted ascending in the walk's frame -- which is bottom to top on
    * screen, so the pairing is done there and converted after.
    */
+  /* The box travels out with the pixels, because emboldening needs it -- with
+   * dropout control off as well as on. Returning before it was attached left
+   * a glyph with no box above the size a face gives dropout up at, Arial's
+   * seventeen, and the smear's bounds fell back to the whole surface: Arial's
+   * `B` at a cell of twenty-four was smeared a column past its box, where
+   * Windows stops. **Recorded** by `rotstyle`. */
+  (pixels as any).box = { left: boxLeft, right: boxRight };
+
   if (!dropout) {
     return pixels;
   }

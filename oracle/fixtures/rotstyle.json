@@ -1,0 +1,1154 @@
+{
+  "probe": "rotstyle",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "style ink",
+      "args": "plain,\"Arial\",h=16,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:67:80:76,rows=083f0/14208/14208/14208/223f0/22208/7f208/41208/80a08/80bf0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=16,esc=0,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:64:81:79,rows=ffffc/ffffc/ffffc/f7c0c/ebdf4/ebdf4/ebdf4/ddc0c/dddf4/80df4/bedf4/7f5f4/7f40c/ffffc/ffffc/ffffc",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "under,\"Arial\",h=16,esc=0,weight=400,italic=0,under=1,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:67:81:78,rows=083f0/14208/14208/14208/223f0/22208/7f208/41208/80a08/80bf0/00000/ffffc",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "strike,\"Arial\",h=16,esc=0,weight=400,italic=0,under=0,strike=1,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:67:81:76,rows=083f0/14208/14208/14208/223f0/22208/7f208/ffffc/80a08/80bf0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "smear,\"Arial\",h=16,esc=0,weight=600,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:67:81:76,rows=0c1fc/1e184/1e184/1e184/331fc/33184/7f984/61984/c0d84/c0dfc",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bold,\"Arial\",h=16,esc=0,weight=700,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:67:80:76,rows=1c3f0/1c318/36318/36318/363f0/63318/63318/7f318/c1b18/c1bf0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "center,\"Arial\",h=16,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=6,opt=0,rect=0:0:0:0",
+      "result": "box=55:67:71:76,rows=083f0/14208/14208/14208/223f0/22208/7f208/41208/80a08/80bf0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "right,\"Arial\",h=16,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=2,opt=0,rect=0:0:0:0",
+      "result": "box=46:67:62:76,rows=083f0/14208/14208/14208/223f0/22208/7f208/41208/80a08/80bf0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "base,\"Arial\",h=16,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=24,opt=0,rect=0:0:0:0",
+      "result": "box=64:54:80:63,rows=083f0/14208/14208/14208/223f0/22208/7f208/41208/80a08/80bf0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bottom,\"Arial\",h=16,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=8,opt=0,rect=0:0:0:0",
+      "result": "box=64:51:80:60,rows=083f0/14208/14208/14208/223f0/22208/7f208/41208/80a08/80bf0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=16,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=2,rect=-4:-4:20:12",
+      "result": "box=64:67:80:76,rows=083f0/14208/14208/14208/223f0/22208/7f208/41208/80a08/80bf0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=16,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=4,rect=-20:-20:8:8",
+      "result": "box=66:67:70:71,rows=20/50/50/50/88",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "plain,\"Arial\",h=16,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=69:58:84:74,rows=0030/00f8/018c/0308/011e/01b3/c0c1/f041/5863/4c2c/4738/5980/70c0/6000/2000/2000/2000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=16,esc=300,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:56:87:77,rows=000380/000f80/003e40/007800/01f380/07e7a0/1ff700/7ff260/f9f9f0/787df4/7d3ce4/3d9e9e/3dc63e/1d33ff/1c79fc/0cfff0/06ffc0/06ff80/02fe00/03f800/01e000/018000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "under,\"Arial\",h=16,esc=300,weight=400,italic=0,under=1,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=69:58:87:76,rows=00300/00f80/018c0/03080/011e0/01b30/c0c10/f0410/58630/4c2c2/4738c/59830/70cc0/60300/20400/21800/26000/18000/20000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "strike,\"Arial\",h=16,esc=300,weight=400,italic=0,under=0,strike=1,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=69:58:85:74,rows=00300/00f80/018c0/03080/011e0/01b38/c0c30/f04d0/58730/4cec0/47380/5f800/78c00/60000/a0000/20000/20000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "smear,\"Arial\",h=16,esc=300,weight=600,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=69:57:87:74,rows=000e0/003f0/00738/00e30/0067c/007ee/00386/e0186/f81ce/7c0f8/6e0f0/67800/7dc00/78e00/70000/30000/30000/30000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bold,\"Arial\",h=16,esc=300,weight=700,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=69:58:85:74,rows=00380/00fc0/01cc0/038c0/019f0/41f98/f0e18/f8638/7c670/6e3c0/67b80/6fc00/78e00/70000/30000/30000/20000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "center,\"Arial\",h=16,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=6,opt=0,rect=0:0:0:0",
+      "result": "box=61:63:76:79,rows=0030/00f8/018c/0308/011e/01b3/c0c1/f041/5863/4c2c/4738/5980/70c0/6000/2000/2000/2000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "right,\"Arial\",h=16,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=2,opt=0,rect=0:0:0:0",
+      "result": "box=53:67:68:83,rows=0030/00f8/018c/0308/011e/01b3/c0c1/f041/5863/4c2c/4738/5980/70c0/6000/2000/2000/2000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "base,\"Arial\",h=16,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=24,opt=0,rect=0:0:0:0",
+      "result": "box=62:47:77:63,rows=0030/00f8/018c/0308/011e/01b3/c0c1/f041/5863/4c2c/4738/5980/70c0/6000/2000/2000/2000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bottom,\"Arial\",h=16,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=8,opt=0,rect=0:0:0:0",
+      "result": "box=61:44:76:60,rows=0030/00f8/018c/0308/011e/01b3/c0c1/f041/5863/4c2c/4738/5980/70c0/6000/2000/2000/2000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=16,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=2,rect=-4:-4:20:12",
+      "result": "box=69:58:84:74,rows=0030/00f8/018c/0308/011e/01b3/c0c1/f041/5863/4c2c/4738/5980/70c0/6000/2000/2000/2000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=16,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=4,rect=-20:-20:8:8",
+      "result": "box=69:58:84:74,rows=0030/00f8/018c/0308/011e/01b3/c0c1/f041/5863/4c2c/4738/5980/70c0/6000/2000/2000/2000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "plain,\"Arial\",h=16,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=69:55:83:72,rows=00c0/0360/0620/0c3c/0c66/06c2/0382/c184/f0cc/dc78/47b0/44e0/2800/3000/3000/1000/1800/0800",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=16,esc=450,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:52:87:74,rows=000c00/001e00/003f00/007980/00e4c0/01cee0/039e10/079cc8/0fc9ec/1fe3ee/39f3df/78799e/f91c3c/7dc278/3dd8f0/1ebfe0/0e7fc0/067f80/037f00/013e00/00bc00/007800/003000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "under,\"Arial\",h=16,esc=450,weight=400,italic=0,under=1,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=69:55:87:74,rows=00c00/03600/06200/0c3c0/0c660/06c20/03822/c1844/f0cc8/dc790/47b20/44e40/28080/30100/30200/10400/18800/09000/02000/04000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "strike,\"Arial\",h=16,esc=450,weight=400,italic=0,under=0,strike=1,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=69:55:83:72,rows=00c0/0360/0622/0c3c/0c6e/06d2/03a2/c1c4/f0cc/dd78/47b0/44e0/2800/3000/3000/5000/1800/0800",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "smear,\"Arial\",h=16,esc=450,weight=600,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=69:53:86:72,rows=00380/00fc0/01cc0/038f8/039dc/01f8c/00f0c/00718/003b8/e01f0/f80e0/fe000/67c00/66f00/3c000/38000/38000/18000/1c000/0c000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bold,\"Arial\",h=16,esc=450,weight=700,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=69:55:84:72,rows=01e0/03f0/0738/0e3e/0e66/07c3/0386/e1cc/fcf8/df78/67f0/66e0/3c00/3800/3800/1800/1c00/0800",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "center,\"Arial\",h=16,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=6,opt=0,rect=0:0:0:0",
+      "result": "box=63:61:77:78,rows=00c0/0360/0620/0c3c/0c66/06c2/0382/c184/f0cc/dc78/47b0/44e0/2800/3000/3000/1000/1800/0800",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "right,\"Arial\",h=16,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=2,opt=0,rect=0:0:0:0",
+      "result": "box=56:68:70:85,rows=00c0/0360/0620/0c3c/0c66/06c2/0382/c184/f0cc/dc78/47b0/44e0/2800/3000/3000/1000/1800/0800",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "base,\"Arial\",h=16,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=24,opt=0,rect=0:0:0:0",
+      "result": "box=60:46:74:63,rows=00c0/0360/0620/0c3c/0c66/06c2/0382/c184/f0cc/dc78/47b0/44e0/2800/3000/3000/1000/1800/0800",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bottom,\"Arial\",h=16,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=8,opt=0,rect=0:0:0:0",
+      "result": "box=58:44:72:61,rows=00c0/0360/0620/0c3c/0c66/06c2/0382/c184/f0cc/dc78/47b0/44e0/2800/3000/3000/1000/1800/0800",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=16,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=2,rect=-4:-4:20:12",
+      "result": "box=69:55:83:72,rows=00c0/0360/0620/0c3c/0c66/06c2/0382/c184/f0cc/dc78/47b0/44e0/2800/3000/3000/1000/1800/0800",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=16,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=4,rect=-20:-20:8:8",
+      "result": "box=69:55:83:72,rows=00c0/0360/0620/0c3c/0c66/06c2/0382/c184/f0cc/dc78/47b0/44e0/2800/3000/3000/1000/1800/0800",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "plain,\"Arial\",h=16,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=67:47:76:63,rows=778/884/884/884/884/884/ffc/000/00c/030/0e0/720/820/720/0e0/030/00c",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=16,esc=900,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:46:79:63,rows=ffff/f10f/eef7/eef7/eef7/eef7/eef7/e007/ffff/ffe7/ff9f/fe3f/f1bf/efbf/f1bf/fe3f/ff9f/ffe7",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "under,\"Arial\",h=16,esc=900,weight=400,italic=0,under=1,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=67:46:78:64,rows=001/779/885/885/885/885/885/ffd/001/00d/031/0e1/721/821/721/0e1/031/00d/001",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "strike,\"Arial\",h=16,esc=900,weight=400,italic=0,under=0,strike=1,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=67:46:76:64,rows=020/778/8a4/8a4/8a4/8a4/8a4/ffc/020/02c/030/0e0/720/820/720/0e0/030/02c/020",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "smear,\"Arial\",h=16,esc=900,weight=600,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=67:45:77:63,rows=7fc/cc6/cc6/cc6/cc6/cc6/ffe/000/000/000/00e/038/0f0/7b0/c30/7b0/0f0/038/00e",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bold,\"Arial\",h=16,esc=900,weight=700,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=67:46:76:63,rows=778/ffc/ccc/ccc/ccc/ccc/ffc/ffc/000/00c/07c/3f0/fb0/c30/fb0/3f0/07c/00c",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "center,\"Arial\",h=16,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=6,opt=0,rect=0:0:0:0",
+      "result": "box=67:56:76:72,rows=778/884/884/884/884/884/ffc/000/00c/030/0e0/720/820/720/0e0/030/00c",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "right,\"Arial\",h=16,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=2,opt=0,rect=0:0:0:0",
+      "result": "box=67:65:76:81,rows=778/884/884/884/884/884/ffc/000/00c/030/0e0/720/820/720/0e0/030/00c",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "base,\"Arial\",h=16,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=24,opt=0,rect=0:0:0:0",
+      "result": "box=54:47:63:63,rows=778/884/884/884/884/884/ffc/000/00c/030/0e0/720/820/720/0e0/030/00c",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bottom,\"Arial\",h=16,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=8,opt=0,rect=0:0:0:0",
+      "result": "box=51:47:60:63,rows=778/884/884/884/884/884/ffc/000/00c/030/0e0/720/820/720/0e0/030/00c",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=16,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=2,rect=-4:-4:20:12",
+      "result": "box=67:47:76:63,rows=778/884/884/884/884/884/ffc/000/00c/030/0e0/720/820/720/0e0/030/00c",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=16,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=4,rect=-20:-20:8:8",
+      "result": "box=67:47:76:63,rows=778/884/884/884/884/884/ffc/000/00c/030/0e0/720/820/720/0e0/030/00c",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "plain,\"Arial\",h=16,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=47:51:63:60,rows=7e808/82808/82410/827f0/82220/7e220/82140/82140/82140/7e080",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=16,esc=1800,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=46:48:63:63,rows=ffffc/ffffc/ffffc/c0bf8/bebf8/bedf4/bec04/beeec/c0eec/bef5c/bef5c/bef5c/c0fbc/ffffc/ffffc/ffffc",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "under,\"Arial\",h=16,esc=1800,weight=400,italic=0,under=1,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=46:50:64:60,rows=ffffe/3f404/41404/41208/413f8/41110/3f110/410a0/410a0/410a0/3f040",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "strike,\"Arial\",h=16,esc=1800,weight=400,italic=0,under=0,strike=1,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=46:51:64:60,rows=3f404/41404/41208/413f8/ffffe/3f110/410a0/410a0/410a0/3f040",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "smear,\"Arial\",h=16,esc=1800,weight=600,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=45:51:64:60,rows=7f303/c3303/c3186/c31fe/c30cc/7f0cc/c3078/c3078/c3078/7f030",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bold,\"Arial\",h=16,esc=1800,weight=700,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=46:51:63:60,rows=7f60c/ff60c/c33f8/c33f8/ff318/7f1b0/c31b0/c31b0/ff0e0/7f0e0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "center,\"Arial\",h=16,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=6,opt=0,rect=0:0:0:0",
+      "result": "box=56:51:72:60,rows=7e808/82808/82410/827f0/82220/7e220/82140/82140/82140/7e080",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "right,\"Arial\",h=16,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=2,opt=0,rect=0:0:0:0",
+      "result": "box=65:51:81:60,rows=7e808/82808/82410/827f0/82220/7e220/82140/82140/82140/7e080",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "base,\"Arial\",h=16,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=24,opt=0,rect=0:0:0:0",
+      "result": "box=47:64:63:73,rows=7e808/82808/82410/827f0/82220/7e220/82140/82140/82140/7e080",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bottom,\"Arial\",h=16,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=8,opt=0,rect=0:0:0:0",
+      "result": "box=47:67:63:76,rows=7e808/82808/82410/827f0/82220/7e220/82140/82140/82140/7e080",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=16,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=2,rect=-4:-4:20:12",
+      "result": "box=47:51:63:60,rows=7e808/82808/82410/827f0/82220/7e220/82140/82140/82140/7e080",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=16,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=4,rect=-20:-20:8:8",
+      "result": "box=47:51:63:60,rows=7e808/82808/82410/827f0/82220/7e220/82140/82140/82140/7e080",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "plain,\"Arial\",h=24,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:68:89:82,rows=0701fe0/0701ff0/0d81838/0d81818/0d81818/18c1838/18c1ff0/18c1ff0/3fe1818/3fe180c/603180c/603180c/603181c/c019ff8/c019ff0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=24,esc=0,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:64:90:87,rows=ffffffe/ffffffe/ffffffe/ffffffe/f8fe01e/f8fe00e/f27e7c6/f27e7e6/f27e7e6/e73e7c6/e73e00e/e73e00e/c01e7e6/c01e7f2/9fce7f2/9fce7f2/9fce7e2/3fe6006/3fe600e/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "under,\"Arial\",h=24,esc=0,weight=400,italic=0,under=1,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:68:90:86,rows=0701fe0/0701ff0/0d81838/0d81818/0d81818/18c1838/18c1ff0/18c1ff0/3fe1818/3fe180c/603180c/603180c/603181c/c019ff8/c019ff0/0000000/0000000/ffffffe/ffffffe",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "strike,\"Arial\",h=24,esc=0,weight=400,italic=0,under=0,strike=1,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:68:90:82,rows=0701fe0/0701ff0/0d81838/0d81818/0d81818/18c1838/18c1ff0/18c1ff0/3fe1818/3fe180c/ffffffe/603180c/603181c/c019ff8/c019ff0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "smear,\"Arial\",h=24,esc=0,weight=600,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:68:90:82,rows=0780ff8/0780ffc/0fc0e1e/0fc0e0e/0fc0e0e/1ce0e1e/1ce0ffc/1ce0ffc/3ff0e0e/3ff0e06/7038e06/7038e06/7038e0e/e01cffe/e01cffc",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bold,\"Arial\",h=24,esc=0,weight=700,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:68:89:82,rows=0f83fe0/0f83ff0/0f83ff8/1dc3838/1dc3838/1dc3838/18e3ff0/38e3ff0/38e3ff8/3fe383c/7ff381c/7ff381c/7073ffc/e03bff8/e03bff0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "center,\"Arial\",h=24,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=6,opt=0,rect=0:0:0:0",
+      "result": "box=51:68:76:82,rows=0701fe0/0701ff0/0d81838/0d81818/0d81818/18c1838/18c1ff0/18c1ff0/3fe1818/3fe180c/603180c/603180c/603181c/c019ff8/c019ff0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "right,\"Arial\",h=24,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=2,opt=0,rect=0:0:0:0",
+      "result": "box=37:68:62:82,rows=0701fe0/0701ff0/0d81838/0d81818/0d81818/18c1838/18c1ff0/18c1ff0/3fe1818/3fe180c/603180c/603180c/603181c/c019ff8/c019ff0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "base,\"Arial\",h=24,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=24,opt=0,rect=0:0:0:0",
+      "result": "box=64:49:89:63,rows=0701fe0/0701ff0/0d81838/0d81818/0d81818/18c1838/18c1ff0/18c1ff0/3fe1818/3fe180c/603180c/603180c/603181c/c019ff8/c019ff0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bottom,\"Arial\",h=24,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=8,opt=0,rect=0:0:0:0",
+      "result": "box=64:44:89:58,rows=0701fe0/0701ff0/0d81838/0d81818/0d81818/18c1838/18c1ff0/18c1ff0/3fe1818/3fe180c/603180c/603180c/603181c/c019ff8/c019ff0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=24,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=2,rect=-4:-4:20:12",
+      "result": "box=64:68:89:82,rows=0701fe0/0701ff0/0d81838/0d81818/0d81818/18c1838/18c1ff0/18c1ff0/3fe1818/3fe180c/603180c/603180c/603181c/c019ff8/c019ff0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=24,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=4,rect=-20:-20:8:8",
+      "result": "box=68:68:71:71,rows=7/7/d/d",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "plain,\"Arial\",h=24,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=71:55:93:79,rows=000380/000fc0/003ce0/007060/01e060/00e060/0060fc/0073ce/603706/f01e06/f81c06/ce0c06/470e0c/638638/61e3f0/61f3c0/673900/3c1e00/380400/300000/300000/300000/100000/180000/100000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=24,esc=300,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:51:98:83,rows=000007000/00001f000/00003f800/0000ff800/0003f8c00/0007e0600/001f86200/003f1f300/00fc3f300/03fe3f380/07ff3e040/1fff18600/7f3f91f20/fe1fc3f20/7e0fc7f30/7e63e7f38/3f71e3e78/3f38f38fc/1f3c381fc/0f3c187fe/0f318dff8/0787c3fe0/078ff7fc0/039ffff00/019fffc00/019fff800/00dffe000/00cffc000/005ff0000/003fc0000/003f80000/001e00000/001800000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "under,\"Arial\",h=24,esc=300,weight=400,italic=0,under=1,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=71:55:99:83,rows=00038000/000fc000/003ce000/00706000/01e06000/00e06000/0060fc00/0073ce00/60370600/f01e0600/f81c0600/ce0c0600/470e0c00/63863810/61e3f078/61f3c1f0/673903c0/3c1e0f00/38043e00/30007800/3001e000/3003c000/100f0000/183e0000/10780000/01e00000/07c00000/0f000000/04000000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "strike,\"Arial\",h=24,esc=300,weight=400,italic=0,under=0,strike=1,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=71:55:94:79,rows=000380/000fc0/003ce0/007060/01e060/00e060/0060fc/0073cf/603706/f01e1e/f81c26/ce0cc6/470f0c/638638/61fbf0/61f3c0/67f900/3f1e00/3c0400/380000/700000/b00000/100000/180000/100000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "smear,\"Arial\",h=24,esc=300,weight=600,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=71:54:96:79,rows=0000f00/0003f80/000fbc0/001e1c0/007c1c0/003c1c0/001c3f8/001efbc/000fe1c/7007c1c/f80781c/fc0381c/ef03c38/6781cf0/73c0fe0/71f0f80/71f8600/77bc000/3e1f000/3c06000/3800000/3800000/3800000/1800000/1c00000/1800000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bold,\"Arial\",h=24,esc=300,weight=700,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=71:54:96:79,rows=0000f80/0003fc0/000ffc0/001f1c0/007c0c0/003c1f0/001c7fc/001efbc/200fe1c/700781c/fc0781c/fe0383c/6f03cf8/77c1fe0/73e0fc0/71f0f00/71fc400/77fe000/3f9f000/3e04000/3800000/3800000/3800000/1c00000/1800000/1000000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "center,\"Arial\",h=24,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=6,opt=0,rect=0:0:0:0",
+      "result": "box=60:62:82:86,rows=000380/000fc0/003ce0/007060/01e060/00e060/0060fc/0073ce/603706/f01e06/f81c06/ce0c06/470e0c/638638/61e3f0/61f3c0/673900/3c1e00/380400/300000/300000/300000/100000/180000/100000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "right,\"Arial\",h=24,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=2,opt=0,rect=0:0:0:0",
+      "result": "box=48:69:70:93,rows=000380/000fc0/003ce0/007060/01e060/00e060/0060fc/0073ce/603706/f01e06/f81c06/ce0c06/470e0c/638638/61e3f0/61f3c0/673900/3c1e00/380400/300000/300000/300000/100000/180000/100000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "base,\"Arial\",h=24,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=24,opt=0,rect=0:0:0:0",
+      "result": "box=61:39:83:63,rows=000380/000fc0/003ce0/007060/01e060/00e060/0060fc/0073ce/603706/f01e06/f81c06/ce0c06/470e0c/638638/61e3f0/61f3c0/673900/3c1e00/380400/300000/300000/300000/100000/180000/100000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bottom,\"Arial\",h=24,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=8,opt=0,rect=0:0:0:0",
+      "result": "box=59:35:81:59,rows=000380/000fc0/003ce0/007060/01e060/00e060/0060fc/0073ce/603706/f01e06/f81c06/ce0c06/470e0c/638638/61e3f0/61f3c0/673900/3c1e00/380400/300000/300000/300000/100000/180000/100000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=24,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=2,rect=-4:-4:20:12",
+      "result": "box=71:55:93:79,rows=000380/000fc0/003ce0/007060/01e060/00e060/0060fc/0073ce/603706/f01e06/f81c06/ce0c06/470e0c/638638/61e3f0/61f3c0/673900/3c1e00/380400/300000/300000/300000/100000/180000/100000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=24,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=4,rect=-20:-20:8:8",
+      "result": "box=71:55:93:79,rows=000380/000fc0/003ce0/007060/01e060/00e060/0060fc/0073ce/603706/f01e06/f81c06/ce0c06/470e0c/638638/61e3f0/61f3c0/673900/3c1e00/380400/300000/300000/300000/100000/180000/100000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "plain,\"Arial\",h=24,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=70:50:92:76,rows=000600/001f80/003980/0070c0/00e0c0/01c0fc/03c1ce/00e386/007706/003e06/001c06/700e0c/fc0718/6f83b8/63e1f0/30fce0/307f40/18c780/198100/0f0000/0e0000/060000/060000/070000/030000/030000/018000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=24,esc=450,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:46:98:79,rows=000030000/000078000/0000fc000/0001fe000/0003e7000/000781800/000f19c00/001e3ce00/003c7cf00/0078fc080/00f0f8c40/01fc71e60/03fe23e70/07ff07e78/0fff8fe7c/1e3fc7cfe/3c0fe39fc/7e41f11f8/fe70783f0/7f3c0c7e0/3f3e02fc0/1f9ce1f80/0f99fbf00/07c3ffe00/03c7ffc00/01e7ff800/00e7ff000/0063fe000/0033fc000/0013f8000/0009f0000/0007e0000/0003c0000/000180000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "under,\"Arial\",h=24,esc=450,weight=400,italic=0,under=1,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=70:50:99:80,rows=00060000/001f8000/00398000/0070c000/00e0c000/01c0fc00/03c1ce00/00e38600/00770600/003e0600/001c0608/700e0c1c/fc071838/6f83b870/63e1f0e0/30fce1c0/307f4380/18c78700/19810e00/0f001c00/0e003800/06007000/0600e000/0701c000/03038000/03070000/018e0000/001c0000/00380000/00700000/00200000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "strike,\"Arial\",h=24,esc=450,weight=400,italic=0,under=0,strike=1,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=70:50:93:76,rows=000600/001f80/003980/0070c0/00e0c0/01c0fd/03c1ce/00e386/00770e/003e16/001c26/700e4c/fc0798/6f83b8/63e3f0/30fce0/307f40/18d780/19a100/0f4000/0e8000/070000/060000/070000/0b0000/030000/018000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "smear,\"Arial\",h=24,esc=450,weight=600,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=70:48:95:76,rows=0001c00/0007f00/000f700/001e380/003c380/00783f8/00f87bc/003cf1c/001fe1c/000fc1c/000781c/0003c38/0001e70/7800ff0/fe007e0/7fc03c0/73f0180/38fe000/387f800/1ce7c00/1dc1800/0f80000/0f00000/0700000/0700000/0780000/0380000/0380000/01c0000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bold,\"Arial\",h=24,esc=450,weight=700,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=70:47:95:76,rows=0000c00/0003f00/0007f00/000f780/001e380/003c3f8/00783fc/00f873c/003ce1c/001fc1c/000f81c/0007838/0003c70/3001ef0/7e00fe0/ff807c0/7fe0380/3bfc100/387f000/3c7fc00/1cf7800/1de1000/0fc0000/0f80000/0700000/0700000/0780000/0380000/0380000/0100000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "center,\"Arial\",h=24,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=6,opt=0,rect=0:0:0:0",
+      "result": "box=61:59:83:85,rows=000600/001f80/003980/0070c0/00e0c0/01c0fc/03c1ce/00e386/007706/003e06/001c06/700e0c/fc0718/6f83b8/63e1f0/30fce0/307f40/18c780/198100/0f0000/0e0000/060000/060000/070000/030000/030000/018000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "right,\"Arial\",h=24,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=2,opt=0,rect=0:0:0:0",
+      "result": "box=51:69:73:95,rows=000600/001f80/003980/0070c0/00e0c0/01c0fc/03c1ce/00e386/007706/003e06/001c06/700e0c/fc0718/6f83b8/63e1f0/30fce0/307f40/18c780/198100/0f0000/0e0000/060000/060000/070000/030000/030000/018000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "base,\"Arial\",h=24,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=24,opt=0,rect=0:0:0:0",
+      "result": "box=57:37:79:63,rows=000600/001f80/003980/0070c0/00e0c0/01c0fc/03c1ce/00e386/007706/003e06/001c06/700e0c/fc0718/6f83b8/63e1f0/30fce0/307f40/18c780/198100/0f0000/0e0000/060000/060000/070000/030000/030000/018000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bottom,\"Arial\",h=24,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=8,opt=0,rect=0:0:0:0",
+      "result": "box=54:34:76:60,rows=000600/001f80/003980/0070c0/00e0c0/01c0fc/03c1ce/00e386/007706/003e06/001c06/700e0c/fc0718/6f83b8/63e1f0/30fce0/307f40/18c780/198100/0f0000/0e0000/060000/060000/070000/030000/030000/018000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=24,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=2,rect=-4:-4:20:12",
+      "result": "box=70:50:92:76,rows=000600/001f80/003980/0070c0/00e0c0/01c0fc/03c1ce/00e386/007706/003e06/001c06/700e0c/fc0718/6f83b8/63e1f0/30fce0/307f40/18c780/198100/0f0000/0e0000/060000/060000/070000/030000/030000/018000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=24,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=4,rect=-20:-20:8:8",
+      "result": "box=70:50:92:76,rows=000600/001f80/003980/0070c0/00e0c0/01c0fc/03c1ce/00e386/007706/003e06/001c06/700e0c/fc0718/6f83b8/63e1f0/30fce0/307f40/18c780/198100/0f0000/0e0000/060000/060000/070000/030000/030000/018000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "plain,\"Arial\",h=24,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=68:38:82:63,rows=0078/3cfc/7f8e/e706/c306/c306/c306/c306/c306/fffe/fffe/0000/0000/0006/003e/00f8/07c0/3fc0/f8c0/c0c0/f8c0/3fc0/07c0/00f8/003e/0006",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=24,esc=900,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:37:86:63,rows=fffffe/fff87e/fc303e/f8071e/f18f9e/f3cf9e/f3cf9e/f3cf9e/f3cf9e/f3cf9e/f0001e/f0001e/fffffe/fffffe/ffff9e/fffc1e/fff07e/ff83fe/fc03fe/f073fe/f3f3fe/f073fe/fc03fe/ff83fe/fff07e/fffc1e/ffff9e",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "under,\"Arial\",h=24,esc=900,weight=400,italic=0,under=1,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=68:37:86:64,rows=00006/00786/3cfc6/7f8e6/e7066/c3066/c3066/c3066/c3066/c3066/fffe6/fffe6/00006/00006/00066/003e6/00f86/07c06/3fc06/f8c06/c0c06/f8c06/3fc06/07c06/00f86/003e6/00066/00006",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "strike,\"Arial\",h=24,esc=900,weight=400,italic=0,under=0,strike=1,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=68:37:82:64,rows=0020/0078/3cfc/7fae/e726/c326/c326/c326/c326/c326/fffe/fffe/0020/0020/0026/003e/00f8/07e0/3fe0/f8e0/c0e0/f8e0/3fe0/07e0/00f8/003e/0026/0020",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "smear,\"Arial\",h=24,esc=900,weight=600,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=68:36:83:63,rows=007c/3efe/7fcf/f787/e387/e387/e387/e387/e387/ffff/ffff/0000/0000/0000/0000/0007/003f/00fc/07e0/3fe0/fce0/e0e0/fce0/3fe0/07e0/00fc/003f/0007",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bold,\"Arial\",h=24,esc=900,weight=700,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=68:35:82:63,rows=0078/3cfc/7ffe/ffce/e38e/e38e/e38e/e38e/e38e/fffe/fffe/fffe/0000/0000/0002/001e/00fe/03fc/1ff0/ff70/fc70/e070/fc70/ff70/1ff0/03fc/00fe/001e/0002",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "center,\"Arial\",h=24,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=6,opt=0,rect=0:0:0:0",
+      "result": "box=68:51:82:76,rows=0078/3cfc/7f8e/e706/c306/c306/c306/c306/c306/fffe/fffe/0000/0000/0006/003e/00f8/07c0/3fc0/f8c0/c0c0/f8c0/3fc0/07c0/00f8/003e/0006",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "right,\"Arial\",h=24,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=2,opt=0,rect=0:0:0:0",
+      "result": "box=68:65:82:90,rows=0078/3cfc/7f8e/e706/c306/c306/c306/c306/c306/fffe/fffe/0000/0000/0006/003e/00f8/07c0/3fc0/f8c0/c0c0/f8c0/3fc0/07c0/00f8/003e/0006",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "base,\"Arial\",h=24,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=24,opt=0,rect=0:0:0:0",
+      "result": "box=49:38:63:63,rows=0078/3cfc/7f8e/e706/c306/c306/c306/c306/c306/fffe/fffe/0000/0000/0006/003e/00f8/07c0/3fc0/f8c0/c0c0/f8c0/3fc0/07c0/00f8/003e/0006",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bottom,\"Arial\",h=24,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=8,opt=0,rect=0:0:0:0",
+      "result": "box=45:38:59:63,rows=0078/3cfc/7f8e/e706/c306/c306/c306/c306/c306/fffe/fffe/0000/0000/0006/003e/00f8/07c0/3fc0/f8c0/c0c0/f8c0/3fc0/07c0/00f8/003e/0006",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=24,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=2,rect=-4:-4:20:12",
+      "result": "box=68:38:82:63,rows=0078/3cfc/7f8e/e706/c306/c306/c306/c306/c306/fffe/fffe/0000/0000/0006/003e/00f8/07c0/3fc0/f8c0/c0c0/f8c0/3fc0/07c0/00f8/003e/0006",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=24,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=4,rect=-20:-20:8:8",
+      "result": "box=68:38:82:63,rows=0078/3cfc/7f8e/e706/c306/c306/c306/c306/c306/fffe/fffe/0000/0000/0006/003e/00f8/07c0/3fc0/f8c0/c0c0/f8c0/3fc0/07c0/00f8/003e/0006",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "plain,\"Arial\",h=24,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=38:45:63:59,rows=3fe600c/7fe600c/e063018/c063018/c063018/c061ff0/6061ff0/3fe0c60/3fe0c60/7060c60/60606c0/60606c0/70606c0/3fe0380/1fe0380",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=24,esc=1800,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=37:41:63:63,rows=ffffffe/ffffffe/ffffffe/ffffffe/e00cff8/c00cff8/8fce7f2/9fce7f2/9fce7f2/9fcf006/cfcf006/e00f9ce/e00f9ce/c7cf9ce/cfcfc9e/cfcfc9e/c7cfc9e/e00fe3e/f00fe3e/ffffffe/ffffffe/ffffffe/ffffffe",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "under,\"Arial\",h=24,esc=1800,weight=400,italic=0,under=1,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=37:42:64:59,rows=fffffff/fffffff/0000000/1ff3006/3ff3006/703180c/603180c/603180c/6030ff8/3030ff8/1ff0630/1ff0630/3830630/3030360/3030360/3830360/1ff01c0/0ff01c0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "strike,\"Arial\",h=24,esc=1800,weight=400,italic=0,under=0,strike=1,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=37:45:64:59,rows=1ff3006/3ff3006/703180c/603180c/603180c/fffffff/3030ff8/1ff0630/1ff0630/3830630/3030360/3030360/3830360/1ff01c0/0ff01c0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "smear,\"Arial\",h=24,esc=1800,weight=600,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=36:45:64:59,rows=3ff1c038/7ff1c038/f070e070/e070e070/e070e070/e0707fe0/70707fe0/3ff039c0/3ff039c0/787039c0/70701f80/70701f80/78701f80/3ff00f00/1ff00f00",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bold,\"Arial\",h=24,esc=1800,weight=700,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=35:45:63:59,rows=3ff38038/7ff1c070/fff1c070/e071fff0/e070ffe0/f070ffe0/7ff0e0e0/3ff071c0/3ff071c0/70703b80/70703b80/70703b80/7ff01f00/3ff01f00/1ff01f00",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "center,\"Arial\",h=24,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=6,opt=0,rect=0:0:0:0",
+      "result": "box=51:45:76:59,rows=3fe600c/7fe600c/e063018/c063018/c063018/c061ff0/6061ff0/3fe0c60/3fe0c60/7060c60/60606c0/60606c0/70606c0/3fe0380/1fe0380",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "right,\"Arial\",h=24,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=2,opt=0,rect=0:0:0:0",
+      "result": "box=65:45:90:59,rows=3fe600c/7fe600c/e063018/c063018/c063018/c061ff0/6061ff0/3fe0c60/3fe0c60/7060c60/60606c0/60606c0/70606c0/3fe0380/1fe0380",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "base,\"Arial\",h=24,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=24,opt=0,rect=0:0:0:0",
+      "result": "box=38:64:63:78,rows=3fe600c/7fe600c/e063018/c063018/c063018/c061ff0/6061ff0/3fe0c60/3fe0c60/7060c60/60606c0/60606c0/70606c0/3fe0380/1fe0380",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bottom,\"Arial\",h=24,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=8,opt=0,rect=0:0:0:0",
+      "result": "box=38:68:63:82,rows=3fe600c/7fe600c/e063018/c063018/c063018/c061ff0/6061ff0/3fe0c60/3fe0c60/7060c60/60606c0/60606c0/70606c0/3fe0380/1fe0380",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=24,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=2,rect=-4:-4:20:12",
+      "result": "box=38:45:63:59,rows=3fe600c/7fe600c/e063018/c063018/c063018/c061ff0/6061ff0/3fe0c60/3fe0c60/7060c60/60606c0/60606c0/70606c0/3fe0380/1fe0380",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Arial\",h=24,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=4,rect=-20:-20:8:8",
+      "result": "box=38:45:63:59,rows=3fe600c/7fe600c/e063018/c063018/c063018/c061ff0/6061ff0/3fe0c60/3fe0c60/7060c60/60606c0/60606c0/70606c0/3fe0380/1fe0380",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "plain,\"Courier New\",h=16,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:68:78:75,rows=387c/1822/1822/243c/2422/3c22/4222/e77c",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=16,esc=0,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:64:79:79,rows=ffff/ffff/ffff/ffff/c783/e7dd/e7dd/dbc3/dbdd/c3dd/bddd/1883/ffff/ffff/ffff/ffff",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "under,\"Courier New\",h=16,esc=0,weight=400,italic=0,under=1,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:68:79:79,rows=387c/1822/1822/243c/2422/3c22/4222/e77c/0000/0000/0000/ffff",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "strike,\"Courier New\",h=16,esc=0,weight=400,italic=0,under=0,strike=1,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:68:79:75,rows=387c/1822/1822/243c/2422/ffff/4222/e77c",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "smear,\"Courier New\",h=16,esc=0,weight=600,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:68:79:75,rows=3c3f/1c19/1c19/361f/3619/3e19/6319/f7bf",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bold,\"Courier New\",h=16,esc=0,weight=700,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:68:77:75,rows=f9f0/38d8/28d8/6cf8/6ccc/7ccc/6ccc/eff8",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "center,\"Courier New\",h=16,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=6,opt=0,rect=0:0:0:0",
+      "result": "box=56:68:70:75,rows=387c/1822/1822/243c/2422/3c22/4222/e77c",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "right,\"Courier New\",h=16,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=2,opt=0,rect=0:0:0:0",
+      "result": "box=48:68:62:75,rows=387c/1822/1822/243c/2422/3c22/4222/e77c",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "base,\"Courier New\",h=16,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=24,opt=0,rect=0:0:0:0",
+      "result": "box=64:56:78:63,rows=387c/1822/1822/243c/2422/3c22/4222/e77c",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bottom,\"Courier New\",h=16,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=8,opt=0,rect=0:0:0:0",
+      "result": "box=64:52:78:59,rows=387c/1822/1822/243c/2422/3c22/4222/e77c",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Courier New\",h=16,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=2,rect=-4:-4:20:12",
+      "result": "box=64:68:78:75,rows=387c/1822/1822/243c/2422/3c22/4222/e77c",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Courier New\",h=16,esc=0,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=4,rect=-20:-20:8:8",
+      "result": "box=66:68:69:71,rows=e/6/6/9",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "plain,\"Courier New\",h=16,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=67:60:82:73,rows=0010/0068/0188/008c/0092/3061/e822/2424/2318/2ce0/1080/1100/1c00/1000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=16,esc=300,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:57:85:77,rows=000e00/003e00/00ff00/01fd00/07f280/1fce80/7fee40/ffeda0/79f3c0/62fbb0/3b7b70/3b9cf8/1a63f8/1deffc/0ddff0/047fc0/05ff00/03fe00/03f800/01e000/018000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "under,\"Courier New\",h=16,esc=300,weight=400,italic=0,under=1,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=67:60:86:77,rows=00100/00680/01880/008c0/00920/30610/e8220/24240/23180/2ce01/10806/11018/1c060/10080/00300/00c00/03000/04000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "strike,\"Courier New\",h=16,esc=300,weight=400,italic=0,under=0,strike=1,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=67:60:82:73,rows=0010/0068/0188/008d/0096/3079/e862/24a4/2318/2ce0/3080/5100/1c00/1000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "smear,\"Courier New\",h=16,esc=300,weight=600,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=67:59:85:73,rows=00060/001f0/00730/00338/0036c/001c6/380cc/fc0d8/36070/338c0/3ee00/18c00/19800/1e000/18000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bold,\"Courier New\",h=16,esc=300,weight=700,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=67:60:82:73,rows=0038/00fc/018c/038e/20fb/7861/ec27/363c/3738/3de0/1980/1800/1c00/3000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "center,\"Courier New\",h=16,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=6,opt=0,rect=0:0:0:0",
+      "result": "box=60:64:75:77,rows=0010/0068/0188/008c/0092/3061/e822/2424/2318/2ce0/1080/1100/1c00/1000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "right,\"Courier New\",h=16,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=2,opt=0,rect=0:0:0:0",
+      "result": "box=53:68:68:81,rows=0010/0068/0188/008c/0092/3061/e822/2424/2318/2ce0/1080/1100/1c00/1000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "base,\"Courier New\",h=16,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=24,opt=0,rect=0:0:0:0",
+      "result": "box=61:50:76:63,rows=0010/0068/0188/008c/0092/3061/e822/2424/2318/2ce0/1080/1100/1c00/1000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bottom,\"Courier New\",h=16,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=8,opt=0,rect=0:0:0:0",
+      "result": "box=59:46:74:59,rows=0010/0068/0188/008c/0092/3061/e822/2424/2318/2ce0/1080/1100/1c00/1000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Courier New\",h=16,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=2,rect=-4:-4:20:12",
+      "result": "box=67:60:82:73,rows=0010/0068/0188/008c/0092/3061/e822/2424/2318/2ce0/1080/1100/1c00/1000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Courier New\",h=16,esc=300,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=4,rect=-20:-20:8:8",
+      "result": "box=67:60:82:73,rows=0010/0068/0188/008c/0092/3061/e822/2424/2318/2ce0/1080/1100/1c00/1000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "plain,\"Courier New\",h=16,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=67:56:82:71,rows=0060/0090/0114/031a/00a1/0042/0022/3014/6c18/a300/12e0/1440/0800/0800/0600/0400",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=16,esc=450,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:54:85:74,rows=003000/007800/00f000/01ec00/03dd00/079c80/0febc0/1ff7a0/3ffbb0/79fd78/f27cfc/6b9ff8/3da3f0/1d77e0/0effc0/06ff80/033f00/017e00/00fc00/007800/003000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "under,\"Courier New\",h=16,esc=450,weight=400,italic=0,under=1,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=67:56:86:75,rows=00600/00900/01140/031a0/00a10/00420/00220/30140/6c181/a3002/12e04/14408/08010/08020/06040/04080/00100/00200/00400/00800",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "strike,\"Courier New\",h=16,esc=450,weight=400,italic=0,under=0,strike=1,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=67:56:82:71,rows=0060/0090/0114/031a/00a5/004a/0032/3034/6c58/a380/13e0/1640/0c00/0800/1600/0400",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "smear,\"Courier New\",h=16,esc=450,weight=600,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=67:55:84:71,rows=00380/006c0/00cf0/01cf8/0078c/00318/00198/000f0/380e0/7e000/f3800/1bf00/1e600/0c000/0c000/07000/06000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bold,\"Courier New\",h=16,esc=450,weight=700,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=67:56:82:71,rows=0070/00d8/019e/031b/03b3/00e2/0066/383c/6e18/f3e0/16e0/1cc0/0800/0e00/0e00/0c00",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "center,\"Courier New\",h=16,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=6,opt=0,rect=0:0:0:0",
+      "result": "box=61:62:76:77,rows=0060/0090/0114/031a/00a1/0042/0022/3014/6c18/a300/12e0/1440/0800/0800/0600/0400",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "right,\"Courier New\",h=16,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=2,opt=0,rect=0:0:0:0",
+      "result": "box=56:67:71:82,rows=0060/0090/0114/031a/00a1/0042/0022/3014/6c18/a300/12e0/1440/0800/0800/0600/0400",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "base,\"Courier New\",h=16,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=24,opt=0,rect=0:0:0:0",
+      "result": "box=59:48:74:63,rows=0060/0090/0114/031a/00a1/0042/0022/3014/6c18/a300/12e0/1440/0800/0800/0600/0400",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bottom,\"Courier New\",h=16,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=8,opt=0,rect=0:0:0:0",
+      "result": "box=56:45:71:60,rows=0060/0090/0114/031a/00a1/0042/0022/3014/6c18/a300/12e0/1440/0800/0800/0600/0400",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Courier New\",h=16,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=2,rect=-4:-4:20:12",
+      "result": "box=67:56:82:71,rows=0060/0090/0114/031a/00a1/0042/0022/3014/6c18/a300/12e0/1440/0800/0800/0600/0400",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Courier New\",h=16,esc=450,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=4,rect=-20:-20:8:8",
+      "result": "box=67:56:82:71,rows=0060/0090/0114/031a/00a1/0042/0022/3014/6c18/a300/12e0/1440/0800/0800/0600/0400",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "plain,\"Courier New\",h=16,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=68:49:75:63,rows=6e/91/91/91/ff/81/00/01/03/1d/e4/e4/9d/03/01",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=16,esc=900,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:48:79:63,rows=ffff/f91f/f6ef/f6ef/f6ef/f00f/f7ef/ffff/ffef/ffcf/fe2f/f1bf/f1bf/f62f/ffcf/ffef",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "under,\"Courier New\",h=16,esc=900,weight=400,italic=0,under=1,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=68:48:79:64,rows=001/6e1/911/911/911/ff1/811/001/011/031/1d1/e41/e41/9d1/031/011/001",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "strike,\"Courier New\",h=16,esc=900,weight=400,italic=0,under=0,strike=1,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=68:48:75:64,rows=08/6e/99/99/99/ff/89/08/09/0b/1d/ec/ec/9d/0b/09/08",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "smear,\"Courier New\",h=16,esc=900,weight=600,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=68:47:76:63,rows=7f0/d98/d98/d98/ff8/c18/000/000/000/018/038/1f8/f60/f60/df8/038/018",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bold,\"Courier New\",h=16,esc=900,weight=700,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=68:48:75:63,rows=0e/7f/f1/91/91/ff/ff/81/07/3f/fd/c4/fd/bf/87/01",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "center,\"Courier New\",h=16,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=6,opt=0,rect=0:0:0:0",
+      "result": "box=68:57:75:71,rows=6e/91/91/91/ff/81/00/01/03/1d/e4/e4/9d/03/01",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "right,\"Courier New\",h=16,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=2,opt=0,rect=0:0:0:0",
+      "result": "box=68:65:75:79,rows=6e/91/91/91/ff/81/00/01/03/1d/e4/e4/9d/03/01",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "base,\"Courier New\",h=16,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=24,opt=0,rect=0:0:0:0",
+      "result": "box=56:49:63:63,rows=6e/91/91/91/ff/81/00/01/03/1d/e4/e4/9d/03/01",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bottom,\"Courier New\",h=16,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=8,opt=0,rect=0:0:0:0",
+      "result": "box=52:49:59:63,rows=6e/91/91/91/ff/81/00/01/03/1d/e4/e4/9d/03/01",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Courier New\",h=16,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=2,rect=-4:-4:20:12",
+      "result": "box=68:49:75:63,rows=6e/91/91/91/ff/81/00/01/03/1d/e4/e4/9d/03/01",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Courier New\",h=16,esc=900,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=4,rect=-20:-20:8:8",
+      "result": "box=68:49:75:63,rows=6e/91/91/91/ff/81/00/01/03/1d/e4/e4/9d/03/01",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "plain,\"Courier New\",h=16,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=49:52:63:59,rows=7dce/8884/8878/8848/7848/8830/8830/7c38",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=16,esc=1800,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=48:48:63:63,rows=ffff/ffff/ffff/ffff/c118/bbbd/bbc3/bbdb/c3db/bbe7/bbe7/c1e3/ffff/ffff/ffff/ffff",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "under,\"Courier New\",h=16,esc=1800,weight=400,italic=0,under=1,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=48:49:64:59,rows=ffff8/00000/00000/3ee70/44420/443c0/44240/3c240/44180/44180/3e1c0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "strike,\"Courier New\",h=16,esc=1800,weight=400,italic=0,under=0,strike=1,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=48:52:64:59,rows=3ee70/44420/443c0/44240/ffff8/44180/44180/3e1c0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "smear,\"Courier New\",h=16,esc=1800,weight=600,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=47:52:64:59,rows=7e7bc/cc318/cc1f0/cc1b0/7c1b0/cc0e0/cc0e0/7e0f0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bold,\"Courier New\",h=16,esc=1800,weight=700,italic=0,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=48:52:63:59,rows=7fef/c6c6/c6fe/c66c/7e6c/666c/6638/3f3e",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "center,\"Courier New\",h=16,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=6,opt=0,rect=0:0:0:0",
+      "result": "box=57:52:71:59,rows=7dce/8884/8878/8848/7848/8830/8830/7c38",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "right,\"Courier New\",h=16,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=2,opt=0,rect=0:0:0:0",
+      "result": "box=65:52:79:59,rows=7dce/8884/8878/8848/7848/8830/8830/7c38",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "base,\"Courier New\",h=16,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=24,opt=0,rect=0:0:0:0",
+      "result": "box=49:64:63:71,rows=7dce/8884/8878/8848/7848/8830/8830/7c38",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "bottom,\"Courier New\",h=16,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=8,opt=0,rect=0:0:0:0",
+      "result": "box=49:68:63:75,rows=7dce/8884/8878/8848/7848/8830/8830/7c38",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Courier New\",h=16,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=2,rect=-4:-4:20:12",
+      "result": "box=49:52:63:59,rows=7dce/8884/8878/8848/7848/8830/8830/7c38",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "ext,\"Courier New\",h=16,esc=1800,weight=400,italic=0,under=0,strike=0,mode=1,align=0,opt=4,rect=-20:-20:8:8",
+      "result": "box=49:52:63:59,rows=7dce/8884/8878/8848/7848/8830/8830/7c38",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "slant,\"Symbol\",h=16,esc=0,weight=400,italic=1,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=65:67:85:76,rows=0041f8/008108/014108/028210/0443e0/088420/0f8420/208840/208840/e3bf00",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "slant,\"Symbol\",h=24,esc=0,weight=400,italic=1,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:70:91:83,rows=0020000/00203fe/0060183/0070183/00b0183/0130307/023030c/02303fc/043020e/0ff0606/0830606/101860c/2018c1c/f07fff0",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "slant,\"Symbol\",h=16,esc=300,weight=400,italic=1,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=71:58:84:74,rows=0020/00f0/0110/0710/0118/016c/4084/6084/b088/98d0/8860/b480/4700/8800/8000/c000/8000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "slant,\"Symbol\",h=24,esc=300,weight=400,italic=1,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=74:57:94:80,rows=0003e0/000460/001860/007020/001860/001840/0018f8/201b18/300c18/380c18/380c18/2c0c10/260620/270640/438780/4d8600/50c800/60f000/408000/410000/400000/400000/700000/800000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "slant,\"Symbol\",h=16,esc=450,weight=400,italic=1,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=72:55:83:72,rows=018/068/088/088/14e/053/021/822/c14/b14/998/9f0/a60/440/400/400/600/400",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "slant,\"Symbol\",h=24,esc=450,weight=400,italic=1,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=76:50:94:77,rows=001c0/003e0/00460/00830/01820/0383c/04c7e/00cc6/00706/00706/00306/80384/e0188/f00c8/b80f0/5c060/47040/47880/49f00/50e00/20400/20800/20000/20000/20000/38000/30000/20000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "slant,\"Symbol\",h=16,esc=900,weight=400,italic=1,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=68:46:76:63,rows=740/970/888/888/c88/bc8/078/008/008/008/7f8/f48/240/1c0/040/028/018/008",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "slant,\"Symbol\",h=24,esc=900,weight=400,italic=1,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=70:36:83:63,rows=3c00/7ce0/47f8/4398/410c/4104/4104/7904/7f04/47f4/007c/000c/0004/0004/0004/001c/1ffc/ffe4/3044/0840/0440/0340/00c0/0060/0014/000c/0004/0004",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "slant,\"Symbol\",h=16,esc=1800,weight=400,italic=1,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=45:51:63:59,rows=1ff8e/21108/61110/621e0/3e120/46140/c4180/c4100/3e200",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    },
+    {
+      "function": "style ink",
+      "args": "slant,\"Symbol\",h=24,esc=1800,weight=400,italic=1,under=0,strike=0,mode=1,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=35:44:63:57,rows=07fff078/1c18c020/3830c040/3030c080/3020ff00/30604100/1fe06200/38406400/60c06800/c0c06800/c0807000/c1806000/7fe04000/00008000",
+      "section": "turned text with the ground, the rules, the styles and the alignments"
+    }
+  ]
+}
