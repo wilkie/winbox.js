@@ -51,6 +51,7 @@ import { DeleteDC } from './gdi/DeleteDC.js';
 import { DeleteObject } from './gdi/DeleteObject.js';
 import { GetBitmapBits } from './gdi/GetBitmapBits.js';
 import { GetGlyphOutline } from './gdi/GetGlyphOutline.js';
+import { CreateScalableFontResource } from './gdi/CreateScalableFontResource.js';
 import { GetDeviceCaps } from './gdi/GetDeviceCaps.js';
 import { GetObject } from './gdi/GetObject.js';
 import { GetRasterizerCaps } from './gdi/GetRasterizerCaps.js';
@@ -500,7 +501,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'GetOutlineTextMetrics', 8],
       [GetGlyphOutline, 'GetGlyphOutline', 22, [HDC, UINT, UINT, [GLYPHMETRICS], DWORD, FARPTR, [MAT2]], DWORD],
       // 310 //
-      [Gdi.stub, 'CreateScalableFontResource', 12],
+      [CreateScalableFontResource, 'CreateScalableFontResource', 14, [UINT, LPCSTR, LPCSTR, LPCSTR], BOOL],
       [Gdi.stub, 'GetFontData', 18],
       [Gdi.stub, 'ConvertOutlineFontFile', 12],
       [GetRasterizerCaps, 'GetRasterizerCaps', 6, [[RASTERIZER_STATUS], INT], BOOL],

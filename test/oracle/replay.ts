@@ -14,6 +14,7 @@ import { Color } from '../../src/raster/color.js';
 import { GetStockObject } from '../../src/win16/gdi/GetStockObject.js';
 import { SelectObject } from '../../src/win16/gdi/SelectObject.js';
 import { GetGlyphOutline } from '../../src/win16/gdi/GetGlyphOutline.js';
+import { scalableFontResource } from '../../src/win16/gdi/CreateScalableFontResource.js';
 import { GetTextExtent } from '../../src/win16/gdi/GetTextExtent.js';
 import { GetTextFace } from '../../src/win16/gdi/GetTextFace.js';
 import { GetTextMetrics } from '../../src/win16/gdi/GetTextMetrics.js';
@@ -998,6 +999,22 @@ export class Context {
   }
 }
 
+/** Where the installed `.TTF` files are on the host. */
+const DRIVE_FONTS = join(__dirname, '..', '..', 'oracle', 'build', 'drive-c', 'WINDOWS', 'SYSTEM');
+
+/** The `.FOT` stub for a `fotmake` record's face, from the drive image. */
+function fotFor(args: any[]) {
+  const file = String(args[1]);
+
+  if (!existsSync(join(DRIVE_FONTS, file))) {
+    throw new NeedsDrive('the fonts live on the drive image; run the oracle pipeline');
+  }
+
+  const ttf = readFileSync(join(DRIVE_FONTS, file));
+
+  return scalableFontResource(new Uint8Array(ttf), `C:\\WINDOWS\\SYSTEM\\${file}`);
+}
+
 /**
  * Splits a recorded argument list.
  *
@@ -1036,7 +1053,10 @@ export function parseArgs(args: string): (string | number)[] {
        * argument -- and turning those into NaN loses the distinction between
        * the cases silently.
        */
-      const value = Number(text);
+      /* And `wsprintf` never writes an exponent, so anything that only reads
+       * as a number *with* one is text: `fotmake`'s `+00e0` is a hexadecimal
+       * offset, not nought times ten to the nought. */
+      const value = /^[+-]?\d+e/i.test(text.trim()) ? NaN : Number(text);
 
       parsed.push(text.trim() !== '' && !Number.isNaN(value) ? value : text);
       at = end;
@@ -2336,6 +2356,18 @@ const ADAPTERS: Record<
       .join(',');
   },
 
+  /* `fotmake` has `CreateScalableFontResource` make each installed face's
+   * `.FOT` and reads it back: its size, then its bytes thirty-two at a time.
+   * The stub is built from the same `.TTF` on the drive image. */
+  made(context, args) {
+    return `size=${fotFor(args).length}`;
+  },
+
+  stub(context, args) {
+    const at = parseInt(String(args[2]).replace(/^\+/, ''), 16);
+    return Buffer.from(fotFor(args).subarray(at, at + 32)).toString('hex');
+  },
+
   /* `smearglf` asks `GetGlyphOutline` for a bitmap with the identity matrix
    * and writes back the metrics, the size and the bytes. */
   'glyph outline'(context, args) {
@@ -3019,22 +3051,16 @@ export const KNOWN_GAPS: Record<string, string> = {
    * records agree on both displays, the `max` field included, and they live in
    * `maxwidth` rather than in `widths`.
    *
-   * What is not checked is 3,863 records the suite reports as **unsupported**,
+   * What is not checked is the records the suite reports as **unsupported**,
    * which is a different thing from a disagreement and is why they are counted
-   * apart. They are not the same kind of thing as each other.
+   * apart. `stack` is 3,650 of them and is an instrument: the scaler's own
+   * working memory, read to find where a number came from, which nothing here
+   * is meant to reproduce.
    *
-   * `stack` is 3,650 of them and is an instrument: the scaler's own working
-   * memory, read to find where a number came from, which nothing here is meant
-   * to reproduce.
-   *
-   * `fotmake` is the other 213 and is a recording of a **real API function**.
-   * `CreateScalableFontResource` is documented and callable, and a faithful
-   * Windows 3.1 would write the `.FOT` stubs it writes; having no adapter is a
-   * statement about this implementation rather than about the record. So
-   * `FONTS.md` section 8c decodes it field by field -- the NE layout, both
-   * resources, and every value of the `FONTDIR` entry beside the `.TTF` field
-   * it comes from -- and an adapter written later has the whole of what it
-   * needs without recording the probe again.
+   * `fotmake`, which used to be the other 213, is a recording of a **real API
+   * function**, and `CreateScalableFontResource` is implemented now: its 213
+   * records are rebuilt byte for byte from the drive image's `.TTF` files. See
+   * `FONTS.md` section 8c.
    */
 };
 

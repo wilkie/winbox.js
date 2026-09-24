@@ -16004,12 +16004,11 @@ arithmetic rather than a coincidence of the files on this drive.
 
 #### What `CreateScalableFontResource` writes, field by field
 
-Nothing here implements this call, so the fixture replays as unsupported. That
-makes it the one recording of a **real API function** the conformance suite
-cannot check, which is a reason to write down what it says rather than leave it
-as a count -- an implementation of it later should not have to record the probe
-again. Everything below is decoded from the 213 records and checked against the
-five `.TTF` files they were made from.
+This was decoded when nothing implemented the call, so that an implementation
+later would not have to record the probe again; it is implemented now, from
+this, and reproduces all 213 records (see the end of this section). Everything
+below is decoded from the 213 records and checked against the five `.TTF`
+files they were made from.
 
 **The file.** A stub NE library of about 1,310 bytes, and the whole of it is
 header and resources: no segments, no imports, no code.
@@ -16078,20 +16077,41 @@ can produce that number.
 **`dfAscent` is `hhea`'s and not the bounding box's.** Arial's `yMax` is 1836
 and its `hhea.ascender` is 1854, and the stub carries 1854.
 
-Three things are observed and not explained, and an implementation should copy
-them rather than derive them: `dfType`'s `0x4083`, the font ordinal of nought,
-and `dfReserved`, whose low word is 11 for four of the five faces and 12 for
-Wingdings and whose high word is `0xf000` on exactly the two faces whose
-`cmap` lives in the `0xF000` private range.
+`dfReserved` is explained after all. Its low word is **`head.lowestRecPPEM`**
+-- 12 for Wingdings and 11 for the other four, the one field of the five files
+that splits them that way -- and its high word is **`OS/2.usFirstCharIndex`'s
+high byte**, `0xf0` for the two faces whose characters start at `0xf020`. Four
+things are observed and not explained, and an implementation copies them: 
+`dfType`'s `0x4083`, the font ordinal of nought, a `0xc3` byte at `0x200` in
+what is otherwise padding, and four bytes, `10 03 01 01`, after the copyright
+string's terminator -- the same in every recording, and so most likely left
+over in the buffer it was built in. Only `fHidden = 1` was recorded, so
+`dfType`'s `0x4000` may be that flag.
+
+The DOS stub is Microsoft's own, message and all -- *This is a TrueType
+font, not a program.* -- followed by the signature `Kiesa`. The NE header's
+offsets all chain from three strings: the resident name (the `.TTF`'s base
+name) takes its length plus six bytes, the imported name (the file name) its
+length plus one with a length byte of the same, the entry table two bytes,
+and the non-resident name, whose length byte is its length plus four, starts
+four bytes past the entry table. The file ends sixteen zero bytes after the
+directory's last string.
 
 #### Why it is written down here
 
 `stack` is an instrument and will stay one: its records are the scaler's own
 working memory and nothing on this side is meant to reproduce them. `fotmake`
 is different in kind. It records what a **documented API call** does, and a
-faithful Windows 3.1 would make these files; that it has no adapter today is a
-statement about this implementation and not about the record. The decode above
-is what an adapter would need.
+faithful Windows 3.1 would make these files. **It is implemented now**:
+`CreateScalableFontResource` builds the stub from the `.TTF` exactly as
+decoded above and writes it, and the replay rebuilds all five faces' stubs
+from the drive image's `.TTF` files -- 213 of 213 records, byte for byte.
+
+Replaying it turned up one thing in the harness: a recorded offset such as
+`+00e0` had been read as the number nought, in scientific notation. A probe
+writes its arguments with `wsprintf`, which never writes an exponent, so the
+argument splitter now leaves anything that only reads as a number with one as
+text.
 
 
 ### 8e. Replaying the band recordings, which was supposed to be vacuous
@@ -18124,9 +18144,12 @@ rules are the display driver's:
   a request of 550 or more, `13a9`), it writes the `TEXTXFORM` it hands the
   driver with `txfWeight` the face's weight **plus 300** -- `0x12c` -- and at
   two of the three sites also sets `txfAccelerator`'s `0x200`
-  (`TC_EA_DOUBLE`) and adds one to `txfOverhang`; the third does those two
-  only when a flag at `[bp-0x12]` lacks `0x200`, which is not identified yet.
-  So a request at 600 reaches the driver as 700 over a face of 400.
+  (`TC_EA_DOUBLE`) and adds one to `txfOverhang`; the third, for a strike
+  the device realises, does those two only when the device's `TEXTCAPS` lacks
+  `TC_EA_DOUBLE` -- `[bp-0x12]` is loaded from `[si+0x22]` of the device's
+  `GDIINFO` at `0643`, the same field `ExtTextOut` masks with and the same
+  routine tests for `TC_RA_ABLE` at `064f`. So a request at 600 reaches the
+  driver as 700 over a face of 400.
 - **`VGA.DRV`'s `StrBlt` smears, in the build that runs.** Windows in
   enhanced mode uses the 386 build (seg2); the 286 build (seg3) is the
   easier read and the wrong one, since it only takes 2.0 fonts. Both set a
