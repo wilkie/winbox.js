@@ -18344,6 +18344,30 @@ The 48 left were three more places the resolutions' ratio enters, all read:
 
 With the three, `rotstyle` on the Hercules is 190 of 190.
 
+**What `GetTextExtent` adds for a bold GDI draws itself.** seg1 `3cf3`-`3d08`
+masks the text transform's effects with the device's `TEXTCAPS` after the
+widths are summed, and for what is left adds `count + 1` for a double weight
+and half the cell less one for a slant. `oracle/probes/simext.c` asks
+`GetTextExtent` alone of four faces at two cells, plain, smeared and slanted,
+upright and at ninety degrees, over "A", "AB", "lll" and "WAWA", on both
+displays: 192 records each.
+
+Upright the rule was already in `LogicalFont.measure`, found in the `font`
+sweep as a Hercules's one extra pixel. The VGA's `TEXTCAPS` has
+`TC_EA_DOUBLE`, so the mask leaves nothing and the pixel a character is
+inside the widths (`6b73`); the Hercules's has not, so the widths are plain
+and `count + 1` comes after. The mask here is the device's alone, with no
+test for a turn -- unlike `ExtTextOut`'s -- so a turned bold on a VGA adds
+nothing either, which the records agree with.
+
+Turned on the Hercules, the order matters: the `count + 1` is added after
+`6a65` has scaled the sum by the baseline's step, not before. A turned smeared
+string measures exactly its plain turned length plus `count + 1` -- 9 and 11
+for "A", 19 and 22 for "AB", 48 and 53 for "WAWA" -- and scaling the charged
+sum instead was a pixel or two short on 28 of the 32. The alignment's width is the
+same `GetTextExtent`, so it follows. With it both displays are 192 of 192;
+the Symbol slants agreed from the start.
+
 That closes `rotstyle`: **190 of 190**. `smearrun` and `smearmod` are 640 of 640
 each, and the glyph and style corpora the single-glyph rule came from are
 unchanged.

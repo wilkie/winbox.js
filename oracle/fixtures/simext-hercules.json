@@ -1,0 +1,1166 @@
+{
+  "probe": "simext",
+  "display": "hercules",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "hercules",
+    "displayDescription": "Hercules, 720x348, monochrome"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"A\"",
+      "result": "width=11,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"A\"",
+      "result": "width=13,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"A\"",
+      "result": "width=11,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"AB\"",
+      "result": "width=22,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"AB\"",
+      "result": "width=25,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"AB\"",
+      "result": "width=22,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"lll\"",
+      "result": "width=9,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"lll\"",
+      "result": "width=13,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"lll\"",
+      "result": "width=12,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"WAWA\"",
+      "result": "width=56,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"WAWA\"",
+      "result": "width=61,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"WAWA\"",
+      "result": "width=56,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"A\"",
+      "result": "width=9,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"A\"",
+      "result": "width=11,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"A\"",
+      "result": "width=9,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"AB\"",
+      "result": "width=19,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"AB\"",
+      "result": "width=22,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"AB\"",
+      "result": "width=19,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"lll\"",
+      "result": "width=9,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"lll\"",
+      "result": "width=13,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"lll\"",
+      "result": "width=11,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"WAWA\"",
+      "result": "width=48,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"WAWA\"",
+      "result": "width=53,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=16,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"WAWA\"",
+      "result": "width=46,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"A\"",
+      "result": "width=19,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"A\"",
+      "result": "width=21,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"A\"",
+      "result": "width=18,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"AB\"",
+      "result": "width=38,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"AB\"",
+      "result": "width=41,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"AB\"",
+      "result": "width=36,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"lll\"",
+      "result": "width=18,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"lll\"",
+      "result": "width=22,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"lll\"",
+      "result": "width=18,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"WAWA\"",
+      "result": "width=94,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"WAWA\"",
+      "result": "width=99,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"WAWA\"",
+      "result": "width=86,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"A\"",
+      "result": "width=14,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"A\"",
+      "result": "width=16,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"A\"",
+      "result": "width=14,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"AB\"",
+      "result": "width=28,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"AB\"",
+      "result": "width=31,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"AB\"",
+      "result": "width=28,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"lll\"",
+      "result": "width=13,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"lll\"",
+      "result": "width=17,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"lll\"",
+      "result": "width=13,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"WAWA\"",
+      "result": "width=70,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"WAWA\"",
+      "result": "width=75,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Arial\",h=24,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"WAWA\"",
+      "result": "width=69,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"A\"",
+      "result": "width=13,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"A\"",
+      "result": "width=15,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"A\"",
+      "result": "width=11,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"AB\"",
+      "result": "width=25,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"AB\"",
+      "result": "width=28,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"AB\"",
+      "result": "width=23,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"lll\"",
+      "result": "width=12,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"lll\"",
+      "result": "width=16,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"lll\"",
+      "result": "width=15,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"WAWA\"",
+      "result": "width=62,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"WAWA\"",
+      "result": "width=67,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"WAWA\"",
+      "result": "width=54,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"A\"",
+      "result": "width=10,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"A\"",
+      "result": "width=12,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"A\"",
+      "result": "width=8,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"AB\"",
+      "result": "width=20,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"AB\"",
+      "result": "width=23,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"AB\"",
+      "result": "width=17,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"lll\"",
+      "result": "width=13,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"lll\"",
+      "result": "width=17,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"lll\"",
+      "result": "width=13,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"WAWA\"",
+      "result": "width=48,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"WAWA\"",
+      "result": "width=53,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=16,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"WAWA\"",
+      "result": "width=40,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"A\"",
+      "result": "width=19,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"A\"",
+      "result": "width=21,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"A\"",
+      "result": "width=17,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"AB\"",
+      "result": "width=38,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"AB\"",
+      "result": "width=41,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"AB\"",
+      "result": "width=34,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"lll\"",
+      "result": "width=24,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"lll\"",
+      "result": "width=28,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"lll\"",
+      "result": "width=24,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"WAWA\"",
+      "result": "width=90,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"WAWA\"",
+      "result": "width=95,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"WAWA\"",
+      "result": "width=78,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"A\"",
+      "result": "width=14,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"A\"",
+      "result": "width=16,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"A\"",
+      "result": "width=12,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"AB\"",
+      "result": "width=28,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"AB\"",
+      "result": "width=31,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"AB\"",
+      "result": "width=25,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"lll\"",
+      "result": "width=18,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"lll\"",
+      "result": "width=22,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"lll\"",
+      "result": "width=18,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"WAWA\"",
+      "result": "width=67,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"WAWA\"",
+      "result": "width=72,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Times New Roman\",h=24,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"WAWA\"",
+      "result": "width=58,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"A\"",
+      "result": "width=10,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"A\"",
+      "result": "width=12,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"A\"",
+      "result": "width=10,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"AB\"",
+      "result": "width=20,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"AB\"",
+      "result": "width=23,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"AB\"",
+      "result": "width=20,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"lll\"",
+      "result": "width=30,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"lll\"",
+      "result": "width=34,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"lll\"",
+      "result": "width=30,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"WAWA\"",
+      "result": "width=40,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"WAWA\"",
+      "result": "width=45,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"WAWA\"",
+      "result": "width=40,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"A\"",
+      "result": "width=8,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"A\"",
+      "result": "width=10,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"A\"",
+      "result": "width=8,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"AB\"",
+      "result": "width=16,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"AB\"",
+      "result": "width=19,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"AB\"",
+      "result": "width=16,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"lll\"",
+      "result": "width=24,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"lll\"",
+      "result": "width=28,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"lll\"",
+      "result": "width=24,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"WAWA\"",
+      "result": "width=33,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"WAWA\"",
+      "result": "width=38,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=16,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"WAWA\"",
+      "result": "width=33,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"A\"",
+      "result": "width=17,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"A\"",
+      "result": "width=19,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"A\"",
+      "result": "width=17,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"AB\"",
+      "result": "width=34,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"AB\"",
+      "result": "width=37,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"AB\"",
+      "result": "width=34,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"lll\"",
+      "result": "width=51,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"lll\"",
+      "result": "width=55,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"lll\"",
+      "result": "width=51,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=400,italic=0,esc=0,ori=0,charset=0,text=\"WAWA\"",
+      "result": "width=68,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=600,italic=0,esc=0,ori=0,charset=0,text=\"WAWA\"",
+      "result": "width=73,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=400,italic=1,esc=0,ori=0,charset=0,text=\"WAWA\"",
+      "result": "width=68,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"A\"",
+      "result": "width=12,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"A\"",
+      "result": "width=14,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"A\"",
+      "result": "width=12,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"AB\"",
+      "result": "width=25,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"AB\"",
+      "result": "width=28,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"AB\"",
+      "result": "width=25,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"lll\"",
+      "result": "width=38,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"lll\"",
+      "result": "width=42,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"lll\"",
+      "result": "width=38,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=400,italic=0,esc=900,ori=900,charset=0,text=\"WAWA\"",
+      "result": "width=51,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=600,italic=0,esc=900,ori=900,charset=0,text=\"WAWA\"",
+      "result": "width=56,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Courier New\",h=24,weight=400,italic=1,esc=900,ori=900,charset=0,text=\"WAWA\"",
+      "result": "width=51,height=23",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,esc=0,ori=0,charset=2,text=\"A\"",
+      "result": "width=9,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,esc=0,ori=0,charset=2,text=\"A\"",
+      "result": "width=14,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,esc=0,ori=0,charset=2,text=\"A\"",
+      "result": "width=12,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,esc=0,ori=0,charset=2,text=\"AB\"",
+      "result": "width=18,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,esc=0,ori=0,charset=2,text=\"AB\"",
+      "result": "width=27,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,esc=0,ori=0,charset=2,text=\"AB\"",
+      "result": "width=23,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,esc=0,ori=0,charset=2,text=\"lll\"",
+      "result": "width=21,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,esc=0,ori=0,charset=2,text=\"lll\"",
+      "result": "width=31,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,esc=0,ori=0,charset=2,text=\"lll\"",
+      "result": "width=27,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,esc=0,ori=0,charset=2,text=\"WAWA\"",
+      "result": "width=38,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,esc=0,ori=0,charset=2,text=\"WAWA\"",
+      "result": "width=57,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,esc=0,ori=0,charset=2,text=\"WAWA\"",
+      "result": "width=50,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,esc=900,ori=900,charset=2,text=\"A\"",
+      "result": "width=9,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,esc=900,ori=900,charset=2,text=\"A\"",
+      "result": "width=11,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,esc=900,ori=900,charset=2,text=\"A\"",
+      "result": "width=9,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,esc=900,ori=900,charset=2,text=\"AB\"",
+      "result": "width=18,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,esc=900,ori=900,charset=2,text=\"AB\"",
+      "result": "width=21,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,esc=900,ori=900,charset=2,text=\"AB\"",
+      "result": "width=17,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,esc=900,ori=900,charset=2,text=\"lll\"",
+      "result": "width=20,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,esc=900,ori=900,charset=2,text=\"lll\"",
+      "result": "width=24,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,esc=900,ori=900,charset=2,text=\"lll\"",
+      "result": "width=20,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=400,italic=0,esc=900,ori=900,charset=2,text=\"WAWA\"",
+      "result": "width=39,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=700,italic=0,esc=900,ori=900,charset=2,text=\"WAWA\"",
+      "result": "width=44,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=16,weight=400,italic=1,esc=900,ori=900,charset=2,text=\"WAWA\"",
+      "result": "width=37,height=16",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,esc=0,ori=0,charset=2,text=\"A\"",
+      "result": "width=19,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,esc=0,ori=0,charset=2,text=\"A\"",
+      "result": "width=21,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,esc=0,ori=0,charset=2,text=\"A\"",
+      "result": "width=20,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,esc=0,ori=0,charset=2,text=\"AB\"",
+      "result": "width=37,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,esc=0,ori=0,charset=2,text=\"AB\"",
+      "result": "width=40,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,esc=0,ori=0,charset=2,text=\"AB\"",
+      "result": "width=38,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,esc=0,ori=0,charset=2,text=\"lll\"",
+      "result": "width=48,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,esc=0,ori=0,charset=2,text=\"lll\"",
+      "result": "width=52,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,esc=0,ori=0,charset=2,text=\"lll\"",
+      "result": "width=45,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,esc=0,ori=0,charset=2,text=\"WAWA\"",
+      "result": "width=78,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,esc=0,ori=0,charset=2,text=\"WAWA\"",
+      "result": "width=83,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,esc=0,ori=0,charset=2,text=\"WAWA\"",
+      "result": "width=82,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,esc=900,ori=900,charset=2,text=\"A\"",
+      "result": "width=14,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,esc=900,ori=900,charset=2,text=\"A\"",
+      "result": "width=16,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,esc=900,ori=900,charset=2,text=\"A\"",
+      "result": "width=15,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,esc=900,ori=900,charset=2,text=\"AB\"",
+      "result": "width=27,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,esc=900,ori=900,charset=2,text=\"AB\"",
+      "result": "width=30,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,esc=900,ori=900,charset=2,text=\"AB\"",
+      "result": "width=28,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,esc=900,ori=900,charset=2,text=\"lll\"",
+      "result": "width=36,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,esc=900,ori=900,charset=2,text=\"lll\"",
+      "result": "width=40,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,esc=900,ori=900,charset=2,text=\"lll\"",
+      "result": "width=33,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=400,italic=0,esc=900,ori=900,charset=2,text=\"WAWA\"",
+      "result": "width=58,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=700,italic=0,esc=900,ori=900,charset=2,text=\"WAWA\"",
+      "result": "width=63,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    },
+    {
+      "function": "sim extent",
+      "args": "\"Symbol\",h=24,weight=400,italic=1,esc=900,ori=900,charset=2,text=\"WAWA\"",
+      "result": "width=61,height=24",
+      "section": "the extent where GDI draws a bold or a slant itself"
+    }
+  ]
+}

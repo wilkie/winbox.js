@@ -544,7 +544,7 @@ export class Surface {
      * length and not the sum across the page: `ExtTextOut` asks for it
      * (`GDI.EXE` seg16 `0679` calls `GetTextExtent`) and halves it for
      * `TA_CENTER` (seg1 `3464`). On a square pixel they are the same. */
-    const width = runWidth ?? turnedLength(font, font.measure(text).width);
+    const width = runWidth ?? turnedLength(font, font.measure(text).width, [...String(text)].length);
     const across = this.textAlign & 6;
     const down = this.textAlign & 24;
 
@@ -2535,7 +2535,7 @@ export class Surface {
  * every angle and nothing changes, which is why GDI only asks where the two
  * resolutions differ.
  */
-export function turnedLength(font, width) {
+export function turnedLength(font, width, count = 0) {
   const style = font?.style ?? {};
   const H = style.horizontalRes ?? 96;
   const V = style.verticalRes ?? 96;
@@ -2543,6 +2543,19 @@ export function turnedLength(font, width) {
 
   if (!font?.outline || escapement === 0 || H === V) {
     return width;
+  }
+
+  /* Where GDI makes the bold itself -- a device without `TC_EA_DOUBLE` -- its
+   * `count + 1` is added after the sum has been scaled, not before
+   * (`GDI.EXE` seg1 `3cf3`-`3cfa`, after `6a65`). `LogicalFont.measure` has
+   * already charged it, so it comes off, and back on afterwards. **Recorded**
+   * by `simext` on a Hercules: a turned smeared string measures its plain
+   * length plus `count + 1`, 32 of 32, against 4 with the charge scaled. */
+  const simulated =
+    (style.weight ?? 0) > 550 && !style.faceBold && style.boldOverhang === 'always';
+
+  if (simulated && count > 0) {
+    return turnedLength(font, width - (count + 1)) + count + 1;
   }
 
   const radians = (escapement * Math.PI) / 1800;

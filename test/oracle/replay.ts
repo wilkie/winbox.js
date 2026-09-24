@@ -2335,6 +2335,17 @@ const ADAPTERS: Record<
       .join(',');
   },
 
+  /* `simext` asks only `GetTextExtent`, of plain, smeared and slanted
+   * strings upright and turned; the request is all in the arguments. */
+  'sim extent'(context, args) {
+    const fields = args.slice(0, -1).filter((field) => !/^text=/.test(String(field)));
+    const text = String(args.find((field) => /^text=/.test(String(field)))).replace(/^text="|"$/g, '');
+    const { hdc } = context.mappedFont(fields);
+    const extent = GetTextExtent.call(context, hdc, context.lpcstr(text), text.length);
+
+    return `width=${extent & 0xffff},height=${(extent >> 16) & 0xffff}`;
+  },
+
   'symbol extent'(context, args) {
     const { hdc } = context.mappedFont([
       'Symbol',
