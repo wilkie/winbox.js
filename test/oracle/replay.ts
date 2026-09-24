@@ -723,6 +723,58 @@ export class Context {
     return this.handles.resolve(handle);
   }
 
+  /** One `rotsq` draw: Symbol, an angle, a pen and a string. */
+  drawSquare(args: (string | number)[]) {
+    if (!this.fonts) {
+      throw new NeedsDrive('the fonts live on the drive image; run the oracle pipeline');
+    }
+
+    const fields: Record<string, string> = {};
+
+    for (const field of args) {
+      const [name, value] = String(field).split('=');
+
+      if (value !== undefined) {
+        fields[name] = value;
+      }
+    }
+
+    const handle = CreateFontIndirect.call(this, {
+      lfHeight: Number(fields.h ?? 0),
+      lfWidth: 0,
+      lfWeight: 400,
+      lfItalic: 0,
+      lfUnderline: 0,
+      lfStrikeOut: 0,
+      lfCharSet: 2,
+      lfPitchAndFamily: 0,
+      lfEscapement: Number(fields.esc ?? 0),
+      lfOrientation: Number(fields.esc ?? 0),
+      lfFaceName: 'Symbol',
+    });
+
+    if (!handle) {
+      throw new Unimplemented('no font mapped');
+    }
+
+    const [penX, penY] = String(fields.pen ?? '32:32').split(':').map(Number);
+    const surface: any = Surface.offscreen(64, 64);
+
+    surface.font = this.handles.resolve(handle);
+    surface.backcolor = new Color(0xff, 0xff, 0xff);
+    surface.backMode = 1;
+    surface.context.lineTie = this.display.lineTie;
+    surface.context.clipCaps = this.display.clipCaps;
+    surface.boldOverhang = this.display.boldOverhang;
+
+    surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
+    surface.fillRect(0, 0, 64, 64);
+
+    surface.fillText(penX, penY, String(fields.text ?? 'A').replace(/^"|"$/g, ''));
+
+    return this.readCell(surface, 64, 64);
+  }
+
   drawTurned(font: any) {
     const surface: any = Surface.offscreen(64, 64);
 
@@ -1639,6 +1691,113 @@ const ADAPTERS: Record<
     );
   },
 
+  /* `rotsq` draws the `rot-square` fabrication -- one plain square, no hint
+   * program -- at a pen of its own choosing, so the ink box at an angle is the
+   * transform with nothing hinted or curved in the way. 8u.
+   */
+  'square ink'(context, args) {
+    return context.drawSquare(args);
+  },
+
+  'square box'(context, args) {
+    return turnedBox(context.drawSquare(args));
+  },
+
+  /* `rotpen` draws one, two and three squares on a canvas a hundred and sixty
+   * square with the pen in the middle, and writes the size, the ascent, the
+   * ink box and the box's rows. 8u.
+   */
+  'pen ink'(context, args) {
+    const fields: Record<string, string> = {};
+
+    for (const field of args) {
+      const [name, value] = String(field).split('=');
+
+      if (value !== undefined) {
+        fields[name] = value;
+      }
+    }
+
+    const handle = CreateFontIndirect.call(context, {
+      lfHeight: Number(fields.h ?? 0),
+      lfWidth: 0,
+      lfWeight: 400,
+      lfItalic: 0,
+      lfUnderline: 0,
+      lfStrikeOut: 0,
+      lfCharSet: 2,
+      lfPitchAndFamily: 0,
+      lfEscapement: Number(fields.esc ?? 0),
+      lfOrientation: Number(fields.esc ?? 0),
+      lfFaceName: 'Symbol',
+    });
+
+    if (!handle) {
+      throw new Unimplemented('no font mapped');
+    }
+
+    const font = context.handles.resolve(handle);
+    const surface: any = Surface.offscreen(160, 160);
+
+    surface.font = font;
+    surface.backcolor = new Color(0xff, 0xff, 0xff);
+    surface.backMode = 1;
+    surface.context.lineTie = context.display.lineTie;
+    surface.context.clipCaps = context.display.clipCaps;
+    surface.boldOverhang = context.display.boldOverhang;
+    surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
+    surface.fillRect(0, 0, 160, 160);
+    surface.fillText(80, 80, String(fields.text ?? 'A').replace(/^"|"$/g, ''));
+
+    const bytes = Buffer.from(context.readCell(surface, 160, 160), 'hex');
+    const ink = (column: number, row: number) => !(bytes[row * 20 + (column >> 3)] & (0x80 >> (column & 7)));
+
+    let left = 160;
+    let top = 160;
+    let right = -1;
+    let bottom = -1;
+
+    for (let row = 0; row < 160; row++) {
+      for (let column = 0; column < 160; column++) {
+        if (ink(column, row)) {
+          left = Math.min(left, column);
+          right = Math.max(right, column);
+          top = Math.min(top, row);
+          bottom = Math.max(bottom, row);
+        }
+      }
+    }
+
+    const rows: string[] = [];
+
+    for (let row = top; right >= 0 && row <= bottom; row++) {
+      let text = '';
+
+      for (let column = left; column <= right; column += 4) {
+        let nibble = 0;
+
+        for (let bit = 0; bit < 4; bit++) {
+          nibble = (nibble << 1) | (column + bit <= right && ink(column + bit, row) ? 1 : 0);
+        }
+
+        text += nibble.toString(16);
+      }
+
+      rows.push(text);
+    }
+
+    const tm: any = {};
+    const hdc = context.handles.allocate(new Surface({ getContext: () => ({}) }));
+
+    SelectObject.call(context, hdc, handle);
+    GetTextMetrics.call(context, hdc, tm);
+
+    return (
+      `ppem=${tm.tmHeight - tm.tmInternalLeading},ascent=${tm.tmAscent},` +
+      `box=${left}:${top}:${right}:${bottom},rows=${rows.join('/')}`
+    );
+  },
+
   /* And the pixels of the same draw: the ink box for reading, the bitmap for
    * comparing. 8u.
    */
@@ -2419,30 +2578,29 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  /* Text turned to an angle that is neither a right angle nor a whole turn.
+  /* Text turned to an oblique angle, where a tip or a corner is a pixel out.
    *
-   * 8u closed the size, the direction, the reduction and the right angles. An
-   * oblique angle is drawn in the right place -- the ink box is within a pixel
-   * everywhere and exact at many angles -- and the ink inside it is not. 29 of
-   * `rotate`'s 107 draws, in each of its two pixel functions, and 31 of
-   * `rotangle`'s 96 boxes: in both, exactly the records whose reduced angle is
-   * not a multiple of nine hundred.
+   * 8u closed the transform: the outline goes through a matrix of whole-pixel
+   * entries, the glyphs are placed along the exact angle and rounded, and the
+   * font's own `prep`, told the glyph is rotated, switches fitting off and
+   * leaves stubs to be rescued. That took `rotate`'s draws from 78 of 107 to
+   * 88 and its boxes to 91, and `rotangle`'s oblique boxes from 56 to 93 of 96.
    *
-   * What is left is the scan converter rather than the transform, and the
-   * instrument that says so is recorded. `rotsq` draws the `rot-square`
-   * fabrication -- Symbol with its letters replaced by one plain square, no
-   * hint program -- at every ten degrees, a tenth of a degree at a time across
-   * a half right angle, and with the pen walked across a pixel. Against that,
-   * a rotated quad filled by pixel centres puts 56 of 95 boxes exactly right
-   * and only 14 of the ink counts: Windows inks four or five more pixels than
-   * the square's own area at the angles between the axes, in a band around its
-   * corners, and inks pixels whose centres lie outside the shape. Rounding the
-   * turned origin to a whole pixel is refused by that instrument -- 52 boxes
-   * against 71 unrounded, floored 13 and ceiled 27.
+   * What is left is the scan converter's arithmetic rather than the geometry.
+   * On `rot-square`, where there is no program and no curve to blame, 70 of 91
+   * oblique squares are exact and every other one is out by a pixel at a tip
+   * or a corner, where the edge passes within a sixty-fourth or two of a pixel
+   * centre -- the right-hand tip at 43.0 to 43.5 degrees is lit a row high six
+   * times, because the rounded matrix is the same across that range. Where the
+   * scaler puts its intermediate roundings is refused as the cause: scaling by
+   * the matrix's stretch and turning by the unit rotation is 70 again, and
+   * rounding to pixels before the turn as well as after is 73.
+   *
+   * `test/raster/turned_squares_test.ts` keeps those counts as a ratchet.
    */
-  'rotate:rotate ink': 'oblique angles: the ink inside a correctly placed box',
-  'rotate:rotate box': 'oblique angles: the ink inside a correctly placed box',
-  'rotangle:angle box': 'oblique angles: the ink inside a correctly placed box',
+  'rotate:rotate ink': 'oblique angles: a tip or corner a pixel out, at the scan converter',
+  'rotate:rotate box': 'oblique angles: a tip or corner a pixel out, at the scan converter',
+  'rotangle:angle box': 'oblique angles: a tip or corner a pixel out, at the scan converter',
 
   /* Which face answers a turned request at a cell too small for an outline.
    *

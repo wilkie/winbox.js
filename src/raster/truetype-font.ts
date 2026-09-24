@@ -1049,7 +1049,7 @@ export class TrueTypeFont {
    * @param {number} ppem - The size to fit to.
    * @returns {Object} The contours and whether they were fitted.
    */
-  hintedOutline(glyph, ppem, roundPhantoms = true, stretch = 1) {
+  hintedOutline(glyph, ppem, roundPhantoms = true, stretch = 1, rotated = false) {
     const contours = this.outlineOf(glyph);
 
     if (!contours.length || !ppem) {
@@ -1085,7 +1085,13 @@ export class TrueTypeFont {
      * above forty-four pixels per em, Arial above sixteen.
      */
     if (!program) {
-      return { contours, hinted: false, scaled: false, dropout: this.prepDropout(ppem, stretch) };
+      return {
+        contours,
+        hinted: false,
+        scaled: false,
+        dropout: this.prepDropout(ppem, stretch, rotated),
+        scanType: this.prepScanType(ppem, stretch, rotated),
+      };
     }
 
     try {
@@ -1103,7 +1109,7 @@ export class TrueTypeFont {
        */
       const down = half === 1 ? ppem : Math.round(ppem / 2);
       const wide = half === 1 ? stretch : Math.round(Math.round(ppem * stretch) / 2) / down;
-      const hinter = this.hinterAt(down, roundPhantoms, wide);
+      const hinter = this.hinterAt(down, roundPhantoms, wide, rotated);
 
       /* A composite is assembled in pixels rather than in design units, so it
        * is put together with the hinter's own scaling and handed over already
@@ -1148,6 +1154,7 @@ export class TrueTypeFont {
         scaled: true,
         advance: hinter.advanceExact * half,
         dropout: hinter.dropout,
+        scanType: hinter.scanType ?? 0,
       };
     } catch {
       return { contours, hinted: false, scaled: false };
@@ -1247,13 +1254,34 @@ export class TrueTypeFont {
    * @returns {boolean|undefined} Whether dropout control is on, or undefined
    *                              where the font has no answer.
    */
-  prepDropout(ppem, stretch = 1) {
+  /**
+   * What `prep` alone left `SCANTYPE` at, for a glyph with no program of its
+   * own -- nought if `prep` never set it, which is the rule that keeps stubs.
+   * Undefined where the font has no answer, so the caller keeps its default.
+   */
+  prepScanType(ppem, stretch = 1, rotated = false) {
     if (!ppem) {
       return undefined;
     }
 
     try {
-      return this.hinterAt(ppem, true, stretch).prepDropout;
+      const hinter: any = this.hinterAt(ppem, true, stretch, rotated);
+
+      hinter.prepare();
+
+      return (hinter._prepScan ? hinter._prepScan.type : hinter.scanType) ?? 0;
+    } catch {
+      return undefined;
+    }
+  }
+
+  prepDropout(ppem, stretch = 1, rotated = false) {
+    if (!ppem) {
+      return undefined;
+    }
+
+    try {
+      return this.hinterAt(ppem, true, stretch, rotated).prepDropout;
     } catch {
       return undefined;
     }
@@ -1292,16 +1320,17 @@ export class TrueTypeFont {
     return Math.round((this.boundingRight * across) / this.unitsPerEm) > 256;
   }
 
-  hinterAt(ppem, roundPhantoms = true, stretch = 1) {
+  hinterAt(ppem, roundPhantoms = true, stretch = 1, rotated = false) {
     this._hinters = this._hinters ?? new Map();
 
     /* The unstretched key is the number itself, which is what every other
      * lookup by size uses; a stretched hinter is its own entry. */
     const square = roundPhantoms ? ppem : `${ppem}-unrounded`;
-    const key = stretch === 1 ? square : `${square}*${stretch}`;
+    const upright = stretch === 1 ? square : `${square}*${stretch}`;
+    const key = rotated ? `${upright}/turned` : upright;
 
     if (!this._hinters.has(key)) {
-      this._hinters.set(key, new Hinter(this, ppem, roundPhantoms, stretch));
+      this._hinters.set(key, new Hinter(this, ppem, roundPhantoms, stretch, rotated));
     }
 
     return this._hinters.get(key);

@@ -17760,44 +17760,112 @@ Serif at every angle. What the penalty *is* wants the mapper swept with an
 escapement the way `font` sweeps it without one, and that recording does not
 exist yet.
 
-#### Where this stops: the ink inside a correct box
+#### The oblique angles, read off a square
 
-Right angles and whole turns are exact. An oblique angle is drawn in the right
-**place** -- the ink box is within a pixel everywhere and exact at many angles
--- and the ink inside it is not. 29 of `rotate`'s 107 draws in each of its two
-pixel functions, and 31 of `rotangle`'s 96 boxes: in both, exactly the records
-whose reduced angle is not a multiple of nine hundred.
+Right angles and whole turns are exact. An oblique angle drew in the right
+*place* and inked it wrongly, and a letter cannot say which of three things is
+wrong -- where the origin lands, how the outline is carried through the
+transform, or what the scan converter does with edges no longer on the grid.
+So the instrument is a square. `oracle/probes/rotsq.c` draws the `rot-square`
+fabrication -- Symbol with every letter replaced by one plain square of known
+design coordinates and no hint program -- at every ten degrees at two sizes, a
+tenth of a degree at a time across half a right angle, and with the pen walked
+across a pixel: 286 records. `oracle/probes/rotpen.c` draws the same square as
+one, two and three glyphs at every five degrees off the axes at four sizes, on a
+canvas large enough that nothing leaves it: 816 records. Both live under
+`fabricated/` and are kept as a ratchet by `test/raster/turned_squares_test.ts`.
 
-Two readings were refused on the way. Drawing an oblique angle from the **raw**
-outline, on the theory that a turn that does not carry the grid onto the grid
-cannot be hinted, is 1,490 wrong pixels against 1,544 -- no answer either way,
-and a tenth of a degree settles it outright: Windows draws Times at an
-escapement of 1 exactly as it draws it at a whole turn, and a whole turn is the
-hinted upright shape. Hinting stays on. Rounding the turned origin to a whole
-pixel is refused by the instrument below: 52 boxes against 71 unrounded,
-floored 13 and ceiled 27.
+Four findings came out of them, each one separating something the others could
+not.
 
-**And the instrument for the rest is recorded.** A letter cannot say which of
-three things is wrong -- where the origin lands, how the outline is carried
-through the transform, or what the scan converter does with edges that are no
-longer on the grid -- so `oracle/probes/rotsq.c` draws the `rot-square`
-fabrication, Symbol with its letters replaced by one plain square of known
-design coordinates and no hint program. Its ink box at an angle *is* the
-transform, with nothing hinted, curved or bearing-shifted in the way, and it is
-swept every ten degrees at two sizes, a tenth of a degree at a time across a
-half right angle, and with the pen walked across a pixel. 286 records.
+**The ink is piecewise constant in the angle.** Across 43.0 to 44.6 degrees
+Windows draws one bitmap, ink for ink, then another from 44.7 to 45.3, then a
+third from 45.4. An exactly rotated square eight pixels from its origin would
+have its corners move a fifth of a pixel across the first range. The steps are
+symmetric about forty-five degrees and fall exactly where twenty-six times the
+cosine and twenty-six times the sine cross a half -- and at that size twenty-six
+is the square's pixels per em.
 
-Against that square, a rotated quad filled by pixel centres puts **56 of 95
-boxes exactly right and only 14 of the ink counts**. The placement is right --
-at a right angle it is exact to the column, and the corners predict the
-recorded box from the design coordinates directly. What is wrong is the ink:
-**Windows inks four or five more pixels than the square's own area** at the
-angles between the axes, in a band around the corners, including pixels whose
-centres lie outside the shape. At fifty degrees the recorded diamond is thirty
-pixels where the area is twenty-six, and the four it has over are at the tips
-and the corners.
+> **The outline goes through a matrix whose entries are whole pixels**: the
+> size times the cosine and the size times the sine, each rounded, and not
+> normalised afterwards. At half a right angle and twenty-six per em the entries
+> are eighteen and eighteen, and the glyph is turned *and* drawn 25.46 pixels to
+> the em.
 
-So what is left of turned text is the scan converter and not the transform.
+70 of the 91 oblique squares are exact with it, against 15 for the exact
+rotation and 21 for the rounded pair normalised back to a unit. It also explains
+two things from `rotangle` that were written down last time as puzzles. Times at
+an escapement of one draws exactly what a whole turn draws, because at fifteen
+per em a tenth of a degree rounds the sine entry to nothing and the matrix *is*
+the identity. And Arial at twenty-nine per em changes at one degree and not at
+half of one, because that is where twenty-nine times the sine crosses a half.
+
+**The fonts switch fitting off themselves.** The scaler's source is on disk and
+says what `GETINFO`'s rotated bit means: a transform that is not a multiple of a
+right angle. Every installed family's `prep` asks it -- selector two, once -- and
+told yes, all four answer the same way:
+
+| | upright | rotated |
+| --- | --- | --- |
+| grid-fitting (`INSTCTRL`) | on | **off** |
+| `SCANCTRL` | Arial 0x111, Times 0x17c, Courier 0x12c, Symbol 0x1ff | **0x1ff** |
+| `SCANTYPE` | 1, stubs excluded | **never set**: 0, stubs rescued |
+
+So a rotated glyph is drawn from the scaled outline, with dropout control on at
+every size and the ends of strokes rescued -- and the extra ink at the square's
+tips, four or five pixels more than its own area at the angles between the axes,
+is that rescue. Nothing here was chosen; the flag is passed and the font's own
+program decides. Whether a glyph is rotated is asked of the *rounded* matrix,
+which is why a tenth of a degree is not.
+
+This retracts a claim made last time: that a turned glyph is still fitted,
+because an escapement of one draws what a whole turn draws. The observation was
+right and the reason was the matrix, not the angle. Stubs are no longer spared
+by a rule of this side's either -- the scan converter reads the `SCANTYPE` the
+font left.
+
+**The glyphs are placed along the exact angle, not the rounded one.** The
+matrix is the outline's; where each glyph goes is worked out separately. The
+pen is carried to the baseline by the ascent, and each glyph from there by the
+advances so far, and each of those two carries is rounded to a whole pixel.
+Symbol cannot tell the two angles apart -- its ascent is its pixel size -- and
+Arial, Times and Courier can: carried along the rounded matrix the letters are
+474 wrong pixels, along the exact angle 234.
+
+`rotpen` settles the walk. Rounding every advance as it is taken puts 141 of its
+272 triples right; carrying from the unrounded baseline origin, 131 of the pairs
+and 84 of the triples. The last seven disagreements were all at 30, 120, 150 and
+330 degrees, where a sine or a cosine is exactly a half and an odd advance lands
+on half a pixel. A double's sine of thirty degrees is a hair under a half and
+settles those ties by accident. Taking the trigonometry in sixteen-dot-sixteen,
+where it is a half, and rounding a half away from nought settles them all:
+
+> **Every one of `rotpen`'s 816 records that disagrees does so in its first
+> square alone** -- 236 of 272 for one square, for two and for three. The walk is
+> exact; what is left is the shape of a single glyph.
+
+**And the advance is the one the glyph steps by upright.** The design advance
+scaled and left fractional, which is what an unfitted glyph would naturally
+carry, is refused: 768 wrong pixels in the letters and 32 of `rotangle`'s 40
+oblique boxes, against 234 and 37.
+
+#### Where it stops now: a sixty-fourth from a pixel centre
+
+With all four, `rotate` is 88 of its 107 draws and 91 of its boxes, and
+`rotangle`'s oblique boxes are 93 of 96. Every square that still disagrees is
+out by a pixel at a tip or a corner, where the edge passes within a sixty-fourth
+or two of a pixel centre: at 43.0 to 43.5 degrees the right-hand tip is lit a
+row high, six times over, because the rounded matrix does not change across
+that range. That is the scan converter's own arithmetic -- the line walk and its
+rounding -- and not the transform's. Where the scaler puts its intermediate
+roundings is refused as the cause: scaling by the matrix's stretch and turning
+by the unit rotation is 70 of 91 again, and rounding to sixty-fourths before the
+turn as well as after is 73.
+
+One thing is known and not closed: at a cell of sixteen this implementation
+still answers a turned Symbol request with the strike where Windows uses the
+outline -- the mapper's gap from `rotsize`, above -- so the instruments replay
+with Symbol's strikes set aside.
 
 ### 8p. Where the text lands, which nothing had ever moved
 

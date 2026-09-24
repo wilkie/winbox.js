@@ -334,9 +334,10 @@ export class Hinter {
    *                                  not. Only the comparison against that
    *                                  table wants it off.
    */
-  constructor(font, ppem, roundPhantoms = true, stretch = 1) {
+  constructor(font, ppem, roundPhantoms = true, stretch = 1, rotated = false) {
     this.font = font;
     this.ppem = ppem;
+    this.rotated = rotated;
     this.roundPhantoms = roundPhantoms;
     this.scale = ppem / font.unitsPerEm;
 
@@ -1990,8 +1991,14 @@ export class Hinter {
 
         let answer = 0;
 
-        /* Bit 0 asks for the scaler's version, and nothing here rotates or
-         * stretches, so the other bits stay clear.
+        /* Bit 0 asks for the scaler's version, and bit 1 whether the glyph is
+         * rotated -- by a transform that is not a multiple of a right angle,
+         * which is the scaler's own `non90DegreeTransformation`. Nothing here
+         * stretches, so that bit stays clear.
+         *
+         * Every installed family's `prep` asks the second, once, and all four
+         * answer a yes the same way: grid-fitting off, dropout control on at
+         * every size, and no `SCANTYPE` set. See FONTS.md 8u.
          *
          * Three is measured, not assumed: `getinfo-version` reports the reply
          * back through the advance and Windows answers three at every size
@@ -2005,6 +2012,10 @@ export class Hinter {
          */
         if (selector & 0x01) {
           answer |= 3;
+        }
+
+        if (selector & 0x02 && this.rotated) {
+          answer |= 0x100;
         }
 
         this.push(answer);

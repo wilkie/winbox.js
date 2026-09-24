@@ -919,8 +919,28 @@ export class Surface {
      */
     const turn = (this._font instanceof LogicalFont ? this._font.escapement : 0) || 0;
     const radians = (turn * Math.PI) / 1800;
-    const cosine = turn ? Math.cos(radians) : 1;
-    const sine = turn ? Math.sin(radians) : 0;
+
+    /* The outline goes through a matrix whose entries are **whole pixels**:
+     * the size times the cosine and the size times the sine, each rounded.
+     * Not normalised afterwards, so an oblique glyph is scaled as well as
+     * turned -- at half a right angle and twenty-six per em the entries are
+     * eighteen and eighteen, and the em comes out 25.46 pixels across.
+     *
+     * **Measured** on `rot-square`, one plain square with no program, whose
+     * box at an angle is the transform itself: 70 of its 91 oblique squares
+     * exact with the entries rounded, 15 with the exact rotation, 21 with
+     * the rounded pair normalised back to a unit. And it is what makes a small
+     * angle draw exactly what nought draws: at fifteen per em the sine entry
+     * of a tenth of a degree rounds to nothing, the matrix is the identity,
+     * and Windows's Times at an escapement of one is ink for ink its whole
+     * turn. Arial at twenty-nine per em changes at one degree and not at a
+     * half, which is where twenty-nine times the sine crosses a half. The
+     * steps in `rotsq`'s fine sweep, where the ink holds still across 43.0 to
+     * 44.6 degrees and moves at 44.7 and 45.4, are the same thing: the matrix
+     * is constant between them.
+     */
+    const cosine = turn ? Math.round(ppem * Math.cos(radians)) / ppem : 1;
+    const sine = turn ? Math.round(ppem * Math.sin(radians)) / ppem : 0;
 
     /* Screen `y` runs down and the angle runs counter-clockwise, so a right
      * angle sends the text up the cell. **Recorded**: Arial at a cell of
@@ -930,11 +950,40 @@ export class Surface {
     const turned = (px, py) =>
       turn === 0 ? [px, py] : [px * cosine - py * sine, px * sine + py * cosine];
 
-    /* The baseline's origin on the screen. Upright it is the pen carried down
-     * by the ascent; turned, that carry turns with the text.
+    /* Whether the scaler calls the glyph rotated, which is what `GETINFO`
+     * answers a font's `prep` with. The scaler's own flag is for a transform
+     * that is not a multiple of a right angle, and it is the *rounded* matrix
+     * that is asked: a tenth of a degree at fifteen per em is the identity and
+     * is not rotated. See `Hinter`'s `GETINFO` and FONTS.md 8u.
      */
-    const baseX = x + font.style.ascent * sine;
-    const baseY = y + font.style.ascent * cosine;
+    const rotated = sine !== 0 && cosine !== 0;
+
+    /* Where the glyphs go is worked out along the exact angle, not the rounded
+     * one, and in sixteen-dot-sixteen: the pen is carried to the baseline by
+     * the ascent, and each glyph from there by the advances so far, and each
+     * of those two carries is rounded to a whole pixel with a half going away
+     * from nought.
+     *
+     * **Measured.** Along the rounded matrix instead, the letters are 474
+     * wrong pixels against 234; from the unrounded baseline origin, `rotpen`'s
+     * pairs are 131 of 272 and its triples 84; with every advance rounded as
+     * it is taken, the triples are 141. The last seven of `rotpen`'s
+     * disagreements about the walk were all at thirty, a hundred and twenty,
+     * a hundred and fifty and three hundred and thirty degrees -- where a
+     * sine or a cosine is exactly a half, and an odd advance lands on half a
+     * pixel. A double's sine of thirty degrees is a hair under a half and
+     * decides those ties by accident; a sixteen-dot-sixteen one is a half, and
+     * rounding it away from nought is what Windows does. With that every one
+     * of `rotpen`'s 816 records that disagrees does so in its first square
+     * alone: 236 of 272 for one square, two and three alike.
+     */
+    const fixed = (value) => Math.round(value * 65536) / 65536;
+    const away = (value) => Math.sign(value) * Math.round(Math.abs(value));
+    const pathSine = fixed(Math.sin(radians));
+    const pathCosine = turn ? fixed(Math.cos(radians)) : 1;
+
+    const baseX = x + away(font.style.ascent * pathSine);
+    const baseY = y + away(font.style.ascent * pathCosine);
 
     let pen = x;
 
@@ -1016,17 +1065,24 @@ export class Surface {
               }))
             );
 
-      /* A turned glyph is still a fitted one.
+      /* A rotated glyph is not fitted, and it is the font that says so.
        *
-       * Drawing the oblique angles from the raw outline instead was tried and
-       * refused: 1,490 wrong pixels against 1,544, which is no answer either
-       * way -- and a tenth of a degree settles it outright. Windows draws
-       * Times at an escapement of 1 exactly as it draws it at a whole turn,
-       * ink for ink, and a whole turn is the hinted upright shape. 8u.
+       * Every installed family's `prep` asks `GETINFO` whether the glyph is
+       * rotated, and told yes, all four switch grid-fitting off, set dropout
+       * control on at every size and leave `SCANTYPE` unset. So a rotated
+       * hinter runs `prep` and nothing after it -- the path Courier New's own
+       * `INSTCTRL` already takes at eight per em -- and this passes it the
+       * flag and lets the font decide. 8u.
+       *
+       * An earlier reading said a turned glyph *is* fitted, on the evidence
+       * that an escapement of one draws what a whole turn draws. It does, and
+       * for another reason: at fifteen per em that tenth of a degree rounds to
+       * the identity matrix, which the scaler does not call rotated. Deciding
+       * it from the angle rather than the matrix is what was wrong.
        */
       const raw = italic
         ? { contours: outline.outlineOf(glyph), hinted: false, scaled: false }
-        : outline.hintedOutline(glyph, ppem, true, stretch);
+        : outline.hintedOutline(glyph, ppem, true, stretch, rotated);
 
       const fitted = raw.scaled ? raw : { ...raw, contours: across(raw.contours) };
       const contours = fitted.contours;
@@ -1253,18 +1309,18 @@ export class Surface {
             )
           : slanted;
 
-        /* Where that origin is. The offset from the pen to the baseline turns
-         * with the text -- at a right angle Arial's baseline origin is its
-         * ascent to the *right* of the pen rather than below it -- and the pen
-         * then walks along the turned baseline by the same advances.
+        /* Where that origin is: the baseline's, carried along the exact angle
+         * by the advances so far and rounded -- see `baseX`. At a right angle
+         * Arial's baseline origin is its ascent to the *right* of the pen
+         * rather than below it, and the carries are whole numbers already.
          */
         const along = pen - x + carried;
 
         const inked = fill(placed, {
           // Hinting hands back pixels; an unhinted outline is still in units.
           scale: turn ? 1 : fitted.scaled ? 1 : scale,
-          originX: turn ? baseX + along * cosine : pen + carried,
-          originY: turn ? baseY - along * sine : baseline,
+          originX: turn ? baseX + away(along * pathCosine) : pen + carried,
+          originY: turn ? baseY - away(along * pathSine) : baseline,
           width: this.width,
           height: this.height,
           /* What the font's own `SCANCTRL` asked for at this size, which is
@@ -1295,7 +1351,13 @@ export class Surface {
            * upright and, baked into the outline, rows 4 to 10; slanted, Windows
            * inks 3 to 10 again. See `FONTS.md` section 3.
            */
-          stubs: !italic,
+          /* And a stroke's end is spared the stub test wherever the font's own
+           * `SCANTYPE` is not the rule that excludes stubs. Every installed
+           * family asks for that rule, and only by a branch of `prep` a rotated
+           * glyph never takes: told the glyph is rotated, all four leave
+           * `SCANTYPE` at nought, simple dropout control *with* stubs, and the
+           * square's rescued corners are that. 8u. */
+          stubs: !italic && (fitted.scanType ?? 1) === 1,
           /* And the box is built from the sheared corners of the glyph's
            * bounding box rather than from the outline's own extent; see
            * `leanOf` and the note in `glyph-raster`. */
@@ -1403,6 +1465,10 @@ export class Surface {
        * rule they are in the right one.
        */
       /* And the gap `SetTextCharacterExtra` asks for after every character. */
+      /* The same advance a turned glyph steps by as an upright one. The
+       * design advance scaled and left fractional, which is what an unfitted
+       * glyph would carry, is refused: the letters are 768 wrong pixels with
+       * it and `rotangle` 32 of its 40 oblique boxes. Rounded, it is this. */
       pen += font.outlineAdvance(character.charCodeAt(0)) + this.charExtra;
     }
   }
