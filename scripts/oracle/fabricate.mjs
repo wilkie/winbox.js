@@ -7343,6 +7343,10 @@ export const FABRICATIONS = [
     describe: 'and further out again, where six per em really has it, to read the term off',
   }),
 
+  rotSquare('rot-square', {
+    describe: 'a plain square with no program, so an angle can be read off its corners',
+  }),
+
   dotBearing('dot-bearing', {
     describe: 'one outline, eleven side bearings, to see how the bearing enters the slanted box',
   }),
@@ -7935,6 +7939,57 @@ function dotBrink(name, { describe, source = 'SYMBOL.TTF' }) {
  * the glyph at all. Read slanted, it says how much of that positioning the
  * slant applies a second time.
  */
+/*
+ * A plain square, for reading the turn off rather than fitting it to a letter.
+ *
+ * 8u's oblique angles are within a pixel or two of Windows everywhere and
+ * exact nowhere, and a letter cannot say which of three things is wrong: where
+ * the glyph's origin lands, how the outline is carried through the transform,
+ * or what the scan converter does with a shape whose edges are no longer on
+ * the grid. A square with no program answers all three at once -- its four
+ * corners are known design coordinates, so the ink box at an angle *is* the
+ * transform, and there is nothing hinted, curved or bearing-shifted in the way.
+ *
+ * Square rather than a bar so that no angle is privileged, and placed away
+ * from the origin in both directions so that a rotation about the wrong point
+ * shows up as a different box rather than as the same one.
+ */
+function rotSquare(name, { describe, side = 400, x0 = 200, y0 = 300, source = 'SYMBOL.TTF' }) {
+  /* The letters `rotsq` asks for: the square itself, and a second glyph left
+   * as a narrow bar so a two-character run can say where the pen went. */
+  const RECORDED = 'ABKMWagjmy1';
+
+  return {
+    name,
+    from: source,
+    as: source,
+
+    describe,
+
+    edit: (bytes) => {
+      for (const character of RECORDED) {
+        const glyph = glyphFor(bytes, 0xf000 + character.charCodeAt(0));
+
+        setGlyph(bytes, null, glyph, {
+          width: x0 + side + 200,
+          height: y0 + side,
+          points: [
+            [x0, y0],
+            [x0, y0 + side],
+            [x0 + side, y0 + side],
+            [x0 + side, y0],
+          ],
+          program: [],
+        });
+
+        setBearing(bytes, glyph, x0);
+      }
+
+      return bytes;
+    },
+  };
+}
+
 function dotBearing(name, { describe, source = 'SYMBOL.TTF' }) {
   const SIDE = 100;
   // The letters the glyph probe asks Symbol for; see `dotPhase`.

@@ -17629,6 +17629,176 @@ away and the second clips nothing at all.
 
 `clipedge` is **178 of 178**.
 
+### 8u. `lfEscapement`, which was thrown away with a comment saying so
+
+`CreateFont` takes an angle in tenths of a degree and this implementation
+dropped it, with a note explaining that nothing here rotates text. Four things
+had to be measured before anything could:
+
+    which faces turn at all      a strike cannot be; an outline can
+    which way the angle goes     and from which axis
+    whether it is snapped        to a right angle, to a degree, or honoured
+    what the mapper does         a request that cannot be honoured may come
+                                 back as a different face
+
+`oracle/probes/rotate.c` sweeps six faces over thirteen angles at a cell of
+sixteen and Arial again at thirty-two, with the face and the metrics recorded
+beside the pixels: the pen sits in the middle of a sixty-four square cell so
+the text can leave it in any direction, and the mode is `TRANSPARENT` so the
+ink is the whole of what comes back. 321 records.
+
+#### `lfOrientation` is not read
+
+The two angles are swept apart -- an escapement of nought with an orientation
+of a right angle, the reverse, and each against a pair that agree -- and the
+drawing is decided by the **escapement alone**, ink for ink, in a face that
+turns and in one that cannot. Five pairs, identical bitmaps.
+
+#### A strike never turns, and is not asked to
+
+MS Sans Serif comes back as the same fifty-five pixels at all fourteen angles,
+and reports one set of metrics for every one of thirty-two. Not rotated, not
+refused, not substituted: drawn upright.
+
+So does a request the mapper answers with a strike for another reason.
+`Modern` and `Roman` name no outline family; both are answered by MS Sans
+Serif at every angle and drawn upright.
+
+#### An outline turns counter-clockwise, and the angle wraps
+
+Arial at a cell of sixteen, drawn from the middle of the cell, inks rows 15 to
+31 at nine hundred, columns 15 to 31 at eighteen hundred, and rows 32 to 48 at
+twenty-seven hundred. So a right angle sends the text **up** the cell: the
+angle runs counter-clockwise from the x axis.
+
+And it is reduced to a single turn. Minus nine hundred draws exactly what
+twenty-seven hundred draws, forty-five hundred exactly what nine hundred draws,
+minus eighteen hundred exactly what eighteen hundred draws -- the same bitmap,
+not merely the same box, in every face.
+
+The offset from the pen to the baseline **turns with the text**. Upright the
+baseline origin is the pen carried down by the ascent; at a right angle it is
+the ascent to the *right* of the pen, at a half turn the ascent above it. That
+is what puts the ink where the recording has it at all four quarters.
+
+#### A turned font is a different size, because `VDMX` is not consulted
+
+This is the finding the pixels could not have given. Turning the text moves the
+metrics:
+
+| | upright | turned |
+| --- | --- | --- |
+| Arial, cell 16 | 13 per em | 14 |
+| Times New Roman, cell 16 | 14 | 15 |
+| Courier New, cell 16 | 13 | 14 |
+| Arial, cell 32 | 27 | 29 |
+
+`VDMX` is a table of what the hinted outline came out as measured up and down
+the pixel grid, and a turned baseline does not run along it. So the turned size
+is computed from the design values instead, and `oracle/probes/rotsize.c` reads
+the rule off every cell from eight to seventy-two in three faces, upright and
+at a right angle side by side. 520 records.
+
+> The extent of a size is the ascender and descender **scaled and rounded
+> separately** and added. The size itself starts from the ratio of the cell to
+> the face's own extent, rounded; that estimate is walked **down** while the
+> extent it gives overflows the cell, and then **up** while the extent falls
+> *short* of the cell and the next size still fits.
+
+**260 of 260**, and every clause is paid for. Without the downward walk 41 are
+wrong; without the upward walk 23; walking up from an exact fit as well as a
+short one 6. The estimate alone is wrong 64 times and the estimate truncated
+rather than rounded 16. Rounding the *sum* of the two design values rather than
+each of them is wrong at Arial's twelve per em and fifteen others. And the
+upright search of 8f and 8r, run against this extent instead of the table's, is
+wrong 16 times -- the two rules are not the same rule with a different input.
+
+#### A whole turn is the same angle as nought and not the same drawing
+
+Thirty-six hundred is a full circle. It draws neither what nought draws nor
+what every other angle reports: Times at a cell of sixteen comes back a pixel
+**taller** than both, and so do Courier and Arial.
+
+`oracle/probes/rotangle.c` sweeps the field where that would show -- a tenth of
+a degree either side of nought and of a full turn, two and three turns, the
+negatives, and both ends of the sixteen-bit field. 192 records, and they fall
+into three groups and not two:
+
+| | Times, cell 16 |
+| --- | --- |
+| the field is nought | 14 per em, ascent 13, descent 3 |
+| every other angle | **15** per em, ascent 13, descent 3 |
+| 3600, 7200, 10800, -3600, -7200 | **15** per em, ascent 13, descent **4** |
+
+The second group includes a tenth of a degree either side of a whole turn, so
+the third is the whole turns exactly and nothing else.
+
+> **The two tests are made on two different values.** Whether to size the font
+> as a turned one is asked of the escapement **as the program gave it**, so a
+> whole turn is sized as turned. Whether to report the extent from the table is
+> asked of the **reduced** angle, so a whole turn reports `VDMX`'s row for the
+> turned size.
+
+Times at fifteen per em reads 13 over 4 in its own table, which is what a whole
+turn reports and not the 13 over 3 the scaling gives; Arial at twenty-nine
+reads 27 over 6, which is what a whole turn reports. Both exact.
+
+And it is not only the metrics. **Every record at a whole number of turns is
+pixel for pixel what the upright machinery draws at the turned size** -- same
+hinting, same advances, same placement, in all three functions. So a turn
+changes the size the font is realised at and, at an angle of nothing, changes
+nothing else.
+
+#### The mapper reads the escapement too
+
+Ten of `rotsize`'s 520 say so. At cells of eight, nine, ten and eleven a request
+for Arial upright is answered by Small Fonts or MS Serif, and the same request
+turned is answered by Arial. A strike cannot be turned, so a face that can wins
+where it would otherwise have lost -- and it is a penalty rather than a bar,
+because `Modern` and `Roman`, which name no outline family, still get MS Sans
+Serif at every angle. What the penalty *is* wants the mapper swept with an
+escapement the way `font` sweeps it without one, and that recording does not
+exist yet.
+
+#### Where this stops: the ink inside a correct box
+
+Right angles and whole turns are exact. An oblique angle is drawn in the right
+**place** -- the ink box is within a pixel everywhere and exact at many angles
+-- and the ink inside it is not. 29 of `rotate`'s 107 draws in each of its two
+pixel functions, and 31 of `rotangle`'s 96 boxes: in both, exactly the records
+whose reduced angle is not a multiple of nine hundred.
+
+Two readings were refused on the way. Drawing an oblique angle from the **raw**
+outline, on the theory that a turn that does not carry the grid onto the grid
+cannot be hinted, is 1,490 wrong pixels against 1,544 -- no answer either way,
+and a tenth of a degree settles it outright: Windows draws Times at an
+escapement of 1 exactly as it draws it at a whole turn, and a whole turn is the
+hinted upright shape. Hinting stays on. Rounding the turned origin to a whole
+pixel is refused by the instrument below: 52 boxes against 71 unrounded,
+floored 13 and ceiled 27.
+
+**And the instrument for the rest is recorded.** A letter cannot say which of
+three things is wrong -- where the origin lands, how the outline is carried
+through the transform, or what the scan converter does with edges that are no
+longer on the grid -- so `oracle/probes/rotsq.c` draws the `rot-square`
+fabrication, Symbol with its letters replaced by one plain square of known
+design coordinates and no hint program. Its ink box at an angle *is* the
+transform, with nothing hinted, curved or bearing-shifted in the way, and it is
+swept every ten degrees at two sizes, a tenth of a degree at a time across a
+half right angle, and with the pen walked across a pixel. 286 records.
+
+Against that square, a rotated quad filled by pixel centres puts **56 of 95
+boxes exactly right and only 14 of the ink counts**. The placement is right --
+at a right angle it is exact to the column, and the corners predict the
+recorded box from the design coordinates directly. What is wrong is the ink:
+**Windows inks four or five more pixels than the square's own area** at the
+angles between the axes, in a band around the corners, including pixels whose
+centres lie outside the shape. At fifty degrees the recorded diamond is thirty
+pixels where the area is twenty-six, and the four it has over are at the tips
+and the corners.
+
+So what is left of turned text is the scan converter and not the transform.
+
 ### 8p. Where the text lands, which nothing had ever moved
 
 `SetTextAlign` says what the point handed to `TextOut` means -- left, centre or

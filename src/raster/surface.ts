@@ -907,6 +907,35 @@ export class Surface {
     const bold = (style.weight ?? 0) > 550 && !style.faceBold;
     const italic = !!style.italic && !style.exactStyle;
 
+    /* The angle the baseline runs at, 8u.
+     *
+     * Reduced to a turn already, and a whole turn reduces to nothing -- which
+     * is measured rather than assumed. Every record `rotate` and `rotangle`
+     * hold at a whole number of turns, 3600 and 7200 and 10800 and the two
+     * negatives, is **pixel for pixel** what the upright machinery draws at
+     * the turned size: same hinting, same advances, same placement. So a turn
+     * changes the size the font is realised at and, at an angle of nothing,
+     * changes nothing else.
+     */
+    const turn = (this._font instanceof LogicalFont ? this._font.escapement : 0) || 0;
+    const radians = (turn * Math.PI) / 1800;
+    const cosine = turn ? Math.cos(radians) : 1;
+    const sine = turn ? Math.sin(radians) : 0;
+
+    /* Screen `y` runs down and the angle runs counter-clockwise, so a right
+     * angle sends the text up the cell. **Recorded**: Arial at a cell of
+     * sixteen drawn from the middle of a sixty-four square cell inks rows 15
+     * to 31 at 900, columns 15 to 31 at 1800, and rows 32 to 48 at 2700.
+     */
+    const turned = (px, py) =>
+      turn === 0 ? [px, py] : [px * cosine - py * sine, px * sine + py * cosine];
+
+    /* The baseline's origin on the screen. Upright it is the pen carried down
+     * by the ascent; turned, that carry turns with the text.
+     */
+    const baseX = x + font.style.ascent * sine;
+    const baseY = y + font.style.ascent * cosine;
+
     let pen = x;
 
     for (const character of String(text)) {
@@ -987,6 +1016,14 @@ export class Surface {
               }))
             );
 
+      /* A turned glyph is still a fitted one.
+       *
+       * Drawing the oblique angles from the raw outline instead was tried and
+       * refused: 1,490 wrong pixels against 1,544, which is no answer either
+       * way -- and a tenth of a degree settles it outright. Windows draws
+       * Times at an escapement of 1 exactly as it draws it at a whole turn,
+       * ink for ink, and a whole turn is the hinted upright shape. 8u.
+       */
       const raw = italic
         ? { contours: outline.outlineOf(glyph), hinted: false, scaled: false }
         : outline.hintedOutline(glyph, ppem, true, stretch);
@@ -1202,11 +1239,32 @@ export class Surface {
           ? this.slant(contours, fitted.scaled ? 1 : scale, ppem, acrossPixels)
           : contours;
 
-        const inked = fill(slanted, {
+        /* A turned glyph is carried to pixels and then rotated about its own
+         * origin, and the scan converter is handed the result with nothing
+         * left to scale. 8u.
+         */
+        const placed = turn
+          ? slanted.map((contour) =>
+              contour.map((point) => {
+                const [px, py] = turned(point.x * up, point.y * up);
+
+                return { ...point, x: px, y: py };
+              })
+            )
+          : slanted;
+
+        /* Where that origin is. The offset from the pen to the baseline turns
+         * with the text -- at a right angle Arial's baseline origin is its
+         * ascent to the *right* of the pen rather than below it -- and the pen
+         * then walks along the turned baseline by the same advances.
+         */
+        const along = pen - x + carried;
+
+        const inked = fill(placed, {
           // Hinting hands back pixels; an unhinted outline is still in units.
-          scale: fitted.scaled ? 1 : scale,
-          originX: pen + carried,
-          originY: baseline,
+          scale: turn ? 1 : fitted.scaled ? 1 : scale,
+          originX: turn ? baseX + along * cosine : pen + carried,
+          originY: turn ? baseY - along * sine : baseline,
           width: this.width,
           height: this.height,
           /* What the font's own `SCANCTRL` asked for at this size, which is
@@ -1265,8 +1323,12 @@ export class Surface {
          */
         const spills = (this.boldOverhang ?? BitmapContext.driver?.boldOverhang) === 'always';
 
-        const from = Math.max(0, cellTop);
-        const to = Math.min(this.height, cellBottom);
+        /* The cell clips an upright glyph and cannot clip a turned one: the
+         * cell turns with the text, and every angle in the recording draws ink
+         * well above and below the rows an upright cell would allow.
+         */
+        const from = turn ? 0 : Math.max(0, cellTop);
+        const to = turn ? this.height : Math.min(this.height, cellBottom);
 
         for (let row = from; row < to; row++) {
           for (let column = 0; column < this.width; column++) {

@@ -66,14 +66,18 @@ export function CreateFont(
   fbPitchAndFamily,
   lpszFace
 ) {
-  /* Escapement, orientation, precision and quality are carried no further.
-   * Nothing here rotates text or trades accuracy for speed, so recording them
-   * would be recording something that has no effect -- and a program that sets
-   * them would be no better served by our pretending otherwise.
+  /* The escapement is carried; the orientation is not, and that is measured
+   * rather than assumed. 8u sweeps the two apart -- an escapement of nought
+   * with an orientation of a right angle, and the reverse, and each of them
+   * against a pair that agree -- and the drawing is decided by the escapement
+   * alone, pixel for pixel, in a face that turns and in one that cannot.
+   *
+   * Precision and quality are still carried no further.
    */
   return CreateFontIndirect.bind(this)({
     lfHeight: nHeight,
     lfWidth: nWidth,
+    lfEscapement: nEscapement,
     lfWeight: fnWeight,
     lfItalic: fbItalic,
     lfUnderline: fbUnderline,

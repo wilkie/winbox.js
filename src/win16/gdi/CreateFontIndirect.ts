@@ -81,6 +81,12 @@ export function CreateFontIndirect(lplf) {
     charset,
     pitchAndFamily,
 
+    /* The angle the baseline runs at, in tenths of a degree counter-clockwise.
+     * `lfOrientation` is deliberately not read: 8u measured that Windows 3.1
+     * decides on the escapement alone.
+     */
+    escapement: lplf.lfEscapement ?? 0,
+
     /* Proof quality refuses a stretched strike outright; see
      * `FontManager.choose`.
      */
@@ -171,6 +177,12 @@ export function CreateFontIndirect(lplf) {
     boldOverhang: this.display?.boldOverhang,
     ascent: found.ascent,
     descent: found.descent,
+
+    /* The angle the baseline runs at, reduced to a turn. A whole turn is not
+     * nought here even though it is the same angle: the *size* was chosen as a
+     * turned font's, and only the drawing asks this. 8u.
+     */
+    escapement: (((request.escapement ?? 0) % 3600) + 3600) % 3600,
   });
 
   this.debug('CreateFontIndirect', request.face, request.height, found.scale);

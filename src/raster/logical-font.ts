@@ -76,6 +76,18 @@ export class LogicalFont extends Font {
     return this._style.xWhole ?? Math.floor(this.xPpem);
   }
 
+  /**
+   * The angle the baseline runs at, in tenths of a degree counter-clockwise,
+   * reduced to a single turn. 8u.
+   *
+   * A strike never turns, whatever is asked: `rotate` draws MS Sans Serif at
+   * fourteen angles and gets one bitmap, and reports one set of metrics for
+   * all of them. So this is only ever read on the outline path.
+   */
+  get escapement() {
+    return this._style.escapement ?? 0;
+  }
+
   /** The pixel size an outline face was settled at. */
   get ppem() {
     return this._style.ppem ?? 0;

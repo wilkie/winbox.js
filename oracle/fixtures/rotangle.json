@@ -1,0 +1,1166 @@
+{
+  "probe": "rotangle",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=0",
+      "result": "height=16,ascent=13,descent=3,internal=2,average=6,maximum=15",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=0",
+      "result": "box=32:35:47:44,ink=56",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=1",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=1",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=2",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=2",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=5",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=5",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=10",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=10",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=-1",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=-1",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=-2",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=-2",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=-10",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=-10",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=3590",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=3590",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=3595",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=3595",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=3598",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=3598",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=3599",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=3599",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=3600",
+      "result": "height=17,ascent=13,descent=4,internal=2,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=3600",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=3601",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=3601",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=3602",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=3602",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=3610",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=3610",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=7200",
+      "result": "height=17,ascent=13,descent=4,internal=2,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=7200",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=7201",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=7201",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=10800",
+      "result": "height=17,ascent=13,descent=4,internal=2,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=10800",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=-3600",
+      "result": "height=17,ascent=13,descent=4,internal=2,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=-3600",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=-3599",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=-3599",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=-7200",
+      "result": "height=17,ascent=13,descent=4,internal=2,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=-7200",
+      "result": "box=32:35:51:44,ink=58",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=1800",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=1800",
+      "result": "box=12:19:31:28,ink=59",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=-1800",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=-1800",
+      "result": "box=12:19:31:28,ink=59",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=5400",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=5400",
+      "result": "box=12:19:31:28,ink=59",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=900",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=900",
+      "result": "box=35:12:44:31,ink=59",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=4500",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=4500",
+      "result": "box=35:12:44:31,ink=59",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=-2700",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=-2700",
+      "result": "box=35:12:44:31,ink=59",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=32767",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=32767",
+      "result": "box=38:23:54:41,ink=71",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=-32768",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=-32768",
+      "result": "box=24:37:44:52,ink=69",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=30000",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=30000",
+      "result": "box=25:8:42:25,ink=73",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Times New Roman\",h=16,esc=-30000",
+      "result": "height=16,ascent=13,descent=3,internal=1,average=6,maximum=16",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Times New Roman\",h=16,esc=-30000",
+      "result": "box=11:25:26:46,ink=75",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=0",
+      "result": "height=32,ascent=26,descent=6,internal=5,average=12,maximum=28",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=0",
+      "result": "box=32:38:63:57,ink=206",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=1",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=1",
+      "result": "box=32:37:63:57,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=2",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=2",
+      "result": "box=32:37:63:57,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=5",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=5",
+      "result": "box=32:37:63:57,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=10",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=10",
+      "result": "box=32:37:63:57,ink=246",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=-1",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=-1",
+      "result": "box=32:37:63:57,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=-2",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=-2",
+      "result": "box=32:37:63:57,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=-10",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=-10",
+      "result": "box=32:37:63:58,ink=242",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=3590",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=3590",
+      "result": "box=32:37:63:58,ink=242",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=3595",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=3595",
+      "result": "box=32:37:63:57,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=3598",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=3598",
+      "result": "box=32:37:63:57,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=3599",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=3599",
+      "result": "box=32:37:63:57,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=3600",
+      "result": "height=33,ascent=27,descent=6,internal=4,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=3600",
+      "result": "box=32:38:63:58,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=3601",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=3601",
+      "result": "box=32:37:63:57,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=3602",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=3602",
+      "result": "box=32:37:63:57,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=3610",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=3610",
+      "result": "box=32:37:63:57,ink=246",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=7200",
+      "result": "height=33,ascent=27,descent=6,internal=4,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=7200",
+      "result": "box=32:38:63:58,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=7201",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=7201",
+      "result": "box=32:37:63:57,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=10800",
+      "result": "height=33,ascent=27,descent=6,internal=4,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=10800",
+      "result": "box=32:38:63:58,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=-3600",
+      "result": "height=33,ascent=27,descent=6,internal=4,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=-3600",
+      "result": "box=32:38:63:58,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=-3599",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=-3599",
+      "result": "box=32:37:63:57,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=-7200",
+      "result": "height=33,ascent=27,descent=6,internal=4,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=-7200",
+      "result": "box=32:38:63:58,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=1800",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=1800",
+      "result": "box=0:6:31:26,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=-1800",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=-1800",
+      "result": "box=0:6:31:26,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=5400",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=5400",
+      "result": "box=0:6:31:26,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=900",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=900",
+      "result": "box=37:0:57:31,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=4500",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=4500",
+      "result": "box=37:0:57:31,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=-2700",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=-2700",
+      "result": "box=37:0:57:31,ink=284",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=32767",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=32767",
+      "result": "box=42:18:63:52,ink=207",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=-32768",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=-32768",
+      "result": "box=16:41:53:63,ink=237",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=30000",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=30000",
+      "result": "box=20:0:54:22,ink=224",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"Arial\",h=32,esc=-30000",
+      "result": "height=32,ascent=26,descent=6,internal=3,average=13,maximum=30",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"Arial\",h=32,esc=-30000",
+      "result": "box=0:19:22:57,ink=246",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=0",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=0",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=1",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=1",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=2",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=2",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=5",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=5",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=10",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=10",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=-1",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=-1",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=-2",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=-2",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=-10",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=-10",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=3590",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=3590",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=3595",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=3595",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=3598",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=3598",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=3599",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=3599",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=3600",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=3600",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=3601",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=3601",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=3602",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=3602",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=3610",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=3610",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=7200",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=7200",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=7201",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=7201",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=10800",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=10800",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=-3600",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=-3600",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=-3599",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=-3599",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=-7200",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=-7200",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=1800",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=1800",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=-1800",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=-1800",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=5400",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=5400",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=900",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=900",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=4500",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=4500",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=-2700",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=-2700",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=32767",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=32767",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=-32768",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=-32768",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=30000",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=30000",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle metrics",
+      "args": "\"MS Sans Serif\",h=16,esc=-30000",
+      "result": "height=16,ascent=13,descent=3,internal=3,average=7,maximum=14",
+      "section": "the escapement field swept where a reduction would show"
+    },
+    {
+      "function": "angle box",
+      "args": "\"MS Sans Serif\",h=16,esc=-30000",
+      "result": "box=32:35:48:44,ink=55",
+      "section": "the escapement field swept where a reduction would show"
+    }
+  ]
+}

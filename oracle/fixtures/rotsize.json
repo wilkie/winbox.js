@@ -1,0 +1,3134 @@
+{
+  "probe": "rotsize",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=8,esc=0",
+      "result": "face=\"Small Fonts\",height=8,ascent=7,descent=1,internal=1,external=0,average=4,maximum=7,extent=28:8",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=8,esc=900",
+      "result": "face=\"Arial\",height=7,ascent=6,descent=1,internal=0,external=0,average=3,maximum=7,extent=30:7",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=9,esc=0",
+      "result": "face=\"Arial\",height=7,ascent=6,descent=1,internal=0,external=0,average=3,maximum=7,extent=30:7",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=9,esc=900",
+      "result": "face=\"Arial\",height=9,ascent=7,descent=2,internal=1,external=0,average=4,maximum=8,extent=30:9",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=10,esc=0",
+      "result": "face=\"MS Serif\",height=10,ascent=8,descent=2,internal=2,external=0,average=4,maximum=8,extent=33:10",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=10,esc=900",
+      "result": "face=\"Arial\",height=10,ascent=8,descent=2,internal=1,external=0,average=4,maximum=9,extent=36:10",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=11,esc=0",
+      "result": "face=\"MS Serif\",height=11,ascent=9,descent=2,internal=2,external=0,average=5,maximum=9,extent=34:11",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=11,esc=900",
+      "result": "face=\"Arial\",height=11,ascent=9,descent=2,internal=1,external=0,average=4,maximum=10,extent=43:11",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=12,esc=0",
+      "result": "face=\"Arial\",height=12,ascent=9,descent=3,internal=3,external=0,average=4,maximum=9,extent=36:12",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=12,esc=900",
+      "result": "face=\"Arial\",height=12,ascent=10,descent=2,internal=1,external=0,average=5,maximum=12,extent=46:12",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=13,esc=0",
+      "result": "face=\"Arial\",height=13,ascent=10,descent=3,internal=3,external=0,average=4,maximum=10,extent=43:13",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=13,esc=900",
+      "result": "face=\"Arial\",height=12,ascent=10,descent=2,internal=1,external=0,average=5,maximum=12,extent=46:12",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=14,esc=0",
+      "result": "face=\"Arial\",height=14,ascent=11,descent=3,internal=3,external=0,average=5,maximum=12,extent=46:14",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=14,esc=900",
+      "result": "face=\"Arial\",height=14,ascent=11,descent=3,internal=2,external=0,average=5,maximum=13,extent=51:14",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=15,esc=0",
+      "result": "face=\"Arial\",height=15,ascent=12,descent=3,internal=3,external=0,average=5,maximum=13,extent=51:15",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=15,esc=900",
+      "result": "face=\"Arial\",height=15,ascent=12,descent=3,internal=2,external=0,average=6,maximum=14,extent=53:15",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=16,esc=0",
+      "result": "face=\"Arial\",height=16,ascent=13,descent=3,internal=3,external=0,average=6,maximum=14,extent=53:16",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=16,esc=900",
+      "result": "face=\"Arial\",height=16,ascent=13,descent=3,internal=2,external=0,average=6,maximum=15,extent=56:16",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=17,esc=0",
+      "result": "face=\"Arial\",height=17,ascent=14,descent=3,internal=2,external=0,average=7,maximum=16,extent=61:17",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=17,esc=900",
+      "result": "face=\"Arial\",height=17,ascent=14,descent=3,internal=2,external=0,average=7,maximum=16,extent=61:17",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=18,esc=0",
+      "result": "face=\"Arial\",height=18,ascent=15,descent=3,internal=2,external=1,average=7,maximum=17,extent=64:18",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=18,esc=900",
+      "result": "face=\"Arial\",height=17,ascent=14,descent=3,internal=1,external=1,average=7,maximum=17,extent=64:17",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=19,esc=0",
+      "result": "face=\"Arial\",height=19,ascent=15,descent=4,internal=2,external=1,average=8,maximum=18,extent=67:19",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=19,esc=900",
+      "result": "face=\"Arial\",height=19,ascent=15,descent=4,internal=2,external=1,average=8,maximum=18,extent=67:19",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=20,esc=0",
+      "result": "face=\"Arial\",height=19,ascent=15,descent=4,internal=2,external=1,average=8,maximum=18,extent=67:19",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=20,esc=900",
+      "result": "face=\"Arial\",height=20,ascent=16,descent=4,internal=2,external=1,average=8,maximum=19,extent=73:20",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=21,esc=0",
+      "result": "face=\"Arial\",height=21,ascent=17,descent=4,internal=3,external=1,average=8,maximum=19,extent=73:21",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=21,esc=900",
+      "result": "face=\"Arial\",height=21,ascent=17,descent=4,internal=2,external=1,average=8,maximum=20,extent=78:21",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=22,esc=0",
+      "result": "face=\"Arial\",height=22,ascent=18,descent=4,internal=3,external=1,average=8,maximum=20,extent=78:22",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=22,esc=900",
+      "result": "face=\"Arial\",height=22,ascent=18,descent=4,internal=2,external=1,average=9,maximum=21,extent=80:22",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=23,esc=0",
+      "result": "face=\"Arial\",height=23,ascent=19,descent=4,internal=3,external=1,average=9,maximum=21,extent=80:23",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=23,esc=900",
+      "result": "face=\"Arial\",height=23,ascent=19,descent=4,internal=2,external=1,average=9,maximum=22,extent=86:23",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=24,esc=0",
+      "result": "face=\"Arial\",height=24,ascent=19,descent=5,internal=3,external=1,average=9,maximum=22,extent=86:24",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=24,esc=900",
+      "result": "face=\"Arial\",height=23,ascent=19,descent=4,internal=2,external=1,average=9,maximum=22,extent=86:23",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=25,esc=0",
+      "result": "face=\"Arial\",height=25,ascent=20,descent=5,internal=3,external=1,average=10,maximum=23,extent=88:25",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=25,esc=900",
+      "result": "face=\"Arial\",height=25,ascent=20,descent=5,internal=3,external=1,average=10,maximum=23,extent=88:25",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=26,esc=0",
+      "result": "face=\"Arial\",height=26,ascent=21,descent=5,internal=3,external=1,average=10,maximum=24,extent=92:26",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=26,esc=900",
+      "result": "face=\"Arial\",height=26,ascent=21,descent=5,internal=3,external=1,average=10,maximum=24,extent=92:26",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=27,esc=0",
+      "result": "face=\"Arial\",height=27,ascent=21,descent=6,internal=3,external=1,average=11,maximum=25,extent=98:27",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=27,esc=900",
+      "result": "face=\"Arial\",height=27,ascent=22,descent=5,internal=3,external=1,average=11,maximum=25,extent=98:27",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=28,esc=0",
+      "result": "face=\"Arial\",height=28,ascent=23,descent=5,internal=3,external=1,average=11,maximum=26,extent=106:28",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=28,esc=900",
+      "result": "face=\"Arial\",height=28,ascent=23,descent=5,internal=3,external=1,average=11,maximum=26,extent=106:28",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=29,esc=0",
+      "result": "face=\"Arial\",height=28,ascent=23,descent=5,internal=3,external=1,average=11,maximum=26,extent=106:28",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=29,esc=900",
+      "result": "face=\"Arial\",height=28,ascent=23,descent=5,internal=3,external=1,average=11,maximum=26,extent=106:28",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=30,esc=0",
+      "result": "face=\"Arial\",height=28,ascent=23,descent=5,internal=3,external=1,average=11,maximum=26,extent=106:28",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=30,esc=900",
+      "result": "face=\"Arial\",height=30,ascent=24,descent=6,internal=3,external=1,average=12,maximum=28,extent=112:30",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=31,esc=0",
+      "result": "face=\"Arial\",height=31,ascent=25,descent=6,internal=5,external=1,average=11,maximum=27,extent=107:31",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=31,esc=900",
+      "result": "face=\"Arial\",height=31,ascent=25,descent=6,internal=3,external=1,average=12,maximum=29,extent=114:31",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=32,esc=0",
+      "result": "face=\"Arial\",height=32,ascent=26,descent=6,internal=5,external=1,average=12,maximum=28,extent=112:32",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=32,esc=900",
+      "result": "face=\"Arial\",height=32,ascent=26,descent=6,internal=3,external=1,average=13,maximum=30,extent=121:32",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=33,esc=0",
+      "result": "face=\"Arial\",height=33,ascent=27,descent=6,internal=4,external=1,average=13,maximum=30,extent=121:33",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=33,esc=900",
+      "result": "face=\"Arial\",height=33,ascent=27,descent=6,internal=3,external=1,average=13,maximum=31,extent=123:33",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=34,esc=0",
+      "result": "face=\"Arial\",height=33,ascent=27,descent=6,internal=4,external=1,average=13,maximum=30,extent=121:33",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=34,esc=900",
+      "result": "face=\"Arial\",height=33,ascent=27,descent=6,internal=3,external=1,average=13,maximum=31,extent=123:33",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=35,esc=0",
+      "result": "face=\"Arial\",height=35,ascent=28,descent=7,internal=5,external=1,average=13,maximum=31,extent=123:35",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=35,esc=900",
+      "result": "face=\"Arial\",height=35,ascent=28,descent=7,internal=4,external=1,average=14,maximum=32,extent=127:35",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=36,esc=0",
+      "result": "face=\"Arial\",height=36,ascent=29,descent=7,internal=4,external=1,average=14,maximum=33,extent=130:36",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=36,esc=900",
+      "result": "face=\"Arial\",height=36,ascent=29,descent=7,internal=4,external=1,average=14,maximum=33,extent=130:36",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=37,esc=0",
+      "result": "face=\"Arial\",height=36,ascent=29,descent=7,internal=4,external=1,average=14,maximum=33,extent=130:36",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=37,esc=900",
+      "result": "face=\"Arial\",height=37,ascent=30,descent=7,internal=4,external=1,average=15,maximum=35,extent=134:37",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=38,esc=0",
+      "result": "face=\"Arial\",height=38,ascent=31,descent=7,internal=5,external=1,average=15,maximum=35,extent=134:38",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=38,esc=900",
+      "result": "face=\"Arial\",height=38,ascent=31,descent=7,internal=4,external=1,average=15,maximum=36,extent=136:38",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=39,esc=0",
+      "result": "face=\"Arial\",height=39,ascent=32,descent=7,internal=5,external=1,average=15,maximum=36,extent=136:39",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=39,esc=900",
+      "result": "face=\"Arial\",height=39,ascent=32,descent=7,internal=4,external=1,average=15,maximum=37,extent=142:39",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=40,esc=0",
+      "result": "face=\"Arial\",height=40,ascent=32,descent=8,internal=5,external=1,average=15,maximum=37,extent=142:40",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=40,esc=900",
+      "result": "face=\"Arial\",height=39,ascent=32,descent=7,internal=4,external=1,average=15,maximum=37,extent=142:39",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=41,esc=0",
+      "result": "face=\"Arial\",height=41,ascent=33,descent=8,internal=5,external=1,average=16,maximum=38,extent=145:41",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=41,esc=900",
+      "result": "face=\"Arial\",height=41,ascent=33,descent=8,internal=4,external=1,average=16,maximum=39,extent=153:41",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=42,esc=0",
+      "result": "face=\"Arial\",height=42,ascent=34,descent=8,internal=5,external=1,average=16,maximum=39,extent=153:42",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=42,esc=900",
+      "result": "face=\"Arial\",height=42,ascent=34,descent=8,internal=4,external=1,average=17,maximum=40,extent=156:42",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=43,esc=0",
+      "result": "face=\"Arial\",height=43,ascent=34,descent=9,internal=5,external=1,average=17,maximum=40,extent=156:43",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=43,esc=900",
+      "result": "face=\"Arial\",height=43,ascent=35,descent=8,internal=4,external=1,average=17,maximum=41,extent=161:43",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=44,esc=0",
+      "result": "face=\"Arial\",height=44,ascent=35,descent=9,internal=5,external=1,average=17,maximum=41,extent=161:44",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=44,esc=900",
+      "result": "face=\"Arial\",height=44,ascent=36,descent=8,internal=4,external=1,average=18,maximum=42,extent=161:44",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=45,esc=0",
+      "result": "face=\"Arial\",height=45,ascent=36,descent=9,internal=5,external=1,average=18,maximum=42,extent=161:45",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=45,esc=900",
+      "result": "face=\"Arial\",height=44,ascent=36,descent=8,internal=4,external=1,average=18,maximum=42,extent=161:44",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=46,esc=0",
+      "result": "face=\"Arial\",height=45,ascent=36,descent=9,internal=5,external=1,average=18,maximum=42,extent=161:45",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=46,esc=900",
+      "result": "face=\"Arial\",height=46,ascent=37,descent=9,internal=5,external=1,average=18,maximum=43,extent=166:46",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=47,esc=0",
+      "result": "face=\"Arial\",height=47,ascent=38,descent=9,internal=6,external=1,average=18,maximum=43,extent=166:47",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=47,esc=900",
+      "result": "face=\"Arial\",height=47,ascent=38,descent=9,internal=5,external=1,average=19,maximum=44,extent=170:47",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=48,esc=0",
+      "result": "face=\"Arial\",height=47,ascent=38,descent=9,internal=5,external=1,average=19,maximum=44,extent=170:47",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=48,esc=900",
+      "result": "face=\"Arial\",height=48,ascent=39,descent=9,internal=5,external=1,average=19,maximum=45,extent=175:48",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=49,esc=0",
+      "result": "face=\"Arial\",height=49,ascent=39,descent=10,internal=6,external=1,average=19,maximum=45,extent=175:49",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=49,esc=900",
+      "result": "face=\"Arial\",height=49,ascent=40,descent=9,internal=5,external=1,average=19,maximum=46,extent=181:49",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=50,esc=0",
+      "result": "face=\"Arial\",height=50,ascent=40,descent=10,internal=6,external=1,average=19,maximum=46,extent=181:50",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=50,esc=900",
+      "result": "face=\"Arial\",height=49,ascent=40,descent=9,internal=5,external=1,average=19,maximum=46,extent=181:49",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=51,esc=0",
+      "result": "face=\"Arial\",height=50,ascent=40,descent=10,internal=5,external=1,average=20,maximum=47,extent=185:50",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=51,esc=900",
+      "result": "face=\"Arial\",height=51,ascent=41,descent=10,internal=6,external=1,average=20,maximum=47,extent=185:51",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=52,esc=0",
+      "result": "face=\"Arial\",height=52,ascent=42,descent=10,internal=6,external=2,average=20,maximum=48,extent=190:52",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=52,esc=900",
+      "result": "face=\"Arial\",height=52,ascent=42,descent=10,internal=6,external=2,average=20,maximum=48,extent=190:52",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=53,esc=0",
+      "result": "face=\"Arial\",height=53,ascent=43,descent=10,internal=6,external=2,average=21,maximum=49,extent=191:53",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=53,esc=900",
+      "result": "face=\"Arial\",height=53,ascent=43,descent=10,internal=6,external=2,average=21,maximum=49,extent=191:53",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=54,esc=0",
+      "result": "face=\"Arial\",height=53,ascent=43,descent=10,internal=6,external=2,average=21,maximum=49,extent=191:53",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=54,esc=900",
+      "result": "face=\"Arial\",height=54,ascent=44,descent=10,internal=5,external=2,average=22,maximum=51,extent=199:54",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=55,esc=0",
+      "result": "face=\"Arial\",height=55,ascent=45,descent=10,internal=7,external=2,average=21,maximum=50,extent=196:55",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=55,esc=900",
+      "result": "face=\"Arial\",height=54,ascent=44,descent=10,internal=5,external=2,average=22,maximum=51,extent=199:54",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=56,esc=0",
+      "result": "face=\"Arial\",height=56,ascent=45,descent=11,internal=7,external=2,average=22,maximum=51,extent=199:56",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=56,esc=900",
+      "result": "face=\"Arial\",height=56,ascent=45,descent=11,internal=6,external=2,average=22,maximum=52,extent=206:56",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=57,esc=0",
+      "result": "face=\"Arial\",height=57,ascent=46,descent=11,internal=7,external=2,average=22,maximum=52,extent=206:57",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=57,esc=900",
+      "result": "face=\"Arial\",height=57,ascent=46,descent=11,internal=6,external=2,average=23,maximum=53,extent=208:57",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=58,esc=0",
+      "result": "face=\"Arial\",height=58,ascent=47,descent=11,internal=7,external=2,average=23,maximum=53,extent=208:58",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=58,esc=900",
+      "result": "face=\"Arial\",height=58,ascent=47,descent=11,internal=6,external=2,average=23,maximum=54,extent=212:58",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=59,esc=0",
+      "result": "face=\"Arial\",height=58,ascent=47,descent=11,internal=7,external=2,average=23,maximum=53,extent=208:58",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=59,esc=900",
+      "result": "face=\"Arial\",height=59,ascent=48,descent=11,internal=6,external=2,average=23,maximum=55,extent=213:59",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=60,esc=0",
+      "result": "face=\"Arial\",height=60,ascent=48,descent=12,internal=8,external=2,average=23,maximum=54,extent=212:60",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=60,esc=900",
+      "result": "face=\"Arial\",height=60,ascent=49,descent=11,internal=6,external=2,average=24,maximum=56,extent=222:60",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=61,esc=0",
+      "result": "face=\"Arial\",height=61,ascent=49,descent=12,internal=7,external=2,average=24,maximum=56,extent=222:61",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=61,esc=900",
+      "result": "face=\"Arial\",height=60,ascent=49,descent=11,internal=6,external=2,average=24,maximum=56,extent=222:60",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=62,esc=0",
+      "result": "face=\"Arial\",height=61,ascent=49,descent=12,internal=7,external=2,average=24,maximum=56,extent=222:61",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=62,esc=900",
+      "result": "face=\"Arial\",height=62,ascent=50,descent=12,internal=7,external=2,average=24,maximum=58,extent=225:62",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=63,esc=0",
+      "result": "face=\"Arial\",height=63,ascent=51,descent=12,internal=8,external=2,average=24,maximum=58,extent=225:63",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=63,esc=900",
+      "result": "face=\"Arial\",height=63,ascent=51,descent=12,internal=7,external=2,average=25,maximum=59,extent=229:63",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=64,esc=0",
+      "result": "face=\"Arial\",height=63,ascent=51,descent=12,internal=8,external=2,average=24,maximum=58,extent=225:63",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=64,esc=900",
+      "result": "face=\"Arial\",height=64,ascent=52,descent=12,internal=7,external=2,average=25,maximum=60,extent=235:64",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=65,esc=0",
+      "result": "face=\"Arial\",height=65,ascent=52,descent=13,internal=9,external=2,average=25,maximum=59,extent=229:65",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=65,esc=900",
+      "result": "face=\"Arial\",height=65,ascent=53,descent=12,internal=7,external=2,average=26,maximum=61,extent=237:65",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=66,esc=0",
+      "result": "face=\"Arial\",height=66,ascent=53,descent=13,internal=8,external=2,average=26,maximum=61,extent=237:66",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=66,esc=900",
+      "result": "face=\"Arial\",height=66,ascent=53,descent=13,internal=7,external=2,average=26,maximum=62,extent=243:66",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=67,esc=0",
+      "result": "face=\"Arial\",height=67,ascent=54,descent=13,internal=7,external=2,average=26,maximum=63,extent=245:67",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=67,esc=900",
+      "result": "face=\"Arial\",height=67,ascent=54,descent=13,internal=7,external=2,average=26,maximum=63,extent=245:67",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=68,esc=0",
+      "result": "face=\"Arial\",height=68,ascent=55,descent=13,internal=7,external=2,average=27,maximum=64,extent=250:68",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=68,esc=900",
+      "result": "face=\"Arial\",height=68,ascent=55,descent=13,internal=7,external=2,average=27,maximum=64,extent=250:68",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=69,esc=0",
+      "result": "face=\"Arial\",height=69,ascent=56,descent=13,internal=7,external=2,average=27,maximum=65,extent=252:69",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=69,esc=900",
+      "result": "face=\"Arial\",height=69,ascent=56,descent=13,internal=7,external=2,average=27,maximum=65,extent=252:69",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=70,esc=0",
+      "result": "face=\"Arial\",height=69,ascent=56,descent=13,internal=7,external=2,average=27,maximum=65,extent=252:69",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=70,esc=900",
+      "result": "face=\"Arial\",height=70,ascent=57,descent=13,internal=7,external=2,average=28,maximum=66,extent=256:70",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=71,esc=0",
+      "result": "face=\"Arial\",height=71,ascent=57,descent=14,internal=8,external=2,average=28,maximum=66,extent=256:71",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=71,esc=900",
+      "result": "face=\"Arial\",height=70,ascent=57,descent=13,internal=7,external=2,average=28,maximum=66,extent=256:70",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=72,esc=0",
+      "result": "face=\"Arial\",height=72,ascent=58,descent=14,internal=8,external=2,average=28,maximum=67,extent=265:72",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial\",h=72,esc=900",
+      "result": "face=\"Arial\",height=72,ascent=58,descent=14,internal=8,external=2,average=28,maximum=67,extent=265:72",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=8,esc=0",
+      "result": "face=\"Small Fonts\",height=8,ascent=7,descent=1,internal=1,external=0,average=4,maximum=7,extent=28:8",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=8,esc=900",
+      "result": "face=\"Times New Roman\",height=8,ascent=6,descent=2,internal=1,external=0,average=3,maximum=8,extent=29:8",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=9,esc=0",
+      "result": "face=\"Times New Roman\",height=8,ascent=6,descent=2,internal=1,external=0,average=3,maximum=8,extent=29:8",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=9,esc=900",
+      "result": "face=\"Times New Roman\",height=9,ascent=7,descent=2,internal=1,external=0,average=3,maximum=9,extent=31:9",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=10,esc=0",
+      "result": "face=\"MS Serif\",height=10,ascent=8,descent=2,internal=2,external=0,average=4,maximum=8,extent=33:10",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=10,esc=900",
+      "result": "face=\"Times New Roman\",height=10,ascent=8,descent=2,internal=1,external=0,average=4,maximum=10,extent=38:10",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=11,esc=0",
+      "result": "face=\"MS Serif\",height=11,ascent=9,descent=2,internal=2,external=0,average=5,maximum=9,extent=34:11",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=11,esc=900",
+      "result": "face=\"Times New Roman\",height=11,ascent=9,descent=2,internal=1,external=0,average=4,maximum=11,extent=39:11",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=12,esc=0",
+      "result": "face=\"Times New Roman\",height=12,ascent=10,descent=2,internal=3,external=0,average=4,maximum=10,extent=38:12",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=12,esc=900",
+      "result": "face=\"Times New Roman\",height=12,ascent=10,descent=2,internal=1,external=0,average=4,maximum=12,extent=42:12",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=13,esc=0",
+      "result": "face=\"Times New Roman\",height=12,ascent=10,descent=2,internal=2,external=0,average=4,maximum=11,extent=39:12",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=13,esc=900",
+      "result": "face=\"Times New Roman\",height=12,ascent=10,descent=2,internal=1,external=0,average=4,maximum=12,extent=42:12",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=14,esc=0",
+      "result": "face=\"Times New Roman\",height=14,ascent=11,descent=3,internal=3,external=0,average=4,maximum=12,extent=42:14",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=14,esc=900",
+      "result": "face=\"Times New Roman\",height=14,ascent=11,descent=3,internal=2,external=1,average=5,maximum=13,extent=46:14",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=15,esc=0",
+      "result": "face=\"Times New Roman\",height=15,ascent=12,descent=3,internal=3,external=1,average=5,maximum=13,extent=46:15",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=15,esc=900",
+      "result": "face=\"Times New Roman\",height=15,ascent=12,descent=3,internal=1,external=1,average=6,maximum=15,extent=54:15",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=16,esc=0",
+      "result": "face=\"Times New Roman\",height=16,ascent=13,descent=3,internal=2,external=1,average=6,maximum=15,extent=54:16",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=16,esc=900",
+      "result": "face=\"Times New Roman\",height=16,ascent=13,descent=3,internal=1,external=1,average=6,maximum=16,extent=55:16",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=17,esc=0",
+      "result": "face=\"Times New Roman\",height=17,ascent=13,descent=4,internal=2,external=1,average=6,maximum=16,extent=55:17",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=17,esc=900",
+      "result": "face=\"Times New Roman\",height=17,ascent=14,descent=3,internal=1,external=1,average=6,maximum=17,extent=58:17",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=18,esc=0",
+      "result": "face=\"Times New Roman\",height=17,ascent=13,descent=4,internal=2,external=1,average=6,maximum=16,extent=55:17",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=18,esc=900",
+      "result": "face=\"Times New Roman\",height=17,ascent=14,descent=3,internal=1,external=1,average=6,maximum=17,extent=58:17",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=19,esc=0",
+      "result": "face=\"Times New Roman\",height=19,ascent=15,descent=4,internal=3,external=1,average=6,maximum=17,extent=58:19",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=19,esc=900",
+      "result": "face=\"Times New Roman\",height=19,ascent=15,descent=4,internal=2,external=1,average=7,maximum=18,extent=64:19",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=20,esc=0",
+      "result": "face=\"Times New Roman\",height=20,ascent=16,descent=4,internal=2,external=1,average=7,maximum=20,extent=68:20",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=20,esc=900",
+      "result": "face=\"Times New Roman\",height=20,ascent=16,descent=4,internal=2,external=1,average=7,maximum=20,extent=68:20",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=21,esc=0",
+      "result": "face=\"Times New Roman\",height=21,ascent=16,descent=5,internal=2,external=1,average=8,maximum=21,extent=72:21",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=21,esc=900",
+      "result": "face=\"Times New Roman\",height=21,ascent=17,descent=4,internal=2,external=1,average=8,maximum=21,extent=72:21",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=22,esc=0",
+      "result": "face=\"Times New Roman\",height=22,ascent=17,descent=5,internal=2,external=1,average=8,maximum=22,extent=76:22",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=22,esc=900",
+      "result": "face=\"Times New Roman\",height=22,ascent=18,descent=4,internal=2,external=1,average=8,maximum=22,extent=76:22",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=23,esc=0",
+      "result": "face=\"Times New Roman\",height=23,ascent=18,descent=5,internal=2,external=1,average=8,maximum=23,extent=79:23",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=23,esc=900",
+      "result": "face=\"Times New Roman\",height=22,ascent=18,descent=4,internal=2,external=1,average=8,maximum=22,extent=76:22",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=24,esc=0",
+      "result": "face=\"Times New Roman\",height=23,ascent=18,descent=5,internal=2,external=1,average=8,maximum=23,extent=79:23",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=24,esc=900",
+      "result": "face=\"Times New Roman\",height=24,ascent=19,descent=5,internal=3,external=1,average=8,maximum=23,extent=79:24",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=25,esc=0",
+      "result": "face=\"Times New Roman\",height=25,ascent=20,descent=5,internal=3,external=1,average=9,maximum=24,extent=82:25",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=25,esc=900",
+      "result": "face=\"Times New Roman\",height=25,ascent=20,descent=5,internal=2,external=1,average=9,maximum=25,extent=89:25",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=26,esc=0",
+      "result": "face=\"Times New Roman\",height=26,ascent=20,descent=6,internal=3,external=1,average=9,maximum=25,extent=89:26",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=26,esc=900",
+      "result": "face=\"Times New Roman\",height=26,ascent=21,descent=5,internal=2,external=1,average=10,maximum=26,extent=91:26",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=27,esc=0",
+      "result": "face=\"Times New Roman\",height=27,ascent=21,descent=6,internal=3,external=1,average=10,maximum=26,extent=91:27",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=27,esc=900",
+      "result": "face=\"Times New Roman\",height=27,ascent=22,descent=5,internal=2,external=1,average=10,maximum=27,extent=97:27",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=28,esc=0",
+      "result": "face=\"Times New Roman\",height=27,ascent=21,descent=6,internal=3,external=1,average=10,maximum=26,extent=91:27",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=28,esc=900",
+      "result": "face=\"Times New Roman\",height=27,ascent=22,descent=5,internal=2,external=1,average=10,maximum=27,extent=97:27",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=29,esc=0",
+      "result": "face=\"Times New Roman\",height=29,ascent=23,descent=6,internal=4,external=1,average=10,maximum=27,extent=97:29",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=29,esc=900",
+      "result": "face=\"Times New Roman\",height=29,ascent=23,descent=6,internal=3,external=1,average=10,maximum=28,extent=98:29",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=30,esc=0",
+      "result": "face=\"Times New Roman\",height=29,ascent=23,descent=6,internal=3,external=1,average=10,maximum=28,extent=98:29",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=30,esc=900",
+      "result": "face=\"Times New Roman\",height=30,ascent=24,descent=6,internal=3,external=1,average=11,maximum=29,extent=103:30",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=31,esc=0",
+      "result": "face=\"Times New Roman\",height=31,ascent=24,descent=7,internal=4,external=1,average=11,maximum=29,extent=103:31",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=31,esc=900",
+      "result": "face=\"Times New Roman\",height=31,ascent=25,descent=6,internal=3,external=1,average=11,maximum=30,extent=106:31",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=32,esc=0",
+      "result": "face=\"Times New Roman\",height=31,ascent=24,descent=7,internal=4,external=1,average=11,maximum=29,extent=103:31",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=32,esc=900",
+      "result": "face=\"Times New Roman\",height=32,ascent=26,descent=6,internal=3,external=1,average=12,maximum=31,extent=108:32",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=33,esc=0",
+      "result": "face=\"Times New Roman\",height=33,ascent=26,descent=7,internal=5,external=1,average=11,maximum=30,extent=106:33",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=33,esc=900",
+      "result": "face=\"Times New Roman\",height=33,ascent=27,descent=6,internal=3,external=1,average=12,maximum=33,extent=112:33",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=34,esc=0",
+      "result": "face=\"Times New Roman\",height=34,ascent=27,descent=7,internal=4,external=1,average=12,maximum=33,extent=112:34",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=34,esc=900",
+      "result": "face=\"Times New Roman\",height=33,ascent=27,descent=6,internal=3,external=1,average=12,maximum=33,extent=112:33",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=35,esc=0",
+      "result": "face=\"Times New Roman\",height=35,ascent=28,descent=7,internal=4,external=1,average=12,maximum=34,extent=116:35",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=35,esc=900",
+      "result": "face=\"Times New Roman\",height=35,ascent=28,descent=7,internal=4,external=1,average=12,maximum=34,extent=116:35",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=36,esc=0",
+      "result": "face=\"Times New Roman\",height=36,ascent=28,descent=8,internal=4,external=1,average=13,maximum=35,extent=119:36",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=36,esc=900",
+      "result": "face=\"Times New Roman\",height=36,ascent=29,descent=7,internal=3,external=1,average=13,maximum=36,extent=123:36",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=37,esc=0",
+      "result": "face=\"Times New Roman\",height=37,ascent=29,descent=8,internal=4,external=1,average=13,maximum=36,extent=123:37",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=37,esc=900",
+      "result": "face=\"Times New Roman\",height=37,ascent=30,descent=7,internal=3,external=1,average=14,maximum=37,extent=129:37",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=38,esc=0",
+      "result": "face=\"Times New Roman\",height=37,ascent=29,descent=8,internal=4,external=1,average=13,maximum=36,extent=123:37",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=38,esc=900",
+      "result": "face=\"Times New Roman\",height=37,ascent=30,descent=7,internal=3,external=1,average=14,maximum=37,extent=129:37",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=39,esc=0",
+      "result": "face=\"Times New Roman\",height=39,ascent=31,descent=8,internal=5,external=1,average=14,maximum=37,extent=129:39",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=39,esc=900",
+      "result": "face=\"Times New Roman\",height=39,ascent=31,descent=8,internal=4,external=1,average=14,maximum=38,extent=134:39",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=40,esc=0",
+      "result": "face=\"Times New Roman\",height=40,ascent=32,descent=8,internal=5,external=1,average=14,maximum=38,extent=134:40",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=40,esc=900",
+      "result": "face=\"Times New Roman\",height=40,ascent=32,descent=8,internal=4,external=2,average=14,maximum=39,extent=134:40",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=41,esc=0",
+      "result": "face=\"Times New Roman\",height=41,ascent=32,descent=9,internal=5,external=2,average=14,maximum=39,extent=134:41",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=41,esc=900",
+      "result": "face=\"Times New Roman\",height=41,ascent=33,descent=8,internal=4,external=2,average=15,maximum=40,extent=139:41",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=42,esc=0",
+      "result": "face=\"Times New Roman\",height=42,ascent=33,descent=9,internal=5,external=2,average=15,maximum=40,extent=139:42",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=42,esc=900",
+      "result": "face=\"Times New Roman\",height=42,ascent=34,descent=8,internal=4,external=2,average=15,maximum=41,extent=144:42",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=43,esc=0",
+      "result": "face=\"Times New Roman\",height=43,ascent=34,descent=9,internal=5,external=2,average=15,maximum=41,extent=144:43",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=43,esc=900",
+      "result": "face=\"Times New Roman\",height=43,ascent=35,descent=8,internal=4,external=2,average=16,maximum=42,extent=150:43",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=44,esc=0",
+      "result": "face=\"Times New Roman\",height=43,ascent=34,descent=9,internal=4,external=2,average=16,maximum=42,extent=150:43",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=44,esc=900",
+      "result": "face=\"Times New Roman\",height=43,ascent=35,descent=8,internal=4,external=2,average=16,maximum=42,extent=150:43",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=45,esc=0",
+      "result": "face=\"Times New Roman\",height=43,ascent=34,descent=9,internal=4,external=2,average=16,maximum=42,extent=150:43",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=45,esc=900",
+      "result": "face=\"Times New Roman\",height=45,ascent=36,descent=9,internal=5,external=2,average=16,maximum=43,extent=153:45",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=46,esc=0",
+      "result": "face=\"Times New Roman\",height=46,ascent=36,descent=10,internal=6,external=2,average=16,maximum=43,extent=153:46",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=46,esc=900",
+      "result": "face=\"Times New Roman\",height=46,ascent=37,descent=9,internal=4,external=2,average=17,maximum=46,extent=159:46",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=47,esc=0",
+      "result": "face=\"Times New Roman\",height=47,ascent=37,descent=10,internal=6,external=2,average=16,maximum=45,extent=154:47",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=47,esc=900",
+      "result": "face=\"Times New Roman\",height=47,ascent=38,descent=9,internal=4,external=2,average=17,maximum=47,extent=163:47",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=48,esc=0",
+      "result": "face=\"Times New Roman\",height=48,ascent=38,descent=10,internal=6,external=2,average=17,maximum=46,extent=159:48",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=48,esc=900",
+      "result": "face=\"Times New Roman\",height=47,ascent=38,descent=9,internal=4,external=2,average=17,maximum=47,extent=163:47",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=49,esc=0",
+      "result": "face=\"Times New Roman\",height=49,ascent=39,descent=10,internal=6,external=2,average=17,maximum=47,extent=163:49",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=49,esc=900",
+      "result": "face=\"Times New Roman\",height=49,ascent=39,descent=10,internal=5,external=2,average=18,maximum=48,extent=165:49",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=50,esc=0",
+      "result": "face=\"Times New Roman\",height=49,ascent=39,descent=10,internal=6,external=2,average=17,maximum=47,extent=163:49",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=50,esc=900",
+      "result": "face=\"Times New Roman\",height=50,ascent=40,descent=10,internal=5,external=2,average=18,maximum=49,extent=169:50",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=51,esc=0",
+      "result": "face=\"Times New Roman\",height=51,ascent=40,descent=11,internal=7,external=2,average=18,maximum=48,extent=165:51",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=51,esc=900",
+      "result": "face=\"Times New Roman\",height=51,ascent=41,descent=10,internal=5,external=2,average=18,maximum=50,extent=171:51",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=52,esc=0",
+      "result": "face=\"Times New Roman\",height=52,ascent=41,descent=11,internal=7,external=2,average=18,maximum=49,extent=169:52",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=52,esc=900",
+      "result": "face=\"Times New Roman\",height=52,ascent=42,descent=10,internal=5,external=2,average=19,maximum=51,extent=179:52",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=53,esc=0",
+      "result": "face=\"Times New Roman\",height=53,ascent=42,descent=11,internal=7,external=2,average=18,maximum=50,extent=171:53",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=53,esc=900",
+      "result": "face=\"Times New Roman\",height=53,ascent=43,descent=10,internal=5,external=2,average=19,maximum=52,extent=181:53",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=54,esc=0",
+      "result": "face=\"Times New Roman\",height=53,ascent=42,descent=11,internal=6,external=2,average=19,maximum=51,extent=179:53",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=54,esc=900",
+      "result": "face=\"Times New Roman\",height=53,ascent=43,descent=10,internal=5,external=2,average=19,maximum=52,extent=181:53",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=55,esc=0",
+      "result": "face=\"Times New Roman\",height=55,ascent=43,descent=12,internal=7,external=2,average=19,maximum=52,extent=181:55",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=55,esc=900",
+      "result": "face=\"Times New Roman\",height=55,ascent=44,descent=11,internal=6,external=2,average=20,maximum=53,extent=189:55",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=56,esc=0",
+      "result": "face=\"Times New Roman\",height=56,ascent=44,descent=12,internal=7,external=2,average=20,maximum=53,extent=189:56",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=56,esc=900",
+      "result": "face=\"Times New Roman\",height=56,ascent=45,descent=11,internal=5,external=2,average=20,maximum=55,extent=197:56",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=57,esc=0",
+      "result": "face=\"Times New Roman\",height=57,ascent=45,descent=12,internal=7,external=2,average=20,maximum=54,extent=188:57",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=57,esc=900",
+      "result": "face=\"Times New Roman\",height=57,ascent=46,descent=11,internal=5,external=2,average=21,maximum=56,extent=200:57",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=58,esc=0",
+      "result": "face=\"Times New Roman\",height=57,ascent=45,descent=12,internal=6,external=2,average=20,maximum=55,extent=197:57",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=58,esc=900",
+      "result": "face=\"Times New Roman\",height=58,ascent=47,descent=11,internal=5,external=2,average=21,maximum=58,extent=206:58",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=59,esc=0",
+      "result": "face=\"Times New Roman\",height=57,ascent=45,descent=12,internal=6,external=2,average=20,maximum=55,extent=197:57",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=59,esc=900",
+      "result": "face=\"Times New Roman\",height=58,ascent=47,descent=11,internal=5,external=2,average=21,maximum=58,extent=206:58",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=60,esc=0",
+      "result": "face=\"Times New Roman\",height=60,ascent=47,descent=13,internal=8,external=2,average=21,maximum=56,extent=200:60",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=60,esc=900",
+      "result": "face=\"Times New Roman\",height=60,ascent=48,descent=12,internal=6,external=2,average=22,maximum=59,extent=207:60",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=61,esc=0",
+      "result": "face=\"Times New Roman\",height=61,ascent=48,descent=13,internal=8,external=2,average=21,maximum=58,extent=206:61",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=61,esc=900",
+      "result": "face=\"Times New Roman\",height=61,ascent=49,descent=12,internal=6,external=2,average=22,maximum=60,extent=210:61",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=62,esc=0",
+      "result": "face=\"Times New Roman\",height=62,ascent=49,descent=13,internal=7,external=2,average=22,maximum=60,extent=210:62",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=62,esc=900",
+      "result": "face=\"Times New Roman\",height=62,ascent=50,descent=12,internal=6,external=2,average=22,maximum=61,extent=212:62",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=63,esc=0",
+      "result": "face=\"Times New Roman\",height=62,ascent=49,descent=13,internal=7,external=2,average=22,maximum=60,extent=210:62",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=63,esc=900",
+      "result": "face=\"Times New Roman\",height=63,ascent=51,descent=12,internal=6,external=2,average=23,maximum=62,extent=215:63",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=64,esc=0",
+      "result": "face=\"Times New Roman\",height=64,ascent=50,descent=14,internal=8,external=2,average=22,maximum=61,extent=212:64",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=64,esc=900",
+      "result": "face=\"Times New Roman\",height=63,ascent=51,descent=12,internal=6,external=2,average=23,maximum=62,extent=215:63",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=65,esc=0",
+      "result": "face=\"Times New Roman\",height=65,ascent=51,descent=14,internal=8,external=2,average=23,maximum=62,extent=215:65",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=65,esc=900",
+      "result": "face=\"Times New Roman\",height=65,ascent=52,descent=13,internal=7,external=2,average=23,maximum=63,extent=221:65",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=66,esc=0",
+      "result": "face=\"Times New Roman\",height=65,ascent=51,descent=14,internal=8,external=2,average=23,maximum=62,extent=215:65",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=66,esc=900",
+      "result": "face=\"Times New Roman\",height=66,ascent=53,descent=13,internal=6,external=3,average=24,maximum=65,extent=229:66",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=67,esc=0",
+      "result": "face=\"Times New Roman\",height=67,ascent=53,descent=14,internal=9,external=2,average=23,maximum=63,extent=221:67",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=67,esc=900",
+      "result": "face=\"Times New Roman\",height=67,ascent=54,descent=13,internal=6,external=3,average=24,maximum=66,extent=233:67",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=68,esc=0",
+      "result": "face=\"Times New Roman\",height=68,ascent=54,descent=14,internal=8,external=3,average=24,maximum=65,extent=229:68",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=68,esc=900",
+      "result": "face=\"Times New Roman\",height=68,ascent=55,descent=13,internal=6,external=3,average=25,maximum=67,extent=235:68",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=69,esc=0",
+      "result": "face=\"Times New Roman\",height=69,ascent=54,descent=15,internal=8,external=3,average=24,maximum=66,extent=233:69",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=69,esc=900",
+      "result": "face=\"Times New Roman\",height=68,ascent=55,descent=13,internal=6,external=3,average=25,maximum=67,extent=235:68",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=70,esc=0",
+      "result": "face=\"Times New Roman\",height=70,ascent=55,descent=15,internal=8,external=3,average=25,maximum=67,extent=235:70",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=70,esc=900",
+      "result": "face=\"Times New Roman\",height=70,ascent=56,descent=14,internal=7,external=3,average=25,maximum=68,extent=242:70",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=71,esc=0",
+      "result": "face=\"Times New Roman\",height=71,ascent=56,descent=15,internal=8,external=3,average=25,maximum=68,extent=242:71",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=71,esc=900",
+      "result": "face=\"Times New Roman\",height=71,ascent=57,descent=14,internal=7,external=3,average=26,maximum=69,extent=245:71",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=72,esc=0",
+      "result": "face=\"Times New Roman\",height=71,ascent=56,descent=15,internal=8,external=3,average=25,maximum=68,extent=242:71",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Times New Roman\",h=72,esc=900",
+      "result": "face=\"Times New Roman\",height=72,ascent=58,descent=14,internal=7,external=3,average=26,maximum=71,extent=250:72",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=8,esc=0",
+      "result": "face=\"Courier New\",height=8,ascent=6,descent=2,internal=0,external=0,average=5,maximum=5,extent=35:8",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=8,esc=900",
+      "result": "face=\"Courier New\",height=8,ascent=6,descent=2,internal=1,external=0,average=4,maximum=5,extent=28:8",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=9,esc=0",
+      "result": "face=\"Courier New\",height=8,ascent=6,descent=2,internal=0,external=0,average=5,maximum=5,extent=35:8",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=9,esc=900",
+      "result": "face=\"Courier New\",height=9,ascent=7,descent=2,internal=1,external=0,average=5,maximum=5,extent=35:9",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=10,esc=0",
+      "result": "face=\"Courier New\",height=8,ascent=6,descent=2,internal=0,external=0,average=5,maximum=5,extent=35:8",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=10,esc=900",
+      "result": "face=\"Courier New\",height=10,ascent=7,descent=3,internal=1,external=0,average=5,maximum=6,extent=35:10",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=11,esc=0",
+      "result": "face=\"Courier New\",height=8,ascent=6,descent=2,internal=0,external=0,average=5,maximum=5,extent=35:8",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=11,esc=900",
+      "result": "face=\"Courier New\",height=11,ascent=8,descent=3,internal=1,external=0,average=6,maximum=7,extent=42:11",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=12,esc=0",
+      "result": "face=\"Courier New\",height=12,ascent=9,descent=3,internal=3,external=0,average=5,maximum=6,extent=35:12",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=12,esc=900",
+      "result": "face=\"Courier New\",height=12,ascent=9,descent=3,internal=1,external=0,average=7,maximum=7,extent=49:12",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=13,esc=0",
+      "result": "face=\"Courier New\",height=12,ascent=9,descent=3,internal=2,external=0,average=6,maximum=7,extent=42:12",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=13,esc=900",
+      "result": "face=\"Courier New\",height=12,ascent=9,descent=3,internal=1,external=0,average=7,maximum=7,extent=49:12",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=14,esc=0",
+      "result": "face=\"Courier New\",height=14,ascent=11,descent=3,internal=3,external=0,average=7,maximum=7,extent=49:14",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=14,esc=900",
+      "result": "face=\"Courier New\",height=14,ascent=10,descent=4,internal=2,external=0,average=7,maximum=8,extent=49:14",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=15,esc=0",
+      "result": "face=\"Courier New\",height=15,ascent=12,descent=3,internal=3,external=0,average=7,maximum=8,extent=49:15",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=15,esc=900",
+      "result": "face=\"Courier New\",height=15,ascent=11,descent=4,internal=2,external=0,average=8,maximum=9,extent=56:15",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=16,esc=0",
+      "result": "face=\"Courier New\",height=16,ascent=12,descent=4,internal=3,external=0,average=8,maximum=9,extent=56:16",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=16,esc=900",
+      "result": "face=\"Courier New\",height=16,ascent=12,descent=4,internal=2,external=0,average=8,maximum=9,extent=56:16",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=17,esc=0",
+      "result": "face=\"Courier New\",height=17,ascent=13,descent=4,internal=3,external=0,average=8,maximum=9,extent=56:17",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=17,esc=900",
+      "result": "face=\"Courier New\",height=17,ascent=12,descent=5,internal=2,external=0,average=9,maximum=10,extent=63:17",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=18,esc=0",
+      "result": "face=\"Courier New\",height=18,ascent=14,descent=4,internal=2,external=0,average=10,maximum=11,extent=70:18",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=18,esc=900",
+      "result": "face=\"Courier New\",height=18,ascent=13,descent=5,internal=2,external=0,average=10,maximum=11,extent=70:18",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=19,esc=0",
+      "result": "face=\"Courier New\",height=18,ascent=14,descent=4,internal=2,external=0,average=10,maximum=11,extent=70:18",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=19,esc=900",
+      "result": "face=\"Courier New\",height=19,ascent=14,descent=5,internal=2,external=0,average=10,maximum=11,extent=70:19",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=20,esc=0",
+      "result": "face=\"Courier New\",height=20,ascent=15,descent=5,internal=3,external=0,average=10,maximum=11,extent=70:20",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=20,esc=900",
+      "result": "face=\"Courier New\",height=20,ascent=15,descent=5,internal=2,external=0,average=11,maximum=12,extent=77:20",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=21,esc=0",
+      "result": "face=\"Courier New\",height=21,ascent=16,descent=5,internal=2,external=0,average=11,maximum=12,extent=77:21",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=21,esc=900",
+      "result": "face=\"Courier New\",height=20,ascent=15,descent=5,internal=2,external=0,average=11,maximum=12,extent=77:20",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=22,esc=0",
+      "result": "face=\"Courier New\",height=22,ascent=17,descent=5,internal=2,external=0,average=12,maximum=13,extent=84:22",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=22,esc=900",
+      "result": "face=\"Courier New\",height=22,ascent=16,descent=6,internal=3,external=0,average=11,maximum=12,extent=77:22",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=23,esc=0",
+      "result": "face=\"Courier New\",height=23,ascent=17,descent=6,internal=2,external=0,average=13,maximum=14,extent=91:23",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=23,esc=900",
+      "result": "face=\"Courier New\",height=23,ascent=17,descent=6,internal=3,external=0,average=12,maximum=13,extent=84:23",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=24,esc=0",
+      "result": "face=\"Courier New\",height=24,ascent=18,descent=6,internal=2,external=0,average=13,maximum=14,extent=91:24",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=24,esc=900",
+      "result": "face=\"Courier New\",height=23,ascent=17,descent=6,internal=2,external=0,average=13,maximum=14,extent=91:23",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=25,esc=0",
+      "result": "face=\"Courier New\",height=25,ascent=19,descent=6,internal=2,external=0,average=14,maximum=15,extent=98:25",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=25,esc=900",
+      "result": "face=\"Courier New\",height=25,ascent=18,descent=7,internal=3,external=0,average=13,maximum=14,extent=91:25",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=26,esc=0",
+      "result": "face=\"Courier New\",height=25,ascent=19,descent=6,internal=2,external=0,average=14,maximum=15,extent=98:25",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=26,esc=900",
+      "result": "face=\"Courier New\",height=26,ascent=19,descent=7,internal=3,external=0,average=14,maximum=15,extent=98:26",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=27,esc=0",
+      "result": "face=\"Courier New\",height=27,ascent=20,descent=7,internal=3,external=0,average=14,maximum=16,extent=98:27",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=27,esc=900",
+      "result": "face=\"Courier New\",height=27,ascent=20,descent=7,internal=3,external=0,average=14,maximum=16,extent=98:27",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=28,esc=0",
+      "result": "face=\"Courier New\",height=27,ascent=20,descent=7,internal=3,external=0,average=14,maximum=16,extent=98:27",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=28,esc=900",
+      "result": "face=\"Courier New\",height=27,ascent=20,descent=7,internal=3,external=0,average=14,maximum=16,extent=98:27",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=29,esc=0",
+      "result": "face=\"Courier New\",height=29,ascent=22,descent=7,internal=4,external=0,average=15,maximum=16,extent=105:29",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=29,esc=900",
+      "result": "face=\"Courier New\",height=29,ascent=21,descent=8,internal=4,external=0,average=15,maximum=16,extent=105:29",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=30,esc=0",
+      "result": "face=\"Courier New\",height=30,ascent=23,descent=7,internal=3,external=0,average=16,maximum=18,extent=112:30",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=30,esc=900",
+      "result": "face=\"Courier New\",height=30,ascent=22,descent=8,internal=4,external=0,average=16,maximum=17,extent=112:30",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=31,esc=0",
+      "result": "face=\"Courier New\",height=31,ascent=23,descent=8,internal=3,external=0,average=17,maximum=18,extent=119:31",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=31,esc=900",
+      "result": "face=\"Courier New\",height=31,ascent=23,descent=8,internal=3,external=0,average=17,maximum=18,extent=119:31",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=32,esc=0",
+      "result": "face=\"Courier New\",height=32,ascent=24,descent=8,internal=3,external=0,average=17,maximum=19,extent=119:32",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=32,esc=900",
+      "result": "face=\"Courier New\",height=31,ascent=23,descent=8,internal=3,external=0,average=17,maximum=18,extent=119:31",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=33,esc=0",
+      "result": "face=\"Courier New\",height=33,ascent=25,descent=8,internal=3,external=0,average=18,maximum=20,extent=126:33",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=33,esc=900",
+      "result": "face=\"Courier New\",height=33,ascent=24,descent=9,internal=4,external=0,average=17,maximum=19,extent=119:33",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=34,esc=0",
+      "result": "face=\"Courier New\",height=33,ascent=25,descent=8,internal=2,external=0,average=19,maximum=20,extent=133:33",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=34,esc=900",
+      "result": "face=\"Courier New\",height=34,ascent=25,descent=9,internal=4,external=0,average=18,maximum=20,extent=126:34",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=35,esc=0",
+      "result": "face=\"Courier New\",height=33,ascent=25,descent=8,internal=2,external=0,average=19,maximum=20,extent=133:33",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=35,esc=900",
+      "result": "face=\"Courier New\",height=35,ascent=26,descent=9,internal=4,external=0,average=19,maximum=20,extent=133:35",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=36,esc=0",
+      "result": "face=\"Courier New\",height=36,ascent=27,descent=9,internal=4,external=0,average=19,maximum=21,extent=133:36",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=36,esc=900",
+      "result": "face=\"Courier New\",height=35,ascent=26,descent=9,internal=4,external=0,average=19,maximum=20,extent=133:35",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=37,esc=0",
+      "result": "face=\"Courier New\",height=37,ascent=28,descent=9,internal=3,external=0,average=20,maximum=22,extent=140:37",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=37,esc=900",
+      "result": "face=\"Courier New\",height=37,ascent=27,descent=10,internal=4,external=0,average=20,maximum=22,extent=140:37",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=38,esc=0",
+      "result": "face=\"Courier New\",height=37,ascent=28,descent=9,internal=3,external=0,average=20,maximum=22,extent=140:37",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=38,esc=900",
+      "result": "face=\"Courier New\",height=38,ascent=28,descent=10,internal=4,external=0,average=20,maximum=22,extent=140:38",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=39,esc=0",
+      "result": "face=\"Courier New\",height=39,ascent=29,descent=10,internal=4,external=0,average=21,maximum=23,extent=147:39",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=39,esc=900",
+      "result": "face=\"Courier New\",height=38,ascent=28,descent=10,internal=4,external=0,average=20,maximum=22,extent=140:38",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=40,esc=0",
+      "result": "face=\"Courier New\",height=40,ascent=30,descent=10,internal=2,external=0,average=23,maximum=25,extent=161:40",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=40,esc=900",
+      "result": "face=\"Courier New\",height=40,ascent=29,descent=11,internal=5,external=0,average=21,maximum=23,extent=147:40",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=41,esc=0",
+      "result": "face=\"Courier New\",height=40,ascent=30,descent=10,internal=2,external=0,average=23,maximum=25,extent=161:40",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=41,esc=900",
+      "result": "face=\"Courier New\",height=41,ascent=30,descent=11,internal=5,external=0,average=22,maximum=24,extent=154:41",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=42,esc=0",
+      "result": "face=\"Courier New\",height=42,ascent=31,descent=11,internal=3,external=0,average=23,maximum=26,extent=161:42",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=42,esc=900",
+      "result": "face=\"Courier New\",height=42,ascent=31,descent=11,internal=5,external=0,average=22,maximum=24,extent=154:42",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=43,esc=0",
+      "result": "face=\"Courier New\",height=42,ascent=31,descent=11,internal=2,external=0,average=24,maximum=26,extent=168:42",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=43,esc=900",
+      "result": "face=\"Courier New\",height=43,ascent=32,descent=11,internal=5,external=0,average=23,maximum=25,extent=161:43",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=44,esc=0",
+      "result": "face=\"Courier New\",height=44,ascent=33,descent=11,internal=3,external=0,average=25,maximum=27,extent=175:44",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=44,esc=900",
+      "result": "face=\"Courier New\",height=44,ascent=32,descent=12,internal=5,external=0,average=23,maximum=26,extent=161:44",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=45,esc=0",
+      "result": "face=\"Courier New\",height=45,ascent=33,descent=12,internal=3,external=0,average=25,maximum=28,extent=175:45",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=45,esc=900",
+      "result": "face=\"Courier New\",height=45,ascent=33,descent=12,internal=5,external=0,average=24,maximum=26,extent=168:45",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=46,esc=0",
+      "result": "face=\"Courier New\",height=46,ascent=34,descent=12,internal=3,external=0,average=26,maximum=28,extent=182:46",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=46,esc=900",
+      "result": "face=\"Courier New\",height=46,ascent=34,descent=12,internal=5,external=0,average=25,maximum=27,extent=175:46",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=47,esc=0",
+      "result": "face=\"Courier New\",height=47,ascent=35,descent=12,internal=3,external=0,average=26,maximum=29,extent=182:47",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=47,esc=900",
+      "result": "face=\"Courier New\",height=46,ascent=34,descent=12,internal=5,external=0,average=25,maximum=27,extent=175:46",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=48,esc=0",
+      "result": "face=\"Courier New\",height=47,ascent=35,descent=12,internal=2,external=0,average=27,maximum=30,extent=189:47",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=48,esc=900",
+      "result": "face=\"Courier New\",height=48,ascent=35,descent=13,internal=6,external=0,average=25,maximum=28,extent=175:48",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=49,esc=0",
+      "result": "face=\"Courier New\",height=49,ascent=36,descent=13,internal=3,external=0,average=28,maximum=30,extent=196:49",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=49,esc=900",
+      "result": "face=\"Courier New\",height=49,ascent=36,descent=13,internal=6,external=0,average=26,maximum=28,extent=182:49",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=50,esc=0",
+      "result": "face=\"Courier New\",height=50,ascent=37,descent=13,internal=3,external=0,average=28,maximum=31,extent=196:50",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=50,esc=900",
+      "result": "face=\"Courier New\",height=50,ascent=37,descent=13,internal=6,external=0,average=26,maximum=29,extent=182:50",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=51,esc=0",
+      "result": "face=\"Courier New\",height=51,ascent=38,descent=13,internal=2,external=0,average=29,maximum=32,extent=203:51",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=51,esc=900",
+      "result": "face=\"Courier New\",height=51,ascent=37,descent=14,internal=6,external=0,average=27,maximum=30,extent=189:51",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=52,esc=0",
+      "result": "face=\"Courier New\",height=51,ascent=38,descent=13,internal=2,external=0,average=29,maximum=32,extent=203:51",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=52,esc=900",
+      "result": "face=\"Courier New\",height=52,ascent=38,descent=14,internal=6,external=0,average=28,maximum=30,extent=196:52",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=53,esc=0",
+      "result": "face=\"Courier New\",height=53,ascent=39,descent=14,internal=3,external=0,average=30,maximum=33,extent=210:53",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=53,esc=900",
+      "result": "face=\"Courier New\",height=53,ascent=39,descent=14,internal=6,external=0,average=28,maximum=31,extent=196:53",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=54,esc=0",
+      "result": "face=\"Courier New\",height=53,ascent=39,descent=14,internal=3,external=0,average=30,maximum=33,extent=210:53",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=54,esc=900",
+      "result": "face=\"Courier New\",height=54,ascent=40,descent=14,internal=6,external=0,average=29,maximum=32,extent=203:54",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=55,esc=0",
+      "result": "face=\"Courier New\",height=53,ascent=39,descent=14,internal=3,external=0,average=30,maximum=33,extent=210:53",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=55,esc=900",
+      "result": "face=\"Courier New\",height=54,ascent=40,descent=14,internal=6,external=0,average=29,maximum=32,extent=203:54",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=56,esc=0",
+      "result": "face=\"Courier New\",height=56,ascent=42,descent=14,internal=5,external=0,average=31,maximum=33,extent=217:56",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=56,esc=900",
+      "result": "face=\"Courier New\",height=56,ascent=41,descent=15,internal=7,external=0,average=29,maximum=32,extent=203:56",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=57,esc=0",
+      "result": "face=\"Courier New\",height=57,ascent=43,descent=14,internal=5,external=0,average=31,maximum=34,extent=217:57",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=57,esc=900",
+      "result": "face=\"Courier New\",height=57,ascent=42,descent=15,internal=7,external=0,average=30,maximum=33,extent=210:57",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=58,esc=0",
+      "result": "face=\"Courier New\",height=58,ascent=43,descent=15,internal=5,external=0,average=32,maximum=35,extent=224:58",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=58,esc=900",
+      "result": "face=\"Courier New\",height=57,ascent=42,descent=15,internal=6,external=0,average=31,maximum=33,extent=217:57",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=59,esc=0",
+      "result": "face=\"Courier New\",height=59,ascent=44,descent=15,internal=5,external=0,average=32,maximum=35,extent=224:59",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=59,esc=900",
+      "result": "face=\"Courier New\",height=59,ascent=43,descent=16,internal=7,external=0,average=31,maximum=34,extent=217:59",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=60,esc=0",
+      "result": "face=\"Courier New\",height=60,ascent=45,descent=15,internal=5,external=0,average=33,maximum=36,extent=231:60",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=60,esc=900",
+      "result": "face=\"Courier New\",height=60,ascent=44,descent=16,internal=7,external=0,average=32,maximum=35,extent=224:60",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=61,esc=0",
+      "result": "face=\"Courier New\",height=60,ascent=45,descent=15,internal=4,external=0,average=34,maximum=37,extent=238:60",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=61,esc=900",
+      "result": "face=\"Courier New\",height=61,ascent=45,descent=16,internal=7,external=0,average=32,maximum=35,extent=224:61",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=62,esc=0",
+      "result": "face=\"Courier New\",height=62,ascent=46,descent=16,internal=5,external=0,average=34,maximum=37,extent=238:62",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=62,esc=900",
+      "result": "face=\"Courier New\",height=61,ascent=45,descent=16,internal=7,external=0,average=32,maximum=35,extent=224:61",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=63,esc=0",
+      "result": "face=\"Courier New\",height=63,ascent=47,descent=16,internal=4,external=0,average=35,maximum=39,extent=245:63",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=63,esc=900",
+      "result": "face=\"Courier New\",height=63,ascent=46,descent=17,internal=8,external=0,average=33,maximum=36,extent=231:63",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=64,esc=0",
+      "result": "face=\"Courier New\",height=63,ascent=47,descent=16,internal=4,external=0,average=35,maximum=39,extent=245:63",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=64,esc=900",
+      "result": "face=\"Courier New\",height=64,ascent=47,descent=17,internal=8,external=0,average=34,maximum=37,extent=238:64",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=65,esc=0",
+      "result": "face=\"Courier New\",height=65,ascent=49,descent=16,internal=5,external=0,average=36,maximum=39,extent=252:65",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=65,esc=900",
+      "result": "face=\"Courier New\",height=65,ascent=48,descent=17,internal=7,external=0,average=35,maximum=38,extent=245:65",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=66,esc=0",
+      "result": "face=\"Courier New\",height=66,ascent=49,descent=17,internal=5,external=0,average=37,maximum=40,extent=259:66",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=66,esc=900",
+      "result": "face=\"Courier New\",height=65,ascent=48,descent=17,internal=7,external=0,average=35,maximum=38,extent=245:65",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=67,esc=0",
+      "result": "face=\"Courier New\",height=67,ascent=50,descent=17,internal=5,external=0,average=37,maximum=41,extent=259:67",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=67,esc=900",
+      "result": "face=\"Courier New\",height=67,ascent=49,descent=18,internal=8,external=0,average=35,maximum=39,extent=245:67",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=68,esc=0",
+      "result": "face=\"Courier New\",height=68,ascent=51,descent=17,internal=5,external=0,average=38,maximum=41,extent=266:68",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=68,esc=900",
+      "result": "face=\"Courier New\",height=68,ascent=50,descent=18,internal=8,external=0,average=36,maximum=39,extent=252:68",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=69,esc=0",
+      "result": "face=\"Courier New\",height=69,ascent=51,descent=18,internal=5,external=0,average=38,maximum=42,extent=266:69",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=69,esc=900",
+      "result": "face=\"Courier New\",height=69,ascent=51,descent=18,internal=8,external=0,average=37,maximum=40,extent=259:69",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=70,esc=0",
+      "result": "face=\"Courier New\",height=70,ascent=52,descent=18,internal=5,external=0,average=39,maximum=43,extent=273:70",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=70,esc=900",
+      "result": "face=\"Courier New\",height=69,ascent=51,descent=18,internal=8,external=0,average=37,maximum=40,extent=259:69",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=71,esc=0",
+      "result": "face=\"Courier New\",height=71,ascent=53,descent=18,internal=5,external=0,average=40,maximum=43,extent=280:71",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=71,esc=900",
+      "result": "face=\"Courier New\",height=71,ascent=52,descent=19,internal=8,external=0,average=38,maximum=41,extent=266:71",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=72,esc=0",
+      "result": "face=\"Courier New\",height=71,ascent=53,descent=18,internal=4,external=0,average=40,maximum=44,extent=280:71",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Courier New\",h=72,esc=900",
+      "result": "face=\"Courier New\",height=72,ascent=53,descent=19,internal=8,external=0,average=38,maximum=42,extent=266:72",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=8,esc=0",
+      "result": "face=\"Small Fonts\",height=8,ascent=7,descent=1,internal=1,external=0,average=4,maximum=7,extent=28:8",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=8,esc=900",
+      "result": "face=\"Times New Roman\",height=8,ascent=6,descent=2,internal=1,external=0,average=3,maximum=8,extent=29:8",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=9,esc=0",
+      "result": "face=\"Arial Bold\",height=7,ascent=6,descent=1,internal=0,external=0,average=3,maximum=7,extent=30:7",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=9,esc=900",
+      "result": "face=\"Times New Roman\",height=9,ascent=7,descent=2,internal=1,external=0,average=3,maximum=9,extent=31:9",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=10,esc=0",
+      "result": "face=\"MS Serif\",height=10,ascent=8,descent=2,internal=2,external=0,average=4,maximum=8,extent=33:10",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=10,esc=900",
+      "result": "face=\"Times New Roman\",height=10,ascent=8,descent=2,internal=1,external=0,average=4,maximum=10,extent=38:10",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=11,esc=0",
+      "result": "face=\"MS Serif\",height=11,ascent=9,descent=2,internal=2,external=0,average=5,maximum=9,extent=34:11",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=11,esc=900",
+      "result": "face=\"Times New Roman\",height=11,ascent=9,descent=2,internal=1,external=0,average=4,maximum=11,extent=39:11",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=12,esc=0",
+      "result": "face=\"Times New Roman\",height=12,ascent=10,descent=2,internal=3,external=0,average=4,maximum=10,extent=38:12",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=12,esc=900",
+      "result": "face=\"Times New Roman\",height=12,ascent=10,descent=2,internal=1,external=0,average=4,maximum=12,extent=42:12",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=13,esc=0",
+      "result": "face=\"Times New Roman\",height=12,ascent=10,descent=2,internal=2,external=0,average=4,maximum=11,extent=39:12",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=13,esc=900",
+      "result": "face=\"Times New Roman\",height=12,ascent=10,descent=2,internal=1,external=0,average=4,maximum=12,extent=42:12",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=14,esc=0",
+      "result": "face=\"Times New Roman\",height=14,ascent=11,descent=3,internal=3,external=0,average=4,maximum=12,extent=42:14",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=14,esc=900",
+      "result": "face=\"Times New Roman\",height=14,ascent=11,descent=3,internal=2,external=1,average=5,maximum=13,extent=46:14",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=15,esc=0",
+      "result": "face=\"Times New Roman\",height=15,ascent=12,descent=3,internal=3,external=1,average=5,maximum=13,extent=46:15",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=15,esc=900",
+      "result": "face=\"Times New Roman\",height=15,ascent=12,descent=3,internal=1,external=1,average=6,maximum=15,extent=54:15",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=16,esc=0",
+      "result": "face=\"Times New Roman\",height=16,ascent=13,descent=3,internal=2,external=1,average=6,maximum=15,extent=54:16",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=16,esc=900",
+      "result": "face=\"Times New Roman\",height=16,ascent=13,descent=3,internal=1,external=1,average=6,maximum=16,extent=55:16",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=17,esc=0",
+      "result": "face=\"Times New Roman\",height=17,ascent=13,descent=4,internal=2,external=1,average=6,maximum=16,extent=55:17",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=17,esc=900",
+      "result": "face=\"Times New Roman\",height=17,ascent=14,descent=3,internal=1,external=1,average=6,maximum=17,extent=58:17",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=18,esc=0",
+      "result": "face=\"Times New Roman\",height=17,ascent=13,descent=4,internal=2,external=1,average=6,maximum=16,extent=55:17",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=18,esc=900",
+      "result": "face=\"Times New Roman\",height=17,ascent=14,descent=3,internal=1,external=1,average=6,maximum=17,extent=58:17",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=19,esc=0",
+      "result": "face=\"Times New Roman\",height=19,ascent=15,descent=4,internal=3,external=1,average=6,maximum=17,extent=58:19",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=19,esc=900",
+      "result": "face=\"Times New Roman\",height=19,ascent=15,descent=4,internal=2,external=1,average=7,maximum=18,extent=64:19",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=20,esc=0",
+      "result": "face=\"Times New Roman\",height=20,ascent=16,descent=4,internal=2,external=1,average=7,maximum=20,extent=68:20",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=20,esc=900",
+      "result": "face=\"Times New Roman\",height=20,ascent=16,descent=4,internal=2,external=1,average=7,maximum=20,extent=68:20",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=21,esc=0",
+      "result": "face=\"Times New Roman\",height=21,ascent=16,descent=5,internal=2,external=1,average=8,maximum=21,extent=72:21",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=21,esc=900",
+      "result": "face=\"Times New Roman\",height=21,ascent=17,descent=4,internal=2,external=1,average=8,maximum=21,extent=72:21",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=22,esc=0",
+      "result": "face=\"Times New Roman\",height=22,ascent=17,descent=5,internal=2,external=1,average=8,maximum=22,extent=76:22",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=22,esc=900",
+      "result": "face=\"Times New Roman\",height=22,ascent=18,descent=4,internal=2,external=1,average=8,maximum=22,extent=76:22",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=23,esc=0",
+      "result": "face=\"Times New Roman\",height=23,ascent=18,descent=5,internal=2,external=1,average=8,maximum=23,extent=79:23",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=23,esc=900",
+      "result": "face=\"Times New Roman\",height=22,ascent=18,descent=4,internal=2,external=1,average=8,maximum=22,extent=76:22",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=24,esc=0",
+      "result": "face=\"Times New Roman\",height=23,ascent=18,descent=5,internal=2,external=1,average=8,maximum=23,extent=79:23",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=24,esc=900",
+      "result": "face=\"Times New Roman\",height=24,ascent=19,descent=5,internal=3,external=1,average=8,maximum=23,extent=79:24",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=25,esc=0",
+      "result": "face=\"Times New Roman\",height=25,ascent=20,descent=5,internal=3,external=1,average=9,maximum=24,extent=82:25",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=25,esc=900",
+      "result": "face=\"Times New Roman\",height=25,ascent=20,descent=5,internal=2,external=1,average=9,maximum=25,extent=89:25",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=26,esc=0",
+      "result": "face=\"Times New Roman\",height=26,ascent=20,descent=6,internal=3,external=1,average=9,maximum=25,extent=89:26",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=26,esc=900",
+      "result": "face=\"Times New Roman\",height=26,ascent=21,descent=5,internal=2,external=1,average=10,maximum=26,extent=91:26",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=27,esc=0",
+      "result": "face=\"Times New Roman\",height=27,ascent=21,descent=6,internal=3,external=1,average=10,maximum=26,extent=91:27",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=27,esc=900",
+      "result": "face=\"Times New Roman\",height=27,ascent=22,descent=5,internal=2,external=1,average=10,maximum=27,extent=97:27",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=28,esc=0",
+      "result": "face=\"Times New Roman\",height=27,ascent=21,descent=6,internal=3,external=1,average=10,maximum=26,extent=91:27",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=28,esc=900",
+      "result": "face=\"Times New Roman\",height=27,ascent=22,descent=5,internal=2,external=1,average=10,maximum=27,extent=97:27",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=29,esc=0",
+      "result": "face=\"Times New Roman\",height=29,ascent=23,descent=6,internal=4,external=1,average=10,maximum=27,extent=97:29",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=29,esc=900",
+      "result": "face=\"Times New Roman\",height=29,ascent=23,descent=6,internal=3,external=1,average=10,maximum=28,extent=98:29",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=30,esc=0",
+      "result": "face=\"Times New Roman\",height=29,ascent=23,descent=6,internal=3,external=1,average=10,maximum=28,extent=98:29",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=30,esc=900",
+      "result": "face=\"Times New Roman\",height=30,ascent=24,descent=6,internal=3,external=1,average=11,maximum=29,extent=103:30",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=31,esc=0",
+      "result": "face=\"Times New Roman\",height=31,ascent=24,descent=7,internal=4,external=1,average=11,maximum=29,extent=103:31",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=31,esc=900",
+      "result": "face=\"Times New Roman\",height=31,ascent=25,descent=6,internal=3,external=1,average=11,maximum=30,extent=106:31",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=32,esc=0",
+      "result": "face=\"Times New Roman\",height=31,ascent=24,descent=7,internal=4,external=1,average=11,maximum=29,extent=103:31",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=32,esc=900",
+      "result": "face=\"Times New Roman\",height=32,ascent=26,descent=6,internal=3,external=1,average=12,maximum=31,extent=108:32",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=33,esc=0",
+      "result": "face=\"Times New Roman\",height=33,ascent=26,descent=7,internal=5,external=1,average=11,maximum=30,extent=106:33",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=33,esc=900",
+      "result": "face=\"Times New Roman\",height=33,ascent=27,descent=6,internal=3,external=1,average=12,maximum=33,extent=112:33",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=34,esc=0",
+      "result": "face=\"Times New Roman\",height=34,ascent=27,descent=7,internal=4,external=1,average=12,maximum=33,extent=112:34",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=34,esc=900",
+      "result": "face=\"Times New Roman\",height=33,ascent=27,descent=6,internal=3,external=1,average=12,maximum=33,extent=112:33",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=35,esc=0",
+      "result": "face=\"Times New Roman\",height=35,ascent=28,descent=7,internal=4,external=1,average=12,maximum=34,extent=116:35",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=35,esc=900",
+      "result": "face=\"Times New Roman\",height=35,ascent=28,descent=7,internal=4,external=1,average=12,maximum=34,extent=116:35",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=36,esc=0",
+      "result": "face=\"Times New Roman\",height=36,ascent=28,descent=8,internal=4,external=1,average=13,maximum=35,extent=119:36",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=36,esc=900",
+      "result": "face=\"Times New Roman\",height=36,ascent=29,descent=7,internal=3,external=1,average=13,maximum=36,extent=123:36",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=37,esc=0",
+      "result": "face=\"Times New Roman\",height=37,ascent=29,descent=8,internal=4,external=1,average=13,maximum=36,extent=123:37",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=37,esc=900",
+      "result": "face=\"Times New Roman\",height=37,ascent=30,descent=7,internal=3,external=1,average=14,maximum=37,extent=129:37",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=38,esc=0",
+      "result": "face=\"Times New Roman\",height=37,ascent=29,descent=8,internal=4,external=1,average=13,maximum=36,extent=123:37",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=38,esc=900",
+      "result": "face=\"Times New Roman\",height=37,ascent=30,descent=7,internal=3,external=1,average=14,maximum=37,extent=129:37",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=39,esc=0",
+      "result": "face=\"Times New Roman\",height=39,ascent=31,descent=8,internal=5,external=1,average=14,maximum=37,extent=129:39",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=39,esc=900",
+      "result": "face=\"Times New Roman\",height=39,ascent=31,descent=8,internal=4,external=1,average=14,maximum=38,extent=134:39",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=40,esc=0",
+      "result": "face=\"Times New Roman\",height=40,ascent=32,descent=8,internal=5,external=1,average=14,maximum=38,extent=134:40",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=40,esc=900",
+      "result": "face=\"Times New Roman\",height=40,ascent=32,descent=8,internal=4,external=2,average=14,maximum=39,extent=134:40",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=41,esc=0",
+      "result": "face=\"Times New Roman\",height=41,ascent=32,descent=9,internal=5,external=2,average=14,maximum=39,extent=134:41",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=41,esc=900",
+      "result": "face=\"Times New Roman\",height=41,ascent=33,descent=8,internal=4,external=2,average=15,maximum=40,extent=139:41",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=42,esc=0",
+      "result": "face=\"Times New Roman\",height=42,ascent=33,descent=9,internal=5,external=2,average=15,maximum=40,extent=139:42",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=42,esc=900",
+      "result": "face=\"Times New Roman\",height=42,ascent=34,descent=8,internal=4,external=2,average=15,maximum=41,extent=144:42",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=43,esc=0",
+      "result": "face=\"Times New Roman\",height=43,ascent=34,descent=9,internal=5,external=2,average=15,maximum=41,extent=144:43",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=43,esc=900",
+      "result": "face=\"Times New Roman\",height=43,ascent=35,descent=8,internal=4,external=2,average=16,maximum=42,extent=150:43",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=44,esc=0",
+      "result": "face=\"Times New Roman\",height=43,ascent=34,descent=9,internal=4,external=2,average=16,maximum=42,extent=150:43",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=44,esc=900",
+      "result": "face=\"Times New Roman\",height=43,ascent=35,descent=8,internal=4,external=2,average=16,maximum=42,extent=150:43",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=45,esc=0",
+      "result": "face=\"Times New Roman\",height=43,ascent=34,descent=9,internal=4,external=2,average=16,maximum=42,extent=150:43",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=45,esc=900",
+      "result": "face=\"Times New Roman\",height=45,ascent=36,descent=9,internal=5,external=2,average=16,maximum=43,extent=153:45",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=46,esc=0",
+      "result": "face=\"Times New Roman\",height=46,ascent=36,descent=10,internal=6,external=2,average=16,maximum=43,extent=153:46",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=46,esc=900",
+      "result": "face=\"Times New Roman\",height=46,ascent=37,descent=9,internal=4,external=2,average=17,maximum=46,extent=159:46",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=47,esc=0",
+      "result": "face=\"Times New Roman\",height=47,ascent=37,descent=10,internal=6,external=2,average=16,maximum=45,extent=154:47",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=47,esc=900",
+      "result": "face=\"Times New Roman\",height=47,ascent=38,descent=9,internal=4,external=2,average=17,maximum=47,extent=163:47",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=48,esc=0",
+      "result": "face=\"Times New Roman\",height=48,ascent=38,descent=10,internal=6,external=2,average=17,maximum=46,extent=159:48",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=48,esc=900",
+      "result": "face=\"Times New Roman\",height=47,ascent=38,descent=9,internal=4,external=2,average=17,maximum=47,extent=163:47",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=49,esc=0",
+      "result": "face=\"Times New Roman\",height=49,ascent=39,descent=10,internal=6,external=2,average=17,maximum=47,extent=163:49",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=49,esc=900",
+      "result": "face=\"Times New Roman\",height=49,ascent=39,descent=10,internal=5,external=2,average=18,maximum=48,extent=165:49",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=50,esc=0",
+      "result": "face=\"Times New Roman\",height=49,ascent=39,descent=10,internal=6,external=2,average=17,maximum=47,extent=163:49",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=50,esc=900",
+      "result": "face=\"Times New Roman\",height=50,ascent=40,descent=10,internal=5,external=2,average=18,maximum=49,extent=169:50",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=51,esc=0",
+      "result": "face=\"Times New Roman\",height=51,ascent=40,descent=11,internal=7,external=2,average=18,maximum=48,extent=165:51",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=51,esc=900",
+      "result": "face=\"Times New Roman\",height=51,ascent=41,descent=10,internal=5,external=2,average=18,maximum=50,extent=171:51",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=52,esc=0",
+      "result": "face=\"Times New Roman\",height=52,ascent=41,descent=11,internal=7,external=2,average=18,maximum=49,extent=169:52",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=52,esc=900",
+      "result": "face=\"Times New Roman\",height=52,ascent=42,descent=10,internal=5,external=2,average=19,maximum=51,extent=179:52",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=53,esc=0",
+      "result": "face=\"Times New Roman\",height=53,ascent=42,descent=11,internal=7,external=2,average=18,maximum=50,extent=171:53",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=53,esc=900",
+      "result": "face=\"Times New Roman\",height=53,ascent=43,descent=10,internal=5,external=2,average=19,maximum=52,extent=181:53",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=54,esc=0",
+      "result": "face=\"Times New Roman\",height=53,ascent=42,descent=11,internal=6,external=2,average=19,maximum=51,extent=179:53",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=54,esc=900",
+      "result": "face=\"Times New Roman\",height=53,ascent=43,descent=10,internal=5,external=2,average=19,maximum=52,extent=181:53",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=55,esc=0",
+      "result": "face=\"Times New Roman\",height=55,ascent=43,descent=12,internal=7,external=2,average=19,maximum=52,extent=181:55",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=55,esc=900",
+      "result": "face=\"Times New Roman\",height=55,ascent=44,descent=11,internal=6,external=2,average=20,maximum=53,extent=189:55",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=56,esc=0",
+      "result": "face=\"Times New Roman\",height=56,ascent=44,descent=12,internal=7,external=2,average=20,maximum=53,extent=189:56",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=56,esc=900",
+      "result": "face=\"Times New Roman\",height=56,ascent=45,descent=11,internal=5,external=2,average=20,maximum=55,extent=197:56",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=57,esc=0",
+      "result": "face=\"Times New Roman\",height=57,ascent=45,descent=12,internal=7,external=2,average=20,maximum=54,extent=188:57",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=57,esc=900",
+      "result": "face=\"Times New Roman\",height=57,ascent=46,descent=11,internal=5,external=2,average=21,maximum=56,extent=200:57",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=58,esc=0",
+      "result": "face=\"Times New Roman\",height=57,ascent=45,descent=12,internal=6,external=2,average=20,maximum=55,extent=197:57",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=58,esc=900",
+      "result": "face=\"Times New Roman\",height=58,ascent=47,descent=11,internal=5,external=2,average=21,maximum=58,extent=206:58",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=59,esc=0",
+      "result": "face=\"Times New Roman\",height=57,ascent=45,descent=12,internal=6,external=2,average=20,maximum=55,extent=197:57",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=59,esc=900",
+      "result": "face=\"Times New Roman\",height=58,ascent=47,descent=11,internal=5,external=2,average=21,maximum=58,extent=206:58",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=60,esc=0",
+      "result": "face=\"Times New Roman\",height=60,ascent=47,descent=13,internal=8,external=2,average=21,maximum=56,extent=200:60",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=60,esc=900",
+      "result": "face=\"Times New Roman\",height=60,ascent=48,descent=12,internal=6,external=2,average=22,maximum=59,extent=207:60",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=61,esc=0",
+      "result": "face=\"Times New Roman\",height=61,ascent=48,descent=13,internal=8,external=2,average=21,maximum=58,extent=206:61",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=61,esc=900",
+      "result": "face=\"Times New Roman\",height=61,ascent=49,descent=12,internal=6,external=2,average=22,maximum=60,extent=210:61",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=62,esc=0",
+      "result": "face=\"Times New Roman\",height=62,ascent=49,descent=13,internal=7,external=2,average=22,maximum=60,extent=210:62",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=62,esc=900",
+      "result": "face=\"Times New Roman\",height=62,ascent=50,descent=12,internal=6,external=2,average=22,maximum=61,extent=212:62",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=63,esc=0",
+      "result": "face=\"Times New Roman\",height=62,ascent=49,descent=13,internal=7,external=2,average=22,maximum=60,extent=210:62",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=63,esc=900",
+      "result": "face=\"Times New Roman\",height=63,ascent=51,descent=12,internal=6,external=2,average=23,maximum=62,extent=215:63",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=64,esc=0",
+      "result": "face=\"Times New Roman\",height=64,ascent=50,descent=14,internal=8,external=2,average=22,maximum=61,extent=212:64",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=64,esc=900",
+      "result": "face=\"Times New Roman\",height=63,ascent=51,descent=12,internal=6,external=2,average=23,maximum=62,extent=215:63",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=65,esc=0",
+      "result": "face=\"Times New Roman\",height=65,ascent=51,descent=14,internal=8,external=2,average=23,maximum=62,extent=215:65",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=65,esc=900",
+      "result": "face=\"Times New Roman\",height=65,ascent=52,descent=13,internal=7,external=2,average=23,maximum=63,extent=221:65",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=66,esc=0",
+      "result": "face=\"Times New Roman\",height=65,ascent=51,descent=14,internal=8,external=2,average=23,maximum=62,extent=215:65",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=66,esc=900",
+      "result": "face=\"Times New Roman\",height=66,ascent=53,descent=13,internal=6,external=3,average=24,maximum=65,extent=229:66",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=67,esc=0",
+      "result": "face=\"Times New Roman\",height=67,ascent=53,descent=14,internal=9,external=2,average=23,maximum=63,extent=221:67",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=67,esc=900",
+      "result": "face=\"Times New Roman\",height=67,ascent=54,descent=13,internal=6,external=3,average=24,maximum=66,extent=233:67",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=68,esc=0",
+      "result": "face=\"Times New Roman\",height=68,ascent=54,descent=14,internal=8,external=3,average=24,maximum=65,extent=229:68",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=68,esc=900",
+      "result": "face=\"Times New Roman\",height=68,ascent=55,descent=13,internal=6,external=3,average=25,maximum=67,extent=235:68",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=69,esc=0",
+      "result": "face=\"Times New Roman\",height=69,ascent=54,descent=15,internal=8,external=3,average=24,maximum=66,extent=233:69",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=69,esc=900",
+      "result": "face=\"Times New Roman\",height=68,ascent=55,descent=13,internal=6,external=3,average=25,maximum=67,extent=235:68",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=70,esc=0",
+      "result": "face=\"Times New Roman\",height=70,ascent=55,descent=15,internal=8,external=3,average=25,maximum=67,extent=235:70",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=70,esc=900",
+      "result": "face=\"Times New Roman\",height=70,ascent=56,descent=14,internal=7,external=3,average=25,maximum=68,extent=242:70",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=71,esc=0",
+      "result": "face=\"Times New Roman\",height=71,ascent=56,descent=15,internal=8,external=3,average=25,maximum=68,extent=242:71",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=71,esc=900",
+      "result": "face=\"Times New Roman\",height=71,ascent=57,descent=14,internal=7,external=3,average=26,maximum=69,extent=245:71",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=72,esc=0",
+      "result": "face=\"Times New Roman\",height=71,ascent=56,descent=15,internal=8,external=3,average=25,maximum=68,extent=242:71",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    },
+    {
+      "function": "rotate heights",
+      "args": "\"Arial Bold\",h=72,esc=900",
+      "result": "face=\"Times New Roman\",height=72,ascent=58,descent=14,internal=7,external=3,average=26,maximum=71,extent=250:72",
+      "section": "every cell upright and turned, so the two size rules sit side by side"
+    }
+  ]
+}

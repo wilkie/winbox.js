@@ -1522,6 +1522,41 @@ export class FontManager {
      * then works out the stretch -- and the extent reported for it is read again
      * at the aspect the realisation ends up with. That is how a width can move
      * the cell height without moving the size. */
+    /* Turned text is sized a different way, 8u.
+     *
+     * The escapement is tested as the program gave it, not reduced: a whole
+     * turn is the same angle as nought and is sized as a turned font all the
+     * same. The two tests are made on two different values, and the recording
+     * is what says so -- at an escapement of 3600 Times New Roman at a cell of
+     * sixteen comes back at fifteen pixels per em, the turned size, and never
+     * at the fourteen the table would have given it.
+     */
+    if (request.escapement) {
+      const turned = font.sizeForTurnedHeight(height);
+
+      /* And the extent is reported from the table after all where the angle
+       * *reduces* to nothing. Times at fifteen per em reports 13 over 4, which
+       * is its `VDMX` row and not the 13 over 3 the scaling gives; Arial at
+       * twenty-nine reports 27 over 6, which is its row. Every other angle,
+       * including a tenth of a degree either side of a whole turn, reports the
+       * scaled pair. **Recorded** over thirty-two angles in two faces.
+       */
+      const upright = ((request.escapement % 3600) + 3600) % 3600 === 0;
+      const fitted = upright
+        ? (font.extentAt(turned.ppem, ...ratioOf(turned.ppem)) ?? turned)
+        : turned;
+
+      return {
+        entry: null,
+        ppem: turned.ppem,
+        xBase: across(turned.ppem),
+        xPpem: stretched(turned.ppem),
+        xWhole: whole(turned.ppem),
+        ascent: fitted.ascent,
+        descent: fitted.descent,
+      };
+    }
+
     const found = font.sizeForHeight(height, font.unitsPerEm, emDenom(256));
 
     if (!found) {

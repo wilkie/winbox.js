@@ -287,6 +287,38 @@ const FONT_SPECIMEN = 'Wg jpq 128';
 /** What `tiepick` measures the extent of. */
 const TIE_SPECIMEN = 'Windows';
 
+/** What `rotate` draws and measures at every angle. */
+const ROTATE_SPECIMEN = 'AB';
+
+/**
+ * The ink box of a cell `drawTurned` read back, in the shape `rotate` writes
+ * it: the extent of the clear bits, and how many there are.
+ */
+function turnedBox(hex: string) {
+  const bytes = Buffer.from(hex, 'hex');
+  let left = 64;
+  let top = 64;
+  let right = -1;
+  let bottom = -1;
+  let ink = 0;
+
+  for (let row = 0; row < 64; row++) {
+    for (let column = 0; column < 64; column++) {
+      if (bytes[row * 8 + (column >> 3)] & (0x80 >> (column & 7))) {
+        continue;
+      }
+
+      ink++;
+      left = Math.min(left, column);
+      right = Math.max(right, column);
+      top = Math.min(top, row);
+      bottom = Math.max(bottom, row);
+    }
+  }
+
+  return `box=${left}:${top}:${right}:${bottom},ink=${ink}`;
+}
+
 /** Thrown by an adapter that cannot run without the drive image. */
 export class NeedsDrive extends Error {}
 
@@ -500,6 +532,10 @@ export class Context {
       lfCharSet: fields.charset ?? 0,
       lfPitchAndFamily: fields.pitch ?? 0,
 
+      /* The angle, where the probe named one. 8u. */
+      lfEscapement: fields.esc ?? 0,
+      lfOrientation: fields.ori ?? 0,
+
       /* The probe writes the quality by name rather than by number, because
        * `proof` is the only one asked for and a 2 in the record would say
        * nothing about which field it was.
@@ -644,6 +680,65 @@ export class Context {
     }
 
     return this.readCell(surface, call.width ?? 64, call.height ?? 48);
+  }
+
+  /**
+   * The text `rotate` and `rotangle` draw, into a cell sixty-four square with
+   * the pen in the middle of it so a turned baseline has room to leave in any
+   * direction. Black on white with the ground transparent, so the ink is all
+   * that comes back. 8u.
+   */
+  /** The font `rotate` and `rotangle` name: a face, a cell and an angle. */
+  turnedFont(args: (string | number)[]) {
+    if (!this.fonts) {
+      throw new NeedsDrive('the fonts live on the drive image; run the oracle pipeline');
+    }
+
+    const fields: Record<string, number> = {};
+
+    for (const field of args.slice(1)) {
+      const [name, value] = String(field).split('=');
+
+      fields[name] = Number(value);
+    }
+
+    const handle = CreateFontIndirect.call(this, {
+      lfHeight: fields.h ?? 0,
+      lfWidth: 0,
+      lfWeight: 400,
+      lfItalic: 0,
+      lfUnderline: 0,
+      lfStrikeOut: 0,
+      lfCharSet: 0,
+      lfPitchAndFamily: 0,
+      lfEscapement: fields.esc ?? 0,
+      lfOrientation: fields.ori ?? 0,
+      lfFaceName: String(args[0] ?? ''),
+    });
+
+    if (!handle) {
+      throw new Unimplemented('no font mapped');
+    }
+
+    return this.handles.resolve(handle);
+  }
+
+  drawTurned(font: any) {
+    const surface: any = Surface.offscreen(64, 64);
+
+    surface.font = font;
+    surface.backcolor = new Color(0xff, 0xff, 0xff);
+    surface.backMode = 1;
+    surface.context.lineTie = this.display.lineTie;
+    surface.context.clipCaps = this.display.clipCaps;
+    surface.boldOverhang = this.display.boldOverhang;
+
+    surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
+    surface.fillRect(0, 0, 64, 64);
+
+    surface.fillText(32, 32, ROTATE_SPECIMEN);
+
+    return this.readCell(surface, 64, 64);
   }
 
   /**
@@ -1485,6 +1580,80 @@ const ADAPTERS: Record<
     return `width=${extent & 0xffff},height=${(extent >> 16) & 0xffff}`;
   },
 
+  /* `rotate` and `rotsize` sweep the escapement. The internal leading is the
+   * cell less the pixel size, so these name the size a turned request was
+   * fitted at, the same way `tiepick` names an upright one. 8u.
+   */
+  'rotate face'(context, args) {
+    const fields = [args[0], args[1], args[2], args[3], 'w=0', 'weight=400', 'italic=0'];
+    const mapped = context.mappedFont([...fields, 'under=0', 'strike=0', 'charset=0', 'pitch=0']);
+    const tm = mapped.metrics;
+    const extent = GetTextExtent.call(
+      context,
+      mapped.hdc,
+      context.lpcstr(ROTATE_SPECIMEN),
+      ROTATE_SPECIMEN.length
+    );
+
+    return (
+      `face=${quoted(mapped.face)},height=${tm.tmHeight},ascent=${tm.tmAscent},` +
+      `descent=${tm.tmDescent},internal=${tm.tmInternalLeading},` +
+      `average=${tm.tmAveCharWidth},maximum=${tm.tmMaxCharWidth},` +
+      `pitch=${tm.tmPitchAndFamily},extent=${extent & 0xffff}:${(extent >> 16) & 0xffff}`
+    );
+  },
+
+  'rotate heights'(context, args) {
+    const fields = [args[0], args[1], args[2], 'w=0', 'weight=400', 'italic=0'];
+    const mapped = context.mappedFont([...fields, 'under=0', 'strike=0', 'charset=0', 'pitch=0']);
+    const tm = mapped.metrics;
+    const extent = GetTextExtent.call(
+      context,
+      mapped.hdc,
+      context.lpcstr(TIE_SPECIMEN),
+      TIE_SPECIMEN.length
+    );
+
+    return (
+      `face=${quoted(mapped.face)},height=${tm.tmHeight},ascent=${tm.tmAscent},` +
+      `descent=${tm.tmDescent},internal=${tm.tmInternalLeading},` +
+      `external=${tm.tmExternalLeading},average=${tm.tmAveCharWidth},` +
+      `maximum=${tm.tmMaxCharWidth},extent=${extent & 0xffff}:${(extent >> 16) & 0xffff}`
+    );
+  },
+
+  'angle metrics'(context, args) {
+    const fields = [args[0], args[1], args[2], 'w=0', 'weight=400', 'italic=0'];
+    const tm = context.mappedFont([
+      ...fields,
+      'under=0',
+      'strike=0',
+      'charset=0',
+      'pitch=0',
+    ]).metrics;
+
+    return (
+      `height=${tm.tmHeight},ascent=${tm.tmAscent},descent=${tm.tmDescent},` +
+      `internal=${tm.tmInternalLeading},average=${tm.tmAveCharWidth},` +
+      `maximum=${tm.tmMaxCharWidth}`
+    );
+  },
+
+  /* And the pixels of the same draw: the ink box for reading, the bitmap for
+   * comparing. 8u.
+   */
+  'rotate ink'(context, args) {
+    return context.drawTurned(context.turnedFont(args));
+  },
+
+  'rotate box'(context, args) {
+    return turnedBox(context.drawTurned(context.turnedFont(args)));
+  },
+
+  'angle box'(context, args) {
+    return turnedBox(context.drawTurned(context.turnedFont(args)));
+  },
+
   /* `groundw` asks the three widths that could be the ground's -- what
    * `GetTextExtent` answers for the character, what `GetCharWidth` answers for
    * it, and the overhang -- of the same request. 8o.
@@ -2250,7 +2419,49 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* Text turned to an angle that is neither a right angle nor a whole turn.
+   *
+   * 8u closed the size, the direction, the reduction and the right angles. An
+   * oblique angle is drawn in the right place -- the ink box is within a pixel
+   * everywhere and exact at many angles -- and the ink inside it is not. 29 of
+   * `rotate`'s 107 draws, in each of its two pixel functions, and 31 of
+   * `rotangle`'s 96 boxes: in both, exactly the records whose reduced angle is
+   * not a multiple of nine hundred.
+   *
+   * What is left is the scan converter rather than the transform, and the
+   * instrument that says so is recorded. `rotsq` draws the `rot-square`
+   * fabrication -- Symbol with its letters replaced by one plain square, no
+   * hint program -- at every ten degrees, a tenth of a degree at a time across
+   * a half right angle, and with the pen walked across a pixel. Against that,
+   * a rotated quad filled by pixel centres puts 56 of 95 boxes exactly right
+   * and only 14 of the ink counts: Windows inks four or five more pixels than
+   * the square's own area at the angles between the axes, in a band around its
+   * corners, and inks pixels whose centres lie outside the shape. Rounding the
+   * turned origin to a whole pixel is refused by that instrument -- 52 boxes
+   * against 71 unrounded, floored 13 and ceiled 27.
+   */
+  'rotate:rotate ink': 'oblique angles: the ink inside a correctly placed box',
+  'rotate:rotate box': 'oblique angles: the ink inside a correctly placed box',
+  'rotangle:angle box': 'oblique angles: the ink inside a correctly placed box',
 
+  /* Which face answers a turned request at a cell too small for an outline.
+   *
+   * The escapement reaches the mapper's penalties as well as the realiser, and
+   * `rotsize` caught it in ten of its 520: at cells of eight, nine, ten and
+   * eleven a request for Arial upright is answered by Small Fonts or MS Serif,
+   * and the same request turned is answered by Arial itself. A strike cannot be
+   * turned, so a face that can wins where it would otherwise have lost.
+   *
+   * It is a penalty rather than a bar. `Modern` and `Roman` name no outline
+   * family, and they are answered by MS Sans Serif at every one of fourteen
+   * angles -- drawn upright, metrics and pixels identical to the upright
+   * request. So a strike still wins where nothing else is close; it is only
+   * beaten where an outline was already the name match.
+   *
+   * What the penalty *is* wants the mapper swept with an escapement the way
+   * `font` sweeps it without one, which is a recording this does not have.
+   */
+  'rotsize:rotate heights': 'the mapper prefers a face that can turn, by an amount not yet swept',
 
   /* The styled files at cells of two hundred and seventy-four to two hundred
    * and eighty-two, where the size chosen is one pixel per em out.
