@@ -615,8 +615,16 @@ export class Surface {
     const metrics = font.measure(text);
     const characters = [...String(text)];
 
+    /* A synthesised bold's widths each carry a pixel, and GDI's opaque
+     * rectangle is those widths summed (`GDI.EXE` seg1 `63b9`, the widths from
+     * `6874`). On a device with `TC_EA_DOUBLE` it is `6b73`'s pixel; on one
+     * without, it is the character extra GDI's own bold raises while it draws
+     * (seg16 `0070`) -- one pixel either way. Turned text on a device with it
+     * has both, which `ground` adds. **Recorded** by `smeargnd`. */
+    const boldPixel = outline && this.synthesisesBold() ? 1 : 0;
+
     const advanceOf = (character) =>
-      font.outlineAdvance ? font.outlineAdvance(character.charCodeAt(0)) : metrics.width;
+      (font.outlineAdvance ? font.outlineAdvance(character.charCodeAt(0)) : metrics.width) + boldPixel;
 
     /* A strike is the advance, and with an array it is the pens the array
      * makes plus the **last glyph's own advance** -- which is where the two
@@ -721,12 +729,59 @@ export class Surface {
     return { left, right, height: metrics.height };
   }
 
+  /** Whether the selected outline face is being made bold by smearing. */
+  synthesisesBold() {
+    const style = (this._font as any)?.style ?? {};
+    return !!(this._font as any)?.outline && (style.weight ?? 0) > 550 && !style.faceBold;
+  }
+
+  /** Whether the display driver has `TC_EA_DOUBLE`: the colour drivers do and
+   * a Hercules does not, which is the same line `boldOverhang` draws. */
+  devicePaintsBold() {
+    return (this.boldOverhang ?? BitmapContext.driver?.boldOverhang) !== 'always';
+  }
+
+  /** Whether GDI draws a synthesised bold itself rather than leaving it to the
+   * driver: when the driver cannot, or when the text is turned, since GDI
+   * keeps every effect of turned text for a device that cannot turn text
+   * (`GDI.EXE` seg1 `35b2`). */
+  gdiDrawsBold() {
+    return this.synthesisesBold() && (this.turnedText || !this.devicePaintsBold());
+  }
+
   ground(x, y, text, runWidth = null) {
     if (this.backMode === 1 || this._runOnly) {
       return;
     }
 
+    /* Where GDI draws the bold itself -- turned text, or any bold on a device
+     * without `TC_EA_DOUBLE` -- an opaque ground is painted twice
+     * (`GDI.EXE` seg16 `0030`). First GDI calls itself with the string swapped
+     * for a single space (`ds:041e` in seg48) at the pen, opaque, and then
+     * draws the string twice: at x + 1 keeping the opaque ground, and at x
+     * transparent (`020a`, `0294`). So the ground is a space's ground at x and
+     * the run's at x + 1. Turned on a device with `TC_EA_DOUBLE`, each
+     * character also carries both the widths' pixel and the character extra
+     * GDI raises for the duration (`0070`).
+     *
+     * **Recorded** by `smeargnd`: an opaque ground white on black behind plain
+     * and smeared "AB", upright and turned, on a VGA and a Hercules.
+     */
+    if (this.gdiDrawsBold()) {
+      this.groundOf(x, y, ' ', null);
+      this.groundOf(x + 1, y, text, runWidth);
+      return;
+    }
+
+    this.groundOf(x, y, text, runWidth);
+  }
+
+  groundOf(x, y, text, runWidth) {
     const box = this.groundBox(text);
+
+    if (this.gdiDrawsBold() && this.turnedText && this.devicePaintsBold()) {
+      box.right += [...String(text)].length;
+    }
 
     /* Turned, the ground is `Polygon` with no pen: the ground rectangle turned,
      * its corners whole pixels -- the reference point, and that carried along
@@ -1896,7 +1951,7 @@ export class Surface {
        * it and `rotangle` 32 of its 40 oblique boxes. Rounded, it is this. */
       pen += run.advances
         ? run.advances[index] + this.charExtra
-        : font.outlineAdvance(character.charCodeAt(0)) + this.charExtra + (bold ? (turn ? 2 : 1) : 0);
+        : font.outlineAdvance(character.charCodeAt(0)) + this.charExtra + (bold ? (turn && this.devicePaintsBold() ? 2 : 1) : 0);
       index++;
     }
   }

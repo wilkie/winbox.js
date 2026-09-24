@@ -1,0 +1,302 @@
+{
+  "probe": "smeargnd",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=16,esc=0,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:64:81:79,rows=ffffc/ffffc/ffffc/f7c0c/ebdf4/ebdf4/ebdf4/ddc0c/dddf4/80df4/bedf4/7f5f4/7f40c/ffffc/ffffc/ffffc",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=16,esc=0,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:64:83:79,rows=fffff/fffff/fffff/f3e03/e1e79/e1e79/e1e79/cce03/cce79/80679/9e679/3f279/3f203/fffff/fffff/fffff",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=16,esc=300,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:56:87:77,rows=000380/000f80/003e40/007800/01f380/07e7a0/1ff700/7ff260/f9f9f0/787df4/7d3ce4/3d9e9e/3dc63e/1d33ff/1c79fc/0cfff0/06ffc0/06ff80/02fe00/03f800/01e000/018000",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=16,esc=300,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:54:91:77,rows=0000380/0000f80/0003fc0/00078c0/001e060/007c620/00f8e70/03fcc18/1ffc088/7ffe3cc/f8ff3cc/783f18e/7c1f83e/3c8f87f/3cc3ffc/1c11ff0/1c38fc0/0c7ff80/067fe00/067f800/027f000/03fc000/01f0000/01c0000",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=16,esc=900,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:46:79:63,rows=ffff/f10f/eef7/eef7/eef7/eef7/eef7/e007/ffff/ffe7/ff9f/fe3f/f1bf/efbf/f1bf/fe3f/ff9f/ffe7",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=16,esc=900,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:42:80:63,rows=7fff8/7fff8/7fff8/70078/66738/66738/66738/66738/66738/60038/7fff8/7fff8/7fff8/7fe38/7f8f8/7e1f8/f09f8/e79f8/f09f8/fe1f8/ff8f8/ffe38",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=16,esc=1800,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=46:48:63:63,rows=ffffc/ffffc/ffffc/c0bf8/bebf8/bedf4/bec04/beeec/c0eec/bef5c/bef5c/bef5c/c0fbc/ffffc/ffffc/ffffc",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=16,esc=1800,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=43:48:64:63,rows=fffffc/fffffc/fffffc/e033f0/cf33f0/cf39e4/cf3804/cf3ccc/e03ccc/cf3e1c/cf3e1c/cf3e1c/e03f3c/fffffc/fffffc/fffffc",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=24,esc=0,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:64:90:87,rows=ffffffe/ffffffe/ffffffe/ffffffe/f8fe01e/f8fe00e/f27e7c6/f27e7e6/f27e7e6/e73e7c6/e73e00e/e73e00e/c01e7e6/c01e7f2/9fce7f2/9fce7f2/9fce7e2/3fe6006/3fe600e/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=24,esc=0,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:64:92:87,rows=fffffff8/fffffff8/fffffff8/fffffff8/f87f0078/f87f0038/f03f1e18/f03f1f18/f03f1f18/e31f1e18/e31f0038/e31f0038/c00f1f18/c00f1f88/8fc71f88/8fc71f88/8fc71f08/1fe30018/1fe30038/fffffff8/fffffff8/fffffff8/fffffff8/fffffff8",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=24,esc=300,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:51:98:83,rows=000007000/00001f000/00003f800/0000ff800/0003f8c00/0007e0600/001f86200/003f1f300/00fc3f300/03fe3f380/07ff3e040/1fff18600/7f3f91f20/fe1fc3f20/7e0fc7f30/7e63e7f38/3f71e3e78/3f38f38fc/1f3c381fc/0f3c187fe/0f318dff8/0787c3fe0/078ff7fc0/039ffff00/019fffc00/019fff800/00dffe000/00cffc000/005ff0000/003fc0000/003f80000/001e00000/001800000",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=24,esc=300,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:49:103:83,rows=0000003800/000000f800/000001fc00/000007fc00/00001ffe00/00003e1f00/0000f80f00/0003e08780/000fc3c780/001f07c7c0/007f87c7e0/01ffc780e0/07ffc20870/1fffe03c70/7f1ff07c78/fe0ff0fc7c/7e07f8fc7c/7e21f878fe/3f30fc61fe/3f187e03ff/1f1c1e0ffc/0f1c0f3ff0/0f1087ffe0/0783c1ff80/0787f3fe00/038ffffc00/018ffff000/018fffc000/00cfff0000/00c7fe0000/004ff80000/003fe00000/003fc00000/001f000000/001c000000",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=24,esc=900,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:37:86:63,rows=fffffe/fff87e/fc303e/f8071e/f18f9e/f3cf9e/f3cf9e/f3cf9e/f3cf9e/f3cf9e/f0001e/f0001e/fffffe/fffffe/ffff9e/fffc1e/fff07e/ff83fe/fc03fe/f073fe/f3f3fe/f073fe/fc03fe/ff83fe/fff07e/fffc1e/ffff9e",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=24,esc=900,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:33:87:63,rows=7fffff/7fffff/7fffff/7ff83f/7c101f/78030f/70878f/71c78f/71c78f/71c78f/71c78f/71c78f/70000f/70000f/7fffff/7fffff/7fffff/7fffff/7fff8f/7ffc0f/7ff03f/7f81ff/7c01ff/f031ff/f1f1ff/f031ff/fc01ff/ff81ff/fff03f/fffc0f/ffff8f",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=24,esc=1800,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=37:41:63:63,rows=ffffffe/ffffffe/ffffffe/ffffffe/e00cff8/c00cff8/8fce7f2/9fce7f2/9fce7f2/9fcf006/cfcf006/e00f9ce/e00f9ce/c7cf9ce/cfcfc9e/cfcfc9e/c7cfc9e/e00fe3e/f00fe3e/ffffffe/ffffffe/ffffffe/ffffffe",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Arial\",h=24,esc=1800,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=34:41:64:63,rows=fffffffe/fffffffe/fffffffe/fffffffe/f0038ff0/e0038ff0/c3e3c7e2/c7e3c7e2/c7e3c7e2/c7e3e006/e3e3e006/f003f18e/f003f18e/e1e3f18e/e3e3f81e/e3e3f81e/e1e3f81e/f003fc3e/f803fc3e/fffffffe/fffffffe/fffffffe/fffffffe",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Times New Roman\",h=16,esc=0,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:64:80:79,rows=ffff8/ffff8/ffff8/f7818/f7de8/ebde8/ebde8/ddc18/ddde8/c1de8/bede8/bede8/1c018/ffff8/ffff8/ffff8",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Times New Roman\",h=16,esc=0,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:64:82:79,rows=ffffe/ffffe/ffffe/f3c06/f3e72/e1e72/e1e72/cce06/cce72/c0e72/9e672/9e672/0c006/ffffe/ffffe/ffffe",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Times New Roman\",h=16,esc=300,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:54:89:77,rows=0000e00/0003e00/0007f00/001f000/003ee00/00f9f00/03f5e40/07fce00/1ffe1c0/7dff7c0/fcff3d0/7c7f998/7d1f978/3dcfcfc/3ec3bf0/1e38fc0/1efbf80/0effe00/06ffc00/073f000/02fc000/03f8000/01e0000/0180000",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Times New Roman\",h=16,esc=300,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:52:94:77,rows=00000700/00001f00/00003f80/0000ff80/000383c0/000731c0/001c79e0/007871f0/01fe3070/03ff0638/1fff9e38/7cff8e7c/fc7fc47c/7c3fc1fe/7c0fe3f8/3cc7cfe0/3e41ffc0/1e187f00/1e79fc00/0e7ff800/067fe000/071f8000/027e0000/03fc0000/01f00000/01c00000",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Times New Roman\",h=16,esc=900,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:43:79:63,rows=ffff/ff9f/f06f/eef7/eef7/eef7/eef7/e007/eff7/ffff/fff7/fff7/ffc7/fe37/f9bf/e7bf/f9bf/fe37/ffc7/fff7/fff7",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Times New Roman\",h=16,esc=900,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:39:80:63,rows=7fff8/7fff8/7fff8/7f8f8/70278/66738/66738/66738/66738/60038/67f38/7fff8/7fff8/7fff8/7ff38/7ff38/7fc38/7e138/789f8/e39f8/f89f8/fe138/ffc38/fff38/fff38",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Times New Roman\",h=16,esc=1800,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=43:48:63:63,rows=fffff8/fffff8/fffff8/e04380/def7d8/bef7d8/bef838/befbb8/c0fb78/defd78/defd78/defef8/e07ef8/fffff8/fffff8/fffff8",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Times New Roman\",h=16,esc=1800,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=40:48:64:63,rows=ffffff8/ffffff8/ffffff8/f018300/e73e798/cf3e798/cf3f038/cf3f338/e03f278/e73f878/e73f878/e73fcf8/f01fcf8/ffffff8/ffffff8/ffffff8",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Times New Roman\",h=24,esc=0,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:64:91:86,rows=fffffff/fffffff/fffffff/fffffff/fefc00f/fcff3e7/fc7f3f3/fa7f3f3/fb3f3f3/fb3f3e7/f73f00f/f79f3e3/e01f3f1/ef9f3f9/dfcf3f9/dfcf3f9/9fc73f3/0f80007/fffffff/fffffff/fffffff/fffffff/fffffff",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Times New Roman\",h=24,esc=0,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:64:93:86,rows=fffffffc/fffffffc/fffffffc/fffffffc/fe7e003c/fc7f8f1c/fc3f8f8c/f83f8f8c/f91f8f8c/f91f8f1c/f31f803c/f38f8f0c/e00f8f84/e78f8fc4/cfc78fc4/cfc78fc4/8fc38f8c/0780001c/fffffffc/fffffffc/fffffffc/fffffffc/fffffffc",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Times New Roman\",h=24,esc=300,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:51:99:84,rows=000003800/00000f800/00001fc00/00007fc00/0001ffe00/0007fe600/000ff8100/003fe7980/00ff9fc80/01ff1fdc0/07fecf9c0/1fffc7800/7fffe6700/ffbff1f90/7f8ff1f88/7f87f9f98/3fa3f8fbc/3fb0fcf7c/1fdc7e4fe/1fde3e3fe/0fd98efff/07d7c1ffc/07cfe7ff0/03dfdffe0/03dffff80/01efffe00/01ebff800/00e7ff000/005ffc000/007ff0000/003fe0000/003f80000/001e00000/001800000",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Times New Roman\",h=24,esc=300,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:49:104:84,rows=0000001c000/0000007c000/000001fe000/000003fe000/00000fff000/00003fff000/0000ff8f800/0001fe03c00/0007f8e3c00/001fe3f1e00/007fc3f3e00/00ff91e3f00/0ffff0e0300/1ffff88c380/7ffffc3e3c0/ff9ffc3e1c0/7f87fe3e3e0/7f83fe1e7e0/3f81ff1cff0/3f907f81ff0/1fcc3f87ff8/1fce1f9ffe0/0fc8873ff80/07c3c0ffe00/07c7e3ffc00/03cfcfff000/03cffffc000/01e7fff0000/01e1ffe0000/00e3ff80000/004ffe00000/007ff800000/003ff000000/003fc000000/001f0000000/001c0000000",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Times New Roman\",h=24,esc=900,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:36:87:63,rows=ffffff/fff87f/fe303f/fc139f/f9c7df/fbefdf/fbefdf/fbefdf/fbefdf/fbefdf/f8001f/f8001f/fbffdf/fbffdf/ffffdf/ffff9f/fffe1f/fff01f/ff81df/fe0bff/f87bff/fcfbff/ff1bff/ffe3ff/fff9df/fffe1f/ffff9f/ffffdf",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Times New Roman\",h=24,esc=900,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:32:88:63,rows=7fffff8/7fffff8/7fffff8/7ff83f8/7e101f8/7c018f8/78c3cf8/79e7cf8/79e7cf8/79e7cf8/79e7cf8/79e7cf8/78000f8/78000f8/79ffcf8/79ffcf8/7fffff8/7fffff8/7fffcf8/7fff8f8/7ffe0f8/7ff00f8/7f80cf8/7e01ff8/7839ff8/fc79ff8/ff09ff8/ffe1ff8/fff8cf8/fffe0f8/ffff8f8/ffffcf8",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Times New Roman\",h=24,esc=1800,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=36:40:63:63,rows=fffffff/fffffff/fffffff/fffffff/fffffff/e0001f0/cfce3f9/9fcf3fb/9fcf3fb/9fcf9f7/8fcf807/c7cf9ef/f00fcef/e7cfcdf/cfcfcdf/cfcfe5f/cfcfe3f/e3cff3f/f003f7f/fffffff/fffffff/fffffff/fffffff/fffffff",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Times New Roman\",h=24,esc=1800,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=33:40:64:63,rows=ffffffff/ffffffff/ffffffff/ffffffff/ffffffff/f00081e0/e3e3c3f1/c7e3e3f3/c7e3e3f3/c7e3f1e7/c3e3f007/e1e3f1cf/f803f8cf/f1e3f89f/e3e3f89f/e3e3fc1f/e3e3fc3f/f0e3fe3f/f800fe7f/ffffffff/ffffffff/ffffffff/ffffffff/ffffffff",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=16,esc=0,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:64:79:79,rows=ffff/ffff/ffff/ffff/c783/e7dd/e7dd/dbc3/dbdd/c3dd/bddd/1883/ffff/ffff/ffff/ffff",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=16,esc=0,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:64:81:79,rows=ffffc/ffffc/ffffc/ffffc/c3c0c/e3e6c/e3e6c/c9e0c/c9e6c/c1e6c/9ce6c/0840c/ffffc/ffffc/ffffc/ffffc",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=16,esc=300,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:57:85:77,rows=000e00/003e00/00ff00/01fd00/07f280/1fce80/7fee40/ffeda0/79f3c0/62fbb0/3b7b70/3b9cf8/1a63f8/1deffc/0ddff0/047fc0/05ff00/03fe00/03f800/01e000/018000",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=16,esc=300,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:55:89:77,rows=0000e00/0003e00/0007f00/001ff00/007f380/01fc180/07f19c0/1ff98e0/7ff9260/fffc730/78fe670/607e4f8/393f1f8/398e7fc/1823ff0/1ce7fc0/0ccff80/043fe00/04ff800/03fe000/03fc000/01f0000/01c0000",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=16,esc=900,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:48:79:63,rows=ffff/f91f/f6ef/f6ef/f6ef/f00f/f7ef/ffff/ffef/ffcf/fe2f/f1bf/f1bf/f62f/ffcf/ffef",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=16,esc=900,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:44:80:63,rows=7fff8/7fff8/7fff8/780f8/72678/72678/72678/70078/73e78/7fff8/ffff8/ffff8/ffe78/ffc78/fe078/f09f8/f09f8/f2078/ffc78/ffe78",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=16,esc=1800,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=48:48:63:63,rows=ffff/ffff/ffff/ffff/c118/bbbd/bbc3/bbdb/c3db/bbe7/bbe7/c1e3/ffff/ffff/ffff/ffff",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=16,esc=1800,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=45:48:64:63,rows=fffff/fffff/fffff/fffff/e0610/ccf39/ccf83/ccf93/e0f93/ccfc7/ccfc7/e07c3/fffff/fffff/fffff/fffff",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=24,esc=0,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=63:64:89:87,rows=ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/e07e03e/fd7fbde/fbbfbee/fbbfbee/fbbfbee/f7dfbde/f7df81e/f7dfbee/e00fbf6/efefbf6/efefbf6/dff7bee/07c001e/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe/ffffffe",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=24,esc=0,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=63:64:91:87,rows=fffffff8/fffffff8/fffffff8/fffffff8/fffffff8/e03f00f8/fc3fce78/f99fcf38/f99fcf38/f99fcf38/f3cfce78/f3cfc078/f3cfcf38/e007cf98/e7e7cf98/e7e7cf98/cff3cf38/03c00078/fffffff8/fffffff8/fffffff8/fffffff8/fffffff8/fffffff8",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=24,esc=300,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:52:98:83,rows=000007000/00001f000/00007f800/0000ff800/0003ffc00/000ffbe00/003fe4e00/00ff9f700/01ff7f700/07febef80/1fffbe1c0/7fffd9ec0/ffffe7ee0/7f7fefe60/7c9ff7ef0/3b6ff7df8/3f77fb3f8/1f7bfcffc/0f7cf3ffc/0f737fffe/078f8fff8/07bf3ffe0/03befff80/01bffff00/01a7ffc00/00dfff000/00bffc000/007ff0000/003fe0000/003f80000/001e00000/001800000",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=24,esc=300,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:50:102:83,rows=0000007000/000001f000/000007f800/00000ff800/00003ffc00/0000fffe00/0001fe7e00/001ff81f00/007fe3cf00/00ffcfcf80/03ff879fc0/07ffe783c0/1ffff239e0/7ffff8f9e0/fffff9f8f0/7f3ffcf9f8/7c0ffcf3f8/3927fe47fc/3f33ff1ffc/1f39fc7ffe/0f3c7ffff8/0f313fffe0/078787ff80/079f1fff00/039e7ffc00/019ffff000/0183ffe000/00cfff8000/009ffe0000/007ff80000/003ff00000/003fc00000/001f000000/001c000000",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=24,esc=900,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:38:86:63,rows=fffffe/fffffe/fff1fe/fe6efe/fd9f7e/fbdf7e/fbdf7e/fbdf7e/fbdf7e/f8007e/fbff7e/fbff7e/fffffe/ffff7e/fffe7e/fff17e/ffc77e/fe37fe/f9f7fe/fbf7fe/f9f7fe/fa37fe/fbc77e/fbf17e/fffe7e/ffff7e",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=24,esc=900,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=64:34:87:63,rows=7fffff/7fffff/7fffff/7fffff/7ff0ff/7e267f/7c8f3f/79cf3f/79cf3f/79cf3f/79cf3f/78003f/79ff3f/79ff3f/7fffff/ffffff/ffffff/ffff3f/fffe3f/fff03f/ffc33f/fe13ff/f8f3ff/f9f3ff/f8f3ff/f813ff/f9c33f/f9f03f/fffe3f/ffff3f",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=24,esc=1800,weight=400,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=38:41:63:63,rows=ffffffc/ffffffc/ffffffc/ffffffc/ffffffc/ffffffc/f0087c0/efbdff4/dfbefec/dfbefec/dfbe00c/efbf7dc/f03f7dc/f7bfbbc/efbfbbc/efbfbbc/f7bfd7c/f80fc0c/ffffffc/ffffffc/ffffffc/ffffffc/ffffffc",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    },
+    {
+      "function": "style ink",
+      "args": "ground,\"Courier New\",h=24,esc=1800,weight=600,italic=0,under=0,strike=0,mode=2,align=0,opt=0,rect=0:0:0:0",
+      "result": "box=35:41:64:63,rows=fffffffc/fffffffc/fffffffc/fffffffc/fffffffc/fffffffc/f8030780/f3cf9fe4/e7cfcfcc/e7cfcfcc/e7cfc00c/f3cfe79c/f80fe79c/f9cff33c/f3cff33c/f3cff33c/f9cff87c/fc03f80c/fffffffc/fffffffc/fffffffc/fffffffc/fffffffc",
+      "section": "an opaque ground behind plain and smeared text, upright and turned"
+    }
+  ]
+}

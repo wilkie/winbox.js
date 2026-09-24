@@ -18245,12 +18245,37 @@ there too, and the string drawn twice is not cut at its end -- section 3's
 character extra's pixel and not `6b73`'s, which is one pixel a glyph, as
 measured.
 
-One thing follows from the code that nothing has recorded: the first of the
-two passes keeps the caller's background mode, so an opaque ground behind a
-turned smeared string -- or behind any bold on a Hercules -- should be
-painted a device pixel to the right of where a plain string's is. Every
-opaque bold record so far draws a white ground on a white page, which cannot
-show it. It is not implemented, for that reason.
+**The ground behind GDI's bold, recorded.** The first pass keeps the
+caller's background mode, so the reading predicted that an opaque ground
+behind a smeared string drawn this way is moved a device pixel to the right.
+Every opaque bold record before drew white on a white page, which could not
+show it. `oracle/probes/smeargnd.c` draws `rotstyle`'s visible ground -- white
+text on black -- behind plain and smeared "AB" in three faces, at two cells
+and four angles, on a VGA and on a Hercules: 48 records on each. Three things
+came out of it, all of them in the code once looked for:
+
+- **The ground carries the bold widths.** GDI's opaque rectangle is the
+  widths summed (seg1 `63b9`), and each smeared character's width has its
+  pixel, so an upright smeared "AB" on a VGA is painted over two columns more
+  than a plain one. The ground here had used the plain advances, which the
+  white-on-white records could not tell apart. With the pixel, the upright
+  VGA records are 12 of 12.
+- **Turned, the ground moves right and grows by two a character.** The run's
+  ground is painted by the first pass, at x + 1, and turned on a VGA its
+  widths carry both pixels -- `6b73`'s and the raised character extra's.
+- **And a space's ground is painted first, where the pen is.** When the mode
+  is `OPAQUE`, seg16 `0030` begins by calling itself with the count set to
+  one and the string swapped for a constant in GDI's data segment
+  (`0116`–`0182`) -- a space, `ds:041e` in seg48 -- at the original x and
+  with only the slant kept. That call's ground is a space's: on a VGA at
+  ninety degrees a strip six rows long at the pen's column -- the space's
+  four plus the two bold pixels -- and on a Hercules the pen's column on
+  every row, left of the run's ground at x + 1.
+
+With the three, the VGA is 48 of 48 and the Hercules's upright records 12 of
+12. The Hercules's turned records disagree plain and smeared alike -- turned
+text on a pixel that is not square had never been recorded -- and are in
+`KNOWN_GAPS` with their count.
 
 That closes `rotstyle`: **190 of 190**. `smearrun` and `smearmod` are 640 of 640
 each, and the glyph and style corpora the single-glyph rule came from are
