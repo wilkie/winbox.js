@@ -2,6 +2,7 @@
 
 import { existsSync } from 'node:fs';
 
+import { checkEvidence, readProbes, readReport } from '../../scripts/kb/evidence.js';
 import { collectExports } from '../../scripts/kb/exports.js';
 import { parsePage } from '../../scripts/kb/frontmatter.js';
 import { assemble, discrepancies, readPages, readSurvey } from '../../scripts/kb/pages.js';
@@ -151,6 +152,56 @@ describe('the knowledge base', () => {
       expect(() =>
         parsePage('kb/x.md', '---\nkind: topic\nname: x\nversions:\n  "3.2": exact\n---\n')
       ).toThrow(/versions/);
+    });
+  });
+
+  describe('evidence', () => {
+    const report = readReport();
+    const probes = readProbes(report);
+
+    it('has a report from the conformance suite, for probes that exist', () => {
+      expect(Object.keys(report).length).toBeGreaterThan(0);
+
+      for (const fixture of Object.values(report)) {
+        expect(existsSync(`oracle/probes/${fixture.probe}.c`)).toBe(true);
+      }
+    });
+
+    it('backs every badge the pages in kb/ claim', () => {
+      expect(() => checkEvidence(assemble(survey, tables, readPages()), probes)).not.toThrow();
+    });
+
+    const claim = (lines: string[], against = probes) => {
+      const text = ['---', ...lines, '---', ''].join('\n');
+      const pages = [{ file: 'kb/test.md', ...parsePage('kb/test.md', text) }];
+      return () => checkEvidence(assemble(survey, tables, pages), against);
+    };
+
+    const base = [
+      'kind: function',
+      'module: GDI',
+      'name: GetGlyphOutline',
+      'ordinal: 309',
+      'versions:',
+      '  "3.1": exact',
+    ];
+
+    it('refuses exact with no probe cited', () => {
+      expect(claim(base)).toThrow(/cites no probe/);
+    });
+
+    it('refuses exact over a probe with a disagreement', () => {
+      const disagreeing = probes.map((probe) =>
+        probe.name === 'smearglf' ? { ...probe, disagreed: 1 } : probe
+      );
+      expect(claim([...base, 'probes: [smearglf]'], disagreeing)).toThrow(/is exact, but smearglf/);
+    });
+
+    it('refuses a claim on a probe that was never recorded', () => {
+      const unrecorded = probes.map((probe) =>
+        probe.name === 'smearglf' ? { ...probe, fixtures: [] } : probe
+      );
+      expect(claim([...base, 'probes: [smearglf]'], unrecorded)).toThrow(/no fixture/);
     });
   });
 

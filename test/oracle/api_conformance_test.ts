@@ -1,5 +1,9 @@
 'use strict';
 
+import { execFileSync } from 'node:child_process';
+import { writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { KNOWN_GAPS, loadFixtures, prepareFonts, replayFixture, type Outcome } from './replay.js';
 
 /**
@@ -31,12 +35,95 @@ const LABEL: Record<Outcome, string> = {
 
 const fixtures = loadFixtures();
 
+/**
+ * The report the knowledge base reads: for every fixture, every probe
+ * function, how many records came out each way. Sorted and free of anything
+ * that varies between runs, so a green run on unchanged code leaves it byte
+ * for byte as it was, and a change in agreement shows up as a change to a
+ * tracked file. Written only when every fixture was replayed, so a filtered
+ * run never leaves a partial report behind. See `KNOWLEDGE_BASE_SPEC.md`,
+ * phase 2.
+ */
+const REPORT = join(__dirname, '..', '..', 'kb', 'data', 'conformance.json');
+const report: Record<string, any> = {};
+
+function recordReport(fixture: any, replayed: { function: string; outcome: Outcome }[]) {
+  const functions: Record<string, Record<Outcome | 'total', number>> = {};
+
+  for (const record of replayed) {
+    const counts = (functions[record.function] ??= {
+      total: 0,
+      agreed: 0,
+      disagreed: 0,
+      unimplemented: 0,
+      unsupported: 0,
+    });
+    counts.total++;
+    counts[record.outcome]++;
+  }
+
+  const gaps: Record<string, string> = {};
+
+  for (const name of Object.keys(functions)) {
+    const gap =
+      KNOWN_GAPS[`${fixture.probe}-${fixture.display}:${name}`] ??
+      KNOWN_GAPS[`${fixture.probe}:${name}`] ??
+      KNOWN_GAPS[name];
+
+    if (gap) {
+      gaps[name] = gap;
+    }
+  }
+
+  report[fixture.file] = {
+    probe: fixture.probe,
+    display: fixture.display ?? null,
+    windows: fixture.source?.windows ?? null,
+    records: replayed.length,
+    functions: Object.fromEntries(Object.entries(functions).sort(([a], [b]) => a.localeCompare(b))),
+    gaps,
+  };
+}
+
+/** The fixtures git tracks, so that a local, uncommitted recording stays out of a tracked report. */
+function trackedFixtures(): Set<string> | null {
+  try {
+    const listed = execFileSync('git', ['ls-files', 'oracle/fixtures'], {
+      cwd: join(__dirname, '..', '..'),
+      encoding: 'utf8',
+    });
+    return new Set(
+      listed
+        .split('\n')
+        .map((path) => path.replace(/^oracle\/fixtures\//, '').replace(/\.json$/, ''))
+    );
+  } catch {
+    return null;
+  }
+}
+
+function writeReport() {
+  if (Object.keys(report).length !== fixtures.length) {
+    return;
+  }
+
+  const tracked = trackedFixtures();
+  const sorted = Object.fromEntries(
+    Object.entries(report)
+      .filter(([file]) => !tracked || tracked.has(file))
+      .sort(([a], [b]) => a.localeCompare(b))
+  );
+  writeFileSync(REPORT, JSON.stringify(sorted, null, 1) + '\n');
+}
+
 if (fixtures.length === 0) {
   describe('API conformance', () => {
     it.skip('needs fixtures; run the oracle pipeline to record them', () => {});
   });
 } else {
   describe('API conformance', () => {
+    afterAll(writeReport);
+
     for (const fixture of fixtures) {
       describe(`${fixture.probe} against ${fixture.source.windows}`, () => {
         /* The replay runs once the fonts are loaded rather than while tests are
@@ -50,6 +137,7 @@ if (fixtures.length === 0) {
           await prepareFonts();
 
           ({ replayed, summary } = await replayFixture(fixture));
+          recordReport(fixture, replayed);
         });
 
         it('reports what it found', function () {

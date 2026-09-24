@@ -78,6 +78,25 @@ an installation of that version.
 - A probe that is not in `oracle/probes/`, or a `source` file that does not
   exist.
 
+## Evidence
+
+The conformance suite (`test/oracle/api_conformance_test.ts`) writes
+`kb/data/conformance.json` on every full run: for every tracked fixture and
+every measurement in it, how many records agreed with Windows, disagreed, or
+could not be replayed. It holds nothing that varies between runs, so it only
+changes when agreement does. Commit it with the change that moved it.
+
+A status badge is a claim, and the build holds it to that report:
+
+- `exact` on 3.1 needs at least one probe in `probes`, and every record of
+  every cited probe must agree, with no known gap open against it.
+- `partial` needs at least one cited probe that was recorded.
+
+Which probes count is the page's to say. A probe calls many functions for
+setup that its replay never checks, so the build does not infer coverage from
+what a probe calls. Each probe also gets a page of its own, built from its
+source's opening comment and its report.
+
 ## Licence
 
 The content of this directory is licensed CC BY-SA 4.0; see `LICENSE.md`. The

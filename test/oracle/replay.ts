@@ -385,6 +385,8 @@ export interface Fixture {
   display?: string;
   source: { windows: string };
   records: { function: string; args: string; result: string; section?: string }[];
+  /** The fixture's file name without `.json`, which is unique where probe and display may not be. */
+  file: string;
 }
 
 /**
@@ -3187,5 +3189,8 @@ export function loadFixtures(): Fixture[] {
   return readdirSync(FIXTURES)
     .filter((name) => name.endsWith('.json'))
     .sort()
-    .map((name) => JSON.parse(readFileSync(join(FIXTURES, name), 'utf8')));
+    .map((name) => ({
+      ...JSON.parse(readFileSync(join(FIXTURES, name), 'utf8')),
+      file: name.replace(/\.json$/, ''),
+    }));
 }

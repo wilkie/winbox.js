@@ -13,10 +13,12 @@
  * Run with `npm run kb`; the site lands in `dist/kb/`.
  */
 
+import { execFileSync } from 'node:child_process';
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
+import { checkEvidence, type Probe, readProbes, readReport } from './evidence.js';
 import { collectExports } from './exports.js';
 import { type Status, VERSIONS } from './frontmatter.js';
 import {
@@ -32,8 +34,34 @@ import {
 
 const ROOT = process.cwd();
 const OUT = join(ROOT, process.env.KB_OUT ?? 'dist/kb');
-const SOURCE_URL =
-  process.env.KB_SOURCE_URL ?? 'https://gitlab.com/wilkie/winbox.js/-/blob/develop';
+/**
+ * Where a page links for a file's source: the repository's own `origin`,
+ * whether it is on GitHub or GitLab, at `KB_SOURCE_BRANCH` (by default
+ * `develop`). `KB_SOURCE_URL` overrides it.
+ */
+function sourceUrl() {
+  if (process.env.KB_SOURCE_URL) {
+    return process.env.KB_SOURCE_URL;
+  }
+
+  const branch = process.env.KB_SOURCE_BRANCH ?? 'develop';
+
+  try {
+    const origin = execFileSync('git', ['remote', 'get-url', 'origin'], { cwd: ROOT, encoding: 'utf8' }).trim();
+    const match = origin.match(/^(?:https?:\/\/|git@)([^/:]+)[/:](.+?)(?:\.git)?$/);
+
+    if (match) {
+      const [, host, path] = match;
+      return host.includes('gitlab') ? `https://${host}/${path}/-/blob/${branch}` : `https://${host}/${path}/blob/${branch}`;
+    }
+  } catch {
+    // No git, or no origin: links are left relative to the repository.
+  }
+
+  return '.';
+}
+
+const SOURCE_URL = sourceUrl();
 
 const STATUS_LABEL: Record<Status, string> = {
   exact: 'Exact',
@@ -136,7 +164,9 @@ function renderIndex(modules: ModulePage[]) {
 ${rows}
 </tbody>
 </table>
-<p class="note">Exports are counted from the entry tables of the Windows 3.1 binaries. ${disagreements} places where the export tables of winbox.js disagree with them are listed on each module's page.</p>`
+<p class="note">Exports are counted from the entry tables of the Windows 3.1 binaries. ${disagreements} places where the export tables of winbox.js disagree with them are listed on each module's page.</p>
+<h2>Evidence</h2>
+<p>Every claim that winbox.js matches Windows rests on a probe: a small Windows 3.1 program that records what Windows did, replayed against winbox.js by its test suite. <a href="evidence/index.html">The probes and how far winbox.js agrees with each</a>.</p>`
   );
 }
 
@@ -185,7 +215,7 @@ ${disagreements}`
   );
 }
 
-function renderExport(module: ModulePage, page: ExportPage) {
+function renderExport(module: ModulePage, page: ExportPage, probes: Probe[]) {
   const versions = VERSIONS.map(
     (version) =>
       `<tr><th scope="row">Windows ${version}</th><td>${badge(page.versions[version])}</td><td>${
@@ -221,8 +251,14 @@ function renderExport(module: ModulePage, page: ExportPage) {
       )}</code> here. A program that imports this ordinal reaches winbox.js's <code>${escape(page.conflict.name)}</code>.</p>`
     : '';
 
-  const probes = page.page?.front.probes.length
-    ? `<h2>Evidence</h2><ul>${page.page.front.probes.map((probe) => `<li><code>oracle/probes/${escape(probe)}.c</code></li>`).join('')}</ul>`
+  const cited = (page.page?.front.probes ?? []).map((name) => probes.find((probe) => probe.name === name)!);
+  const evidence = cited.length
+    ? `<h2>Evidence</h2><ul>${cited
+        .map(
+          (probe) =>
+            `<li><a href="../../evidence/${escape(probe.name)}/index.html"><code>${escape(probe.name)}</code></a>: ${probe.agreed} of ${probe.records} records agree, over ${probe.fixtures.length} ${probe.fixtures.length === 1 ? 'recording' : 'recordings'}</li>`
+        )
+        .join('')}</ul>`
     : '';
 
   const unknown =
@@ -255,7 +291,7 @@ ${versions}
 </tbody>
 </table>
 ${conflict}
-${probes}
+${evidence}
 ${unknown}`
   );
 }
@@ -299,8 +335,143 @@ function write(path: string, content: string) {
   writeFileSync(path, content);
 }
 
+/** Which function pages cite each probe, by probe name. */
+function citations(modules: ModulePage[]) {
+  const cited = new Map<string, [ModulePage, ExportPage][]>();
+
+  for (const module of modules) {
+    for (const page of module.exports) {
+      for (const probe of page.page?.front.probes ?? []) {
+        cited.set(probe, [...(cited.get(probe) ?? []), [module, page]]);
+      }
+    }
+  }
+
+  return cited;
+}
+
+function renderEvidence(probes: Probe[], cited: ReturnType<typeof citations>) {
+  const rows = probes
+    .map(
+      (probe) => `<tr>
+<th scope="row"><a href="${escape(probe.name)}/index.html"><code>${escape(probe.name)}</code></a></th>
+<td>${escape(firstSentence(probe.description))}</td>
+<td class="num">${probe.fixtures.length}</td>
+<td class="num">${probe.records}</td>
+<td class="num">${probe.records ? percent(probe.agreed, probe.records) : '—'}</td>
+<td class="num">${cited.get(probe.name)?.length ?? 0}</td>
+</tr>`
+    )
+    .join('\n');
+
+  const recorded = probes.filter((probe) => probe.fixtures.length);
+  const records = recorded.reduce((sum, probe) => sum + probe.records, 0);
+  const agreed = recorded.reduce((sum, probe) => sum + probe.agreed, 0);
+
+  return layout(
+    1,
+    'Evidence',
+    [
+      ['Modules', 'index.html'],
+      ['Evidence', null],
+    ],
+    `<h1>Evidence</h1>
+<p class="lead">${probes.length} probes, ${recorded.length} of them recorded against Windows 3.1: ${records} records, of which winbox.js agrees with ${agreed} (${percent(agreed, records)}). Records a probe makes that the replay cannot yet check are counted but not agreed.</p>
+<table>
+<caption>Probes, their recordings, and how far winbox.js agrees</caption>
+<thead><tr><th scope="col">Probe</th><th scope="col">What it measures</th><th scope="col" class="num">Recordings</th><th scope="col" class="num">Records</th><th scope="col" class="num">Agree</th><th scope="col" class="num">Cited by</th></tr></thead>
+<tbody>
+${rows}
+</tbody>
+</table>`
+  );
+}
+
+/** A probe's description as paragraphs, with its `code` spans kept. */
+function paragraphs(text: string) {
+  return text
+    .split(/\n\s*\n/)
+    .map((block) => block.replace(/\s*\n\s*/g, ' ').trim())
+    .filter(Boolean)
+    .map((block) => `<p>${escape(block).replace(/`([^`]+)`/g, '<code>$1</code>')}</p>`)
+    .join('\n');
+}
+
+function firstSentence(text: string) {
+  const flat = text.replace(/\s+/g, ' ').trim();
+  const end = flat.search(/[.:](\s|$)/);
+  return end === -1 ? flat : flat.slice(0, end + 1);
+}
+
+function renderProbe(probe: Probe, cited: ReturnType<typeof citations>) {
+  const recordings = probe.fixtures.length
+    ? probe.fixtures
+        .map(([file, fixture]) => {
+          const rows = Object.entries(fixture.functions)
+            .map(
+              ([name, counts]) => `<tr>
+<th scope="row"><code>${escape(name)}</code></th>
+<td class="num">${counts.total}</td>
+<td class="num">${counts.agreed}</td>
+<td class="num">${counts.disagreed}</td>
+<td class="num">${counts.unsupported + counts.unimplemented}</td>
+<td>${fixture.gaps[name] ? escape(fixture.gaps[name]) : ''}</td>
+</tr>`
+            )
+            .join('\n');
+
+          return `<h3><code>${escape(file)}</code></h3>
+<p class="note">Recorded on ${escape(fixture.display ?? 'the default display')}${fixture.windows ? `, ${escape(fixture.windows)}` : ''}: ${fixture.records} records.</p>
+<table>
+<thead><tr><th scope="col">Measurement</th><th scope="col" class="num">Records</th><th scope="col" class="num">Agree</th><th scope="col" class="num">Disagree</th><th scope="col" class="num">Not replayed</th><th scope="col">Known gap</th></tr></thead>
+<tbody>
+${rows}
+</tbody>
+</table>`;
+        })
+        .join('\n')
+    : '<p>Not yet recorded, or not replayed: no fixture of this probe is in the conformance report.</p>';
+
+  const citing = cited.get(probe.name) ?? [];
+
+  return layout(
+    2,
+    `Probe ${probe.name}`,
+    [
+      ['Modules', 'index.html'],
+      ['Evidence', 'evidence/index.html'],
+      [probe.name, null],
+    ],
+    `<h1><code>${escape(probe.name)}</code></h1>
+<dl class="facts">
+<dt>Source</dt><dd><a href="${SOURCE_URL}/oracle/probes/${escape(probe.name)}.c"><code>oracle/probes/${escape(probe.name)}.c</code></a></dd>
+<dt>Records</dt><dd>${probe.records ? `${probe.agreed} of ${probe.records} agree (${percent(probe.agreed, probe.records)})` : 'none replayed'}</dd>
+<dt>Cited by</dt><dd>${
+      citing.length
+        ? citing
+            .map(
+              ([module, page]) =>
+                `<a href="../../${slugOf(module.name)}/${page.slug}/index.html"><code>${escape(module.name)}.${escape(page.name)}</code></a>`
+            )
+            .join(', ')
+        : 'no page yet'
+    }</dd>
+</dl>
+<h2>What it measures</h2>
+${paragraphs(probe.description)}
+<h2>Recordings</h2>
+${recordings}
+<h2>Reproducing it</h2>
+<p>Build it with <code>node scripts/oracle/build-probes.mjs ${escape(probe.name)}</code> and record it under Windows 3.1 with <code>node scripts/oracle/record.mjs ${escape(probe.name)}</code>, adding <code>--display &lt;name&gt;</code> for another display; the test suite replays the recording against winbox.js.</p>`
+  );
+}
+
 export function build() {
   const modules = assemble(readSurvey('3.1'), collectExports(), readPages());
+  const probes = readProbes(readReport());
+  const cited = citations(modules);
+
+  checkEvidence(modules, probes);
 
   rmSync(OUT, { recursive: true, force: true });
   write(join(OUT, 'style.css'), STYLE);
@@ -313,12 +484,19 @@ export function build() {
     write(join(directory, 'index.html'), renderModule(module));
 
     for (const page of module.exports) {
-      write(join(directory, page.slug, 'index.html'), renderExport(module, page));
+      write(join(directory, page.slug, 'index.html'), renderExport(module, page, probes));
       count++;
     }
   }
 
+  write(join(OUT, 'evidence', 'index.html'), renderEvidence(probes, cited));
+
+  for (const probe of probes) {
+    write(join(OUT, 'evidence', probe.name, 'index.html'), renderProbe(probe, cited));
+  }
+
   return {
+    probes: probes.length,
     modules: modules.length,
     exports: count,
     disagreements: discrepancies(modules).length,
@@ -330,6 +508,6 @@ export function build() {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const result = build();
   console.log(
-    `knowledge base: ${result.modules} modules, ${result.exports} export pages, ${result.disagreements} disagreements with Windows 3.1 -> ${result.out}`
+    `knowledge base: ${result.modules} modules, ${result.exports} export pages, ${result.probes} probe pages, ${result.disagreements} disagreements with Windows 3.1 -> ${result.out}`
   );
 }

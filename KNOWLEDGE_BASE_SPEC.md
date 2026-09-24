@@ -177,6 +177,8 @@ Ship a small, complete slice first, fonts and text in GDI, because that is where
 
 Phase 1 is built: `npm run kb` writes 1,633 pages for 17 modules to `dist/kb/` — every export of the 16 surveyed Windows 3.1 libraries, plus WinG from our table — and `test/kb/knowledge_base_test.ts` checks the pages against the survey and the tables.
 
+Phase 2 is built: the conformance suite writes `kb/data/conformance.json` (96 fixtures, 173,497 records, none disagreeing; the 12,455 not replayed are the four instrument probes that read the scaler's memory), each of the 62 probes has a page, and the build refuses an `exact` or `partial` badge the report does not support.
+
 From phase 3 on, the working rule for new findings changes: a rule measured or read out goes straight into its `kb/` page, with its counts and refused alternatives, instead of into FONTS.md.
 
 ## Decisions
