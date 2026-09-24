@@ -1825,9 +1825,9 @@ export class Surface {
                * is `GDI.EXE` seg1 `6223`: the array is a character's width
                * plus a pixel when the device has `TC_EA_DOUBLE` (`6b73`), and
                * in `OPAQUE` mode the rectangle is those widths summed. A
-               * Hercules has no `TC_EA_DOUBLE`, so its smear is left to GDI
-               * (seg16 `0030`, not yet read) and the driver's end never cuts
-               * it.
+               * Hercules has no `TC_EA_DOUBLE`, so its smear is left to GDI's
+               * simulation (seg16 `0030`: the string drawn twice, at x + 1 and
+               * at x), which nothing cuts at the end.
                *
                * The stack-probe cell is kept because it is that rectangle, and
                * the transparent one is refused at 312 of 640 as a clip at the
@@ -1835,8 +1835,12 @@ export class Surface {
                * right.
                *
                * Turned, none of it: the overhang is a column to the right on
-               * the device and not along the text, and it is always drawn --
-               * the cell turns with the text and clips nothing (above). All
+               * the device and not along the text, and it is always drawn.
+               * GDI will not leave turned text's double weight to a device
+               * that cannot turn text (seg1 `35b2`), so it is GDI's
+               * simulation, seg16 `0030`: the whole string drawn at x + 1 and
+               * again at x, transparent -- two whole draws, which nothing
+               * cuts. All
                * 320 of `smearmod`'s turned records in both modes, and
                * `rotstyle`'s fifteen; a smear along the text, with the same
                * advance, is refused at 0 of either.
@@ -1881,8 +1885,11 @@ export class Surface {
        * Turned it is **two**. `rotstyle`'s "AB" puts the `B` two pixels further
        * along than the plain one at all four angles, and `smearmod`'s three-
        * glyph strings say it is two a glyph and not one a glyph and one more:
-       * all 320 of its turned records at two, 70 at one. Why a turned bold
-       * glyph costs the extra pixel is not read out; it is measured. */
+       * all 320 of its turned records at two, 70 at one. **Read out** of
+       * `GDI.EXE`: GDI's bold simulation (seg16 `0030`, which turned text gets;
+       * see the smear) adds one to the character extra while it draws, and
+       * the widths it hands on still carry the `TC_EA_DOUBLE` pixel (seg1
+       * `6b73`). */
       /* The same advance a turned glyph steps by as an upright one. The
        * design advance scaled and left fractional, which is what an unfitted
        * glyph would carry, is refused: the letters are 768 wrong pixels with

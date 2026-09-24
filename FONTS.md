@@ -18199,43 +18199,58 @@ the rectangle `0744` stops at.
 The same test explains the Hercules. Its `TEXTCAPS` lacks `TC_EA_DOUBLE`,
 so its widths get no bold pixel and its driver no double-weight request. The
 accelerator bit the driver cannot do is left for GDI (`35a9`–`3748`, into
-seg16 `0030`), so the smear there is GDI's own and not the driver's. That
-fits section 3's "a Hercules draws it wherever the smear reaches", but
-seg16 `0030` itself has not been read.
+seg16 `0030`), so the smear there is GDI's own and not the driver's; see
+below.
 
-Where the turned glyph's second pixel comes from has not been
-read, and it stays a measurement. How far the reading has got:
+**Turned, the smear is GDI's own, and so is the second pixel.** Read out of
+`GDI.EXE`:
 
-- **Turned text is GDI's own drawing.** With the realised font's turned flag
-  (`0x10` at `+0x33`) GDI's TrueType text ends in seg8 `024b` rather than the
-  driver's `ExtTextOut`. That routine turns the width array into running
-  totals (`01c7`), rotates each total onto the baseline (`01e1`, `01f0`,
-  through seg33's multiplies), and blits each glyph's bitmap from the cache
-  with `BitBlt`'s raster operation for the drawing mode (`2ed4`). The array
-  is the one above, so the step it gives a turned smeared glyph is its width
-  plus **one** bold pixel. Nothing in the loop smears.
-- **The bitmap comes from the engine untouched.** The glyph cache (seg1
-  `7010`) fills a missing character through one of two producers (`75da`,
-  `7222`). For a turned font `7222` has the engine (seg36 `00a2`, a stack
-  switch into entry `0x10` of the far table in seg47, which is seg36 `0aa3`)
-  write the bitmap straight into the cache, and only does bookkeeping after
-  it. An upright glyph is instead transposed into the `.FNT` column layout,
-  and its width and bearing are the engine's advance and origin, rounded
-  (`7300`).
-- **The engine does not embolden by weight when asked directly.**
-  `oracle/probes/smearglf.c` asks `GetGlyphOutline` for "A" and "l" in four
-  faces at two cells, plain and at the smeared weight, upright and at thirty
-  and ninety degrees. All 48 pairs are byte for byte the same, box, origin,
-  advance and bitmap. It also answers with the unturned outline at every
-  escapement (`inc=9:0` at ninety degrees), so it cannot see the turned
-  realisation; what it does show is that weight alone changes nothing the
-  engine returns.
+- **GDI decides the device cannot do it.** Before drawing, `ExtTextOut` masks
+  the text transform's `txfAccelerator` with the device's `TEXTCAPS`, so that
+  only the effects the device cannot do are left for GDI (seg1 `35a9`–`35ea`).
+  When `txfEscapement` or `txfOrientation` is not nought, it first asks
+  whether the device can turn text at all (`TC_CR_ANY`, `0x10`; VGA's
+  `TEXTCAPS` is `0x2204`), and if not it **skips the mask**, leaving every
+  effect to GDI (`35b2`–`35e0`). The double weight is one of them, and
+  `[bp-0x53] & 0x1e` sends the text to GDI's simulation, seg16 `0030`
+  (`364e`–`3748`).
+- **GDI's bold is the whole string twice, a device pixel apart.** seg16
+  `0030` notes the double weight (`0050`), then loops twice (`0286`–`02ad`):
+  first with the pen at x + 1 (`020a`), then at x with the background mode
+  forced to `TRANSPARENT` and `ETO_OPAQUE` cleared (`0294`, `029c`). That is
+  a smear one column right **on the device**, not along the text, and since
+  each pass is a whole draw, nothing cuts either copy -- the rule measured
+  above, 335 of 335.
+- **The second pixel is a character extra.** With no width array, seg16
+  `0030` adds one to the DC's character extra for the duration (`0070`,
+  taken back at `066d`). The widths builder still adds its own pixel as well
+  (seg1 `6b73`), because the text transform asks for double weight and the
+  VGA's `TEXTCAPS` has `TC_EA_DOUBLE`. One plus one: **a turned smeared
+  glyph advances two pixels**.
 
-So the turned smear and its second pixel are in the bitmap and advance the
-engine hands `7222`, and weight alone does not produce them. What asks the
-engine for them is still to find: the request `7451` builds for it
-(`[bp-0x3a]`, whose first word is `0x12`, with a request code of `0xc` or
-`0x2c` at `[bp-0x36]`) is the next place to read.
+Each pass then goes the way turned TrueType text always does, drawn by GDI
+itself (seg8 `024b`): the width array made into running totals (`01c7`),
+each rotated onto the baseline (`01e1`, `01f0`), and each glyph's bitmap
+blitted from the cache as the engine made it (`2ed4`). The engine never
+hears about the weight. Its transform request (seg1 `6df7`) carries the
+matrix, the width scale and the synthesised slant's third (`0x57/256`), and
+no bold; and `oracle/probes/smearglf.c`, which asks `GetGlyphOutline` for "A"
+and "l" plain and smeared in four faces, two cells and three angles, gets all
+48 pairs back byte for byte the same.
+
+The same simulation is the Hercules's bold, upright as well as turned: its
+`TEXTCAPS` has no `TC_EA_DOUBLE`, so the mask leaves the double weight to GDI
+there too, and the string drawn twice is not cut at its end -- section 3's
+"a Hercules draws it wherever the smear reaches". Its widths get the
+character extra's pixel and not `6b73`'s, which is one pixel a glyph, as
+measured.
+
+One thing follows from the code that nothing has recorded: the first of the
+two passes keeps the caller's background mode, so an opaque ground behind a
+turned smeared string -- or behind any bold on a Hercules -- should be
+painted a device pixel to the right of where a plain string's is. Every
+opaque bold record so far draws a white ground on a white page, which cannot
+show it. It is not implemented, for that reason.
 
 That closes `rotstyle`: **190 of 190**. `smearrun` and `smearmod` are 640 of 640
 each, and the glyph and style corpora the single-glyph rule came from are
