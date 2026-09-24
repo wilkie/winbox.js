@@ -14,22 +14,27 @@
  */
 
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 import { checkEvidence, type Probe, readProbes, readReport } from './evidence.js';
 import { collectExports } from './exports.js';
 import { type Status, VERSIONS } from './frontmatter.js';
+import { readSignature } from './jsdoc.js';
+import { render, type Targets } from './markup.js';
 import {
+  articles,
   assemble,
   discrepancies,
   escape,
   type ExportPage,
   type ModulePage,
+  type Page,
   readPages,
   readSurvey,
   slugOf,
+  targetsOf,
 } from './pages.js';
 
 const ROOT = process.cwd();
@@ -47,12 +52,17 @@ function sourceUrl() {
   const branch = process.env.KB_SOURCE_BRANCH ?? 'develop';
 
   try {
-    const origin = execFileSync('git', ['remote', 'get-url', 'origin'], { cwd: ROOT, encoding: 'utf8' }).trim();
+    const origin = execFileSync('git', ['remote', 'get-url', 'origin'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    }).trim();
     const match = origin.match(/^(?:https?:\/\/|git@)([^/:]+)[/:](.+?)(?:\.git)?$/);
 
     if (match) {
       const [, host, path] = match;
-      return host.includes('gitlab') ? `https://${host}/${path}/-/blob/${branch}` : `https://${host}/${path}/blob/${branch}`;
+      return host.includes('gitlab')
+        ? `https://${host}/${path}/-/blob/${branch}`
+        : `https://${host}/${path}/blob/${branch}`;
     }
   } catch {
     // No git, or no origin: links are left relative to the repository.
@@ -62,6 +72,37 @@ function sourceUrl() {
 }
 
 const SOURCE_URL = sourceUrl();
+
+/**
+ * What every page's body is rendered against: the pages a reference can point
+ * at, and every reference that did not resolve. Set once the site is
+ * assembled; see `build`.
+ */
+const site: { targets: Targets; errors: string[] } = {
+  targets: {
+    functions: new Map(),
+    topics: new Map(),
+    formats: new Map(),
+    probes: new Map(),
+    fonts: new Map(),
+  },
+  errors: [],
+};
+
+/** A page's Markdown body as HTML, its references resolved from `depth` levels down. */
+function body(page: Page | null | undefined, depth: number) {
+  if (!page || !page.body.trim()) {
+    return { html: '', mermaid: false };
+  }
+
+  return render(page.body, {
+    up: '../'.repeat(depth),
+    fontsUrl: `${SOURCE_URL}/FONTS.md`,
+    targets: site.targets,
+    file: page.file,
+    errors: site.errors,
+  });
+}
 
 const STATUS_LABEL: Record<Status, string> = {
   exact: 'Exact',
@@ -89,7 +130,13 @@ const implementedIn = (module: ModulePage) =>
   module.exports.filter((page) => page.entry?.implemented).length;
 
 /** One page of the site, with the navigation back up the tree. */
-function layout(depth: number, title: string, crumbs: [string, string | null][], content: string) {
+function layout(
+  depth: number,
+  title: string,
+  crumbs: [string, string | null][],
+  content: string,
+  mermaid = false
+) {
   const up = '../'.repeat(depth);
   const trail = crumbs
     .map(([label, href]) =>
@@ -103,7 +150,15 @@ function layout(depth: number, title: string, crumbs: [string, string | null][],
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escape(title)} — Windows API Knowledge Base</title>
-<link rel="stylesheet" href="${up}style.css">
+<link rel="stylesheet" href="${up}style.css">${
+    mermaid
+      ? `
+<script type="module">
+import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({ startOnLoad: true, theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default' });
+</script>`
+      : ''
+  }
 </head>
 <body>
 <header class="site">
@@ -165,6 +220,8 @@ ${rows}
 </tbody>
 </table>
 <p class="note">Exports are counted from the entry tables of the Windows 3.1 binaries. ${disagreements} places where the export tables of winbox.js disagree with them are listed on each module's page.</p>
+<h2>Topics and file formats</h2>
+<p><a href="topics/index.html">Topics</a> describe behaviour that crosses functions, and <a href="formats/index.html">file formats</a> the files Windows reads and writes.</p>
 <h2>Evidence</h2>
 <p>Every claim that winbox.js matches Windows rests on a probe: a small Windows 3.1 program that records what Windows did, replayed against winbox.js by its test suite. <a href="evidence/index.html">The probes and how far winbox.js agrees with each</a>.</p>`
   );
@@ -251,13 +308,41 @@ function renderExport(module: ModulePage, page: ExportPage, probes: Probe[]) {
       )}</code> here. A program that imports this ordinal reaches winbox.js's <code>${escape(page.conflict.name)}</code>.</p>`
     : '';
 
-  const cited = (page.page?.front.probes ?? []).map((name) => probes.find((probe) => probe.name === name)!);
+  const cited = (page.page?.front.probes ?? []).map((name) =>
+    probes.find((probe) => probe.name === name)!
+  );
   const evidence = cited.length
     ? `<h2>Evidence</h2><ul>${cited
         .map(
           (probe) =>
             `<li><a href="../../evidence/${escape(probe.name)}/index.html"><code>${escape(probe.name)}</code></a>: ${probe.agreed} of ${probe.records} records agree, over ${probe.fixtures.length} ${probe.fixtures.length === 1 ? 'recording' : 'recordings'}</li>`
         )
+        .join('')}</ul>`
+    : '';
+
+  const signature = page.entry?.implemented
+    ? readSignature(ROOT, page.source, page.entry.implementation ?? page.name)
+    : null;
+  /* Only what is factual about the signature: the parameters' names and types
+   * and the return type. The descriptions in the source's JSDoc follow the
+   * SDK reference's wording, which the site does not republish; the page's
+   * own summary stands in for them. See the Boundaries in the spec. */
+  const typeName = (type: string) => type.replace(/^(?:Types|Gdi|Kernel|User)\./, '');
+  const signatureHtml = signature
+    ? `<h2>Signature</h2>
+<p><code>${escape(typeName(signature.returns?.type ?? 'void'))} ${escape(page.name)}(${signature.parameters
+        .map((parameter) => `${escape(typeName(parameter.type))} ${escape(parameter.name)}`)
+        .join(', ')})</code></p>`
+    : '';
+
+  const article = body(page.page, 2);
+
+  const topics = page.page?.front.topics.length
+    ? `<h2>Topics</h2><ul>${page.page.front.topics
+        .map((topic) => {
+          const target = site.targets.topics.get(topic);
+          return `<li><a href="../../${target?.url}">${escape(target?.title ?? topic)}</a></li>`;
+        })
         .join('')}</ul>`
     : '';
 
@@ -290,9 +375,84 @@ ${unnamed}
 ${versions}
 </tbody>
 </table>
+${signatureHtml}
+${article.html}
 ${conflict}
 ${evidence}
-${unknown}`
+${topics}
+${unknown}`,
+    article.mermaid
+  );
+}
+
+/** A topic or a file format: its own title and body, and what links to it. */
+function renderArticle(
+  kind: 'topic' | 'format',
+  article: { slug: string; page: Page },
+  related: [ModulePage, ExportPage][]
+) {
+  const { page } = article;
+  const content = body(page, 2);
+  const section = kind === 'topic' ? 'Topics' : 'File formats';
+  const directory = kind === 'topic' ? 'topics' : 'formats';
+
+  const functions = related.length
+    ? `<h2>Functions</h2><ul>${related
+        .map(
+          ([module, exported]) =>
+            `<li><a href="../../${slugOf(module.name)}/${exported.slug}/index.html"><code>${escape(module.name)}.${escape(exported.name)}</code></a></li>`
+        )
+        .join('')}</ul>`
+    : '';
+
+  const probes = page.front.probes.length
+    ? `<h2>Evidence</h2><ul>${page.front.probes
+        .map(
+          (probe) =>
+            `<li><a href="../../evidence/${escape(probe)}/index.html"><code>${escape(probe)}</code></a></li>`
+        )
+        .join('')}</ul>`
+    : '';
+
+  return layout(
+    2,
+    page.front.name,
+    [
+      ['Modules', 'index.html'],
+      [section, `${directory}/index.html`],
+      [page.front.name, null],
+    ],
+    `<h1>${escape(page.front.name)}</h1>
+${page.front.summary ? `<p class="lead">${escape(page.front.summary)}</p>` : ''}
+${content.html}
+${functions}
+${probes}`,
+    content.mermaid
+  );
+}
+
+function renderArticleIndex(kind: 'topic' | 'format', list: ReturnType<typeof articles>) {
+  const title = kind === 'topic' ? 'Topics' : 'File formats';
+  const lead =
+    kind === 'topic'
+      ? 'Behaviour that crosses functions: how Windows 3.1 maps, scales, draws and measures, as one rule at a time.'
+      : 'The on-disk formats Windows 3.1 reads and writes, field by field.';
+
+  return layout(
+    1,
+    title,
+    [
+      ['Modules', 'index.html'],
+      [title, null],
+    ],
+    `<h1>${title}</h1>
+<p class="lead">${lead}</p>
+<ul class="articles">${list
+      .map(
+        (item) =>
+          `<li><a href="${item.slug}/index.html">${escape(item.page.front.name)}</a>${item.page.front.summary ? `<span class="note"> — ${escape(item.page.front.summary)}</span>` : ''}</li>`
+      )
+      .join('\n')}</ul>`
   );
 }
 
@@ -327,6 +487,19 @@ dl.facts dd { margin: 0; }
 .badge { display: inline-block; font-size: 0.8rem; font-weight: 600; padding: 0 0.5rem; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
 .badge.exact { color: var(--exact); } .badge.partial { color: var(--partial); } .badge.stub { color: var(--stub); }
 .badge.unrecorded { color: var(--unrecorded); } .badge.unsurveyed { color: var(--unsurveyed); font-weight: 400; }
+.label { display: inline-block; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; padding: 0 0.4rem; border-radius: 4px; background: var(--line); color: var(--fg); vertical-align: 0.1em; }
+.label.measured { background: #d8ecdf; color: #134d29; } .label.read-out { background: #dce6f7; color: #173d7a; }
+.label.documented { background: #ececf1; color: #3b3b44; } .label.inferred { background: #f6ead3; color: #6b4600; }
+.label.refused { background: #f4dede; color: #7a1f1f; }
+@media (prefers-color-scheme: dark) {
+  .label.measured { background: #1f3a29; color: #9fe0b5; } .label.read-out { background: #1d2a44; color: #a9c4f5; }
+  .label.documented { background: #2a2a32; color: #c9c9d3; } .label.inferred { background: #3b2f18; color: #ecc98a; }
+  .label.refused { background: #3f1f1f; color: #f0aaaa; }
+}
+main pre { background: var(--line); padding: 0.75rem 1rem; border-radius: 6px; overflow-x: auto; }
+main pre.mermaid { background: none; padding: 0; }
+main blockquote { margin: 1rem 0; padding-left: 1rem; border-left: 3px solid var(--line); color: var(--muted); }
+ul.articles { padding-left: 1.2rem; } ul.articles li { margin: 0.3rem 0; }
 footer.site { margin-top: 3rem; padding-bottom: 2rem; color: var(--muted); font-size: 0.85rem; border-top: 1px solid var(--line); }
 `;
 
@@ -473,6 +646,12 @@ export function build() {
 
   checkEvidence(modules, probes);
 
+  const all = readPages();
+  const topics = articles(all, 'topic');
+  const formats = articles(all, 'format');
+
+  site.targets = targetsOf(modules, all, probes, readFileSync(join(ROOT, 'FONTS.md'), 'utf8'));
+
   rmSync(OUT, { recursive: true, force: true });
   write(join(OUT, 'style.css'), STYLE);
   write(join(OUT, 'index.html'), renderIndex(modules));
@@ -489,13 +668,35 @@ export function build() {
     }
   }
 
+  write(join(OUT, 'topics', 'index.html'), renderArticleIndex('topic', topics));
+  write(join(OUT, 'formats', 'index.html'), renderArticleIndex('format', formats));
+
+  for (const topic of topics) {
+    const related = modules.flatMap((module) =>
+      module.exports
+        .filter((page) => page.page?.front.topics.includes(topic.slug))
+        .map((page): [ModulePage, ExportPage] => [module, page])
+    );
+    write(join(OUT, 'topics', topic.slug, 'index.html'), renderArticle('topic', topic, related));
+  }
+
+  for (const format of formats) {
+    write(join(OUT, 'formats', format.slug, 'index.html'), renderArticle('format', format, []));
+  }
+
   write(join(OUT, 'evidence', 'index.html'), renderEvidence(probes, cited));
 
   for (const probe of probes) {
     write(join(OUT, 'evidence', probe.name, 'index.html'), renderProbe(probe, cited));
   }
 
+  if (site.errors.length) {
+    throw new Error(`references that do not resolve:\n  ${site.errors.join('\n  ')}`);
+  }
+
   return {
+    topics: topics.length,
+    formats: formats.length,
     probes: probes.length,
     modules: modules.length,
     exports: count,
@@ -508,6 +709,6 @@ export function build() {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const result = build();
   console.log(
-    `knowledge base: ${result.modules} modules, ${result.exports} export pages, ${result.probes} probe pages, ${result.disagreements} disagreements with Windows 3.1 -> ${result.out}`
+    `knowledge base: ${result.modules} modules, ${result.exports} export pages, ${result.probes} probe pages, ${result.topics} topics, ${result.formats} formats, ${result.disagreements} disagreements with Windows 3.1 -> ${result.out}`
   );
 }

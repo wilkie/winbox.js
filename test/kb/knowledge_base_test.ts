@@ -1,11 +1,18 @@
 'use strict';
 
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 
 import { checkEvidence, readProbes, readReport } from '../../scripts/kb/evidence.js';
 import { collectExports } from '../../scripts/kb/exports.js';
+import { fontsSections, headingSlug, render } from '../../scripts/kb/markup.js';
 import { parsePage } from '../../scripts/kb/frontmatter.js';
-import { assemble, discrepancies, readPages, readSurvey } from '../../scripts/kb/pages.js';
+import {
+  assemble,
+  discrepancies,
+  readPages,
+  readSurvey,
+  targetsOf,
+} from '../../scripts/kb/pages.js';
 
 /**
  * The knowledge base's first promise: every export Windows 3.1 has gets a page
@@ -148,6 +155,13 @@ describe('the knowledge base', () => {
       ).toThrow(/status/);
     });
 
+    it('reads a version quoted either way, as Prettier may write it', () => {
+      const double = parsePage('kb/x.md', '---\nkind: topic\nname: x\nversions:\n  "3.1": exact\n---\n');
+      const single = parsePage('kb/x.md', "---\nkind: topic\nname: x\nversions:\n  '3.1': exact\n---\n");
+
+      expect(single.front.versions).toEqual(double.front.versions);
+    });
+
     it('refuses a version that is not one', () => {
       expect(() =>
         parsePage('kb/x.md', '---\nkind: topic\nname: x\nversions:\n  "3.2": exact\n---\n')
@@ -202,6 +216,62 @@ describe('the knowledge base', () => {
         probe.name === 'smearglf' ? { ...probe, fixtures: [] } : probe
       );
       expect(claim([...base, 'probes: [smearglf]'], unrecorded)).toThrow(/no fixture/);
+    });
+  });
+
+  describe('the bodies of pages', () => {
+    const pages = readPages();
+    const probes = readProbes(readReport());
+    const targets = targetsOf(
+      assemble(survey, tables, pages),
+      pages,
+      probes,
+      readFileSync('FONTS.md', 'utf8')
+    );
+    const context = (errors: string[]) => ({
+      up: '../../',
+      fontsUrl: 'FONTS.md',
+      targets,
+      file: 'test.md',
+      errors,
+    });
+
+    it('resolve every reference in every page in kb/', () => {
+      const errors: string[] = [];
+
+      for (const page of pages) {
+        render(page.body, { ...context(errors), file: page.file });
+      }
+
+      expect(errors).toEqual([]);
+    });
+
+    it('refuse a reference to something that does not exist', () => {
+      const errors: string[] = [];
+      render(
+        '[[fn:GDI.NoSuchFunction]] [[topic:no-such-topic]] [[fonts:99z]] [[nonsense]]',
+        context(errors)
+      );
+
+      expect(errors).toHaveLength(4);
+    });
+
+    it('link a function and label a claim', () => {
+      const { html } = render('[[measured]] see [[fn:GDI.GetGlyphOutline]]', context([]));
+
+      expect(html).toContain('<span class="label measured">Measured</span>');
+      expect(html).toContain('href="../../gdi/getglyphoutline/index.html"');
+    });
+
+    it('keep raw HTML out', () => {
+      expect(render('<script>alert(1)</script>', context([])).html).not.toContain('<script>');
+    });
+
+    it('link FONTS.md sections at the anchors GitHub gives them', () => {
+      expect(
+        headingSlug('8u. `lfEscapement`, which was thrown away with a comment saying so')
+      ).toBe('8u-lfescapement-which-was-thrown-away-with-a-comment-saying-so');
+      expect(fontsSections(readFileSync('FONTS.md', 'utf8')).has('8u')).toBe(true);
     });
   });
 

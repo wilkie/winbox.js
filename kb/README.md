@@ -20,7 +20,35 @@ can know, and the build checks it before using it.
 
 ## Where a page goes
 
-`kb/<module>/<name>.md`, in lower case: `kb/gdi/getglyphoutline.md`.
+| Kind          | File                                                                | Built at                  |
+| ------------- | ------------------------------------------------------------------- | ------------------------- |
+| A function    | `kb/<module>/<name>.md`, in lower case: `kb/gdi/getglyphoutline.md` | `/gdi/getglyphoutline/`   |
+| A topic       | `kb/topics/<slug>.md`: `kb/topics/synthetic-bold.md`                | `/topics/synthetic-bold/` |
+| A file format | `kb/formats/<slug>.md`: `kb/formats/fot.md`                         | `/formats/fot/`           |
+
+## The body
+
+After the front matter, a page is Markdown, with raw HTML refused. A function
+page follows the order of the spec's page anatomy: `## Observed behaviour`,
+`## Nuances`, `## Inside Windows`, `## Implementation`. Its title, facts,
+status, signature, evidence and topics are generated around it.
+
+Two additions, both checked by the build:
+
+- **References**, `[[kind:target]]` or `[[kind:target|text]]`: `[[fn:GDI.TextOut]]`,
+  `[[topic:synthetic-bold]]`, `[[format:fot]]`, `[[probe:smearmod]]`, and
+  `[[fonts:8u]]` for a section of `FONTS.md`. One that does not resolve fails
+  the build.
+- **Evidence labels** before a claim: `[[documented]]`, `[[measured]]`,
+  `[[read out]]`, `[[inferred]]` and `[[refused]]`, as the spec's evidence model
+  defines them. A claim nothing has settled says so in words: "Not yet measured".
+
+A ` ```mermaid ` fence is drawn as a diagram.
+
+A page states each rule briefly with its evidence and its count, and links
+the `FONTS.md` section that derives it. `FONTS.md` stays the long form for the
+people doing the reverse engineering, and the two are kept in step: a finding
+lands in both.
 
 ## Front matter
 

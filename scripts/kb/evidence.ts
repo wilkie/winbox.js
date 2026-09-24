@@ -86,7 +86,8 @@ export function readProbes(report: Report): Probe[] {
       const sum = (key: keyof FunctionCounts) =>
         fixtures.reduce(
           (total, [, fixture]) =>
-            total + Object.values(fixture.functions).reduce((part, counts) => part + counts[key], 0),
+            total +
+            Object.values(fixture.functions).reduce((part, counts) => part + counts[key], 0),
           0
         );
 
@@ -143,6 +144,8 @@ export function checkEvidence(modules: ModulePage[], probes: Probe[]) {
   }
 
   if (errors.length) {
-    throw new Error(`the knowledge base claims more than the conformance report shows:\n  ${errors.join('\n  ')}`);
+    throw new Error(
+      `the knowledge base claims more than the conformance report shows:\n  ${errors.join('\n  ')}`
+    );
   }
 }

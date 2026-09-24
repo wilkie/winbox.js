@@ -179,6 +179,8 @@ Phase 1 is built: `npm run kb` writes 1,633 pages for 17 modules to `dist/kb/` â
 
 Phase 2 is built: the conformance suite writes `kb/data/conformance.json` (96 fixtures, 173,497 records, none disagreeing; the 12,455 not replayed are the four instrument probes that read the scaler's memory), each of the 62 probes has a page, and the build refuses an `exact` or `partial` badge the report does not support.
 
+Phase 3 is under way: page bodies render from Markdown with checked references and evidence labels, topic and format pages exist, and the first content is written â€” the 12 GDI text functions, five topics (synthetic bold, turned text, non-square pixels, the text ground and rules, polygon fill) and two formats (`.FOT`, NE). Still to come in it: the font mapper, TrueType scaling and hinting, scan conversion and synthetic italic topics, and the FNT/FON format. Signatures show names and types only: the source's JSDoc descriptions follow the SDK's wording, which the site does not republish.
+
 From phase 3 on, the working rule for new findings changes: a rule measured or read out goes straight into its `kb/` page, with its counts and refused alternatives, instead of into FONTS.md.
 
 ## Decisions

@@ -19,6 +19,7 @@ import { join, relative } from 'node:path';
 
 import { type ExportEntry, type ModuleEntry } from './exports.js';
 import { type FrontMatter, parsePage, type Status, type Version, VERSIONS } from './frontmatter.js';
+import { fontsSections, type Targets } from './markup.js';
 
 const ROOT = process.cwd();
 const PAGES = join(ROOT, 'kb');
@@ -120,6 +121,23 @@ export function readPages(): Page[] {
   }
 
   return pages;
+}
+
+/** A topic or format page's slug: its file name without `.md`. */
+export const articleSlug = (page: Page) => page.file.replace(/^.*\//, '').replace(/\.md$/, '');
+
+/** The topic and format pages, each with the URL it is built at. */
+export function articles(pages: Page[], kind: 'topic' | 'format') {
+  const directory = kind === 'topic' ? 'topics' : 'formats';
+
+  return pages
+    .filter((page) => page.front.kind === kind)
+    .map((page) => ({
+      slug: articleSlug(page),
+      url: `${directory}/${articleSlug(page)}/index.html`,
+      page,
+    }))
+    .sort((a, b) => a.page.front.name.localeCompare(b.page.front.name));
 }
 
 /**
@@ -232,6 +250,20 @@ export function assemble(survey: Survey, tables: ModuleEntry[], pages: Page[]): 
       errors.push(`${file}: no source file ${front.source}`);
     }
 
+    for (const topic of front.topics) {
+      if (!pages.some((other) => other.front.kind === 'topic' && articleSlug(other) === topic)) {
+        errors.push(`${file}: no topic page kb/topics/${topic}.md`);
+      }
+    }
+
+    if (front.kind === 'topic' && !/^kb\/topics\/[a-z0-9-]+\.md$/.test(file)) {
+      errors.push(`${file}: a topic page lives in kb/topics/, named in lower case with hyphens`);
+    }
+
+    if (front.kind === 'format' && !/^kb\/formats\/[a-z0-9-]+\.md$/.test(file)) {
+      errors.push(`${file}: a format page lives in kb/formats/, named in lower case with hyphens`);
+    }
+
     if (front.kind !== 'function') {
       continue;
     }
@@ -315,4 +347,44 @@ export function discrepancies(modules: ModulePage[]) {
   }
 
   return lines;
+}
+
+/** Everything a page's references may point at, from the site's root. */
+export function targetsOf(
+  modules: ModulePage[],
+  pages: Page[],
+  probes: { name: string }[],
+  fontsText: string
+): Targets {
+  const targets: Targets = {
+    functions: new Map(),
+    topics: new Map(),
+    formats: new Map(),
+    probes: new Map(),
+    fonts: fontsSections(fontsText),
+  };
+
+  for (const module of modules) {
+    for (const page of module.exports) {
+      targets.functions.set(`${module.name}.${page.name}`.toUpperCase(), {
+        url: `${slugOf(module.name)}/${page.slug}/index.html`,
+        title: page.name,
+      });
+    }
+  }
+
+  for (const kind of ['topic', 'format'] as const) {
+    for (const article of articles(pages, kind)) {
+      (kind === 'topic' ? targets.topics : targets.formats).set(article.slug, {
+        url: article.url,
+        title: article.page.front.name,
+      });
+    }
+  }
+
+  for (const probe of probes) {
+    targets.probes.set(probe.name, { url: `evidence/${probe.name}/index.html`, title: probe.name });
+  }
+
+  return targets;
 }

@@ -48,6 +48,11 @@ function scalar(text: string): string | number {
     return JSON.parse(trimmed);
   }
 
+  /* Single quotes, as Prettier writes them: a doubled quote is one quote. */
+  if (/^'(?:[^']|'')*'$/.test(trimmed)) {
+    return trimmed.slice(1, -1).replace(/''/g, "'");
+  }
+
   if (/^-?\d+$/.test(trimmed)) {
     return Number(trimmed);
   }
@@ -83,7 +88,7 @@ export function parsePage(file: string, text: string): { front: FrontMatter; bod
       continue;
     }
 
-    const child = line.match(/^ {2}("?[\w.]+"?):\s*(.+)$/);
+    const child = line.match(/^ {2}("[\w.]+"|'[\w.]+'|[\w.]+):\s*(.+)$/);
 
     if (child) {
       if (!nested) {
