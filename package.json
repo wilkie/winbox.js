@@ -45,6 +45,7 @@
     "test:conformance": "jest --config jest.conformance.config.js --runInBand",
     "test:conformance:fetch": "node scripts/fetch-cpu-tests.mjs",
     "bench": "vite build --config bench/vite.config.ts --logLevel warn && node dist/bench/cpu.js",
+    "kb": "vite build --config scripts/kb/vite.config.ts --logLevel warn && node dist/kb-build/build.js",
     "oracle:media": "node scripts/oracle/fetch-windows.mjs",
     "oracle:toolchain": "node scripts/oracle/fetch-toolchain.mjs",
     "oracle:install": "node scripts/oracle/install-windows.mjs",

@@ -91,8 +91,8 @@ Recommendation: keep every word of content in this repository, next to the code 
 
 Four sources feed the build:
 
-1. **Export tables** — `src/win16/<module>.ts` already lists every export with its name, argument bytes and whether it is a stub. The build reads these for each page's header and the module index.
-2. **JSDoc on implementations** — signature, parameters and summary, as each file in `src/win16/<module>/` has now. TypeDoc already reads it (`typedoc.json`, output to `docs/`).
+1. **The survey of the binaries** — `scripts/kb/survey.mjs` reads the entry and name tables of the installed Windows libraries into `kb/data/exports-<version>.json`, committed so the site builds without the media. It decides which exports exist: our tables carry placeholders and a few wrong names, so they are not the authority.
+2. **Export tables and JSDoc** — `src/win16/<module>.ts` says, where it names the same export at the same ordinal, whether it is implemented and how many bytes it pops; the implementation's JSDoc gives signature, parameters and summary. Where a table disagrees with the survey, the page says so.
 3. **Knowledge pages** — a new `kb/` directory of Markdown files, one per function, structure, format or topic, holding sections 4 to 6 and 8 of the page anatomy. FONTS.md is split into these rather than duplicated.
 4. **Evidence** — `oracle/probes/*.c` and `oracle/fixtures/*.json`, plus a JSON report the conformance suite writes on each run (per probe, function and display: agreed, disagreed, unsupported).
 
@@ -154,8 +154,8 @@ The fonts-and-text part of GDI is ready to publish almost as it stands: FONTS.md
 | Oracle probes (`oracle/probes`)                              | 62 C programs                                                                                               | 62 probe pages with build and record steps                                |
 | Fixtures (`oracle/fixtures`)                                 | 413 files, 1,137,028 records, 4 displays (VGA, EGA, Super VGA, Hercules)                                    | Evidence tables and per-display agreement on every page                   |
 | Conformance suite                                            | 4,338 passing tests, `KNOWN_GAPS` empty                                                                     | Status badges and scores                                                  |
-| Implemented exports with JSDoc                               | KERNEL 53, USER 50, GDI 34                                                                                  | Signature and summary sections                                            |
-| Declared stubs                                               | KERNEL 301, USER 481, GDI 452, COMMDLG 31, SOUND 17                                                         | Header-only pages marked Stub, so the index is complete from day one      |
+| Windows 3.1 exports, surveyed from its binaries              | 1,623 across 16 libraries; winbox.js implements 143                                                         | One page each, with signature and summary where implemented               |
+| Export-table disagreements with Windows                      | 7, including an implemented SetBkMode at GDI.487, an ordinal Windows does not export                        | Listed on module pages; a test keeps the list from growing                |
 | Decoded file formats                                         | `.FOT` byte for byte; NE via `scripts/oracle/ne.mjs`; FNT/FON strikes; the TrueType tables the scaler reads | Four format pages                                                         |
 | Binary read-outs                                             | Offsets in `GDI.EXE` and `VGA.DRV` cited throughout FONTS.md                                                | Inside Windows sections                                                   |
 
@@ -174,6 +174,8 @@ Ship a small, complete slice first, fonts and text in GDI, because that is where
 | 3. Fonts and text | FONTS.md split into topic pages; the 12 fully recorded GDI functions written out; `.FOT`, FNT/FON and NE format pages                              | Those pages cite only existing probes and offsets, checked by the build                        |
 | 4. Public release | Search, cross-links, a contribution guide for adding a probe and a page                                                                            | A reader can reproduce any Measured claim from the site alone                                  |
 | 5. Widen          | KERNEL and USER pages as their behaviour is recorded; FONTS.md stops growing and new findings land directly in `kb/`                               | Ongoing                                                                                        |
+
+Phase 1 is built: `npm run kb` writes 1,633 pages for 17 modules to `dist/kb/` — every export of the 16 surveyed Windows 3.1 libraries, plus WinG from our table — and `test/kb/knowledge_base_test.ts` checks the pages against the survey and the tables.
 
 From phase 3 on, the working rule for new findings changes: a rule measured or read out goes straight into its `kb/` page, with its counts and refused alternatives, instead of into FONTS.md.
 

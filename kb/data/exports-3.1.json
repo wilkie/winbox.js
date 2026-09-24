@@ -1,0 +1,8250 @@
+{
+ "version": "3.1",
+ "generated": "scripts/kb/survey.mjs",
+ "modules": [
+  {
+   "name": "KERNEL",
+   "files": [
+    "KRNL386.EXE",
+    "KRNL286.EXE"
+   ],
+   "exports": [
+    {
+     "ordinal": 1,
+     "name": "FATALEXIT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 2,
+     "name": "EXITKERNEL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 3,
+     "name": "GETVERSION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 4,
+     "name": "LOCALINIT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 5,
+     "name": "LOCALALLOC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 6,
+     "name": "LOCALREALLOC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 7,
+     "name": "LOCALFREE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 8,
+     "name": "LOCALLOCK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 9,
+     "name": "LOCALUNLOCK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 10,
+     "name": "LOCALSIZE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 11,
+     "name": "LOCALHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 12,
+     "name": "LOCALFLAGS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 13,
+     "name": "LOCALCOMPACT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 14,
+     "name": "LOCALNOTIFY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 15,
+     "name": "GLOBALALLOC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 16,
+     "name": "GLOBALREALLOC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 17,
+     "name": "GLOBALFREE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 18,
+     "name": "GLOBALLOCK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 19,
+     "name": "GLOBALUNLOCK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 20,
+     "name": "GLOBALSIZE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 21,
+     "name": "GLOBALHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 22,
+     "name": "GLOBALFLAGS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 23,
+     "name": "LOCKSEGMENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 24,
+     "name": "UNLOCKSEGMENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 25,
+     "name": "GLOBALCOMPACT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 26,
+     "name": "GLOBALFREEALL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 28,
+     "name": "GLOBALMASTERHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 29,
+     "name": "YIELD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 30,
+     "name": "WAITEVENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 31,
+     "name": "POSTEVENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 32,
+     "name": "SETPRIORITY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 33,
+     "name": "LOCKCURRENTTASK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 34,
+     "name": "SETTASKQUEUE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 35,
+     "name": "GETTASKQUEUE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 36,
+     "name": "GETCURRENTTASK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 37,
+     "name": "GETCURRENTPDB",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 38,
+     "name": "SETTASKSIGNALPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 41,
+     "name": "ENABLEDOS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 42,
+     "name": "DISABLEDOS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 45,
+     "name": "LOADMODULE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 46,
+     "name": "FREEMODULE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 47,
+     "name": "GETMODULEHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 48,
+     "name": "GETMODULEUSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 49,
+     "name": "GETMODULEFILENAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 50,
+     "name": "GETPROCADDRESS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 51,
+     "name": "MAKEPROCINSTANCE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 52,
+     "name": "FREEPROCINSTANCE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 53,
+     "name": "CALLPROCINSTANCE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 54,
+     "name": "GETINSTANCEDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 55,
+     "name": "CATCH",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 56,
+     "name": "THROW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 57,
+     "name": "GETPROFILEINT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 58,
+     "name": "GETPROFILESTRING",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 59,
+     "name": "WRITEPROFILESTRING",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 60,
+     "name": "FINDRESOURCE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 61,
+     "name": "LOADRESOURCE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 62,
+     "name": "LOCKRESOURCE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 63,
+     "name": "FREERESOURCE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 64,
+     "name": "ACCESSRESOURCE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 65,
+     "name": "SIZEOFRESOURCE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 66,
+     "name": "ALLOCRESOURCE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 67,
+     "name": "SETRESOURCEHANDLER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 68,
+     "name": "INITATOMTABLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 69,
+     "name": "FINDATOM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 70,
+     "name": "ADDATOM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 71,
+     "name": "DELETEATOM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 72,
+     "name": "GETATOMNAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 73,
+     "name": "GETATOMHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 74,
+     "name": "OPENFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 75,
+     "name": "OPENPATHNAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 76,
+     "name": "DELETEPATHNAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 77,
+     "name": "RESERVED1",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 78,
+     "name": "RESERVED2",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 79,
+     "name": "RESERVED3",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 80,
+     "name": "RESERVED4",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 81,
+     "name": "_LCLOSE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 82,
+     "name": "_LREAD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 83,
+     "name": "_LCREAT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 84,
+     "name": "_LLSEEK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 85,
+     "name": "_LOPEN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 86,
+     "name": "_LWRITE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 87,
+     "name": "RESERVED5",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 88,
+     "name": "LSTRCPY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 89,
+     "name": "LSTRCAT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 90,
+     "name": "LSTRLEN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 91,
+     "name": "INITTASK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 92,
+     "name": "GETTEMPDRIVE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 93,
+     "name": "GETCODEHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 94,
+     "name": "DEFINEHANDLETABLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 95,
+     "name": "LOADLIBRARY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 96,
+     "name": "FREELIBRARY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 97,
+     "name": "GETTEMPFILENAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 98,
+     "name": "GETLASTDISKCHANGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 99,
+     "name": "GETLPERRMODE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 100,
+     "name": "VALIDATECODESEGMENTS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 101,
+     "name": "NOHOOKDOSCALL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 102,
+     "name": "DOS3CALL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 103,
+     "name": "NETBIOSCALL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 104,
+     "name": "GETCODEINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 105,
+     "name": "GETEXEVERSION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 106,
+     "name": "SETSWAPAREASIZE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 107,
+     "name": "SETERRORMODE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 108,
+     "name": "SWITCHSTACKTO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 109,
+     "name": "SWITCHSTACKBACK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 110,
+     "name": "PATCHCODEHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 111,
+     "name": "GLOBALWIRE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 112,
+     "name": "GLOBALUNWIRE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 113,
+     "name": "__AHSHIFT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 114,
+     "name": "__AHINCR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 115,
+     "name": "OUTPUTDEBUGSTRING",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 116,
+     "name": "INITLIB",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 117,
+     "name": "OLDYIELD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 118,
+     "name": "GETTASKQUEUEDS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 119,
+     "name": "GETTASKQUEUEES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 120,
+     "name": "UNDEFDYNLINK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 121,
+     "name": "LOCALSHRINK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 122,
+     "name": "ISTASKLOCKED",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 123,
+     "name": "KBDRST",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 124,
+     "name": "ENABLEKERNEL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 125,
+     "name": "DISABLEKERNEL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 126,
+     "name": "MEMORYFREED",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 127,
+     "name": "GETPRIVATEPROFILEINT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 128,
+     "name": "GETPRIVATEPROFILESTRING",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 129,
+     "name": "WRITEPRIVATEPROFILESTRING",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 130,
+     "name": "FILECDR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 131,
+     "name": "GETDOSENVIRONMENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 132,
+     "name": "GETWINFLAGS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 133,
+     "name": "GETEXEPTR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 134,
+     "name": "GETWINDOWSDIRECTORY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 135,
+     "name": "GETSYSTEMDIRECTORY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 136,
+     "name": "GETDRIVETYPE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 137,
+     "name": "FATALAPPEXIT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 138,
+     "name": "GETHEAPSPACES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 139,
+     "name": "DOSIGNAL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 140,
+     "name": "SETSIGHANDLER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 141,
+     "name": "INITTASK1",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 150,
+     "name": "DIRECTEDYIELD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 151,
+     "name": "WINOLDAPCALL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 152,
+     "name": "GETNUMTASKS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 154,
+     "name": "GLOBALNOTIFY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 155,
+     "name": "GETTASKDS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 156,
+     "name": "LIMITEMSPAGES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 157,
+     "name": "GETCURPID",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 158,
+     "name": "ISWINOLDAPTASK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 159,
+     "name": "GLOBALHANDLENORIP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 160,
+     "name": "EMSCOPY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 161,
+     "name": "LOCALCOUNTFREE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 162,
+     "name": "LOCALHEAPSIZE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 163,
+     "name": "GLOBALLRUOLDEST",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 164,
+     "name": "GLOBALLRUNEWEST",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 165,
+     "name": "A20PROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 166,
+     "name": "WINEXEC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 167,
+     "name": "GETEXPWINVER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 168,
+     "name": "DIRECTRESALLOC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 169,
+     "name": "GETFREESPACE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 170,
+     "name": "ALLOCCSTODSALIAS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 171,
+     "name": "ALLOCDSTOCSALIAS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 172,
+     "name": "ALLOCALIAS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 173,
+     "name": "__ROMBIOS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 174,
+     "name": "__A000H",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 175,
+     "name": "ALLOCSELECTOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 176,
+     "name": "FREESELECTOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 177,
+     "name": "PRESTOCHANGOSELECTOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 178,
+     "name": "__WINFLAGS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 179,
+     "name": "__D000H",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 180,
+     "name": "LONGPTRADD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 181,
+     "name": "__B000H",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 182,
+     "name": "__B800H",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 183,
+     "name": "__0000H",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 184,
+     "name": "GLOBALDOSALLOC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 185,
+     "name": "GLOBALDOSFREE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 186,
+     "name": "GETSELECTORBASE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 187,
+     "name": "SETSELECTORBASE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 188,
+     "name": "GETSELECTORLIMIT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 189,
+     "name": "SETSELECTORLIMIT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 190,
+     "name": "__E000H",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 191,
+     "name": "GLOBALPAGELOCK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 192,
+     "name": "GLOBALPAGEUNLOCK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 193,
+     "name": "__0040H",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 194,
+     "name": "__F000H",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 195,
+     "name": "__C000H",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 196,
+     "name": "SELECTORACCESSRIGHTS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 197,
+     "name": "GLOBALFIX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 198,
+     "name": "GLOBALUNFIX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 199,
+     "name": "SETHANDLECOUNT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 200,
+     "name": "VALIDATEFREESPACES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 201,
+     "name": "REPLACEINST",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 202,
+     "name": "REGISTERPTRACE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 203,
+     "name": "DEBUGBREAK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 204,
+     "name": "SWAPRECORDING",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 205,
+     "name": "CVWBREAK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 206,
+     "name": "ALLOCSELECTORARRAY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 207,
+     "name": "ISDBCSLEADBYTE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 310,
+     "name": "LOCALHANDLEDELTA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 311,
+     "name": "GETSETKERNELDOSPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 314,
+     "name": "DEBUGDEFINESEGMENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 315,
+     "name": "WRITEOUTPROFILES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 316,
+     "name": "GETFREEMEMINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 318,
+     "name": "FATALEXITHOOK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 319,
+     "name": "FLUSHCACHEDFILEHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 320,
+     "name": "ISTASK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 323,
+     "name": "ISROMMODULE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 324,
+     "name": "LOGERROR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 325,
+     "name": "LOGPARAMERROR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 326,
+     "name": "ISROMFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 327,
+     "name": "K327",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 328,
+     "name": "_DEBUGOUTPUT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 329,
+     "name": "K329",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 332,
+     "name": "THHOOK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 334,
+     "name": "ISBADREADPTR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 335,
+     "name": "ISBADWRITEPTR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 336,
+     "name": "ISBADCODEPTR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 337,
+     "name": "ISBADSTRINGPTR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 338,
+     "name": "HASGPHANDLER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 339,
+     "name": "DIAGQUERY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 340,
+     "name": "DIAGOUTPUT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 341,
+     "name": "TOOLHELPHOOK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 342,
+     "name": "__GP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 343,
+     "name": "REGISTERWINOLDAPHOOK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 344,
+     "name": "GETWINOLDAPHOOKS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 345,
+     "name": "ISSHAREDSELECTOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 346,
+     "name": "ISBADHUGEREADPTR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 347,
+     "name": "ISBADHUGEWRITEPTR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 348,
+     "name": "HMEMCPY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 349,
+     "name": "_HREAD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 350,
+     "name": "_HWRITE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 351,
+     "name": "BUNNY_351",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 353,
+     "name": "LSTRCPYN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 354,
+     "name": "GETAPPCOMPATFLAGS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 355,
+     "name": "GETWINDEBUGINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 356,
+     "name": "SETWINDEBUGINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 403,
+     "name": "K403",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 404,
+     "name": "K404",
+     "nameFrom": "binary"
+    }
+   ]
+  },
+  {
+   "name": "USER",
+   "files": [
+    "USER.EXE"
+   ],
+   "exports": [
+    {
+     "ordinal": 1,
+     "name": "MESSAGEBOX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 2,
+     "name": "OLDEXITWINDOWS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 3,
+     "name": "ENABLEOEMLAYER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 4,
+     "name": "DISABLEOEMLAYER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 5,
+     "name": "INITAPP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 6,
+     "name": "POSTQUITMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 7,
+     "name": "EXITWINDOWS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 8,
+     "name": "WEP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 10,
+     "name": "SETTIMER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 11,
+     "name": "BEAR11",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 12,
+     "name": "KILLTIMER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 13,
+     "name": "GETTICKCOUNT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 14,
+     "name": "GETTIMERRESOLUTION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 15,
+     "name": "GETCURRENTTIME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 16,
+     "name": "CLIPCURSOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 17,
+     "name": "GETCURSORPOS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 18,
+     "name": "SETCAPTURE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 19,
+     "name": "RELEASECAPTURE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 20,
+     "name": "SETDOUBLECLICKTIME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 21,
+     "name": "GETDOUBLECLICKTIME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 22,
+     "name": "SETFOCUS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 23,
+     "name": "GETFOCUS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 24,
+     "name": "REMOVEPROP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 25,
+     "name": "GETPROP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 26,
+     "name": "SETPROP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 27,
+     "name": "ENUMPROPS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 28,
+     "name": "CLIENTTOSCREEN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 29,
+     "name": "SCREENTOCLIENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 30,
+     "name": "WINDOWFROMPOINT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 31,
+     "name": "ISICONIC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 32,
+     "name": "GETWINDOWRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 33,
+     "name": "GETCLIENTRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 34,
+     "name": "ENABLEWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 35,
+     "name": "ISWINDOWENABLED",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 36,
+     "name": "GETWINDOWTEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 37,
+     "name": "SETWINDOWTEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 38,
+     "name": "GETWINDOWTEXTLENGTH",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 39,
+     "name": "BEGINPAINT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 40,
+     "name": "ENDPAINT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 41,
+     "name": "CREATEWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 42,
+     "name": "SHOWWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 43,
+     "name": "CLOSEWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 44,
+     "name": "OPENICON",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 45,
+     "name": "BRINGWINDOWTOTOP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 46,
+     "name": "GETPARENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 47,
+     "name": "ISWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 48,
+     "name": "ISCHILD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 49,
+     "name": "ISWINDOWVISIBLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 50,
+     "name": "FINDWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 51,
+     "name": "BEAR51",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 52,
+     "name": "ANYPOPUP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 53,
+     "name": "DESTROYWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 54,
+     "name": "ENUMWINDOWS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 55,
+     "name": "ENUMCHILDWINDOWS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 56,
+     "name": "MOVEWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 57,
+     "name": "REGISTERCLASS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 58,
+     "name": "GETCLASSNAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 59,
+     "name": "SETACTIVEWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 60,
+     "name": "GETACTIVEWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 61,
+     "name": "SCROLLWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 62,
+     "name": "SETSCROLLPOS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 63,
+     "name": "GETSCROLLPOS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 64,
+     "name": "SETSCROLLRANGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 65,
+     "name": "GETSCROLLRANGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 66,
+     "name": "GETDC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 67,
+     "name": "GETWINDOWDC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 68,
+     "name": "RELEASEDC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 69,
+     "name": "SETCURSOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 70,
+     "name": "SETCURSORPOS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 71,
+     "name": "SHOWCURSOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 72,
+     "name": "SETRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 73,
+     "name": "SETRECTEMPTY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 74,
+     "name": "COPYRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 75,
+     "name": "ISRECTEMPTY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 76,
+     "name": "PTINRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 77,
+     "name": "OFFSETRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 78,
+     "name": "INFLATERECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 79,
+     "name": "INTERSECTRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 80,
+     "name": "UNIONRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 81,
+     "name": "FILLRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 82,
+     "name": "INVERTRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 83,
+     "name": "FRAMERECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 84,
+     "name": "DRAWICON",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 85,
+     "name": "DRAWTEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 86,
+     "name": "BEAR86",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 87,
+     "name": "DIALOGBOX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 88,
+     "name": "ENDDIALOG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 89,
+     "name": "CREATEDIALOG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 90,
+     "name": "ISDIALOGMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 91,
+     "name": "GETDLGITEM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 92,
+     "name": "SETDLGITEMTEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 93,
+     "name": "GETDLGITEMTEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 94,
+     "name": "SETDLGITEMINT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 95,
+     "name": "GETDLGITEMINT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 96,
+     "name": "CHECKRADIOBUTTON",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 97,
+     "name": "CHECKDLGBUTTON",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 98,
+     "name": "ISDLGBUTTONCHECKED",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 99,
+     "name": "DLGDIRSELECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 100,
+     "name": "DLGDIRLIST",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 101,
+     "name": "SENDDLGITEMMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 102,
+     "name": "ADJUSTWINDOWRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 103,
+     "name": "MAPDIALOGRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 104,
+     "name": "MESSAGEBEEP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 105,
+     "name": "FLASHWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 106,
+     "name": "GETKEYSTATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 107,
+     "name": "DEFWINDOWPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 108,
+     "name": "GETMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 109,
+     "name": "PEEKMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 110,
+     "name": "POSTMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 111,
+     "name": "SENDMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 112,
+     "name": "WAITMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 113,
+     "name": "TRANSLATEMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 114,
+     "name": "DISPATCHMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 115,
+     "name": "REPLYMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 116,
+     "name": "POSTAPPMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 118,
+     "name": "REGISTERWINDOWMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 119,
+     "name": "GETMESSAGEPOS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 120,
+     "name": "GETMESSAGETIME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 121,
+     "name": "SETWINDOWSHOOK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 122,
+     "name": "CALLWINDOWPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 123,
+     "name": "CALLMSGFILTER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 124,
+     "name": "UPDATEWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 125,
+     "name": "INVALIDATERECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 126,
+     "name": "INVALIDATERGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 127,
+     "name": "VALIDATERECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 128,
+     "name": "VALIDATERGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 129,
+     "name": "GETCLASSWORD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 130,
+     "name": "SETCLASSWORD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 131,
+     "name": "GETCLASSLONG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 132,
+     "name": "SETCLASSLONG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 133,
+     "name": "GETWINDOWWORD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 134,
+     "name": "SETWINDOWWORD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 135,
+     "name": "GETWINDOWLONG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 136,
+     "name": "SETWINDOWLONG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 137,
+     "name": "OPENCLIPBOARD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 138,
+     "name": "CLOSECLIPBOARD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 139,
+     "name": "EMPTYCLIPBOARD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 140,
+     "name": "GETCLIPBOARDOWNER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 141,
+     "name": "SETCLIPBOARDDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 142,
+     "name": "GETCLIPBOARDDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 143,
+     "name": "COUNTCLIPBOARDFORMATS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 144,
+     "name": "ENUMCLIPBOARDFORMATS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 145,
+     "name": "REGISTERCLIPBOARDFORMAT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 146,
+     "name": "GETCLIPBOARDFORMATNAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 147,
+     "name": "SETCLIPBOARDVIEWER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 148,
+     "name": "GETCLIPBOARDVIEWER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 149,
+     "name": "CHANGECLIPBOARDCHAIN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 150,
+     "name": "LOADMENU",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 151,
+     "name": "CREATEMENU",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 152,
+     "name": "DESTROYMENU",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 153,
+     "name": "CHANGEMENU",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 154,
+     "name": "CHECKMENUITEM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 155,
+     "name": "ENABLEMENUITEM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 156,
+     "name": "GETSYSTEMMENU",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 157,
+     "name": "GETMENU",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 158,
+     "name": "SETMENU",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 159,
+     "name": "GETSUBMENU",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 160,
+     "name": "DRAWMENUBAR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 161,
+     "name": "GETMENUSTRING",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 162,
+     "name": "HILITEMENUITEM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 163,
+     "name": "CREATECARET",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 164,
+     "name": "DESTROYCARET",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 165,
+     "name": "SETCARETPOS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 166,
+     "name": "HIDECARET",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 167,
+     "name": "SHOWCARET",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 168,
+     "name": "SETCARETBLINKTIME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 169,
+     "name": "GETCARETBLINKTIME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 170,
+     "name": "ARRANGEICONICWINDOWS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 171,
+     "name": "WINHELP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 172,
+     "name": "SWITCHTOTHISWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 173,
+     "name": "LOADCURSOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 174,
+     "name": "LOADICON",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 175,
+     "name": "LOADBITMAP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 176,
+     "name": "LOADSTRING",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 177,
+     "name": "LOADACCELERATORS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 178,
+     "name": "TRANSLATEACCELERATOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 179,
+     "name": "GETSYSTEMMETRICS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 180,
+     "name": "GETSYSCOLOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 181,
+     "name": "SETSYSCOLORS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 182,
+     "name": "BEAR182",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 183,
+     "name": "GETCARETPOS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 184,
+     "name": "QUERYSENDMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 185,
+     "name": "GRAYSTRING",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 186,
+     "name": "SWAPMOUSEBUTTON",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 187,
+     "name": "ENDMENU",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 188,
+     "name": "SETSYSMODALWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 189,
+     "name": "GETSYSMODALWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 190,
+     "name": "GETUPDATERECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 191,
+     "name": "CHILDWINDOWFROMPOINT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 192,
+     "name": "INSENDMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 193,
+     "name": "ISCLIPBOARDFORMATAVAILABLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 194,
+     "name": "DLGDIRSELECTCOMBOBOX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 195,
+     "name": "DLGDIRLISTCOMBOBOX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 196,
+     "name": "TABBEDTEXTOUT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 197,
+     "name": "GETTABBEDTEXTEXTENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 198,
+     "name": "CASCADECHILDWINDOWS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 199,
+     "name": "TILECHILDWINDOWS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 200,
+     "name": "OPENCOMM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 201,
+     "name": "SETCOMMSTATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 202,
+     "name": "GETCOMMSTATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 203,
+     "name": "GETCOMMERROR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 204,
+     "name": "READCOMM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 205,
+     "name": "WRITECOMM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 206,
+     "name": "TRANSMITCOMMCHAR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 207,
+     "name": "CLOSECOMM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 208,
+     "name": "SETCOMMEVENTMASK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 209,
+     "name": "GETCOMMEVENTMASK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 210,
+     "name": "SETCOMMBREAK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 211,
+     "name": "CLEARCOMMBREAK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 212,
+     "name": "UNGETCOMMCHAR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 213,
+     "name": "BUILDCOMMDCB",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 214,
+     "name": "ESCAPECOMMFUNCTION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 215,
+     "name": "FLUSHCOMM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 216,
+     "name": "USERSEEUSERDO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 217,
+     "name": "LOOKUPMENUHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 218,
+     "name": "DIALOGBOXINDIRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 219,
+     "name": "CREATEDIALOGINDIRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 220,
+     "name": "LOADMENUINDIRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 221,
+     "name": "SCROLLDC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 222,
+     "name": "GETKEYBOARDSTATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 223,
+     "name": "SETKEYBOARDSTATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 224,
+     "name": "GETWINDOWTASK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 225,
+     "name": "ENUMTASKWINDOWS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 226,
+     "name": "LOCKINPUT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 227,
+     "name": "GETNEXTDLGGROUPITEM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 228,
+     "name": "GETNEXTDLGTABITEM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 229,
+     "name": "GETTOPWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 230,
+     "name": "GETNEXTWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 231,
+     "name": "GETSYSTEMDEBUGSTATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 232,
+     "name": "SETWINDOWPOS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 233,
+     "name": "SETPARENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 234,
+     "name": "UNHOOKWINDOWSHOOK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 235,
+     "name": "DEFHOOKPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 236,
+     "name": "GETCAPTURE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 237,
+     "name": "GETUPDATERGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 238,
+     "name": "EXCLUDEUPDATERGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 239,
+     "name": "DIALOGBOXPARAM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 240,
+     "name": "DIALOGBOXINDIRECTPARAM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 241,
+     "name": "CREATEDIALOGPARAM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 242,
+     "name": "CREATEDIALOGINDIRECTPARAM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 243,
+     "name": "GETDIALOGBASEUNITS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 244,
+     "name": "EQUALRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 245,
+     "name": "ENABLECOMMNOTIFICATION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 246,
+     "name": "EXITWINDOWSEXEC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 247,
+     "name": "GETCURSOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 248,
+     "name": "GETOPENCLIPBOARDWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 249,
+     "name": "GETASYNCKEYSTATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 250,
+     "name": "GETMENUSTATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 251,
+     "name": "SENDDRIVERMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 252,
+     "name": "OPENDRIVER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 253,
+     "name": "CLOSEDRIVER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 254,
+     "name": "GETDRIVERMODULEHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 255,
+     "name": "DEFDRIVERPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 256,
+     "name": "GETDRIVERINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 257,
+     "name": "GETNEXTDRIVER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 258,
+     "name": "MAPWINDOWPOINTS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 259,
+     "name": "BEGINDEFERWINDOWPOS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 260,
+     "name": "DEFERWINDOWPOS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 261,
+     "name": "ENDDEFERWINDOWPOS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 262,
+     "name": "GETWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 263,
+     "name": "GETMENUITEMCOUNT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 264,
+     "name": "GETMENUITEMID",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 265,
+     "name": "SHOWOWNEDPOPUPS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 266,
+     "name": "SETMESSAGEQUEUE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 267,
+     "name": "SHOWSCROLLBAR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 268,
+     "name": "GLOBALADDATOM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 269,
+     "name": "GLOBALDELETEATOM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 270,
+     "name": "GLOBALFINDATOM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 271,
+     "name": "GLOBALGETATOMNAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 272,
+     "name": "ISZOOMED",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 273,
+     "name": "CONTROLPANELINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 274,
+     "name": "GETNEXTQUEUEWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 275,
+     "name": "REPAINTSCREEN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 276,
+     "name": "LOCKMYTASK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 277,
+     "name": "GETDLGCTRLID",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 278,
+     "name": "GETDESKTOPHWND",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 279,
+     "name": "OLDSETDESKPATTERN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 280,
+     "name": "SETSYSTEMMENU",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 282,
+     "name": "SELECTPALETTE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 283,
+     "name": "REALIZEPALETTE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 284,
+     "name": "GETFREESYSTEMRESOURCES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 285,
+     "name": "BEAR285",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 286,
+     "name": "GETDESKTOPWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 287,
+     "name": "GETLASTACTIVEPOPUP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 288,
+     "name": "GETMESSAGEEXTRAINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 289,
+     "name": "KEYBD_EVENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 290,
+     "name": "REDRAWWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 291,
+     "name": "SETWINDOWSHOOKEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 292,
+     "name": "UNHOOKWINDOWSHOOKEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 293,
+     "name": "CALLNEXTHOOKEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 294,
+     "name": "LOCKWINDOWUPDATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 299,
+     "name": "MOUSE_EVENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 301,
+     "name": "BOZOSLIVEHERE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 306,
+     "name": "BEAR306",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 308,
+     "name": "DEFDLGPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 309,
+     "name": "GETCLIPCURSOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 314,
+     "name": "SIGNALPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 319,
+     "name": "SCROLLWINDOWEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 320,
+     "name": "SYSERRORBOX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 321,
+     "name": "SETEVENTHOOK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 322,
+     "name": "WINOLDAPPHACKOMATIC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 323,
+     "name": "GETMESSAGE2",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 324,
+     "name": "FILLWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 325,
+     "name": "PAINTRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 326,
+     "name": "GETCONTROLBRUSH",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 331,
+     "name": "ENABLEHARDWAREINPUT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 332,
+     "name": "USERYIELD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 333,
+     "name": "ISUSERIDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 334,
+     "name": "GETQUEUESTATUS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 335,
+     "name": "GETINPUTSTATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 336,
+     "name": "LOADCURSORICONHANDLER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 337,
+     "name": "GETMOUSEEVENTPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 341,
+     "name": "_FFFE_FARFRAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 343,
+     "name": "GETFILEPORTNAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 356,
+     "name": "LOADDIBCURSORHANDLER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 357,
+     "name": "LOADDIBICONHANDLER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 358,
+     "name": "ISMENU",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 359,
+     "name": "GETDCEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 362,
+     "name": "DCHOOK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 368,
+     "name": "COPYICON",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 369,
+     "name": "COPYCURSOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 370,
+     "name": "GETWINDOWPLACEMENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 371,
+     "name": "SETWINDOWPLACEMENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 372,
+     "name": "GETINTERNALICONHEADER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 373,
+     "name": "SUBTRACTRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 400,
+     "name": "FINALUSERINIT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 402,
+     "name": "GETPRIORITYCLIPBOARDFORMAT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 403,
+     "name": "UNREGISTERCLASS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 404,
+     "name": "GETCLASSINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 406,
+     "name": "CREATECURSOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 407,
+     "name": "CREATEICON",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 408,
+     "name": "CREATECURSORICONINDIRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 410,
+     "name": "INSERTMENU",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 411,
+     "name": "APPENDMENU",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 412,
+     "name": "REMOVEMENU",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 413,
+     "name": "DELETEMENU",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 414,
+     "name": "MODIFYMENU",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 415,
+     "name": "CREATEPOPUPMENU",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 416,
+     "name": "TRACKPOPUPMENU",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 417,
+     "name": "GETMENUCHECKMARKDIMENSIONS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 418,
+     "name": "SETMENUITEMBITMAPS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 420,
+     "name": "_WSPRINTF",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 421,
+     "name": "WVSPRINTF",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 422,
+     "name": "DLGDIRSELECTEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 423,
+     "name": "DLGDIRSELECTCOMBOBOXEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 430,
+     "name": "LSTRCMP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 431,
+     "name": "ANSIUPPER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 432,
+     "name": "ANSILOWER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 433,
+     "name": "ISCHARALPHA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 434,
+     "name": "ISCHARALPHANUMERIC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 435,
+     "name": "ISCHARUPPER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 436,
+     "name": "ISCHARLOWER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 437,
+     "name": "ANSIUPPERBUFF",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 438,
+     "name": "ANSILOWERBUFF",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 445,
+     "name": "DEFFRAMEPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 447,
+     "name": "DEFMDICHILDPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 451,
+     "name": "TRANSLATEMDISYSACCEL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 452,
+     "name": "CREATEWINDOWEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 454,
+     "name": "ADJUSTWINDOWRECTEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 455,
+     "name": "GETICONID",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 456,
+     "name": "LOADICONHANDLER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 457,
+     "name": "DESTROYICON",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 458,
+     "name": "DESTROYCURSOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 459,
+     "name": "DUMPICON",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 460,
+     "name": "GETINTERNALWINDOWPOS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 461,
+     "name": "SETINTERNALWINDOWPOS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 462,
+     "name": "CALCCHILDSCROLL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 463,
+     "name": "SCROLLCHILDREN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 464,
+     "name": "DRAGOBJECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 465,
+     "name": "DRAGDETECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 466,
+     "name": "DRAWFOCUSRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 470,
+     "name": "STRINGFUNC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 471,
+     "name": "LSTRCMPI",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 472,
+     "name": "ANSINEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 473,
+     "name": "ANSIPREV",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 480,
+     "name": "GETUSERLOCALOBJTYPE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 481,
+     "name": "HARDWARE_EVENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 482,
+     "name": "ENABLESCROLLBAR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 483,
+     "name": "SYSTEMPARAMETERSINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 484,
+     "name": "__GP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 499,
+     "name": "WNETERRORTEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 501,
+     "name": "WNETOPENJOB",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 502,
+     "name": "WNETCLOSEJOB",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 503,
+     "name": "WNETABORTJOB",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 504,
+     "name": "WNETHOLDJOB",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 505,
+     "name": "WNETRELEASEJOB",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 506,
+     "name": "WNETCANCELJOB",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 507,
+     "name": "WNETSETJOBCOPIES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 508,
+     "name": "WNETWATCHQUEUE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 509,
+     "name": "WNETUNWATCHQUEUE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 510,
+     "name": "WNETLOCKQUEUEDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 511,
+     "name": "WNETUNLOCKQUEUEDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 512,
+     "name": "WNETGETCONNECTION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 513,
+     "name": "WNETGETCAPS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 514,
+     "name": "WNETDEVICEMODE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 515,
+     "name": "WNETBROWSEDIALOG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 516,
+     "name": "WNETGETUSER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 517,
+     "name": "WNETADDCONNECTION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 518,
+     "name": "WNETCANCELCONNECTION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 519,
+     "name": "WNETGETERROR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 520,
+     "name": "WNETGETERRORTEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 521,
+     "name": "WNETENABLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 522,
+     "name": "WNETDISABLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 523,
+     "name": "WNETRESTORECONNECTION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 524,
+     "name": "WNETWRITEJOB",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 525,
+     "name": "WNETCONNECTDIALOG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 526,
+     "name": "WNETDISCONNECTDIALOG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 527,
+     "name": "WNETCONNECTIONDIALOG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 528,
+     "name": "WNETVIEWQUEUEDIALOG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 529,
+     "name": "WNETPROPERTYDIALOG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 530,
+     "name": "WNETGETDIRECTORYTYPE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 531,
+     "name": "WNETDIRECTORYNOTIFY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 532,
+     "name": "WNETGETPROPERTYTEXT",
+     "nameFrom": "binary"
+    }
+   ]
+  },
+  {
+   "name": "GDI",
+   "files": [
+    "GDI.EXE"
+   ],
+   "exports": [
+    {
+     "ordinal": 1,
+     "name": "SETBKCOLOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 2,
+     "name": "SETBKMODE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 3,
+     "name": "SETMAPMODE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 4,
+     "name": "SETROP2",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 5,
+     "name": "SETRELABS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 6,
+     "name": "SETPOLYFILLMODE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 7,
+     "name": "SETSTRETCHBLTMODE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 8,
+     "name": "SETTEXTCHARACTEREXTRA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 9,
+     "name": "SETTEXTCOLOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 10,
+     "name": "SETTEXTJUSTIFICATION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 11,
+     "name": "SETWINDOWORG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 12,
+     "name": "SETWINDOWEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 13,
+     "name": "SETVIEWPORTORG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 14,
+     "name": "SETVIEWPORTEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 15,
+     "name": "OFFSETWINDOWORG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 16,
+     "name": "SCALEWINDOWEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 17,
+     "name": "OFFSETVIEWPORTORG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 18,
+     "name": "SCALEVIEWPORTEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 19,
+     "name": "LINETO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 20,
+     "name": "MOVETO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 21,
+     "name": "EXCLUDECLIPRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 22,
+     "name": "INTERSECTCLIPRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 23,
+     "name": "ARC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 24,
+     "name": "ELLIPSE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 25,
+     "name": "FLOODFILL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 26,
+     "name": "PIE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 27,
+     "name": "RECTANGLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 28,
+     "name": "ROUNDRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 29,
+     "name": "PATBLT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 30,
+     "name": "SAVEDC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 31,
+     "name": "SETPIXEL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 32,
+     "name": "OFFSETCLIPRGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 33,
+     "name": "TEXTOUT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 34,
+     "name": "BITBLT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 35,
+     "name": "STRETCHBLT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 36,
+     "name": "POLYGON",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 37,
+     "name": "POLYLINE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 38,
+     "name": "ESCAPE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 39,
+     "name": "RESTOREDC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 40,
+     "name": "FILLRGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 41,
+     "name": "FRAMERGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 42,
+     "name": "INVERTRGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 43,
+     "name": "PAINTRGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 44,
+     "name": "SELECTCLIPRGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 45,
+     "name": "SELECTOBJECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 46,
+     "name": "__GP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 47,
+     "name": "COMBINERGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 48,
+     "name": "CREATEBITMAP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 49,
+     "name": "CREATEBITMAPINDIRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 50,
+     "name": "CREATEBRUSHINDIRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 51,
+     "name": "CREATECOMPATIBLEBITMAP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 52,
+     "name": "CREATECOMPATIBLEDC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 53,
+     "name": "CREATEDC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 54,
+     "name": "CREATEELLIPTICRGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 55,
+     "name": "CREATEELLIPTICRGNINDIRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 56,
+     "name": "CREATEFONT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 57,
+     "name": "CREATEFONTINDIRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 58,
+     "name": "CREATEHATCHBRUSH",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 59,
+     "name": "WEP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 60,
+     "name": "CREATEPATTERNBRUSH",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 61,
+     "name": "CREATEPEN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 62,
+     "name": "CREATEPENINDIRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 63,
+     "name": "CREATEPOLYGONRGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 64,
+     "name": "CREATERECTRGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 65,
+     "name": "CREATERECTRGNINDIRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 66,
+     "name": "CREATESOLIDBRUSH",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 67,
+     "name": "DPTOLP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 68,
+     "name": "DELETEDC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 69,
+     "name": "DELETEOBJECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 70,
+     "name": "ENUMFONTS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 71,
+     "name": "ENUMOBJECTS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 72,
+     "name": "EQUALRGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 73,
+     "name": "EXCLUDEVISRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 74,
+     "name": "GETBITMAPBITS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 75,
+     "name": "GETBKCOLOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 76,
+     "name": "GETBKMODE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 77,
+     "name": "GETCLIPBOX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 78,
+     "name": "GETCURRENTPOSITION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 79,
+     "name": "GETDCORG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 80,
+     "name": "GETDEVICECAPS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 81,
+     "name": "GETMAPMODE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 82,
+     "name": "GETOBJECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 83,
+     "name": "GETPIXEL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 84,
+     "name": "GETPOLYFILLMODE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 85,
+     "name": "GETROP2",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 86,
+     "name": "GETRELABS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 87,
+     "name": "GETSTOCKOBJECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 88,
+     "name": "GETSTRETCHBLTMODE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 89,
+     "name": "GETTEXTCHARACTEREXTRA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 90,
+     "name": "GETTEXTCOLOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 91,
+     "name": "GETTEXTEXTENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 92,
+     "name": "GETTEXTFACE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 93,
+     "name": "GETTEXTMETRICS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 94,
+     "name": "GETVIEWPORTEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 95,
+     "name": "GETVIEWPORTORG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 96,
+     "name": "GETWINDOWEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 97,
+     "name": "GETWINDOWORG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 98,
+     "name": "INTERSECTVISRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 99,
+     "name": "LPTODP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 100,
+     "name": "LINEDDA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 101,
+     "name": "OFFSETRGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 102,
+     "name": "OFFSETVISRGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 103,
+     "name": "PTVISIBLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 104,
+     "name": "RECTVISIBLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 105,
+     "name": "SELECTVISRGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 106,
+     "name": "SETBITMAPBITS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 117,
+     "name": "SETDCORG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 119,
+     "name": "ADDFONTRESOURCE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 121,
+     "name": "DEATH",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 122,
+     "name": "RESURRECTION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 123,
+     "name": "PLAYMETAFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 124,
+     "name": "GETMETAFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 125,
+     "name": "CREATEMETAFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 126,
+     "name": "CLOSEMETAFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 127,
+     "name": "DELETEMETAFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 128,
+     "name": "MULDIV",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 129,
+     "name": "SAVEVISRGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 130,
+     "name": "RESTOREVISRGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 131,
+     "name": "INQUIREVISRGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 132,
+     "name": "SETENVIRONMENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 133,
+     "name": "GETENVIRONMENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 134,
+     "name": "GETRGNBOX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 135,
+     "name": "SCANLR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 136,
+     "name": "REMOVEFONTRESOURCE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 148,
+     "name": "SETBRUSHORG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 149,
+     "name": "GETBRUSHORG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 150,
+     "name": "UNREALIZEOBJECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 151,
+     "name": "COPYMETAFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 153,
+     "name": "CREATEIC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 154,
+     "name": "GETNEARESTCOLOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 155,
+     "name": "QUERYABORT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 156,
+     "name": "CREATEDISCARDABLEBITMAP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 159,
+     "name": "GETMETAFILEBITS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 160,
+     "name": "SETMETAFILEBITS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 161,
+     "name": "PTINREGION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 162,
+     "name": "GETBITMAPDIMENSION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 163,
+     "name": "SETBITMAPDIMENSION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 169,
+     "name": "ISDCDIRTY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 170,
+     "name": "SETDCSTATUS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 172,
+     "name": "SETRECTRGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 173,
+     "name": "GETCLIPRGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 175,
+     "name": "ENUMMETAFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 176,
+     "name": "PLAYMETAFILERECORD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 179,
+     "name": "GETDCSTATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 180,
+     "name": "SETDCSTATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 181,
+     "name": "RECTINREGION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 190,
+     "name": "SETDCHOOK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 191,
+     "name": "GETDCHOOK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 192,
+     "name": "SETHOOKFLAGS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 193,
+     "name": "SETBOUNDSRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 194,
+     "name": "GETBOUNDSRECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 195,
+     "name": "SELECTBITMAP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 196,
+     "name": "SETMETAFILEBITSBETTER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 201,
+     "name": "DMBITBLT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 202,
+     "name": "DMCOLORINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 206,
+     "name": "DMENUMDFONTS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 207,
+     "name": "DMENUMOBJ",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 208,
+     "name": "DMOUTPUT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 209,
+     "name": "DMPIXEL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 210,
+     "name": "DMREALIZEOBJECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 211,
+     "name": "DMSTRBLT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 212,
+     "name": "DMSCANLR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 213,
+     "name": "BRUTE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 214,
+     "name": "DMEXTTEXTOUT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 215,
+     "name": "DMGETCHARWIDTH",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 216,
+     "name": "DMSTRETCHBLT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 217,
+     "name": "DMDIBBITS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 218,
+     "name": "DMSTRETCHDIBITS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 219,
+     "name": "DMSETDIBTODEV",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 220,
+     "name": "DMTRANSPOSE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 230,
+     "name": "CREATEPQ",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 231,
+     "name": "MINPQ",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 232,
+     "name": "EXTRACTPQ",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 233,
+     "name": "INSERTPQ",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 234,
+     "name": "SIZEPQ",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 235,
+     "name": "DELETEPQ",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 240,
+     "name": "OPENJOB",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 241,
+     "name": "WRITESPOOL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 242,
+     "name": "WRITEDIALOG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 243,
+     "name": "CLOSEJOB",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 244,
+     "name": "DELETEJOB",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 245,
+     "name": "GETSPOOLJOB",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 246,
+     "name": "STARTSPOOLPAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 247,
+     "name": "ENDSPOOLPAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 248,
+     "name": "QUERYJOB",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 250,
+     "name": "COPY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 253,
+     "name": "DELETESPOOLPAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 254,
+     "name": "SPOOLFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 300,
+     "name": "ENGINEENUMERATEFONT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 301,
+     "name": "ENGINEDELETEFONT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 302,
+     "name": "ENGINEREALIZEFONT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 303,
+     "name": "ENGINEGETCHARWIDTH",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 304,
+     "name": "ENGINESETFONTCONTEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 305,
+     "name": "ENGINEGETGLYPHBMP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 306,
+     "name": "ENGINEMAKEFONTDIR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 307,
+     "name": "GETCHARABCWIDTHS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 308,
+     "name": "GETOUTLINETEXTMETRICS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 309,
+     "name": "GETGLYPHOUTLINE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 310,
+     "name": "CREATESCALABLEFONTRESOURCE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 311,
+     "name": "GETFONTDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 312,
+     "name": "CONVERTOUTLINEFONTFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 313,
+     "name": "GETRASTERIZERCAPS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 314,
+     "name": "ENGINEEXTTEXTOUT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 330,
+     "name": "ENUMFONTFAMILIES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 332,
+     "name": "GETKERNINGPAIRS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 345,
+     "name": "GETTEXTALIGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 346,
+     "name": "SETTEXTALIGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 348,
+     "name": "CHORD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 349,
+     "name": "SETMAPPERFLAGS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 350,
+     "name": "GETCHARWIDTH",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 351,
+     "name": "EXTTEXTOUT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 352,
+     "name": "GETPHYSICALFONTHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 353,
+     "name": "GETASPECTRATIOFILTER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 354,
+     "name": "SHRINKGDIHEAP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 355,
+     "name": "FTRAPPING0",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 360,
+     "name": "CREATEPALETTE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 361,
+     "name": "GDISELECTPALETTE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 362,
+     "name": "GDIREALIZEPALETTE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 363,
+     "name": "GETPALETTEENTRIES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 364,
+     "name": "SETPALETTEENTRIES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 365,
+     "name": "REALIZEDEFAULTPALETTE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 366,
+     "name": "UPDATECOLORS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 367,
+     "name": "ANIMATEPALETTE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 368,
+     "name": "RESIZEPALETTE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 370,
+     "name": "GETNEARESTPALETTEINDEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 372,
+     "name": "EXTFLOODFILL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 373,
+     "name": "SETSYSTEMPALETTEUSE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 374,
+     "name": "GETSYSTEMPALETTEUSE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 375,
+     "name": "GETSYSTEMPALETTEENTRIES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 376,
+     "name": "RESETDC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 377,
+     "name": "STARTDOC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 378,
+     "name": "ENDDOC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 379,
+     "name": "STARTPAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 380,
+     "name": "ENDPAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 381,
+     "name": "SETABORTPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 382,
+     "name": "ABORTDOC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 400,
+     "name": "FASTWINDOWFRAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 401,
+     "name": "GDIMOVEBITMAP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 403,
+     "name": "GDIINIT2",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 405,
+     "name": "FINALGDIINIT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 407,
+     "name": "CREATEUSERBITMAP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 409,
+     "name": "CREATEUSERDISCARDABLEBITMAP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 410,
+     "name": "ISVALIDMETAFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 411,
+     "name": "GETCURLOGFONT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 412,
+     "name": "ISDCCURRENTPALETTE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 439,
+     "name": "STRETCHDIBITS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 440,
+     "name": "SETDIBITS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 441,
+     "name": "GETDIBITS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 442,
+     "name": "CREATEDIBITMAP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 443,
+     "name": "SETDIBITSTODEVICE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 444,
+     "name": "CREATEROUNDRECTRGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 445,
+     "name": "CREATEDIBPATTERNBRUSH",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 449,
+     "name": "DEVICECOLORMATCH",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 450,
+     "name": "POLYPOLYGON",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 451,
+     "name": "CREATEPOLYPOLYGONRGN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 452,
+     "name": "GDISEEGDIDO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 460,
+     "name": "GDITASKTERMINATION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 461,
+     "name": "SETOBJECTOWNER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 462,
+     "name": "ISGDIOBJECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 463,
+     "name": "MAKEOBJECTPRIVATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 464,
+     "name": "FIXUPBOGUSPUBLISHERMETAFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 465,
+     "name": "RECTVISIBLE_EHH",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 466,
+     "name": "RECTINREGION_EHH",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 467,
+     "name": "UNICODETOANSI",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 468,
+     "name": "GETBITMAPDIMENSIONEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 469,
+     "name": "GETBRUSHORGEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 470,
+     "name": "GETCURRENTPOSITIONEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 471,
+     "name": "GETTEXTEXTENTPOINT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 472,
+     "name": "GETVIEWPORTEXTEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 473,
+     "name": "GETVIEWPORTORGEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 474,
+     "name": "GETWINDOWEXTEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 475,
+     "name": "GETWINDOWORGEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 476,
+     "name": "OFFSETVIEWPORTORGEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 477,
+     "name": "OFFSETWINDOWORGEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 478,
+     "name": "SETBITMAPDIMENSIONEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 479,
+     "name": "SETVIEWPORTEXTEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 480,
+     "name": "SETVIEWPORTORGEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 481,
+     "name": "SETWINDOWEXTEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 482,
+     "name": "SETWINDOWORGEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 483,
+     "name": "MOVETOEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 484,
+     "name": "SCALEVIEWPORTEXTEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 485,
+     "name": "SCALEWINDOWEXTEX",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 486,
+     "name": "GETASPECTRATIOFILTEREX",
+     "nameFrom": "binary"
+    }
+   ]
+  },
+  {
+   "name": "KEYBOARD",
+   "files": [
+    "KEYBOARD.DRV"
+   ],
+   "exports": [
+    {
+     "ordinal": 1,
+     "name": "INQUIRE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 2,
+     "name": "ENABLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 3,
+     "name": "DISABLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 4,
+     "name": "TOASCII",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 5,
+     "name": "ANSITOOEM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 6,
+     "name": "OEMTOANSI",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 7,
+     "name": "SETSPEED",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 8,
+     "name": "WEP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 100,
+     "name": "SCREENSWITCHENABLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 126,
+     "name": "GETTABLESEG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 127,
+     "name": "NEWTABLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 128,
+     "name": "OEMKEYSCAN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 129,
+     "name": "VKKEYSCAN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 130,
+     "name": "GETKEYBOARDTYPE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 131,
+     "name": "MAPVIRTUALKEY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 132,
+     "name": "GETKBCODEPAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 133,
+     "name": "GETKEYNAMETEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 134,
+     "name": "ANSITOOEMBUFF",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 135,
+     "name": "OEMTOANSIBUFF",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 136,
+     "name": "ENABLEKBSYSREQ",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 137,
+     "name": "GETBIOSKEYPROC",
+     "nameFrom": "binary"
+    }
+   ]
+  },
+  {
+   "name": "SYSTEM",
+   "files": [
+    "SYSTEM.DRV"
+   ],
+   "exports": [
+    {
+     "ordinal": 1,
+     "name": "INQUIRESYSTEM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 2,
+     "name": "CREATESYSTEMTIMER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 3,
+     "name": "KILLSYSTEMTIMER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 4,
+     "name": "ENABLESYSTEMTIMERS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 5,
+     "name": "DISABLESYSTEMTIMERS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 6,
+     "name": "GETSYSTEMMSECCOUNT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 7,
+     "name": "GET80X87SAVESIZE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 8,
+     "name": "SAVE80X87STATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 9,
+     "name": "RESTORE80X87STATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 10,
+     "name": "WEP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 20,
+     "name": "A20_PROC",
+     "nameFrom": "binary"
+    }
+   ]
+  },
+  {
+   "name": "SOUND",
+   "files": [
+    "SOUND.DRV"
+   ],
+   "exports": [
+    {
+     "ordinal": 1,
+     "name": "OPENSOUND",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 2,
+     "name": "CLOSESOUND",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 3,
+     "name": "SETVOICEQUEUESIZE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 4,
+     "name": "SETVOICENOTE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 5,
+     "name": "SETVOICEACCENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 6,
+     "name": "SETVOICEENVELOPE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 7,
+     "name": "SETSOUNDNOISE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 8,
+     "name": "SETVOICESOUND",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 9,
+     "name": "STARTSOUND",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 10,
+     "name": "STOPSOUND",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 11,
+     "name": "WAITSOUNDSTATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 12,
+     "name": "SYNCALLVOICES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 13,
+     "name": "COUNTVOICENOTES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 14,
+     "name": "GETTHRESHOLDEVENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 15,
+     "name": "GETTHRESHOLDSTATUS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 16,
+     "name": "SETVOICETHRESHOLD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 17,
+     "name": "DOBEEP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 18,
+     "name": "WEP",
+     "nameFrom": "binary"
+    }
+   ]
+  },
+  {
+   "name": "COMMDLG",
+   "files": [
+    "COMMDLG.DLL"
+   ],
+   "exports": [
+    {
+     "ordinal": 1,
+     "name": "GETOPENFILENAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 2,
+     "name": "GETSAVEFILENAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 5,
+     "name": "CHOOSECOLOR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 6,
+     "name": "FILEOPENDLGPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 7,
+     "name": "FILESAVEDLGPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 8,
+     "name": "COLORDLGPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 9,
+     "name": "LOADALTERBITMAP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 11,
+     "name": "FINDTEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 12,
+     "name": "REPLACETEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 13,
+     "name": "FINDTEXTDLGPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 14,
+     "name": "REPLACETEXTDLGPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 15,
+     "name": "CHOOSEFONT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 16,
+     "name": "FORMATCHARDLGPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 18,
+     "name": "FONTSTYLEENUMPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 19,
+     "name": "FONTFAMILYENUMPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 20,
+     "name": "PRINTDLG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 21,
+     "name": "PRINTDLGPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 22,
+     "name": "PRINTSETUPDLGPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 23,
+     "name": "EDITINTEGERONLY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 25,
+     "name": "WANTARROWS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 26,
+     "name": "COMMDLGEXTENDEDERROR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 27,
+     "name": "GETFILETITLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 28,
+     "name": "WEP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 29,
+     "name": "DWLBSUBCLASS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 30,
+     "name": "DWUPARROWHACK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 31,
+     "name": "DWOKSUBCLASS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 32,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 33,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 34,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 35,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 36,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 37,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 38,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 39,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 40,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 41,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 42,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 43,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 44,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 45,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 46,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 47,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 48,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 49,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 50,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 51,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 52,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 53,
+     "name": null,
+     "nameFrom": null
+    }
+   ]
+  },
+  {
+   "name": "SHELL",
+   "files": [
+    "SHELL.DLL"
+   ],
+   "exports": [
+    {
+     "ordinal": 1,
+     "name": "REGOPENKEY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 2,
+     "name": "REGCREATEKEY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 3,
+     "name": "REGCLOSEKEY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 4,
+     "name": "REGDELETEKEY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 5,
+     "name": "REGSETVALUE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 6,
+     "name": "REGQUERYVALUE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 7,
+     "name": "REGENUMKEY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 8,
+     "name": "WEP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 9,
+     "name": "DRAGACCEPTFILES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 11,
+     "name": "DRAGQUERYFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 12,
+     "name": "DRAGFINISH",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 13,
+     "name": "DRAGQUERYPOINT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 20,
+     "name": "SHELLEXECUTE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 21,
+     "name": "FINDEXECUTABLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 22,
+     "name": "SHELLABOUT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 32,
+     "name": "WCI",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 33,
+     "name": "ABOUTDLGPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 34,
+     "name": "EXTRACTICON",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 36,
+     "name": "EXTRACTASSOCIATEDICON",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 37,
+     "name": "DOENVIRONMENTSUBST",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 38,
+     "name": "FINDENVIRONMENTSTRING",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 39,
+     "name": "INTERNALEXTRACTICON",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 100,
+     "name": "HERETHARBETYGARS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 101,
+     "name": "FINDEXEDLGPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 102,
+     "name": "REGISTERSHELLHOOK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 103,
+     "name": "SHELLHOOKPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 104,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 105,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 106,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 107,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 108,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 109,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 110,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 111,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 112,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 113,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 114,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 115,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 116,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 117,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 118,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 119,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 120,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 121,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 122,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 123,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 124,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 125,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 126,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 127,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 128,
+     "name": null,
+     "nameFrom": null
+    }
+   ]
+  },
+  {
+   "name": "MMSYSTEM",
+   "files": [
+    "MMSYSTEM.DLL"
+   ],
+   "exports": [
+    {
+     "ordinal": 1,
+     "name": "WEP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 2,
+     "name": "SNDPLAYSOUND",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 5,
+     "name": "MMSYSTEMGETVERSION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 6,
+     "name": "DRIVERPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 30,
+     "name": "OUTPUTDEBUGSTR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 31,
+     "name": "DRIVERCALLBACK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 32,
+     "name": "STACKENTER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 33,
+     "name": "STACKLEAVE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 34,
+     "name": "MMDRVINSTALL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 101,
+     "name": "JOYGETNUMDEVS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 102,
+     "name": "JOYGETDEVCAPS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 103,
+     "name": "JOYGETPOS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 104,
+     "name": "JOYGETTHRESHOLD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 105,
+     "name": "JOYRELEASECAPTURE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 106,
+     "name": "JOYSETCAPTURE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 107,
+     "name": "JOYSETTHRESHOLD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 109,
+     "name": "JOYSETCALIBRATION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 201,
+     "name": "MIDIOUTGETNUMDEVS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 202,
+     "name": "MIDIOUTGETDEVCAPS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 203,
+     "name": "MIDIOUTGETERRORTEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 204,
+     "name": "MIDIOUTOPEN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 205,
+     "name": "MIDIOUTCLOSE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 206,
+     "name": "MIDIOUTPREPAREHEADER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 207,
+     "name": "MIDIOUTUNPREPAREHEADER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 208,
+     "name": "MIDIOUTSHORTMSG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 209,
+     "name": "MIDIOUTLONGMSG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 210,
+     "name": "MIDIOUTRESET",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 211,
+     "name": "MIDIOUTGETVOLUME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 212,
+     "name": "MIDIOUTSETVOLUME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 213,
+     "name": "MIDIOUTCACHEPATCHES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 214,
+     "name": "MIDIOUTCACHEDRUMPATCHES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 215,
+     "name": "MIDIOUTGETID",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 216,
+     "name": "MIDIOUTMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 301,
+     "name": "MIDIINGETNUMDEVS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 302,
+     "name": "MIDIINGETDEVCAPS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 303,
+     "name": "MIDIINGETERRORTEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 304,
+     "name": "MIDIINOPEN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 305,
+     "name": "MIDIINCLOSE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 306,
+     "name": "MIDIINPREPAREHEADER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 307,
+     "name": "MIDIINUNPREPAREHEADER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 308,
+     "name": "MIDIINADDBUFFER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 309,
+     "name": "MIDIINSTART",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 310,
+     "name": "MIDIINSTOP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 311,
+     "name": "MIDIINRESET",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 312,
+     "name": "MIDIINGETID",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 313,
+     "name": "MIDIINMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 350,
+     "name": "AUXGETNUMDEVS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 351,
+     "name": "AUXGETDEVCAPS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 352,
+     "name": "AUXGETVOLUME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 353,
+     "name": "AUXSETVOLUME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 354,
+     "name": "AUXOUTMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 401,
+     "name": "WAVEOUTGETNUMDEVS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 402,
+     "name": "WAVEOUTGETDEVCAPS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 403,
+     "name": "WAVEOUTGETERRORTEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 404,
+     "name": "WAVEOUTOPEN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 405,
+     "name": "WAVEOUTCLOSE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 406,
+     "name": "WAVEOUTPREPAREHEADER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 407,
+     "name": "WAVEOUTUNPREPAREHEADER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 408,
+     "name": "WAVEOUTWRITE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 409,
+     "name": "WAVEOUTPAUSE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 410,
+     "name": "WAVEOUTRESTART",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 411,
+     "name": "WAVEOUTRESET",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 412,
+     "name": "WAVEOUTGETPOSITION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 413,
+     "name": "WAVEOUTGETPITCH",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 414,
+     "name": "WAVEOUTSETPITCH",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 415,
+     "name": "WAVEOUTGETVOLUME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 416,
+     "name": "WAVEOUTSETVOLUME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 417,
+     "name": "WAVEOUTGETPLAYBACKRATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 418,
+     "name": "WAVEOUTSETPLAYBACKRATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 419,
+     "name": "WAVEOUTBREAKLOOP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 420,
+     "name": "WAVEOUTGETID",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 421,
+     "name": "WAVEOUTMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 501,
+     "name": "WAVEINGETNUMDEVS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 502,
+     "name": "WAVEINGETDEVCAPS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 503,
+     "name": "WAVEINGETERRORTEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 504,
+     "name": "WAVEINOPEN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 505,
+     "name": "WAVEINCLOSE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 506,
+     "name": "WAVEINPREPAREHEADER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 507,
+     "name": "WAVEINUNPREPAREHEADER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 508,
+     "name": "WAVEINADDBUFFER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 509,
+     "name": "WAVEINSTART",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 510,
+     "name": "WAVEINSTOP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 511,
+     "name": "WAVEINRESET",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 512,
+     "name": "WAVEINGETPOSITION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 513,
+     "name": "WAVEINGETID",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 514,
+     "name": "WAVEINMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 601,
+     "name": "TIMEGETSYSTEMTIME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 602,
+     "name": "TIMESETEVENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 603,
+     "name": "TIMEKILLEVENT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 604,
+     "name": "TIMEGETDEVCAPS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 605,
+     "name": "TIMEBEGINPERIOD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 606,
+     "name": "TIMEENDPERIOD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 607,
+     "name": "TIMEGETTIME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 701,
+     "name": "MCISENDCOMMAND",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 702,
+     "name": "MCISENDSTRING",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 703,
+     "name": "MCIGETDEVICEID",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 704,
+     "name": "MCIPARSECOMMAND",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 705,
+     "name": "MCILOADCOMMANDRESOURCE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 706,
+     "name": "MCIGETERRORSTRING",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 707,
+     "name": "MCISETDRIVERDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 708,
+     "name": "MCIGETDRIVERDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 710,
+     "name": "MCIDRIVERYIELD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 711,
+     "name": "MCIDRIVERNOTIFY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 712,
+     "name": "MCIEXECUTE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 713,
+     "name": "MCIFREECOMMANDRESOURCE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 714,
+     "name": "MCISETYIELDPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 715,
+     "name": "MCIGETDEVICEIDFROMELEMENTID",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 716,
+     "name": "MCIGETYIELDPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 717,
+     "name": "MCIGETCREATORTASK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 900,
+     "name": "MMTASKCREATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 902,
+     "name": "MMTASKBLOCK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 903,
+     "name": "MMTASKSIGNAL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 904,
+     "name": "MMGETCURRENTTASK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 905,
+     "name": "MMTASKYIELD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1100,
+     "name": "DRVOPEN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1101,
+     "name": "DRVCLOSE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1102,
+     "name": "DRVSENDMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1103,
+     "name": "DRVGETMODULEHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1104,
+     "name": "DRVDEFDRIVERPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1210,
+     "name": "MMIOOPEN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1211,
+     "name": "MMIOCLOSE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1212,
+     "name": "MMIOREAD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1213,
+     "name": "MMIOWRITE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1214,
+     "name": "MMIOSEEK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1215,
+     "name": "MMIOGETINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1216,
+     "name": "MMIOSETINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1217,
+     "name": "MMIOSETBUFFER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1218,
+     "name": "MMIOFLUSH",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1219,
+     "name": "MMIOADVANCE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1220,
+     "name": "MMIOSTRINGTOFOURCC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1221,
+     "name": "MMIOINSTALLIOPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1222,
+     "name": "MMIOSENDMESSAGE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1223,
+     "name": "MMIODESCEND",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1224,
+     "name": "MMIOASCEND",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1225,
+     "name": "MMIOCREATECHUNK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 1226,
+     "name": "MMIORENAME",
+     "nameFrom": "binary"
+    }
+   ]
+  },
+  {
+   "name": "TOOLHELP",
+   "files": [
+    "TOOLHELP.DLL"
+   ],
+   "exports": [
+    {
+     "ordinal": 1,
+     "name": "WEP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 50,
+     "name": "GLOBALHANDLETOSEL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 51,
+     "name": "GLOBALFIRST",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 52,
+     "name": "GLOBALNEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 53,
+     "name": "GLOBALINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 54,
+     "name": "GLOBALENTRYHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 55,
+     "name": "GLOBALENTRYMODULE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 56,
+     "name": "LOCALINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 57,
+     "name": "LOCALFIRST",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 58,
+     "name": "LOCALNEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 59,
+     "name": "MODULEFIRST",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 60,
+     "name": "MODULENEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 61,
+     "name": "MODULEFINDNAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 62,
+     "name": "MODULEFINDHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 63,
+     "name": "TASKFIRST",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 64,
+     "name": "TASKNEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 65,
+     "name": "TASKFINDHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 66,
+     "name": "STACKTRACEFIRST",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 67,
+     "name": "STACKTRACECSIPFIRST",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 68,
+     "name": "STACKTRACENEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 69,
+     "name": "CLASSFIRST",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 70,
+     "name": "CLASSNEXT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 71,
+     "name": "SYSTEMHEAPINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 72,
+     "name": "MEMMANINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 73,
+     "name": "NOTIFYREGISTER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 74,
+     "name": "NOTIFYUNREGISTER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 75,
+     "name": "INTERRUPTREGISTER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 76,
+     "name": "INTERRUPTUNREGISTER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 77,
+     "name": "TERMINATEAPP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 78,
+     "name": "MEMORYREAD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 79,
+     "name": "MEMORYWRITE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 80,
+     "name": "TIMERCOUNT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 81,
+     "name": "TASKSETCSIP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 82,
+     "name": "TASKGETCSIP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 83,
+     "name": "TASKSWITCH",
+     "nameFrom": "binary"
+    }
+   ]
+  },
+  {
+   "name": "VER",
+   "files": [
+    "VER.DLL"
+   ],
+   "exports": [
+    {
+     "ordinal": 1,
+     "name": "WEP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 2,
+     "name": "GETFILERESOURCESIZE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 3,
+     "name": "GETFILERESOURCE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 6,
+     "name": "GETFILEVERSIONINFOSIZE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 7,
+     "name": "GETFILEVERSIONINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 8,
+     "name": "VERFINDFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 9,
+     "name": "VERINSTALLFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 10,
+     "name": "VERLANGUAGENAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 11,
+     "name": "VERQUERYVALUE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 12,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 13,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 14,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 15,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 16,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 17,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 18,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 19,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 20,
+     "name": null,
+     "nameFrom": null
+    }
+   ]
+  },
+  {
+   "name": "LZEXPAND",
+   "files": [
+    "LZEXPAND.DLL"
+   ],
+   "exports": [
+    {
+     "ordinal": 1,
+     "name": "LZCOPY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 2,
+     "name": "LZOPENFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 3,
+     "name": "LZINIT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 4,
+     "name": "LZSEEK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 5,
+     "name": "LZREAD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 6,
+     "name": "LZCLOSE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 7,
+     "name": "LZSTART",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 8,
+     "name": "COPYLZFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 9,
+     "name": "LZDONE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 10,
+     "name": "GETEXPANDEDNAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 11,
+     "name": "WEP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 12,
+     "name": "___EXPORTEDSTUB",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 13,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 14,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 15,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 16,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 17,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 18,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 19,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 20,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 21,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 22,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 23,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 24,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 25,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 26,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 27,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 28,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 29,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 30,
+     "name": null,
+     "nameFrom": null
+    }
+   ]
+  },
+  {
+   "name": "DDEML",
+   "files": [
+    "DDEML.DLL"
+   ],
+   "exports": [
+    {
+     "ordinal": 1,
+     "name": "WEP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 2,
+     "name": "DDEINITIALIZE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 3,
+     "name": "DDEUNINITIALIZE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 4,
+     "name": "DDECONNECTLIST",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 5,
+     "name": "DDEQUERYNEXTSERVER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 6,
+     "name": "DDEDISCONNECTLIST",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 7,
+     "name": "DDECONNECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 8,
+     "name": "DDEDISCONNECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 9,
+     "name": "DDEQUERYCONVINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 10,
+     "name": "DDESETUSERHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 11,
+     "name": "DDECLIENTTRANSACTION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 12,
+     "name": "DDEABANDONTRANSACTION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 13,
+     "name": "DDEPOSTADVISE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 14,
+     "name": "DDECREATEDATAHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 15,
+     "name": "DDEADDDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 16,
+     "name": "DDEGETDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 17,
+     "name": "DDEACCESSDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 18,
+     "name": "DDEUNACCESSDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 19,
+     "name": "DDEFREEDATAHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 20,
+     "name": "DDEGETLASTERROR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 21,
+     "name": "DDECREATESTRINGHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 22,
+     "name": "DDEFREESTRINGHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 23,
+     "name": "DDEQUERYSTRING",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 24,
+     "name": "DDEKEEPSTRINGHANDLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 26,
+     "name": "DDEENABLECALLBACK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 27,
+     "name": "DDENAMESERVICE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 28,
+     "name": "CLIENTWNDPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 29,
+     "name": "SERVERWNDPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 30,
+     "name": "SUBFRAMEWNDPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 31,
+     "name": "DMGWNDPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 32,
+     "name": "CONVLISTWNDPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 33,
+     "name": "MONITORWNDPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 34,
+     "name": "DDESENDHOOKPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 35,
+     "name": "DDEPOSTHOOKPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 36,
+     "name": "DDECMPSTRINGHANDLES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 37,
+     "name": "DDERECONNECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 38,
+     "name": "INITENUM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 39,
+     "name": "TERMDLGPROC",
+     "nameFrom": "binary"
+    }
+   ]
+  },
+  {
+   "name": "OLECLI",
+   "files": [
+    "OLECLI.DLL"
+   ],
+   "exports": [
+    {
+     "ordinal": 1,
+     "name": "WEP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 2,
+     "name": "OLEDELETE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 3,
+     "name": "OLESAVETOSTREAM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 4,
+     "name": "OLELOADFROMSTREAM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 6,
+     "name": "OLECLONE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 7,
+     "name": "OLECOPYFROMLINK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 8,
+     "name": "OLEEQUAL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 9,
+     "name": "OLEQUERYLINKFROMCLIP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 10,
+     "name": "OLEQUERYCREATEFROMCLIP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 11,
+     "name": "OLECREATELINKFROMCLIP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 12,
+     "name": "OLECREATEFROMCLIP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 13,
+     "name": "OLECOPYTOCLIPBOARD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 14,
+     "name": "OLEQUERYTYPE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 15,
+     "name": "OLESETHOSTNAMES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 16,
+     "name": "OLESETTARGETDEVICE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 17,
+     "name": "OLESETBOUNDS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 18,
+     "name": "OLEQUERYBOUNDS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 19,
+     "name": "OLEDRAW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 20,
+     "name": "OLEQUERYOPEN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 21,
+     "name": "OLEACTIVATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 22,
+     "name": "OLEUPDATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 23,
+     "name": "OLERECONNECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 24,
+     "name": "OLEGETLINKUPDATEOPTIONS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 25,
+     "name": "OLESETLINKUPDATEOPTIONS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 26,
+     "name": "OLEENUMFORMATS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 27,
+     "name": "OLECLOSE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 28,
+     "name": "OLEGETDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 29,
+     "name": "OLESETDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 30,
+     "name": "OLEQUERYPROTOCOL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 31,
+     "name": "OLEQUERYOUTOFDATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 32,
+     "name": "OLEOBJECTCONVERT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 33,
+     "name": "OLECREATEFROMTEMPLATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 34,
+     "name": "OLECREATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 35,
+     "name": "OLEQUERYRELEASESTATUS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 36,
+     "name": "OLEQUERYRELEASEERROR",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 37,
+     "name": "OLEQUERYRELEASEMETHOD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 38,
+     "name": "OLECREATEFROMFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 39,
+     "name": "OLECREATELINKFROMFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 40,
+     "name": "OLERELEASE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 41,
+     "name": "OLEREGISTERCLIENTDOC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 42,
+     "name": "OLEREVOKECLIENTDOC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 43,
+     "name": "OLERENAMECLIENTDOC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 44,
+     "name": "OLEREVERTCLIENTDOC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 45,
+     "name": "OLESAVEDCLIENTDOC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 46,
+     "name": "OLERENAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 47,
+     "name": "OLEENUMOBJECTS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 48,
+     "name": "OLEQUERYNAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 49,
+     "name": "OLESETCOLORSCHEME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 50,
+     "name": "OLEREQUESTDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 54,
+     "name": "OLELOCKSERVER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 55,
+     "name": "OLEUNLOCKSERVER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 56,
+     "name": "OLEQUERYSIZE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 57,
+     "name": "OLEEXECUTE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 58,
+     "name": "OLECREATEINVISIBLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 59,
+     "name": "OLEQUERYCLIENTVERSION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 60,
+     "name": "OLEISDCMETA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 100,
+     "name": "DOCWNDPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 101,
+     "name": "SRVRWNDPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 102,
+     "name": "MFCALLBACKFUNC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 110,
+     "name": "DEFLOADFROMSTREAM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 111,
+     "name": "DEFCREATEFROMCLIP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 112,
+     "name": "DEFCREATELINKFROMCLIP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 113,
+     "name": "DEFCREATEFROMTEMPLATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 114,
+     "name": "DEFCREATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 115,
+     "name": "DEFCREATEFROMFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 116,
+     "name": "DEFCREATELINKFROMFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 117,
+     "name": "DEFCREATEINVISIBLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 200,
+     "name": "LERELEASE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 201,
+     "name": "LESHOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 202,
+     "name": "LEGETDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 203,
+     "name": "LESETDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 204,
+     "name": "LESETHOSTNAMES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 205,
+     "name": "LESETTARGETDEVICE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 206,
+     "name": "LESETBOUNDS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 207,
+     "name": "LESAVETOSTREAM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 208,
+     "name": "LECLONE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 209,
+     "name": "LECOPYFROMLINK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 210,
+     "name": "LEEQUAL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 211,
+     "name": "LECOPY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 212,
+     "name": "LEQUERYTYPE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 213,
+     "name": "LEQUERYBOUNDS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 214,
+     "name": "LEDRAW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 215,
+     "name": "LEQUERYOPEN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 216,
+     "name": "LEACTIVATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 218,
+     "name": "LEUPDATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 219,
+     "name": "LERECONNECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 220,
+     "name": "LEENUMFORMAT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 221,
+     "name": "LEQUERYPROTOCOL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 222,
+     "name": "LEQUERYOUTOFDATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 223,
+     "name": "LEOBJECTCONVERT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 224,
+     "name": "LECHANGEDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 225,
+     "name": "LECLOSE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 226,
+     "name": "LEGETUPDATEOPTIONS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 227,
+     "name": "LESETUPDATEOPTIONS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 228,
+     "name": "LEEXECUTE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 229,
+     "name": "LEOBJECTLONG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 230,
+     "name": "LECREATEINVISIBLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 300,
+     "name": "MFRELEASE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 301,
+     "name": "MFGETDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 302,
+     "name": "MFSAVETOSTREAM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 303,
+     "name": "MFCLONE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 304,
+     "name": "MFEQUAL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 305,
+     "name": "MFCOPY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 307,
+     "name": "MFQUERYBOUNDS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 308,
+     "name": "MFDRAW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 309,
+     "name": "MFENUMFORMAT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 310,
+     "name": "MFCHANGEDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 400,
+     "name": "BMRELEASE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 401,
+     "name": "BMGETDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 402,
+     "name": "BMSAVETOSTREAM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 403,
+     "name": "BMCLONE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 404,
+     "name": "BMEQUAL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 405,
+     "name": "BMCOPY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 407,
+     "name": "BMQUERYBOUNDS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 408,
+     "name": "BMDRAW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 409,
+     "name": "BMENUMFORMAT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 410,
+     "name": "BMCHANGEDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 500,
+     "name": "DIBRELEASE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 501,
+     "name": "DIBGETDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 502,
+     "name": "DIBSAVETOSTREAM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 503,
+     "name": "DIBCLONE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 504,
+     "name": "DIBEQUAL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 505,
+     "name": "DIBCOPY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 507,
+     "name": "DIBQUERYBOUNDS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 508,
+     "name": "DIBDRAW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 509,
+     "name": "DIBENUMFORMAT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 510,
+     "name": "DIBCHANGEDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 600,
+     "name": "GENRELEASE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 601,
+     "name": "GENGETDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 602,
+     "name": "GENSETDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 603,
+     "name": "GENSAVETOSTREAM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 604,
+     "name": "GENCLONE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 605,
+     "name": "GENEQUAL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 606,
+     "name": "GENCOPY",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 608,
+     "name": "GENQUERYBOUNDS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 609,
+     "name": "GENDRAW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 610,
+     "name": "GENENUMFORMAT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 611,
+     "name": "GENCHANGEDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 701,
+     "name": "ERRSHOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 702,
+     "name": "ERRSETDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 703,
+     "name": "ERRSETHOSTNAMES",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 704,
+     "name": "ERRSETTARGETDEVICE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 705,
+     "name": "ERRSETBOUNDS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 706,
+     "name": "ERRCOPYFROMLINK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 707,
+     "name": "ERRQUERYOPEN",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 708,
+     "name": "ERRACTIVATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 709,
+     "name": "ERRCLOSE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 710,
+     "name": "ERRUPDATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 711,
+     "name": "ERRRECONNECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 712,
+     "name": "ERRQUERYPROTOCOL",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 713,
+     "name": "ERRQUERYOUTOFDATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 714,
+     "name": "ERROBJECTCONVERT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 715,
+     "name": "ERRGETUPDATEOPTIONS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 716,
+     "name": "ERRSETUPDATEOPTIONS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 717,
+     "name": "ERREXECUTE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 718,
+     "name": "ERROBJECTLONG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 800,
+     "name": "PBLOADFROMSTREAM",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 801,
+     "name": "PBCREATEFROMCLIP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 802,
+     "name": "PBCREATELINKFROMCLIP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 803,
+     "name": "PBCREATEFROMTEMPLATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 804,
+     "name": "PBCREATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 805,
+     "name": "PBDRAW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 806,
+     "name": "PBQUERYBOUNDS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 807,
+     "name": "PBCOPYTOCLIPBOARD",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 808,
+     "name": "PBCREATEFROMFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 809,
+     "name": "PBCREATELINKFROMFILE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 810,
+     "name": "PBENUMFORMATS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 811,
+     "name": "PBGETDATA",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 812,
+     "name": "PBCREATEINVISIBLE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 910,
+     "name": "OBJQUERYNAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 911,
+     "name": "OBJRENAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 912,
+     "name": "OBJQUERYTYPE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 913,
+     "name": "OBJQUERYSIZE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 950,
+     "name": "CONNECTDLGPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 951,
+     "name": "SETNETNAME",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 952,
+     "name": "CHECKNETDRIVE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 953,
+     "name": "SETNEXTNETDRIVE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 954,
+     "name": "GETTASKVISIBLEWINDOW",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 955,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 956,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 957,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 958,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 959,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 960,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 961,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 962,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 963,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 964,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 965,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 966,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 967,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 968,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 969,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 970,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 971,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 972,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 973,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 974,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 975,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 976,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 977,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 978,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 979,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 980,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 981,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 982,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 983,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 984,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 985,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 986,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 987,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 988,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 989,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 990,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 991,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 992,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 993,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 994,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 995,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 996,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 997,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 998,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 999,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1000,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1001,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1002,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1003,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1004,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1005,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1006,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1007,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1008,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1009,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1010,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1011,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1012,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1013,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1014,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1015,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1016,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1017,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1018,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1019,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1020,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1021,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1022,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1023,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1024,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1025,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1026,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1027,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1028,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1029,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1030,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1031,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1032,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1033,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1034,
+     "name": null,
+     "nameFrom": null
+    },
+    {
+     "ordinal": 1035,
+     "name": null,
+     "nameFrom": null
+    }
+   ]
+  },
+  {
+   "name": "OLESVR",
+   "files": [
+    "OLESVR.DLL"
+   ],
+   "exports": [
+    {
+     "ordinal": 1,
+     "name": "WEP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 2,
+     "name": "OLEREGISTERSERVER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 3,
+     "name": "OLEREVOKESERVER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 4,
+     "name": "OLEBLOCKSERVER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 5,
+     "name": "OLEUNBLOCKSERVER",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 6,
+     "name": "OLEREGISTERSERVERDOC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 7,
+     "name": "OLEREVOKESERVERDOC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 8,
+     "name": "OLERENAMESERVERDOC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 9,
+     "name": "OLEREVERTSERVERDOC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 10,
+     "name": "OLESAVEDSERVERDOC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 11,
+     "name": "OLEREVOKEOBJECT",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 12,
+     "name": "OLEQUERYSERVERVERSION",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 21,
+     "name": "SRVRWNDPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 22,
+     "name": "DOCWNDPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 23,
+     "name": "ITEMWNDPROC",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 24,
+     "name": "SENDDATAMSG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 25,
+     "name": "FINDITEMWND",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 26,
+     "name": "ITEMCALLBACK",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 27,
+     "name": "TERMINATECLIENTS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 28,
+     "name": "TERMINATEDOCCLIENTS",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 29,
+     "name": "DELETECLIENTINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 30,
+     "name": "SENDRENAMEMSG",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 31,
+     "name": "ENUMFORTERMINATE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 32,
+     "name": null,
+     "nameFrom": null
+    }
+   ]
+  },
+  {
+   "name": "WIN87EM",
+   "files": [
+    "WIN87EM.DLL"
+   ],
+   "exports": [
+    {
+     "ordinal": 1,
+     "name": "__FPMATH",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 2,
+     "name": "WEP",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 3,
+     "name": "__WIN87EMINFO",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 4,
+     "name": "__WIN87EMRESTORE",
+     "nameFrom": "binary"
+    },
+    {
+     "ordinal": 5,
+     "name": "__WIN87EMSAVE",
+     "nameFrom": "binary"
+    }
+   ]
+  }
+ ]
+}

@@ -1,4 +1,4 @@
-import { TRUE, FALSE } from '../types.js';
+import { TRUE, FALSE } from '../consts.js';
 
 /**
  * The **ExtTextOut** function writes a character string within a rectangular
