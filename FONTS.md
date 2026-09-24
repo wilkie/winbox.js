@@ -18314,9 +18314,35 @@ things make it, all read out of `GDI.EXE`:
 
 The same `GetTextExtent` also adds `count + 1` to the extent where GDI draws a
 bold itself and half the cell for a slant it draws itself (`3cf3`-`3d08`) --
-read, and not yet asked of a recording. And turned rules -- underline and
-strikeout -- on a pixel that is not square have not been recorded; they are
-still drawn with the square carries.
+read, and not yet asked of a recording.
+
+**The rest of `rotstyle` on a Hercules.** Recorded on the Hercules as well,
+`rotstyle` -- the ground, both rules, the bold, each alignment, `ExtTextOut`
+and the made-up slant, at five angles -- was 142 of 190 with the three above.
+The 48 left were three more places the resolutions' ratio enters, all read:
+
+- **The alignment is its own carry, by `MulDiv`.** `ExtTextOut` moves the
+  pen by the alignment before GDI's turned drawing adds the ascent (seg1
+  `3484`-`34f4`): along the baseline by the width times the cosine and down
+  the page by `MulDiv(width, V, H)` times the sine, and by its own shift down
+  the text -- nothing for `TA_TOP`, the ascent back up for `TA_BASELINE`, the
+  cell back up for `TA_BOTTOM` -- across the page by `MulDiv(d, H, V)`. The
+  width is what `GetTextExtent` says, since seg16 `0679` calls it, so on this
+  pixel it is the turned length; `TA_CENTER` halves it first. seg8 then adds
+  the ascent through the 8.8 ratio, truncated -- a different conversion from
+  the alignment's, which is why the two must stay apart. On a VGA both are the
+  identity, and this is 8u's two carries exactly.
+- **A rule is three carries, each by its own `MulDiv`.** seg16 `046d`-`059f`
+  builds the rule's `Polygon` from the aligned pen: down the text by the
+  rule's offset (across the page by `MulDiv(d, H, V)`), along the baseline by
+  the run's length (down the page by `MulDiv(L, V, H)`), and down by the
+  thickness less one (`MulDiv(t - 1, H, V)` across). The length is the sum
+  across the page, not the turned length: 30 of 30 against 12.
+- **The slant's shear comes before the stretch.** `6f63`, which adds a third
+  of one row to the other for a made-up slant, runs before `6fa3` stretches
+  the across entries, so the stretch applies to the sheared matrix.
+
+With the three, `rotstyle` on the Hercules is 190 of 190.
 
 That closes `rotstyle`: **190 of 190**. `smearrun` and `smearmod` are 640 of 640
 each, and the glyph and style corpora the single-glyph rule came from are

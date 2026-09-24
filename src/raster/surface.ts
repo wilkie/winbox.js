@@ -539,14 +539,62 @@ export class Surface {
    */
   turnedAlign(text, runWidth = null) {
     const font: any = this._font;
-    const width = runWidth ?? font.measure(text).width;
+    /* The width the alignment moves by is what `GetTextExtent` says, which
+     * for a turned font on a pixel that is not square is the along-baseline
+     * length and not the sum across the page: `ExtTextOut` asks for it
+     * (`GDI.EXE` seg16 `0679` calls `GetTextExtent`) and halves it for
+     * `TA_CENTER` (seg1 `3464`). On a square pixel they are the same. */
+    const width = runWidth ?? turnedLength(font, font.measure(text).width);
     const across = this.textAlign & 6;
     const down = this.textAlign & 24;
 
     return {
-      across: across === 2 ? -width : across === 6 ? -Math.floor(width / 2) : 0,
+      across: across === 2 ? -width : across === 6 ? -Math.trunc(width / 2) : 0,
       down: down === 8 ? -font.style.descent : down === 24 ? 0 : font.style.ascent,
+      /* The alignment's own shift down the text, apart from the ascent GDI's
+       * turned drawing adds afterwards: nothing for `TA_TOP`, the ascent back
+       * up for `TA_BASELINE`, the whole cell back up for `TA_BOTTOM`. */
+      alignDown: down === 8 ? -(font.style.ascent + font.style.descent) : down === 24 ? -font.style.ascent : 0,
       bottom: down === 8,
+    };
+  }
+
+  /**
+   * Where a turned string's reference point lands, as two carries: the
+   * alignment's and the ascent's.
+   *
+   * `ExtTextOut` moves the pen by the alignment first (`GDI.EXE` seg1
+   * `3484`-`34f4`): along the baseline by the width times the cosine and, down
+   * the page, by the width carried by `MulDiv(width, V, H)` times the sine; and
+   * down the text by its own shift, carried across by `MulDiv(d, H, V)`. Then
+   * GDI's turned drawing adds the ascent (seg8 `02b7`-`02f3`), carried across
+   * by the 8.8 ratio instead, truncated. Each multiply by a sine or cosine is
+   * rounded on its own. On a square pixel both conversions are the identity
+   * and this is the two carries 8u measured -- `TA_BOTTOM`'s ascent less the
+   * cell among them.
+   *
+   * **Recorded** by `rotstyle` on a Hercules.
+   */
+  turnedBase(x, y, text, runWidth, sine, cosine) {
+    const away = (value) => Math.sign(value) * Math.round(Math.abs(value));
+    const font: any = this._font;
+    const style = font?.style ?? {};
+    const H = style.horizontalRes ?? 96;
+    const V = style.verticalRes ?? 96;
+    const mulDiv = (value, numerator, denominator) =>
+      numerator === denominator ? value : away((value * numerator) / denominator);
+    const { toAcross } = this.aspectCarries();
+    const reference = this.turnedAlign(text, runWidth);
+    const ascent = style.ascent;
+
+    const alignX = away(reference.across * cosine) + away(mulDiv(reference.alignDown, H, V) * sine);
+    const alignY = -away(mulDiv(reference.across, V, H) * sine) + away(reference.alignDown * cosine);
+
+    return {
+      x: x + alignX + away(toAcross(ascent) * sine),
+      y: y + alignY + away(ascent * cosine),
+      alignX,
+      alignY,
     };
   }
 
@@ -814,13 +862,14 @@ export class Surface {
     if (this.turnedText) {
       const away = (value) => Math.sign(value) * Math.round(Math.abs(value));
       const { sine, cosine } = this.turnedTrig();
-      const reference = this.turnedAlign(text, runWidth);
-      const left = reference.across + box.left;
       const width = (runWidth ?? box.right - box.left);
-      const down = reference.down - (this._font as any).style.ascent;
       const { toAcross, toDown } = this.aspectCarries();
-      const originX = x + away(left * cosine) + away(toAcross(down) * sine);
-      const originY = y - away(toDown(left) * sine) + away(down * cosine);
+      /* The ground's corner is the reference point moved by the alignment
+       * alone -- the ascent is what carries the glyphs down from it -- and
+       * then along by the box's own left edge. */
+      const { alignX, alignY } = this.turnedBase(x, y, text, runWidth, sine, cosine);
+      const originX = x + alignX + away(box.left * cosine);
+      const originY = y + alignY - away(toDown(box.left) * sine);
       const alongX = originX + away(width * cosine);
       const alongY = originY - away(toDown(width) * sine);
 
@@ -899,16 +948,29 @@ export class Surface {
       const away = (value) => Math.sign(value) * Math.round(Math.abs(value));
       const sine = fixed(Math.sin(radians));
       const cosine = fixed(Math.cos(radians));
-      const reference = this.turnedAlign(text, runWidth);
-      const startX = x + away(reference.across * cosine);
-      const startY = y - away(reference.across * sine);
-      const shift = reference.down - font.style.ascent;
+      /* From the reference point the alignment has already moved the pen to,
+       * the rule is carried down the text by its offset -- across the page by
+       * `MulDiv(d, H, V)` -- and along the baseline by the run's length, down
+       * the page by `MulDiv(L, V, H)`; each carry rounded on its own
+       * (`GDI.EXE` seg16 `046d`-`0567`). On a square pixel the two `MulDiv`s
+       * are the identity. */
+      const H = font.style.horizontalRes ?? 96;
+      const V = font.style.verticalRes ?? 96;
+      const mulDiv = (value, numerator, denominator) =>
+        numerator === denominator ? value : away((value * numerator) / denominator);
+      const { alignX, alignY } = this.turnedBase(x, y, text, runWidth, sine, cosine);
+      const startX = x + alignX;
+      const startY = y + alignY;
+      /* The run's length is the sum across the page, not what `GetTextExtent`
+       * says of a turned run: with the turned length the Hercules's rules are
+       * 12 of 30 in `rotstyle`, with the sum 30. */
+      const length = width;
 
       const ends = (down) => {
-        const fromX = startX + away((shift + down) * sine);
-        const fromY = startY + away((shift + down) * cosine);
+        const fromX = startX + away(mulDiv(down, H, V) * sine);
+        const fromY = startY + away(down * cosine);
 
-        return [fromX, fromY, fromX + away(width * cosine), fromY - away(width * sine)];
+        return [fromX, fromY, fromX + away(length * cosine), fromY - away(mulDiv(length, V, H) * sine)];
       };
 
       const band = (down, rows) => {
@@ -934,7 +996,7 @@ export class Surface {
          * thirty degrees a pixel short on every row, and filling between two
          * lines without GDI's fill leaves a gap at half a right angle. */
         const [ax, ay, bx, by] = first;
-        const shiftX = away((rows - 1) * sine);
+        const shiftX = away(mulDiv(rows - 1, H, V) * sine);
         const shiftY = away((rows - 1) * cosine);
         const corners = [
           [ax, ay],
@@ -1349,15 +1411,13 @@ export class Surface {
     const verticalRes = (this._font as any)?.style?.verticalRes ?? 96;
     const aspect = turn && outline ? horizontalRes / verticalRes : 1;
     const rotated = sine !== 0 && cosine !== 0;
-    const turnMatrix = (() => {
-      /* Only where the two differ: `6fa3` compares them first, and on a square
-       * pixel the multiply would move a negative entry by the half it adds. */
-      const across = (entry) =>
-        horizontalRes === verticalRes
-          ? entry
-          : Math.trunc((entry * horizontalRes + Math.floor(verticalRes / 2)) / verticalRes);
-      return [across(entryCos), entrySin, across(-entrySin), entryCos];
-    })();
+    /* Only where the two differ: `6fa3` compares them first, and on a square
+     * pixel the multiply would move a negative entry by the half it adds. */
+    const acrossRow = (entry) =>
+      horizontalRes === verticalRes
+        ? entry
+        : Math.trunc((entry * horizontalRes + Math.floor(verticalRes / 2)) / verticalRes);
+    const turnMatrix = [acrossRow(entryCos), entrySin, acrossRow(-entrySin), entryCos];
 
     /* Where the glyphs go is worked out along the exact angle, not the rounded
      * one, and in sixteen-dot-sixteen: the pen is carried to the baseline by
@@ -1406,17 +1466,11 @@ export class Surface {
      * across by the resolutions' ratio first, and one along it is carried down
      * by the other: `GDI.EXE` seg8 `02c1` and `01f0`, each ratio 256 times
      * the quotient rounded and applied as a truncated multiply. */
-    const { toAcross, toDown } = this.aspectCarries();
+    const { toDown } = this.aspectCarries();
 
-    const downX = reference.bottom
-      ? away(toAcross(font.style.ascent) * pathSine) - away(toAcross(cell) * pathSine)
-      : away(toAcross(reference.down) * pathSine);
-    const downY = reference.bottom
-      ? away(font.style.ascent * pathCosine) - away(cell * pathCosine)
-      : away(reference.down * pathCosine);
-
-    const baseX = x + away(reference.across * pathCosine) + downX;
-    const baseY = y - away(toDown(reference.across) * pathSine) + downY;
+    const base = turn ? this.turnedBase(x, y, text, run.runWidth, pathSine, pathCosine) : { x, y };
+    const baseX = base.x;
+    const baseY = base.y;
 
     let pen = x;
     let index = 0;
@@ -1546,7 +1600,12 @@ export class Surface {
             turnedAlready: true,
             contours: Surface.transformOutline(
               outline.outlineOf(glyph),
-              Surface.slantedTurn(entryCos, entrySin),
+              /* The slant's shear is added before the stretch across
+               * (`6f63` comes before `6fa3`), so the stretch applies to the
+               * sheared entries. */
+              (([m00, m01, m10, m11]) => [acrossRow(m00), m01, acrossRow(m10), m11])(
+                Surface.slantedTurn(entryCos, entrySin)
+              ),
               outline.unitsPerEm
             ),
           }
@@ -2457,4 +2516,42 @@ export class Surface {
   unlock(view) {
     this.context.putImageData(view._data, view._x, view._y);
   }
+}
+
+/**
+ * The length of a turned string on a pixel that is not square.
+ *
+ * A turned TrueType font's widths are sums across the page, and on a device
+ * whose two resolutions differ GDI scales that sum by the length of the
+ * baseline's unit step as it lands on the device: `GDI.EXE` seg1 `6ab0` asks
+ * seg3 `2615` for a factor and keeps `sum * factor >> 8`. The factor is the
+ * square root of `a^2 + b^2`, where `a` is the angle's sine times
+ * `256 * V / H` rounded and `b` its cosine times 256, each through seg33's
+ * multiplies -- the vertical part of the step shrunk by the resolutions'
+ * ratio, the horizontal part not.
+ *
+ * **Recorded** by `rotherc`: all 216 turned records on a Hercules. The square
+ * root truncated; rounded, it is 215. A square pixel has a factor of 256 at
+ * every angle and nothing changes, which is why GDI only asks where the two
+ * resolutions differ.
+ */
+export function turnedLength(font, width) {
+  const style = font?.style ?? {};
+  const H = style.horizontalRes ?? 96;
+  const V = style.verticalRes ?? 96;
+  const escapement = font?.escapement ?? 0;
+
+  if (!font?.outline || escapement === 0 || H === V) {
+    return width;
+  }
+
+  const radians = (escapement * Math.PI) / 1800;
+  const fixed = (value) => Math.round(value * 65536);
+  const fixMul = (value, factor) => Math.floor((value * factor + 32768) / 65536);
+  const ratio = Math.floor((256 * V + Math.floor(H / 2)) / H);
+  const a = fixMul(ratio, fixed(Math.sin(radians)));
+  const b = fixMul(256, fixed(Math.cos(radians)));
+  const factor = Math.floor(Math.sqrt(a * a + b * b));
+
+  return Math.floor((width * factor) / 256);
 }
