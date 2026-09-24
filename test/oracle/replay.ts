@@ -2807,17 +2807,6 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  /* Turned text on a Hercules, which nothing had recorded.
-   *
-   * `smeargnd` draws an opaque ground behind "AB" on a Hercules as well as a
-   * VGA, and every turned record on the Hercules disagrees -- plain as well as
-   * smeared, all 36 of them at thirty, ninety and a hundred and eighty
-   * degrees -- where all twelve upright ones agree and the VGA is 48 of 48.
-   * The Hercules's pixel is not square, and everything 8u read about turned
-   * text was read on a square one. Not yet looked at.
-   */
-  'smeargnd-hercules:style ink': 'turned text on a pixel that is not square: 36 of 48',
-
   /* The styled files at cells of two hundred and seventy-four to two hundred
    * and eighty-two, where the size chosen is one pixel per em out.
    *

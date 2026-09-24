@@ -729,6 +729,27 @@ export class Surface {
     return { left, right, height: metrics.height };
   }
 
+  /**
+   * How a distance in a turned font's own terms reaches the device where the
+   * pixel is not square: one down the text is carried across by the
+   * resolutions' ratio, and one along it down by the other, each ratio 256
+   * times the quotient rounded and applied as a truncated multiply --
+   * `GDI.EXE` seg1 `625b` makes them and seg8 `02c1` and `01f0` use them. On a
+   * square pixel both are the identity.
+   */
+  aspectCarries() {
+    const style = (this._font as any)?.style ?? {};
+    const H = style.horizontalRes ?? 96;
+    const V = style.verticalRes ?? 96;
+    const across = Math.floor((256 * H + Math.floor(V / 2)) / V);
+    const down = Math.floor((256 * V + Math.floor(H / 2)) / H);
+
+    return {
+      toAcross: (value) => (H === V ? value : Math.floor((value * across) / 256)),
+      toDown: (value) => (H === V ? value : Math.floor((value * down) / 256)),
+    };
+  }
+
   /** Whether the selected outline face is being made bold by smearing. */
   synthesisesBold() {
     const style = (this._font as any)?.style ?? {};
@@ -797,17 +818,18 @@ export class Surface {
       const left = reference.across + box.left;
       const width = (runWidth ?? box.right - box.left);
       const down = reference.down - (this._font as any).style.ascent;
-      const originX = x + away(left * cosine) + away(down * sine);
-      const originY = y - away(left * sine) + away(down * cosine);
+      const { toAcross, toDown } = this.aspectCarries();
+      const originX = x + away(left * cosine) + away(toAcross(down) * sine);
+      const originY = y - away(toDown(left) * sine) + away(down * cosine);
       const alongX = originX + away(width * cosine);
-      const alongY = originY - away(width * sine);
+      const alongY = originY - away(toDown(width) * sine);
 
       this.fillPolygon(
         [
           [originX, originY],
           [alongX, alongY],
-          [alongX + away(box.height * sine), alongY + away(box.height * cosine)],
-          [originX + away(box.height * sine), originY + away(box.height * cosine)],
+          [alongX + away(toAcross(box.height) * sine), alongY + away(box.height * cosine)],
+          [originX + away(toAcross(box.height) * sine), originY + away(box.height * cosine)],
         ],
         this.backcolor
       );
@@ -1307,7 +1329,35 @@ export class Surface {
      * that is asked: a tenth of a degree at fifteen per em is the identity and
      * is not rotated. See `Hinter`'s `GETINFO` and FONTS.md 8u.
      */
+    /* Whether the device's pixel is square, which a turn has to know.
+     *
+     * GDI builds a turned glyph's matrix in whole pixels -- the size times the
+     * angle's cosine and sine, as on a square pixel -- and then, where the
+     * font's `dfHorizRes` and `dfVertRes` differ, multiplies the two entries
+     * that land across the page by their ratio: `(entry * H + V / 2) / V`,
+     * the division truncating toward nought (`GDI.EXE` seg1 `6fa3`-`6fce`). So
+     * the turn is done in physical space and stretched across afterwards, and
+     * the rounding is not symmetric: at ninety degrees Arial's fourteen per em
+     * is -18 across on a Hercules and at two hundred and seventy it is 19.
+     *
+     * **Recorded** by `rotherc`: every one of its 216 turned glyphs and pairs
+     * on a Hercules is the right shape with this, against 16 at thirty degrees
+     * and none at the right angles for the size rounded away from nought, and
+     * fewer again for it truncated, rounded up, or left fractional.
+     */
+    const horizontalRes = (this._font as any)?.style?.horizontalRes ?? 96;
+    const verticalRes = (this._font as any)?.style?.verticalRes ?? 96;
+    const aspect = turn && outline ? horizontalRes / verticalRes : 1;
     const rotated = sine !== 0 && cosine !== 0;
+    const turnMatrix = (() => {
+      /* Only where the two differ: `6fa3` compares them first, and on a square
+       * pixel the multiply would move a negative entry by the half it adds. */
+      const across = (entry) =>
+        horizontalRes === verticalRes
+          ? entry
+          : Math.trunc((entry * horizontalRes + Math.floor(verticalRes / 2)) / verticalRes);
+      return [across(entryCos), entrySin, across(-entrySin), entryCos];
+    })();
 
     /* Where the glyphs go is worked out along the exact angle, not the rounded
      * one, and in sixteen-dot-sixteen: the pen is carried to the baseline by
@@ -1352,15 +1402,21 @@ export class Surface {
      * degrees, where three times the sine is minus one and a half: two carries,
      * seven less eight, make it minus one, which is where Windows puts it.
      */
+    /* On a pixel that is not square a distance down the text is carried
+     * across by the resolutions' ratio first, and one along it is carried down
+     * by the other: `GDI.EXE` seg8 `02c1` and `01f0`, each ratio 256 times
+     * the quotient rounded and applied as a truncated multiply. */
+    const { toAcross, toDown } = this.aspectCarries();
+
     const downX = reference.bottom
-      ? away(font.style.ascent * pathSine) - away(cell * pathSine)
-      : away(reference.down * pathSine);
+      ? away(toAcross(font.style.ascent) * pathSine) - away(toAcross(cell) * pathSine)
+      : away(toAcross(reference.down) * pathSine);
     const downY = reference.bottom
       ? away(font.style.ascent * pathCosine) - away(cell * pathCosine)
       : away(reference.down * pathCosine);
 
     const baseX = x + away(reference.across * pathCosine) + downX;
-    const baseY = y - away(reference.across * pathSine) + downY;
+    const baseY = y - away(toDown(reference.across) * pathSine) + downY;
 
     let pen = x;
     let index = 0;
@@ -1461,7 +1517,20 @@ export class Surface {
        */
       const raw = italic
         ? { contours: outline.outlineOf(glyph), hinted: false, scaled: false }
-        : outline.hintedOutline(glyph, ppem, true, stretch, rotated);
+        : aspect !== 1 && !rotated
+          ? /* A turn by right angles is still fitted, and the scaler fits it at
+             * each row's own stretch -- the larger entry of the row -- which on
+             * a pixel that is not square is not the upright stretch: at ninety
+             * degrees the glyph's `x` is the size and its `y` the size across. */
+            outline.hintedOutline(
+              glyph,
+              Math.max(Math.abs(turnMatrix[2]), Math.abs(turnMatrix[3])),
+              true,
+              Math.max(Math.abs(turnMatrix[0]), Math.abs(turnMatrix[1])) /
+                Math.max(Math.abs(turnMatrix[2]), Math.abs(turnMatrix[3])),
+              rotated
+            )
+          : outline.hintedOutline(glyph, ppem, true, stretch, rotated);
 
       /* A rotated glyph is carried through the scaler's own transform, from
        * the design outline, and arrives in pixels already turned. See
@@ -1487,7 +1556,7 @@ export class Surface {
             hinted: true,
             scaled: true,
             turnedAlready: true,
-            contours: Surface.turnOutline(outline.outlineOf(glyph), entryCos, entrySin, outline.unitsPerEm),
+            contours: Surface.transformOutline(outline.outlineOf(glyph), turnMatrix, outline.unitsPerEm),
           }
         : raw.scaled
           ? raw
@@ -1727,7 +1796,7 @@ export class Surface {
           // Hinting hands back pixels; an unhinted outline is still in units.
           scale: turn ? 1 : fitted.scaled ? 1 : scale,
           originX: turn ? baseX + away(along * pathCosine) : pen + carried,
-          originY: turn ? baseY - away(along * pathSine) : baseline,
+          originY: turn ? baseY - away(toDown(along) * pathSine) : baseline,
           width: this.width,
           height: this.height,
           /* What the font's own `SCANCTRL` asked for at this size, which is

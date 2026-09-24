@@ -34,7 +34,46 @@ export function GetTextExtent(hdc, lpszString, cbString) {
 
   // Draw the text
   const metrics = surface.measureText(lpszString.slice(0, cbString));
+  const width = turnedLength(surface.font, metrics.width);
 
   // Return the DWORD consisting of the dimensions
-  return (metrics.width & 0xffff) | ((metrics.height & 0xffff) << 16);
+  return (width & 0xffff) | ((metrics.height & 0xffff) << 16);
+}
+
+/**
+ * The length of a turned string on a pixel that is not square.
+ *
+ * A turned TrueType font's widths are sums across the page, and on a device
+ * whose two resolutions differ GDI scales that sum by the length of the
+ * baseline's unit step as it lands on the device: `GDI.EXE` seg1 `6ab0` asks
+ * seg3 `2615` for a factor and keeps `sum * factor >> 8`. The factor is the
+ * square root of `a^2 + b^2`, where `a` is the angle's sine times
+ * `256 * V / H` rounded and `b` its cosine times 256, each through seg33's
+ * multiplies -- the vertical part of the step shrunk by the resolutions'
+ * ratio, the horizontal part not.
+ *
+ * **Recorded** by `rotherc`: all 216 turned records on a Hercules. The square
+ * root truncated; rounded, it is 215. A square pixel has a factor of 256 at
+ * every angle and nothing changes, which is why GDI only asks where the two
+ * resolutions differ.
+ */
+function turnedLength(font, width) {
+  const style = font?.style ?? {};
+  const H = style.horizontalRes ?? 96;
+  const V = style.verticalRes ?? 96;
+  const escapement = font?.escapement ?? 0;
+
+  if (!font?.outline || escapement === 0 || H === V) {
+    return width;
+  }
+
+  const radians = (escapement * Math.PI) / 1800;
+  const fixed = (value) => Math.round(value * 65536);
+  const fixMul = (value, factor) => Math.floor((value * factor + 32768) / 65536);
+  const ratio = Math.floor((256 * V + Math.floor(H / 2)) / H);
+  const a = fixMul(ratio, fixed(Math.sin(radians)));
+  const b = fixMul(256, fixed(Math.cos(radians)));
+  const factor = Math.floor(Math.sqrt(a * a + b * b));
+
+  return Math.floor((width * factor) / 256);
 }

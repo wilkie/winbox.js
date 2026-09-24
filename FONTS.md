@@ -18273,9 +18273,50 @@ came out of it, all of them in the code once looked for:
   every row, left of the run's ground at x + 1.
 
 With the three, the VGA is 48 of 48 and the Hercules's upright records 12 of
-12. The Hercules's turned records disagree plain and smeared alike -- turned
-text on a pixel that is not square had never been recorded -- and are in
-`KNOWN_GAPS` with their count.
+12. The Hercules's turned records disagreed plain and smeared alike: turned
+text on a pixel that is not square had never been recorded. It is below.
+
+**Turned text on a pixel that is not square.** Everything above was read on
+a VGA. A Hercules is 96 by 72 to the inch, and at ninety degrees Windows'
+"AB" in Arial at sixteen is 21 columns across and 19 rows along where turning
+the upright picture gives 16 and 26: the turn is done in physical space.
+`oracle/probes/rotherc.c` draws "A", "B", "AB", "l", "ll" and "W" in three
+faces at two cells and seven angles, with what `GetTextExtent` says, on the
+Hercules and on the VGA as the square control -- 252 records each. Three
+things make it, all read out of `GDI.EXE`:
+
+- **The matrix is stretched across afterwards, and the rounding is GDI's.**
+  `6df7` builds the whole-pixel turn as on a square pixel and then, where the
+  font's `dfHorizRes` and `dfVertRes` differ, multiplies the two entries that
+  land across the page by their ratio as `(entry * H + V / 2) / V`, the
+  division truncating toward nought (`6fa3`-`6fce`). That is not symmetric:
+  Arial's fourteen per em is -18 across at ninety degrees and 19 at two
+  hundred and seventy, and Windows' glyphs are exactly those widths. Rounding
+  the product away from nought, truncating it, rounding it up or leaving it
+  fractional each fit some angles and not others. A turn by right angles is
+  still fitted, at each row's own stretch -- which on this pixel is the
+  size along the glyph's `x` and the stretched size along its `y` at ninety
+  degrees, not the upright pair. With it every one of the 252 is the right
+  shape.
+- **Distances are carried by the resolutions' ratio.** seg1 `625b` makes two
+  8.8 ratios, 256 times H over V and V over H, each rounded. seg8 carries the
+  ascent across the page by the first (`02c1`) and each glyph's running total
+  down the page by the second (`01f0`), as a truncated multiply. The ground's
+  polygon is carried the same way. With both, all 252 glyphs and pairs are in
+  the right place, and `smeargnd`'s Hercules grounds are 48 of 48.
+- **`GetTextExtent` shrinks the along-baseline sum by the step's length.** A
+  turned font's widths are sums across the page, and where the resolutions
+  differ GDI keeps `sum * factor >> 8` (seg1 `6ab0`), the factor from seg3
+  `2615`: the square root of `a^2 + b^2` with `a` the sine times `256 * V / H`
+  and `b` the cosine times 256. Truncated, that is all 216 turned extents;
+  rounded, 215. On a square pixel the factor is 256 at every angle, which is
+  why GDI only asks where the two resolutions differ.
+
+The same `GetTextExtent` also adds `count + 1` to the extent where GDI draws a
+bold itself and half the cell for a slant it draws itself (`3cf3`-`3d08`) --
+read, and not yet asked of a recording. And turned rules -- underline and
+strikeout -- on a pixel that is not square have not been recorded; they are
+still drawn with the square carries.
 
 That closes `rotstyle`: **190 of 190**. `smearrun` and `smearmod` are 640 of 640
 each, and the glyph and style corpora the single-glyph rule came from are

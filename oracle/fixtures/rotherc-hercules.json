@@ -1,0 +1,1526 @@
+{
+  "probe": "rotherc",
+  "display": "hercules",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "hercules",
+    "displayDescription": "Hercules, 720x348, monochrome"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"A\",mode=1,esc=0,pen=64:64",
+      "result": "box=64:67:74:76,rows=040/0a0/0a0/110/110/208/3f8/404/404/802,extent=11",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"A\",mode=1,esc=300,pen=64:64",
+      "result": "box=72:64:83:74,rows=c00/b00/9c0/c60/c78/dcc/f07/400/400/400/600,extent=12",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"A\",mode=1,esc=450,pen=64:64",
+      "result": "box=71:62:84:72,rows=4000/f800/4f00/61e0/233c/3600/1800/1800/0800/0c00/0400,extent=11",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"A\",mode=1,esc=900,pen=64:64",
+      "result": "box=68:55:80:63,rows=0018/00e0/0780/3980/c180/3980/0780/00e0/0018,extent=9",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"A\",mode=1,esc=1350,pen=64:64",
+      "result": "box=63:48:75:58,rows=0800/0c00/0c00/1800/1800/3c00/3610/61f8/4780/dc00/f000,extent=11",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"A\",mode=1,esc=1800,pen=64:64",
+      "result": "box=53:51:63:60,rows=c06/c06/60c/7fc/318/318/3b8/1b0/1b0/0e0,extent=13",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"A\",mode=1,esc=2700,pen=64:64",
+      "result": "box=47:64:60:72,rows=c000/3800/0f80/0c70/0c0c/0c70/0f80/3800/c000,extent=9",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"B\",mode=1,esc=0,pen=64:64",
+      "result": "box=65:67:73:76,rows=ff0/810/808/810/ff0/810/808/808/810/fe0,extent=11",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"B\",mode=1,esc=300,pen=64:64",
+      "result": "box=68:63:81:73,rows=0300/0fc0/7040/e040/21f0/3718/1c0c/0808/0c30/06e0/0300,extent=12",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"B\",mode=1,esc=450,pen=64:64",
+      "result": "box=68:61:81:71,rows=0780/0dc0/38c0/60f8/e1cc/3304/1e04/0e0c/0338/01e0/00c0,extent=11",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"B\",mode=1,esc=900,pen=64:64",
+      "result": "box=68:56:80:62,rows=79e0/c638/c618/c618/c618/c618/fff8,extent=9",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"B\",mode=1,esc=1350,pen=64:64",
+      "result": "box=62:50:74:60,rows=0700/0dc0/1860/1830/7c18/c670/83c0/c180/6300/3600/1c00,extent=11",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"B\",mode=1,esc=1800,pen=64:64",
+      "result": "box=53:51:62:60,rows=3fc/60c/c0c/c0c/c0c/7fc/60c/c0c/e0c/7fc,extent=13",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"B\",mode=1,esc=2700,pen=64:64",
+      "result": "box=47:65:60:71,rows=fffc/c30c/c30c/c30c/c30c/e39c/3cf0,extent=9",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"AB\",mode=1,esc=0,pen=64:64",
+      "result": "box=64:67:84:76,rows=040ff0/0a0810/0a0808/110810/110ff0/208810/3f8808/404808/404810/802fe0,extent=22",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"AB\",mode=1,esc=300,pen=64:64",
+      "result": "box=72:58:92:74,rows=000600/001f80/00e080/01c080/0043e0/006e30/c03818/b01010/9c1860/c60dc0/c78600/dcc000/f07000/400000/400000/400000/600000,extent=24",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"AB\",mode=1,esc=450,pen=64:64",
+      "result": "box=71:55:90:72,rows=001e0/00370/00e30/0183e/03873/00cc1/00781/40383/f80ce/4f078/61e30/233c0/36000/18000/18000/08000/0c000/04000,extent=22",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"AB\",mode=1,esc=900,pen=64:64",
+      "result": "box=68:47:80:63,rows=79e0/c638/c618/c618/c618/c618/fff8/0000/0018/00e0/0780/3980/c180/3980/0780/00e0/0018,extent=19",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"AB\",mode=1,esc=1350,pen=64:64",
+      "result": "box=53:44:75:58,rows=070000/0dc000/186000/183000/7c1a00/c67300/83c300/c18600/630600/360f00/1c0d84/00187e/0011e0/003700/003c00,extent=22",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"AB\",mode=1,esc=1800,pen=64:64",
+      "result": "box=40:51:63:60,rows=3fc603/60c603/c0c306/c0c3fe/c0c18c/7fc18c/60c1dc/c0c0d8/e0c0d8/7fc070,extent=26",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"AB\",mode=1,esc=2700,pen=64:64",
+      "result": "box=47:64:60:80,rows=c000/3800/0f80/0c70/0c0c/0c70/0f80/3800/c000/0000/fffc/c30c/c30c/c30c/c30c/e39c/3cf0,extent=19",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"l\",mode=1,esc=0,pen=64:64",
+      "result": "box=65:67:65:76,rows=8/8/8/8/8/8/8/8/8/8,extent=3",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"l\",mode=1,esc=300,pen=64:64",
+      "result": "box=68:65:74:74,rows=40/c0/60/30/10/18/0c/04/06/04,extent=3",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"l\",mode=1,esc=450,pen=64:64",
+      "result": "box=68:64:77:71,rows=400/e00/300/180/0c0/070/018/00c,extent=3",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"l\",mode=1,esc=900,pen=64:64",
+      "result": "box=68:62:80:62,rows=fff8,extent=3",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"l\",mode=1,esc=1350,pen=64:64",
+      "result": "box=66:53:74:61,rows=010/018/030/060/180/300/600/c00/800,extent=3",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"l\",mode=1,esc=1800,pen=64:64",
+      "result": "box=61:51:62:60,rows=c/c/c/c/c/c/c/c/c/c,extent=4",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"l\",mode=1,esc=2700,pen=64:64",
+      "result": "box=47:65:60:65,rows=fffc,extent=3",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"ll\",mode=1,esc=0,pen=64:64",
+      "result": "box=65:67:68:76,rows=9/9/9/9/9/9/9/9/9/9,extent=6",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"ll\",mode=1,esc=300,pen=64:64",
+      "result": "box=68:63:77:74,rows=080/180/4c0/c60/620/330/118/188/0cc/048/060/040,extent=7",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"ll\",mode=1,esc=450,pen=64:64",
+      "result": "box=68:62:80:71,rows=0800/1c00/4600/e300/3180/18e0/0c30/0718/0180/00c0,extent=7",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"ll\",mode=1,esc=900,pen=64:64",
+      "result": "box=68:59:80:62,rows=fff8/0000/0000/fff8,extent=6",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"ll\",mode=1,esc=1350,pen=64:64",
+      "result": "box=63:51:74:61,rows=010/018/032/063/186/30c/630/c60/8c0/180/100,extent=7",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"ll\",mode=1,esc=1800,pen=64:64",
+      "result": "box=57:51:62:60,rows=cc/cc/cc/cc/cc/cc/cc/cc/cc/cc,extent=8",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"ll\",mode=1,esc=2700,pen=64:64",
+      "result": "box=47:65:60:68,rows=fffc/0000/0000/fffc,extent=6",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"W\",mode=1,esc=0,pen=64:64",
+      "result": "box=64:67:80:76,rows=80808/41410/41410/41410/22220/22220/14140/14140/1c0c0/08080,extent=17",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"W\",mode=1,esc=300,pen=64:64",
+      "result": "box=67:60:84:73,rows=00020/00030/00030/01c10/01e10/01b18/e09d8/30868/18c38/0cc1c/03400/01c00/00e00/00800,extent=17",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"W\",mode=1,esc=450,pen=64:64",
+      "result": "box=68:57:85:70,rows=00300/00180/000c0/000c0/07060/06e30/03390/010f8/c1838/70c14/1c400/07600/00f00/00200,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"W\",mode=1,esc=900,pen=64:64",
+      "result": "box=68:51:80:63,rows=c000/3c00/03e0/0018/03e0/3c00/c000/3c00/03e0/0018/01e0/3e00/c000,extent=14",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"W\",mode=1,esc=1350,pen=64:64",
+      "result": "box=56:48:73:61,rows=00700/01f00/07600/1c400/70c18/c187c/011d8/03730/07c20/02040/000c0/00180/00100/00300,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"W\",mode=1,esc=1800,pen=64:64",
+      "result": "box=47:51:63:60,rows=1c1c0/3c1e0/36360/36360/36360/63630/63630/63630/c3618/c1c18,extent=19",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=16,weight=400,text=\"W\",mode=1,esc=2700,pen=64:64",
+      "result": "box=47:64:60:76,rows=000c/01f0/1e00/e000/3e00/01f0/000c/01f0/1e00/e000/3e00/01f0/000c,extent=14",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"A\",mode=1,esc=0,pen=64:64",
+      "result": "box=65:68:81:82,rows=01c00/01c00/03600/03600/06300/06300/0c180/0c180/1ffc0/1ffc0/30060/30060/60030/60030/c0018,extent=19",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"A\",mode=1,esc=300,pen=64:64",
+      "result": "box=74:63:92:79,rows=60000/f8000/dc000/cf000/e3c00/e1f00/60780/60fe0/73c78/7f03e/3c008/30000/38000/38000/38000/18000/10000,extent=17",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"A\",mode=1,esc=450,pen=64:64",
+      "result": "box=74:61:94:76,rows=780000/ff0000/67e000/70fc00/303f80/381ff0/1870f8/1ce020/0fc000/0f0000/070000/030000/038000/018000/01c000/008000,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"A\",mode=1,esc=900,pen=64:64",
+      "result": "box=69:51:88:63,rows=00007/0003f/003f8/03fc0/3fcc0/fc0c0/c00c0/fc0c0/3fcc0/03fc0/003f8/0003f/00007,extent=14",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"A\",mode=1,esc=1350,pen=64:64",
+      "result": "box=61:41:81:57,rows=008000/01c000/01c000/038000/038000/070000/070000/0fc000/0ce020/1c70f0/183bf8/381f80/30fc00/73e000/7f0000/f80000/200000,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"A\",mode=1,esc=1800,pen=64:64",
+      "result": "box=47:45:63:59,rows=c0018/60030/60030/30060/30060/1ffc0/1ffc0/0c180/0c180/06300/06300/03600/03600/01c00/01c00,extent=19",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"A\",mode=1,esc=2700,pen=64:64",
+      "result": "box=39:64:58:76,rows=e0000/fc000/1fc00/03fc0/033fc/0303f/03003/0303f/033fc/03fc0/1fc00/fc000/e0000,extent=14",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"B\",mode=1,esc=0,pen=64:64",
+      "result": "box=66:68:81:82,rows=fff0/fffc/c00e/c006/c006/c00e/fffc/fffc/c00e/c003/c003/c003/c00e/fffe/fff8,extent=19",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"B\",mode=1,esc=300,pen=64:64",
+      "result": "box=69:62:89:78,rows=007000/03fc00/0f1e00/7c0e00/f00600/700c00/781fe0/387cf0/1de070/0f8038/070038/070070/0380e0/01c7c0/00ff00/00f800/006000,extent=17",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"B\",mode=1,esc=450,pen=64:64",
+      "result": "box=70:59:91:75,rows=00f000/03fc00/071c00/1e0e00/380600/700ff0/f01e78/38381c/1ef01c/0fc01c/078018/01c070/00f0e0/0079c0/003f80/000e00/000400,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"B\",mode=1,esc=900,pen=64:64",
+      "result": "box=69:51:88:61,rows=000f8/1f1fe/7fb86/e0f03/c0603/c0603/c0603/c0603/c0603/fffff/fffff,extent=14",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"B\",mode=1,esc=1350,pen=64:64",
+      "result": "box=59:44:80:60,rows=00fc00/01ff00/038380/0301e0/030070/0d8038/3fc07c/70e0f0/6071c0/e03f80/700f00/381e00/1c3800/0ef000/07e000/018000/010000,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"B\",mode=1,esc=1800,pen=64:64",
+      "result": "box=47:45:61:59,rows=1ffe/7ffe/7006/c006/c006/c006/7006/3ffe/3ffe/7006/6006/6006/7006/3ffe/0ffe,extent=19",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"B\",mode=1,esc=2700,pen=64:64",
+      "result": "box=39:66:58:76,rows=fffff/fffff/c0603/c0603/c0603/c0603/c0603/c0f07/61dfe/7f8f8/1f000,extent=14",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"AB\",mode=1,esc=0,pen=64:64",
+      "result": "box=65:68:100:82,rows=01c00fff0/01c00fffc/03600c00e/03600c006/06300c006/06300c00e/0c180fffc/0c180fffc/1ffc0c00e/1ffc0c003/30060c003/30060c003/60030c00e/60030fffe/c0018fff8,extent=38",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"AB\",mode=1,esc=300,pen=64:64",
+      "result": "box=74:55:105:79,rows=00000e00/00007f80/0001e3c0/000f81c0/001e00c0/000e0180/000f03fc/00070f9e/6003bc0e/f801f007/dc00e007/cf00e00e/e3c0701c/e1f038f8/60781fe0/60fe1f00/73c78c00/7f03e000/3c008000/30000000/38000000/38000000/38000000/18000000/10000000,extent=35",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"AB\",mode=1,esc=450,pen=64:64",
+      "result": "box=74:49:104:76,rows=00007800/0001fe00/00038e00/000f0700/001c0300/003807f8/00780f3c/001c1c0e/000f780e/0007e00e/0003c00c/0000e038/78007870/ff003ce0/67e01fc0/70fc0700/303f8200/381ff000/1870f800/1ce02000/0fc00000/0f000000/07000000/03000000/03800000/01800000/01c00000/00800000,extent=33",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"AB\",mode=1,esc=900,pen=64:64",
+      "result": "box=69:37:88:63,rows=000f8/1f1fe/7fb86/e0f03/c0603/c0603/c0603/c0603/c0603/fffff/fffff/00000/00000/00000/00007/0003f/003f8/03fc0/3fcc0/fc0c0/c00c0/fc0c0/3fcc0/03fc0/003f8/0003f/00007,extent=28",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"AB\",mode=1,esc=1350,pen=64:64",
+      "result": "box=46:34:81:57,rows=00fc00000/01ff00000/038380000/0301e0000/030070000/0d8038000/3fc07c000/70e0f1000/6071c3800/e03f83800/700f07000/381e07000/1c380e000/0ef00e000/07e01f800/018019c04/010038e1e/00003077f/0000703f0/000061f80/0000e7c00/0000fe000/0001f0000/000040000,extent=33",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"AB\",mode=1,esc=1800,pen=64:64",
+      "result": "box=28:45:63:59,rows=1ffe18003/7ffe0c006/70060c006/c0060600c/c0060600c/c00603ff8/700603ff8/3ffe01830/3ffe01830/700600c60/600600c60/6006006c0/7006006c0/3ffe00380/0ffe00380,extent=38",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"AB\",mode=1,esc=2700,pen=64:64",
+      "result": "box=39:64:58:90,rows=e0000/fc000/1fc00/03fc0/033fc/0303f/03003/0303f/033fc/03fc0/1fc00/fc000/e0000/00000/00000/00000/fffff/fffff/c0603/c0603/c0603/c0603/c0603/c0f07/61dfe/7f8f8/1f000,extent=28",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"l\",mode=1,esc=0,pen=64:64",
+      "result": "box=66:68:67:82,rows=c/c/c/c/c/c/c/c/c/c/c/c/c/c/c,extent=6",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"l\",mode=1,esc=300,pen=64:64",
+      "result": "box=68:65:80:78,rows=2000/e000/7000/3800/1c00/0e00/0e00/0700/0380/01c0/00c0/00e0/0070/0038,extent=5",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"l\",mode=1,esc=450,pen=64:64",
+      "result": "box=70:64:84:75,rows=4000/e000/7800/3c00/0e00/0700/03c0/00e0/0070/0038/001e/0004,extent=5",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"l\",mode=1,esc=900,pen=64:64",
+      "result": "box=69:61:88:62,rows=fffff/fffff,extent=4",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"l\",mode=1,esc=1350,pen=64:64",
+      "result": "box=66:49:80:60,rows=000c/001e/0038/00f0/01c0/0380/0700/1e00/3800/7000/e000/4000,extent=5",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"l\",mode=1,esc=1800,pen=64:64",
+      "result": "box=60:45:61:59,rows=c/c/c/c/c/c/c/c/c/c/c/c/c/c/c,extent=6",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"l\",mode=1,esc=2700,pen=64:64",
+      "result": "box=39:65:58:66,rows=fffff/fffff,extent=4",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"ll\",mode=1,esc=0,pen=64:64",
+      "result": "box=66:68:73:82,rows=c3/c3/c3/c3/c3/c3/c3/c3/c3/c3/c3/c3/c3/c3/c3,extent=12",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"ll\",mode=1,esc=300,pen=64:64",
+      "result": "box=68:63:85:78,rows=01000/07000/23800/e1c00/70e00/38700/1c700/0e380/0e1c0/070e0/03860/01c70/00c38/00e1c/00700/00380,extent=11",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"ll\",mode=1,esc=450,pen=64:64",
+      "result": "box=70:61:88:75,rows=04000/0e000/07800/43c00/e0e00/78700/3c3c0/0e0e0/07070/03c38/00e1e/00704/00380/001e0/00040,extent=10",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"ll\",mode=1,esc=900,pen=64:64",
+      "result": "box=69:57:88:62,rows=fffff/fffff/00000/00000/fffff/fffff,extent=9",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"ll\",mode=1,esc=1350,pen=64:64",
+      "result": "box=62:46:80:60,rows=000c0/001e0/00380/00f0c/01c1e/03838/070f0/1e1c0/38380/70700/e1e00/43800/07000/0e000/04000,extent=10",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"ll\",mode=1,esc=1800,pen=64:64",
+      "result": "box=54:45:61:59,rows=c3/c3/c3/c3/c3/c3/c3/c3/c3/c3/c3/c3/c3/c3/c3,extent=12",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"ll\",mode=1,esc=2700,pen=64:64",
+      "result": "box=39:65:58:70,rows=fffff/fffff/00000/00000/fffff/fffff,extent=9",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"W\",mode=1,esc=0,pen=64:64",
+      "result": "box=64:68:90:82,rows=c00e006/600e00c/601b00c/601b00c/3031818/3031818/3060c18/1860c30/18e0e30/18c0630/0cc0660/0d80360/0d80360/07001c0/07001c0,extent=28",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"W\",mode=1,esc=300,pen=64:64",
+      "result": "box=67:57:94:77,rows=0000060/00000e0/0000060/0000070/0008070/003c030/003f038/001b818/0019e18/601c71c/f80c38c/3c0c1ec/0e0e076/070603e/03c600f/00e7004/0073000/003b000/000f800/0007800/0002000,extent=26",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"W\",mode=1,esc=450,pen=64:64",
+      "result": "box=69:52:96:73,rows=0000400/0000e00/0000700/0000300/0000380/00001c0/00400c0/00f8060/00de070/0067838/0071f18/00387cc/00180fe/e00c03e/780e00f/1e06000/07c3000/01f3800/007dc00/000fc00/0003e00/0000c00,extent=24",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"W\",mode=1,esc=900,pen=64:64",
+      "result": "box=69:43:88:63,rows=c0000/fe000/3ff00/01ff8/000ff/00007/000ff/01ff8/1ff00/fe000/c0000/fe000/3ff00/01ff8/000ff/00007/000ff/01ff8/3ff00/fe000/c0000,extent=21",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"W\",mode=1,esc=1350,pen=64:64",
+      "result": "box=51:40:77:61,rows=0000c00/0003e00/001ec00/0079800/01e3000/0787000/3e0e000/f80c01e/601c07e/00381ec/0030f98/0063c38/00ef070/01fc060/00f00c0/00001c0/0000380/0000700/0000600/0000e00/0001c00/0000800,extent=24",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"W\",mode=1,esc=1800,pen=64:64",
+      "result": "box=37:45:63:59,rows=07001c0/07001c0/0d80360/0d80360/0cc0660/18c0630/18e0e30/1860c30/3060c18/3031818/3031818/601b00c/601b00c/600e00c/c00e006,extent=28",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Arial\",h=24,weight=400,text=\"W\",mode=1,esc=2700,pen=64:64",
+      "result": "box=39:64:58:84,rows=00003/0007f/00ffc/1ff80/ff000/e0000/ff000/1ff80/00ffc/0007f/00003/0007f/00ff8/1ff80/ff000/e0000/ff000/1ff80/00ffc/0007f/00003,extent=21",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"A\",mode=1,esc=0,pen=64:64",
+      "result": "box=64:67:76:76,rows=0300/0300/0580/0580/08c0/08c0/1fc0/2060/2060/f0f8,extent=13",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"A\",mode=1,esc=300,pen=64:64",
+      "result": "box=72:63:84:74,rows=8000/e000/7000/5c00/4700/45c0/58f8/6060/4080/2000/3800/4000,extent=13",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"A\",mode=1,esc=450,pen=64:64",
+      "result": "box=72:62:86:72,rows=e000/7c00/4780/21fe/2618/1820/1000/1000/0a00/0c00/0800,extent=12",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"A\",mode=1,esc=900,pen=64:64",
+      "result": "box=69:54:80:63,rows=001/003/01f/3f1/c10/390/071/00f/003/001,extent=10",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"A\",mode=1,esc=1350,pen=64:64",
+      "result": "box=61:47:75:58,rows=0800/0600/0700/0680/0c00/1c00/1a08/311c/30e2/6700/7800/8000,extent=12",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"A\",mode=1,esc=1800,pen=64:64",
+      "result": "box=51:51:63:61,rows=f878/3020/3020/1fc0/1840/1880/0c80/0d00/0d00/0600/0400,extent=14",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"A\",mode=1,esc=2700,pen=64:64",
+      "result": "box=47:64:59:73,rows=8000/c000/f000/8e00/09c0/0838/8fc0/f800/c000/8000,extent=10",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"B\",mode=1,esc=0,pen=64:64",
+      "result": "box=64:67:74:76,rows=ff0/31c/30c/30c/3f8/30c/306/306/30c/ff8,extent=12",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"B\",mode=1,esc=300,pen=64:64",
+      "result": "box=67:63:81:74,rows=03c0/1c60/6020/b060/18fc/0f0e/0e06/0604/0308/01b0/01c0/0200,extent=12",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"B\",mode=1,esc=450,pen=64:64",
+      "result": "box=67:61:83:72,rows=03e00/0c700/10300/703f0/98430/0f818/07010/01820/00e40/00780/00200/00400,extent=11",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"B\",mode=1,esc=900,pen=64:64",
+      "result": "box=69:55:80:62,rows=008/7b4/c43/841/841/841/fff/801,extent=9",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"B\",mode=1,esc=1350,pen=64:64",
+      "result": "box=60:50:75:61,rows=07c0/0e30/0c08/340c/7c1e/c331/c0e0/41c0/2300/1e00/0c00/0600,extent=11",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"B\",mode=1,esc=1800,pen=64:64",
+      "result": "box=53:51:63:61,rows=3fe/618/c18/c18/618/3f8/618/618/618/318/1fe,extent=13",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"B\",mode=1,esc=2700,pen=64:64",
+      "result": "box=47:65:59:72,rows=8008/fff8/8208/8208/8208/8718/6df0/1000,extent=9",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"AB\",mode=1,esc=0,pen=64:64",
+      "result": "box=64:67:87:76,rows=0307f8/03018e/058186/058186/08c1fc/08c186/1fc183/206183/206186/f0fffc,extent=25",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"AB\",mode=1,esc=300,pen=64:64",
+      "result": "box=72:58:93:74,rows=000780/0038c0/00c040/0160c0/0031f8/801e1c/e01c0c/700c08/5c0610/470360/45c380/58fc00/606000/408000/200000/380000/400000,extent=25",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"AB\",mode=1,esc=450,pen=64:64",
+      "result": "box=72:54:93:72,rows=001f00/006380/008180/0381f8/04c218/007c0c/003808/000c10/e00720/7c03c0/478100/21fe00/261800/182000/100000/100000/0a0000/0c0000/080000,extent=23",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"AB\",mode=1,esc=900,pen=64:64",
+      "result": "box=69:45:80:63,rows=008/7b4/c43/841/841/841/fff/801/000/001/003/01f/3f1/c10/390/071/00f/003/001,extent=20",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"AB\",mode=1,esc=1350,pen=64:64",
+      "result": "box=50:43:75:58,rows=07c0000/0e30000/0c08000/340c000/7c1f000/c331c00/c0e0e00/41c0d00/2301800/1e03800/0c03410/0606238/00061c4/000ce00/000f000/0010000,extent=23",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"AB\",mode=1,esc=1800,pen=64:64",
+      "result": "box=39:51:63:61,rows=3fef878/6183020/c183020/c181fc0/6181840/3f81880/6180c80/6180d00/6180d00/3180600/1fe0400,extent=27",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"AB\",mode=1,esc=2700,pen=64:64",
+      "result": "box=47:64:59:82,rows=8000/c000/f000/8e00/09c0/0838/8fc0/f800/c000/8000/0000/8008/fff8/8208/8208/8208/8718/6df0/1000,extent=20",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"l\",mode=1,esc=0,pen=64:64",
+      "result": "box=64:67:67:76,rows=6/e/6/6/6/6/6/6/6/f,extent=4",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"l\",mode=1,esc=300,pen=64:64",
+      "result": "box=67:64:76:74,rows=400/600/b00/180/180/0c0/060/030/030/01c/020,extent=5",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"l\",mode=1,esc=450,pen=64:64",
+      "result": "box=67:63:79:72,rows=4000/7000/b800/0c00/0600/0380/00c0/0078/0020/0040,extent=5",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"l\",mode=1,esc=900,pen=64:64",
+      "result": "box=68:61:80:63,rows=0008/fff8/4008,extent=4",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"l\",mode=1,esc=1350,pen=64:64",
+      "result": "box=64:52:74:61,rows=008/004/01e/030/060/0c0/380/600/c00/200,extent=5",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"l\",mode=1,esc=1800,pen=64:64",
+      "result": "box=60:51:63:61,rows=f/6/6/6/6/6/6/6/6/7/6,extent=6",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"l\",mode=1,esc=2700,pen=64:64",
+      "result": "box=47:64:60:66,rows=8008/fffc/8000,extent=4",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"ll\",mode=1,esc=0,pen=64:64",
+      "result": "box=64:67:71:76,rows=66/ee/66/66/66/66/66/66/66/ff,extent=8",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"ll\",mode=1,esc=300,pen=64:64",
+      "result": "box=67:62:81:74,rows=0200/0300/4580/60c0/b0c0/1860/1830/0c18/0618/030e/0310/01c0/0200,extent=11",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"ll\",mode=1,esc=450,pen=64:64",
+      "result": "box=67:60:83:72,rows=04000/07000/0b800/40c00/70600/b8380/0c0c0/06078/03820/00c40/00780/00200/00400,extent=10",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"ll\",mode=1,esc=900,pen=64:64",
+      "result": "box=68:57:80:63,rows=0008/fff8/4008/0000/0008/fff8/4008,extent=9",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"ll\",mode=1,esc=1350,pen=64:64",
+      "result": "box=60:49:74:61,rows=0080/0040/01e0/0308/0604/0c1e/3830/6060/c0c0/2380/0600/0c00/0200,extent=10",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"ll\",mode=1,esc=1800,pen=64:64",
+      "result": "box=54:51:63:61,rows=f3c/618/618/618/618/618/618/618/618/71c/618,extent=12",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"ll\",mode=1,esc=2700,pen=64:64",
+      "result": "box=47:64:60:70,rows=8008/fffc/8000/0000/8008/fffc/8000,extent=9",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"W\",mode=1,esc=0,pen=64:64",
+      "result": "box=64:67:81:76,rows=fbe3c/30c18/30410/18610/18a20/0ca20/0d340/05140/06180/02080,extent=18",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"W\",mode=1,esc=300,pen=64:64",
+      "result": "box=67:59:83:72,rows=00020/000e0/00020/00c20/03820/14e10/60710/b05d0/1c468/07238/03a08/00e00/00600/00100,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"W\",mode=1,esc=450,pen=64:64",
+      "result": "box=67:55:85:69,rows=00040/00080/00140/00040/00820/01010/07c10/00f88/303e8/7023c/be106/07900/00f80/003c0/00040,extent=15",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"W\",mode=1,esc=900,pen=64:64",
+      "result": "box=69:50:80:63,rows=800/c00/bc0/878/007/078/f80/9c0/83c/007/878/f80/800/800,extent=13",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"W\",mode=1,esc=1350,pen=64:64",
+      "result": "box=54:48:71:61,rows=00180/00f00/03300/1c604/e0638/40cd8/21f30/01860/07060/010c0/010c0/00580/00300/00180,extent=15",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"W\",mode=1,esc=1800,pen=64:64",
+      "result": "box=46:51:63:61,rows=04100/06180/0e380/0b2c0/134c0/11460/11c60/20860/20c30/60e38/f1f7c,extent=18",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=16,weight=400,text=\"W\",mode=1,esc=2700,pen=64:64",
+      "result": "box=47:64:59:77,rows=0008/0008/00f8/0f08/f000/1808/0798/00f8/1f00/e000/1e08/01e8/0018/0008,extent=13",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"A\",mode=1,esc=0,pen=64:64",
+      "result": "box=64:68:83:81,rows=00600/00a00/00b00/01180/01180/020c0/020c0/04060/07fe0/08030/08018/10018/3001c/fc03f,extent=19",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"A\",mode=1,esc=300,pen=64:64",
+      "result": "box=76:64:93:79,rows=c0000/e0000/f8000/de000/4f800/43e00/40f00/433c0/4c0fc/70060/20080/20000/20000/34000/38000/40000,extent=17",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"A\",mode=1,esc=450,pen=64:64",
+      "result": "box=76:61:95:76,rows=80000/70000/7e000/2fc00/21fc0/103f9/1047e/19818/0a010/0c000/04000/06000/02400/03800/01000/02000,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"A\",mode=1,esc=900,pen=64:64",
+      "result": "box=71:50:88:63,rows=00004/0000c/0007c/007fc/03f84/3f900/fc100/30100/0e100/01d00/00384/0007c/0000c/00004,extent=14",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"A\",mode=1,esc=1350,pen=64:64",
+      "result": "box=62:40:81:55,rows=02000/01000/01800/03e00/03a00/07000/07000/0e000/0f008/1cc0c/1821e/381e1/30e00/77000/78000/c0000,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"A\",mode=1,esc=1800,pen=64:64",
+      "result": "box=45:45:63:58,rows=fc07e/38018/18010/18020/0c020/07fe0/06040/03040/03080/01880/00900/00d00/00600/00600,extent=19",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"A\",mode=1,esc=2700,pen=64:64",
+      "result": "box=39:64:57:77,rows=80000/c0000/f8000/87000/02e00/021c0/02038/0207e/027f8/87f80/ff800/f8000/c0000/80000,extent=14",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"B\",mode=1,esc=0,pen=64:64",
+      "result": "box=64:68:80:81,rows=fff80/180e0/18030/18030/18070/180e0/1ff80/181e0/18038/18018/18018/18038/18070/fffc0,extent=19",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"B\",mode=1,esc=300,pen=64:64",
+      "result": "box=68:63:89:79,rows=001c00/00ff00/070700/180380/7c0300/8e0300/0707f8/071878/03e01c/01c01c/00e018/00e030/007060/003980/001e00/001000/006000,extent=17",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"B\",mode=1,esc=450,pen=64:64",
+      "result": "box=70:60:91:76,rows=007c00/01fe00/020e00/0c0700/1006f0/3807f8/de0c3c/0f101c/03e00c/01e008/00f010/007820/001c40/000f80/000600/000400/000800,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"B\",mode=1,esc=900,pen=64:64",
+      "result": "box=71:51:88:63,rows=001e0/1e7f8/7f618/6180c/c0804/80804/80804/80804/80804/ffffc/ffffc/80004/80004,extent=14",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"B\",mode=1,esc=1350,pen=64:64",
+      "result": "box=61:44:81:60,rows=03f000/078c00/070200/060180/0600c0/7f01e0/f30390/c08708/c07e00/c03c00/407000/21e000/13c000/0f0000/060000/020000/010000,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"B\",mode=1,esc=1800,pen=64:64",
+      "result": "box=47:45:63:58,rows=1fff8/700c0/e00c0/c00c0/c00c0/e00c0/3c0c0/0ffc0/380c0/700c0/600c0/600c0/380c0/0fff8,extent=19",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"B\",mode=1,esc=2700,pen=64:64",
+      "result": "box=39:64:57:76,rows=80002/80002/ffffe/ffffe/80402/80402/80402/80402/80606/c070c/61bfc/7f9f0/1e000,extent=14",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"AB\",mode=1,esc=0,pen=64:64",
+      "result": "box=64:68:99:81,rows=00601fff0/00a00301c/00b003006/011803006/01180300e/020c0301c/020c03ff0/04060303c/07fe03007/080303003/080183003/100183007/3001c300e/fc03ffff8,extent=38",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"AB\",mode=1,esc=300,pen=64:64",
+      "result": "box=76:56:105:79,rows=00001c00/0000ff00/00070700/00180380/007c0300/008e0300/000707f8/00071878/c003e01c/e001c01c/f800e018/de00e030/4f807060/43e03980/40f01e00/433c1000/4c0fe000/70060000/20080000/20000000/20000000/34000000/38000000/40000000,extent=35",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"AB\",mode=1,esc=450,pen=64:64",
+      "result": "box=76:50:104:76,rows=0000f800/0003fc00/00041c00/00180e00/00200de0/00700ff0/01bc1878/001e2038/0007c018/0003c010/0001e020/8000f040/70003880/7e001f00/2fc00c00/21fc0800/103f9000/1047e000/19818000/0a010000/0c000000/04000000/06000000/02400000/03800000/01000000/02000000,extent=33",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"AB\",mode=1,esc=900,pen=64:64",
+      "result": "box=71:37:88:63,rows=001e0/1e7f8/7f618/6180c/c0804/80804/80804/80804/80804/ffffc/ffffc/80004/80004/00004/0000c/0007c/007fc/03f84/3f900/fc100/30100/0e100/01d00/00384/0007c/0000c/00004,extent=28",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"AB\",mode=1,esc=1350,pen=64:64",
+      "result": "box=48:34:81:55,rows=03f000000/078c00000/070200000/060180000/0600c0000/7f01e0000/f30398000/c0870c000/c07e06000/c03c0f800/40700e800/21e01c000/13c01c000/0f0038000/06003c020/020073030/010060878/0000e0784/0000c3800/0001dc000/0001e0000/000300000,extent=33",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"AB\",mode=1,esc=1800,pen=64:64",
+      "result": "box=28:45:63:58,rows=1ffffe03f/700c1c00c/e00c0c008/c00c0c010/c00c06010/e00c03ff0/3c0c03020/0ffc01820/380c01840/700c00c40/600c00480/600c00680/380c00300/0fff80300,extent=38",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"AB\",mode=1,esc=2700,pen=64:64",
+      "result": "box=39:64:57:90,rows=80000/c0000/f8000/87000/02e00/021c0/02038/0207e/027f8/87f80/ff800/f8000/c0000/80000/80002/80002/ffffe/ffffe/80402/80402/80402/80402/80606/c070c/61bfc/7f9f0/1e000,extent=28",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"l\",mode=1,esc=0,pen=64:64",
+      "result": "box=65:67:70:81,rows=30/f0/30/30/30/30/30/30/30/30/30/30/30/30/fc,extent=8",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"l\",mode=1,esc=300,pen=64:64",
+      "result": "box=69:65:82:79,rows=2000/7000/f000/3800/1c00/0e00/0600/0300/0380/01c0/00e0/0060/007c/0020/00c0,extent=7",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"l\",mode=1,esc=450,pen=64:64",
+      "result": "box=70:64:86:75,rows=20000/78000/9c000/0e000/07000/01c00/00e00/00700/003c0/000f8/00060/000c0,extent=7",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"l\",mode=1,esc=900,pen=64:64",
+      "result": "box=70:59:88:62,rows=00002/ffffe/ffffe/40002,extent=6",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"l\",mode=1,esc=1350,pen=64:64",
+      "result": "box=65:47:80:59,rows=0008/0004/000e/001d/0070/00e0/01c0/0380/0e00/1c00/3800/f000/3000,extent=7",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"l\",mode=1,esc=1800,pen=64:64",
+      "result": "box=57:45:62:59,rows=fc/30/30/30/30/30/30/30/30/30/30/30/30/3c/30,extent=8",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"l\",mode=1,esc=2700,pen=64:64",
+      "result": "box=39:65:58:68,rows=80002/fffff/fffff/80000,extent=6",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"ll\",mode=1,esc=0,pen=64:64",
+      "result": "box=65:67:78:81,rows=3030/f0f0/3030/3030/3030/3030/3030/3030/3030/3030/3030/3030/3030/3030/fcfc,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"ll\",mode=1,esc=300,pen=64:64",
+      "result": "box=69:62:89:79,rows=004000/00e000/01e000/207000/703800/f01c00/380c00/1c0600/0e0700/060380/0301c0/0380c0/01c0f8/00e040/006180/007c00/002000/00c000,extent=15",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"ll\",mode=1,esc=450,pen=64:64",
+      "result": "box=70:60:92:75,rows=008000/01e000/027000/003800/201c00/780700/9c0380/0e01c0/0700f0/01c03e/00e018/007030/003c00/000f80/000600/000c00,extent=14",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"ll\",mode=1,esc=900,pen=64:64",
+      "result": "box=70:53:88:62,rows=00002/ffffe/ffffe/40002/00000/00000/00002/ffffe/ffffe/40002,extent=12",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"ll\",mode=1,esc=1350,pen=64:64",
+      "result": "box=59:43:80:59,rows=000800/000400/000e00/001d00/007020/00e010/01c038/038074/0e01c0/1c0380/380700/f00e00/303800/007000/00e000/03c000/00c000,extent=14",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"ll\",mode=1,esc=1800,pen=64:64",
+      "result": "box=49:45:62:59,rows=fcfc/3030/3030/3030/3030/3030/3030/3030/3030/3030/3030/3030/3030/3c3c/3030,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"ll\",mode=1,esc=2700,pen=64:64",
+      "result": "box=39:65:58:74,rows=80002/fffff/fffff/80000/00000/00000/80002/fffff/fffff/80000,extent=12",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"W\",mode=1,esc=0,pen=64:64",
+      "result": "box=64:68:89:81,rows=fc7f07c/381c010/180c020/180e020/0806060/0c07040/0c0b040/041b880/0611880/0621900/0320d00/0340d00/0180600/0180600,extent=26",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"W\",mode=1,esc=300,pen=64:64",
+      "result": "box=68:58:92:76,rows=0000040/0000380/0000480/0000040/000c040/0038040/00fc060/040f020/1807820/7c03e20/9e027b0/07823d0/03c30f0/00f1070/003d018/001f000/0007800/0003800/0000800,extent=24",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"W\",mode=1,esc=450,pen=64:64",
+      "result": "box=70:53:94:72,rows=0000400/0000c00/0001c00/0002600/0000200/0020100/0020100/00e0080/01fc0c0/021f040/080fe20/1004fe0/38021f0/ff02078/07e1008/01f9800/003f800/0007c00/0000c00/0000200,extent=22",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"W\",mode=1,esc=900,pen=64:64",
+      "result": "box=71:45:88:63,rows=80000/e0000/fe000/83e00/001f0/0007c/007f0/87f00/ff800/f8000/c7800/80780/00078/003fc/83fe0/ffc00/fc000/c0000/80000,extent=19",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"W\",mode=1,esc=1350,pen=64:64",
+      "result": "box=52:41:75:60,rows=000040/0003c0/000f80/007300/038700/0c0603/f00e0f/201c7e/101b8c/003c1c/007038/03f038/00e070/006060/0020e0/0011c0/0007c0/000380/000080/0000c0,extent=22",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"W\",mode=1,esc=1800,pen=64:64",
+      "result": "box=39:45:63:58,rows=0100c00/0380c00/0381600/02c1600/04c2200/04e2300/0462300/0874180/0834180/1838080/10180c0/10180c0/201c0e0/f87f1f8,extent=26",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Times New Roman\",h=24,weight=400,text=\"W\",mode=1,esc=2700,pen=64:64",
+      "result": "box=39:64:57:82,rows=00002/0000e/000fe/00ffe/1ff02/ff000/70000/0f002/00f06/000fe/003fe/03f82/3f800/fc000/3e000/01f02/000fe/0000e/00002,extent=19",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"A\",mode=1,esc=0,pen=64:64",
+      "result": "box=64:68:73:75,rows=7c0/0c0/120/120/210/3f0/408/e1c,extent=10",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"A\",mode=1,esc=300,pen=64:64",
+      "result": "box=69:65:80:73,rows=380/d40/130/118/167/182/104/140/180,extent=10",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"A\",mode=1,esc=450,pen=64:64",
+      "result": "box=70:63:82:71,rows=3000/ee00/a180/1378/1420/0800/0800/0700/0400,extent=9",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"A\",mode=1,esc=900,pen=64:64",
+      "result": "box=69:56:78:63,rows=004/01c/1f4/f20/f20/9f4/81c/004,extent=8",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"A\",mode=1,esc=1350,pen=64:64",
+      "result": "box=64:50:74:60,rows=100/0c0/100/100/288/444/43a/9c0/e00/400/200,extent=9",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"A\",mode=1,esc=1800,pen=64:64",
+      "result": "box=53:52:63:59,rows=f1e/404/3f8/208/110/110/0a0/0fc,extent=11",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"A\",mode=1,esc=2700,pen=64:64",
+      "result": "box=49:64:59:71,rows=800/e02/bf2/11e/11e/be0/e00/800,extent=8",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"B\",mode=1,esc=0,pen=64:64",
+      "result": "box=65:68:72:75,rows=fe/42/42/7c/43/41/41/fe,extent=10",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"B\",mode=1,esc=300,pen=64:64",
+      "result": "box=68:64:79:73,rows=020/1d8/608/a1c/163/081/082/04c/030/0c0,extent=10",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"B\",mode=1,esc=450,pen=64:64",
+      "result": "box=69:62:80:70,rows=0e0/110/614/c3b/341/081/042/02c/030,extent=9",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"B\",mode=1,esc=900,pen=64:64",
+      "result": "box=69:57:78:62,rows=738/8c4/884/884/ffc/804,extent=8",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"B\",mode=1,esc=1350,pen=64:64",
+      "result": "box=63:52:73:60,rows=1f0/108/104/786/858/820/440/280/180,extent=9",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"B\",mode=1,esc=1800,pen=64:64",
+      "result": "box=55:52:62:59,rows=7f/82/82/c2/3e/42/42/3f,extent=11",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"B\",mode=1,esc=2700,pen=64:64",
+      "result": "box=49:64:59:70,rows=802/802/ffe/842/842/842/7bc,extent=8",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"AB\",mode=1,esc=0,pen=64:64",
+      "result": "box=64:68:82:75,rows=7c1fc/0c084/12084/120f8/21086/3f082/40882/e1dfc,extent=20",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"AB\",mode=1,esc=300,pen=64:64",
+      "result": "box=69:60:89:73,rows=000100/000ec0/003040/0050e0/000b18/380408/d40410/130260/118180/167600/182000/104000/140000/180000,extent=20",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"AB\",mode=1,esc=450,pen=64:64",
+      "result": "box=70:56:88:71,rows=001c0/00220/00c28/01876/00682/00102/00084/30058/ee060/a1800/13780/14200/08000/08000/07000/04000,extent=19",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"AB\",mode=1,esc=900,pen=64:64",
+      "result": "box=69:49:78:63,rows=738/8c4/884/884/ffc/804/000/004/01c/1f4/f20/f20/9f4/81c/004,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"AB\",mode=1,esc=1350,pen=64:64",
+      "result": "box=55:46:74:60,rows=1f000/10800/10400/78600/85880/82060/44080/28080/18144/00222/0021d/004e0/00700/00200/00100,extent=19",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"AB\",mode=1,esc=1800,pen=64:64",
+      "result": "box=44:52:63:59,rows=7f78f/82202/821fc/c2104/3e088/42088/42050/3f07e,extent=22",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"AB\",mode=1,esc=2700,pen=64:64",
+      "result": "box=49:64:59:78,rows=800/e02/bf2/11e/11e/be0/e00/800/802/802/ffe/842/842/842/7bc,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"l\",mode=1,esc=0,pen=64:64",
+      "result": "box=66:68:72:75,rows=70/10/10/10/10/10/10/fe,extent=10",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"l\",mode=1,esc=300,pen=64:64",
+      "result": "box=69:64:79:72,rows=200/500/880/080/040/020/022/01c/0e0,extent=10",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"l\",mode=1,esc=450,pen=64:64",
+      "result": "box=70:63:80:70,rows=600/900/080/040/032/00c/010/020,extent=9",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"l\",mode=1,esc=900,pen=64:64",
+      "result": "box=68:56:78:62,rows=002/002/002/ffe/802/802/002,extent=8",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"l\",mode=1,esc=1350,pen=64:64",
+      "result": "box=64:51:73:60,rows=040/020/030/048/084/100/600/800/800/400,extent=9",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"l\",mode=1,esc=1800,pen=64:64",
+      "result": "box=55:52:61:60,rows=fe/10/10/10/10/10/10/10/1e,extent=11",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"l\",mode=1,esc=2700,pen=64:64",
+      "result": "box=49:65:60:71,rows=800/801/801/fff/800/800/800,extent=8",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"ll\",mode=1,esc=0,pen=64:64",
+      "result": "box=66:68:82:75,rows=701c0/10040/10040/10040/10040/10040/10040/fe3f8,extent=20",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"ll\",mode=1,esc=300,pen=64:64",
+      "result": "box=69:60:89:72,rows=000800/001400/002200/000200/200100/500080/880088/080070/040380/020000/022000/01c000/0e0000,extent=20",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"ll\",mode=1,esc=450,pen=64:64",
+      "result": "box=70:57:88:70,rows=00600/00900/00080/00040/00032/0000c/60010/90020/08000/04000/03200/00c00/01000/02000,extent=19",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"ll\",mode=1,esc=900,pen=64:64",
+      "result": "box=68:48:78:62,rows=002/002/002/ffe/802/802/002/000/002/002/002/ffe/802/802/002,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"ll\",mode=1,esc=1350,pen=64:64",
+      "result": "box=56:45:73:60,rows=04000/02000/03000/04800/08400/10000/60040/80020/80030/40048/00084/00100/00600/00800/00800/00400,extent=19",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"ll\",mode=1,esc=1800,pen=64:64",
+      "result": "box=44:52:61:60,rows=fe1fc/10020/10020/10020/10020/10020/10020/10020/1e03c,extent=22",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"ll\",mode=1,esc=2700,pen=64:64",
+      "result": "box=49:65:60:79,rows=800/801/801/fff/800/800/800/000/800/801/801/fff/800/800/800,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"W\",mode=1,esc=0,pen=64:64",
+      "result": "box=65:68:73:75,rows=e38/410/410/490/590/550/550/220,extent=10",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"W\",mode=1,esc=300,pen=64:64",
+      "result": "box=68:63:79:72,rows=008/038/008/644/c64/252/14e/0c3/0a0/060,extent=10",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"W\",mode=1,esc=450,pen=64:64",
+      "result": "box=69:61:80:70,rows=060/090/008/444/8b2/44d/323/0a0/070/010,extent=9",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"W\",mode=1,esc=900,pen=64:64",
+      "result": "box=69:55:78:63,rows=800/ff8/804/8f8/300/8f8/804/ff8/800,extent=8",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"W\",mode=1,esc=1350,pen=64:64",
+      "result": "box=61:51:73:60,rows=0080/0380/0500/1a10/2278/c5a0/2640/0080/0900/0600,extent=9",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"W\",mode=1,esc=1800,pen=64:64",
+      "result": "box=53:52:63:59,rows=208/514/514/4a4/4a4/444/404/fbe,extent=11",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=16,weight=400,text=\"W\",mode=1,esc=2700,pen=64:64",
+      "result": "box=49:64:59:72,rows=002/7fe/802/7c2/038/7c2/802/7fe/002,extent=8",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"A\",mode=1,esc=0,pen=64:64",
+      "result": "box=64:69:80:81,rows=1fc00/01400/02200/02200/04100/04100/04100/08080/0ff80/10040/10040/20020/f80f8,extent=17",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"A\",mode=1,esc=300,pen=64:64",
+      "result": "box=70:65:88:78,rows=0c000/3a000/c9800/08600/08100/0c1c0/04630/0580e/06018/04020/02000/02c00/03000/04000,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"A\",mode=1,esc=450,pen=64:64",
+      "result": "box=71:62:91:75,rows=080000/1f0000/38e000/441c00/840700/0218f8/023060/0140c0/018000/008000/004800/005000/006000/004000,extent=15",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"A\",mode=1,esc=900,pen=64:64",
+      "result": "box=70:50:85:64,rows=0001/0001/0007/0039/03c0/1c40/e040/8040/e040/9c40/83c1/8039/0007/0001/0001,extent=12",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"A\",mode=1,esc=1350,pen=64:64",
+      "result": "box=63:43:79:58,rows=04000/02000/03800/04800/0c000/08000/160c0/13020/20870/20788/41c00/ce000/b0000/60000/30000/08000,extent=15",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"A\",mode=1,esc=1800,pen=64:64",
+      "result": "box=48:47:63:58,rows=f81f/2004/1008/1008/0ff0/0810/0420/0420/0240/0240/0180/01f8,extent=17",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"A\",mode=1,esc=2700,pen=64:64",
+      "result": "box=42:63:57:77,rows=8000/8000/e000/9c01/83c1/0239/0207/0201/0207/0238/03c0/9c00/e000/8000/8000,extent=12",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"B\",mode=1,esc=0,pen=64:64",
+      "result": "box=66:69:78:81,rows=ffc0/2020/2010/2010/2010/2020/3fc0/2030/2008/2008/2008/2010/ffe0,extent=17",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"B\",mode=1,esc=300,pen=64:64",
+      "result": "box=68:64:85:77,rows=00400/03b80/0c080/300c0/d0080/081f8/0c604/07804/02004/0100c/00818/00ce0/00700/00c00,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"B\",mode=1,esc=450,pen=64:64",
+      "result": "box=70:61:88:74,rows=00e00/03100/0c080/18080/201fc/d0306/0c602/06802/01004/00c08/00630/00360/00080/00300,extent=15",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"B\",mode=1,esc=900,pen=64:64",
+      "result": "box=70:53:85:62,rows=007c/1cc2/6381/8101/8101/8101/8101/ffff/8001/8001,extent=12",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"B\",mode=1,esc=1350,pen=64:64",
+      "result": "box=61:45:78:59,rows=01c00/06300/04080/04060/04030/3e018/43064/c08c0/c0500/40200/20c00/19800/0e000/02000/01000,extent=15",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"B\",mode=1,esc=1800,pen=64:64",
+      "result": "box=50:47:61:58,rows=3ff/404/804/804/804/604/1fc/204/404/404/204/1ff,extent=17",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"B\",mode=1,esc=2700,pen=64:64",
+      "result": "box=42:65:57:74,rows=8001/8001/ffff/8081/8081/8081/8081/81c2/433c/3e00,extent=12",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"AB\",mode=1,esc=0,pen=64:64",
+      "result": "box=64:69:95:81,rows=1fc01ff8/01400404/02200402/02200402/04100402/04100404/041007f8/08080406/0ff80401/10040401/10040401/20020402/f80f9ffc,extent=34",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"AB\",mode=1,esc=300,pen=64:64",
+      "result": "box=70:58:100:78,rows=00000200/00001dc0/00006040/00018060/00068040/000040fc/00006302/0c003c02/3a001002/c9800806/0860040c/08100670/0c1c0380/04630600/0580e000/06018000/04020000/02000000/02c00000/03000000/04000000,extent=32",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"AB\",mode=1,esc=450,pen=64:64",
+      "result": "box=71:53:100:75,rows=00001c00/00006200/00018100/00030100/000403f8/001a060c/00018c04/0000d004/00002008/08001810/1f000c60/38e006c0/441c0100/84070600/0218f800/02306000/0140c000/01800000/00800000/00480000/00500000/00600000/00400000,extent=30",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"AB\",mode=1,esc=900,pen=64:64",
+      "result": "box=70:41:85:64,rows=007c/1cc2/6381/8101/8101/8101/8101/ffff/8001/8001/0001/0007/0039/03c0/1c40/e040/8040/e040/9c40/83c1/8039/0007/0001/0001,extent=25",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"AB\",mode=1,esc=1350,pen=64:64",
+      "result": "box=49:37:79:58,rows=01c00000/06300000/04080000/04060000/04030000/3e018000/43065000/c08c0800/c0500e00/40201200/20c03000/19802000/0e005830/02004c08/0100821c/000081e2/00010700/00033800/0002c000/00018000/0000c000/00002000,extent=30",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"AB\",mode=1,esc=1800,pen=64:64",
+      "result": "box=33:47:63:58,rows=3ff1f03e/40404008/80402010/80402010/80401fe0/60401020/1fc00840/20400840/40400480/40400480/20400300/1ff003f0,extent=34",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"AB\",mode=1,esc=2700,pen=64:64",
+      "result": "box=42:63:57:86,rows=8000/8000/e000/9c01/83c1/0239/0207/0201/0207/0238/03c0/9c00/e000/8000/8001/8001/ffff/8081/8081/8081/8081/81c2/433c/3e00,extent=25",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"l\",mode=1,esc=0,pen=64:64",
+      "result": "box=67:68:77:81,rows=7c0/040/040/040/040/040/040/040/040/040/040/040/040/ffe,extent=17",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"l\",mode=1,esc=300,pen=64:64",
+      "result": "box=70:64:86:77,rows=10000/38000/cc000/06000/02000/01000/01800/00c00/00400/00218/00160/00380/00c00/01000,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"l\",mode=1,esc=450,pen=64:64",
+      "result": "box=71:62:89:73,rows=10000/2c000/c6000/01000/00800/00600/00306/0008c/00070/00060/000c0/00300,extent=15",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"l\",mode=1,esc=900,pen=64:64",
+      "result": "box=69:53:85:61,rows=00008/00008/00008/00008/ffff8/80008/80008/80008/00008,extent=12",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"l\",mode=1,esc=1350,pen=64:64",
+      "result": "box=62:45:77:58,rows=00c0/0060/0010/003c/0066/0081/0300/0600/0800/1000/6000/c000/2000/1000,extent=15",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"l\",mode=1,esc=1800,pen=64:64",
+      "result": "box=51:47:61:59,rows=ffe/040/040/040/040/040/040/040/040/040/040/040/07c,extent=17",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"l\",mode=1,esc=2700,pen=64:64",
+      "result": "box=42:66:58:74,rows=80000/80008/80008/80008/ffff8/80000/80000/80000/80000,extent=12",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"ll\",mode=1,esc=0,pen=64:64",
+      "result": "box=67:68:94:81,rows=7c003e0/0400020/0400020/0400020/0400020/0400020/0400020/0400020/0400020/0400020/0400020/0400020/0400020/ffe07ff,extent=34",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"ll\",mode=1,esc=300,pen=64:64",
+      "result": "box=70:58:101:77,rows=00002000/00007000/00019800/00000c00/00000400/00000200/10000300/38000180/cc000080/06000043/0200002c/01000070/01800180/00c00200/00400000/00218000/00160000/00380000/00c00000/01000000,extent=32",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"ll\",mode=1,esc=450,pen=64:64",
+      "result": "box=71:54:101:73,rows=00010000/0002c000/000c6000/00001000/00000800/00000600/00000306/0000008c/10000070/2c000060/c60000c0/01000300/00800000/00600000/00306000/0008c000/00070000/00060000/000c0000/00300000,extent=30",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"ll\",mode=1,esc=900,pen=64:64",
+      "result": "box=69:41:85:61,rows=00008/00008/00008/00008/ffff8/80008/80008/80008/00008/00000/00000/00000/00008/00008/00008/00008/ffff8/80008/80008/80008/00008,extent=25",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"ll\",mode=1,esc=1350,pen=64:64",
+      "result": "box=50:37:77:58,rows=00c0000/0060000/0010000/003c000/0066000/0081000/0300000/0600000/08000c0/1000060/6000010/c00003c/2000066/1000081/0000300/0000600/0000800/0001000/0006000/000c000/0002000/0001000,extent=30",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"ll\",mode=1,esc=1800,pen=64:64",
+      "result": "box=34:47:61:59,rows=ffe07ff/0400020/0400020/0400020/0400020/0400020/0400020/0400020/0400020/0400020/0400020/0400020/07c003e,extent=34",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"ll\",mode=1,esc=2700,pen=64:64",
+      "result": "box=42:66:58:86,rows=80000/80008/80008/80008/ffff8/80000/80000/80000/80000/00000/00000/00000/80000/80008/80008/80008/ffff8/80000/80000/80000/80000,extent=25",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"W\",mode=1,esc=0,pen=64:64",
+      "result": "box=63:69:81:81,rows=fe0fe/20008/20008/20408/20a08/10a10/11110/11110/12090/12090/14050/14050/08020,extent=17",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"W\",mode=1,esc=300,pen=64:64",
+      "result": "box=68:62:86:77,rows=00080/00380/00c80/000c0/08040/30820/c1c20/20b10/10998/08c68/04434/0240c/01602/00a00/00600/00400,extent=16",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"W\",mode=1,esc=450,pen=64:64",
+      "result": "box=70:59:89:73,rows=00200/00e00/01900/00080/00040/11020/21e10/c0988/b0c64/1841e/06203/01100/00d80/00380/001c0,extent=15",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"W\",mode=1,esc=900,pen=64:64",
+      "result": "box=70:51:85:63,rows=8000/8000/fc00/83fe/8001/80fe/0f00/80fe/8001/83fe/fc00/8000/8000,extent=12",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"W\",mode=1,esc=1350,pen=64:64",
+      "result": "box=58:45:77:59,rows=000c0/003c0/00480/01900/06202/0c20f/b0474/40988/31e10/18820/00040/00080/01900/00e00/00200,extent=15",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"W\",mode=1,esc=1800,pen=64:64",
+      "result": "box=46:47:63:58,rows=08040/140a0/140a0/12120/12120/12220/11220/11420/20c10/20010/20010/fc0fc,extent=17",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    },
+    {
+      "function": "smear ink",
+      "args": "\"Courier New\",h=24,weight=400,text=\"W\",mode=1,esc=2700,pen=64:64",
+      "result": "box=42:64:57:76,rows=0001/0001/003f/7fc1/8001/7f81/0078/7f81/8001/7fc1/003f/0001/0001,extent=12",
+      "section": "turned text at seven angles, for a display whose pixel is not square"
+    }
+  ]
+}

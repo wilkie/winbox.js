@@ -169,6 +169,12 @@ export function CreateFontIndirect(lplf) {
      * `LogicalFont.xWhole`. */
     xWhole: found.xWhole,
 
+    /* The device's resolutions, which the realised font carries as
+     * `dfHorizRes` and `dfVertRes`: GDI stretches a turned glyph's matrix by
+     * their ratio (`GDI.EXE` seg1 `6fa3`). See `Surface.turnMatrix`. */
+    horizontalRes: this.display?.logicalPixelsX || 96,
+    verticalRes: this.display?.logicalPixelsY || 96,
+
     /* And the horizontal size before the width was applied, which the metrics
      * take the average and the maximum at. See `LogicalFont.xBase`.
      */
