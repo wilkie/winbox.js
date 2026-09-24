@@ -18114,12 +18114,53 @@ four angles in both modes: 640 more. What they say:
 Clipping the last glyph's overhang at the pen plus the plain advances is
 refused at 312 of `smearrun`'s 640, and at the ground's right edge at 320;
 counting the byte from the pen is 200, from the glyph's origin 168 and from
-the box's left 152. These
-are measurements and not a mechanism. `VGA.DRV`'s `StrBlt` sets a bold flag
-when the text transform's weight is at least 700 and the font's is below it,
-and adds a column to the last character's cell and a pixel to the extent. But
-weight 600 does not reach that test, so the transparent drop, the opaque byte,
-and the turned glyph's extra pixel are not yet read out of any binary.
+the box's left 152.
+
+These are measurements. Read out of the binaries, most of the mechanism is
+the display driver's:
+
+- **GDI turns the synthesis into weight.** Where the mapper realises a font
+  it had to embolden (flag `0x100`, `GDI.EXE` seg3 at `07e1`, `098e` and, for
+  a request of 550 or more, `13a9`), it writes the `TEXTXFORM` it hands the
+  driver with `txfWeight` the face's weight **plus 300** -- `0x12c` -- and at
+  two of the three sites also sets `txfAccelerator`'s `0x200`
+  (`TC_EA_DOUBLE`) and adds one to `txfOverhang`; the third does those two
+  only when a flag at `[bp-0x12]` lacks `0x200`, which is not identified yet.
+  So a request at 600 reaches the driver as 700 over a face of 400.
+- **`VGA.DRV`'s `StrBlt` smears, in the build that runs.** Windows in
+  enhanced mode uses the 386 build (seg2); the 286 build (seg3) is the
+  easier read and the wrong one, since it only takes 2.0 fonts. Both set a
+  bold flag when `txfWeight` is at least 700 and the font's `dfWeight` is
+  below it (seg2 `0867`), and in the 386 build the flag does four things:
+  - it turns off the fixed-pitch fast path (`09ae`);
+  - with no width array it is **added to the character extra** (`0970`:
+    `cmp word [bp+0xe],0` then `add cx,[bp-0xe]`), so every glyph is laid
+    out a column wider -- the pixel a smeared glyph advances by;
+  - the layout loop adds it again to the **last** character's cell (`cmp
+    cx,1` then `add dx,[bp-0xe]`, `0286` and `0359`); and the extent it
+    reports carries it (`0b97`);
+  - and it sends the glyphs to their own compositor (`13de` to `17c2`),
+    which ORs each piece of a glyph into the string buffer **twice**: once
+    at its bit phase and once at the phase plus one (`ror eax,1` then `ror
+    eax,cl`). The masks it uses (`cs:1190`, indexed by the phase) only split
+    each byte between the buffer column it lands in and the next one. They
+    are not cut to the piece's width, so **every glyph's overhang reaches the
+    buffer**, the last one's included.
+
+  The extra spacing is how a column is added to a glyph: the layout loop
+  first widens the glyph's own piece into the unused bits of its last byte,
+  as far as the extra goes (`0332`: `neg ax`, `and ax,7`), and lays whatever
+  is left as a blank piece. That is section 3's "does not begin a new byte".
+- **The 386 `StrBlt` only takes a version 3.0 `.FNT`** whose `FONTINFO` sits
+  at `0x42`, straight after the file header's version, size and copyright
+  (`cmp si,0x42`, `cmp word [0x0],0x300`, seg2 `099b`); anything else returns
+  `0x80000000`.
+
+So the smear is the driver's own, and all of it is in the buffer. The last
+glyph's overhang is dropped later, when the buffer is copied to the
+destination: transparent always, opaque by the cell and the byte. That copy
+has not been read yet, and it is where the three rules above should come
+from.
 
 That closes `rotstyle`: **190 of 190**. `smearrun` and `smearmod` are 640 of 640
 each, and the glyph and style corpora the single-glyph rule came from are
