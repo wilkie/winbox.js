@@ -2578,29 +2578,6 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  /* Text turned to an oblique angle, where a tip or a corner is a pixel out.
-   *
-   * 8u closed the transform: the outline goes through a matrix of whole-pixel
-   * entries, the glyphs are placed along the exact angle and rounded, and the
-   * font's own `prep`, told the glyph is rotated, switches fitting off and
-   * leaves stubs to be rescued. That took `rotate`'s draws from 78 of 107 to
-   * 88 and its boxes to 91, and `rotangle`'s oblique boxes from 56 to 93 of 96.
-   *
-   * What is left is the scan converter's arithmetic rather than the geometry.
-   * On `rot-square`, where there is no program and no curve to blame, 70 of 91
-   * oblique squares are exact and every other one is out by a pixel at a tip
-   * or a corner, where the edge passes within a sixty-fourth or two of a pixel
-   * centre -- the right-hand tip at 43.0 to 43.5 degrees is lit a row high six
-   * times, because the rounded matrix is the same across that range. Where the
-   * scaler puts its intermediate roundings is refused as the cause: scaling by
-   * the matrix's stretch and turning by the unit rotation is 70 again, and
-   * rounding to pixels before the turn as well as after is 73.
-   *
-   * `test/raster/turned_squares_test.ts` keeps those counts as a ratchet.
-   */
-  'rotate:rotate ink': 'oblique angles: a tip or corner a pixel out, at the scan converter',
-  'rotate:rotate box': 'oblique angles: a tip or corner a pixel out, at the scan converter',
-  'rotangle:angle box': 'oblique angles: a tip or corner a pixel out, at the scan converter',
 
 
   /* The styled files at cells of two hundred and seventy-four to two hundred

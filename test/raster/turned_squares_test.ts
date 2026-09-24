@@ -84,27 +84,19 @@ describe('the turned-square recordings', () => {
   const pens = fixture('rotpen-rot-square.json');
   const present = squares && pens && existsSync(FONTS) ? it : it.skip;
 
-  /* One square at every ten degrees and a tenth of a degree at a time across
-   * half a right angle, at a cell of thirty-two.
+  /* Every one of them is exact, and the ceilings are nought so that one which
+   * stops agreeing says so. They were 70 of 91, 25 of 32 and 236 of 272 until
+   * the transform was read out of `GDI.EXE` rather than fitted; see
+   * `Surface.turnOutline` and FONTS.md 8u.
    *
-   * 70 of the 91 oblique squares are exact. Every one that is not is out by a
-   * pixel at a tip or a corner, where the edge the scan converter walks passes
-   * within a sixty-fourth or two of a pixel centre -- at 43.0 to 43.5 degrees
-   * the right-hand tip is lit a row high, six times over, because the matrix
-   * does not change across that range. That is the scan converter's own
-   * arithmetic and not the transform's, and it is where this stops.
+   * One square at every ten degrees and a tenth of a degree at a time across
+   * half a right angle, at a cell of thirty-two; the same at sixteen; and one,
+   * two and three squares at every five degrees off the axes at four sizes.
    */
-  const SQUARES_EXACT = 70;
-  const SQUARES_WRONG = 38;
-
-  /* The same square at a cell of sixteen, thirteen per em, whose ascent and
-   * size give every carry a different fraction. */
-  const SMALL_EXACT = 25;
-
-  /* One, two and three squares at every five degrees off the axes, at four
-   * sizes. The walk is exact: every record that disagrees does so in its first
-   * square, so one, two and three squares fail at the same angles. */
-  const PEN_EXACT = 236;
+  const SQUARES_EXACT = 91;
+  const SQUARES_WRONG = 0;
+  const SMALL_EXACT = 32;
+  const PEN_EXACT = 272;
 
   present('draws a turned square where Windows does', async function () {
     let exact = 0;

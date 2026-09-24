@@ -939,8 +939,14 @@ export class Surface {
      * 44.6 degrees and moves at 44.7 and 45.4, are the same thing: the matrix
      * is constant between them.
      */
-    const cosine = turn ? Math.round(ppem * Math.cos(radians)) / ppem : 1;
-    const sine = turn ? Math.round(ppem * Math.sin(radians)) / ppem : 0;
+    /* Each entry is the size times a sixteen-dot-sixteen cosine or sine,
+     * rounded with a half going away from nought -- the same convention the
+     * pen's carries use below. A double's sine of thirty degrees is a hair
+     * under a half, and at thirty-three per em that decided `rotpen`'s ten
+     * last squares the wrong way; see `Surface.turnEntries`. */
+    const [entryCos, entrySin] = turn ? Surface.turnEntries(ppem, radians) : [ppem, 0];
+    const cosine = entryCos / ppem;
+    const sine = entrySin / ppem;
 
     /* Screen `y` runs down and the angle runs counter-clockwise, so a right
      * angle sends the text up the cell. **Recorded**: Arial at a cell of
@@ -1084,7 +1090,20 @@ export class Surface {
         ? { contours: outline.outlineOf(glyph), hinted: false, scaled: false }
         : outline.hintedOutline(glyph, ppem, true, stretch, rotated);
 
-      const fitted = raw.scaled ? raw : { ...raw, contours: across(raw.contours) };
+      /* A rotated glyph is carried through the scaler's own transform, from
+       * the design outline, and arrives in pixels already turned. See
+       * `Surface.turnOutline`. */
+      const fitted = rotated
+        ? {
+            ...raw,
+            hinted: true,
+            scaled: true,
+            turnedAlready: true,
+            contours: Surface.turnOutline(outline.outlineOf(glyph), entryCos, entrySin, outline.unitsPerEm),
+          }
+        : raw.scaled
+          ? raw
+          : { ...raw, contours: across(raw.contours) };
       const contours = fitted.contours;
 
       /* A slanted glyph is carried across its side bearing in whole pixels.
@@ -1299,7 +1318,7 @@ export class Surface {
          * origin, and the scan converter is handed the result with nothing
          * left to scale. 8u.
          */
-        const placed = turn
+        const placed = turn && !fitted.turnedAlready
           ? slanted.map((contour) =>
               contour.map((point) => {
                 const [px, py] = turned(point.x * up, point.y * up);
@@ -1471,6 +1490,114 @@ export class Surface {
        * it and `rotangle` 32 of its 40 oblique boxes. Rounded, it is this. */
       pen += font.outlineAdvance(character.charCodeAt(0)) + this.charExtra;
     }
+  }
+
+  /**
+   * The whole-pixel matrix GDI hands the scaler for turned text: the size
+   * times the cosine and the size times the sine, in sixteen-dot-sixteen, each
+   * rounded to a whole pixel with a half going away from nought. 8u.
+   *
+   * **Measured.** Rounded, not normalised: 70 of `rot-square`'s 91 oblique
+   * squares against 15 for the exact rotation, and the ink holding still
+   * across 43.0 to 44.6 degrees is the matrix not changing. The sixteen-dot-
+   * sixteen and the away-from-nought are the last ten of `rotpen`'s: at
+   * thirty-three per em and thirty degrees the sine entry is exactly 16.5.
+   */
+  static turnEntries(ppem, radians) {
+    const fixed = (value) => Math.round(value * 65536) / 65536;
+    const away = (value) => Math.sign(value) * Math.round(Math.abs(value));
+
+    return [away(ppem * fixed(Math.cos(radians))), away(ppem * fixed(Math.sin(radians)))];
+  }
+
+  /**
+   * A rotated outline carried to the device the way the scaler carries it.
+   *
+   * **Read out of `GDI.EXE`**, segment 36 -- the TrueType glue, which is not
+   * among the scaler sources on disk:
+   *
+   * - `3ff9` sets a transformation up. It takes each row of the matrix to a
+   *   *stretch* through `3f16`, and `3f16` is not a length: it is the larger
+   *   of the row's two entries in magnitude. So an outline turned by
+   *   half a right angle at twenty-six per em, whose entries are eighteen and
+   *   eighteen, is scaled at **eighteen** per em, and the rest of the em is the
+   *   matrix's to supply.
+   * - The outline is scaled at that stretch into sixty-fourths by whichever
+   *   method `3f55` picks for the ratio of the stretch times sixty-four to the
+   *   em. At an em of 2048 it always reduces to a power of two, which is the
+   *   multiply-and-shift at `3e5e`: a half goes up. Otherwise `3e80` divides,
+   *   and a half goes away from nought.
+   * - `6ebb` then turns every point. Each matrix entry is divided by its row's
+   *   stretch with `FixDiv` at `0x270` -- magnitudes, half the divisor added,
+   *   the sign put back -- and each point is `FixMul(x, m00) + FixMul(y, m10)`
+   *   across and `FixMul(x, m01) + FixMul(y, m11)` up, with `FixMul` at
+   *   `0x200` adding `0x8000` before it shifts. Two products, each rounded,
+   *   then added.
+   *
+   * **Measured.** `rot-square` and `rotpen`, 363 single squares at every five
+   * and every ten degrees, a tenth of a degree at a time across half a right
+   * angle, and four sizes: **363 of 363** exact. Every simpler model of the
+   * same numbers stopped near 306, and the same arithmetic run with the ppem as
+   * the stretch instead of the larger entry is 309.
+   *
+   * The bearing is not carried here: every installed face and every
+   * instrument keeps a glyph's left side bearing equal to its `xMin`, so the
+   * phantom points would move nothing.
+   */
+  static turnOutline(contours, entryCos, entrySin, unitsPerEm) {
+    const stretch = Math.max(Math.abs(entryCos), Math.abs(entrySin));
+
+    /* The scale into sixty-fourths, reduced the way `3f55` reduces it. */
+    let multiplier = stretch * 64;
+    let divisor = unitsPerEm;
+
+    while (multiplier % 2 === 0 && divisor % 2 === 0) {
+      multiplier /= 2;
+      divisor /= 2;
+    }
+
+    const shifted = (divisor & (divisor - 1)) === 0;
+    const scale = (value) =>
+      shifted || value >= 0
+        ? Math.floor((value * multiplier + Math.floor(divisor / 2)) / divisor)
+        : -Math.floor((-value * multiplier + Math.floor(divisor / 2)) / divisor);
+
+    const fixDiv = (numerator, denominator) =>
+      Math.sign(numerator) *
+      Math.sign(denominator) *
+      Math.floor((Math.abs(numerator) * 65536 + Math.floor(Math.abs(denominator) / 2)) / Math.abs(denominator));
+    const fixMul = (value, factor) => Math.floor((value * factor + 32768) / 65536);
+
+    const m00 = fixDiv(entryCos, stretch);
+    const m01 = fixDiv(entrySin, stretch);
+    const m10 = fixDiv(-entrySin, stretch);
+    const m11 = fixDiv(entryCos, stretch);
+
+    /* And on a diagonal the whole outline is nudged a sixty-fourth across.
+     *
+     * **Read out of `GDI.EXE`.** `3dc1`, called as the transformation is set
+     * up, compares each row's two entries and sets a flag where they are equal
+     * or opposite -- which for a turn is exactly half a right angle and its
+     * odd multiples. Before the glyph goes to the scan converter, `202d` tests
+     * it and `2357` adds one to every point's `x`. The letters at 45, 135, 225
+     * and 315 degrees were every one of `rotate`'s draws still wrong without
+     * it.
+     */
+    const diagonal = Math.abs(entryCos) === Math.abs(entrySin);
+    const nudge = diagonal ? 1 : 0;
+
+    return contours.map((contour) =>
+      contour.map((point) => {
+        const x = scale(point.x);
+        const y = scale(point.y);
+
+        return {
+          ...point,
+          x: (fixMul(x, m00) + fixMul(y, m10) + nudge) / 64,
+          y: (fixMul(x, m01) + fixMul(y, m11)) / 64,
+        };
+      })
+    );
   }
 
   /**

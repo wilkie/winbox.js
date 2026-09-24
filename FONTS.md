@@ -17913,18 +17913,65 @@ scaled and left fractional, which is what an unfitted glyph would naturally
 carry, is refused: 768 wrong pixels in the letters and 32 of `rotangle`'s 40
 oblique boxes, against 234 and 37.
 
-#### Where it stops now: a sixty-fourth from a pixel centre
+#### The transform, read out of the binary rather than fitted
 
-With all four, `rotate` is 88 of its 107 draws and 91 of its boxes, and
-`rotangle`'s oblique boxes are 93 of 96. Every square that still disagrees is
-out by a pixel at a tip or a corner, where the edge passes within a sixty-fourth
-or two of a pixel centre: at 43.0 to 43.5 degrees the right-hand tip is lit a
-row high, six times over, because the rounded matrix does not change across
-that range. That is the scan converter's own arithmetic -- the line walk and its
-rounding -- and not the transform's. Where the scaler puts its intermediate
-roundings is refused as the cause: scaling by the matrix's stretch and turning
-by the unit rotation is 70 of 91 again, and rounding to sixty-fourths before the
-turn as well as after is 73.
+With the rules above, `rotate` was 88 of its 107 draws and every square that
+still disagreed was out by one pixel at a tip or a corner, where an edge passed
+within a sixty-fourth or two of a pixel centre. Twenty candidate roundings of
+the same numbers were tried against 363 single squares and none passed about 307
+-- and they disagreed *with each other* by angle, which is what said the model
+itself was wrong rather than one rounding in it.
+
+The TrueType glue -- the part of the scaler that applies a transformation, and
+that is not among the three sources on disk -- is in `GDI.EXE`, segment 36. It
+was found from the inside out: `GETINFO` is at `seg36:6621`, recognisable by its
+version of three and its two tests of a byte at `globalGS+0xb3` for bits 1 and 2;
+the only writer of that byte is the transformation's setup at `3ff9`; and the
+per-point transform is at `6ebb`. What they do:
+
+- **The stretch is the larger entry, not the length.** `3ff9` takes each row of
+  the matrix to a stretch through `3f16`, and `3f16` returns the larger of the
+  row's two entries in magnitude. The outline is scaled at that stretch and the
+  matrix divided by it supplies the rest. At half a right angle and twenty-six
+  per em the entries are eighteen and eighteen, so the square is scaled at
+  **eighteen** per em in sixty-fourths and the root of two comes from the matrix
+  -- a much coarser first rounding than any model that scaled at the ppem. The
+  same arithmetic with the ppem as the stretch is 309 of 363.
+- **The first rounding is a multiply and a shift.** `3f55` reduces the stretch
+  times sixty-four over the em, and at an em of 2048 the denominator is always a
+  power of two, which selects `3e5e`: `(x * mul + half) >> shift`, a half going
+  up. Another em would select `3e80`, which divides and sends a half away from
+  nought.
+- **Each product is rounded before the two are added.** `6ebb` divides every
+  matrix entry by its row's stretch with `FixDiv` at `0x270` -- magnitudes, half
+  the divisor added, the sign put back, so a half goes away from nought -- and
+  turns each point as `FixMul(x, m00) + FixMul(y, m10)` across and
+  `FixMul(x, m01) + FixMul(y, m11)` up, where `FixMul` at `0x200` adds `0x8000`
+  to the sixty-four bit product before it shifts.
+
+That is **353 of 363**, and the ten left were `rotpen` at cells of forty and
+forty-eight at thirty, a hundred and twenty, a hundred and fifty, two hundred and
+ten and three hundred and thirty degrees: the matrix entries themselves at a
+tie, thirty-three times the sine of thirty degrees being exactly 16.5. Made the
+way the pen's carries are made -- the sine and cosine in sixteen-dot-sixteen, a
+half rounded away from nought -- they are **363 of 363**.
+
+**And a diagonal is nudged a sixty-fourth across.** The letters were then exact
+at every angle but four: 45, 135, 225 and 315 degrees, where a row's two entries
+are equal or opposite. The setup notices exactly that -- `3dc1` compares each
+row's pair and sets a flag at `+0xf3` -- and before the glyph is handed to the
+scan converter, `202d` tests the flag and `2357` walks every point of the element
+adding **one to its `x`**. The square had not needed it; the letters did, and
+with it all 29 oblique draws are exact.
+
+So **`rotate` is 321 of 321 and `rotangle` 192 of 192**, and every one of
+`rot-square`'s and `rotpen`'s records agrees. Nothing turned is left in
+`KNOWN_GAPS`.
+
+What the tests had been showing all along as a sub-pixel edge case was three
+things measured from outside that could not be told apart from outside: which
+number the outline is scaled at, where the roundings fall, and a deliberate
+nudge. None of the three was guessable; all three are a few instructions long.
 
 At a cell of sixteen the turned squares are Symbol's outline, as Windows draws
 them, because the exact-strike arm refuses an angle and the directory arm
