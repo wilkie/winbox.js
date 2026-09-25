@@ -105,6 +105,32 @@ function windowsRoot(entries: ZipEntry[]) {
 }
 
 /**
+ * The display driver a Windows installation runs with: the file `SYSTEM.INI`
+ * names as `display.drv`, from its `SYSTEM` directory. Its OEM bitmaps are
+ * what USER draws window frames with.
+ */
+export function displayDriverOf(windows: Archive) {
+  const root = windowsRoot(windows.entries);
+
+  if (root === null) {
+    return null;
+  }
+
+  const find = (path: string) =>
+    windows.entries.find((entry) => entry.path.toUpperCase() === (root + path).toUpperCase());
+  const ini = find('SYSTEM.INI');
+
+  if (!ini) {
+    return null;
+  }
+
+  const text = new TextDecoder('latin1').decode(ini.data);
+  const name = /^\s*display\.drv\s*=\s*(\S+)/im.exec(text)?.[1];
+
+  return name ? (find(`SYSTEM/${name}`)?.data ?? null) : null;
+}
+
+/**
  * Formats the machine's first disk and fills it: the Windows installation, if
  * given, under `C:\WINDOWS`, and each archive under a directory of its own.
  */

@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { test, expect } from '@playwright/test';
@@ -95,4 +95,55 @@ test('runs a real Windows program and traces its calls', async ({ page }) => {
 
   await expect(page.locator('#counts')).toContainText('KERNEL.lstrlen', { timeout: 15000 });
   await expect(page.locator('#counts')).toContainText('USER.lstrcmp');
+});
+
+const DRIVE_C = join(process.cwd(), 'oracle', 'build', 'drive-c', 'WINDOWS');
+const CHROME = join(process.cwd(), 'oracle', 'build', 'probes', 'CHROME.EXE');
+
+test("draws a real program's windows on the raster screen, from the installation's driver", async ({
+  page,
+}) => {
+  test.skip(!existsSync(CHROME) || !existsSync(DRIVE_C), 'the oracle pipeline has not run here');
+
+  /* An installation of just what the screen needs: SYSTEM.INI, which names
+   * the display driver, the driver, and the fonts. */
+  const system = join(DRIVE_C, 'SYSTEM');
+  const files = [
+    { path: 'WINDOWS/SYSTEM.INI', data: new Uint8Array(readFileSync(join(DRIVE_C, 'SYSTEM.INI'))) },
+    ...readdirSync(system)
+      .filter((name: string) => /\.(FON|DRV)$/i.test(name))
+      .map((name: string) => ({
+        path: `WINDOWS/SYSTEM/${name}`,
+        data: new Uint8Array(readFileSync(join(system, name))),
+      })),
+  ];
+
+  await page.goto('/run.html');
+  await expect(page.locator('#status')).toHaveText('Ready.');
+
+  await page.locator('#picker').setInputFiles({
+    name: 'win31.zip',
+    mimeType: 'application/zip',
+    buffer: archive(files),
+  });
+  await expect(page.locator('#windows')).toContainText('win31.zip');
+
+  await page.locator('#picker').setInputFiles({
+    name: 'probes.zip',
+    mimeType: 'application/zip',
+    buffer: archive([{ path: 'CHROME.EXE', data: new Uint8Array(readFileSync(CHROME)) }]),
+  });
+
+  await expect(page.getByRole('img', { name: 'The Windows screen' })).toBeVisible();
+
+  await page.getByRole('button', { name: 'Run C:\\PROBES\\CHROME.EXE' }).click();
+
+  await expect(page.locator('#counts')).toContainText('USER.CreateWindow', { timeout: 20000 });
+  await expect(page.locator('#counts')).toContainText('USER.ShowWindow');
+  await expect(page.locator('#status')).not.toContainText('stopped');
+
+  /* Past its message pump, which once waited on an empty queue, to reading the
+   * window back from the screen. */
+  await expect(page.locator('#counts')).toContainText('USER.GetWindowRect', { timeout: 20000 });
+  await expect(page.locator('#counts')).toContainText('GDI.GetPixel');
 });

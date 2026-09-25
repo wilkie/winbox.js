@@ -46,6 +46,11 @@ export class Presenter {
 
     bitmap.context.onDirty = () => this.schedule();
     bitmap.context.markRect(0, 0, bitmap.width, bitmap.height);
+
+    /* The first frame is asked for here: pixels written before there was a
+     * presenter left the bitmap dirty, and `onDirty` is only told when a
+     * clean one is first written. */
+    this.schedule();
   }
 
   /** Asks for a frame, once, however many pixels are written before it. */

@@ -17,9 +17,13 @@ import { Executable } from '../executable.js';
 import { Machine } from '../emulator/machine.js';
 import { Space } from '../space.js';
 import { Win16 } from '../win16.js';
-import { DISPLAY_MODES } from '../win16/display-modes.js';
+import { DISPLAY_MODES, displayMode } from '../win16/display-modes.js';
+import { DevicePalette } from '../raster/device-palette.js';
+import { decodeDib, dibToDevice } from '../raster/dib.js';
+import { Presenter } from '../raster/presenter.js';
+import { resourcesOf, RT_BITMAP } from '../win16/ne-resources.js';
 import { readZip } from '../zip.js';
-import { type Archive, buildDrive, type Drive, type Program } from './drive.js';
+import { type Archive, buildDrive, displayDriverOf, type Drive, type Program } from './drive.js';
 import { forgetWindows, recallWindows, rememberWindows } from './store.js';
 import '../../css/main.scss';
 import './run.css';
@@ -32,6 +36,7 @@ const elements = {
   windows: $<HTMLElement>('#windows'),
   forget: $<HTMLButtonElement>('#forget'),
   display: $<HTMLSelectElement>('#display'),
+  raster: $<HTMLInputElement>('#raster'),
   programs: $<HTMLElement>('#programs'),
   files: $<HTMLElement>('#files'),
   desktop: $<HTMLElement>('#desktop'),
@@ -128,14 +133,36 @@ async function rebuild() {
   const space = new Space({ title: 'Windows' });
   space.open(elements.desktop);
 
+  /* With the installation's display driver, windows are USER's own, drawn on
+   * one screen from the driver's bitmaps; without it, the page's components
+   * stand in. */
+  const oem =
+    state.windows && elements.raster.checked
+      ? oemBitmaps(state.windows, elements.display.value)
+      : null;
+
   const win16: any = new Win16(new DOS(machine), machine, space, {
     display: elements.display.value,
     onCall: trace,
     onError: (error: any) => status(`Stopped: ${error?.message ?? error}`, 'error'),
+    ...(oem ? { raster: { oem } } : {}),
   });
 
   if (drive.windows) {
     await win16.boot();
+  }
+
+  if (oem && drive.windows) {
+    const screen = win16.rasterDesktop.screen;
+    const canvas = document.createElement('canvas');
+
+    canvas.width = screen.width;
+    canvas.height = screen.height;
+    canvas.className = 'screen';
+    canvas.setAttribute('role', 'img');
+    canvas.setAttribute('aria-label', 'The Windows screen');
+    elements.desktop.replaceChildren(canvas);
+    new Presenter(screen, canvas);
   }
 
   session = { machine, win16, drive };
@@ -163,6 +190,32 @@ async function run(program: Program) {
     status(`${program.path} is running.`);
   } catch (error: any) {
     status(`${program.path} stopped: ${error?.message ?? error}`, 'error');
+  }
+}
+
+/**
+ * The OEM bitmaps of an installation's display driver, at the chosen
+ * display's depth, or `null` without one.
+ */
+function oemBitmaps(windows: Archive, display: string) {
+  const driver = displayDriverOf(windows);
+
+  if (!driver) {
+    return null;
+  }
+
+  const mode = displayMode(display);
+  const depth = DevicePalette.depthOf(mode);
+  const palette = DevicePalette.forDisplay(mode);
+
+  try {
+    return new Map(
+      resourcesOf(driver)
+        .filter((resource) => resource.type === RT_BITMAP && resource.id !== null)
+        .map((resource) => [resource.id!, dibToDevice(decodeDib(resource.data), depth, palette)])
+    );
+  } catch {
+    return null;
   }
 }
 
@@ -262,6 +315,7 @@ function start() {
 
   elements.display.value = 'vga';
   elements.display.addEventListener('change', () => rebuild());
+  elements.raster.addEventListener('change', () => rebuild());
 
   elements.drop.addEventListener('dragover', (event) => {
     event.preventDefault();

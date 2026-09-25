@@ -84,7 +84,9 @@ import { User } from '../user.js';
 export async function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuRemove) {
   let msg = this.scheduler.task.peek();
 
-  if (fuRemove & User.PM_REMOVE) {
+  /* Only a message that is there is taken: `pull` waits for one, and
+   * `PeekMessage` never waits. */
+  if (msg && fuRemove & User.PM_REMOVE) {
     msg = await this.scheduler.task.pull();
   }
 

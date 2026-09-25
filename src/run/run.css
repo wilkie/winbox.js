@@ -176,6 +176,22 @@ button:not(:disabled):hover {
   overflow: hidden;
 }
 
+.option {
+  display: block;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.desktop:has(.screen) {
+  min-height: 0;
+}
+
+.desktop .screen {
+  display: block;
+  max-width: 100%;
+  image-rendering: pixelated;
+}
+
 .counts li {
   font-family: ui-monospace, monospace;
   font-size: 0.8rem;
