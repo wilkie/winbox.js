@@ -24,4 +24,12 @@ flowchart LR
 
 [[measured]] [[probe:polyfill]] draws 117 quadrilaterals under both fill modes — rectangles turned every five degrees, bands two and three pixels thick, and the corners of every turned ground [[probe:rotstyle]] drew — and this reproduces 234 of 234. [[refused]] Filling the pairs inclusively reproduces none.
 
-Not implemented: the winding rule, and `094f`'s handling of two edges meeting at a vertex, which no convex quadrilateral asks. The derivation is in [[fonts:8u]].
+## The outline
+
+[[measured]] With a pen selected, [[fn:GDI.Polygon]] draws each edge the way [[fn:GDI.LineTo]] draws a line, with the last edge going back to the first point. The same probe draws all 117 quadrilaterals with a black pen, once over a null brush and once over a black brush, and winbox.js reproduces all 234. See [[topic:line-drawing]].
+
+- [[measured]] The outline is not inside the fill. Across the 117 shapes, 3,602 of the 6,970 outline pixels lie where the fill leaves the page white, and every outline has some. [[inferred]] That fits a fill whose runs stop short of their right edge while the pen walks along the edge itself.
+- [[measured]] With both a pen and a brush, the ink is exactly the fill and the outline added together, in all 117 records.
+- [[measured]] For every one of these convex shapes, the two fill modes give the same ink.
+
+Recorded on a VGA only. Not implemented: the winding rule, and `094f`'s handling of two edges meeting at a vertex, which no convex quadrilateral asks. The derivation is in [[fonts:8u]].
