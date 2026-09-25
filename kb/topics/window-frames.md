@@ -51,7 +51,7 @@ Every size below comes from [[fn:USER.GetSystemMetrics]] and every colour from [
 - [[documented]] A mouse message goes to the window under the pointer, or to the window that called `SetCapture`. Over a client area it is `WM_MOUSEMOVE` or a button message, in client coordinates. Elsewhere on a window it is the `WM_NC` form, carrying the part of the window it is over, in screen coordinates. A second press is a double click only for a class with `CS_DBLCLKS`.
 - [[documented]] Pressing on a window that is not active activates it. Keys go to the window with the focus, and `TranslateMessage` posts `WM_CHAR` for a key that typed a character.
 - [[documented]] `WM_PAINT` is never queued. `InvalidateRect` marks a window, and the window is painted when its program next asks for a message and none is waiting.
-- Not yet measured: no probe records the input queue. winbox.js answers `WM_NCHITTEST`, `WM_MOUSEACTIVATE` and `WM_SETCURSOR` as `DefWindowProc` does, without asking the window. Moving and sizing windows, the system menu, the minimize and maximize boxes, and pulling down menus are not done yet.
+- Not yet measured: no probe records the input queue. winbox.js answers `WM_NCHITTEST`, `WM_MOUSEACTIVATE` and `WM_SETCURSOR` as `DefWindowProc` does, without asking the window. Menus are in [[topic:menus]]. Moving and sizing windows, and the minimize and maximize boxes, are not done yet.
 
 ## Implementation
 

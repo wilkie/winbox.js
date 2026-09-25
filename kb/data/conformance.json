@@ -1424,6 +1424,70 @@
   },
   "gaps": {}
  },
+ "menus-ega": {
+  "probe": "menus",
+  "display": "ega",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 1200,
+  "functions": {
+   "screen": {
+    "total": 1200,
+    "agreed": 1200,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "menus-hercules": {
+  "probe": "menus",
+  "display": "hercules",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 1200,
+  "functions": {
+   "screen": {
+    "total": 1200,
+    "agreed": 1200,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "menus-svga": {
+  "probe": "menus",
+  "display": "svga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 1200,
+  "functions": {
+   "screen": {
+    "total": 1200,
+    "agreed": 1200,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "menus-vga": {
+  "probe": "menus",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 1200,
+  "functions": {
+   "screen": {
+    "total": 1200,
+    "agreed": 1200,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "plotbig-ega": {
   "probe": "plotbig",
   "display": "ega",
