@@ -11123,7 +11123,9 @@ about the real one.
 
 Named rather than counted, because a rate cannot say whether a change fixed four
 letters and broke three. `test/oracle/disputed_glyphs_test.ts` lists them and
-holds both counts as ceilings.
+holds both counts as ceilings. (Since folded into the conformance suite, which
+accepts no disagreement at all and names each wrong cell with its count of
+wrong pixels.)
 
 Thirty-three records, fifty-eight pixels. Eleven in Arial, thirteen in Times New
 Roman, nine in Courier New; twenty-four of the thirty-three are wrong by one or

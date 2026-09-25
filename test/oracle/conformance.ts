@@ -76,6 +76,32 @@ export function shardOf(files: string[]): Map<string, number> {
   return shards;
 }
 
+/**
+ * How many pixels two recorded cells differ by, where both are bitmaps written
+ * as hex digits of the same length -- or `null` where they are not, and there
+ * is nothing to count.
+ */
+function wrongPixels(expected: string, actual: string | null) {
+  const hex = /^[0-9a-f]+$/i;
+
+  if (!actual || !hex.test(expected) || !hex.test(actual) || expected.length !== actual.length) {
+    return null;
+  }
+
+  let count = 0;
+
+  for (let at = 0; at < expected.length; at++) {
+    let bits = parseInt(expected[at], 16) ^ parseInt(actual[at], 16);
+
+    while (bits) {
+      count += bits & 1;
+      bits >>= 1;
+    }
+  }
+
+  return count;
+}
+
 /** One fixture's line in the report the knowledge base reads. */
 function reportOf(fixture: any, replayed: { function: string; outcome: Outcome }[]) {
   const functions: Record<string, Record<Outcome | 'total', number>> = {};
@@ -239,6 +265,22 @@ export function conformanceShard(shard: number) {
             }
 
             const wrong = records.filter((record) => record.outcome !== 'agreed');
+
+            /* A cell is named with how many of its pixels are wrong, because a
+             * count of wrong records cannot say whether a change fixed four
+             * letters and broke three -- what `disputed_glyphs_test.ts` did,
+             * in a second replay of its own, before this suite held every
+             * record to agreement. */
+            const pixels = wrong
+              .map((record) => [record.args, wrongPixels(record.expected, record.actual)] as const)
+              .filter(([, count]) => count !== null);
+
+            if (pixels.length) {
+              console.log(
+                `${fixture.probe} ${name}: ${pixels.length} cells wrong\n` +
+                  pixels.map(([args, count]) => `  ${args.padEnd(48)} ${count} px`).join('\n')
+              );
+            }
 
             expect(wrong.map((record) => `${name}(${record.args}) = ${record.actual}`)).toEqual(
               wrong.map((record) => `${name}(${record.args}) = ${record.expected}`)
