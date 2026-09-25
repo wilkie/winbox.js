@@ -1,3 +1,9 @@
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+import { prepareShares } from './oracle/conformance-shares';
+
 /**
  * Chooses the seed for the run and reports it, so any run can be replayed.
  *
@@ -5,6 +11,10 @@
  * run even though each worker re-seeds per test.
  */
 export default function globalSetup(): void {
+  /* Where the conformance suite's shards write their shares of the report,
+   * fresh for every run. See `test/oracle/conformance.ts`. */
+  prepareShares(mkdtempSync(join(tmpdir(), 'winbox-conformance-')));
+
   if (!process.env.WINBOX_TEST_SEED) {
     process.env.WINBOX_TEST_SEED = String((Math.random() * 0xffffffff) >>> 0);
   }

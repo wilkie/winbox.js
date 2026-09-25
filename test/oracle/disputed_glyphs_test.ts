@@ -3,7 +3,7 @@
  *
  * The outline glyphs that still disagree, named rather than counted.
  *
- * `api_conformance_test.ts` reports the rate; this reports the list, because a
+ * `conformance.ts` reports the rate; this reports the list, because a
  * rate cannot say whether a change fixed four letters and broke three. Every
  * row is a recorded call whose bitmap we do not reproduce, with how many pixels
  * of the thirty-two by thirty-two cell are wrong.

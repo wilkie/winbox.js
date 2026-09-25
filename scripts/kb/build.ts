@@ -846,7 +846,7 @@ node scripts/oracle/build-drive.mjs</code></pre></li>
 ${records}
 </ul></li>
 <li>Replay the recordings against winbox.js:
-<pre><code>npx jest test/oracle/api_conformance_test.ts -t "${escape(probe.name)} against"</code></pre></li>
+<pre><code>npx jest test/oracle/conformance -t "${escape(probe.name)} against"</code></pre></li>
 </ol>
 ${fabricated}
 <h2>Source</h2>

@@ -33,7 +33,7 @@ Some questions have no answer a program can read, such as how the TrueType inter
 `test/oracle/replay.ts` turns each record back into a call on winbox.js. An adapter in `ADAPTERS`, keyed by the record's function name, takes the parsed arguments, calls the implementation, and returns the result formatted exactly as the probe formatted it. A record with no adapter is counted as not replayed, not as agreeing. The site shows those counts, so a probe without adapters is visible for what it is.
 
 ```shell
-npx jest test/oracle/api_conformance_test.ts -t "<name> against"
+npx jest test/oracle/conformance -t "<name> against"
 ```
 
 A disagreement that cannot be fixed yet goes into `KNOWN_GAPS` in the same file. Its key is `probe:function`, or `probe-display:function` for one display. Its value says what is wrong and by how many records. The test then expects that function to fail, and it fails the suite once the function starts agreeing, so the entry must come out when the fix lands. A function with an open gap cannot be marked exact.

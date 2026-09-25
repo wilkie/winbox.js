@@ -60,7 +60,7 @@ Where the file lands depends on the probe:
 ## Replay it against winbox.js
 
 ```shell
-npx jest test/oracle/api_conformance_test.ts -t "smeargnd against"
+npx jest test/oracle/conformance -t "smeargnd against"
 ```
 
 This calls winbox.js's implementation with every recorded argument and compares the answer with what Windows returned. The full suite, `npx jest`, replays every fixture. When every fixture has been replayed it rewrites `kb/data/conformance.json`, the report this site's counts and status badges are built from. A page may claim a function is exact only when every record of every probe it cites agrees.

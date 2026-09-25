@@ -111,7 +111,7 @@ an installation of that version.
 
 ## Evidence
 
-The conformance suite (`test/oracle/api_conformance_test.ts`) writes
+The conformance suite (`test/oracle/conformance.ts`) writes
 `kb/data/conformance.json` on every full run: for every tracked fixture and
 every measurement in it, how many records agreed with Windows, disagreed, or
 could not be replayed. It holds nothing that varies between runs, so it only

@@ -201,7 +201,7 @@ true for the string `'0'` as well. `%04X` printed `4X` as literal text and
 consumed no argument, so everything after it read from the wrong place: the
 memory probe reported allocations of 65538 bytes where it meant 1.
 
-`test/oracle/api_conformance_test.ts` does the direct form, reporting agreement
+`test/oracle/conformance.ts` does the direct form, reporting agreement
 per function in the shape the CPU oracle reports per opcode. Four outcomes, one
 of them good: **agreed**, **disagreed**,
 **unimplemented** for a stub or a function no module exports, and
