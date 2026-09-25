@@ -7,6 +7,7 @@ import { Ditherer } from './ditherer.js';
 import { BitmapFont } from './bitmap-font.js';
 import { BitmapContext } from './bitmap-context.js';
 import { DeviceBitmap } from './device-bitmap.js';
+import { IndexedContext } from './indexed-context.js';
 import { LogicalFont } from './logical-font.js';
 import { fill } from './glyph-raster.js';
 
@@ -1268,6 +1269,28 @@ export class Surface {
       top: Math.min(box.top, box.bottom),
       bottom: Math.max(box.top, box.bottom),
     };
+
+    /* Pixels winbox.js owns as indices are kept as indices: a copy of the
+     * bytes, not a round trip through colours, which a whole window would pay
+     * on every clipped draw. */
+    if (this.context instanceof IndexedContext) {
+      const indices = this.context.indices;
+      const kept = indices.slice();
+      const width = this.width;
+
+      draw();
+
+      for (let row = 0; row < this.height; row++) {
+        for (let column = 0; column < width; column++) {
+          if (column < rect.left || column >= rect.right || row < rect.top || row >= rect.bottom) {
+            indices[row * width + column] = kept[row * width + column];
+          }
+        }
+      }
+
+      this.context.markRect(0, 0, width, this.height);
+      return;
+    }
 
     const before = this.context.getImageData(0, 0, this.width, this.height);
 

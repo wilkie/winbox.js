@@ -83,3 +83,54 @@ test('loads without console errors', async ({ page }) => {
 
   expect(errors).toEqual([]);
 });
+
+/* A window's pixels are palette indices, shown on its canvas by a presenter
+ * once a frame. This draws a known pattern into a bitmap the size of a VGA
+ * screen, presents it on a canvas, and reads the canvas back: the colours have
+ * to come out of the palette in the byte order the canvas uses. It also says
+ * how long a whole frame takes to present. */
+test('presents a window bitmap on its canvas', async ({ page }) => {
+  const result = await page.evaluate(async () => {
+    const host: any = globalThis;
+    const canvas = document.createElement('canvas');
+    canvas.width = 640;
+    canvas.height = 480;
+    document.body.appendChild(canvas);
+    const width = canvas.width;
+    const height = canvas.height;
+    const bitmap = new host.DeviceBitmap(width, height, 4);
+
+    /* Red, green, blue and white stripes, eight columns each, in indices. */
+    const stripes = [9, 10, 12, 15];
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        bitmap.indices[y * width + x] = stripes[Math.floor(x / 8) % 4];
+      }
+    }
+
+    const presenter = new host.Presenter(bitmap, canvas);
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+    const ctx = canvas.getContext('2d')!;
+    const at = (x: number) => Array.from(ctx.getImageData(x, 1, 1, 1).data);
+
+    /* And how long one whole frame takes to present. */
+    bitmap.context.markRect(0, 0, width, height);
+    const start = performance.now();
+    for (let i = 0; i < 20; i++) {
+      bitmap.context.markRect(0, 0, width, height);
+      presenter.present();
+    }
+    const perFrame = (performance.now() - start) / 20;
+
+    return { colours: [at(0), at(8), at(16), at(24)], perFrame, width, height };
+  });
+
+  expect(result.colours).toEqual([
+    [255, 0, 0, 255],
+    [0, 255, 0, 255],
+    [0, 0, 255, 255],
+    [255, 255, 255, 255],
+  ]);
+  console.log(`present: ${result.width}x${result.height} in ${result.perFrame.toFixed(2)} ms`);
+});

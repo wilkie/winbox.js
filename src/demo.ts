@@ -9,6 +9,8 @@
 import { Space } from './space.js';
 import { SizableWindow } from './windows/sizable-window.js';
 import { Button } from './controls/button.js';
+import { DeviceBitmap } from './raster/device-bitmap.js';
+import { Presenter } from './raster/presenter.js';
 import '../css/main.scss';
 
 const element = document.getElementById('space');
@@ -33,4 +35,6 @@ Object.assign(globalThis as Record<string, unknown>, {
   space,
   demoWindow: window_,
   demoButton: button,
+  DeviceBitmap,
+  Presenter,
 });

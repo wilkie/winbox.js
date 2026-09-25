@@ -83,6 +83,7 @@ export function writeByte(bitmap: any, at: number, value: number) {
     const perByte = 8 / depth;
 
     paddingOf(bitmap)[at] = value & paddingMask(depth, bitmap.width, column);
+    bitmap.context.markRect(column * perByte, row, (column + 1) * perByte, row + 1);
 
     for (let slot = 0; slot < perByte; slot++) {
       const x = column * perByte + slot;

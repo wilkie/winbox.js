@@ -18,6 +18,18 @@ export class IndexedContext extends BitmapContext {
   readonly indices: Uint8Array;
   readonly palette: DevicePalette;
 
+  /**
+   * The rectangle written since it was last taken, as left, top, right and
+   * bottom, the last two outside it -- what a window's presenter copies to its
+   * canvas. `onDirty` is told when the first pixel after a clean frame is
+   * written, so a frame can be asked for then and not before.
+   */
+  #left = Infinity;
+  #top = Infinity;
+  #right = -Infinity;
+  #bottom = -Infinity;
+  onDirty: (() => void) | null = null;
+
   /** The last colour turned into an index, and the index it turned into. */
   #lastColour = -1;
   #lastIndex = 0;
@@ -46,6 +58,34 @@ export class IndexedContext extends BitmapContext {
     }
 
     this.indices[y * this.width + x] = this.indexOf(colour);
+    this.markRect(x, y, x + 1, y + 1);
+  }
+
+  /** Records that a rectangle was written, the right and bottom edges outside it. */
+  markRect(left: number, top: number, right: number, bottom: number) {
+    const clean = this.#right <= this.#left;
+
+    if (left < this.#left) this.#left = left;
+    if (top < this.#top) this.#top = top;
+    if (right > this.#right) this.#right = right;
+    if (bottom > this.#bottom) this.#bottom = bottom;
+
+    if (clean && this.onDirty) {
+      this.onDirty();
+    }
+  }
+
+  /** The rectangle written since the last call, clipped to the pixels, or `null`. */
+  takeDirty() {
+    const left = Math.max(0, this.#left);
+    const top = Math.max(0, this.#top);
+    const right = Math.min(this.width, this.#right);
+    const bottom = Math.min(this.height, this.#bottom);
+
+    this.#left = this.#top = Infinity;
+    this.#right = this.#bottom = -Infinity;
+
+    return right > left && bottom > top ? { left, top, right, bottom } : null;
   }
 
   /** The pixels as RGBA bytes, made from the indices. */

@@ -40,6 +40,8 @@ import { Types, Struct, VARIADIC, HWND, WPARAM, LPARAM, UINT } from './win16/typ
 import { LocalInit } from './win16/kernel/LocalInit.js';
 
 import { Surface } from './raster/surface.js';
+import { DeviceBitmap } from './raster/device-bitmap.js';
+import { DevicePalette } from './raster/device-palette.js';
 
 /**
  * This represents the Windows 16-bit Operating System emulation.
@@ -252,7 +254,14 @@ export class Win16 {
    */
   get screen() {
     if (!this._screen) {
-      this._screen = Surface.offscreen(this._display.width, this._display.height);
+      /* Off the page, and indexed at the display's depth like every other
+       * device context's pixels. See `DeviceBitmap`. */
+      this._screen = Surface.memory();
+      this._screen.bitmap = new DeviceBitmap(
+        this._display.width,
+        this._display.height,
+        DevicePalette.depthOf(this._display)
+      );
     }
 
     return this._screen;

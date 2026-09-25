@@ -131,14 +131,15 @@ side dithers, and the two sides currently differ:
 - Windows dithers at **draw** time, into the destination surface. For a
   device-compatible bitmap the pattern is therefore in the bits, and a
   comparison would see it.
-- WinBox.js does not dither in the GDI path at all. `CreateSolidBrush` keeps
-  the exact twenty-four bit colour, `Surface` sets it as a canvas fill style,
-  and the fill comes out flat at full precision. The `Ditherer` that `Surface`
+- WinBox.js does not dither in the GDI path. It quantises at draw time,
+  as Windows does, but to the **nearest** palette colour rather than to a
+  dither pattern: every device context's pixels are palette indices, and a
+  colour becomes an index as it is drawn. The `Ditherer` that `Surface`
   builds in its constructor is used by one call, which is commented out; the
   only live dithering in the project is decoration on the desktop background.
 
 So a fill with a colour outside the sixteen produces a dither pattern on one
-side and a flat unavailable colour on the other, and a bitmap comparison would
+side and a flat nearest colour on the other, and a bitmap comparison would
 report every pixel of it. That is a true difference rather than a false alarm
 -- but it would swamp the geometry differences the comparison is for, and it
 would keep reporting until the deeper question is settled.
@@ -150,24 +151,22 @@ frame, the caption, the menus -- stays DOM, which is where the accessibility
 argument applies anyway; everything a program draws inside its window goes
 through a raster we own.
 
-`src/raster/bitmap-context.ts` is the first piece of that: the operations
-`Surface` reaches for, over a buffer rather than a canvas. `Surface` is
-unchanged and the browser keeps the canvas it always had, so this adds a target
-rather than replacing one. `Surface.offscreen(width, height)` makes one, and
-real Windows glyphs rasterise into it with no browser present.
+That raster is now the only one. Every device context's pixels are a
+`DeviceBitmap` (`src/raster/device-bitmap.ts`): one byte a pixel, an index into
+the palette for its depth, in the order the `bitblt` probe recorded. A memory
+device context draws into the bitmap selected into it, and a program's window
+draws into one the size of its client area, which a `Presenter`
+(`src/raster/presenter.ts`) shows on the window's canvas once a frame -- only
+the rectangle written since the last frame, turned into colours through a
+table, and nothing ever read back from the canvas. `BitBlt` is index arithmetic
+on these bytes. A whole 640 by 480 frame presents in under two milliseconds in
+Chromium and Firefox; a frame normally presents far less.
 
-The deeper question is where WinBox.js should dither, if at all. Drawing at
-full precision and quantising at paint time would look cleaner and would match
-the project's aim of rendering through the DOM; dithering at draw time would
-match what the guest actually saw, and is the only way a program that reads its
-own pixels back gets the answer Windows would have given. The display modes
-make this concrete rather than abstract, since a sixteen colour driver and a
-256 colour one dither differently and now both exist.
-
-None of this is settled here. What is settled is that a bitmap comparison
-measures geometry and glyphs well, measures colour only as far as the two
-pipelines agree about when to quantise, and should not be read as covering the
-second until that is decided.
+What is left open is dithering: a colour outside the palette becomes the
+nearest one, where Windows would dither a brush of it, and the 256-colour
+drivers' palette order is not recorded. A bitmap comparison therefore measures
+geometry, glyphs and the sixteen palette colours exactly, and a colour outside
+them only as far as the nearest colour is the answer.
 
 ## Running it
 

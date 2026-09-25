@@ -83,6 +83,7 @@ function sideOf(
       write: (px, py, index) => {
         bitmap.indices[py * bitmap.width + px] = index;
       },
+      finish: () => bitmap.context.markRect(x, y, x + width, y + height),
     };
   }
 

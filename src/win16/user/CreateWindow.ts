@@ -7,8 +7,7 @@ import { HWND } from '../types.js';
 
 import { User, MSG, MINMAXINFO, CREATESTRUCT, WNDCLASS } from '../user.js';
 
-import { Bitmap } from '../../raster/bitmap.js';
-import { Palette } from '../../raster/palette.js';
+import { attachWindowBitmap } from './window-bitmap.js';
 import { Window } from '../../window.js';
 import { FixedWindow } from '../../windows/fixed-window.js';
 import { SizableWindow } from '../../windows/sizable-window.js';
@@ -105,17 +104,8 @@ export async function CreateWindow(
     dialog.move(x, y);
   }
 
-  // Set default bitmap (8bpp)
-  const bitmapData = new Uint8Array(dialog.surface.width * dialog.surface.height * 4);
-  const bitmapView = new DataView(bitmapData.buffer);
-  dialog.surface.bitmap = new Bitmap(
-    dialog.surface.width,
-    dialog.surface.height,
-    32,
-    Bitmap.RGBA,
-    bitmapView,
-    Palette.PALETTEWIN256
-  );
+  // The pixels the window draws into, shown on its canvas once a frame.
+  attachWindowBitmap(this, dialog);
 
   dialog.hide();
 

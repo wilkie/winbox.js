@@ -139,6 +139,12 @@ what makes the environment reachable by a screen reader and usable with a
 keyboard. Canvas is used where Windows 3.1 semantics require raster operations:
 the desktop's dithered background, bitmap fonts, and GDI surfaces.
 
+A GDI surface's pixels are not the canvas. Every device context -- a program's
+window, a memory device context, the screen -- draws into a `DeviceBitmap` of
+palette indices, one byte a pixel, and a program's window is shown on its
+canvas by a `Presenter` once a frame, only the rectangle written since the last
+one. See the oracle's README, "Comparing what gets drawn".
+
 ## Known gaps
 
 Found while formalizing the boundary; recorded here rather than fixed silently.
