@@ -15,7 +15,7 @@ source: src/win16/gdi/PatBlt.ts
 - [[measured]] `WHITENESS` and `BLACKNESS` fill exactly the rectangle given, its right and bottom edges outside it: black from column 3 to 10 across rows 1 and 2 of a 24-pixel bitmap, from `PatBlt(3, 1, 8, 2, BLACKNESS)`. Three records of [[probe:bitbits]].
 - [[measured]] A fill does not touch a row's padding.
 - [[measured]] Every probe that draws starts by filling its cell with `WHITENESS`, and all of their records agree.
-- [[measured]] `PATCOPY` with a solid brush of a colour the display lacks fills a pattern, not the nearest colour. The pattern is eight pixels square and anchored to the screen, not to the rectangle. [[probe:dither]] records 981 fills on each of four displays, and 1,218 fills of monochrome bitmaps. winbox.js reproduces all of them. See [[topic:brush-dithering]].
+- [[measured]] `PATCOPY` with a solid brush of a colour the display lacks fills a pattern, not the nearest colour. The pattern is eight pixels square and anchored to the device context's origin, not to the rectangle. [[probe:dither]] records 981 fills on each of four displays, and 1,218 fills of monochrome bitmaps. winbox.js reproduces all of them. See [[topic:brush-dithering]].
 
 ## Nuances
 

@@ -14,7 +14,9 @@ A sixteen-colour display has sixteen colours, and a Hercules has two. A program 
 
 ## Where the pattern starts
 
-[[measured]] The pattern is anchored to the screen's pixels, not to the rectangle being filled. A square filled at (53, 37) has the same pixels as the pattern at (32, 32) would have there. Two fills side by side therefore meet without a seam.
+[[measured]] The pattern is anchored to the device context's origin, not to the rectangle being filled. A square filled on the screen at (53, 37) has the same pixels as the pattern at (32, 32) would have there, so two fills side by side meet without a seam.
+
+[[measured]] For a window, the origin is the window's own, not the screen's. [[probe:chrome]]'s scroll bar control fills its trough through the control's device context. On the Hercules, where the colour is the quarter pattern, the pattern starts at the control's corner and is one row out of step with the screen's. [[documented]] This is why a Windows 3.1 program that fills adjacent windows with a patterned brush sets the brush origin itself.
 
 ## One order for every pattern
 
