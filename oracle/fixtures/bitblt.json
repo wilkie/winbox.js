@@ -1,0 +1,434 @@
+{
+  "probe": "bitblt",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "mono",
+      "args": "SRCCOPY,rop=00cc0020,brush=black",
+      "result": "33333333",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "SRCCOPY,rop=00cc0020,brush=white",
+      "result": "33333333",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "SRCPAINT,rop=00ee0086,brush=black",
+      "result": "77777777",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "SRCPAINT,rop=00ee0086,brush=white",
+      "result": "77777777",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "SRCAND,rop=008800c6,brush=black",
+      "result": "11111111",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "SRCAND,rop=008800c6,brush=white",
+      "result": "11111111",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "SRCINVERT,rop=00660046,brush=black",
+      "result": "66666666",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "SRCINVERT,rop=00660046,brush=white",
+      "result": "66666666",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "SRCERASE,rop=00440328,brush=black",
+      "result": "22222222",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "SRCERASE,rop=00440328,brush=white",
+      "result": "22222222",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "NOTSRCCOPY,rop=00330008,brush=black",
+      "result": "cccccccc",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "NOTSRCCOPY,rop=00330008,brush=white",
+      "result": "cccccccc",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "NOTSRCERASE,rop=001100a6,brush=black",
+      "result": "88888888",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "NOTSRCERASE,rop=001100a6,brush=white",
+      "result": "88888888",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "MERGECOPY,rop=00c000ca,brush=black",
+      "result": "00000000",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "MERGECOPY,rop=00c000ca,brush=white",
+      "result": "33333333",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "MERGEPAINT,rop=00bb0226,brush=black",
+      "result": "dddddddd",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "MERGEPAINT,rop=00bb0226,brush=white",
+      "result": "dddddddd",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "PATCOPY,rop=00f00021,brush=black",
+      "result": "00000000",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "PATCOPY,rop=00f00021,brush=white",
+      "result": "ffffffff",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "PATPAINT,rop=00fb0a09,brush=black",
+      "result": "dddddddd",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "PATPAINT,rop=00fb0a09,brush=white",
+      "result": "ffffffff",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "PATINVERT,rop=005a0049,brush=black",
+      "result": "55555555",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "PATINVERT,rop=005a0049,brush=white",
+      "result": "aaaaaaaa",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "DSTINVERT,rop=00550009,brush=black",
+      "result": "aaaaaaaa",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "DSTINVERT,rop=00550009,brush=white",
+      "result": "aaaaaaaa",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "BLACKNESS,rop=00000042,brush=black",
+      "result": "00000000",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "BLACKNESS,rop=00000042,brush=white",
+      "result": "00000000",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "WHITENESS,rop=00ff0062,brush=black",
+      "result": "ffffffff",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "mono",
+      "args": "WHITENESS,rop=00ff0062,brush=white",
+      "result": "ffffffff",
+      "section": "monochrome onto monochrome: source 0011, destination 0101"
+    },
+    {
+      "function": "to colour",
+      "args": "SRCCOPY,rop=00cc0020,ground=ffffff,text=0000ff,back=00ff00",
+      "result": "00ff00/00ff00/00ff00/00ff00/0000ff/0000ff/0000ff/0000ff/0000ff/0000ff/0000ff/0000ff/00ff00/00ff00/00ff00/00ff00/0000ff/0000ff/0000ff/0000ff/00ff00/00ff00/00ff00/00ff00/00ff00/00ff00/00ff00/00ff00/0000ff/0000ff/0000ff/0000ff",
+      "section": "monochrome onto colour: text red, background green"
+    },
+    {
+      "function": "to colour",
+      "args": "SRCAND,rop=008800c6,ground=ff0000,text=0000ff,back=00ff00",
+      "result": "c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0",
+      "section": "monochrome onto colour: text red, background green"
+    },
+    {
+      "function": "to colour",
+      "args": "SRCPAINT,rop=00ee0086,ground=ff0000,text=0000ff,back=00ff00",
+      "result": "ffff00/ffff00/ffff00/ffff00/ff00ff/ff00ff/ff00ff/ff00ff/ff00ff/ff00ff/ff00ff/ff00ff/ffff00/ffff00/ffff00/ffff00/ff00ff/ff00ff/ff00ff/ff00ff/ffff00/ffff00/ffff00/ffff00/ffff00/ffff00/ffff00/ffff00/ff00ff/ff00ff/ff00ff/ff00ff",
+      "section": "monochrome onto colour: text red, background green"
+    },
+    {
+      "function": "to colour",
+      "args": "SRCINVERT,rop=00660046,ground=ff0000,text=0000ff,back=00ff00",
+      "result": "808000/808000/808000/808000/800080/800080/800080/800080/800080/800080/800080/800080/808000/808000/808000/808000/800080/800080/800080/800080/808000/808000/808000/808000/808000/808000/808000/808000/800080/800080/800080/800080",
+      "section": "monochrome onto colour: text red, background green"
+    },
+    {
+      "function": "colour source",
+      "args": "",
+      "result": "0000ff/00ff00/ff0000/ffffff/000000/0000ff/00ff00/ff0000/ffffff/000000/0000ff/00ff00/ff0000/ffffff/000000/0000ff/00ff00/ff0000/ffffff/000000/0000ff/00ff00/ff0000/ffffff/000000/0000ff/00ff00/ff0000/ffffff/000000/0000ff/00ff00",
+      "section": "colour onto monochrome: which pixels match the background colour"
+    },
+    {
+      "function": "to mono",
+      "args": "back=green",
+      "result": "42108421",
+      "section": "colour onto monochrome: which pixels match the background colour"
+    },
+    {
+      "function": "to mono",
+      "args": "back=red",
+      "result": "84210842",
+      "section": "colour onto monochrome: which pixels match the background colour"
+    },
+    {
+      "function": "palette source",
+      "args": "",
+      "result": "000000/000080/008000/008080/800000/800080/808000/c0c0c0/808080/0000ff/00ff00/00ffff/ff0000/ff00ff/ffff00/ffffff/000000/000080/008000/008080/800000/800080/808000/c0c0c0/808080/0000ff/00ff00/00ffff/ff0000/ff00ff/ffff00/ffffff",
+      "section": "colour onto colour, exclusive-or: the palette onto each of its colours"
+    },
+    {
+      "function": "xor",
+      "args": "ground=000000",
+      "result": "000000/000080/008000/008080/800000/800080/808000/c0c0c0/808080/0000ff/00ff00/00ffff/ff0000/ff00ff/ffff00/ffffff/000000/000080/008000/008080/800000/800080/808000/c0c0c0/808080/0000ff/00ff00/00ffff/ff0000/ff00ff/ffff00/ffffff",
+      "section": "colour onto colour, exclusive-or: the palette onto each of its colours"
+    },
+    {
+      "function": "xor",
+      "args": "ground=000080",
+      "result": "000080/000000/008080/008000/800080/800000/808080/0000ff/808000/c0c0c0/00ffff/00ff00/ff00ff/ff0000/ffffff/ffff00/000080/000000/008080/008000/800080/800000/808080/0000ff/808000/c0c0c0/00ffff/00ff00/ff00ff/ff0000/ffffff/ffff00",
+      "section": "colour onto colour, exclusive-or: the palette onto each of its colours"
+    },
+    {
+      "function": "xor",
+      "args": "ground=008000",
+      "result": "008000/008080/000000/000080/808000/808080/800000/00ff00/800080/00ffff/c0c0c0/0000ff/ffff00/ffffff/ff0000/ff00ff/008000/008080/000000/000080/808000/808080/800000/00ff00/800080/00ffff/c0c0c0/0000ff/ffff00/ffffff/ff0000/ff00ff",
+      "section": "colour onto colour, exclusive-or: the palette onto each of its colours"
+    },
+    {
+      "function": "xor",
+      "args": "ground=008080",
+      "result": "008080/008000/000080/000000/808080/808000/800080/00ffff/800000/00ff00/0000ff/c0c0c0/ffffff/ffff00/ff00ff/ff0000/008080/008000/000080/000000/808080/808000/800080/00ffff/800000/00ff00/0000ff/c0c0c0/ffffff/ffff00/ff00ff/ff0000",
+      "section": "colour onto colour, exclusive-or: the palette onto each of its colours"
+    },
+    {
+      "function": "xor",
+      "args": "ground=800000",
+      "result": "800000/800080/808000/808080/000000/000080/008000/ff0000/008080/ff00ff/ffff00/ffffff/c0c0c0/0000ff/00ff00/00ffff/800000/800080/808000/808080/000000/000080/008000/ff0000/008080/ff00ff/ffff00/ffffff/c0c0c0/0000ff/00ff00/00ffff",
+      "section": "colour onto colour, exclusive-or: the palette onto each of its colours"
+    },
+    {
+      "function": "xor",
+      "args": "ground=800080",
+      "result": "800080/800000/808080/808000/000080/000000/008080/ff00ff/008000/ff0000/ffffff/ffff00/0000ff/c0c0c0/00ffff/00ff00/800080/800000/808080/808000/000080/000000/008080/ff00ff/008000/ff0000/ffffff/ffff00/0000ff/c0c0c0/00ffff/00ff00",
+      "section": "colour onto colour, exclusive-or: the palette onto each of its colours"
+    },
+    {
+      "function": "xor",
+      "args": "ground=808000",
+      "result": "808000/808080/800000/800080/008000/008080/000000/ffff00/000080/ffffff/ff0000/ff00ff/00ff00/00ffff/c0c0c0/0000ff/808000/808080/800000/800080/008000/008080/000000/ffff00/000080/ffffff/ff0000/ff00ff/00ff00/00ffff/c0c0c0/0000ff",
+      "section": "colour onto colour, exclusive-or: the palette onto each of its colours"
+    },
+    {
+      "function": "xor",
+      "args": "ground=c0c0c0",
+      "result": "c0c0c0/0000ff/00ff00/00ffff/ff0000/ff00ff/ffff00/000000/ffffff/000080/008000/008080/800000/800080/808000/808080/c0c0c0/0000ff/00ff00/00ffff/ff0000/ff00ff/ffff00/000000/ffffff/000080/008000/008080/800000/800080/808000/808080",
+      "section": "colour onto colour, exclusive-or: the palette onto each of its colours"
+    },
+    {
+      "function": "xor",
+      "args": "ground=808080",
+      "result": "808080/808000/800080/800000/008080/008000/000080/ffffff/000000/ffff00/ff00ff/ff0000/00ffff/00ff00/0000ff/c0c0c0/808080/808000/800080/800000/008080/008000/000080/ffffff/000000/ffff00/ff00ff/ff0000/00ffff/00ff00/0000ff/c0c0c0",
+      "section": "colour onto colour, exclusive-or: the palette onto each of its colours"
+    },
+    {
+      "function": "xor",
+      "args": "ground=0000ff",
+      "result": "0000ff/c0c0c0/00ffff/00ff00/ff00ff/ff0000/ffffff/000080/ffff00/000000/008080/008000/800080/800000/808080/808000/0000ff/c0c0c0/00ffff/00ff00/ff00ff/ff0000/ffffff/000080/ffff00/000000/008080/008000/800080/800000/808080/808000",
+      "section": "colour onto colour, exclusive-or: the palette onto each of its colours"
+    },
+    {
+      "function": "xor",
+      "args": "ground=00ff00",
+      "result": "00ff00/00ffff/c0c0c0/0000ff/ffff00/ffffff/ff0000/008000/ff00ff/008080/000000/000080/808000/808080/800000/800080/00ff00/00ffff/c0c0c0/0000ff/ffff00/ffffff/ff0000/008000/ff00ff/008080/000000/000080/808000/808080/800000/800080",
+      "section": "colour onto colour, exclusive-or: the palette onto each of its colours"
+    },
+    {
+      "function": "xor",
+      "args": "ground=00ffff",
+      "result": "00ffff/00ff00/0000ff/c0c0c0/ffffff/ffff00/ff00ff/008080/ff0000/008000/000080/000000/808080/808000/800080/800000/00ffff/00ff00/0000ff/c0c0c0/ffffff/ffff00/ff00ff/008080/ff0000/008000/000080/000000/808080/808000/800080/800000",
+      "section": "colour onto colour, exclusive-or: the palette onto each of its colours"
+    },
+    {
+      "function": "xor",
+      "args": "ground=ff0000",
+      "result": "ff0000/ff00ff/ffff00/ffffff/c0c0c0/0000ff/00ff00/800000/00ffff/800080/808000/808080/000000/000080/008000/008080/ff0000/ff00ff/ffff00/ffffff/c0c0c0/0000ff/00ff00/800000/00ffff/800080/808000/808080/000000/000080/008000/008080",
+      "section": "colour onto colour, exclusive-or: the palette onto each of its colours"
+    },
+    {
+      "function": "xor",
+      "args": "ground=ff00ff",
+      "result": "ff00ff/ff0000/ffffff/ffff00/0000ff/c0c0c0/00ffff/800080/00ff00/800000/808080/808000/000080/000000/008080/008000/ff00ff/ff0000/ffffff/ffff00/0000ff/c0c0c0/00ffff/800080/00ff00/800000/808080/808000/000080/000000/008080/008000",
+      "section": "colour onto colour, exclusive-or: the palette onto each of its colours"
+    },
+    {
+      "function": "xor",
+      "args": "ground=ffff00",
+      "result": "ffff00/ffffff/ff0000/ff00ff/00ff00/00ffff/c0c0c0/808000/0000ff/808080/800000/800080/008000/008080/000000/000080/ffff00/ffffff/ff0000/ff00ff/00ff00/00ffff/c0c0c0/808000/0000ff/808080/800000/800080/008000/008080/000000/000080",
+      "section": "colour onto colour, exclusive-or: the palette onto each of its colours"
+    },
+    {
+      "function": "xor",
+      "args": "ground=ffffff",
+      "result": "ffffff/ffff00/ff00ff/ff0000/00ffff/00ff00/0000ff/808080/c0c0c0/808000/800080/800000/008080/008000/000080/000000/ffffff/ffff00/ff00ff/ff0000/00ffff/00ff00/0000ff/808080/c0c0c0/808000/800080/800000/008080/008000/000080/000000",
+      "section": "colour onto colour, exclusive-or: the palette onto each of its colours"
+    },
+    {
+      "function": "and",
+      "args": "ground=000000",
+      "result": "000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000/000000",
+      "section": "colour onto colour, and: the palette onto each of its colours"
+    },
+    {
+      "function": "and",
+      "args": "ground=000080",
+      "result": "000000/000080/000000/000080/000000/000080/000000/000000/000080/000080/000000/000080/000000/000080/000000/000080/000000/000080/000000/000080/000000/000080/000000/000000/000080/000080/000000/000080/000000/000080/000000/000080",
+      "section": "colour onto colour, and: the palette onto each of its colours"
+    },
+    {
+      "function": "and",
+      "args": "ground=008000",
+      "result": "000000/000000/008000/008000/000000/000000/008000/000000/008000/000000/008000/008000/000000/000000/008000/008000/000000/000000/008000/008000/000000/000000/008000/000000/008000/000000/008000/008000/000000/000000/008000/008000",
+      "section": "colour onto colour, and: the palette onto each of its colours"
+    },
+    {
+      "function": "and",
+      "args": "ground=008080",
+      "result": "000000/000080/008000/008080/000000/000080/008000/000000/008080/000080/008000/008080/000000/000080/008000/008080/000000/000080/008000/008080/000000/000080/008000/000000/008080/000080/008000/008080/000000/000080/008000/008080",
+      "section": "colour onto colour, and: the palette onto each of its colours"
+    },
+    {
+      "function": "and",
+      "args": "ground=800000",
+      "result": "000000/000000/000000/000000/800000/800000/800000/000000/800000/000000/000000/000000/800000/800000/800000/800000/000000/000000/000000/000000/800000/800000/800000/000000/800000/000000/000000/000000/800000/800000/800000/800000",
+      "section": "colour onto colour, and: the palette onto each of its colours"
+    },
+    {
+      "function": "and",
+      "args": "ground=800080",
+      "result": "000000/000080/000000/000080/800000/800080/800000/000000/800080/000080/000000/000080/800000/800080/800000/800080/000000/000080/000000/000080/800000/800080/800000/000000/800080/000080/000000/000080/800000/800080/800000/800080",
+      "section": "colour onto colour, and: the palette onto each of its colours"
+    },
+    {
+      "function": "and",
+      "args": "ground=808000",
+      "result": "000000/000000/008000/008000/800000/800000/808000/000000/808000/000000/008000/008000/800000/800000/808000/808000/000000/000000/008000/008000/800000/800000/808000/000000/808000/000000/008000/008000/800000/800000/808000/808000",
+      "section": "colour onto colour, and: the palette onto each of its colours"
+    },
+    {
+      "function": "and",
+      "args": "ground=c0c0c0",
+      "result": "000000/000000/000000/000000/000000/000000/000000/c0c0c0/000000/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/000000/000000/000000/000000/000000/000000/000000/c0c0c0/000000/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0/c0c0c0",
+      "section": "colour onto colour, and: the palette onto each of its colours"
+    },
+    {
+      "function": "and",
+      "args": "ground=808080",
+      "result": "000000/000080/008000/008080/800000/800080/808000/000000/808080/000080/008000/008080/800000/800080/808000/808080/000000/000080/008000/008080/800000/800080/808000/000000/808080/000080/008000/008080/800000/800080/808000/808080",
+      "section": "colour onto colour, and: the palette onto each of its colours"
+    },
+    {
+      "function": "and",
+      "args": "ground=0000ff",
+      "result": "000000/000080/000000/000080/000000/000080/000000/c0c0c0/000080/0000ff/c0c0c0/0000ff/c0c0c0/0000ff/c0c0c0/0000ff/000000/000080/000000/000080/000000/000080/000000/c0c0c0/000080/0000ff/c0c0c0/0000ff/c0c0c0/0000ff/c0c0c0/0000ff",
+      "section": "colour onto colour, and: the palette onto each of its colours"
+    },
+    {
+      "function": "and",
+      "args": "ground=00ff00",
+      "result": "000000/000000/008000/008000/000000/000000/008000/c0c0c0/008000/c0c0c0/00ff00/00ff00/c0c0c0/c0c0c0/00ff00/00ff00/000000/000000/008000/008000/000000/000000/008000/c0c0c0/008000/c0c0c0/00ff00/00ff00/c0c0c0/c0c0c0/00ff00/00ff00",
+      "section": "colour onto colour, and: the palette onto each of its colours"
+    },
+    {
+      "function": "and",
+      "args": "ground=00ffff",
+      "result": "000000/000080/008000/008080/000000/000080/008000/c0c0c0/008080/0000ff/00ff00/00ffff/c0c0c0/0000ff/00ff00/00ffff/000000/000080/008000/008080/000000/000080/008000/c0c0c0/008080/0000ff/00ff00/00ffff/c0c0c0/0000ff/00ff00/00ffff",
+      "section": "colour onto colour, and: the palette onto each of its colours"
+    },
+    {
+      "function": "and",
+      "args": "ground=ff0000",
+      "result": "000000/000000/000000/000000/800000/800000/800000/c0c0c0/800000/c0c0c0/c0c0c0/c0c0c0/ff0000/ff0000/ff0000/ff0000/000000/000000/000000/000000/800000/800000/800000/c0c0c0/800000/c0c0c0/c0c0c0/c0c0c0/ff0000/ff0000/ff0000/ff0000",
+      "section": "colour onto colour, and: the palette onto each of its colours"
+    },
+    {
+      "function": "and",
+      "args": "ground=ff00ff",
+      "result": "000000/000080/000000/000080/800000/800080/800000/c0c0c0/800080/0000ff/c0c0c0/0000ff/ff0000/ff00ff/ff0000/ff00ff/000000/000080/000000/000080/800000/800080/800000/c0c0c0/800080/0000ff/c0c0c0/0000ff/ff0000/ff00ff/ff0000/ff00ff",
+      "section": "colour onto colour, and: the palette onto each of its colours"
+    },
+    {
+      "function": "and",
+      "args": "ground=ffff00",
+      "result": "000000/000000/008000/008000/800000/800000/808000/c0c0c0/808000/c0c0c0/00ff00/00ff00/ff0000/ff0000/ffff00/ffff00/000000/000000/008000/008000/800000/800000/808000/c0c0c0/808000/c0c0c0/00ff00/00ff00/ff0000/ff0000/ffff00/ffff00",
+      "section": "colour onto colour, and: the palette onto each of its colours"
+    },
+    {
+      "function": "and",
+      "args": "ground=ffffff",
+      "result": "000000/000080/008000/008080/800000/800080/808000/c0c0c0/808080/0000ff/00ff00/00ffff/ff0000/ff00ff/ffff00/ffffff/000000/000080/008000/008080/800000/800080/808000/c0c0c0/808080/0000ff/00ff00/00ffff/ff0000/ff00ff/ffff00/ffffff",
+      "section": "colour onto colour, and: the palette onto each of its colours"
+    }
+  ]
+}
