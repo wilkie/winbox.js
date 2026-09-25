@@ -44,14 +44,14 @@ Every size below comes from [[fn:USER.GetSystemMetrics]] and every colour from [
 - [[documented]] Windows 3.1 keeps no pixels for a window. What shows of a window is on the screen and nowhere else. A window draws through a device context that starts at its client area and is clipped to the part of it that shows. When one window uncovers another, USER repaints the frame, and the window repaints the rest when asked with `WM_PAINT`.
 - [[measured]] Showing a window makes it the active one, and the window that was active is repainted as inactive. That is how [[probe:chrome]] made its inactive capture: by showing a second window elsewhere on the screen.
 - [[measured]] The client area is erased with the class's background brush when the window is painted. `COLOR_WINDOW + 1`, which the probe's class gives, stands for the colour itself and is not a brush handle.
-- Not yet measured: where `CW_USEDEFAULT` puts a window and how big it makes it, child windows and their clipping, the desktop's wallpaper and pattern, and moving and sizing.
+- Not yet measured: where `CW_USEDEFAULT` puts a window and how big it makes it, child windows and their clipping, and the desktop's wallpaper and pattern. Maximizing, minimizing, moving and sizing are in [[topic:window-states]].
 
 ## The mouse and the keyboard
 
 - [[documented]] A mouse message goes to the window under the pointer, or to the window that called `SetCapture`. Over a client area it is `WM_MOUSEMOVE` or a button message, in client coordinates. Elsewhere on a window it is the `WM_NC` form, carrying the part of the window it is over, in screen coordinates. A second press is a double click only for a class with `CS_DBLCLKS`.
 - [[documented]] Pressing on a window that is not active activates it. Keys go to the window with the focus, and `TranslateMessage` posts `WM_CHAR` for a key that typed a character.
 - [[documented]] `WM_PAINT` is never queued. `InvalidateRect` marks a window, and the window is painted when its program next asks for a message and none is waiting.
-- Not yet measured: no probe records the input queue. winbox.js answers `WM_NCHITTEST`, `WM_MOUSEACTIVATE` and `WM_SETCURSOR` as `DefWindowProc` does, without asking the window. Menus are in [[topic:menus]]. Moving and sizing windows, and the minimize and maximize boxes, are not done yet.
+- Not yet measured: no probe records the input queue. winbox.js answers `WM_NCHITTEST`, `WM_MOUSEACTIVATE` and `WM_SETCURSOR` as `DefWindowProc` does, without asking the window. Menus are in [[topic:menus]], and the caption boxes, moving and sizing are in [[topic:window-states]].
 
 ## Implementation
 
