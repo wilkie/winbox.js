@@ -244,7 +244,13 @@ export async function LoadBitmap(hinst, lpszBitmap) {
              * keeps a mask a mask. Inferred, not recorded. See `DeviceBitmap`. */
             const depth = bitmapHeader.biBitCount === 1 ? 1 : DevicePalette.depthOf(this.display);
             const colours = bitmap.convert(32);
-            const device = new DeviceBitmap(bitmap.width, bitmap.height, depth);
+            const device = new DeviceBitmap(
+              bitmap.width,
+              bitmap.height,
+              depth,
+              undefined,
+              DevicePalette.forDisplay(this.display, depth)
+            );
             const stride = colours.widthBytes;
 
             for (let y = 0; y < device.height; y++) {

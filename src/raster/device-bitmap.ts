@@ -22,11 +22,17 @@ export class DeviceBitmap extends Bitmap {
   readonly context: IndexedContext;
   readonly depth: number;
 
-  constructor(width: number, height: number, depth: number, indices?: Uint8Array) {
+  constructor(
+    width: number,
+    height: number,
+    depth: number,
+    indices?: Uint8Array,
+    palette = DevicePalette.forDepth(depth)
+  ) {
     super(width, height, depth, Bitmap.RGBA, undefined, []);
 
     this.depth = depth;
-    this.devicePalette = DevicePalette.forDepth(depth);
+    this.devicePalette = palette;
     this.indices = indices ?? new Uint8Array(Math.max(width * height, 0));
     this.context = new IndexedContext(width, height, this.indices, this.devicePalette);
   }

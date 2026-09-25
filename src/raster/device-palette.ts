@@ -12,6 +12,11 @@ import { Palette } from './palette.js';
  * every index up to the order of its four bits, which no operation can see.
  * The order is the Windows palette's, with light grey and dark grey swapped.
  *
+ * The EGA's sixteen are not the VGA's: its driver's table, which `EGA.DRV`
+ * keeps where `VGA.DRV` keeps its own, has dark grey `404040` where the VGA has
+ * light grey `c0c0c0`, and the `dither` probe's `GetNearestColor` and
+ * `GetPixel` answer those colours on an EGA and no other.
+ *
  * Monochrome is black at 0 and white at 1, as a set bit of a monochrome bitmap
  * is white. The 256-colour order is the one this project already used and is
  * not recorded.
@@ -33,6 +38,13 @@ export class DevicePalette {
         this.#found.set(key, index);
       }
     });
+  }
+
+  /** Whether the palette holds a colour exactly. */
+  holds(red: number, green: number, blue: number) {
+    const key = (red << 16) | (green << 8) | blue;
+
+    return this.colours.some(([r, g, b]) => ((r << 16) | (g << 8) | b) === key);
   }
 
   get size() {
@@ -100,6 +112,13 @@ export class DevicePalette {
     [0xff, 0xff, 0xff],
   ]);
 
+  /** The EGA's, from its display driver: the VGA's with `404040` for `c0c0c0`. */
+  static readonly EGA = new DevicePalette(
+    DevicePalette.SIXTEEN.colours.map(([red, green, blue], index) =>
+      index === 8 ? ([0x40, 0x40, 0x40] as [number, number, number]) : [red, green, blue]
+    )
+  );
+
   static readonly TWO_FIFTY_SIX = new DevicePalette(
     Array.from({ length: 256 }, (_, index) => {
       const [red, green, blue] = Palette.PALETTEWIN256[index] ?? [0, 0, 0];
@@ -115,6 +134,18 @@ export class DevicePalette {
       : depth === 4
         ? DevicePalette.SIXTEEN
         : DevicePalette.TWO_FIFTY_SIX;
+  }
+
+  /**
+   * The palette of a display's own bitmaps, and of any bitmap at its depth: a
+   * display mode may name one of its driver's own.
+   */
+  static forDisplay(display: any, depth = DevicePalette.depthOf(display)) {
+    if (depth === DevicePalette.depthOf(display) && display?.palette === 'ega') {
+      return DevicePalette.EGA;
+    }
+
+    return DevicePalette.forDepth(depth);
   }
 
   /** The depth of a display's bitmaps: a bit, four, or eight. */

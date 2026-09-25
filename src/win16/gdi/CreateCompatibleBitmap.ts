@@ -25,10 +25,9 @@ export function CreateCompatibleBitmap(hdc, nWidth, nHeight) {
     return NULL;
   }
 
-  const depth =
-    surface.bitmap instanceof DeviceBitmap
-      ? surface.bitmap.depth
-      : DevicePalette.depthOf(this.display);
+  const like = surface.bitmap instanceof DeviceBitmap ? surface.bitmap : null;
+  const depth = like ? like.depth : DevicePalette.depthOf(this.display);
+  const palette = like ? like.devicePalette : DevicePalette.forDisplay(this.display);
 
-  return this.handles.allocate(new DeviceBitmap(nWidth, nHeight, depth));
+  return this.handles.allocate(new DeviceBitmap(nWidth, nHeight, depth, undefined, palette));
 }

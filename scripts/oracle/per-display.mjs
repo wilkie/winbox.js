@@ -54,6 +54,10 @@ export const PER_DISPLAY = new Set([
    * their sizes from the display's metrics, and their colours are the
    * driver's. */
   'chrome',
+
+  /* How a brush of a colour the display lacks is patterned, which is the
+   * display driver's alone. */
+  'dither',
 ]);
 
 /** The fixture `record.mjs` writes for a probe recorded on a display. */

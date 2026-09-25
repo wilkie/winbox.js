@@ -83,9 +83,8 @@ export function decodeDib(bytes: Uint8Array): Dib {
  * A DIB as a device-dependent bitmap at a depth: each colour matched to the
  * palette of that depth, as a bitmap is realised for a display.
  */
-export function dibToDevice(dib: Dib, depth: number) {
-  const bitmap = new DeviceBitmap(dib.width, dib.height, depth);
-  const palette = DevicePalette.forDepth(depth);
+export function dibToDevice(dib: Dib, depth: number, palette = DevicePalette.forDepth(depth)) {
+  const bitmap = new DeviceBitmap(dib.width, dib.height, depth, undefined, palette);
   const map = dib.colours.map(([red, green, blue]) => palette.index(red, green, blue));
 
   for (let at = 0; at < dib.pixels.length; at++) {

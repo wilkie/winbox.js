@@ -29,7 +29,13 @@ export function CreateBitmap(nWidth, nHeight, cbPlanes, cbBits, lpvBits) {
   const bits = (cbBits & 0xff) * (cbPlanes & 0xff);
   const depth = bits === 1 || bits === 4 || bits === 8 ? bits : DevicePalette.depthOf(this.display);
 
-  const bitmap = new DeviceBitmap(nWidth, nHeight, depth);
+  const bitmap = new DeviceBitmap(
+    nWidth,
+    nHeight,
+    depth,
+    undefined,
+    DevicePalette.forDisplay(this.display, depth)
+  );
 
   if (lpvBits) {
     const core = this.machine.cpu.core;

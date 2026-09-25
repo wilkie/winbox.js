@@ -260,7 +260,9 @@ export class Win16 {
       this._screen.bitmap = new DeviceBitmap(
         this._display.width,
         this._display.height,
-        DevicePalette.depthOf(this._display)
+        DevicePalette.depthOf(this._display),
+        undefined,
+        DevicePalette.forDisplay(this._display)
       );
     }
 

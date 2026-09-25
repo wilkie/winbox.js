@@ -3,6 +3,7 @@
 import { BitmapContext } from './bitmap-context.js';
 import { DeviceBitmap } from './device-bitmap.js';
 import { DevicePalette } from './device-palette.js';
+import { ditherTile } from './dither.js';
 
 /**
  * `BitBlt` and `PatBlt`: a rectangle of pixels combined from the brush, a
@@ -91,7 +92,7 @@ function sideOf(
    * are the display's colours, so they are indices of the display's palette,
    * read back only if the operation needs them. */
   const depth = DevicePalette.depthOf(display);
-  const palette = DevicePalette.forDepth(depth);
+  const palette = DevicePalette.forDisplay(display);
   const context = surface.context;
   const image = reads
     ? context.getImageData(x, y, width, height)
@@ -177,8 +178,16 @@ export function rasterOp(
     : null;
   const mask = (1 << to.depth) - 1;
 
-  /* The brush, as the destination's index. */
-  const p = indexOfColour(to.palette, dest.brush?.color);
+  /* The brush, as the destination's index: its nearest colour, or where the
+   * display driver realises it as a pattern, that pattern's index at each
+   * pixel. A driver makes patterns for its own format and for monochrome, and
+   * for nothing else. See `ditheredIndex`. */
+  const brush = dest.brush?.color;
+  const solid = indexOfColour(to.palette, brush);
+  const own = to.depth === 1 || to.palette === DevicePalette.forDisplay(display);
+  const tile =
+    own && brush ? ditherTile(display, to.palette, brush.red, brush.green, brush.blue) : null;
+  const pattern = tile ? (px: number, py: number) => tile[((py & 7) << 3) | (px & 7)] : () => solid;
 
   /* A source pixel, carried into the destination's terms. */
   let carry: (index: number) => number = (index) => index;
@@ -201,21 +210,23 @@ export function rasterOp(
 
   /* The table for every pattern, source and destination value, where the
    * depth is small enough to have one. */
-  let result: (s: number, d: number) => number;
+  let result: (p: number, s: number, d: number) => number;
 
   if (to.depth <= 4) {
     const size = 1 << to.depth;
-    const cells = new Uint8Array(size * size);
+    const cells = new Uint8Array(size * size * size);
 
-    for (let s = 0; s < size; s++) {
-      for (let d = 0; d < size; d++) {
-        cells[s * size + d] = combine(table, p, s, d, mask);
+    for (let p = 0; p < size; p++) {
+      for (let s = 0; s < size; s++) {
+        for (let d = 0; d < size; d++) {
+          cells[(p * size + s) * size + d] = combine(table, p, s, d, mask);
+        }
       }
     }
 
-    result = (s, d) => cells[s * size + d];
+    result = (p, s, d) => cells[(p * size + s) * size + d];
   } else {
-    result = (s, d) => combine(table, p, s, d, mask);
+    result = (p, s, d) => combine(table, p, s, d, mask);
   }
 
   for (let py = top; py < bottom; py++) {
@@ -223,7 +234,7 @@ export function rasterOp(
       const s = from ? carry(from.read(px - x + sx, py - y + sy)) : 0;
       const d = to.read(px, py);
 
-      to.write!(px, py, result(s, d));
+      to.write!(px, py, result(pattern(px, py), s, d));
     }
   }
 

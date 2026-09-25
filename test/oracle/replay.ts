@@ -39,6 +39,7 @@ import { Polygon } from '../../src/win16/gdi/Polygon.js';
 import { TextOut } from '../../src/win16/gdi/TextOut.js';
 import { CreateCompatibleBitmap } from '../../src/win16/gdi/CreateCompatibleBitmap.js';
 import { GetPixel } from '../../src/win16/gdi/GetPixel.js';
+import { GetNearestColor } from '../../src/win16/gdi/GetNearestColor.js';
 import { BitBlt } from '../../src/win16/gdi/BitBlt.js';
 import { SetPixel } from '../../src/win16/gdi/SetPixel.js';
 import { SetBitmapBits } from '../../src/win16/gdi/SetBitmapBits.js';
@@ -1205,6 +1206,57 @@ export class Context {
    * `CreateCompatibleDC`, `CreateBitmap` and `SelectObject`. What is drawn
    * lands in the bitmap, and `readCell` reads it back with `GetBitmapBits`.
    */
+  /** A `COLORREF` the probe wrote as six hex digits, which the parse may have read as a number. */
+  hexColour(written: string | number) {
+    return parseInt(String(written).padStart(6, '0'), 16);
+  }
+
+  /**
+   * `dither`'s fill: a solid brush over a square of sixteen at `left:top` of a
+   * bitmap compatible with the display, whose origin stands for the screen's,
+   * each pixel read back with `GetPixel` as its place in the palette.
+   */
+  ditherSquare(colour: string | number, at: string) {
+    const PALETTE = [
+      0x000000, 0x000080, 0x008000, 0x008080, 0x800000, 0x800080, 0x808000, 0xc0c0c0, 0x808080,
+      0x0000ff, 0x00ff00, 0x00ffff, 0xff0000, 0xff00ff, 0xffff00, 0xffffff,
+    ];
+    const [left, top] = at.replace('at=', '').split(':').map(Number);
+    const screen = this.handles.allocate(Surface.offscreen(1, 1));
+    const hdc = CreateCompatibleDC.call(this, screen);
+
+    SelectObject.call(this, hdc, CreateCompatibleBitmap.call(this, screen, 80, 64));
+    SelectObject.call(this, hdc, CreateSolidBrush.call(this, this.hexColour(colour)));
+    PatBlt.call(this, hdc, left, top, 16, 16, Gdi.PATCOPY);
+
+    const rows: string[] = [];
+
+    for (let y = 0; y < 16; y++) {
+      let row = '';
+
+      for (let x = 0; x < 16; x++) {
+        const index = PALETTE.indexOf(GetPixel.call(this, hdc, left + x, top + y) & 0xffffff);
+
+        row += index < 0 ? '?' : index.toString(16);
+      }
+
+      rows.push(row);
+    }
+
+    return rows.join('/');
+  }
+
+  /** `dither`'s brush into a monochrome bitmap of sixteen, read with `GetBitmapBits`. */
+  ditherMono(colour: string | number) {
+    const surface: any = this.memoryCell(16, 16);
+    const hdc = this.handles.allocate(surface);
+
+    SelectObject.call(this, hdc, CreateSolidBrush.call(this, this.hexColour(colour)));
+    PatBlt.call(this, hdc, 0, 0, 16, 16, Gdi.PATCOPY);
+
+    return this.readCell(surface, 16, 16);
+  }
+
   memoryCell(width: number, height: number) {
     const hdc = CreateCompatibleDC.call(this, 0);
     const bitmap = CreateBitmap.call(this, width, height, 1, 1, 0);
@@ -1397,8 +1449,9 @@ export function parseArgs(args: string): (string | number)[] {
        */
       /* And `wsprintf` never writes an exponent, so anything that only reads
        * as a number *with* one is text: `fotmake`'s `+00e0` is a hexadecimal
-       * offset, not nought times ten to the nought. */
-      const value = /^[+-]?\d+e/i.test(text.trim()) ? NaN : Number(text);
+       * offset, not nought times ten to the nought. Nor a binary or octal
+       * prefix: `dither`'s `0b0000` is a colour, not nought in binary. */
+      const value = /^[+-]?\d+e|^0[bo]/i.test(text.trim()) ? NaN : Number(text);
 
       parsed.push(text.trim() !== '' && !Number.isNaN(value) ? value : text);
       at = end;
@@ -1769,6 +1822,25 @@ const ADAPTERS: Record<
     return String(GetSystemMetrics.call(context, Number(index)));
   },
 
+  /* `dither`: a solid brush filled over a square of the display, every pixel
+   * read back as its place in the palette. The display is a bitmap compatible
+   * with it, whose origin is the screen's. */
+  screen(context, [colour, at]) {
+    return context.ditherSquare(colour, String(at));
+  },
+
+  offset(context, [colour, at]) {
+    return context.ditherSquare(colour, String(at));
+  },
+
+  ramp(context, [colour, at]) {
+    return context.ditherSquare(colour, String(at));
+  },
+
+  grid(context, [colour, at]) {
+    return context.ditherSquare(colour, String(at));
+  },
+
   GetCharWidth(context, [name, range]) {
     const [first, last] = String(range).split('-').map(Number);
 
@@ -1982,7 +2054,24 @@ const ADAPTERS: Record<
   /* `bitblt`: every case rebuilt from nothing through the calls the probe
    * made, in memory device contexts, and read back with `GetBitmapBits` for a
    * monochrome bitmap and `GetPixel` for a colour one. */
+  /* `dither`'s `GetNearestColor`, on the screen. */
+  nearest(context, [colour]) {
+    const screen = context.handles.allocate(Surface.offscreen(1, 1));
+    const answer = GetNearestColor.call(context, screen, context.hexColour(colour));
+
+    return (answer & 0xffffff).toString(16).padStart(6, '0');
+  },
+
+  monoramp(context, [colour]) {
+    return context.ditherMono(colour);
+  },
+
   mono(context, [name, , brush]) {
+    /* `dither`'s `mono` is a colour alone: its brush into a monochrome bitmap. */
+    if (brush === undefined) {
+      return context.ditherMono(name);
+    }
+
     const blt = context.bitblt();
     const source = blt.mono([0x33, 0x33, 0x33, 0x33]);
     const dest = blt.mono([0x55, 0x55, 0x55, 0x55]);

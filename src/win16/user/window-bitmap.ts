@@ -32,7 +32,13 @@ export function attachWindowBitmap(win16: any, dialog: any) {
       return;
     }
 
-    const bitmap = new DeviceBitmap(width, height, depth);
+    const bitmap = new DeviceBitmap(
+      width,
+      height,
+      depth,
+      undefined,
+      DevicePalette.forDisplay(win16.display)
+    );
 
     bitmap.indices.fill(bitmap.devicePalette.index(0xff, 0xff, 0xff));
 

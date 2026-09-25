@@ -47,12 +47,7 @@ const STYLES: Record<string, { style: number; active: boolean }> = {
  * fail, so the suite fails the moment one starts matching and its entry
  * becomes stale -- as `KNOWN_GAPS` does for the conformance suite.
  */
-const KNOWN: Record<string, string> = {
-  'hercules/overlapped':
-    "the Hercules's border colour is grey, which a monochrome display dithers into a " +
-    'checkerboard; brush dithering is not recorded yet, so the grey is painted as its ' +
-    'nearest colour, black',
-};
+const KNOWN: Record<string, string> = {};
 
 /** The display driver an installation names in its SYSTEM.INI. */
 function driverOf(drive: string) {
@@ -79,7 +74,9 @@ for (const [display, drive] of Object.entries(DRIVES)) {
     const records = ready ? JSON.parse(readFileSync(fixture, 'utf8')).records : [];
     let context: any;
     let oem: Map<number, DeviceBitmap>;
-    const depth = DevicePalette.depthOf(displayMode(display));
+    const mode = displayMode(display);
+    const depth = DevicePalette.depthOf(mode);
+    const palette = DevicePalette.forDisplay(mode);
 
     beforeAll(async () => {
       await prepareFonts(display);
@@ -89,7 +86,7 @@ for (const [display, drive] of Object.entries(DRIVES)) {
       oem = new Map(
         resourcesOf(driver)
           .filter((resource) => resource.type === RT_BITMAP && resource.id !== null)
-          .map((resource) => [resource.id!, dibToDevice(decodeDib(resource.data), depth)])
+          .map((resource) => [resource.id!, dibToDevice(decodeDib(resource.data), depth, palette)])
       );
     });
 
@@ -104,7 +101,7 @@ for (const [display, drive] of Object.entries(DRIVES)) {
           .map((record: any) => record.result);
         const width = rows[0].length;
         const height = rows.length;
-        const screen = new DeviceBitmap(width, height, depth);
+        const screen = new DeviceBitmap(width, height, depth, undefined, palette);
         const white = screen.devicePalette.index(0xff, 0xff, 0xff);
 
         screen.indices.fill(white);
@@ -122,6 +119,7 @@ for (const [display, drive] of Object.entries(DRIVES)) {
           height,
           { ...frame, title: 'Probe' },
           {
+            display: mode,
             metric: (index) => GetSystemMetrics.call(context, index),
             sysColor: (index) => GetSysColor.call(context, index),
             oem,

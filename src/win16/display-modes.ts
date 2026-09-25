@@ -318,6 +318,10 @@ export const DISPLAY_MODES = {
     planes: 4,
     colors: 16,
 
+    /* Its colours are its driver's, which are not quite the VGA's. See
+     * `DevicePalette.EGA`. */
+    palette: 'ega',
+
     metrics: EGA_METRICS,
     sysColors: EGA_COLORS,
     metricsByIndex: EGA_BY_INDEX,

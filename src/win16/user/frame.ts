@@ -1,6 +1,7 @@
 'use strict';
 
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
+import { ditherTile } from '../../raster/dither.js';
 
 /**
  * What USER draws around a window: its border or sizing frame, its caption,
@@ -23,6 +24,9 @@ import { DeviceBitmap } from '../../raster/device-bitmap.js';
  *   what is left.
  * * Active and inactive windows differ only in colours: the caption, the
  *   caption text and the border.
+ * * Every area is filled with a brush of its colour, so a colour the display
+ *   lacks is patterned as the driver patterns a brush -- the Hercules's grey
+ *   border is a checkerboard. See `ditheredIndex`.
  *
  * The OEM bitmaps are the display driver's own, read from the installation the
  * person supplied: they are never part of this project.
@@ -60,6 +64,9 @@ const COLOR_INACTIVEBORDER = 11;
 const COLOR_INACTIVECAPTIONTEXT = 19;
 
 export interface FrameEnvironment {
+  /** The display mode, whose driver patterns the brushes. */
+  display: any;
+
   /** `GetSystemMetrics`, for the display the window is on. */
   metric(index: number): number;
 
@@ -97,24 +104,34 @@ export function paintFrame(
   environment: FrameEnvironment
 ) {
   const palette = screen.devicePalette;
-  const index = (colorref: number) =>
-    palette.index(colorref & 0xff, (colorref >> 8) & 0xff, (colorref >> 16) & 0xff);
-  const colour = (system: number) => index(environment.sysColor(system));
 
-  const fill = (x0: number, y0: number, x1: number, y1: number, value: number) => {
+  /* A brush of a system colour: an index, or a pattern by screen pixel. */
+  type Paint = number | Uint8Array;
+
+  const colour = (system: number): Paint => {
+    const colorref = environment.sysColor(system);
+    const [red, green, blue] = [colorref & 0xff, (colorref >> 8) & 0xff, (colorref >> 16) & 0xff];
+
+    return (
+      ditherTile(environment.display, palette, red, green, blue) ?? palette.index(red, green, blue)
+    );
+  };
+
+  const fill = (x0: number, y0: number, x1: number, y1: number, paint: Paint) => {
     for (let y = Math.max(y0, 0); y < Math.min(y1, height); y++) {
       for (let x = Math.max(x0, 0); x < Math.min(x1, width); x++) {
         const sx = left + x;
         const sy = top + y;
 
         if (sx >= 0 && sy >= 0 && sx < screen.width && sy < screen.height) {
-          screen.indices[sy * screen.width + sx] = value;
+          screen.indices[sy * screen.width + sx] =
+            typeof paint === 'number' ? paint : paint[((sy & 7) << 3) | (sx & 7)];
         }
       }
     }
   };
 
-  const outline = (x0: number, y0: number, x1: number, y1: number, value: number) => {
+  const outline = (x0: number, y0: number, x1: number, y1: number, value: Paint) => {
     fill(x0, y0, x1, y0 + 1, value);
     fill(x0, y1 - 1, x1, y1, value);
     fill(x0, y0, x0 + 1, y1, value);
