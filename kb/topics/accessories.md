@@ -2,24 +2,22 @@
 kind: topic
 name: The Windows 3.1 accessories
 summary: Every Windows program that comes with Windows 3.1, run on winbox.js's raster desktop — which open their windows, and for the rest, what each one stops at and what it needs.
-probes: [loadstr, winhelp, rectops]
+probes: [loadstr, winhelp, rectops, dialogs]
 ---
 
 Windows 3.1 installs about 25 Windows programs, from Clock and Notepad to File Manager and Paintbrush. They're a good test of an emulation: each is a real program, written against the documented API with the usual shortcuts. winbox.js runs each one in turn on the raster desktop, lets it run a while, and records what it called, what it stopped at, and which windows it opened. Where a program has an error box of its own, the box says what it wanted.
 
 ## Programs that open their windows
 
-Clock, Notepad, Control Panel, Program Manager, File Manager, Print Manager, the Clipboard Viewer, Windows Help, the Windows Tutorial, Terminal, and Dr. Watson, which starts minimized. File Manager and Program Manager are MDI programs, whose document windows live inside a frame. They open their frames, but the MDI functions, `DefFrameProc` and `DefMDIChildProc`, are not done yet.
+Clock, Notepad, Control Panel, Program Manager, File Manager, Print Manager, the Clipboard Viewer, Windows Help, the Windows Tutorial, Terminal, Character Map, Media Player, Task Manager, About Windows, and Dr. Watson, which starts minimized. Character Map, Task Manager and About Windows are dialog boxes ([[topic:dialog-boxes]]). Character Map's font list is a combo box, which is not done yet, so it opens without it. File Manager and Program Manager are MDI programs, whose document windows live inside a frame. They open their frames, but the MDI functions, `DefFrameProc` and `DefMDIChildProc`, are not done yet.
 
 ## What stops the rest
 
 | Program | What it stops at |
 | --- | --- |
-| Calculator | Its main window is a dialog box, from `CreateDialog`. |
-| Character Map | A dialog box, from `CreateDialog`. |
-| Media Player, Sound Recorder | Dialog boxes, from `CreateDialogParam`. |
-| Registration Editor | A dialog box, from `CreateDialog`. |
-| Task Manager, About Windows | Modal dialog boxes, from `DialogBox` and `DialogBoxParam`. |
+| Calculator | The floating-point unit: its dialog runs until the first x87 instruction the CPU does not have, `FNSTSW`. |
+| Sound Recorder | Not yet examined, now that its dialog is made. |
+| Registration Editor | Not yet examined: it closes itself after making its dialog. |
 | Write, Calendar, Cardfile | A temporary file, from `GetTempFileName`, which needs a drive that can be written to. Calendar says "Cannot create the temporary change file", and Cardfile "Cannot create temporary file". |
 | Paintbrush | Its own `PBRUSH.DLL`, and `OLESVR.DLL`. |
 | Object Packager | `OLECLI.DLL`, `OLESVR.DLL` and `TOOLHELP.DLL`. |

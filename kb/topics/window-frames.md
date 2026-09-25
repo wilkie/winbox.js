@@ -12,7 +12,7 @@ Every size below comes from [[fn:USER.GetSystemMetrics]] and every colour from [
 ## Frames and borders
 
 - [[measured]] A **sizing frame** is `SM_CXFRAME` wide. It has a line in `COLOR_WINDOWFRAME` at its outer edge and another at its inner edge, with the border colour (`COLOR_ACTIVEBORDER` or `COLOR_INACTIVEBORDER`) between them. A notch of the frame colour crosses it `SM_CXFRAME + SM_CXSIZE` from each corner, which marks where a drag sizes a corner rather than an edge.
-- [[measured]] A **thin border** is one line of the frame colour. A **dialog frame** is one line, then `SM_CXDLGFRAME` of the caption colour.
+- [[measured]] A **thin border** is one line of the frame colour. A **dialog frame** is one line, then `SM_CXDLGFRAME` of the caption colour. A dialog's **modal frame**, `DS_MODALFRAME` with a caption, is described with dialog boxes ([[topic:dialog-boxes]]).
 
 ## The caption
 
