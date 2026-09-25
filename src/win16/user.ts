@@ -36,6 +36,7 @@ import {
   LPCSTR,
   HWND,
   Struct,
+  COLORREF,
 } from './types.js';
 
 import { AnsiLower } from './user/AnsiLower.js';
@@ -59,6 +60,7 @@ import { GetDC } from './user/GetDC.js';
 import { GetDesktopWindow } from './user/GetDesktopWindow.js';
 import { GetMessage } from './user/GetMessage.js';
 import { GetSystemMetrics } from './user/GetSystemMetrics.js';
+import { GetSysColor } from './user/GetSysColor.js';
 import { GetTickCount } from './user/GetTickCount.js';
 import { GetClientRect } from './user/GetClientRect.js';
 import { GetMenu } from './user/GetMenu.js';
@@ -245,6 +247,8 @@ export class User extends Module {
   declare static SM_CYFRAME: any;
   declare static SM_CYICON: any;
   declare static SM_CYMENU: any;
+  declare static SM_CXFULLSCREEN: any;
+  declare static SM_CYFULLSCREEN: any;
   declare static SM_CYSCREEN: any;
   declare static VK_DECIMAL: any;
   declare static VK_DELETE: any;
@@ -662,7 +666,7 @@ export class User extends Module {
       [TranslateAccelerator, 'TranslateAccelerator', 8, [HWND, HACCEL, [MSG]], BOOL],
       [GetSystemMetrics, 'GetSystemMetrics', 2, [INT], INT],
       // 180 //
-      [User.stub, 'GetSysColor', 0],
+      [GetSysColor, 'GetSysColor', 2, [INT], COLORREF],
       [User.stub, 'SetSysColors', 10],
       [User.stub, 'Bear182', 4],
       [User.stub, 'GetCaretPos', 4],
@@ -1630,6 +1634,8 @@ User.SM_CYBORDER = 6;
 User.SM_CXICON = 11;
 User.SM_CYICON = 12;
 User.SM_CYMENU = 15;
+User.SM_CXFULLSCREEN = 16;
+User.SM_CYFULLSCREEN = 17;
 User.SM_CXFRAME = 32;
 User.SM_CYFRAME = 33;
 

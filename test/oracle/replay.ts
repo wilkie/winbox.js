@@ -22,6 +22,7 @@ import { GetTextMetrics } from '../../src/win16/gdi/GetTextMetrics.js';
 import { GetCharWidth } from '../../src/win16/gdi/GetCharWidth.js';
 import { GetDeviceCaps } from '../../src/win16/gdi/GetDeviceCaps.js';
 import { GetSystemMetrics } from '../../src/win16/user/GetSystemMetrics.js';
+import { GetSysColor } from '../../src/win16/user/GetSysColor.js';
 import { displayMode } from '../../src/win16/display-modes.js';
 import { Gdi } from '../../src/win16/gdi.js';
 import { User } from '../../src/win16/user.js';
@@ -1755,6 +1756,17 @@ const ADAPTERS: Record<
     }
 
     return String(GetSystemMetrics.call(context, index));
+  },
+
+  /* `chrome`: every system colour and the metrics that size a frame, by
+   * index. The windows' rectangles and pixels are recorded for USER's own
+   * drawing, which is not replayed yet. */
+  syscolor(context, [index]) {
+    return (GetSysColor.call(context, Number(index)) & 0xffffff).toString(16).padStart(6, '0');
+  },
+
+  metric(context, [index]) {
+    return String(GetSystemMetrics.call(context, Number(index)));
   },
 
   GetCharWidth(context, [name, range]) {

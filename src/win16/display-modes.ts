@@ -109,6 +109,132 @@ const VGA_METRICS = {
 
 const EGA_METRICS = { ...VGA_METRICS, captionHeight: 18, menuHeight: 16 };
 
+/**
+ * Every system metric the `chrome` probe recorded, by `SM_` index, apart from
+ * the screen and full-screen sizes, which follow the display's size: the
+ * scroll bars, borders, frames, icons, cursor, menu, sizing boxes and the
+ * smallest a window may be tracked to. The Super VGA's are the VGA's; the two
+ * 256-colour modes are not recorded and take the VGA's.
+ */
+const VGA_BY_INDEX = {
+  2: 17,
+  3: 17,
+  4: 20,
+  5: 1,
+  6: 1,
+  7: 4,
+  8: 4,
+  9: 17,
+  10: 17,
+  11: 32,
+  12: 32,
+  13: 32,
+  14: 32,
+  15: 18,
+  18: 0,
+  19: 1,
+  20: 17,
+  21: 17,
+  22: 0,
+  23: 0,
+  28: 102,
+  29: 26,
+  30: 18,
+  31: 18,
+  32: 4,
+  33: 4,
+  34: 102,
+  35: 26,
+};
+
+const EGA_BY_INDEX = {
+  2: 17,
+  3: 14,
+  4: 18,
+  5: 1,
+  6: 1,
+  7: 4,
+  8: 4,
+  9: 14,
+  10: 18,
+  11: 32,
+  12: 32,
+  13: 32,
+  14: 32,
+  15: 16,
+  18: 0,
+  19: 1,
+  20: 14,
+  21: 18,
+  22: 0,
+  23: 0,
+  28: 102,
+  29: 24,
+  30: 18,
+  31: 16,
+  32: 4,
+  33: 4,
+  34: 102,
+  35: 24,
+};
+
+const HERCULES_BY_INDEX = {
+  2: 15,
+  3: 11,
+  4: 18,
+  5: 1,
+  6: 1,
+  7: 4,
+  8: 4,
+  9: 15,
+  10: 16,
+  11: 32,
+  12: 32,
+  13: 32,
+  14: 32,
+  15: 16,
+  18: 0,
+  19: 1,
+  20: 11,
+  21: 16,
+  22: 0,
+  23: 0,
+  28: 105,
+  29: 24,
+  30: 19,
+  31: 16,
+  32: 4,
+  33: 4,
+  34: 105,
+  35: 24,
+};
+
+/**
+ * The system colours, by `COLOR_` index, as `COLORREF`s: USER's defaults for
+ * each display when `WIN.INI` has no `[colors]` section, which none of the
+ * oracle's installations has. Recorded by the `chrome` probe on each display.
+ * The Super VGA's are the VGA's. The EGA's scroll bar colour, `818181`, is not
+ * one of the sixteen, so it is a dithered colour; the Hercules's are greys.
+ * The two 256-colour modes are not recorded and take the VGA's.
+ */
+const VGA_COLORS = [
+  0xc0c0c0, 0xc0c0c0, 0x800000, 0xffffff, 0xffffff, 0xffffff, 0x000000, 0x000000, 0x000000,
+  0xffffff, 0xc0c0c0, 0xc0c0c0, 0xffffff, 0x800000, 0xffffff, 0xc0c0c0, 0x808080, 0xc0c0c0,
+  0x000000, 0x000000, 0xffffff,
+];
+
+const EGA_COLORS = [
+  0x818181, 0xc0c0c0, 0x800000, 0xffffff, 0xffffff, 0xffffff, 0x000000, 0x000000, 0x000000,
+  0xffffff, 0x808080, 0xffffff, 0xffffff, 0x800000, 0xffffff, 0xffffff, 0x808080, 0x808080,
+  0x000000, 0x000000, 0xffffff,
+];
+
+const HERCULES_COLORS = [
+  0x3f3f3f, 0x7f7f7f, 0x000000, 0xffffff, 0xffffff, 0xffffff, 0x000000, 0x000000, 0x000000,
+  0xffffff, 0x7f7f7f, 0xffffff, 0xbfbfbf, 0x000000, 0xffffff, 0xffffff, 0xffffff, 0x000000,
+  0x000000, 0x000000, 0xffffff,
+];
+
 export const DISPLAY_MODES = {
   vga: {
     ...COMMON,
@@ -137,6 +263,8 @@ export const DISPLAY_MODES = {
     colors: 16,
 
     metrics: VGA_METRICS,
+    sysColors: VGA_COLORS,
+    metricsByIndex: VGA_BY_INDEX,
   },
 
   svga: {
@@ -161,6 +289,8 @@ export const DISPLAY_MODES = {
     colors: 16,
 
     metrics: VGA_METRICS,
+    sysColors: VGA_COLORS,
+    metricsByIndex: VGA_BY_INDEX,
   },
 
   ega: {
@@ -189,6 +319,8 @@ export const DISPLAY_MODES = {
     colors: 16,
 
     metrics: EGA_METRICS,
+    sysColors: EGA_COLORS,
+    metricsByIndex: EGA_BY_INDEX,
   },
 
   hercules: {
@@ -247,6 +379,8 @@ export const DISPLAY_MODES = {
     boldOverhang: 'always',
 
     metrics: EGA_METRICS,
+    sysColors: HERCULES_COLORS,
+    metricsByIndex: HERCULES_BY_INDEX,
   },
 
   vga256: {
@@ -278,6 +412,8 @@ export const DISPLAY_MODES = {
     colorRes: 18,
 
     metrics: VGA_METRICS,
+    sysColors: VGA_COLORS,
+    metricsByIndex: VGA_BY_INDEX,
   },
 
   xga256: {
@@ -306,6 +442,8 @@ export const DISPLAY_MODES = {
     colorRes: 18,
 
     metrics: VGA_METRICS,
+    sysColors: VGA_COLORS,
+    metricsByIndex: VGA_BY_INDEX,
   },
 };
 

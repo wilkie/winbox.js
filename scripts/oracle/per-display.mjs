@@ -49,6 +49,11 @@ export const PER_DISPLAY = new Set([
   'extout',
   'groundrn',
   'clipedge',
+
+  /* What USER draws around a window: the frame, caption and controls take
+   * their sizes from the display's metrics, and their colours are the
+   * driver's. */
+  'chrome',
 ]);
 
 /** The fixture `record.mjs` writes for a probe recorded on a display. */

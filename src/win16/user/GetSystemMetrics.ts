@@ -29,6 +29,22 @@ export function GetSystemMetrics(nIndex) {
     case User.SM_CYSCREEN:
       return display.height;
 
+    /* The screen less the caption, on every display the `chrome` probe
+     * recorded: 460 on a VGA, 332 on an EGA, 330 on a Hercules. */
+    case User.SM_CXFULLSCREEN:
+      return display.width;
+    case User.SM_CYFULLSCREEN:
+      return display.height - metrics.captionHeight;
+  }
+
+  /* Everything else the `chrome` probe recorded for this display. */
+  const recorded = display.metricsByIndex?.[nIndex];
+
+  if (recorded !== undefined) {
+    return recorded;
+  }
+
+  switch (nIndex) {
     case User.SM_CYCAPTION:
       return metrics.captionHeight;
     case User.SM_CYMENU:

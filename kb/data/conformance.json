@@ -105,6 +105,154 @@
   },
   "gaps": {}
  },
+ "chrome-ega": {
+  "probe": "chrome",
+  "display": "ega",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 1091,
+  "functions": {
+   "metric": {
+    "total": 32,
+    "agreed": 32,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "pixels": {
+    "total": 1030,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1030
+   },
+   "rects": {
+    "total": 8,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 8
+   },
+   "syscolor": {
+    "total": 21,
+    "agreed": 21,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "chrome-hercules": {
+  "probe": "chrome",
+  "display": "hercules",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 1091,
+  "functions": {
+   "metric": {
+    "total": 32,
+    "agreed": 32,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "pixels": {
+    "total": 1030,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1030
+   },
+   "rects": {
+    "total": 8,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 8
+   },
+   "syscolor": {
+    "total": 21,
+    "agreed": 21,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "chrome-svga": {
+  "probe": "chrome",
+  "display": "svga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 1091,
+  "functions": {
+   "metric": {
+    "total": 32,
+    "agreed": 32,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "pixels": {
+    "total": 1030,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1030
+   },
+   "rects": {
+    "total": 8,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 8
+   },
+   "syscolor": {
+    "total": 21,
+    "agreed": 21,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "chrome-vga": {
+  "probe": "chrome",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 1091,
+  "functions": {
+   "metric": {
+    "total": 32,
+    "agreed": 32,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "pixels": {
+    "total": 1030,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1030
+   },
+   "rects": {
+    "total": 8,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 8
+   },
+   "syscolor": {
+    "total": 21,
+    "agreed": 21,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "clipedge-vga": {
   "probe": "clipedge",
   "display": "vga",
