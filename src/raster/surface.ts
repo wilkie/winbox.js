@@ -1434,6 +1434,10 @@ export class Surface {
 
         /* The gap after every character; see `SetTextCharacterExtra`. */
         extra: this.charExtra,
+
+        /* The text colour, which the strike drew in black whatever it was:
+         * white caption text is a bitmap font on a coloured ground. */
+        color: this.textColor ?? new Color(0, 0, 0),
       };
 
       // Fill the rectangle behind it
