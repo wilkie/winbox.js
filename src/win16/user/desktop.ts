@@ -7,6 +7,8 @@ import { Surface } from '../../raster/surface.js';
 
 import { paintControl, type ControlState } from './controls.js';
 import { paintFrame, type FrameEnvironment } from './frame.js';
+import { type MenuData } from './menu-data.js';
+import { paintPopup, popupLayout, type MenuEnvironment } from './menus.js';
 
 /**
  * The screen as USER keeps it: one bitmap of the display's pixels, and the
@@ -33,6 +35,18 @@ import { paintFrame, type FrameEnvironment } from './frame.js';
  */
 
 export const COLOR_BACKGROUND = 1;
+
+const SM_CYMENU = 15;
+
+/** The space either side of a menu bar item's text. See `frame.ts`. */
+const MENU_GAP = 8;
+
+/**
+ * Which pixels a grayed label keeps what was there: those whose x and y add
+ * to an odd number, from the corner of what the label is drawn on. Measured
+ * on the VGA's selected, grayed Restore and the Hercules's grayed Paste.
+ */
+const GRAY_PHASE = 1;
 
 /** What the desktop needs of the display: the frame's needs, and the System font to draw text in. */
 export type DesktopEnvironment = Omit<FrameEnvironment, 'title' | 'text' | 'measure'> & {
@@ -81,6 +95,18 @@ export class DesktopWindow {
   /** A child's identifier, what `CreateWindow` was given as its menu. */
   controlId = 0;
 
+  /** The menu bar's item that is selected while a menu is open from it. */
+  menuSelected: number | undefined = undefined;
+
+  /** Whether the window's system menu is open. */
+  systemMenuOpen = false;
+
+  /** For a pop-up menu's own window: the menu, and the item selected in it. */
+  popup: { menu: MenuData; selected: number } | null = null;
+
+  /** The window's own system menu, once a program or a menu asked for it. */
+  systemMenu: MenuData | null = null;
+
   constructor(
     id: number,
     left: number,
@@ -123,6 +149,9 @@ export class Desktop {
   /** The window keys go to: the active window, or one of its children. */
   focus: DesktopWindow | null = null;
 
+  /** The window whose menu is open, while one is. */
+  menuOwner: DesktopWindow | null = null;
+
   /** Which window each pixel of the screen shows, by id; 0 for the desktop. */
   readonly owners: Uint16Array;
 
@@ -140,7 +169,7 @@ export class Desktop {
   }
 
   /** The frame's environment, with the desktop's text drawn on `bitmap`. */
-  #frameEnvironment(bitmap: DeviceBitmap | null): FrameEnvironment {
+  #frameEnvironment(bitmap: DeviceBitmap | null): FrameEnvironment & MenuEnvironment {
     const text = this.#text;
     const font = this.environment.font;
 
@@ -169,7 +198,158 @@ export class Desktop {
         text.textColor = colourOf(colour);
         text.fillText(x, y, line);
       },
+      label: (line, colour, x, y, grayed = false) => {
+        if (!bitmap) {
+          return;
+        }
+
+        const at = line.indexOf('&');
+        const plain = line.replace('&', '');
+        const width = text.measureText(plain).width;
+        const height = font.height;
+
+        /* What was there, to put back through a grayed label's gaps. */
+        const kept: (number | null)[] = [];
+
+        if (grayed) {
+          for (let row = 0; row < height; row++) {
+            for (let column = 0; column < width; column++) {
+              kept.push(bitmap.indexAt(x + column, y + row));
+            }
+          }
+        }
+
+        text.bitmap = bitmap;
+        text.textColor = colourOf(colour);
+        text.fillText(x, y, plain);
+
+        /* The mnemonic, underlined a row below the ascent. */
+        if (at >= 0 && at < plain.length) {
+          const under = x + text.measureText(plain.slice(0, at)).width;
+          const index = bitmap.devicePalette.index(
+            colour & 0xff,
+            (colour >> 8) & 0xff,
+            (colour >> 16) & 0xff
+          );
+          const across = text.measureText(plain[at]).width;
+
+          for (let column = 0; column < across; column++) {
+            bitmap.put(under + column, y + font.ascent + 1, index);
+          }
+
+          bitmap.context.markRect(under, y + font.ascent + 1, under + across, y + font.ascent + 2);
+        }
+
+        /* Grayed: only every other pixel, as `GrayString` draws through a gray brush. */
+        if (grayed) {
+          for (let row = 0; row < height; row++) {
+            for (let column = 0; column < width; column++) {
+              const px = x + column;
+              const py = y + row;
+              const was = kept[row * width + column];
+
+              if (((px + py) & 1) === GRAY_PHASE && was !== null) {
+                bitmap.put(px, py, was);
+              }
+            }
+          }
+        }
+      },
     };
+  }
+
+  /**
+   * Opens a pop-up menu with its top left at `x, y` on the screen, on top of
+   * every window: its own window, a pixel larger each way for its shadow,
+   * which never becomes active.
+   */
+  openPopup(menu: MenuData, x: number, y: number, selected = -1) {
+    const layout = popupLayout(menu, this.#frameEnvironment(null));
+    const window = new DesktopWindow(
+      this.#next++,
+      x,
+      y,
+      layout.width + 1,
+      layout.height + 1,
+      0x80000000,
+      '',
+      undefined,
+      null
+    );
+
+    window.popup = { menu, selected };
+    window.visible = true;
+    this.windows.unshift(window);
+    this.#own();
+    this.paintPopup(window);
+
+    return window;
+  }
+
+  /** Paints a pop-up menu's window again: its selection may have moved. */
+  paintPopup(window: DesktopWindow) {
+    if (!window.popup) {
+      return;
+    }
+
+    const whole = this.#view(window, 0, 0, window.width, window.height);
+
+    paintPopup(
+      whole,
+      0,
+      0,
+      window.popup.menu,
+      window.popup.selected,
+      this.#frameEnvironment(whole)
+    );
+  }
+
+  /**
+   * Where each item of a window's menu bar is on the screen: its text's width
+   * and the space either side, the bar's height.
+   */
+  menuBarItems(window: DesktopWindow) {
+    const environment = this.#frameEnvironment(null);
+    const bar = this.environment.metric(SM_CYMENU);
+    const top = window.top + window.client.top - 1 - bar;
+    let x = window.left + window.client.left;
+
+    return (window.menu ?? []).map((label) => {
+      const width = environment.measure(label.replace('&', '')) + 2 * MENU_GAP;
+      const item = { left: x, right: x + width, top, bottom: top + bar };
+
+      x += width;
+
+      return item;
+    });
+  }
+
+  /** Where a window's system menu opens: under its box, on the caption's bottom line. */
+  systemMenuPlace(window: DesktopWindow) {
+    const bar = window.menu ? this.environment.metric(SM_CYMENU) + 1 : 0;
+
+    return {
+      x: window.left + window.client.left,
+      y: window.top + window.client.top - 1 - bar,
+    };
+  }
+
+  /** Gives a window a menu bar, or takes it away, and paints it. */
+  setMenu(window: DesktopWindow, labels: string[] | undefined) {
+    const had = window.menu !== undefined;
+
+    window.menu = labels;
+
+    if (had !== (labels !== undefined)) {
+      this.place(window, window.left, window.top, window.width, window.height);
+    } else {
+      this.paintFrame(window);
+    }
+  }
+
+  /** Where each item of an open pop-up is, from its window's top. */
+  popupPlaces(window: DesktopWindow) {
+    return window.popup ? popupLayout(window.popup.menu, this.#frameEnvironment(null)).places : [];
   }
 
   /** The window made active last, if it is still showing. */
@@ -372,7 +552,14 @@ export class Desktop {
       0,
       window.width,
       window.height,
-      { style: window.style, active: window.active, title: window.title, menu: window.menu },
+      {
+        style: window.style,
+        active: window.active,
+        title: window.title,
+        menu: window.menu,
+        menuSelected: window.menuSelected,
+        systemMenuOpen: window.systemMenuOpen,
+      },
       this.#frameEnvironment(whole)
     );
   }
@@ -419,7 +606,14 @@ export class Desktop {
       0,
       window.width,
       window.height,
-      { style: window.style, active: window.active, title: window.title, menu: window.menu },
+      {
+        style: window.style,
+        active: window.active,
+        title: window.title,
+        menu: window.menu,
+        menuSelected: window.menuSelected,
+        systemMenuOpen: window.systemMenuOpen,
+      },
       this.#frameEnvironment(null)
     );
 
@@ -480,11 +674,24 @@ export class Desktop {
         bottom = Math.min(bottom, parent.top + parent.client.bottom);
       }
 
+      /* A pop-up's shadow leaves its two outer corners to what is beneath. */
+      const corners = window.popup
+        ? [
+            [window.left + window.width - 1, window.top],
+            [window.left, window.top + window.height - 1],
+          ].filter(([cx, cy]) => cx >= 0 && cy >= 0 && cx < stride && cy < this.screen.height)
+        : [];
+      const beneath = corners.map(([cx, cy]) => this.owners[cy * stride + cx]);
+
       for (let y = top; y < bottom; y++) {
         if (right > left) {
           this.owners.fill(window.id, y * stride + left, y * stride + right);
         }
       }
+
+      corners.forEach(([cx, cy], index) => {
+        this.owners[cy * stride + cx] = beneath[index];
+      });
     }
   }
 

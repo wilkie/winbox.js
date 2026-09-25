@@ -2,7 +2,7 @@
 
 import { FALSE, TRUE } from '../consts.js';
 
-import { MenuData, MF_BITMAP, MF_OWNERDRAW } from './menu-data.js';
+import { MenuData, MF_BITMAP, MF_OWNERDRAW, MF_POPUP, MF_SEPARATOR } from './menu-data.js';
 
 /**
  * The **AppendMenu** function adds an item to the end of a menu.
@@ -24,9 +24,18 @@ export function AppendMenu(hmenu, fuFlags, idNewItem, lpNewItem) {
     return FALSE;
   }
 
-  const text = fuFlags & (MF_BITMAP | MF_OWNERDRAW) ? null : (lpNewItem?.toString() ?? null);
+  const text =
+    fuFlags & (MF_BITMAP | MF_OWNERDRAW | MF_SEPARATOR) ? null : (lpNewItem?.toString() ?? null);
 
-  menu.items.push({ flags: fuFlags, id: idNewItem, text });
+  /* A pop-up item's identifier is the handle of the menu it opens. */
+  const popup = fuFlags & MF_POPUP ? this.handles.resolve(idNewItem) : null;
+
+  menu.items.push({
+    flags: fuFlags,
+    id: popup ? 0 : idNewItem,
+    text,
+    popup: popup instanceof MenuData ? popup : undefined,
+  });
 
   return TRUE;
 }

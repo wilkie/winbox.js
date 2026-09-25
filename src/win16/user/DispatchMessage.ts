@@ -4,6 +4,8 @@ import { NULL } from '../consts.js';
 
 import { User } from '../user.js';
 
+import { callTimerProc } from './queue.js';
+
 /**
  * The **DispatchMessage** function dispatches a message to a window. It is
  * typically used to dispatch a message retrieved by the
@@ -34,8 +36,17 @@ import { User } from '../user.js';
  *                      ignored.
  */
 export async function DispatchMessage(lpmsg) {
+  /* A timer set with a procedure calls it, not the window's procedure. */
+  if (lpmsg.message === User.WM_TIMER && lpmsg.lParam) {
+    return await callTimerProc(this, lpmsg);
+  }
+
   // Get the window itself
   const dialog = this.handles.resolve(lpmsg.hwnd);
+
+  if (!dialog) {
+    return 0;
+  }
 
   // Get the window/class for the handle
   const windowClass = this.handles.retrieve(dialog.options.windowClass);

@@ -2,6 +2,8 @@
 
 import { User } from '../user.js';
 
+import { nextMessage } from './queue.js';
+
 import { TRUE, FALSE } from '../consts.js';
 
 /**
@@ -62,20 +64,8 @@ import { TRUE, FALSE } from '../consts.js';
  *                      message is retrieved.
  */
 export async function GetMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax) {
-  /* With nothing queued, a window due to be painted is. See `PeekMessage`. */
-  const unpainted = this.scheduler.task.peek() ? null : this.rasterDesktop?.unpainted;
-
-  // Wait until we have a message, and pull it
-  const msg = unpainted
-    ? {
-        hwnd: unpainted.hwnd,
-        message: User.WM_PAINT,
-        wParam: 0,
-        lParam: 0,
-        time: 0,
-        pt: { x: 0, y: 0 },
-      }
-    : await this.scheduler.task.pull();
+  /* The next message in the order Windows gives them, waiting for one. See `queue.ts`. */
+  const msg = await nextMessage(this);
 
   // Copy message to memory
   lpmsg.hwnd = msg.hwnd;
@@ -83,10 +73,9 @@ export async function GetMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax) {
   lpmsg.wParam = msg.wParam;
   lpmsg.lParam = msg.lParam;
   lpmsg.time = msg.time;
-  lpmsg.pt.x = msg.pt.x;
-  lpmsg.pt.y = msg.pt.y;
+  lpmsg.pt.x = msg.pt?.x ?? 0;
+  lpmsg.pt.y = msg.pt?.y ?? 0;
 
-  //console.log("returning", lpmsg);
   if (msg.message == User.WM_QUIT) {
     return FALSE;
   }

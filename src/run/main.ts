@@ -231,7 +231,12 @@ function attachInput(canvas: HTMLCanvasElement, input: any) {
 
   const key = (kind: 'down' | 'up') => (event: KeyboardEvent) => {
     event.preventDefault();
-    input.key(kind, { code: event.code, key: event.key, repeat: event.repeat });
+    input.key(kind, {
+      code: event.code,
+      key: event.key,
+      repeat: event.repeat,
+      alt: event.altKey,
+    });
   };
 
   canvas.addEventListener('keydown', key('down'));

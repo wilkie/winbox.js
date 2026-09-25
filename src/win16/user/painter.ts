@@ -103,6 +103,24 @@ export class Painter {
     }
   }
 
+  /** Inverts a rectangle: every bit of each pixel's index, as `DSTINVERT` does. */
+  invert(x0: number, y0: number, x1: number, y1: number) {
+    const screen = this.screen;
+    const mask = (1 << screen.depth) - 1;
+
+    screen.context.markRect(this.left + x0, this.top + y0, this.left + x1, this.top + y1);
+
+    for (let y = Math.max(y0, 0); y < Math.min(y1, this.height); y++) {
+      for (let x = Math.max(x0, 0); x < Math.min(x1, this.width); x++) {
+        const index = screen.indexAt(this.left + x, this.top + y);
+
+        if (index !== null) {
+          screen.put(this.left + x, this.top + y, index ^ mask);
+        }
+      }
+    }
+  }
+
   /** A rectangle's edges, a pixel wide, inside it. */
   outline(x0: number, y0: number, x1: number, y1: number, paint: Paint) {
     this.fill(x0, y0, x1, y0 + 1, paint);

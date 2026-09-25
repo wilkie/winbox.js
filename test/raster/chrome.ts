@@ -81,10 +81,27 @@ function driverOf(drive: string) {
   return join(ROOT, 'oracle', 'build', drive, 'WINDOWS', 'SYSTEM', name.toUpperCase());
 }
 
-/** A device index as the digit the probe wrote: its place in the Windows palette. */
-export function digitOf(depth: number, index: number) {
+/** The colours the probes write a digit for, in the Windows palette's order, as `0xRRGGBB`. */
+const PROBE_COLOURS = [
+  0x000000, 0x800000, 0x008000, 0x808000, 0x000080, 0x800080, 0x008080, 0xc0c0c0, 0x808080,
+  0xff0000, 0x00ff00, 0xffff00, 0x0000ff, 0xff00ff, 0x00ffff, 0xffffff,
+];
+
+/**
+ * A pixel as the digit the probe wrote: its colour's place in the Windows
+ * palette, or `?` for a colour that is not one of those sixteen -- the EGA's
+ * dark grey.
+ */
+export function digitOf(depth: number, index: number, palette?: any) {
   if (depth === 1) {
     return index ? 'f' : '0';
+  }
+
+  if (palette) {
+    const [red, green, blue] = palette.colours[index] ?? [0, 0, 0];
+    const at = PROBE_COLOURS.indexOf((red << 16) | (green << 8) | blue);
+
+    return at < 0 ? '?' : at.toString(16);
   }
 
   return (index === 7 ? 8 : index === 8 ? 7 : index).toString(16);
@@ -141,7 +158,11 @@ export function differences(
 
   for (let y = 0; y < rows.length; y++) {
     for (let x = 0; x < rows[y].length; x++) {
-      const got = digitOf(depth, bitmap.indices[(top + y) * bitmap.width + left + x]);
+      const got = digitOf(
+        depth,
+        bitmap.indices[(top + y) * bitmap.width + left + x],
+        bitmap.devicePalette
+      );
 
       if (got !== rows[y][x]) {
         wrong.push(`${x},${y}: ${got} want ${rows[y][x]}`);

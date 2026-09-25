@@ -4,6 +4,8 @@ import { TRUE, FALSE } from '../consts.js';
 
 import { User } from '../user.js';
 
+import { nextMessage } from './queue.js';
+
 /**
  * The **PeekMessage** function checks the application's message queue for a
  * message and places the message (if any) in the specified MSG structure.
@@ -82,54 +84,22 @@ import { User } from '../user.js';
  *                      Otherwise, it is zero.
  */
 export async function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuRemove) {
-  let msg = this.scheduler.task.peek();
+  /* The next message, if there is one, in the order Windows gives them;
+   * `PeekMessage` never waits. See `queue.ts`. */
+  const msg = await nextMessage(this, { remove: (fuRemove & User.PM_REMOVE) !== 0, wait: false });
 
-  /* With nothing queued, a window due to be painted is: `WM_PAINT` is made
-   * when it is asked for, and stays until the window is painted. */
   if (!msg) {
-    const unpainted = this.rasterDesktop?.unpainted;
-
-    if (unpainted) {
-      lpmsg.hwnd = unpainted.hwnd;
-      lpmsg.message = User.WM_PAINT;
-      lpmsg.wParam = 0;
-      lpmsg.lParam = 0;
-      lpmsg.time = 0;
-      lpmsg.pt.x = 0;
-      lpmsg.pt.y = 0;
-
-      return TRUE;
-    }
-  }
-
-  /* Only a message that is there is taken: `pull` waits for one, and
-   * `PeekMessage` never waits. */
-  if (msg && fuRemove & User.PM_REMOVE) {
-    msg = await this.scheduler.task.pull();
-  }
-
-  if (msg) {
-    // Copy message to memory
-    lpmsg.hwnd = msg.hwnd;
-    lpmsg.message = msg.message;
-    lpmsg.wParam = msg.wParam;
-    lpmsg.lParam = msg.lParam;
-    lpmsg.time = msg.time;
-    lpmsg.pt.x = msg.pt.x;
-    lpmsg.pt.y = msg.pt.y;
-
-    if (!(fuRemove & User.PM_NOYIELD)) {
-      return TRUE;
-    }
-
-    return TRUE;
-  } else {
     return FALSE;
-    // No message... let's halt
-    return new Promise((resolve) => {
-      window.setTimeout(() => {
-        resolve(FALSE);
-      }, 50);
-    });
   }
+
+  // Copy message to memory
+  lpmsg.hwnd = msg.hwnd;
+  lpmsg.message = msg.message;
+  lpmsg.wParam = msg.wParam;
+  lpmsg.lParam = msg.lParam;
+  lpmsg.time = msg.time;
+  lpmsg.pt.x = msg.pt?.x ?? 0;
+  lpmsg.pt.y = msg.pt?.y ?? 0;
+
+  return TRUE;
 }

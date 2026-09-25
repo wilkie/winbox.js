@@ -75,11 +75,16 @@ export async function LoadMenu(hinst, lpszMenuName) {
 
   const data = new Uint8Array(await executable.readResource(resourceInfo));
 
-  return this.handles.allocate(parseMenu(data, resourceInfo.length));
+  const menu = parseMenu(data, resourceInfo.length);
+
+  menu.handle = this.handles.allocate(menu);
+
+  return menu.handle;
 }
 
 const MF_POPUP = 0x0010;
 const MF_END = 0x0080;
+const MF_SEPARATOR = 0x0800;
 
 /**
  * A menu resource as a menu: a header of two words, the version and the
@@ -115,7 +120,15 @@ export function parseMenu(data: Uint8Array, length = data.length) {
     const menu = stack[stack.length - 1];
     const popup = flags & MF_POPUP ? new MenuData() : undefined;
 
-    menu.items.push({ flags: flags & ~MF_END, id, text, popup });
+    /* A separator is written as an item with no text and no identifier. */
+    const separator = !popup && id === 0 && text === '';
+
+    menu.items.push({
+      flags: (flags & ~MF_END) | (separator ? MF_SEPARATOR : 0),
+      id,
+      text: separator ? null : text,
+      popup,
+    });
 
     if (flags & MF_END) {
       stack.pop();

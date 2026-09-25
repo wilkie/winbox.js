@@ -68,6 +68,9 @@ export interface Key {
   /** What it types, if it types one character. */
   key: string;
   repeat: boolean;
+
+  /** Whether Alt is held: the key is then a system key. */
+  alt?: boolean;
 }
 
 export class RasterInput {
@@ -75,6 +78,9 @@ export class RasterInput {
 
   /** The window the mouse is captured by, with `SetCapture`. */
   capture: DesktopWindow | null = null;
+
+  /** Which buttons are down, as bits: left, right, middle. */
+  buttons = 0;
 
   /** The character each virtual key typed last, for `TranslateMessage`. */
   readonly typed = new Map<number, number>();
@@ -93,6 +99,7 @@ export class RasterInput {
    * A press on a window that is not active makes it active first.
    */
   pointer(kind: 'down' | 'up' | 'move', pointer: Pointer) {
+    this.buttons = pointer.buttons;
     const desktop = this.desktop;
     const target = this.capture ?? desktop.windowAt(pointer.x, pointer.y);
 
@@ -163,6 +170,10 @@ export class RasterInput {
 
     let code: any = key.code;
 
+    if (code === 'AltLeft' || code === 'AltRight') {
+      code = User.VK_MENU;
+    }
+
     if (/^Key[A-Z]$/.test(code)) {
       code = code.charCodeAt(3);
     } else if (/^Digit[0-9]$/.test(code)) {
@@ -182,7 +193,17 @@ export class RasterInput {
     /* The repeat count, and bit 30 for a key that was already down; bit 31 for a release. */
     const lParam = 1 | (key.repeat ? 1 << 30 : 0) | (kind === 'up' ? (3 << 30) >>> 0 : 0);
 
-    this.#post(target, kind === 'down' ? User.WM_KEYDOWN : User.WM_KEYUP, virtual, lParam);
+    /* With Alt held, or Alt itself, the key is a system key; bit 29 says Alt is down. */
+    const system = key.alt || virtual === User.VK_MENU;
+    const message = system
+      ? kind === 'down'
+        ? User.WM_SYSKEYDOWN
+        : User.WM_SYSKEYUP
+      : kind === 'down'
+        ? User.WM_KEYDOWN
+        : User.WM_KEYUP;
+
+    this.#post(target, message, virtual, (lParam | (key.alt ? 1 << 29 : 0)) >>> 0);
   }
 
   /**

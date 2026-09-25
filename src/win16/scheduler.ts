@@ -339,6 +339,11 @@ export class Scheduler {
     return await this.call(User, newCS, newIP, args, LRESULT);
   }
 
+  /** Calls a procedure a program gave, a far pointer, with arguments: a timer's, say. */
+  async callProc(proc, args) {
+    return await this.call(User, (proc >> 16) & 0xffff, proc & 0xffff, args, LRESULT);
+  }
+
   /**
    * Calls into the VM from the given module.
    *

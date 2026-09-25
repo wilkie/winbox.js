@@ -9,7 +9,15 @@ import { decodeDib, dibToDevice } from '../../src/raster/dib.js';
 import { GetPixel } from '../../src/win16/gdi/GetPixel.js';
 import { displayMode } from '../../src/win16/display-modes.js';
 import { resourcesOf, RT_BITMAP } from '../../src/win16/ne-resources.js';
-import { User, PAINTSTRUCT, POINT, RECT, WNDCLASS } from '../../src/win16/user.js';
+import { MSG, User, PAINTSTRUCT, POINT, RECT, WNDCLASS } from '../../src/win16/user.js';
+import { CreatePopupMenu } from '../../src/win16/user/CreateMenu.js';
+import { DispatchMessage } from '../../src/win16/user/DispatchMessage.js';
+import { PeekMessage } from '../../src/win16/user/PeekMessage.js';
+import { PostMessage } from '../../src/win16/user/PostMessage.js';
+import { SendMessage } from '../../src/win16/user/SendMessage.js';
+import { KillTimer, SetTimer } from '../../src/win16/user/SetTimer.js';
+import { TrackPopupMenu } from '../../src/win16/user/TrackPopupMenu.js';
+import { TranslateMessage } from '../../src/win16/user/TranslateMessage.js';
 import { AppendMenu } from '../../src/win16/user/AppendMenu.js';
 import { BeginPaint } from '../../src/win16/user/BeginPaint.js';
 import { ClientToScreen } from '../../src/win16/user/ClientToScreen.js';
@@ -276,4 +284,179 @@ async function capture(system: any, name: string) {
   DestroyWindow.call(system, hwnd);
 
   return { rects, rows };
+}
+
+/* ---- menus ---- */
+
+const MENUS_AREA = { left: 32, top: 32, right: 352, bottom: 272 };
+const WM_TIMER = 0x0113;
+const WM_KEYDOWN = 0x0100;
+const WM_SYSCOMMAND = 0x0112;
+const SC_KEYMENU = 0xf100;
+const VK_ESCAPE = 0x1b;
+const VK_DOWN = 0x28;
+const MF_STRING = 0x0000;
+const MF_GRAYED = 0x0001;
+const MF_CHECKED = 0x0008;
+const MF_POPUP = 0x0010;
+const MF_SEPARATOR = 0x0800;
+
+const menuCaptures = new Map<string, Promise<Map<string, string[]>>>();
+
+/**
+ * The `menus` probe, replayed through the exports, once per display: its
+ * window with a menu bar, and each menu opened from inside and read back by
+ * its window procedure on a timer, as the probe does it. The menu's own loop
+ * dispatches the timer; the procedure posts Escape until the menu is gone.
+ */
+export function menusCapture(context: any) {
+  const key = context.display.name;
+
+  if (!menuCaptures.has(key)) {
+    menuCaptures.set(key, captureMenus(context));
+  }
+
+  return menuCaptures.get(key)!;
+}
+
+async function captureMenus(system: any) {
+  const captured = new Map<string, string[]>();
+  let pending: string | null = null;
+  let frame = 0;
+
+  const read = (name: string) => {
+    const screen = GetDC.call(system, 0);
+    const rows: string[] = [];
+
+    for (let y = MENUS_AREA.top; y < MENUS_AREA.bottom; y++) {
+      let row = '';
+
+      for (let x = MENUS_AREA.left; x < MENUS_AREA.right; x++) {
+        const index = PALETTE.indexOf(GetPixel.call(system, screen, x, y) & 0xffffff);
+
+        row += index < 0 ? '?' : index.toString(16);
+      }
+
+      rows.push(row);
+    }
+
+    ReleaseDC.call(system, 0, screen);
+    captured.set(name, rows);
+  };
+
+  async function ProbeProc(hwnd: number, message: number, wParam: number, lParam: number) {
+    if (message === User.WM_PAINT) {
+      const paint = new PAINTSTRUCT();
+
+      await BeginPaint.call(system, hwnd, paint);
+      EndPaint.call(system, hwnd, paint);
+      return 0;
+    }
+
+    if (message === WM_TIMER && wParam === 1) {
+      KillTimer.call(system, hwnd, 1);
+
+      if (pending) {
+        read(pending);
+        pending = null;
+      }
+
+      PostMessage.call(system, hwnd, WM_KEYDOWN, VK_ESCAPE, 0);
+      PostMessage.call(system, hwnd, WM_KEYDOWN, VK_ESCAPE, 0);
+      PostMessage.call(system, hwnd, WM_KEYDOWN, VK_ESCAPE, 0);
+      return 0;
+    }
+
+    return DefWindowProc.call(system, hwnd, message, wParam, lParam);
+  }
+
+  /* The probe's pump: every queued message taken and dispatched. */
+  const pump = async () => {
+    const msg: any = new MSG();
+
+    while (await PeekMessage.call(system, msg, 0, 0, 0, User.PM_REMOVE)) {
+      TranslateMessage.call(system, msg);
+      await DispatchMessage.call(system, msg);
+    }
+  };
+
+  const kind: any = new WNDCLASS();
+
+  kind.style = 0x0003;
+  kind.lpfnWndProc = ProbeProc;
+  kind.hbrBackground = 5 + 1;
+  kind.lpszClassName = 'ProbeMenus';
+  await RegisterClass.call(system, kind);
+
+  const recent = CreatePopupMenu.call(system);
+  AppendMenu.call(system, recent, MF_STRING, 20, '&First');
+  AppendMenu.call(system, recent, MF_STRING, 21, '&Second');
+
+  const file = CreatePopupMenu.call(system);
+  AppendMenu.call(system, file, MF_STRING, 10, '&New');
+  AppendMenu.call(system, file, MF_STRING, 11, '&Open...\tCtrl+O');
+  AppendMenu.call(system, file, MF_SEPARATOR, 0, null);
+  AppendMenu.call(system, file, MF_STRING | MF_CHECKED, 12, '&Word Wrap');
+  AppendMenu.call(system, file, MF_STRING | MF_GRAYED, 13, '&Print');
+  AppendMenu.call(system, file, MF_POPUP, recent, '&Recent');
+  AppendMenu.call(system, file, MF_SEPARATOR, 0, null);
+  AppendMenu.call(system, file, MF_STRING, 14, 'E&xit');
+
+  const edit = CreatePopupMenu.call(system);
+  AppendMenu.call(system, edit, MF_STRING, 30, '&Undo');
+
+  const bar = CreateMenu.call(system);
+  AppendMenu.call(system, bar, MF_POPUP, file, '&File');
+  AppendMenu.call(system, bar, MF_POPUP, edit, '&Edit');
+  AppendMenu.call(system, bar, MF_STRING, 40, '&Help');
+
+  frame = await CreateWindow.call(
+    system,
+    'ProbeMenus',
+    'Menus',
+    0x00cf0000,
+    40,
+    40,
+    240,
+    160,
+    0,
+    bar,
+    0,
+    0
+  );
+  await ShowWindow.call(system, frame, User.SW_SHOWNORMAL);
+  await UpdateWindow.call(system, frame);
+  await pump();
+
+  read('bar');
+
+  const captureOpen = async (name: string, key: number, down: boolean) => {
+    pending = name;
+    SetTimer.call(system, frame, 1, 300, 0);
+
+    if (down) {
+      PostMessage.call(system, frame, WM_KEYDOWN, VK_DOWN, 0);
+    }
+
+    await SendMessage.call(system, frame, WM_SYSCOMMAND, SC_KEYMENU, key);
+    await pump();
+  };
+
+  await captureOpen('file', 'f'.charCodeAt(0), false);
+  await captureOpen('down', 'f'.charCodeAt(0), true);
+
+  const popup = CreatePopupMenu.call(system);
+  AppendMenu.call(system, popup, MF_STRING, 50, '&Cut');
+  AppendMenu.call(system, popup, MF_STRING, 51, 'C&opy');
+  AppendMenu.call(system, popup, MF_STRING | MF_GRAYED, 52, '&Paste');
+  pending = 'popup';
+  SetTimer.call(system, frame, 1, 300, 0);
+  await TrackPopupMenu.call(system, popup, 0, 150, 120, 0, frame, 0);
+  await pump();
+
+  await captureOpen('system', ' '.charCodeAt(0), false);
+
+  DestroyWindow.call(system, frame);
+
+  return captured;
 }

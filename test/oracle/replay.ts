@@ -12,7 +12,7 @@ import { Surface } from '../../src/raster/surface.js';
 import { DeviceBitmap } from '../../src/raster/device-bitmap.js';
 import { DevicePalette } from '../../src/raster/device-palette.js';
 import { rasterDesktop } from '../../src/win16/user/raster-desktop.js';
-import { NoDrive, chromeCapture, oemBitmaps } from './replay-windows.js';
+import { NoDrive, chromeCapture, menusCapture, oemBitmaps } from './replay-windows.js';
 import { Brush } from '../../src/raster/brush.js';
 import { Pen } from '../../src/raster/pen.js';
 import { Color } from '../../src/raster/color.js';
@@ -496,6 +496,21 @@ export class Context {
    */
   scheduler = {
     active: 0,
+
+    /* The one program's queue: what is posted to it, taken in order, never
+     * waited for -- a replay has nothing to wait on. */
+    task: {
+      messages: [] as any[],
+      push(message: any) {
+        this.messages.push(message);
+      },
+      peek() {
+        return this.messages[0] ?? null;
+      },
+      async pull() {
+        return this.messages.shift() ?? null;
+      },
+    },
     callWndProc: async (windowClass: any, hwnd: number, message: number, wParam: number, lParam: number) =>
       typeof windowClass?.lpfnWndProc === 'function'
         ? windowClass.lpfnWndProc(hwnd, message, wParam, lParam)
@@ -504,6 +519,9 @@ export class Context {
 
   /** And for the window manager: there is no input to route. */
   windows = { register: () => {} };
+
+  /** Time does not pass in a replay: on its clock every timer is due when asked. See `queue.ts`. */
+  virtualClock = true;
 
   constructor(display = 'vga') {
     this.machine = new Machine();
@@ -1894,6 +1912,24 @@ const ADAPTERS: Record<
     return captured.rects;
   },
 
+  /* `menus`: a window's menus opened and read back through the exports. See `replay-windows.ts`. */
+  async screen(context, args) {
+    /* `dither` names its fills `screen` too: a colour and a place, not a capture and a row. */
+    if (String(args[1] ?? '').startsWith('at=')) {
+      return context.ditherSquare(args[0], String(args[1]));
+    }
+
+    const [name, row] = args;
+    const captured = await menusCapture(context);
+    const rows = captured.get(String(name));
+
+    if (!rows) {
+      throw new Unimplemented(`the ${name} menu was not opened`);
+    }
+
+    return rows[Number(String(row).replace('y=', ''))] ?? '';
+  },
+
   async pixels(context, [name, row]) {
     const captured = await chromeCapture(context, String(name));
 
@@ -1907,10 +1943,6 @@ const ADAPTERS: Record<
   /* `dither`: a solid brush filled over a square of the display, every pixel
    * read back as its place in the palette. The display is a bitmap compatible
    * with it, whose origin is the screen's. */
-  screen(context, [colour, at]) {
-    return context.ditherSquare(colour, String(at));
-  },
-
   offset(context, [colour, at]) {
     return context.ditherSquare(colour, String(at));
   },

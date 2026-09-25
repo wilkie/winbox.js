@@ -79,6 +79,8 @@ const COLOR_INACTIVECAPTION = 3;
 const COLOR_MENU = 4;
 const COLOR_WINDOWFRAME = 6;
 const COLOR_MENUTEXT = 7;
+const COLOR_HIGHLIGHT = 13;
+const COLOR_HIGHLIGHTTEXT = 14;
 const COLOR_CAPTIONTEXT = 9;
 const COLOR_ACTIVEBORDER = 10;
 const COLOR_INACTIVEBORDER = 11;
@@ -108,6 +110,12 @@ export interface Frame {
 
   /** The menu bar's items, as `AppendMenu` was given them, `&` and all. */
   menu?: string[];
+
+  /** The menu bar's item that is selected, while a menu is open from it. */
+  menuSelected?: number;
+
+  /** Whether the system menu is open, which shows its box inverted. */
+  systemMenuOpen?: boolean;
 }
 
 /**
@@ -219,6 +227,10 @@ export function paintFrame(
 
       blit(close, inset, rowTop, size);
       fill(inset + size, rowTop, inset + size + 1, rowBottom, line);
+
+      if (frame.systemMenuOpen) {
+        painter.invert(inset, rowTop, inset + size, rowBottom);
+      }
       barLeft = inset + size + 1;
     }
 
@@ -258,7 +270,6 @@ export function paintFrame(
   /** The menu bar, from `from`; returns where the client area starts below it. */
   function paintMenu(from: number) {
     const bar = environment.metric(SM_CYMENU);
-    const ink = colour(COLOR_MENUTEXT);
     let x = inset;
 
     /* The text's cell, one pixel less than centred in the bar: 0 in the
@@ -271,13 +282,26 @@ export function paintFrame(
     fill(inset, from, width - inset, from + bar, colour(COLOR_MENU));
     fill(inset, from + bar, width - inset, from + bar + 1, line);
 
-    for (const item of frame.menu!) {
+    for (const [index, item] of frame.menu!.entries()) {
       const at = item.indexOf('&');
       const text = item.replace('&', '');
+      const selected = index === frame.menuSelected;
+      const ink = colour(selected ? COLOR_HIGHLIGHTTEXT : COLOR_MENUTEXT);
+
+      /* A selected item: the highlight, the text's width and the space either side. */
+      if (selected) {
+        fill(
+          x,
+          from,
+          x + environment.measure(text) + 2 * MENU_GAP,
+          from + bar,
+          colour(COLOR_HIGHLIGHT)
+        );
+      }
 
       environment.text(
         text,
-        environment.sysColor(COLOR_MENUTEXT),
+        environment.sysColor(selected ? COLOR_HIGHLIGHTTEXT : COLOR_MENUTEXT),
         left + x + MENU_GAP,
         top + from + cell
       );

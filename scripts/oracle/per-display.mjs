@@ -13,6 +13,7 @@
  */
 export const PER_DISPLAY = new Set([
   'devcaps',
+  'menus',
   'maxwidth',
   'charscal',
   'glyphs',

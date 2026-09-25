@@ -46,7 +46,17 @@ import { AnsiUpper } from './user/AnsiUpper.js';
 import { BeginPaint } from './user/BeginPaint.js';
 import { CopyRect } from './user/CopyRect.js';
 import { CreateWindow } from './user/CreateWindow.js';
-import { CreateMenu } from './user/CreateMenu.js';
+import { CreateMenu, CreatePopupMenu } from './user/CreateMenu.js';
+import {
+  CheckMenuItem,
+  DestroyMenu,
+  DrawMenuBar,
+  EnableMenuItem,
+  GetSubMenu,
+  GetSystemMenu,
+  SetMenu,
+} from './user/menu-api.js';
+import { TrackPopupMenu } from './user/TrackPopupMenu.js';
 import { AppendMenu } from './user/AppendMenu.js';
 import { ClientToScreen } from './user/ClientToScreen.js';
 import { GetDlgItem } from './user/GetDlgItem.js';
@@ -89,7 +99,8 @@ import { RedrawWindow } from './user/RedrawWindow.js';
 import { ReleaseDC } from './user/ReleaseDC.js';
 import { SendMessage } from './user/SendMessage.js';
 import { SetFocus } from './user/SetFocus.js';
-import { SetTimer } from './user/SetTimer.js';
+import { KillTimer, SetTimer } from './user/SetTimer.js';
+import { PostMessage } from './user/PostMessage.js';
 import { SetRect } from './user/SetRect.js';
 import { SetWindowText } from './user/SetWindowText.js';
 import { ShowWindow } from './user/ShowWindow.js';
@@ -482,7 +493,7 @@ export class User extends Module {
       // 10 //
       [SetTimer, 'SetTimer', 10, [HWND, UINT, UINT, FARPTR], UINT],
       [User.stub, 'Bear11', 10],
-      [User.stub, 'KillTimer', 4],
+      [KillTimer, 'KillTimer', 4, [HWND, UINT], BOOL],
       [GetTickCount, 'GetTickCount', 0, [], DWORD],
       [User.stub, 'GetTimerResolution', 0],
       [User.stub, 'GetCurrentTime', 0],
@@ -596,7 +607,7 @@ export class User extends Module {
       [GetMessage, 'GetMessage', 10, [[MSG], HWND, UINT, UINT], BOOL],
       [PeekMessage, 'PeekMessage', 12, [[MSG], HWND, UINT, UINT, UINT], BOOL],
       // 110 //
-      [User.stub, 'PostMessage', 10],
+      [PostMessage, 'PostMessage', 10, [HWND, UINT, WPARAM, LPARAM], BOOL],
       [SendMessage, 'SendMessage', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
       [User.stub, 'WaitMessage', 0],
       [TranslateMessage, 'TranslateMessage', 4, [[MSG]], BOOL],
@@ -642,16 +653,16 @@ export class User extends Module {
       // 150 //
       [LoadMenu, 'LoadMenu', 6, [HINSTANCE, LPCSTR], HMENU],
       [CreateMenu, 'CreateMenu', 0, [], HMENU],
-      [User.stub, 'DestroyMenu', 2],
+      [DestroyMenu, 'DestroyMenu', 2, [HMENU], BOOL],
       [User.stub, 'ChangeMenu', 12],
-      [User.stub, 'CheckMenuItem', 6],
-      [User.stub, 'EnableMenuItem', 6],
-      [User.stub, 'GetSystemMenu', 4],
+      [CheckMenuItem, 'CheckMenuItem', 6, [HMENU, UINT, UINT], INT],
+      [EnableMenuItem, 'EnableMenuItem', 6, [HMENU, UINT, UINT], BOOL],
+      [GetSystemMenu, 'GetSystemMenu', 4, [HWND, BOOL], HMENU],
       [GetMenu, 'GetMenu', 2, [HWND], HMENU],
-      [User.stub, 'SetMenu', 4],
-      [User.stub, 'GetSubMenu', 4],
+      [SetMenu, 'SetMenu', 4, [HWND, HMENU], BOOL],
+      [GetSubMenu, 'GetSubMenu', 4, [HMENU, INT], HMENU],
       // 160 //
-      [User.stub, 'DrawMenuBar', 2],
+      [DrawMenuBar, 'DrawMenuBar', 2, [HWND]],
       [User.stub, 'GetMenuString', 12],
       [User.stub, 'HiliteMenuItem', 8],
       [User.stub, 'CreateCaret', 8],
@@ -931,8 +942,8 @@ export class User extends Module {
       [User.stub, 'RemoveMenu', 6],
       [User.stub, 'DeleteMenu', 6],
       [User.stub, 'ModifyMenu', 12],
-      [User.stub, 'CreatePopupMenu', 0],
-      [User.stub, 'TrackPopupMenu', 16],
+      [CreatePopupMenu, 'CreatePopupMenu', 0, [], HMENU],
+      [TrackPopupMenu, 'TrackPopupMenu', 16, [HMENU, UINT, INT, INT, INT, HWND, FARPTR], BOOL],
       [User.stub, 'GetMenuCheckmarkDimensions', 0],
       [User.stub, 'SetMenuItemBitmaps', 10],
       [User.stub, 'Unknown'],

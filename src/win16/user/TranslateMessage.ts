@@ -61,11 +61,14 @@ export function TranslateMessage(lpmsg) {
      * what a key typed. */
     const typed = this.rasterInput?.typed.get(lpmsg.wParam);
 
-    if (lpmsg.message === User.WM_KEYDOWN && typed !== undefined) {
+    if (
+      (lpmsg.message === User.WM_KEYDOWN || lpmsg.message === User.WM_SYSKEYDOWN) &&
+      typed !== undefined
+    ) {
       const msg: any = new MSG();
 
       msg.hwnd = lpmsg.hwnd;
-      msg.message = User.WM_CHAR;
+      msg.message = lpmsg.message === User.WM_KEYDOWN ? User.WM_CHAR : User.WM_SYSCHAR;
       msg.wParam = typed;
       msg.lParam = lpmsg.lParam;
       msg.time = lpmsg.time;
