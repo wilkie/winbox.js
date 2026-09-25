@@ -20,7 +20,12 @@ function archive(files: { path: string; data: Uint8Array }[]) {
 
     locals.push(...u32(0x04034b50), ...u16(20), ...u16(0), ...u16(0), ...u32(0), ...u32(0));
     locals.push(...u32(file.data.length), ...u32(file.data.length), ...u16(name.length), ...u16(0));
-    locals.push(...name, ...file.data);
+    locals.push(...name);
+
+    // A byte at a time: spread, a program's worth of bytes overflows the stack.
+    for (const byte of file.data) {
+      locals.push(byte);
+    }
 
     central.push(...u32(0x02014b50), ...u16(20), ...u16(20), ...u16(0), ...u16(0), ...u32(0));
     central.push(...u32(0), ...u32(file.data.length), ...u32(file.data.length));
@@ -138,9 +143,9 @@ test("draws a real program's windows on the raster screen, from the installation
 
   await expect(screen).toBeVisible();
 
-  /* The screen takes the keyboard when it is pressed, as Windows' input. */
+  /* The desktop takes the keyboard when the screen is pressed, as Windows' input. */
   await screen.click({ position: { x: 10, y: 10 } });
-  await expect(screen).toBeFocused();
+  await expect(page.getByRole('application', { name: 'Windows desktop' })).toBeFocused();
 
   await page.getByRole('button', { name: 'Run C:\\PROBES\\CHROME.EXE' }).click();
 
@@ -152,4 +157,81 @@ test("draws a real program's windows on the raster screen, from the installation
    * window back from the screen. */
   await expect(page.locator('#counts')).toContainText('USER.GetWindowRect', { timeout: 20000 });
   await expect(page.locator('#counts')).toContainText('GDI.GetPixel');
+});
+
+/* Notepad, from the installation, as a screen reader is given it: the mirror
+ * of USER's windows beside the canvas, and the keyboard's place in it. */
+const NOTEPAD = join(DRIVE_C, 'NOTEPAD.EXE');
+
+test('mirrors Notepad for a screen reader, its menu opened from the keyboard', async ({ page }) => {
+  test.skip(!existsSync(NOTEPAD), 'the oracle pipeline has not run here');
+
+  const system = join(DRIVE_C, 'SYSTEM');
+  const files = [
+    { path: 'WINDOWS/SYSTEM.INI', data: new Uint8Array(readFileSync(join(DRIVE_C, 'SYSTEM.INI'))) },
+    { path: 'WINDOWS/WIN.INI', data: new Uint8Array(readFileSync(join(DRIVE_C, 'WIN.INI'))) },
+    ...readdirSync(system)
+      .filter((name: string) => /\.(FON|DRV)$|^USER\.EXE$/i.test(name))
+      .map((name: string) => ({
+        path: `WINDOWS/SYSTEM/${name}`,
+        data: new Uint8Array(readFileSync(join(system, name))),
+      })),
+  ];
+
+  await page.goto('/run.html');
+  await expect(page.locator('#status')).toHaveText('Ready.');
+  await page.locator('#picker').setInputFiles({
+    name: 'win31.zip',
+    mimeType: 'application/zip',
+    buffer: archive(files),
+  });
+  await page.locator('#picker').setInputFiles({
+    name: 'apps.zip',
+    mimeType: 'application/zip',
+    buffer: archive([{ path: 'NOTEPAD.EXE', data: new Uint8Array(readFileSync(NOTEPAD)) }]),
+  });
+  await page.getByRole('button', { name: 'Run C:\\APPS\\NOTEPAD.EXE' }).click();
+
+  const window = page.getByRole('group', { name: 'Notepad - (Untitled)' });
+
+  await expect(window).toHaveCount(1, { timeout: 20000 });
+  await expect(window).toHaveAttribute('aria-description', 'active');
+  const bar = window.getByRole('menubar').getByRole('menuitem');
+
+  await expect(bar).toHaveCount(4);
+  expect(
+    await bar.evaluateAll((items) => items.map((item) => item.getAttribute('aria-label')))
+  ).toEqual(['File', 'Edit', 'Search', 'Help']);
+  await expect(window.getByRole('textbox')).toHaveCount(1);
+
+  /* Alt and F, as a keyboard user opens a menu: the reader is pointed at the
+   * menu's first item. */
+  const desktop = page.getByRole('application', { name: 'Windows desktop' });
+
+  /* On Notepad's caption, which Windows put in the middle of the screen. */
+  const screen = page.getByRole('img', { name: 'The Windows screen' });
+  const box = (await screen.boundingBox())!;
+
+  await screen.click({ position: { x: box.width / 2, y: (100 * box.height) / 480 } });
+  await expect(desktop).toBeFocused();
+  const file = window.getByRole('menuitem', { name: 'File', exact: true });
+
+  /* Pressed and released on File, as a mouse user opens a menu: it stays
+   * open, and the reader is pointed at File. */
+  await screen.click({ position: { x: (143 * box.width) / 640, y: (121 * box.height) / 480 } });
+  await expect(file).toHaveAttribute('aria-expanded', 'true');
+  await expect(desktop).toHaveAttribute('aria-activedescendant', (await file.getAttribute('id'))!);
+
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await expect(file).toHaveAttribute('aria-expanded', 'false');
+
+  await page.keyboard.press('Alt+f');
+
+  await expect(file).toHaveAttribute('aria-expanded', 'true');
+
+  const first = file.getByRole('menu').getByRole('menuitem').first();
+
+  await expect(first).toHaveAttribute('aria-label', 'New');
+  await expect(desktop).toHaveAttribute('aria-activedescendant', (await first.getAttribute('id'))!);
 });

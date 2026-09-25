@@ -290,10 +290,27 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
 
       return 0;
 
+    /* Whether Alt is alone so far: any other key pressed while it is down
+     * makes its release nothing, as Alt and a letter is the letter's menu. */
+    case User.WM_SYSKEYDOWN:
+    case User.WM_KEYDOWN:
+      system._altAlone = uMsg === User.WM_SYSKEYDOWN && wParam === VK_MENU;
+      return undefined;
+
     /* Alt released alone, or F10: into the menu bar from the keyboard. */
     case User.WM_SYSKEYUP:
     case User.WM_KEYUP:
-      if ((uMsg === User.WM_SYSKEYUP && wParam === VK_MENU) || wParam === VK_F10) {
+      if (uMsg === User.WM_SYSKEYUP && wParam === VK_MENU) {
+        const alone = !!system._altAlone;
+
+        system._altAlone = false;
+
+        return alone
+          ? rasterDefault(system, dialog, hwnd, User.WM_SYSCOMMAND, SC_KEYMENU, 0)
+          : undefined;
+      }
+
+      if (wParam === VK_F10) {
         return rasterDefault(system, dialog, hwnd, User.WM_SYSCOMMAND, SC_KEYMENU, 0);
       }
 

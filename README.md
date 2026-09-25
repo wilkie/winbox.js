@@ -46,6 +46,14 @@ the browser so it is dropped once. Nothing is uploaded. As a program runs, the
 page lists every API function it called, marking the ones that reach no
 implementation yet, and its most recent calls with their arguments.
 
+With an installation present, the page draws windows as Windows does, from
+the installation's own display driver, on one screen-sized canvas. A
+screen reader is not given the pixels. It gets a mirror of USER's windows
+beside the canvas: each window named by its caption, its menu bar and open
+menus, and its controls as buttons, check boxes, text boxes and lists. The
+mirror follows what has the keyboard. `src/win16/user/accessible-tree.ts` says
+what each window becomes.
+
 ## Building
 
 To build a web bundle:

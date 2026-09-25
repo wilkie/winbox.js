@@ -167,13 +167,20 @@ export async function trackWindow(system: any, hwnd: number, start: TrackStart) 
       continue;
     }
 
-    if (msg.message === User.WM_MOUSEMOVE || msg.message === User.WM_LBUTTONUP) {
+    /* The pointer, in either form: the page posts each mouse event as it
+     * happens, hit-tested then, so a release that came before this loop took
+     * the capture is still the non-client message it was posted as. Windows
+     * hit-tests when a message is taken, and has no such case. */
+    const moved = msg.message === User.WM_MOUSEMOVE || msg.message === User.WM_NCMOUSEMOVE;
+    const released = msg.message === User.WM_LBUTTONUP || msg.message === User.WM_NCLBUTTONUP;
+
+    if (moved || released) {
       if (last) {
         shift(msg.pt.x - last.x, msg.pt.y - last.y);
         last = { x: msg.pt.x, y: msg.pt.y };
       }
 
-      if (msg.message === User.WM_LBUTTONUP) {
+      if (released) {
         done = true;
       }
 

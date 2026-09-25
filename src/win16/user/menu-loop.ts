@@ -277,15 +277,22 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
       continue;
     }
 
+    /* The pointer, in either form: the page posts each mouse event as it
+     * happens, hit-tested then, so what came before this loop took the
+     * capture -- the release of the press that opened the menu -- is still
+     * the non-client message it was posted as. Windows hit-tests when a
+     * message is taken, and has no such case. */
+    const pointed = clientForm(msg.message);
+
     if (
-      msg.message === User.WM_MOUSEMOVE ||
-      msg.message === User.WM_LBUTTONDOWN ||
-      msg.message === User.WM_LBUTTONUP ||
-      msg.message === User.WM_RBUTTONDOWN ||
-      msg.message === User.WM_RBUTTONUP
+      pointed === User.WM_MOUSEMOVE ||
+      pointed === User.WM_LBUTTONDOWN ||
+      pointed === User.WM_LBUTTONUP ||
+      pointed === User.WM_RBUTTONDOWN ||
+      pointed === User.WM_RBUTTONUP
     ) {
       keyboard = false;
-      await pointer(msg);
+      await pointer(msg, pointed);
       continue;
     }
 
@@ -414,7 +421,7 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
     }
   }
 
-  async function pointer(msg: any) {
+  async function pointer(msg: any, message: number) {
     const x = msg.pt.x;
     const y = msg.pt.y;
 
@@ -442,7 +449,7 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
       if (index >= 0 && !(level.menu.items[index].flags & MF_SEPARATOR)) {
         await select(index);
 
-        if (msg.message === User.WM_LBUTTONUP) {
+        if (message === User.WM_LBUTTONUP) {
           await choose(index);
         }
       }
@@ -457,9 +464,9 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
         .findIndex((item) => x >= item.left && x < item.right && y >= item.top && y < item.bottom);
 
       if (index >= 0) {
-        if (index !== bar || (msg.message === User.WM_LBUTTONDOWN && !levels.length)) {
+        if (index !== bar || (message === User.WM_LBUTTONDOWN && !levels.length)) {
           await openBar(index);
-        } else if (msg.message === User.WM_LBUTTONDOWN && levels.length) {
+        } else if (message === User.WM_LBUTTONDOWN && levels.length) {
           done = true;
         }
 
@@ -468,10 +475,28 @@ export async function trackMenu(system: any, hwnd: number, start: MenuStart) {
     }
 
     /* Anywhere else, a press closes the menu. */
-    if (msg.message === User.WM_LBUTTONDOWN || msg.message === User.WM_RBUTTONDOWN) {
+    if (message === User.WM_LBUTTONDOWN || message === User.WM_RBUTTONDOWN) {
       done = true;
     }
   }
+}
+
+/** A non-client mouse message as the client-area one it stands for here; any other as itself. */
+function clientForm(message: number) {
+  switch (message) {
+    case User.WM_NCMOUSEMOVE:
+      return User.WM_MOUSEMOVE;
+    case User.WM_NCLBUTTONDOWN:
+      return User.WM_LBUTTONDOWN;
+    case User.WM_NCLBUTTONUP:
+      return User.WM_LBUTTONUP;
+    case User.WM_NCRBUTTONDOWN:
+      return User.WM_RBUTTONDOWN;
+    case User.WM_NCRBUTTONUP:
+      return User.WM_RBUTTONUP;
+  }
+
+  return message;
 }
 
 /** The next item from `from` in a direction that is not a separator, wrapping. */

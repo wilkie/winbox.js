@@ -15,6 +15,7 @@ export class Task {
   declare _loader: any;
   declare _messageLock: any;
   declare _messages: any;
+  declare _input: any;
   declare _pendingStack: any;
   declare _programSegment: any;
   declare _ended: any;
@@ -26,6 +27,7 @@ export class Task {
     this._stopped = false;
     this._yield = false;
     this._messages = [];
+    this._input = [];
     this._contextStack = [];
     this._callbackStack = [];
     this._callStack = [];
@@ -180,9 +182,17 @@ export class Task {
   }
 
   /**
-   * Pushes a window message to the message queue.
+   * Pushes a window message to the message queue: a posted one, or with
+   * `input`, one of the mouse's or the keyboard's.
+   *
+   * The two are kept apart because Windows gives a program what was posted
+   * to it before its input: the `WM_CHAR` `TranslateMessage` posts for a key
+   * comes before the key's release, which was already waiting when it was
+   * posted. Taken in one line, the release of Alt after Alt and a letter
+   * reached `DefWindowProc` before the letter did, and opened the menu bar
+   * rather than the letter's menu.
    */
-  push(message) {
+  push(message, input = false) {
     if (this._messageLock) {
       const promise = this._messageLock;
       this._messageLock = null;
@@ -193,6 +203,8 @@ export class Task {
       }
 
       promise(message);
+    } else if (input) {
+      this._input.push(message);
     } else {
       this._messages.push(message);
     }
@@ -202,18 +214,15 @@ export class Task {
    * Returns the next message in the queue or null if empty.
    */
   peek() {
-    if (this._messages.length == 0) {
-      return null;
-    }
-
-    return this._messages[0];
+    return this._messages[0] ?? this._input[0] ?? null;
   }
 
   /**
-   * Pulls the oldest message from the queue or returns null if empty.
+   * Pulls the oldest message from the queue or returns null if empty: the
+   * oldest posted one, or the oldest input.
    */
   async pull() {
-    if (this._messages.length == 0) {
+    if (this._messages.length == 0 && this._input.length == 0) {
       const promise = new Promise((resolve) => {
         this._messageLock = resolve;
       });
@@ -221,7 +230,7 @@ export class Task {
       return promise;
     }
 
-    const ret = this._messages.splice(0, 1)[0];
+    const ret = (this._messages.length ? this._messages : this._input).splice(0, 1)[0];
 
     // Call the message callback
     if (ret && ret.callback) {

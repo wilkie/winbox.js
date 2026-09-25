@@ -1,6 +1,7 @@
 'use strict';
 
 import { Heap } from '../../src/win16/heap.js';
+import { Task } from '../../src/win16/task.js';
 import { taskEnvironment } from '../../src/win16/task-environment.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
 
@@ -90,5 +91,20 @@ describe('RegisterWindowMessage', () => {
     expect(RegisterWindowMessage.call(system, 'commdlg_FindReplace')).toBe(first);
     expect(RegisterWindowMessage.call(system, 'COMMDLG_FINDREPLACE')).toBe(first);
     expect(RegisterWindowMessage.call(system, 'winbox_probe_message')).not.toBe(first);
+  });
+});
+
+describe("a task's queue", () => {
+  it('gives what was posted before the input already waiting', async () => {
+    const task: any = new Task(null, null);
+
+    task.push({ message: 'WM_SYSKEYUP F' }, true);
+    task.push({ message: 'WM_SYSKEYUP Alt' }, true);
+    task.push({ message: 'WM_SYSCHAR f' });
+
+    expect(task.peek().message).toBe('WM_SYSCHAR f');
+    expect((await task.pull()).message).toBe('WM_SYSCHAR f');
+    expect((await task.pull()).message).toBe('WM_SYSKEYUP F');
+    expect((await task.pull()).message).toBe('WM_SYSKEYUP Alt');
   });
 });

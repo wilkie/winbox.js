@@ -18,8 +18,10 @@ import { Machine } from '../emulator/machine.js';
 import { Space } from '../space.js';
 import { Win16 } from '../win16.js';
 import { DISPLAY_MODES } from '../win16/display-modes.js';
+import { accessibleTree } from '../win16/user/accessible-tree.js';
 import { Presenter } from '../raster/presenter.js';
 import { readZip } from '../zip.js';
+import { AriaMirror } from './aria-mirror.js';
 import {
   type Archive,
   buildDrive,
@@ -165,9 +167,21 @@ async function rebuild() {
     canvas.className = 'screen';
     canvas.setAttribute('role', 'img');
     canvas.setAttribute('aria-label', 'The Windows screen');
-    elements.desktop.replaceChildren(canvas);
+
+    /* What holds the keyboard, and what a screen reader reads in place of the
+     * pixels: the mirror of USER's windows, kept up to date as they change. */
+    const host = document.createElement('div');
+    const mirror = document.createElement('div');
+
+    host.className = 'screen-host';
+    host.setAttribute('role', 'application');
+    host.setAttribute('aria-label', 'Windows desktop');
+    mirror.className = 'aria-mirror';
+    host.append(canvas, mirror);
+    elements.desktop.replaceChildren(host);
     new Presenter(screen, canvas);
-    attachInput(canvas, win16.rasterInput);
+    attachInput(canvas, host, win16.rasterInput);
+    keepMirror(new AriaMirror(mirror, host), win16.rasterDesktop);
   }
 
   session = { machine, win16, drive };
@@ -201,11 +215,12 @@ async function run(program: Program) {
 /**
  * The screen's canvas as Windows' mouse and keyboard: a pointer's place, in
  * the screen's pixels however large the canvas is drawn, and each key, handed
- * to the raster desktop's input. The canvas takes the keyboard when it is
- * clicked, and keeps the keys it is given from the page.
+ * to the raster desktop's input. The host around the canvas takes the
+ * keyboard when the canvas is clicked, and keeps the keys it is given from
+ * the page.
  */
-function attachInput(canvas: HTMLCanvasElement, input: any) {
-  canvas.tabIndex = 0;
+function attachInput(canvas: HTMLCanvasElement, host: HTMLElement, input: any) {
+  host.tabIndex = 0;
 
   const at = (event: MouseEvent) => {
     const box = canvas.getBoundingClientRect();
@@ -222,7 +237,7 @@ function attachInput(canvas: HTMLCanvasElement, input: any) {
   };
 
   canvas.addEventListener('mousedown', (event) => {
-    canvas.focus();
+    host.focus();
     event.preventDefault();
     input.pointer('down', at(event));
   });
@@ -240,8 +255,22 @@ function attachInput(canvas: HTMLCanvasElement, input: any) {
     });
   };
 
-  canvas.addEventListener('keydown', key('down'));
-  canvas.addEventListener('keyup', key('up'));
+  host.addEventListener('keydown', key('down'));
+  host.addEventListener('keyup', key('up'));
+}
+
+/**
+ * The mirror, brought up to date with the desktop once a frame. Rebuilding
+ * the tree is cheap for a screen of windows, and the mirror touches nothing
+ * when it has not changed.
+ */
+function keepMirror(mirror: AriaMirror, desktop: any) {
+  const frame = () => {
+    mirror.update(accessibleTree(desktop));
+    requestAnimationFrame(frame);
+  };
+
+  requestAnimationFrame(frame);
 }
 
 /* ---- the page ---- */

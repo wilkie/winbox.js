@@ -265,7 +265,7 @@ export class RasterInput {
     msg.lParam = lParam;
     msg.time = this.#time();
     msg.pt = { x: pointer?.x ?? 0, y: pointer?.y ?? 0 };
-    task.push(msg);
+    task.push(msg, true);
   }
 
   #taskOf(window: DesktopWindow) {
