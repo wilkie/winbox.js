@@ -625,6 +625,50 @@
   },
   "gaps": {}
  },
+ "environ": {
+  "probe": "environ",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 8,
+  "functions": {
+   "count": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "module": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "path": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "pdb": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "variable": {
+    "total": 4,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 4
+   }
+  },
+  "gaps": {}
+ },
  "extout-vga": {
   "probe": "extout",
   "display": "vga",
@@ -1438,6 +1482,29 @@
   },
   "gaps": {}
  },
+ "localgro": {
+  "probe": "localgro",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 17,
+  "functions": {
+   "dataseg": {
+    "total": 1,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 1
+   },
+   "grow": {
+    "total": 16,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 16
+   }
+  },
+  "gaps": {}
+ },
  "maxorder": {
   "probe": "maxorder",
   "display": "vga",
@@ -1844,6 +1911,31 @@
    }
   },
   "gaps": {}
+ },
+ "regmsg": {
+  "probe": "regmsg",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 4,
+  "functions": {
+   "atom": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 2
+   },
+   "register": {
+    "total": 2,
+    "agreed": 0,
+    "disagreed": 2,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {
+   "register": "message numbers count from 0xC000 by one; Windows gave 0xC40E, then eight more"
+  }
  },
  "rotangle": {
   "probe": "rotangle",

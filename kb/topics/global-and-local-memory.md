@@ -2,7 +2,7 @@
 kind: topic
 name: Global and local memory
 summary: What a global handle is, how the two heaps round a request, and what Windows 3.1 did and did not do to a block once it had one — as two probes recorded it.
-probes: [memory, handles]
+probes: [memory, handles, localgro]
 ---
 
 A Windows 3.1 program has two allocators: the global heap, whose blocks are whole segments reached through selectors, and the local heap inside its own data segment, whose blocks are near offsets. The two round differently, and the global one's handles have a precise relationship to the selectors that address them.
@@ -30,6 +30,15 @@ Handle values are the allocator's choice and need not repeat between runs, so ne
 - [[inferred]] The two bytes a moveable block does not report hold the link back to its handle.
 - [[refused]] The first reading of 15, 16 and 17 all reporting 18 looked like the probe measuring reuse, since it freed each block before asking for the next. Holding every block until the end gave the same 17 numbers, so reuse was ruled out. Nine of the sizes were picked to break the model — on either side of a four-byte boundary, at the minimum, or exactly on a boundary — and none did.
 
+## A local heap that runs out
+
+- [[measured]] [[probe:localgro]] starts with a data segment of 12,160 bytes and a 1,024-byte heap. It asks [[fn:KERNEL.LocalAlloc]] for fixed blocks that do not fit: three of 1,000 bytes, one of 3,072, then 4,096 at a time until one fails. Each request that does not fit grows the data segment. It grows by **the request plus 544, rounded up to 32**: 1,568 for 1,000, 3,616 for 3,072 and 4,640 for 4,096. The heap is at the end of the segment, so it grows with it.
+- [[measured]] The growth ignores the room the heap already had, so the slack it leaves can take the next request whole. The second 1,000-byte block and the sixth 4,096-byte one needed no growth.
+- [[measured]] A growth that would pass 64 KiB grows the segment to exactly 64 KiB instead, if the block then fits. If it still does not fit, the segment does not grow at all and `LocalAlloc` returns NULL. The first recording ended at 65,536 with the block made. The second ended at 65,312 and returned NULL.
+- [[measured]] Each fixed block starts four bytes after the previous one ends.
+- [[refused]] The first recording asked only for multiples of 32. On those, "the block, its four-byte header and 540" and "the same with 512, rounded up to 32" both fit every growth. The 1,000-byte requests were added to split them, and they refuted both: 1,544 and 1,536 against the 1,568 recorded.
+- This is what Notepad hits first. Its heap is 2,048 bytes, and it asks for 3,072 before it opens its window.
+
 ## Flags and lock counts
 
 - [[measured]] [[fn:KERNEL.GlobalFlags]] reports `0x0000` for new moveable and fixed blocks and `0x0100` for a discardable one. Being moveable is not reported.
@@ -47,4 +56,4 @@ Discardable blocks actually being discarded, whether `GMEM_ZEROINIT` or `LMEM_ZE
 
 ## In winbox.js
 
-`src/win16/selectors.ts` states the encoding once, and the allocator works in descriptor indices, converting at the API boundary. Segments live in the LDT. Global blocks never move, and `GlobalFree` does not yet give memory back. `Heap.blockFor` in `src/win16/heap.ts` does the local rounding. How to record these probes again is in [[guide:reproducing]].
+`src/win16/selectors.ts` states the encoding once, and the allocator works in descriptor indices, converting at the API boundary. Segments live in the LDT. Global blocks never move, and `GlobalFree` does not yet give memory back. `Heap.blockFor` in `src/win16/heap.ts` does the local rounding, and `Heap.grow` the growth of a moveable data segment's heap. winbox.js keeps a two-byte header rather than Windows' four, so its block offsets do not match [[probe:localgro]]'s, and it does not report the data segment's size; `test/win16/task_test.ts` holds the growth rule instead. How to record these probes again is in [[guide:reproducing]].
