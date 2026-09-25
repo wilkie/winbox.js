@@ -175,6 +175,7 @@ export class Win16 {
 
     // The task scheduler
     this._scheduler = new Scheduler(this._machine, this._modules, options);
+    this._scheduler.handles = this._handles;
 
     // Keep track of all window instances.
     // The '0' index window is the desktop.
@@ -293,7 +294,7 @@ export class Win16 {
       this,
       raster.driver
         ? driverResources(raster.driver, this._display, raster.user)
-        : { oem: raster.oem ?? new Map(), icons: new Map() }
+        : { oem: raster.oem ?? new Map(), icons: new Map(), cursors: new Set<number>() }
     );
 
     return this._rasterDesktop;
@@ -857,7 +858,14 @@ export class Win16 {
         (callerIP - 5).toString(16),
         args
       );
-      result = 1234;
+
+      /* What an unimplemented function answers: nothing, zero in DX:AX, which
+       * a program reads as failure -- a NULL handle, FALSE. It used to leave
+       * whatever AX held, so a program went on with a handle it never got:
+       * Cardfile drew with a device context that was its own last result. */
+      this._machine.cpu.core.ax = 0;
+      this._machine.cpu.core.dx = 0;
+      result = undefined;
     }
 
     // Interpret the result; possibly resumes the task

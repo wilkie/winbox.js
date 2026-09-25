@@ -3,6 +3,8 @@
 import { DWORD, HWND, UINT } from '../types.js';
 import { MSG, User } from '../user.js';
 
+import { noteKey } from './accelerators.js';
+
 /**
  * A program's messages, in the order Windows gives them: what was posted to
  * its queue, the mouse's and the keyboard's among them, first; then, with
@@ -150,7 +152,16 @@ export async function nextMessage(
 
   for (;;) {
     if (task?.peek()) {
-      return remove ? await task.pull() : task.peek();
+      if (!remove) {
+        return task.peek();
+      }
+
+      const taken = await task.pull();
+
+      /* The keys' state moves with the messages taken; see `noteKey`. */
+      noteKey(system, taken);
+
+      return taken;
     }
 
     /* The quit, once, after everything posted and before a paint or a timer.

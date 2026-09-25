@@ -22,6 +22,9 @@ import {
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
+import { LoadString } from '../../src/win16/user/LoadString.js';
+import { WinHelp } from '../../src/win16/user/WinHelp.js';
+import { resourcesOf } from '../../src/win16/ne-resources.js';
 import { SystemParametersInfo } from '../../src/win16/user/SystemParametersInfo.js';
 import { Brush } from '../../src/raster/brush.js';
 import { Pen } from '../../src/raster/pen.js';
@@ -1746,6 +1749,33 @@ const ADAPTERS: Record<
     }
 
     return String(GlobalSize.call(context, handle));
+  },
+
+  /**
+   * `loadstr`: USER's string 4 loaded into a buffer of a size, a guard byte
+   * after it, as the probe writes it down.
+   */
+  async sized(context, [size]) {
+    const module = userStrings(context);
+    const buffer = context.place('#'.repeat(63), 64);
+    const answer = await LoadString.call(context, module, 4, buffer.far, Number(size));
+    const text = context.fetch(buffer.far);
+    const guard = context.machine.cpu.core.read8(buffer.segment, buffer.offset + Number(size));
+
+    return `answer=${answer},text=${text},guard=${guard === 0x23 ? 1 : 0}`;
+  },
+
+  /** `loadstr`: a string USER does not have. */
+  async missing(context, [id]) {
+    const buffer = context.place('#', 40);
+    const answer = await LoadString.call(context, userStrings(context), Number(id), buffer.far, 40);
+
+    return `answer=${answer},first=${String.fromCharCode(context.machine.cpu.core.read8(buffer.segment, buffer.offset))}`;
+  },
+
+  /** `winhelp`: `HELP_QUIT` with Help not running. */
+  quit(context, [file]) {
+    return String(WinHelp.call(context, 0, file, 2, 0));
   },
 
   /** `quitord`: the message `PeekMessage` took at a place in the order. */
@@ -3701,6 +3731,39 @@ const ADAPTERS: Record<
     return context.drawLine(toX - fromX, toY - fromY, fromX, fromY);
   },
 };
+
+/**
+ * USER's own string tables as a module `LoadString` can read: the
+ * installation's `USER.EXE`, whose strings the `loadstr` probe loaded.
+ */
+function userStrings(context: any) {
+  const path = join(
+    __dirname,
+    '..',
+    '..',
+    'oracle',
+    'build',
+    'drive-c',
+    'WINDOWS',
+    'SYSTEM',
+    'USER.EXE'
+  );
+
+  if (!existsSync(path)) {
+    throw new NeedsDrive('USER.EXE is not built');
+  }
+
+  const tables = resourcesOf(new Uint8Array(readFileSync(path))).filter(
+    (resource) => resource.type === 6
+  );
+  const executable = {
+    resources: [{ id: 6, entries: tables.map((table) => ({ id: table.id, data: table.data })) }],
+    readResource: async (entry: any) =>
+      entry.data.buffer.slice(entry.data.byteOffset, entry.data.byteOffset + entry.data.byteLength),
+  };
+
+  return context.handles.allocate({ executable });
+}
 
 /** Thrown by an adapter for a function we have not implemented at all. */
 export class Unimplemented extends Error {}

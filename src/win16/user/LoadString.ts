@@ -78,26 +78,23 @@ export async function LoadString(hinst, idResource, lpszBuffer, cbBuffer) {
             offset += 1 + data[offset];
           }
 
-          // Then, we read the string data to memory.
-          const length = data[offset];
+          /* As much as fits, and a zero, and the answer is how much fitted.
+           * Measured by the `loadstr` probe: a buffer of 0 bytes is left
+           * alone, one of 1 gets only the zero, and one of `n` at most `n - 1`
+           * characters; nothing is ever written past the buffer. */
+          if (cbBuffer <= 0) {
+            return 0;
+          }
+
+          const length = Math.min(data[offset], cbBuffer - 1);
           offset++;
           for (let i = offset; i < offset + length; i++) {
             cpu.write8(destSegment, destOffset, data[i]);
             destOffset++;
           }
 
-          // Write the null-terminator as well.
           cpu.write8(destSegment, destOffset, 0);
 
-          console.log(
-            'loading string',
-            destSegment,
-            destOffset - length,
-            this.machine.memory.readCString(cpu.translateAddress(destSegment, destOffset - length)),
-            length
-          );
-
-          // We will return the length of the string
           ret = length;
         }
       }

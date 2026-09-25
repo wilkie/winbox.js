@@ -21,6 +21,9 @@ export class Scheduler {
   declare _running: any;
   declare _tasks: any;
   declare _onError: any;
+  /** The system's handles, to find a window's own procedure. */
+  declare handles: any;
+
   constructor(machine, modules, options: any = {}) {
     this._tasks = {};
     this._machine = machine;
@@ -317,15 +320,36 @@ export class Scheduler {
    * message procedure.
    */
   async callWndProc(windowClass, hwnd, message, wParam, lParam) {
-    /* A class USER registers itself has its procedure here, not in a program. */
-    if (typeof windowClass?.lpfnWndProc === 'function') {
-      return await windowClass.lpfnWndProc(hwnd, message, wParam, lParam);
+    /* The window's own procedure, when a program has set one with
+     * `SetWindowLong` -- subclassed it -- and otherwise its class's. */
+    const own = this.handles?.resolve(hwnd)?.wndProc;
+
+    return await this.callWindowProc(
+      own ?? windowClass?.lpfnWndProc,
+      hwnd,
+      message,
+      wParam,
+      lParam
+    );
+  }
+
+  /**
+   * A window procedure called: one of USER's own, which is a function here,
+   * or a program's, at a far address.
+   */
+  async callWindowProc(proc, hwnd, message, wParam, lParam) {
+    if (typeof proc === 'function') {
+      return await proc(hwnd, message, wParam, lParam);
+    }
+
+    if (!proc) {
+      return 0;
     }
 
     // Get the function to call and craft that function call and return to the
     // current CS:IP
-    const newCS = (windowClass.lpfnWndProc >> 16) & 0xffff;
-    const newIP = windowClass.lpfnWndProc & 0xffff;
+    const newCS = (proc >> 16) & 0xffff;
+    const newIP = proc & 0xffff;
 
     //console.log("calling wndproc", newCS.toString(16), newIP.toString(16));
 

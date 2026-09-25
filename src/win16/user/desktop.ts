@@ -79,6 +79,9 @@ export type DesktopEnvironment = Omit<FrameEnvironment, 'title' | 'text' | 'meas
   /** What a minimized window whose class's icon is `IDI_APPLICATION` shows. See `driverResources`. */
   applicationIcon?: IconData;
 
+  /** The standard cursors there are, by id. */
+  cursors?: Set<number>;
+
   /** The font icon titles are in, and its height and ascent. */
   titleFont?: any;
   titleMetrics?: { height: number; ascent: number };
@@ -715,6 +718,19 @@ export class Desktop {
       window.clientWidth,
       window.clientHeight
     );
+  }
+
+  /**
+   * A surface over the whole of a window, frame and all, as `GetWindowDC`
+   * hands out: a view of the screen from the window's corner, drawn only
+   * where the window shows.
+   */
+  windowSurface(window: DesktopWindow) {
+    const surface: any = Surface.memory();
+
+    surface.bitmap = this.#view(window, 0, 0, window.width, window.height);
+
+    return surface;
   }
 
   /** A view of the screen over part of a window, drawn only where the window shows. */

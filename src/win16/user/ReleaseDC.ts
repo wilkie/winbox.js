@@ -45,7 +45,10 @@ export function ReleaseDC(hwnd, hdc) {
     surface = dialog.surface;
   }
 
-  if (this.handles.resolve(hdc) !== surface) {
+  const released = this.handles.resolve(hdc);
+
+  /* Or one `GetWindowDC` made over the window's whole rectangle. */
+  if (released !== surface && !(hwnd != NULL && this._windowDCs?.get(released) === hwnd)) {
     return FALSE;
   }
 

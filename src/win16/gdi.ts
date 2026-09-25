@@ -47,6 +47,7 @@ import { CreateCompatibleBitmap } from './gdi/CreateCompatibleBitmap.js';
 import { CreateCompatibleDC } from './gdi/CreateCompatibleDC.js';
 import { CreatePen } from './gdi/CreatePen.js';
 import { CreateSolidBrush } from './gdi/CreateSolidBrush.js';
+import { CreateDC, CreateIC } from './gdi/CreateDC.js';
 import { DeleteDC } from './gdi/DeleteDC.js';
 import { DeleteObject } from './gdi/DeleteObject.js';
 import { GetBitmapBits } from './gdi/GetBitmapBits.js';
@@ -216,7 +217,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'CreateBrushIndirect', 4],
       [CreateCompatibleBitmap, 'CreateCompatibleBitmap', 6, [HDC, INT, INT], HBITMAP],
       [CreateCompatibleDC, 'CreateCompatibleDC', 2, [HDC], HDC],
-      [Gdi.stub, 'CreateDC', 16],
+      [CreateDC, 'CreateDC', 16, [LPCSTR, LPCSTR, LPCSTR, FARPTR], HDC],
       [Gdi.stub, 'CreateEllipticRgn', 8],
       [Gdi.stub, 'CreateEllipticRgnIndirect', 4],
       [
@@ -332,7 +333,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'UnrealizeObject', 2],
       [Gdi.stub, 'CopyMetafile', 6],
       [Gdi.stub, 'unknown'],
-      [Gdi.stub, 'CreateIC', 16],
+      [CreateIC, 'CreateIC', 16, [LPCSTR, LPCSTR, LPCSTR, FARPTR], HDC],
       [GetNearestColor, 'GetNearestColor', 6, [HDC, COLORREF], COLORREF],
       [Gdi.stub, 'QueryAbort', 4],
       [Gdi.stub, 'CreateDiscardableBitmap', 6],

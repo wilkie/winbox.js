@@ -42,6 +42,7 @@ import { GetPrivateProfileString } from './kernel/GetPrivateProfileString.js';
 import { GetProfileInt } from './kernel/GetProfileInt.js';
 import { GetProfileString } from './kernel/GetProfileString.js';
 import { WriteProfileString } from './kernel/WriteProfileString.js';
+import { GetModuleHandle } from './kernel/GetModuleHandle.js';
 import { GetProcAddress } from './kernel/GetProcAddress.js';
 import { GetVersion } from './kernel/GetVersion.js';
 import { GetWindowsDirectory } from './kernel/GetWindowsDirectory.js';
@@ -210,7 +211,7 @@ export class Kernel extends Module {
       null, // was BuildPDB; Windows 3.1 exports nothing at this ordinal
       [Kernel.stub, 'LoadModule', 8, [LPCSTR, FARPTR], HINSTANCE],
       [Kernel.stub, 'FreeModule', 2, [HINSTANCE], BOOL],
-      [Kernel.stub, 'GetModuleHandle', 4, [LPCSTR], HANDLE],
+      [GetModuleHandle, 'GetModuleHandle', 4, [LPCSTR], HANDLE],
       [Kernel.stub, 'GetModuleUsage', 2, [HINSTANCE], INT],
       [GetModuleFilename, 'GetModuleFilename', 8, [HINSTANCE, FARPTR, INT], INT],
       // 50 //

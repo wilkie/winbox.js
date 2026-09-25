@@ -119,6 +119,12 @@ export class RasterInput {
       return;
     }
 
+    /* A disabled window, or one inside one, takes no input: a press there does
+     * nothing, as when a dialog box has disabled its owner. */
+    if (!this.capture && disabled(target)) {
+      return;
+    }
+
     if (kind === 'down') {
       const top = topLevel(target);
 
@@ -181,7 +187,7 @@ export class RasterInput {
   key(kind: 'down' | 'up', key: Key) {
     const target = this.desktop.focus ?? this.desktop.active;
 
-    if (!target) {
+    if (!target || disabled(target)) {
       return;
     }
 
@@ -410,4 +416,15 @@ export function hitTest(desktop: Desktop, window: DesktopWindow, x: number, y: n
   }
 
   return HTBORDER;
+}
+
+/** Whether a window, or any window it is inside, has `WS_DISABLED`. */
+function disabled(window: DesktopWindow) {
+  for (let at: DesktopWindow | null = window; at; at = at.parent) {
+    if (at.style & User.WS_DISABLED) {
+      return true;
+    }
+  }
+
+  return false;
 }

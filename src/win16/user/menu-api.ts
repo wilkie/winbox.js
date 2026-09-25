@@ -130,7 +130,7 @@ export function DestroyMenu(hmenu) {
   return menuOf(this, hmenu) ? TRUE : 0;
 }
 
-function menuOf(system: any, hmenu: number) {
+export function menuOf(system: any, hmenu: number) {
   const menu = system.handles.resolve(hmenu);
 
   return menu instanceof MenuData ? menu : null;

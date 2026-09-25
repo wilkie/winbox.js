@@ -8,6 +8,7 @@ import { resourcesOf, RT_BITMAP } from '../ne-resources.js';
 
 const RT_ICON = 3;
 const RT_GROUP_ICON = 14;
+const RT_GROUP_CURSOR = 12;
 
 /**
  * What USER draws with that is the display driver's: its OEM bitmaps --
@@ -18,6 +19,9 @@ const RT_GROUP_ICON = 14;
 export interface DriverResources {
   oem: Map<number, DeviceBitmap>;
   icons: Map<number, IconData>;
+
+  /** The standard cursors there are, by id: the driver's, and USER's own. */
+  cursors: Set<number>;
 
   /**
    * USER's own Windows flag, which a minimized window whose class's icon is
@@ -62,7 +66,13 @@ export function driverResources(
     ? (iconOf(resourcesOf(user), OIC_WINLOGO, display, palette) ?? undefined)
     : undefined;
 
-  return { oem, icons, applicationIcon };
+  const cursors = new Set<number>(
+    [...resources, ...(user ? resourcesOf(user) : [])]
+      .filter((resource) => resource.type === RT_GROUP_CURSOR && resource.id !== null)
+      .map((resource) => resource.id as number)
+  );
+
+  return { oem, icons, applicationIcon, cursors };
 }
 
 /** A group's icon for a display, at the size icons are drawn. */

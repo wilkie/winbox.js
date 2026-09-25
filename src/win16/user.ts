@@ -60,7 +60,7 @@ import { TrackPopupMenu } from './user/TrackPopupMenu.js';
 import { SystemParametersInfo } from './user/SystemParametersInfo.js';
 import { DrawIcon, IsIconic, IsZoomed, LoadIcon } from './user/icon-api.js';
 import { CloseWindow, OpenIcon } from './user/ShowWindow.js';
-import { AppendMenu } from './user/AppendMenu.js';
+import { AppendMenu, InsertMenu } from './user/AppendMenu.js';
 import { ClientToScreen } from './user/ClientToScreen.js';
 import { GetDlgItem } from './user/GetDlgItem.js';
 import { GetFocus } from './user/GetFocus.js';
@@ -76,7 +76,22 @@ import { EndPaint } from './user/EndPaint.js';
 import { FillRect } from './user/FillRect.js';
 import { FindWindow } from './user/FindWindow.js';
 import { FrameRect } from './user/FrameRect.js';
+import { GetCursor, LoadCursor, SetCursor } from './user/cursor-api.js';
 import { GetDC } from './user/GetDC.js';
+import { WinHelp } from './user/WinHelp.js';
+import {
+  CallWindowProc,
+  GetClassLong,
+  GetClassWord,
+  GetWindowLong,
+  GetWindowWord,
+  SetClassLong,
+  SetClassWord,
+  SetWindowLong,
+  SetWindowWord,
+} from './user/window-words.js';
+import { EnableWindow, IsWindow, IsWindowEnabled, IsWindowVisible } from './user/window-queries.js';
+import { GetWindowDC } from './user/GetWindowDC.js';
 import { GetDesktopWindow } from './user/GetDesktopWindow.js';
 import { GetMessage } from './user/GetMessage.js';
 import { GetSystemMetrics } from './user/GetSystemMetrics.js';
@@ -85,7 +100,6 @@ import { GetTickCount } from './user/GetTickCount.js';
 import { GetClientRect } from './user/GetClientRect.js';
 import { GetMenu } from './user/GetMenu.js';
 import { GetWindowRect } from './user/GetWindowRect.js';
-import { GetWindowWord } from './user/GetWindowWord.js';
 import { InitApp } from './user/InitApp.js';
 import { InvalidateRect } from './user/InvalidateRect.js';
 import { LoadBitmap } from './user/LoadBitmap.js';
@@ -110,7 +124,7 @@ import { PostMessage } from './user/PostMessage.js';
 import { SetRect } from './user/SetRect.js';
 import { SetWindowText } from './user/SetWindowText.js';
 import { ShowWindow } from './user/ShowWindow.js';
-import { TranslateAccelerator } from './user/TranslateAccelerator.js';
+import { GetKeyState, LoadAccelerators, TranslateAccelerator } from './user/accelerators.js';
 import { TranslateMessage } from './user/TranslateMessage.js';
 import { UpdateWindow } from './user/UpdateWindow.js';
 import { wsprintf } from './user/wsprintf.js';
@@ -522,8 +536,8 @@ export class User extends Module {
       [IsIconic, 'IsIconic', 2, [HWND], BOOL],
       [GetWindowRect, 'GetWindowRect', 6, [HWND, [RECT]]],
       [GetClientRect, 'GetClientRect', 6, [HWND, [RECT]]],
-      [User.stub, 'EnableWindow', 4],
-      [User.stub, 'IsWindowEnabled', 2],
+      [EnableWindow, 'EnableWindow', 4, [HWND, BOOL], BOOL],
+      [IsWindowEnabled, 'IsWindowEnabled', 2, [HWND], BOOL],
       [User.stub, 'GetWindowText', 8],
       [SetWindowText, 'SetWindowText', 6, [HWND, LPCSTR]],
       [User.stub, 'GetWindowTextLength', 2],
@@ -542,9 +556,9 @@ export class User extends Module {
       [OpenIcon, 'OpenIcon', 2, [HWND], BOOL],
       [User.stub, 'BringWindowToTop', 2],
       [User.stub, 'GetParent', 2],
-      [User.stub, 'IsWindow', 2],
+      [IsWindow, 'IsWindow', 2, [HWND], BOOL],
       [User.stub, 'IsChild', 4],
-      [User.stub, 'IsWindowVisible', 2],
+      [IsWindowVisible, 'IsWindowVisible', 2, [HWND], BOOL],
       // 50 //
       [FindWindow, 'FindWindow', 8, [LPCSTR, LPCSTR], HWND],
       [User.stub, 'Bear51', 2],
@@ -564,9 +578,9 @@ export class User extends Module {
       [User.stub, 'SetScrollRange', 10],
       [User.stub, 'GetScrollRange', 12],
       [GetDC, 'GetDC', 2, [HWND], HDC],
-      [User.stub, 'GetWindowDC', 2],
+      [GetWindowDC, 'GetWindowDC', 2, [HWND], HDC],
       [ReleaseDC, 'ReleaseDC', 4, [HWND, HDC], INT],
-      [User.stub, 'SetCursor', 2],
+      [SetCursor, 'SetCursor', 2, [HCURSOR], HCURSOR],
       // 70 //
       [User.stub, 'SetCursorPos', 4],
       [User.stub, 'ShowCursor', 2],
@@ -607,7 +621,7 @@ export class User extends Module {
       [User.stub, 'MapDialogRect', 6],
       [User.stub, 'MessageBeep', 2],
       [User.stub, 'FlashWindow', 4],
-      [User.stub, 'GetKeyState', 2],
+      [GetKeyState, 'GetKeyState', 2, [INT], INT],
       [DefWindowProc, 'DefWindowProc', 10, [HWND, UINT, WPARAM, LPARAM], LONG],
       [GetMessage, 'GetMessage', 10, [[MSG], HWND, UINT, UINT], BOOL],
       [PeekMessage, 'PeekMessage', 12, [[MSG], HWND, UINT, UINT, UINT], BOOL],
@@ -625,22 +639,22 @@ export class User extends Module {
       // 120 //
       [User.stub, 'GetMessageTime', 0],
       [User.stub, 'SetWindowsHook', 6],
-      [User.stub, 'CallWindowProc', 14],
+      [CallWindowProc, 'CallWindowProc', 14, [FARPTR, HWND, UINT, WPARAM, LPARAM], LRESULT],
       [User.stub, 'CallMsgFilter', 6],
       [UpdateWindow, 'UpdateWindow', 2, [HWND]],
       [InvalidateRect, 'InvalidateRect', 8, [HWND, [RECT], BOOL]],
       [User.stub, 'InvalidateRgn', 6],
       [ValidateRect, 'ValidateRect', 6, [HWND, FARPTR]],
       [User.stub, 'ValidateRgn', 4],
-      [User.stub, 'GetClassWord', 4],
+      [GetClassWord, 'GetClassWord', 4, [HWND, INT], UINT],
       // 130 //
-      [User.stub, 'SetClassWord', 6],
-      [User.stub, 'GetClassLong', 4],
-      [User.stub, 'SetClassLong', 8],
-      [GetWindowWord, 'GetWindowWord', 4, [HWND, INT], INT],
-      [User.stub, 'SetWindowWord', 6],
-      [User.stub, 'GetWindowLong', 4],
-      [User.stub, 'SetWindowLong', 8],
+      [SetClassWord, 'SetClassWord', 6, [HWND, INT, UINT], UINT],
+      [GetClassLong, 'GetClassLong', 4, [HWND, INT], DWORD],
+      [SetClassLong, 'SetClassLong', 8, [HWND, INT, DWORD], DWORD],
+      [GetWindowWord, 'GetWindowWord', 4, [HWND, INT], UINT],
+      [SetWindowWord, 'SetWindowWord', 6, [HWND, INT, UINT], UINT],
+      [GetWindowLong, 'GetWindowLong', 4, [HWND, INT], DWORD],
+      [SetWindowLong, 'SetWindowLong', 8, [HWND, INT, DWORD], DWORD],
       [User.stub, 'OpenClipboard', 2],
       [User.stub, 'CloseClipboard', 0],
       [User.stub, 'EmptyClipboard', 0],
@@ -679,13 +693,13 @@ export class User extends Module {
       [User.stub, 'GetCaretBlinkTime', 0],
       // 170 //
       [User.stub, 'ArrangeIconicWindows', 2],
-      [User.stub, 'WinHelp', 12],
+      [WinHelp, 'WinHelp', 12, [HWND, LPCSTR, UINT, DWORD], BOOL],
       [User.stub, 'SwitchToThisWindow', 4],
-      [User.stub, 'LoadCursor', 6],
+      [LoadCursor, 'LoadCursor', 6, [HINSTANCE, LPCSTR], HCURSOR],
       [LoadIcon, 'LoadIcon', 6, [HINSTANCE, LPCSTR], HICON],
       [LoadBitmap, 'LoadBitmap', 6, [HINSTANCE, DWORD], HBITMAP],
       [LoadString, 'LoadString', 10, [HINSTANCE, UINT, FARPTR, INT], INT],
-      [User.stub, 'LoadAccelerators', 6],
+      [LoadAccelerators, 'LoadAccelerators', 6, [HINSTANCE, LPCSTR], HACCEL],
       [TranslateAccelerator, 'TranslateAccelerator', 8, [HWND, HACCEL, [MSG]], BOOL],
       [GetSystemMetrics, 'GetSystemMetrics', 2, [INT], INT],
       // 180 //
@@ -762,7 +776,7 @@ export class User extends Module {
       [User.stub, 'EqualRect', 8],
       [User.stub, 'EnableCommNotification', 8],
       [User.stub, 'ExitWindowsExec', 8],
-      [User.stub, 'GetCursor', 0],
+      [GetCursor, 'GetCursor', 0, [], HCURSOR],
       [User.stub, 'GetOpenClipboardWindow', 0],
       [User.stub, 'GetAsyncKeyState', 2],
       // 250 //
@@ -942,7 +956,7 @@ export class User extends Module {
       [User.stub, 'CreateCursorIconIndirect', 14],
       [User.stub, 'Unknown'],
       // 410 //
-      [User.stub, 'InsertMenu', 12],
+      [InsertMenu, 'InsertMenu', 12, [HMENU, UINT, UINT, UINT, LPCSTR], BOOL],
       [AppendMenu, 'AppendMenu', 10, [HMENU, UINT, UINT, LPCSTR], BOOL],
       [User.stub, 'RemoveMenu', 6],
       [User.stub, 'DeleteMenu', 6],

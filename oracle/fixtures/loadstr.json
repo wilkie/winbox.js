@@ -1,0 +1,59 @@
+{
+  "probe": "loadstr",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "sized",
+      "args": "0",
+      "result": "answer=0,text=###############################################################,guard=1"
+    },
+    {
+      "function": "sized",
+      "args": "1",
+      "result": "answer=0,text=,guard=1"
+    },
+    {
+      "function": "sized",
+      "args": "2",
+      "result": "answer=1,text=C,guard=1"
+    },
+    {
+      "function": "sized",
+      "args": "5",
+      "result": "answer=4,text=Curs,guard=1"
+    },
+    {
+      "function": "sized",
+      "args": "15",
+      "result": "answer=14,text=CursorBlinkRat,guard=1"
+    },
+    {
+      "function": "sized",
+      "args": "16",
+      "result": "answer=15,text=CursorBlinkRate,guard=1"
+    },
+    {
+      "function": "sized",
+      "args": "17",
+      "result": "answer=15,text=CursorBlinkRate,guard=1"
+    },
+    {
+      "function": "sized",
+      "args": "40",
+      "result": "answer=15,text=CursorBlinkRate,guard=1"
+    },
+    {
+      "function": "missing",
+      "args": "9999",
+      "result": "answer=0,first=#"
+    }
+  ]
+}

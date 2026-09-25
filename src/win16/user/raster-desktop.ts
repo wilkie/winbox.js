@@ -29,6 +29,7 @@ export function rasterDesktop(system: any, resources: DriverResources) {
     oem: resources.oem,
     icons: resources.icons,
     applicationIcon: resources.applicationIcon,
+    cursors: resources.cursors,
     font: system_.metrics,
     systemFont: system_.font,
     titleFont: title.font,

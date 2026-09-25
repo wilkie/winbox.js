@@ -2,6 +2,7 @@
 
 import { NULL } from '../consts.js';
 
+import { resourceBytes } from './resources.js';
 import { Executable } from '../../executable.js';
 
 import { MenuData } from './menu-data.js';
@@ -40,42 +41,13 @@ export async function LoadMenu(hinst, lpszMenuName) {
     return NULL;
   }
 
-  let id = 0xffff;
-  let name = null;
-  if (lpszMenuName instanceof String || typeof lpszMenuName == 'string') {
-    name = lpszMenuName.toUpperCase();
-  } else {
-    id = lpszMenuName;
-  }
+  const data = await resourceBytes(module.executable, Executable.RESOURCES.Menu, lpszMenuName);
 
-  const executable = module.executable;
-
-  // Find the menu resource
-  let resourceInfo = null;
-  for (let i = 0; i < executable.resources.length; i++) {
-    const resourceType = executable.resources[i];
-    if (resourceType.id == Executable.RESOURCES.Menu) {
-      for (let j = 0; j < resourceType.entries.length; j++) {
-        const resource = resourceType.entries[j];
-        /* A named resource's name may be kept as its `id`. */
-        if (
-          resource.id == id ||
-          (name !== null && (resource.name === name || String(resource.id).toUpperCase() === name))
-        ) {
-          resourceInfo = resource;
-          break;
-        }
-      }
-    }
-  }
-
-  if (!resourceInfo) {
+  if (!data) {
     return NULL;
   }
 
-  const data = new Uint8Array(await executable.readResource(resourceInfo));
-
-  const menu = parseMenu(data, resourceInfo.length);
+  const menu = parseMenu(data, data.length);
 
   menu.handle = this.handles.allocate(menu);
 

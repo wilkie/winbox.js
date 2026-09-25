@@ -1,14 +1,13 @@
 'use strict';
 
-import { Util } from '../../util.js';
 import { Executable } from '../../executable.js';
-
-import { Palette } from '../../raster/palette.js';
-import { Bitmap } from '../../raster/bitmap.js';
+import { decodeDib, dibToDevice } from '../../raster/dib.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { DevicePalette } from '../../raster/device-palette.js';
 
 import { NULL } from '../consts.js';
+
+import { resourceBytes } from './resources.js';
 
 /**
  * The **LoadBitmap** function loads the specified bitmap resource from the
@@ -89,191 +88,44 @@ import { NULL } from '../consts.js';
  *                         `NULL`.
  */
 export async function LoadBitmap(hinst, lpszBitmap) {
-  // If the hinst is NULL, we are looking for a system bitmap
+  /* No module: one of the system's bitmaps, `OBM_...`, which the display
+   * driver keeps. Each call gets a bitmap of its own to draw with or delete. */
   if (hinst == NULL) {
+    const oem = this.rasterDesktop?.environment?.oem?.get(lpszBitmap & 0xffff);
+
+    if (!oem) {
+      return NULL;
+    }
+
+    const copy = new DeviceBitmap(oem.width, oem.height, oem.depth, undefined, oem.devicePalette);
+
+    copy.indices.set(oem.indices);
+
+    return this.handles.allocate(copy);
   }
 
-  const hi = (lpszBitmap >> 16) & 0xffff;
-  const lo = lpszBitmap & 0xffff;
-
-  let idResource = 0xffff;
-  let name = null;
-
-  if (hi == 0) {
-    // This is a resource identifier
-    idResource = lo;
-  } else {
-    // We have a string resource
-    const idSegment = (lpszBitmap >> 16) & 0xffff;
-    const idOffset = lpszBitmap & 0xffff;
-
-    name = this.machine.memory.readCString(
-      this.machine.cpu.core.translateAddress(idSegment, idOffset)
-    );
-    name = name.toUpperCase();
-  }
-
-  console.log('looking for', name);
-
-  // Resolve the handle
   const module = this.handles.resolve(hinst);
+  const data = await resourceBytes(module?.executable, Executable.RESOURCES.Bitmap, lpszBitmap);
 
-  // Fail out if the handle is not found
-  if (!module) {
+  if (!data) {
     return NULL;
   }
 
-  const memory = this.machine.memory;
-  const executable = this.scheduler.task.executable;
+  /* Into a device-dependent bitmap at the display's depth, each colour
+   * matched to the display's palette, as the bitmap will be drawn with. A
+   * two-colour resource becomes a monochrome bitmap, which keeps a mask a
+   * mask. Inferred, not recorded. See `DeviceBitmap`. */
+  let dib;
 
-  let ret = NULL;
-  for (let i = 0; i < executable.resources.length; i++) {
-    const resourceType = executable.resources[i];
-    if (resourceType.id == Executable.RESOURCES.Bitmap) {
-      for (let j = 0; j < resourceType.entries.length; j++) {
-        const resource = resourceType.entries[j];
-        if (resource.id == idResource || resource.name.toUpperCase() === name) {
-          const data = await executable.readResource(resource);
-          const view = new DataView(data);
-
-          // Read the bitmap header
-          let bitmapHeader = Util.readStructure(
-            view,
-            {
-              bcSize: [0, 4],
-              bcWidth: [4, -2],
-              bcHeight: [6, -2],
-              bcPlanes: [8, 2],
-              bcBitCount: [10, 2],
-            },
-            0,
-            true
-          );
-
-          if (bitmapHeader.bcSize == 12) {
-            // We only have the BITMAPCOREHEADER
-            const bitmapData = data.slice(bitmapHeader.bcSize);
-            const bitmapView = new DataView(bitmapData);
-
-            const bitmap = new Bitmap(
-              bitmapHeader.bcWidth,
-              bitmapHeader.bcHeight,
-              bitmapHeader.bcBitCount,
-              Bitmap.ABGR,
-              bitmapView
-            );
-          } else {
-            // We have the BITMAPINFOHEADER
-            bitmapHeader = Util.readStructure(
-              view,
-              {
-                biSize: [0, 4],
-                biWidth: [4, -4],
-                biHeight: [8, -4],
-                biPlanes: [12, 2],
-                biBitCount: [14, 2],
-                biCompression: [16, 4],
-                biSizeImage: [20, 4],
-                biXPelsPerMeter: [24, -4],
-                biYPelsPerMeter: [28, -4],
-                biClrUsed: [32, 4],
-                biClrImportant: [36, 4],
-              },
-              0,
-              true
-            );
-
-            const colors = 1 << bitmapHeader.biBitCount;
-            const paletteSize = 4 * colors;
-
-            const paletteData = data.slice(bitmapHeader.biSize);
-            const paletteView = new DataView(paletteData);
-            const bitmapPalette = new Uint32Array(colors);
-            const realPalette = new Palette(Palette.PALETTEWIN16);
-
-            for (let i = 0; i < colors; i++) {
-              // These colors are in ARGB
-              bitmapPalette[i] = paletteView.getUint32(i * 4, true) | 0xff000000;
-
-              if (colors == 16) {
-                // Windows 3.1 converts 16 color bitmaps to a
-                // 16-color palette even in 256 color mode.
-                bitmapPalette[i] = realPalette.nearestColor(bitmapPalette[i]).color;
-              }
-
-              // Convert to RGBA
-              bitmapPalette[i] =
-                ((bitmapPalette[i] << 8) & 0xffffff00) | ((bitmapPalette[i] >> 24) & 0xff);
-            }
-
-            const bitmapData = data.slice(bitmapHeader.biSize + paletteSize);
-
-            // Bitmaps are stored last row first, so we have to invert them
-            const bitmapRealData = new Uint8Array(bitmapData.byteLength);
-
-            let bpRow = bitmapHeader.biBitCount * bitmapHeader.biWidth;
-            let bitmapView = new DataView(bitmapData);
-            bpRow = (bpRow + (8 - 1)) & ~(8 - 1);
-            const widthBytes = ((bpRow >> 3) + (4 - 1)) & ~(4 - 1);
-
-            // Flip bitmap vertically
-            let offset = 0;
-            for (let y = bitmapHeader.biHeight - 1; y >= 0; y--) {
-              for (let x = 0; x < widthBytes; x++) {
-                bitmapRealData[y * widthBytes + x] = bitmapView.getUint8(offset + x);
-              }
-              offset += widthBytes;
-            }
-
-            // Get a view of the bitmap data
-            bitmapView = new DataView(bitmapRealData.buffer);
-
-            // Create the Bitmap object
-            const bitmap = new Bitmap(
-              bitmapHeader.biWidth,
-              bitmapHeader.biHeight,
-              bitmapHeader.biBitCount,
-              Bitmap.RGBA,
-              bitmapView,
-              bitmapPalette
-            );
-
-            /* Into a device-dependent bitmap at the display's depth, each colour
-             * matched to the display's palette, as the bitmap will be drawn
-             * with. A two-colour resource becomes a monochrome bitmap, which
-             * keeps a mask a mask. Inferred, not recorded. See `DeviceBitmap`. */
-            const depth = bitmapHeader.biBitCount === 1 ? 1 : DevicePalette.depthOf(this.display);
-            const colours = bitmap.convert(32);
-            const device = new DeviceBitmap(
-              bitmap.width,
-              bitmap.height,
-              depth,
-              undefined,
-              DevicePalette.forDisplay(this.display, depth)
-            );
-            const stride = colours.widthBytes;
-
-            for (let y = 0; y < device.height; y++) {
-              for (let x = 0; x < device.width; x++) {
-                const at = y * stride + x * 4;
-
-                device.indices[y * device.width + x] = device.devicePalette.index(
-                  colours.view.getUint8(at),
-                  colours.view.getUint8(at + 1),
-                  colours.view.getUint8(at + 2)
-                );
-              }
-            }
-
-            ret = this.handles.allocate(device);
-          }
-        }
-      }
-    }
+  try {
+    dib = decodeDib(data);
+  } catch {
+    return NULL;
   }
 
-  console.log('returning', ret);
+  const depth = dib.bitCount === 1 ? 1 : DevicePalette.depthOf(this.display);
 
-  // If we could not find the string, ret remains NULL.
-  return ret;
+  return this.handles.allocate(
+    dibToDevice(dib, depth, DevicePalette.forDisplay(this.display, depth))
+  );
 }
