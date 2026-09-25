@@ -584,12 +584,27 @@ export class Desktop {
    */
   place(window: DesktopWindow, left: number, top: number, width: number, height: number) {
     const was = { ...window } as DesktopWindow;
+    const origin = { x: window.left + window.client.left, y: window.top + window.client.top };
 
     window.left = left;
     window.top = top;
     window.width = width;
     window.height = height;
     this.#layout(window);
+
+    /* Its children keep their places in its client area, so they move as
+     * far as that does: they are placed on the screen, not in the parent. */
+    const dx = window.left + window.client.left - origin.x;
+    const dy = window.top + window.client.top - origin.y;
+    const family = this.windows.filter((other) => other !== window && this.#within(other, window));
+
+    if (dx || dy) {
+      for (const child of family) {
+        child.left += dx;
+        child.top += dy;
+        this.#layout(child);
+      }
+    }
 
     if (!window.visible) {
       return;
@@ -600,6 +615,14 @@ export class Desktop {
     this.paintFrame(window);
     window.needsErase = true;
     window.needsPaint = true;
+
+    for (const child of family) {
+      if (this.#showing(child)) {
+        this.paintFrame(child);
+        child.needsErase = true;
+        child.needsPaint = true;
+      }
+    }
   }
 
   /** Hides a window without taking it away: as `destroy`, but it can be shown again. */
