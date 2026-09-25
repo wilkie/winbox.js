@@ -166,6 +166,30 @@ export function readProbes(report: Report): Probe[] {
 }
 
 /**
+ * What a probe's report says about some of its recorded functions, or all of
+ * them: how many records agree and disagree, and how many known gaps are open.
+ */
+export function evidenceFor(probe: Probe, records: string[]) {
+  if (!records.length) {
+    return { agreed: probe.agreed, disagreed: probe.disagreed, gaps: probe.gaps };
+  }
+
+  let agreed = 0;
+  let disagreed = 0;
+  let gaps = 0;
+
+  for (const [, fixture] of probe.fixtures) {
+    for (const name of records) {
+      agreed += fixture.functions[name]?.agreed ?? 0;
+      disagreed += fixture.functions[name]?.disagreed ?? 0;
+      gaps += name in fixture.gaps ? 1 : 0;
+    }
+  }
+
+  return { agreed, disagreed, gaps };
+}
+
+/**
  * Holds every page's badges to the report, and throws with every claim the
  * report does not support.
  */
@@ -194,10 +218,15 @@ export function checkEvidence(modules: ModulePage[], probes: Probe[]) {
         for (const probe of cited) {
           if (!probe.fixtures.length) {
             errors.push(`${file}: ${probe.name} has no fixture in the conformance report`);
-          } else if (status === 'exact' && (probe.disagreed || probe.gaps || !probe.agreed)) {
-            errors.push(
-              `${file}: ${front.name} is exact, but ${probe.name} has ${probe.disagreed} disagreeing records and ${probe.gaps} known gaps`
-            );
+          } else if (status === 'exact') {
+            const { agreed, disagreed, gaps } = evidenceFor(probe, front.records);
+
+            if (disagreed || gaps || !agreed) {
+              errors.push(
+                `${file}: ${front.name} is exact, but ${probe.name} has ${disagreed} disagreeing records and ${gaps} known gaps` +
+                  (front.records.length ? ` in ${front.records.join(', ')}` : '')
+              );
+            }
           }
         }
       }

@@ -32,6 +32,12 @@ export interface FrontMatter {
   summary?: string;
   versions: Partial<Record<Version, Status>>;
   probes: string[];
+
+  /**
+   * Which of the cited probes' recorded functions back the page, by the
+   * names the fixtures give them; every record, without it.
+   */
+  records: string[];
   source?: string;
   topics: string[];
 }
@@ -44,6 +50,7 @@ const FIELDS = [
   'summary',
   'versions',
   'probes',
+  'records',
   'source',
   'topics',
 ];
@@ -192,7 +199,7 @@ function validate(file: string, raw: Record<string, any>): FrontMatter {
     }
   }
 
-  for (const list of ['probes', 'topics']) {
+  for (const list of ['probes', 'records', 'topics']) {
     if (raw[list] !== undefined && !Array.isArray(raw[list])) {
       fail(`${list} is a list, [a, b]`);
     }
@@ -206,6 +213,7 @@ function validate(file: string, raw: Record<string, any>): FrontMatter {
     summary: raw.summary,
     versions,
     probes: raw.probes ?? [],
+    records: raw.records ?? [],
     source: raw.source,
     topics: raw.topics ?? [],
   };

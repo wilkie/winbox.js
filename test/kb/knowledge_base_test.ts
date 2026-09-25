@@ -225,6 +225,34 @@ describe('the knowledge base', () => {
       expect(claim([...base, 'probes: [smearglf]'], disagreeing)).toThrow(/is exact, but smearglf/);
     });
 
+    it('holds exact to the named records only, and still to all of them', () => {
+      const fixture = {
+        probe: 'smearglf',
+        display: null,
+        windows: null,
+        records: 3,
+        functions: {
+          good: { total: 2, agreed: 2, disagreed: 0, unimplemented: 0, unsupported: 0 },
+          bad: { total: 1, agreed: 0, disagreed: 1, unimplemented: 0, unsupported: 0 },
+        },
+        gaps: { gapped: 'open' },
+      };
+      const mixed = probes.map((probe) =>
+        probe.name === 'smearglf'
+          ? { ...probe, fixtures: [['smearglf', fixture]] as any, agreed: 2, disagreed: 1, gaps: 1 }
+          : probe
+      );
+
+      expect(claim([...base, 'probes: [smearglf]', 'records: [good]'], mixed)).not.toThrow();
+      expect(claim([...base, 'probes: [smearglf]', 'records: [good, bad]'], mixed)).toThrow(
+        /1 disagreeing records and 0 known gaps in good, bad/
+      );
+      expect(claim([...base, 'probes: [smearglf]', 'records: [gapped]'], mixed)).toThrow(
+        /1 known gaps in gapped/
+      );
+      expect(claim([...base, 'probes: [smearglf]'], mixed)).toThrow(/is exact, but smearglf/);
+    });
+
     it('refuses a claim on a probe that was never recorded', () => {
       const unrecorded = probes.map((probe) =>
         probe.name === 'smearglf' ? { ...probe, fixtures: [] } : probe

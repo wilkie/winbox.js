@@ -120,17 +120,17 @@
    },
    "pixels": {
     "total": 1030,
-    "agreed": 0,
+    "agreed": 840,
     "disagreed": 0,
-    "unimplemented": 0,
-    "unsupported": 1030
+    "unimplemented": 190,
+    "unsupported": 0
    },
    "rects": {
     "total": 8,
-    "agreed": 0,
+    "agreed": 7,
     "disagreed": 0,
-    "unimplemented": 0,
-    "unsupported": 8
+    "unimplemented": 1,
+    "unsupported": 0
    },
    "syscolor": {
     "total": 21,
@@ -140,7 +140,10 @@
     "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "rects": "the controls window: 1 record on each display, no controls drawn yet",
+   "pixels": "the controls window: 190 records on each display, no controls drawn yet"
+  }
  },
  "chrome-hercules": {
   "probe": "chrome",
@@ -157,17 +160,17 @@
    },
    "pixels": {
     "total": 1030,
-    "agreed": 0,
+    "agreed": 840,
     "disagreed": 0,
-    "unimplemented": 0,
-    "unsupported": 1030
+    "unimplemented": 190,
+    "unsupported": 0
    },
    "rects": {
     "total": 8,
-    "agreed": 0,
+    "agreed": 7,
     "disagreed": 0,
-    "unimplemented": 0,
-    "unsupported": 8
+    "unimplemented": 1,
+    "unsupported": 0
    },
    "syscolor": {
     "total": 21,
@@ -177,7 +180,10 @@
     "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "rects": "the controls window: 1 record on each display, no controls drawn yet",
+   "pixels": "the controls window: 190 records on each display, no controls drawn yet"
+  }
  },
  "chrome-svga": {
   "probe": "chrome",
@@ -194,17 +200,17 @@
    },
    "pixels": {
     "total": 1030,
-    "agreed": 0,
+    "agreed": 840,
     "disagreed": 0,
-    "unimplemented": 0,
-    "unsupported": 1030
+    "unimplemented": 190,
+    "unsupported": 0
    },
    "rects": {
     "total": 8,
-    "agreed": 0,
+    "agreed": 7,
     "disagreed": 0,
-    "unimplemented": 0,
-    "unsupported": 8
+    "unimplemented": 1,
+    "unsupported": 0
    },
    "syscolor": {
     "total": 21,
@@ -214,7 +220,10 @@
     "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "rects": "the controls window: 1 record on each display, no controls drawn yet",
+   "pixels": "the controls window: 190 records on each display, no controls drawn yet"
+  }
  },
  "chrome-vga": {
   "probe": "chrome",
@@ -231,17 +240,17 @@
    },
    "pixels": {
     "total": 1030,
-    "agreed": 0,
+    "agreed": 840,
     "disagreed": 0,
-    "unimplemented": 0,
-    "unsupported": 1030
+    "unimplemented": 190,
+    "unsupported": 0
    },
    "rects": {
     "total": 8,
-    "agreed": 0,
+    "agreed": 7,
     "disagreed": 0,
-    "unimplemented": 0,
-    "unsupported": 8
+    "unimplemented": 1,
+    "unsupported": 0
    },
    "syscolor": {
     "total": 21,
@@ -251,7 +260,10 @@
     "unsupported": 0
    }
   },
-  "gaps": {}
+  "gaps": {
+   "rects": "the controls window: 1 record on each display, no controls drawn yet",
+   "pixels": "the controls window: 190 records on each display, no controls drawn yet"
+  }
  },
  "clipedge-vga": {
   "probe": "clipedge",

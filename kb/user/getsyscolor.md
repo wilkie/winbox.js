@@ -7,6 +7,7 @@ summary: Returns one of the system colours USER draws windows in, such as the ca
 versions:
   '3.1': exact
 probes: [chrome]
+records: [syscolor]
 source: src/win16/user/GetSysColor.ts
 topics: [display-drivers]
 ---

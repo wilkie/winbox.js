@@ -7,6 +7,7 @@ summary: Returns one of the sizes USER lays windows out with, such as the screen
 versions:
   '3.1': exact
 probes: [devcaps, chrome]
+records: [GetSystemMetrics, metric]
 topics: [display-drivers]
 ---
 

@@ -83,6 +83,7 @@ topics: [turned-text]
 | `summary`  | no                                                  | One or two sentences, shown under the title                                             |
 | `versions` | no                                                  | A status for each of `"3.0"`, `"3.1"`, `"3.11"`; a version left out is not yet surveyed |
 | `probes`   | no                                                  | Probes in `oracle/probes/` that record the behaviour                                    |
+| `records`  | no                                                  | Which of those probes' recorded functions back the page; all of them, without it        |
 | `source`   | no                                                  | The implementation, where it is not `src/win16/<module>/<Name>.ts`                      |
 | `topics`   | no                                                  | Topic pages the function belongs to                                                     |
 
@@ -120,12 +121,15 @@ changes when agreement does. Commit it with the change that moved it.
 A status badge is a claim, and the build holds it to that report:
 
 - `exact` on 3.1 needs at least one probe in `probes`, and every record of
-  every cited probe must agree, with no known gap open against it.
+  every cited probe must agree, with no known gap open against it -- or, where
+  the page names its `records`, every record of those functions.
 - `partial` needs at least one cited probe that was recorded.
 
-Which probes count is the page's to say. A probe calls many functions for
-setup that its replay never checks, so the build does not infer coverage from
-what a probe calls. Each probe also gets a page of its own, built from its
+Which probes count is the page's to say, and which of their records. A probe
+calls many functions for setup that its replay never checks, so the build does
+not infer coverage from what a probe calls. `chrome` records the system
+colours and metrics alongside whole windows, and `GetSysColor` rests on its
+`syscolor` records alone. Each probe also gets a page of its own, built from its
 source's opening comment and its report.
 
 ## Licence
