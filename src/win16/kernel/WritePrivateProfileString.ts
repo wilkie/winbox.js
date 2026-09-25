@@ -1,6 +1,6 @@
 'use strict';
 
-import { readProfile, writeProfile } from './profiles.js';
+import { flushWrites, readProfile, rememberWrite, writeProfile } from './profiles.js';
 /**
  * The **WritePrivateProfileString** function copies a character string into the
  * specified section of the specified initialization file.
@@ -68,6 +68,31 @@ import { readProfile, writeProfile } from './profiles.js';
  *                       successful. Otherwise it is zero.
  */
 export async function WritePrivateProfileString(lpszSection, lpszEntry, lpszString, lpszFilename) {
+  /* All three null is a flush: what the writes left in memory is let go, and
+   * the next read is of the file. Windows returns 0 for it, as recorded.
+   */
+  if (lpszSection === null && lpszEntry === null && lpszString === null) {
+    flushWrites(this, lpszFilename);
+    return 0;
+  }
+
+  /* Windows trims the trailing spaces off the caller's own string, in place,
+   * by writing a zero over the first of them -- recorded by the `profile`
+   * probe's "in place" records. Only spaces: a trailing tab stays in the
+   * caller's string, though it does not reach the file.
+   */
+  let value = lpszString === null ? null : String(lpszString);
+
+  if (value !== null) {
+    const kept = value.replace(/ +$/, '');
+
+    if (kept.length < value.length && lpszString.segment !== undefined) {
+      this.machine.cpu.core.write8(lpszString.segment, lpszString.offset + kept.length, 0);
+    }
+
+    value = kept.replace(/[ \t]+$/, '');
+  }
+
   const profile = await readProfile(this, lpszFilename);
 
   /* A null entry deletes the whole section, and a null value deletes just the
@@ -79,12 +104,16 @@ export async function WritePrivateProfileString(lpszSection, lpszEntry, lpszStri
       profile.set(String(lpszSection), name, null);
     }
   } else {
-    profile.set(
-      String(lpszSection),
-      String(lpszEntry),
-      lpszString === null ? null : String(lpszString)
-    );
+    profile.set(String(lpszSection), String(lpszEntry), value);
   }
+
+  rememberWrite(
+    this,
+    String(lpszFilename),
+    String(lpszSection),
+    lpszEntry === null ? null : String(lpszEntry),
+    value
+  );
 
   this.debug('WritePrivateProfileString', String(lpszSection), String(lpszEntry));
 

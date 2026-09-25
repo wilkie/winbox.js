@@ -126,7 +126,31 @@ const SUBJECT_PROFILE = [
   '[Second]',
   'only=one',
   '',
+  '[Spacing]',
+  'after=   after only',
+  'before   =before only',
+  'around   =   around both',
+  'tabbed=\tafter a tab',
+  'ends=  both ends  ',
 ].join('\r\n');
+
+/**
+ * Every write the profile probe makes, in its order, so that a record which
+ * depends on all of them -- a value read again after the flush -- can be
+ * replayed from the same state. Mirrors `profile.c` as `SUBJECT_PROFILE` does.
+ */
+const PROFILE_WRITES: [string, string, string | null][] = [
+  ['Plain', 'added', 'new value'],
+  ['Plain', 'entry', 'replaced'],
+  ['Fresh', 'first', 'in a new section'],
+  ['Plain', 'added', null],
+  ['Plain', 'spaced', '  untrimmed  '],
+  ['Plain', 'both', '  both ends  '],
+  ['Plain', 'trailing', 'trailing only   '],
+  ['Plain', 'leading', '   leading only'],
+  ['Plain', 'blank', '   '],
+  ['Plain', 'tabbed', 'tab\t'],
+];
 
 /** Loads the installed fonts off the drive image, if it has been built. */
 /**
@@ -1626,6 +1650,72 @@ const ADAPTERS: Record<
     );
 
     return `${ok},${quoted(context.fetch(buffer.far))}`;
+  },
+
+  /* The caller's string after the write, and what reads back. The value is
+   * placed in the scratch segment as the probe's copy was in its own, so a
+   * write that changes it is seen. */
+  async 'WritePrivateProfileString in place'(context, [entry, value]) {
+    const copy = context.lpcstr(value as string);
+    const before = (value as string).length;
+
+    const ok = await WritePrivateProfileString.call(
+      context,
+      context.lpcstr('Plain'),
+      context.lpcstr(entry as string),
+      copy,
+      context.lpcstr('PROBE.INI')
+    );
+
+    const after = context.fetch((copy.segment << 16) | copy.offset);
+    const buffer = context.place('', 130);
+
+    await GetPrivateProfileString.call(
+      context,
+      context.lpcstr('Plain'),
+      context.lpcstr(entry as string),
+      context.lpcstr('<gone>'),
+      buffer.far,
+      128,
+      context.lpcstr('PROBE.INI')
+    );
+
+    return `${ok},${before},${after.length},${quoted(after)},${quoted(context.fetch(buffer.far))}`;
+  },
+
+  async 'WritePrivateProfileString flush'(context) {
+    return String(
+      await WritePrivateProfileString.call(context, null, null, null, context.lpcstr('PROBE.INI'))
+    );
+  },
+
+  /* Read after every write the probe made and a flush, so the writes are made
+   * again on this context first. */
+  async 'GetPrivateProfileString after flush'(context, [section, entry]) {
+    for (const [writeSection, writeEntry, value] of PROFILE_WRITES) {
+      await WritePrivateProfileString.call(
+        context,
+        context.lpcstr(writeSection),
+        context.lpcstr(writeEntry),
+        value === null ? null : context.lpcstr(value),
+        context.lpcstr('PROBE.INI')
+      );
+    }
+
+    await WritePrivateProfileString.call(context, null, null, null, context.lpcstr('PROBE.INI'));
+
+    const buffer = context.place('', 130);
+    const count = await GetPrivateProfileString.call(
+      context,
+      context.lpcstr(section as string),
+      context.lpcstr(entry as string),
+      context.lpcstr('<default>'),
+      buffer.far,
+      128,
+      context.lpcstr('PROBE.INI')
+    );
+
+    return `${count},${quoted(context.fetch(buffer.far))}`;
   },
 
   /*

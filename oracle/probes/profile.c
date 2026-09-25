@@ -149,6 +149,108 @@ static void probeWrite(LPCSTR section, LPCSTR entry, LPCSTR value)
 }
 
 /*
+ * Whether a write changes the caller's own string.
+ *
+ * `probeWrite` prints the value it passed after the write has happened, and the
+ * first recording printed `"  untrimmed  "` as `"  untrimmed"`: the trailing
+ * spaces were gone from the probe's own string, not only from the file. So ask
+ * it directly. The value is copied into a buffer of the probe's, and the record
+ * is that buffer's length before and after the write, what it holds afterwards,
+ * and what reads back.
+ */
+static void probeWriteInPlace(LPCSTR entry, LPCSTR value)
+{
+    char copy[64];
+    char buffer[128];
+    int before;
+    BOOL ok;
+
+    lstrcpy(copy, value);
+    before = lstrlen(copy);
+
+    ok = WritePrivateProfileString("Plain", entry, copy, SUBJECT);
+
+    GetPrivateProfileString("Plain", entry, "<gone>", buffer, sizeof(buffer), SUBJECT);
+
+    wsprintf(probeArgs, "\"%s\",\"%s\"", (LPSTR)entry, (LPSTR)value);
+    wsprintf(probeResult, "%d,%d,%d,\"%s\",\"%s\"", (int)ok, before, lstrlen(copy),
+             (LPSTR)copy, (LPSTR)buffer);
+    probe("WritePrivateProfileString in place", probeArgs, probeResult);
+}
+
+/*
+ * A value read again once the cache is flushed. Named apart from the first
+ * reads because what it answers depends on every write before it.
+ */
+static void probeReread(LPCSTR section, LPCSTR entry)
+{
+    char buffer[128];
+    int count;
+
+    count = GetPrivateProfileString(section, entry, "<default>", buffer, sizeof(buffer), SUBJECT);
+
+    wsprintf(probeArgs, "\"%s\",\"%s\"", (LPSTR)section, (LPSTR)entry);
+    wsprintf(probeResult, "%d,\"%s\"", count, (LPSTR)buffer);
+    probe("GetPrivateProfileString after flush", probeArgs, probeResult);
+}
+
+/*
+ * The file as Windows left it, a line at a time.
+ *
+ * What reads back says whether a value survived a write, not how the writer
+ * kept it: a value with spaces at its start reads back with them, where the
+ * reader trims the spaces from an unquoted one. Only the bytes can say whether
+ * the writer quoted it. So after the writes, record every line of the file.
+ */
+static void probeFile(void)
+{
+    static char text[4096];
+    HFILE file;
+    int length;
+    int start;
+    int at;
+    int line;
+
+    file = _lopen(SUBJECT, OF_READ);
+
+    if (file == HFILE_ERROR) {
+        probe("file line", "open", "failed");
+        return;
+    }
+
+    length = _lread(file, text, sizeof(text) - 1);
+    _lclose(file);
+
+    if (length < 0) {
+        length = 0;
+    }
+
+    text[length] = '\0';
+
+    for (start = 0, at = 0, line = 1; at <= length; at++) {
+        if (at == length || text[at] == '\n') {
+            int end = at;
+
+            if (end > start && text[end - 1] == '\r') {
+                end--;
+            }
+
+            if (at < length || end > start) {
+                char saved = text[end];
+
+                text[end] = '\0';
+                wsprintf(probeArgs, "%d", line);
+                probe("file line", probeArgs, text + start);
+                text[end] = saved;
+                line++;
+            }
+
+            start = at + 1;
+        }
+    }
+}
+
+/*
  * Lays down the file the lookups run against.
  *
  * Written a line at a time through the file API rather than through
@@ -176,7 +278,14 @@ static void writeSubject(void)
         "equals=a=b\r\n"
         "\r\n"
         "[Second]\r\n"
-        "only=one\r\n";
+        "only=one\r\n"
+        "\r\n"
+        "[Spacing]\r\n"
+        "after=   after only\r\n"
+        "before   =before only\r\n"
+        "around   =   around both\r\n"
+        "tabbed=\tafter a tab\r\n"
+        "ends=  both ends  \r\n";
 
     HFILE handle = _lcreat(SUBJECT, 0);
 
@@ -199,6 +308,18 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeString("Plain", "empty", "<default>", 128);
     probeString("Plain", "semicolon", "<default>", 128);
     probeString("Plain", "equals", "<default>", 128);
+
+    /* Which whitespace the reader drops. `spaced` above has it on both sides of
+     * the `=` and at the end, and reads back without any of it; a value
+     * written with spaces at its start reads back with them. These separate
+     * the places the spaces can be.
+     */
+    probeNote("whitespace on each side of the equals sign");
+    probeString("Spacing", "after", "<default>", 128);
+    probeString("Spacing", "before", "<default>", 128);
+    probeString("Spacing", "around", "<default>", 128);
+    probeString("Spacing", "tabbed", "<default>", 128);
+    probeString("Spacing", "ends", "<default>", 128);
 
     probeNote("case, on the entry and on the section");
     probeString("Plain", "mixed", "<default>", 128);
@@ -246,6 +367,16 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
      */
     probeSection("Plain", 128);
 
+    probeNote("what a write does to the string it was given");
+    probeWriteInPlace("both", "  both ends  ");
+    probeWriteInPlace("trailing", "trailing only   ");
+    probeWriteInPlace("leading", "   leading only");
+    probeWriteInPlace("blank", "   ");
+    probeWriteInPlace("tabbed", "tab\t");
+
+    probeNote("the file as the writes left it");
+    probeFile();
+
     probeNote("WIN.INI, which is what programs actually read");
     probeWindows("intl", "s1159", "<default>");
     probeWindows("intl", "s2359", "<default>");
@@ -253,6 +384,19 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeWindows("intl", "sShortDate", "<default>");
     probeWindows("windows", "device", "<default>");
     probeWindows("Absent", "absent", "<default>");
+
+    /* The written values again, now that other files have been read and the
+     * cache flushed, so that what comes back is what the file says rather than
+     * what the write left in memory.
+     */
+    probeNote("the written values, read again after a flush");
+    wsprintf(probeResult, "%d", (int)WritePrivateProfileString(NULL, NULL, NULL, SUBJECT));
+    probe("WritePrivateProfileString flush", "NULL,NULL,NULL", probeResult);
+    probeReread("Plain", "spaced");
+    probeReread("Plain", "both");
+    probeReread("Plain", "leading");
+    probeReread("Plain", "tabbed");
+    probeReread("Spacing", "after");
 
     probeFinish();
 

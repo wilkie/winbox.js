@@ -15,6 +15,75 @@ import { Profile } from '../profile.js';
 export const WINDOWS_PROFILE = 'WIN.INI';
 
 /**
+ * What each write leaves in memory, until the program flushes the file.
+ *
+ * Windows does not read a value it has just written back out of the file.
+ * Recorded by the `profile` probe: a value written with spaces at its start
+ * reads back with them straight after the write, though the file holds it
+ * unquoted and the reader trims those spaces from every value it parses; once
+ * the program flushes the file, the same entry reads back without them. So a
+ * write is kept as written, by file, section and entry, until the flush.
+ * Whether reading another file flushes it as well is not separated by the
+ * recording, which read `WIN.INI` before flushing.
+ */
+const written = new WeakMap<object, Map<string, string>>();
+
+/** The key a write is kept under: the file's name, the section and the entry, without case. */
+const writtenKey = (name, section, entry) =>
+  [
+    String(name)
+      .split(/[\\/:]/)
+      .pop()!
+      .toUpperCase(),
+    section.toLowerCase(),
+    entry.toLowerCase(),
+  ].join('\0');
+
+/** The value a write left for this entry, if the file has not been flushed since. */
+export function writtenValue(kernel, name, section, entry) {
+  return written.get(kernel)?.get(writtenKey(name, section, entry)) ?? null;
+}
+
+/**
+ * Keeps a write, or forgets one: `null` for the value forgets the entry, and
+ * `null` for the entry forgets the section.
+ */
+export function rememberWrite(kernel, name, section, entry, value) {
+  let values = written.get(kernel);
+
+  if (!values) {
+    values = new Map();
+    written.set(kernel, values);
+  }
+
+  if (entry === null) {
+    const prefix = writtenKey(name, section, '');
+
+    for (const key of [...values.keys()]) {
+      if (key.startsWith(prefix)) {
+        values.delete(key);
+      }
+    }
+  } else if (value === null) {
+    values.delete(writtenKey(name, section, entry));
+  } else {
+    values.set(writtenKey(name, section, entry), value);
+  }
+}
+
+/** Forgets every write to a file: what a flush does. */
+export function flushWrites(kernel, name) {
+  const prefix = writtenKey(name, '', '').split('\0')[0] + '\0';
+  const values = written.get(kernel);
+
+  for (const key of [...(values?.keys() ?? [])]) {
+    if (key.startsWith(prefix)) {
+      values!.delete(key);
+    }
+  }
+}
+
+/**
  * Reads an initialisation file, or an empty one if it does not exist.
  *
  * A missing file is not an error: every profile call is defined to fall back

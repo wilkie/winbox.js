@@ -7,8 +7,8 @@ import { readProfile, toInteger } from './profiles.js';
  * from the specified initialization file.
  *
  * The conversion is not `atoi`. Windows reads digits from the start of the
- * value and stops at the first character that is not one, so `40two` is 40. It
- * reads no sign, so a value written as `-1` is not 65535 but zero. And a value
+ * value and stops at the first character that is not one, so `40two` is 40. A
+ * leading minus is read, and the result is unsigned, so `-1` is 65535. And a value
  * that does not begin with a digit at all gives zero rather than the default:
  * the default is what an entry that is *absent* returns, which is a different
  * thing from an entry that is present and unreadable.

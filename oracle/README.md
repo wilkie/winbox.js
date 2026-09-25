@@ -585,9 +585,8 @@ what reading the documentation would suggest.
 **A quoted value keeps its spaces and loses its quotes.** `quoted="  kept  "`
 reads back as `  kept  `. Both quote characters work. Since the whitespace
 around a value is otherwise trimmed away, quoting is the only way for a value
-to have any, which makes it the mechanism rather than a nicety -- and it is
-also what the _writer_ does: a value written with spaces around it comes back
-with them, which only works if `WritePrivateProfileString` adds the quotes.
+to have any, which makes it the mechanism rather than a nicety. The writer
+does not use it, though that was the first reading: see below.
 
 **`GetProfileInt` is not the string call with a conversion on the end.** It
 reads digits and stops at the first character that is not one, so `40two` is 40. It reads a leading minus and returns a `UINT`, so `-1` is 65535. And it
@@ -612,6 +611,22 @@ belongs to the value.
 adding one puts it at the end of its own section rather than at the end of the
 file. Enumerating the section after five writes returns exactly the list it
 returned before them, which is the check that says so.
+
+**A write changes the caller's string, and what reads back is not the file.**
+The probe printed the value it had passed after the write, and `"  untrimmed  "`
+came out as `"  untrimmed"`: Windows had cut the trailing spaces off the
+probe's own string, in place. Asked directly -- a copy of the value, measured
+before and after -- it does exactly that, to spaces only; a trailing tab stays
+in the caller's string. The value then reads back with its leading spaces, which
+first looked like the writer quoting it. It does not: the probe now records the
+file line by line, and the line is `spaced=  untrimmed`, unquoted. The reader
+trims those spaces from every line it parses, wherever they are, and after
+`WritePrivateProfileString(NULL, NULL, NULL, file)` -- a flush, which returns
+0 -- the same entries read back without them. What a write leaves in memory is
+read before the file until the flush. The file itself is rewritten whole and
+normalised, `after=   after only` becoming `after=after only` in a section
+nothing wrote to, and a rewritten value that had trailing spaces leaves stray
+bytes behind; the file's lines are recorded but not yet replayed.
 
 ### The font probe
 

@@ -1,6 +1,6 @@
 'use strict';
 
-import { copyOut, copyOutList, readProfile } from './profiles.js';
+import { copyOut, copyOutList, readProfile, writtenValue } from './profiles.js';
 
 /**
  * The **GetPrivateProfileString** function retrieves a character string from
@@ -96,7 +96,12 @@ export async function GetPrivateProfileString(
     return copyOutList(this, lpszReturnBuffer, names, cbReturnBuffer);
   }
 
-  const found = profile.get(String(lpszSection), String(lpszEntry));
+  /* A value this program wrote since the file was last flushed comes back as
+   * it was written, not as the file would parse; see `writtenValue`.
+   */
+  const found =
+    writtenValue(this, String(lpszFilename), String(lpszSection), String(lpszEntry)) ??
+    profile.get(String(lpszSection), String(lpszEntry));
 
   /* The default is copied verbatim when the entry is missing, and a null
    * default is documented as not allowed -- but a program that passes one

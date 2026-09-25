@@ -197,23 +197,6 @@ export class Profile {
   }
 
   /**
-   * Writes a value in the form that reads back as itself.
-   *
-   * Whitespace at either end of a value is not part of it, so a value that has
-   * some would come back shorter than it went in. Quoting is how the format
-   * carries it: the reader removes one surrounding pair, so a quoted value
-   * survives intact. Windows does this too: a value written with spaces around
-   * it is read back with them, which only works if the writer put quotes on.
-   */
-  static quote(value) {
-    if (value !== value.trim()) {
-      return `"${value}"`;
-    }
-
-    return value;
-  }
-
-  /**
    * Sets an entry, adding the section or the entry if the file lacks it.
    *
    * A value of `null` removes the entry, which is what a program asking to
@@ -256,7 +239,7 @@ export class Profile {
 
       if (found && Profile.same(found.entry, entry)) {
         if (value !== null) {
-          output.push(`${entry}=${Profile.quote(value)}`);
+          output.push(`${entry}=${value}`);
         }
 
         written = true;
@@ -280,7 +263,7 @@ export class Profile {
         }
 
         output.push(`[${section}]`);
-        output.push(`${entry}=${Profile.quote(value)}`);
+        output.push(`${entry}=${value}`);
       } else {
         /* Back up over the blank lines that separate this section from the
          * next, so the entry lands inside its own section.
@@ -291,7 +274,7 @@ export class Profile {
           at--;
         }
 
-        output.splice(at, 0, `${entry}=${Profile.quote(value)}`);
+        output.splice(at, 0, `${entry}=${value}`);
       }
     }
 
