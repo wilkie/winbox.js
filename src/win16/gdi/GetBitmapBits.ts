@@ -1,54 +1,37 @@
 'use strict';
 
+import { readByte, rowBytes } from './ddb.js';
+
 /**
- * The **GetBitmapBits** function copies the bits of the specified bitmap into a
- * buffer.
+ * Copies a bitmap's bits into a buffer, in rows padded to 16-bit words.
  *
- * An application can use the {@link Gdi.GetObject GetObject} function to
- * determine the number of bytes to copy into the buffer pointed to by the
- * *`lpvBits`* parameter;
+ * Recorded by `bitbits`: the bits follow what was drawn into the bitmap, not
+ * what it was created with; a row is padded to a word; and a buffer smaller
+ * than the bitmap gets exactly as many bytes as it holds, which is what the
+ * call returns. Earlier this wrote every byte to the buffer's first address,
+ * from the bitmap as it was created, in rows padded to four bytes. See
+ * `ddb.ts`.
  *
- * **See also**:
- * {@link Gdi.GetObject GetObject}
- * {@link Gdi.SetBitmapBits SetBitmapBits}
+ * @param {Types.HBITMAP} hbm - The bitmap.
+ * @param {Types.LONG} cbBuffer - How many bytes the buffer holds.
+ * @param {Types.FARPTR} lpvBits - The buffer.
  *
- * @static
- * @function GetBitmapBits
- * @memberof Gdi
- *
- * @param {Types.HDC} hbm - Identifies the bitmap.
- * @param {Types.LONG} cbBuffer - Specifies the number of bytes to be copied.
- * @param {Types.FARPTR} lpvBits - Points to the buffer that is to receive the
- *                                 bitmap. The bitmap is an array of bytes. This
- *                                 array conforms to a structure in which
- *                                 horizontal scan lines are multiples of 16
- *                                 bits.
- *
- * @return {Types.LONG} The return value specifies the number of bytes in the
- *                      bitmap if the function is successful. It is zero if
- *                      there is an error.
+ * @returns {Types.LONG} How many bytes were copied.
  */
 export function GetBitmapBits(hbm, cbBuffer, lpvBits) {
-  const memory = this.machine.memory;
   const item = this.handles.resolve(hbm);
 
-  if (!item) {
+  if (!item || !lpvBits) {
     return 0;
   }
 
-  const destSegment = ((lpvBits >> 16) & 0xffff) >> 3;
-  const destOffset = lpvBits & 0xffff;
+  const core = this.machine.cpu.core;
+  const segment = (lpvBits >>> 16) & 0xffff;
+  const offset = lpvBits & 0xffff;
+  const size = Math.min(rowBytes(item.bpp, item.width) * item.height, cbBuffer);
 
-  let bpRow = item.bpp * item.width;
-  bpRow = (bpRow + (8 - 1)) & ~(8 - 1);
-  const widthBytes = ((bpRow >> 3) + (4 - 1)) & ~(4 - 1);
-
-  const copied = 0;
-  const size = Math.min(widthBytes * item.height, cbBuffer);
-
-  // Copy the bitmap to the specified array.
-  for (let i = 0; i < size; i++) {
-    memory.write8(destSegment, destOffset, item.view.getUint8(i));
+  for (let at = 0; at < size; at++) {
+    core.write8(segment, offset + at, readByte(item, at));
   }
 
   return size;

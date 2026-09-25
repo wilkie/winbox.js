@@ -36,6 +36,9 @@ import { LineTo } from '../../src/win16/gdi/LineTo.js';
 import { MoveTo } from '../../src/win16/gdi/MoveTo.js';
 import { Polygon } from '../../src/win16/gdi/Polygon.js';
 import { TextOut } from '../../src/win16/gdi/TextOut.js';
+import { GetBitmapBits } from '../../src/win16/gdi/GetBitmapBits.js';
+import { PatBlt } from '../../src/win16/gdi/PatBlt.js';
+import { CreateBitmap } from '../../src/win16/gdi/CreateBitmap.js';
 import { ExtTextOut } from '../../src/win16/gdi/ExtTextOut.js';
 import { SetTextCharacterExtra } from '../../src/win16/gdi/SetTextCharacterExtra.js';
 import { SetTextAlign } from '../../src/win16/gdi/SetTextAlign.js';
@@ -1072,26 +1075,26 @@ export class Context {
   }
 
   /** The cell as the probes write it: one bit a pixel, white set. */
+  /**
+   * The cell as the probe read it: a monochrome bitmap selected into the
+   * surface, and `GetBitmapBits`, so every recording of pixels checks that call
+   * as well. A set bit is white, which is what the probe's background was.
+   */
   readCell(surface: any, cell = 32, rows = cell) {
-    const pixels = surface.context.pixels;
+    const core = this.machine.cpu.core;
+    const size = (cell / 8) * rows;
+    const bitmap = CreateBitmap.call(this, cell, rows, 1, 1, 0);
+
+    SelectObject.call(this, this.handles.allocate(surface), bitmap);
+
+    const buffer = this.place('', size);
+
+    GetBitmapBits.call(this, bitmap, size, buffer.far);
 
     let hex = '';
 
-    for (let row = 0; row < rows; row++) {
-      for (let group = 0; group < cell / 8; group++) {
-        let byte = 0;
-
-        for (let bit = 0; bit < 8; bit++) {
-          const at = (row * cell + group * 8 + bit) * 4;
-
-          // A set bit is white, which is what the probe's background was.
-          const inked = pixels[at] < 0x80 && pixels[at + 3] !== 0;
-
-          byte |= (inked ? 0 : 1) << (7 - bit);
-        }
-
-        hex += byte.toString(16).padStart(2, '0');
-      }
+    for (let index = 0; index < size; index++) {
+      hex += core.read8(buffer.segment, buffer.offset + index).toString(16).padStart(2, '0');
     }
 
     return hex;
@@ -1849,6 +1852,50 @@ const ADAPTERS: Record<
     );
 
     return `${ok},${quoted(context.fetch(buffer.far))}`;
+  },
+
+  /* `bitbits`: a bitmap made from known bits or drawn into, read back through
+   * `GetBitmapBits` into a buffer of 128 bytes filled with `0xAA`. The record
+   * is the count and every byte of the buffer. */
+  bits(context, args) {
+    const field = (name: string) =>
+      String(args.find((one) => String(one).startsWith(`${name}=`)) ?? '').slice(name.length + 1);
+    const core = context.machine.cpu.core;
+    const bytes = (values: number[]) => {
+      const at = context.place('', values.length);
+
+      values.forEach((value, index) => core.write8(at.segment, at.offset + index, value));
+
+      return at;
+    };
+
+    const width = Number(field('w'));
+    const height = Number(field('h'));
+    const created = args[0] === 'created';
+    const source = created
+      ? bytes(Array.from({ length: 128 }, (_, index) => index + 1))
+      : bytes(new Array(128).fill(0));
+    const bitmap = CreateBitmap.call(context, width, height, 1, 1, source.far);
+
+    if (!created) {
+      const surface: any = Surface.offscreen(width, height);
+      const hdc = context.handles.allocate(surface);
+      const [left, top, right, bottom] = field('rect').split(':').map(Number);
+
+      SelectObject.call(context, hdc, bitmap);
+      PatBlt.call(context, hdc, 0, 0, width, height, Gdi.WHITENESS);
+      PatBlt.call(context, hdc, left, top, right - left, bottom - top, Gdi.BLACKNESS);
+    }
+
+    const buffer = bytes(new Array(128).fill(0xaa));
+    const count = GetBitmapBits.call(context, bitmap, Number(field('buffer')), buffer.far);
+    let hex = '';
+
+    for (let index = 0; index < 128; index++) {
+      hex += core.read8(buffer.segment, buffer.offset + index).toString(16).padStart(2, '0');
+    }
+
+    return `${count},${hex}`;
   },
 
   /* The caller's string after the write, and what reads back. The value is

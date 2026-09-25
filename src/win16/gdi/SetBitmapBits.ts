@@ -1,5 +1,7 @@
 'use strict';
 
+import { rowBytes, writeByte } from './ddb.js';
+
 /**
  * The **SetBitmapBits** function sets the bits of the given bitmap to the
  * specified values.
@@ -32,16 +34,15 @@ export function SetBitmapBits(hbmp, cbBuffer, lpvBits) {
   const srcSegment = (lpvBits >> 16) & 0xffff;
   const srcOffset = lpvBits & 0xffff;
 
-  let bpRow = item.bpp * item.width;
-  bpRow = (bpRow + (8 - 1)) & ~(8 - 1);
-  const widthBytes = ((bpRow >> 3) + (4 - 1)) & ~(4 - 1);
+  /* Rows padded to words, as `CreateBitmap` takes them -- the documented
+   * shape of a device-dependent bitmap, which `bitbits` recorded for
+   * `CreateBitmap` and `GetBitmapBits`. This call itself is not recorded,
+   * nor whether bits set here reach a bitmap already selected into a
+   * surface; see `ddb.ts`. It used to read the same source byte every time. */
+  const size = Math.min(rowBytes(item.bpp, item.width) * item.height, cbBuffer);
 
-  const copied = 0;
-  const size = Math.min(widthBytes * item.height, cbBuffer);
-
-  // Copy the bitmap to the bitmap's data view.
-  for (let i = 0; i < size; i++) {
-    item.view.setUint8(i, cpu.read8(srcSegment, srcOffset));
+  for (let at = 0; at < size; at++) {
+    writeByte(item, at, cpu.read8(srcSegment, srcOffset + at));
   }
 
   return size;

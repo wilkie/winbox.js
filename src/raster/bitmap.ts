@@ -251,6 +251,14 @@ export class Bitmap {
       this._surface.context.fillStyle = source.css;
       this._surface.context.fillRect(destX, destY, destWidth, destHeight);
       return;
+    } else if (source instanceof Color && this._surface && operation == Bitmap.OPERATIONS.COPY) {
+      /* A bitmap of another depth selected into a surface: text and lines draw
+       * on the surface's pixels, and `GetBitmapBits` reads them there, so a
+       * fill goes there too -- `PatBlt` to white and then drawing is what
+       * every probe does before reading its cell back. The bitmap's own bits
+       * are filled below as well, for anything that reads those. */
+      this._surface.context.fillStyle = source.css;
+      this._surface.context.fillRect(destX, destY, destWidth, destHeight);
     }
 
     // Whether or not the source is a device bitmap (canvas)

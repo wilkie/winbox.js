@@ -1,5 +1,7 @@
 'use strict';
 
+import { rowBytes } from './ddb.js';
+
 import { Palette } from '../../raster/palette.js';
 import { Bitmap } from '../../raster/bitmap.js';
 
@@ -19,7 +21,7 @@ export function CreateBitmap(nWidth, nHeight, cbPlanes, cbBits, lpvBits) {
   cbPlanes = cbPlanes & 0xff;
 
   const srcSegment = (lpvBits >> 16) & 0xffff;
-  let srcOffset = lpvBits & 0xffff;
+  const srcOffset = lpvBits & 0xffff;
 
   // Get bitmap data
   let bpRow = cbBits * nWidth;
@@ -41,10 +43,19 @@ export function CreateBitmap(nWidth, nHeight, cbPlanes, cbBits, lpvBits) {
 
   const data = new Uint8Array(size);
 
+  /* The caller's bits come in rows padded to words, not doublewords: recorded
+   * by `bitbits` at widths of 8 to 40 pixels. They are re-rowed into the four
+   * byte rows the bitmap is kept in; see `ddb.ts`. */
   if (lpvBits) {
-    for (let i = 0; i < size; i++) {
-      data[i] = this.machine.cpu.core.read8(srcSegment, srcOffset);
-      srcOffset++;
+    const given = rowBytes(cbBits, nWidth);
+
+    for (let row = 0; row < nHeight; row++) {
+      for (let column = 0; column < given && column < widthBytes; column++) {
+        data[row * widthBytes + column] = this.machine.cpu.core.read8(
+          srcSegment,
+          srcOffset + row * given + column
+        );
+      }
     }
   }
 
