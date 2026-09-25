@@ -8,7 +8,15 @@
  * a field cannot quietly drop a claim from the site. See `kb/README.md`.
  */
 
-export const KINDS = ['function', 'structure', 'message', 'constants', 'format', 'topic'] as const;
+export const KINDS = [
+  'function',
+  'structure',
+  'message',
+  'constants',
+  'format',
+  'topic',
+  'guide',
+] as const;
 export const VERSIONS = ['3.0', '3.1', '3.11'] as const;
 export const STATUSES = ['exact', 'partial', 'stub', 'unrecorded'] as const;
 

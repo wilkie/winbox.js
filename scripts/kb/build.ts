@@ -18,12 +18,24 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { checkEvidence, type Probe, readProbes, readReport } from './evidence.js';
+// @ts-expect-error -- a plain script of the oracle's, shared so the site says what it does
+import { fixtureFor } from '../oracle/per-display.mjs';
+
+import {
+  checkEvidence,
+  type Fabrication,
+  type Probe,
+  readFabrications,
+  readProbes,
+  readReport,
+} from './evidence.js';
 import { collectExports } from './exports.js';
 import { type Status, VERSIONS } from './frontmatter.js';
 import { readSignature } from './jsdoc.js';
 import { render, type Targets } from './markup.js';
 import {
+  ARTICLE_DIRECTORY,
+  type ArticleKind,
   articles,
   assemble,
   discrepancies,
@@ -83,14 +95,31 @@ const site: { targets: Targets; errors: string[] } = {
     functions: new Map(),
     topics: new Map(),
     formats: new Map(),
+    guides: new Map(),
     probes: new Map(),
     fonts: new Map(),
   },
   errors: [],
 };
 
+/** A page that links to another: its URL from the site's root, and its title. */
+interface Referrer {
+  url: string;
+  title: string;
+}
+
+/**
+ * Every page that links to each page, keyed by the linked page's URL: through
+ * a reference in its body, or through its front matter's `probes` and
+ * `topics`. What each page lists under "Linked from"; see `referrersOf`.
+ */
+let referrers = new Map<string, Referrer[]>();
+
+const linksTo = (url: string) =>
+  (referrers.get(url) ?? []).slice().sort((a, b) => a.title.localeCompare(b.title));
+
 /** A page's Markdown body as HTML, its references resolved from `depth` levels down. */
-function body(page: Page | null | undefined, depth: number) {
+function body(page: Page | null | undefined, depth: number, linked?: (url: string) => void) {
   if (!page || !page.body.trim()) {
     return { html: '', mermaid: false };
   }
@@ -100,8 +129,76 @@ function body(page: Page | null | undefined, depth: number) {
     fontsUrl: `${SOURCE_URL}/FONTS.md`,
     targets: site.targets,
     file: page.file,
-    errors: site.errors,
+    errors: linked ? [] : site.errors,
+    linked,
   });
+}
+
+/**
+ * Who links to whom, gathered before any page is written, so that every page
+ * can list what links to it. A page's body is rendered once here for its
+ * references alone; a reference that does not resolve is reported by the
+ * rendering that writes the page.
+ */
+function referrersOf(modules: ModulePage[], all: Page[]) {
+  const found = new Map<string, Referrer[]>();
+  const add = (url: string | undefined, from: Referrer) => {
+    if (!url || url === from.url) {
+      return;
+    }
+
+    const list = found.get(url) ?? [];
+
+    if (!list.some((other) => other.url === from.url)) {
+      list.push(from);
+      found.set(url, list);
+    }
+  };
+
+  const walk = (page: Page, from: Referrer) => {
+    body(page, 0, (url) => add(url, from));
+
+    for (const probe of page.front.probes) {
+      add(site.targets.probes.get(probe)?.url, from);
+    }
+
+    for (const topic of page.front.topics) {
+      add(site.targets.topics.get(topic)?.url, from);
+    }
+  };
+
+  for (const module of modules) {
+    for (const exported of module.exports) {
+      if (exported.page) {
+        walk(exported.page, {
+          url: `${slugOf(module.name)}/${exported.slug}/index.html`,
+          title: `${module.name}.${exported.name}`,
+        });
+      }
+    }
+  }
+
+  for (const kind of ['topic', 'format', 'guide'] as const) {
+    for (const article of articles(all, kind)) {
+      walk(article.page, { url: article.url, title: article.page.front.name });
+    }
+  }
+
+  return found;
+}
+
+/** The "Linked from" section of the page at `url`, `depth` levels down. */
+function linkedFrom(url: string, depth: number, heading = 'Linked from') {
+  const list = linksTo(url);
+
+  if (!list.length) {
+    return '';
+  }
+
+  const up = '../'.repeat(depth);
+  return `<h2>${heading}</h2><ul>${list
+    .map((from) => `<li><a href="${up}${from.url}">${escape(from.title)}</a></li>`)
+    .join('')}</ul>`;
 }
 
 const STATUS_LABEL: Record<Status, string> = {
@@ -129,14 +226,32 @@ const percent = (part: number, whole: number) =>
 const implementedIn = (module: ModulePage) =>
   module.exports.filter((page) => page.entry?.implemented).length;
 
+interface LayoutOptions {
+  /** Load Mermaid, for a page with a diagram. */
+  mermaid?: boolean;
+
+  /**
+   * What the page is, as search offers it for narrowing: `Function`, `Topic`.
+   * A page without one is left out of the search index.
+   */
+  kind?: string;
+
+  /** A function's Windows 3.1 status, for search to narrow by. */
+  status?: Status | null;
+
+  /** Extra tags for the head, from the site's root. */
+  head?: string;
+}
+
 /** One page of the site, with the navigation back up the tree. */
 function layout(
   depth: number,
   title: string,
   crumbs: [string, string | null][],
   content: string,
-  mermaid = false
+  options: LayoutOptions = {}
 ) {
+  const { mermaid = false, kind, status, head = '' } = options;
   const up = '../'.repeat(depth);
   const trail = crumbs
     .map(([label, href]) =>
@@ -150,7 +265,7 @@ function layout(
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${escape(title)} — Windows API Knowledge Base</title>
-<link rel="stylesheet" href="${up}style.css">${
+<link rel="stylesheet" href="${up}style.css">${head.replaceAll('{up}', up)}${
     mermaid
       ? `
 <script type="module">
@@ -163,10 +278,17 @@ mermaid.initialize({ startOnLoad: true, theme: matchMedia('(prefers-color-scheme
 <body>
 <header class="site">
 <a class="home" href="${up}index.html">Windows API Knowledge Base</a>
+<nav aria-label="Sections" class="sections"><a href="${up}topics/index.html">Topics</a> <a href="${up}formats/index.html">Formats</a> <a href="${up}evidence/index.html">Evidence</a> <a href="${up}guides/index.html">Guides</a> <a href="${up}search/index.html">Search</a></nav>
 <nav aria-label="Breadcrumb">${trail}</nav>
 </header>
-<main>
-${content}
+<main${kind ? ' data-pagefind-body' : ''}>
+${
+  kind
+    ? `<span hidden data-pagefind-meta="title">${escape(title)}</span><span hidden data-pagefind-filter="kind">${escape(kind)}</span>${
+        status ? `<span hidden data-pagefind-filter="status">${STATUS_LABEL[status]}</span>` : ''
+      }\n`
+    : ''
+}${content}
 </main>
 <footer class="site">
 <p>Built from the survey of the Windows 3.1 binaries, the export tables of winbox.js, and the pages in <code>kb/</code>. Content is licensed <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</p>
@@ -223,7 +345,10 @@ ${rows}
 <h2>Topics and file formats</h2>
 <p><a href="topics/index.html">Topics</a> describe behaviour that crosses functions, and <a href="formats/index.html">file formats</a> the files Windows reads and writes.</p>
 <h2>Evidence</h2>
-<p>Every claim that winbox.js matches Windows rests on a probe: a small Windows 3.1 program that records what Windows did, replayed against winbox.js by its test suite. <a href="evidence/index.html">The probes and how far winbox.js agrees with each</a>.</p>`
+<p>Every claim that winbox.js matches Windows rests on a probe: a small Windows 3.1 program that records what Windows did, replayed against winbox.js by its test suite. <a href="evidence/index.html">The probes and how far winbox.js agrees with each</a>.</p>
+<h2>Guides</h2>
+<p><a href="guides/index.html">How to reproduce a measurement, and how to add a probe or a page</a>. <a href="search/index.html">Search</a> covers every page.</p>`,
+    { kind: 'Overview' }
   );
 }
 
@@ -268,7 +393,8 @@ function renderModule(module: ModulePage) {
 ${rows}
 </tbody>
 </table>
-${disagreements}`
+${disagreements}`,
+    { kind: 'Module' }
   );
 }
 
@@ -380,30 +506,23 @@ ${article.html}
 ${conflict}
 ${evidence}
 ${topics}
+${linkedFrom(`${slugOf(module.name)}/${page.slug}/index.html`, 2)}
 ${unknown}`,
-    article.mermaid
+    { mermaid: article.mermaid, kind: 'Function', status: page.versions['3.1'] }
   );
 }
 
-/** A topic or a file format: its own title and body, and what links to it. */
-function renderArticle(
-  kind: 'topic' | 'format',
-  article: { slug: string; page: Page },
-  related: [ModulePage, ExportPage][]
-) {
+const ARTICLE_TITLE: Record<ArticleKind, [string, string]> = {
+  topic: ['Topic', 'Topics'],
+  format: ['Format', 'File formats'],
+  guide: ['Guide', 'Guides'],
+};
+
+/** A topic, a file format or a guide: its own title and body, and what links to it. */
+function renderArticle(kind: ArticleKind, article: { slug: string; url: string; page: Page }) {
   const { page } = article;
   const content = body(page, 2);
-  const section = kind === 'topic' ? 'Topics' : 'File formats';
-  const directory = kind === 'topic' ? 'topics' : 'formats';
-
-  const functions = related.length
-    ? `<h2>Functions</h2><ul>${related
-        .map(
-          ([module, exported]) =>
-            `<li><a href="../../${slugOf(module.name)}/${exported.slug}/index.html"><code>${escape(module.name)}.${escape(exported.name)}</code></a></li>`
-        )
-        .join('')}</ul>`
-    : '';
+  const [label, section] = ARTICLE_TITLE[kind];
 
   const probes = page.front.probes.length
     ? `<h2>Evidence</h2><ul>${page.front.probes
@@ -419,24 +538,28 @@ function renderArticle(
     page.front.name,
     [
       ['Modules', 'index.html'],
-      [section, `${directory}/index.html`],
+      [section, `${ARTICLE_DIRECTORY[kind]}/index.html`],
       [page.front.name, null],
     ],
     `<h1>${escape(page.front.name)}</h1>
 ${page.front.summary ? `<p class="lead">${escape(page.front.summary)}</p>` : ''}
 ${content.html}
-${functions}
-${probes}`,
-    content.mermaid
+${probes}
+${linkedFrom(article.url, 2)}`,
+    { mermaid: content.mermaid, kind: label }
   );
 }
 
-function renderArticleIndex(kind: 'topic' | 'format', list: ReturnType<typeof articles>) {
-  const title = kind === 'topic' ? 'Topics' : 'File formats';
-  const lead =
-    kind === 'topic'
-      ? 'Behaviour that crosses functions: how Windows 3.1 maps, scales, draws and measures, as one rule at a time.'
-      : 'The on-disk formats Windows 3.1 reads and writes, field by field.';
+const ARTICLE_LEAD: Record<ArticleKind, string> = {
+  topic:
+    'Behaviour that crosses functions: how Windows 3.1 maps, scales, draws and measures, as one rule at a time.',
+  format: 'The on-disk formats Windows 3.1 reads and writes, field by field.',
+  guide:
+    'How to check a claim on this site for yourself, and how to add to it: a probe, a recording, a page.',
+};
+
+function renderArticleIndex(kind: ArticleKind, list: ReturnType<typeof articles>) {
+  const title = ARTICLE_TITLE[kind][1];
 
   return layout(
     1,
@@ -446,13 +569,44 @@ function renderArticleIndex(kind: 'topic' | 'format', list: ReturnType<typeof ar
       [title, null],
     ],
     `<h1>${title}</h1>
-<p class="lead">${lead}</p>
+<p class="lead">${ARTICLE_LEAD[kind]}</p>
 <ul class="articles">${list
       .map(
         (item) =>
           `<li><a href="${item.slug}/index.html">${escape(item.page.front.name)}</a>${item.page.front.summary ? `<span class="note"> — ${escape(item.page.front.summary)}</span>` : ''}</li>`
       )
       .join('\n')}</ul>`
+  );
+}
+
+/**
+ * The search page. The index is Pagefind's, built over the finished site by
+ * `npm run kb`; every page but this one and the lists is in it, and search can
+ * narrow by what a page is and by a function's status. The interface is loaded
+ * here only, so the other pages carry no script for it.
+ */
+function renderSearch() {
+  return layout(
+    1,
+    'Search',
+    [
+      ['Modules', 'index.html'],
+      ['Search', null],
+    ],
+    `<h1>Search</h1>
+<pagefind-config bundle-path="../pagefind/"></pagefind-config>
+<div class="search">
+<pagefind-input autofocus placeholder="Functions, topics, formats, probes"></pagefind-input>
+<div class="search-filters">
+<pagefind-filter-dropdown filter="kind" label="Kind"></pagefind-filter-dropdown>
+<pagefind-filter-dropdown filter="status" label="Status"></pagefind-filter-dropdown>
+</div>
+<pagefind-summary></pagefind-summary>
+<pagefind-results show-sub-results></pagefind-results>
+</div>
+<noscript><p>Search runs in the browser and needs JavaScript. Every page is also reachable from <a href="../index.html">the module index</a>.</p></noscript>
+<script src="../pagefind/pagefind-component-ui.js"></script>`,
+    { head: '\n<link rel="stylesheet" href="{up}pagefind/pagefind-component-ui.css">' }
   );
 }
 
@@ -470,6 +624,11 @@ header.site, main, footer.site { max-width: 60rem; margin: 0 auto; padding: 0 16
 header.site { padding-top: 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; align-items: baseline; }
 header.site .home { font-weight: 600; color: var(--fg); text-decoration: none; }
 nav { color: var(--muted); font-size: 0.9rem; }
+nav.sections { display: flex; flex-wrap: wrap; gap: 0 1rem; }
+header.site nav[aria-label="Breadcrumb"] { flex-basis: 100%; }
+main pre code { font-size: 0.85rem; }
+.search { --pf-text: var(--fg); --pf-text-secondary: var(--muted); --pf-text-muted: var(--muted); --pf-background: var(--bg); --pf-border: var(--line); --pf-border-focus: var(--link); --pf-outline-focus: var(--link); --pf-hover: var(--line); --pf-mark: var(--fg); --pf-font: inherit; display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem; }
+.search-filters { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 a { color: var(--link); }
 h1 { font-size: 1.8rem; margin: 1.5rem 0 0.5rem; overflow-wrap: anywhere; }
 h2 { font-size: 1.2rem; margin: 2rem 0 0.5rem; }
@@ -483,7 +642,7 @@ thead th { font-size: 0.85rem; color: var(--muted); font-weight: 600; }
 .num { text-align: right; font-variant-numeric: tabular-nums; }
 dl.facts { display: grid; grid-template-columns: max-content 1fr; gap: 0.35rem 1.5rem; }
 dl.facts dt { color: var(--muted); }
-dl.facts dd { margin: 0; }
+dl.facts dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
 .badge { display: inline-block; font-size: 0.8rem; font-weight: 600; padding: 0 0.5rem; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
 .badge.exact { color: var(--exact); } .badge.partial { color: var(--partial); } .badge.stub { color: var(--stub); }
 .badge.unrecorded { color: var(--unrecorded); } .badge.unsurveyed { color: var(--unsurveyed); font-weight: 400; }
@@ -508,22 +667,7 @@ function write(path: string, content: string) {
   writeFileSync(path, content);
 }
 
-/** Which function pages cite each probe, by probe name. */
-function citations(modules: ModulePage[]) {
-  const cited = new Map<string, [ModulePage, ExportPage][]>();
-
-  for (const module of modules) {
-    for (const page of module.exports) {
-      for (const probe of page.page?.front.probes ?? []) {
-        cited.set(probe, [...(cited.get(probe) ?? []), [module, page]]);
-      }
-    }
-  }
-
-  return cited;
-}
-
-function renderEvidence(probes: Probe[], cited: ReturnType<typeof citations>) {
+function renderEvidence(probes: Probe[]) {
   const rows = probes
     .map(
       (probe) => `<tr>
@@ -532,7 +676,7 @@ function renderEvidence(probes: Probe[], cited: ReturnType<typeof citations>) {
 <td class="num">${probe.fixtures.length}</td>
 <td class="num">${probe.records}</td>
 <td class="num">${probe.records ? percent(probe.agreed, probe.records) : '—'}</td>
-<td class="num">${cited.get(probe.name)?.length ?? 0}</td>
+<td class="num">${linksTo(`evidence/${probe.name}/index.html`).length}</td>
 </tr>`
     )
     .join('\n');
@@ -556,7 +700,8 @@ function renderEvidence(probes: Probe[], cited: ReturnType<typeof citations>) {
 <tbody>
 ${rows}
 </tbody>
-</table>`
+</table>`,
+    { kind: 'Evidence' }
   );
 }
 
@@ -576,7 +721,18 @@ function firstSentence(text: string) {
   return end === -1 ? flat : flat.slice(0, end + 1);
 }
 
-function renderProbe(probe: Probe, cited: ReturnType<typeof citations>) {
+/** The display each recording was made on, as `record.mjs --display` names it. */
+const DISPLAY_NAME: Record<string, string> = {
+  vga: 'VGA',
+  svga: 'Super VGA',
+  ega: 'EGA',
+  hercules: 'Hercules',
+};
+
+function renderProbe(probe: Probe, fabrications: Fabrication[]) {
+  const source = readFileSync(join(ROOT, 'oracle', 'probes', `${probe.name}.c`), 'latin1');
+  const fixtureUrl = (file: string) => `${SOURCE_URL}/oracle/fixtures/${file}.json`;
+
   const recordings = probe.fixtures.length
     ? probe.fixtures
         .map(([file, fixture]) => {
@@ -593,8 +749,8 @@ function renderProbe(probe: Probe, cited: ReturnType<typeof citations>) {
             )
             .join('\n');
 
-          return `<h3><code>${escape(file)}</code></h3>
-<p class="note">Recorded on ${escape(fixture.display ?? 'the default display')}${fixture.windows ? `, ${escape(fixture.windows)}` : ''}: ${fixture.records} records.</p>
+          return `<h3><a href="${fixtureUrl(file)}"><code>oracle/fixtures/${escape(file)}.json</code></a></h3>
+<p class="note">Recorded on ${escape(DISPLAY_NAME[fixture.display ?? ''] ?? fixture.display ?? 'the default display')}${fixture.windows ? `, ${escape(fixture.windows)}` : ''}: ${fixture.records} records. The file holds every call's arguments and what Windows returned.</p>
 <table>
 <thead><tr><th scope="col">Measurement</th><th scope="col" class="num">Records</th><th scope="col" class="num">Agree</th><th scope="col" class="num">Disagree</th><th scope="col" class="num">Not replayed</th><th scope="col">Known gap</th></tr></thead>
 <tbody>
@@ -605,7 +761,52 @@ ${rows}
         .join('\n')
     : '<p>Not yet recorded, or not replayed: no fixture of this probe is in the conformance report.</p>';
 
-  const citing = cited.get(probe.name) ?? [];
+  const displays = [...new Set(probe.fixtures.map(([, fixture]) => fixture.display ?? 'vga'))];
+  const install = displays
+    .map(
+      (display) =>
+        `node scripts/oracle/install-windows.mjs${display === 'vga' ? '' : ` --display ${escape(display)}`}`
+    )
+    .join('\n');
+  /* One line per recording, saying where `record.mjs` writes it: a probe that
+   * is not recorded per display writes the same file on every display, so a
+   * second display's recording is committed under a name of its own. */
+  const records = probe.fixtures
+    .map(([file, fixture]) => {
+      const display = fixture.display ?? 'vga';
+      const written: string = fixtureFor(probe.name, display);
+      const command = `node scripts/oracle/record.mjs ${escape(probe.name)}${display === 'vga' ? '' : ` --display ${escape(display)}`}`;
+
+      return `<li><code>${command}</code> writes <code>oracle/fixtures/${escape(written)}.json</code>${
+        written === file
+          ? ', over the committed recording, so <code>git diff</code> shows any difference'
+          : `, which is committed as <code>${escape(file)}.json</code>: compare the two, then restore <code>${escape(written)}.json</code> with <code>git checkout</code>`
+      }.</li>`;
+    })
+    .join('\n');
+
+  const citing = linksTo(`evidence/${probe.name}/index.html`);
+
+  const flag = (display: string) => (display === 'vga' ? '' : ` --display ${escape(display)}`);
+  const fabricated = fabrications.length
+    ? `<h2>Recordings against fabricated fonts</h2>
+<p>${fabrications.length} ${fabrications.length === 1 ? 'recording' : 'recordings'} of this probe were made against fonts built for the purpose: a font Windows installs, with only the bytes under test changed, so that the answer to one question can be read off the result. They are not in the conformance report, and the counts above leave them out. The tests that replay them read <code>oracle/fixtures/fabricated/</code>, and are under <code>test/raster/</code> and <code>test/oracle/</code>.</p>
+<table>
+<thead><tr><th scope="col">Font</th><th scope="col">Display</th><th scope="col">Recording</th></tr></thead>
+<tbody>
+${fabrications
+  .map(
+    (fabrication) =>
+      `<tr><td><code>${escape(fabrication.font)}</code></td><td>${escape(DISPLAY_NAME[fabrication.display] ?? fabrication.display)}</td><td><a href="${fixtureUrl(fabrication.file)}"><code>${escape(fabrication.file)}.json</code></a></td></tr>`
+  )
+  .join('\n')}
+</tbody>
+</table>
+<p>To make one again, build the fonts, then record against the one named:</p>
+<pre><code>node scripts/oracle/fabricate.mjs
+node scripts/oracle/record.mjs ${escape(probe.name)} --font ${escape(fabrications[0].font)}${flag(fabrications[0].display)}
+npx jest test/raster test/oracle</code></pre>`
+    : '';
 
   return layout(
     2,
@@ -617,16 +818,11 @@ ${rows}
     ],
     `<h1><code>${escape(probe.name)}</code></h1>
 <dl class="facts">
-<dt>Source</dt><dd><a href="${SOURCE_URL}/oracle/probes/${escape(probe.name)}.c"><code>oracle/probes/${escape(probe.name)}.c</code></a></dd>
+<dt>Source</dt><dd><a href="${SOURCE_URL}/oracle/probes/${escape(probe.name)}.c"><code>oracle/probes/${escape(probe.name)}.c</code></a>, in full below</dd>
 <dt>Records</dt><dd>${probe.records ? `${probe.agreed} of ${probe.records} agree (${percent(probe.agreed, probe.records)})` : 'none replayed'}</dd>
 <dt>Cited by</dt><dd>${
       citing.length
-        ? citing
-            .map(
-              ([module, page]) =>
-                `<a href="../../${slugOf(module.name)}/${page.slug}/index.html"><code>${escape(module.name)}.${escape(page.name)}</code></a>`
-            )
-            .join(', ')
+        ? citing.map((from) => `<a href="../../${from.url}">${escape(from.title)}</a>`).join(', ')
         : 'no page yet'
     }</dd>
 </dl>
@@ -635,14 +831,34 @@ ${paragraphs(probe.description)}
 <h2>Recordings</h2>
 ${recordings}
 <h2>Reproducing it</h2>
-<p>Build it with <code>node scripts/oracle/build-probes.mjs ${escape(probe.name)}</code> and record it under Windows 3.1 with <code>node scripts/oracle/record.mjs ${escape(probe.name)}</code>, adding <code>--display &lt;name&gt;</code> for another display; the test suite replays the recording against winbox.js.</p>`
+<p>You need your own copy of the Windows 3.1 media, which the first step fetches, and <code>dosbox</code>, <code>mtools</code> and <code>dosfstools</code>. <a href="../../guides/reproducing/index.html">Reproducing a measurement</a> explains each step.</p>
+<ol>
+<li>Fetch the media and the compiler, and install Windows${displays.length > 1 ? ' for each display this probe was recorded on' : ''}. The replay reads the installed fonts, the VGA's from the drive image:
+<pre><code>pnpm install
+node scripts/oracle/fetch-windows.mjs
+node scripts/oracle/fetch-toolchain.mjs
+${displays.includes('vga') ? install : `node scripts/oracle/install-windows.mjs\n${install}`}
+node scripts/oracle/build-drive.mjs</code></pre></li>
+<li>Build the probe:
+<pre><code>node scripts/oracle/build-probes.mjs ${escape(probe.name)}</code></pre></li>
+<li>Record it under Windows. The new recording should match the committed one record for record.
+<ul>
+${records}
+</ul></li>
+<li>Replay the recordings against winbox.js:
+<pre><code>npx jest test/oracle/api_conformance_test.ts -t "${escape(probe.name)} against"</code></pre></li>
+</ol>
+${fabricated}
+<h2>Source</h2>
+<pre><code>${escape(source)}</code></pre>`,
+    { kind: 'Probe' }
   );
 }
 
 export function build() {
   const modules = assemble(readSurvey('3.1'), collectExports(), readPages());
   const probes = readProbes(readReport());
-  const cited = citations(modules);
+  const fabrications = readFabrications();
 
   checkEvidence(modules, probes);
 
@@ -651,6 +867,8 @@ export function build() {
   const formats = articles(all, 'format');
 
   site.targets = targetsOf(modules, all, probes, readFileSync(join(ROOT, 'FONTS.md'), 'utf8'));
+  referrers = referrersOf(modules, all);
+  const guides = articles(all, 'guide');
 
   rmSync(OUT, { recursive: true, force: true });
   write(join(OUT, 'style.css'), STYLE);
@@ -668,26 +886,27 @@ export function build() {
     }
   }
 
-  write(join(OUT, 'topics', 'index.html'), renderArticleIndex('topic', topics));
-  write(join(OUT, 'formats', 'index.html'), renderArticleIndex('format', formats));
+  for (const [kind, list] of [
+    ['topic', topics],
+    ['format', formats],
+    ['guide', guides],
+  ] as const) {
+    const directory = join(OUT, ARTICLE_DIRECTORY[kind]);
+    write(join(directory, 'index.html'), renderArticleIndex(kind, list));
 
-  for (const topic of topics) {
-    const related = modules.flatMap((module) =>
-      module.exports
-        .filter((page) => page.page?.front.topics.includes(topic.slug))
-        .map((page): [ModulePage, ExportPage] => [module, page])
-    );
-    write(join(OUT, 'topics', topic.slug, 'index.html'), renderArticle('topic', topic, related));
+    for (const article of list) {
+      write(join(directory, article.slug, 'index.html'), renderArticle(kind, article));
+    }
   }
 
-  for (const format of formats) {
-    write(join(OUT, 'formats', format.slug, 'index.html'), renderArticle('format', format, []));
-  }
-
-  write(join(OUT, 'evidence', 'index.html'), renderEvidence(probes, cited));
+  write(join(OUT, 'search', 'index.html'), renderSearch());
+  write(join(OUT, 'evidence', 'index.html'), renderEvidence(probes));
 
   for (const probe of probes) {
-    write(join(OUT, 'evidence', probe.name, 'index.html'), renderProbe(probe, cited));
+    write(
+      join(OUT, 'evidence', probe.name, 'index.html'),
+      renderProbe(probe, fabrications.get(probe.name) ?? [])
+    );
   }
 
   if (site.errors.length) {
@@ -697,6 +916,7 @@ export function build() {
   return {
     topics: topics.length,
     formats: formats.length,
+    guides: guides.length,
     probes: probes.length,
     modules: modules.length,
     exports: count,
@@ -709,6 +929,6 @@ export function build() {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const result = build();
   console.log(
-    `knowledge base: ${result.modules} modules, ${result.exports} export pages, ${result.probes} probe pages, ${result.topics} topics, ${result.formats} formats, ${result.disagreements} disagreements with Windows 3.1 -> ${result.out}`
+    `knowledge base: ${result.modules} modules, ${result.exports} export pages, ${result.probes} probe pages, ${result.topics} topics, ${result.formats} formats, ${result.guides} guides, ${result.disagreements} disagreements with Windows 3.1 -> ${result.out}`
   );
 }

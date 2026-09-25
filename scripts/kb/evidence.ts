@@ -12,7 +12,8 @@
  * guess at coverage from what a probe calls.
  */
 
-import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { closeSync, existsSync, openSync, readdirSync, readFileSync, readSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { type ModulePage } from './pages.js';
@@ -56,6 +57,66 @@ export interface Probe {
 export function readReport(): Report {
   const path = join(ROOT, 'kb', 'data', 'conformance.json');
   return existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : {};
+}
+
+/**
+ * A recording made against a font built for the purpose -- a real font with
+ * the bytes under test changed, by `scripts/oracle/fabricate.mjs` -- rather
+ * than one Windows installs. These are not in the conformance report: the
+ * raster tests replay them, one question about the scaler at a time.
+ */
+export interface Fabrication {
+  /** The file, from `oracle/fixtures/` and without `.json`. */
+  file: string;
+  font: string;
+  display: string;
+}
+
+/**
+ * Every tracked recording in `oracle/fixtures/fabricated/`, by probe. Only the
+ * head of each file is read: together they are hundreds of megabytes, and the
+ * probe, display and font are all in the first few lines.
+ */
+export function readFabrications(): Map<string, Fabrication[]> {
+  const found = new Map<string, Fabrication[]>();
+  let files: string[];
+
+  try {
+    files = execFileSync('git', ['ls-files', 'oracle/fixtures/fabricated'], {
+      cwd: ROOT,
+      encoding: 'utf8',
+    })
+      .split('\n')
+      .filter((file) => file.endsWith('.json'));
+  } catch {
+    return found;
+  }
+
+  const head = Buffer.alloc(4096);
+
+  for (const file of files.sort()) {
+    const descriptor = openSync(join(ROOT, file), 'r');
+    const length = readSync(descriptor, head, 0, head.length, 0);
+    closeSync(descriptor);
+
+    const text = head.toString('latin1', 0, length);
+    const field = (name: string) => text.match(new RegExp(`"${name}": "([^"]*)"`))?.[1];
+    const probe = field('probe');
+    const font = field('font');
+
+    if (probe && font) {
+      found.set(probe, [
+        ...(found.get(probe) ?? []),
+        {
+          file: file.replace(/^oracle\/fixtures\//, '').replace(/\.json$/, ''),
+          font,
+          display: field('display') ?? 'vga',
+        },
+      ]);
+    }
+  }
+
+  return found;
 }
 
 /** The first comment block of a probe's source, without its `*` margins. */

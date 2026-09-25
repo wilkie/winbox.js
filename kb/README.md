@@ -25,6 +25,7 @@ can know, and the build checks it before using it.
 | A function    | `kb/<module>/<name>.md`, in lower case: `kb/gdi/getglyphoutline.md` | `/gdi/getglyphoutline/`   |
 | A topic       | `kb/topics/<slug>.md`: `kb/topics/synthetic-bold.md`                | `/topics/synthetic-bold/` |
 | A file format | `kb/formats/<slug>.md`: `kb/formats/fot.md`                         | `/formats/fot/`           |
+| A guide       | `kb/guides/<slug>.md`: `kb/guides/contributing.md`                  | `/guides/contributing/`   |
 
 ## The body
 
@@ -36,7 +37,8 @@ status, signature, evidence and topics are generated around it.
 Two additions, both checked by the build:
 
 - **References**, `[[kind:target]]` or `[[kind:target|text]]`: `[[fn:GDI.TextOut]]`,
-  `[[topic:synthetic-bold]]`, `[[format:fot]]`, `[[probe:smearmod]]`, and
+  `[[topic:synthetic-bold]]`, `[[format:fot]]`, `[[guide:reproducing]]`,
+  `[[probe:smearmod]]`, and
   `[[fonts:8u]]` for a section of `FONTS.md`. One that does not resolve fails
   the build.
 - **Evidence labels** before a claim: `[[documented]]`, `[[measured]]`,
@@ -74,7 +76,7 @@ topics: [turned-text]
 
 | Field      | Required                                            | Meaning                                                                                 |
 | ---------- | --------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `kind`     | yes                                                 | `function`, `structure`, `message`, `constants`, `format` or `topic`                    |
+| `kind`     | yes                                                 | `function`, `structure`, `message`, `constants`, `format`, `topic` or `guide`           |
 | `name`     | yes                                                 | The exported name, or the structure's, message's or topic's                             |
 | `module`   | for `function`, `structure`, `message`, `constants` | The module as Windows names it: `GDI`, `KERNEL`                                         |
 | `ordinal`  | for `function`                                      | Must match the export table                                                             |

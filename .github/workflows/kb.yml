@@ -1,0 +1,64 @@
+# Builds the Windows API knowledge base and publishes it to GitHub Pages.
+#
+# The site is built from tracked files alone -- the survey of the Windows
+# binaries and the conformance report are committed -- so no Windows media is
+# needed here. The build fails on any reference that does not resolve and on
+# any status the conformance report does not support, and so does this job.
+#
+# Pages must be set to deploy from GitHub Actions in the repository's
+# settings.
+
+name: Knowledge base
+
+on:
+  push:
+    branches: [develop]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Check the pages
+        run: pnpm exec jest test/kb
+
+      - name: Build the site and its search index
+        run: pnpm kb
+        env:
+          # Source links point at the commit the site was built from, so a
+          # reader sees the probe and the fixture exactly as they were.
+          KB_SOURCE_URL: ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/kb
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

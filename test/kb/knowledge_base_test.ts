@@ -7,6 +7,7 @@ import { collectExports } from '../../scripts/kb/exports.js';
 import { fontsSections, headingSlug, render } from '../../scripts/kb/markup.js';
 import { parsePage } from '../../scripts/kb/frontmatter.js';
 import {
+  articles,
   assemble,
   discrepancies,
   readPages,
@@ -139,6 +140,12 @@ describe('the knowledge base', () => {
       ],
     ])('%s', (_, lines) => {
       expect(() => assemble(survey, tables, [page(lines)])).toThrow();
+    });
+
+    it('a guide outside kb/guides/', () => {
+      expect(() => assemble(survey, tables, [page(['kind: guide', 'name: Misplaced'])])).toThrow(
+        /a guide lives in kb\/guides/
+      );
     });
   });
 
@@ -280,6 +287,23 @@ describe('the knowledge base', () => {
 
     it('keep raw HTML out', () => {
       expect(render('<script>alert(1)</script>', context([])).html).not.toContain('<script>');
+    });
+
+    it('link a guide, and say where each reference landed', () => {
+      const linked: string[] = [];
+      const { html } = render('[[guide:reproducing]] and [[probe:smeargnd]]', {
+        ...context([]),
+        linked: (url: string) => linked.push(url),
+      });
+
+      expect(html).toContain('href="../../guides/reproducing/index.html"');
+      expect(linked).toEqual(['guides/reproducing/index.html', 'evidence/smeargnd/index.html']);
+    });
+
+    it('include a guide on reproducing a measurement and one on contributing', () => {
+      expect(articles(pages, 'guide').map((guide) => guide.slug)).toEqual(
+        expect.arrayContaining(['contributing', 'reproducing'])
+      );
     });
 
     it('link FONTS.md sections at the anchors GitHub gives them', () => {

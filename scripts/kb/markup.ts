@@ -8,6 +8,7 @@
  *   [[fn:GDI.TextOut]]        a function, by module and exported name
  *   [[topic:synthetic-bold]]  a topic page, by its file name in kb/topics/
  *   [[format:fot]]            a file format page, by its file name in kb/formats/
+ *   [[guide:contributing]]    a guide, by its file name in kb/guides/
  *   [[probe:smearmod]]        a probe, by its name in oracle/probes/
  *   [[fonts:8u]]              a section of FONTS.md, by its number, at the
  *                             anchor GitHub and GitLab generate for its heading
@@ -41,6 +42,7 @@ export interface Targets {
   functions: Map<string, Target>;
   topics: Map<string, Target>;
   formats: Map<string, Target>;
+  guides: Map<string, Target>;
   probes: Map<string, Target>;
 
   /** FONTS.md sections, by number, to their anchors. */
@@ -87,6 +89,9 @@ export interface RenderContext {
 
   /** Every reference that did not resolve is added here. */
   errors: string[];
+
+  /** Told the site URL of every page a reference resolved to. */
+  linked?: (url: string) => void;
 }
 
 export interface Rendered {
@@ -141,6 +146,8 @@ export function render(body: string, context: RenderContext): Rendered {
         return escape(text ?? target);
       }
 
+      context.linked?.(found.url);
+
       const shown = escape(text ?? found.title);
       return `<a href="${up}${found.url}">${code && !text ? `<code>${shown}</code>` : shown}</a>`;
     };
@@ -152,6 +159,8 @@ export function render(body: string, context: RenderContext): Rendered {
         return link(targets.topics.get(target), false);
       case 'format':
         return link(targets.formats.get(target), false);
+      case 'guide':
+        return link(targets.guides.get(target), false);
       case 'probe':
         return link(targets.probes.get(target), true);
       case 'fonts': {

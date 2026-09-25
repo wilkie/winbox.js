@@ -181,6 +181,14 @@ Phase 2 is built: the conformance suite writes `kb/data/conformance.json` (96 fi
 
 Phase 3's content is written: page bodies render from Markdown with checked references and evidence labels, and there are 12 GDI text functions, nine topics (synthetic bold, synthetic italic, turned text, non-square pixels, the text ground and rules, polygon fill, the font mapper, TrueType scaling and hinting, scan conversion) and three formats (`.FOT`, `.FNT`/`.FON`, NE). Signatures show names and types only: the source's JSDoc descriptions follow the SDK's wording, which the site does not republish.
 
+Phase 4 is built:
+
+- Search is Pagefind's, over every page, narrowed by kind and by a function's status.
+- Every page lists the pages that link to it.
+- Guides are a kind of page. Two are written: how to reproduce a measurement, and how to contribute a probe or a page.
+- Each probe page shows its C source and links each of its recordings, and its steps name the file each recording is written to. It also lists the recordings made against fabricated fonts.
+- `.github/workflows/kb.yml` checks the pages, builds the site and deploys it to GitHub Pages from `develop`. It links sources at the commit built. It runs once the repository is on GitHub, with Pages set to deploy from Actions.
+
 From phase 3 on, the working rule for new findings changes: a rule measured or read out goes straight into its `kb/` page, with its counts and refused alternatives, instead of into FONTS.md.
 
 ## Decisions

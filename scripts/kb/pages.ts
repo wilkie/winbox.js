@@ -123,12 +123,22 @@ export function readPages(): Page[] {
   return pages;
 }
 
-/** A topic or format page's slug: its file name without `.md`. */
+/** A topic, format or guide page's slug: its file name without `.md`. */
 export const articleSlug = (page: Page) => page.file.replace(/^.*\//, '').replace(/\.md$/, '');
 
-/** The topic and format pages, each with the URL it is built at. */
-export function articles(pages: Page[], kind: 'topic' | 'format') {
-  const directory = kind === 'topic' ? 'topics' : 'formats';
+/** The kinds of page that stand on their own rather than describe an export. */
+export type ArticleKind = 'topic' | 'format' | 'guide';
+
+/** Where each kind of article lives, in `kb/` and on the site. */
+export const ARTICLE_DIRECTORY: Record<ArticleKind, string> = {
+  topic: 'topics',
+  format: 'formats',
+  guide: 'guides',
+};
+
+/** The topic, format or guide pages, each with the URL it is built at. */
+export function articles(pages: Page[], kind: ArticleKind) {
+  const directory = ARTICLE_DIRECTORY[kind];
 
   return pages
     .filter((page) => page.front.kind === kind)
@@ -264,6 +274,10 @@ export function assemble(survey: Survey, tables: ModuleEntry[], pages: Page[]): 
       errors.push(`${file}: a format page lives in kb/formats/, named in lower case with hyphens`);
     }
 
+    if (front.kind === 'guide' && !/^kb\/guides\/[a-z0-9-]+\.md$/.test(file)) {
+      errors.push(`${file}: a guide lives in kb/guides/, named in lower case with hyphens`);
+    }
+
     if (front.kind !== 'function') {
       continue;
     }
@@ -360,6 +374,7 @@ export function targetsOf(
     functions: new Map(),
     topics: new Map(),
     formats: new Map(),
+    guides: new Map(),
     probes: new Map(),
     fonts: fontsSections(fontsText),
   };
@@ -373,9 +388,11 @@ export function targetsOf(
     }
   }
 
-  for (const kind of ['topic', 'format'] as const) {
+  const byKind = { topic: targets.topics, format: targets.formats, guide: targets.guides };
+
+  for (const kind of ['topic', 'format', 'guide'] as const) {
     for (const article of articles(pages, kind)) {
-      (kind === 'topic' ? targets.topics : targets.formats).set(article.slug, {
+      byKind[kind].set(article.slug, {
         url: article.url,
         title: article.page.front.name,
       });
