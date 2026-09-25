@@ -5,8 +5,8 @@ name: ExtTextOut
 ordinal: 351
 summary: Draws a string with an optional opaque or clipping rectangle and an optional array of character distances.
 versions:
-  '3.1': partial
-probes: [extout, rotstyle]
+  '3.1': exact
+probes: [extout, rotstyle, clipedge, groundrn, smeargnd]
 topics: [turned-text, text-ground-and-rules]
 ---
 
@@ -19,4 +19,4 @@ topics: [turned-text, text-ground-and-rules]
 
 ## Implementation
 
-As for [[fn:GDI.TextOut]], the drawing is replayed through the surface, not through this wrapper, which reads the rectangle and the array from memory. Until this knowledge base was built it also returned `undefined` instead of 1 or 0: it imported its constants from a module that does not export them.
+Every recording of this call is replayed through it: the rectangle and the distances are placed in guest memory as a `RECT` and an array of words, as the probes passed them, and all of them agree. Until this knowledge base was built it returned `undefined` instead of 1 or 0: it imported its constants from a module that does not export them.

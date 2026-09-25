@@ -36,6 +36,7 @@ import { LineTo } from '../../src/win16/gdi/LineTo.js';
 import { MoveTo } from '../../src/win16/gdi/MoveTo.js';
 import { Polygon } from '../../src/win16/gdi/Polygon.js';
 import { TextOut } from '../../src/win16/gdi/TextOut.js';
+import { ExtTextOut } from '../../src/win16/gdi/ExtTextOut.js';
 import { SetTextCharacterExtra } from '../../src/win16/gdi/SetTextCharacterExtra.js';
 import { SetTextAlign } from '../../src/win16/gdi/SetTextAlign.js';
 import { SetBkMode } from '../../src/win16/gdi/SetBkMode.js';
@@ -765,20 +766,15 @@ export class Context {
     if (call.textout) {
       this.textOut(surface, pen[0], pen[1], text);
     } else {
-      const rect = call.use ? call.rect : null;
-      let ink = false;
-
-      if (call.options & 0x0002) {
-        if (rect) {
-          surface.paintGround(rect);
-        }
-
-        ink = true;
-      }
-
-      surface.withClip(rect && call.options & 0x0004 && !surface.turnedText ? rect : null, () => {
-        surface.extText(pen[0], pen[1], text, call.dx ?? null, ink);
-      });
+      this.extTextOut(
+        surface,
+        pen[0],
+        pen[1],
+        call.options,
+        call.use ? call.rect : null,
+        text,
+        call.dx ?? null
+      );
     }
 
     return this.readCell(surface, call.width ?? 64, call.height ?? 48);
@@ -901,6 +897,45 @@ export class Context {
    * `poly` records exist to say that a stroke glyph's run through the same
    * points is not the same ink. See `BitmapContext.stroke`.
    */
+  /**
+   * `ExtTextOut` as a probe calls it: the rectangle and the distances placed in
+   * guest memory as a `RECT` and an array of words, and the export called on a
+   * device context for the surface. A null rectangle or distance array is a
+   * null pointer.
+   */
+  extTextOut(
+    surface: any,
+    x: number,
+    y: number,
+    options: number,
+    rect: { left: number; top: number; right: number; bottom: number } | null,
+    text: string,
+    dx: number[] | null
+  ) {
+    const core = this.machine.cpu.core;
+    const words = (values: number[]) => {
+      const at = this.place('', values.length * 2);
+
+      values.forEach((value, index) =>
+        core.write16(at.segment, at.offset + index * 2, value & 0xffff)
+      );
+
+      return at.far;
+    };
+
+    ExtTextOut.call(
+      this,
+      this.handles.allocate(surface),
+      x,
+      y,
+      options,
+      rect ? words([rect.left, rect.top, rect.right, rect.bottom]) : 0,
+      this.lpcstr(text),
+      text.length,
+      dx ? words(dx) : 0
+    );
+  }
+
   /**
    * The text state a probe set on its context, set through the same calls:
    * the background colour, white unless `dark`; the background mode, 1 for
@@ -2217,15 +2252,7 @@ const ADAPTERS: Record<
     if (what === 'ext') {
       const [dl, dt, dr, db] = String(fields.rect).split(':').map(Number);
       const rect = { left: 64 + dl, top: 64 + dt, right: 64 + dr, bottom: 64 + db };
-      const options = Number(fields.opt);
-
-      if (options & 0x0002) {
-        surface.paintGround(rect);
-      }
-
-      surface.withClip(options & 0x0004 && !surface.turnedText ? rect : null, () => {
-        surface.extText(64, 64, 'AB', null, (options & 0x0002) !== 0);
-      });
+      context.extTextOut(surface, 64, 64, Number(fields.opt), rect, 'AB', null);
     } else {
       context.textOut(surface, 64, 64, 'AB');
     }
