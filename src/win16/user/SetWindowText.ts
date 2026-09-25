@@ -1,5 +1,7 @@
 'use strict';
 
+import { User } from '../user.js';
+
 import { RasterWindow } from './raster-window.js';
 
 /**
@@ -26,7 +28,7 @@ import { RasterWindow } from './raster-window.js';
  * @param {Types.LPCSTR} lpsz - Points to a null-terminated string to be used as
  *                              the new title or control text.
  */
-export function SetWindowText(hwnd, lpsz) {
+export async function SetWindowText(hwnd, lpsz) {
   this.debug('SetWindowText', hwnd, lpsz);
 
   // Get window
@@ -40,8 +42,18 @@ export function SetWindowText(hwnd, lpsz) {
   options.caption = lpsz;
   dialog.options = options;
 
-  /* On the raster desktop the caption is drawn by USER, and redrawn now. */
+  /* On the raster desktop, as Windows does it: `WM_SETTEXT` to the window,
+   * with the program's own pointer, which `DefWindowProc` or the control
+   * takes the text from -- so a subclassed window sees it. */
   if (dialog instanceof RasterWindow) {
-    dialog.caption = lpsz === null || lpsz === undefined ? '' : String(lpsz);
+    const far =
+      lpsz && lpsz.segment !== undefined ? ((lpsz.segment << 16) | lpsz.offset) >>> 0 : lpsz;
+    const windowClass = this.handles.retrieve(dialog.options.windowClass);
+
+    if (windowClass) {
+      await this.scheduler.callWndProc(windowClass, hwnd, User.WM_SETTEXT, 0, far ?? 0);
+    } else {
+      dialog.caption = lpsz === null || lpsz === undefined ? '' : String(lpsz);
+    }
   }
 }

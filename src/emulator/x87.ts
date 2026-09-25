@@ -1,1442 +1,983 @@
-// Much of this is thanks to documentation and the DOSBox implementation (GPLv2).
+/**
+ * The 387 floating-point unit, as a Windows 3.1 program on a 386 sees it.
+ *
+ * Written from Intel's description of the instruction set: the stack of eight
+ * registers addressed from `TOP`, the status word's condition codes, the
+ * control word's rounding, and every instruction of the 8087, 287 and 387 a
+ * sixteen-bit program can issue. The instructions the 486 and later added --
+ * `FCMOV`, `FCOMI`, `FISTTP` -- are not here.
+ *
+ * Values are held as sixty-four-bit doubles, not the unit's eighty-bit
+ * extended precision, as DOSBox holds them. Everything a program stores or
+ * loads converts exactly where a double can hold the value; an eighty-bit
+ * value with more precision than a double is rounded to nearest on the way
+ * in. Exceptions are recorded in the status word as the unit records masked
+ * ones, and never raised: every program seen runs with the control word
+ * `FINIT` leaves, all exceptions masked.
+ */
+
+const TAG_VALID = 0;
+const TAG_ZERO = 1;
+const TAG_SPECIAL = 2;
+const TAG_EMPTY = 3;
+
+const ROUND_NEAREST = 0;
+const ROUND_DOWN = 1;
+const ROUND_UP = 2;
+const ROUND_CHOP = 3;
+
+/* Status word bits. */
+const IE = 0x0001;
+const DE = 0x0002;
+const ZE = 0x0004;
+const SF = 0x0040;
+const ES = 0x0080;
+const C0 = 0x0100;
+const C1 = 0x0200;
+const C2 = 0x0400;
+const C3 = 0x4000;
+const B = 0x8000;
+
+/** The "indefinite" NaN a masked invalid operation leaves. */
+const INDEFINITE = NaN;
 
 export class X87 {
-  declare _control: any;
   declare _cpu: any;
-  declare _flags: any;
-  declare _registers: any;
-  declare _tags: any;
-  declare _view: any;
-  declare round: any;
-  declare writeRegister: any;
-  declare static BIAS64: any;
-  declare static BIAS80: any;
-  declare static L2E: any;
-  declare static L2T: any;
-  declare static LG2: any;
-  declare static LN2: any;
-  declare static ROUND_CHOP: any;
-  declare static ROUND_DOWN: any;
-  declare static ROUND_NEAREST: any;
-  declare static ROUND_UP: any;
-  declare static TAG_EMPTY: any;
-  declare static TAG_VALID: any;
-  declare static TAG_WEIRD: any;
-  declare static TAG_ZERO: any;
+  declare registers: Float64Array;
+  /** Whether each physical register is empty. */
+  declare empty: boolean[];
+  declare status: number;
+  declare control: number;
+
   constructor(cpu) {
     this._cpu = cpu;
-
-    const bytes = new Uint8Array(16);
-    this._view = new DataView(bytes.buffer);
-    this._registers = new Array(9);
-
-    this.reset(true);
+    this.registers = new Float64Array(8);
+    this.empty = new Array(8).fill(true);
+    this.reset();
   }
 
-  /**
-   * Returns the attached CPU.
-   */
   get cpu() {
     return this._cpu;
   }
 
-  get flags() {
-    return this._flags;
-  }
-
-  set flags(value) {
-    this._flags = value;
-  }
-
-  get tags() {
-    return this._tags;
-  }
-
-  set tags(value) {
-    this._tags = value;
-  }
-
-  get b() {
-    return (this._flags & 0x8000) > 0;
-  }
-
-  set b(value: boolean | number) {
-    if (value) {
-      this._flags |= 0x8000;
-    } else {
-      this._flags &= ~0x8000;
-    }
-  }
-
-  get c3() {
-    return (this._flags & 0x4000) > 0;
-  }
-
-  set c3(value: boolean | number) {
-    if (value) {
-      this._flags |= 0x4000;
-    } else {
-      this._flags &= ~0x4000;
-    }
+  /** `FINIT`: the control word `037Fh`, every exception masked, the stack empty. */
+  reset() {
+    this.control = 0x037f;
+    this.status = 0;
+    this.empty.fill(true);
   }
 
   get top() {
-    return (this._flags >> 11) & 0x7;
+    return (this.status >> 11) & 7;
   }
 
   set top(value) {
-    this._flags &= ~(0x7 << 11);
-    this._flags |= (value & 0x7) << 11;
+    this.status = (this.status & ~0x3800) | ((value & 7) << 11);
   }
 
-  get c2() {
-    return (this._flags & 0x400) > 0;
+  get rounding() {
+    return (this.control >> 10) & 3;
   }
 
-  set c2(value: boolean | number) {
-    if (value) {
-      this._flags |= 0x400;
-    } else {
-      this._flags &= ~0x400;
+  /** ST(i)'s physical register. */
+  #physical(i: number) {
+    return (this.top + i) & 7;
+  }
+
+  st(i: number) {
+    const at = this.#physical(i);
+
+    if (this.empty[at]) {
+      this.#invalid(true, false);
+      return INDEFINITE;
+    }
+
+    return this.registers[at];
+  }
+
+  setSt(i: number, value: number) {
+    const at = this.#physical(i);
+
+    this.registers[at] = value;
+    this.empty[at] = false;
+  }
+
+  push(value: number) {
+    const top = (this.top - 1) & 7;
+
+    if (!this.empty[top]) {
+      /* Overflow: the stack fault, and the indefinite in its place. */
+      this.#invalid(true, true);
+      value = INDEFINITE;
+    }
+
+    this.top = top;
+    this.registers[top] = value;
+    this.empty[top] = false;
+  }
+
+  pop() {
+    this.empty[this.top] = true;
+    this.top = this.top + 1;
+  }
+
+  /** A masked invalid operation: `IE`, and for a stack fault `SF`, with `C1` saying which way. */
+  #invalid(stack: boolean, overflow: boolean) {
+    this.status |= IE;
+
+    if (stack) {
+      this.status |= SF;
+      this.#flag(C1, overflow);
     }
   }
 
-  get c1() {
-    return (this._flags & 0x200) > 0;
+  #flag(bit: number, on: boolean) {
+    this.status = on ? this.status | bit : this.status & ~bit;
   }
 
-  set c1(value: boolean | number) {
-    if (value) {
-      this._flags |= 0x200;
-    } else {
-      this._flags &= ~0x200;
+  #codes(c3: boolean, c2: boolean, c0: boolean) {
+    this.#flag(C3, c3);
+    this.#flag(C2, c2);
+    this.#flag(C0, c0);
+  }
+
+  /* ---- memory ---- */
+
+  #read(instruction, size: number) {
+    const bytes = new Uint8Array(size);
+
+    for (let at = 0; at < size; at++) {
+      bytes[at] = this.cpu.read8(instruction.segment, (instruction.offset + at) & 0xffff);
+    }
+
+    return new DataView(bytes.buffer);
+  }
+
+  #write(instruction, bytes: Uint8Array, offset = 0) {
+    for (let at = 0; at < bytes.length; at++) {
+      this.cpu.write8(instruction.segment, (instruction.offset + offset + at) & 0xffff, bytes[at]);
     }
   }
 
-  get c0() {
-    return (this._flags & 0x100) > 0;
+  #writeView(instruction, size: number, fill: (view: DataView) => void, offset = 0) {
+    const bytes = new Uint8Array(size);
+
+    fill(new DataView(bytes.buffer));
+    this.#write(instruction, bytes, offset);
   }
 
-  set c0(value: boolean | number) {
-    if (value) {
-      this._flags |= 0x100;
-    } else {
-      this._flags &= ~0x100;
+  readF32(instruction) {
+    return this.#read(instruction, 4).getFloat32(0, true);
+  }
+
+  readF64(instruction) {
+    return this.#read(instruction, 8).getFloat64(0, true);
+  }
+
+  readF80(instruction, offset = 0) {
+    const view = this.#read({ ...instruction, offset: instruction.offset + offset }, 10);
+
+    return fromExtended(view.getBigUint64(0, true), view.getUint16(8, true));
+  }
+
+  writeF80(instruction, value: number, offset = 0) {
+    const { mantissa, signExponent } = toExtended(value);
+
+    this.#writeView(
+      instruction,
+      10,
+      (view) => {
+        view.setBigUint64(0, mantissa, true);
+        view.setUint16(8, signExponent, true);
+      },
+      offset
+    );
+  }
+
+  /** A value rounded to an integer as the control word says. */
+  roundInteger(value: number) {
+    switch (this.rounding) {
+      case ROUND_DOWN:
+        return Math.floor(value);
+      case ROUND_UP:
+        return Math.ceil(value);
+      case ROUND_CHOP:
+        return Math.trunc(value);
+      default:
+        return roundEven(value);
     }
   }
 
-  get es() {
-    return (this._flags & 0x80) > 0;
-  }
+  /** `FIST`: ST(0) as an integer of `bits`, or the integer indefinite -- the most negative -- when it does not fit. */
+  #storeInteger(instruction, bits: 16 | 32 | 64) {
+    const value = this.roundInteger(this.st(0));
+    const limit = 2 ** (bits - 1);
+    const fits = Number.isFinite(value) && value >= -limit && value < limit;
 
-  set es(value: boolean | number) {
-    if (value) {
-      this._flags |= 0x80;
-    } else {
-      this._flags &= ~0x80;
-    }
-  }
-
-  get sf() {
-    return (this._flags & 0x40) > 0;
-  }
-
-  set sf(value: boolean | number) {
-    if (value) {
-      this._flags |= 0x40;
-    } else {
-      this._flags &= ~0x40;
-    }
-  }
-
-  get pe() {
-    return (this._flags & 0x20) > 0;
-  }
-
-  set pe(value: boolean | number) {
-    if (value) {
-      this._flags |= 0x20;
-    } else {
-      this._flags &= ~0x20;
-    }
-  }
-
-  get ue() {
-    return (this._flags & 0x10) > 0;
-  }
-
-  set ue(value: boolean | number) {
-    if (value) {
-      this._flags |= 0x10;
-    } else {
-      this._flags &= ~0x10;
-    }
-  }
-
-  get oe() {
-    return (this._flags & 0x8) > 0;
-  }
-
-  set oe(value: boolean | number) {
-    if (value) {
-      this._flags |= 0x8;
-    } else {
-      this._flags &= ~0x8;
-    }
-  }
-
-  get ze() {
-    return (this._flags & 0x4) > 0;
-  }
-
-  set ze(value: boolean | number) {
-    if (value) {
-      this._flags |= 0x4;
-    } else {
-      this._flags &= ~0x4;
-    }
-  }
-
-  get de() {
-    return (this._flags & 0x2) > 0;
-  }
-
-  set de(value: boolean | number) {
-    if (value) {
-      this._flags |= 0x2;
-    } else {
-      this._flags &= ~0x2;
-    }
-  }
-
-  get ie() {
-    return (this._flags & 0x1) > 0;
-  }
-
-  set ie(value: boolean | number) {
-    if (value) {
-      this._flags |= 0x1;
-    } else {
-      this._flags &= ~0x1;
-    }
-  }
-
-  get control() {
-    return this._control;
-  }
-
-  set control(value) {
-    this._control = value;
-  }
-
-  readTag(index) {
-    return (this._tags >> (2 * index)) & 0x3;
-  }
-
-  writeTag(index, value) {
-    this._tags &= ~(0x3 << (2 * index));
-    this._tags |= (value & 0x3) << (2 * index);
-  }
-
-  readOperandF32(instruction) {
-    if (instruction.operandRegister !== undefined) {
-      return instruction.operandRegister;
+    if (!fits) {
+      this.status |= IE;
     }
 
-    // Read byte from memory at the effective address
-    this.fld32(instruction.segment, instruction.offset, 8);
-    return 8;
-  }
-
-  readOperandF64(instruction) {
-    if (instruction.operandRegister !== undefined) {
-      return instruction.operandRegister;
-    }
-
-    // Read byte from memory at the effective address
-    this.fld64(instruction.segment, instruction.offset, 8);
-    return 8;
-  }
-
-  readRegister64(index) {
-    return this._registers[(this.top + index) & 0x7];
-  }
-
-  writeRegister64(index, value) {
-    this._registers[(this.top + index) & 0x7] = value;
-  }
-
-  reset(clearRegisters = true) {
-    // Clear registers and tags
-    this._registers.forEach((_, i) => {
-      if (clearRegisters) {
-        this._registers[i] = 0;
+    this.#writeView(instruction, bits / 8, (view) => {
+      if (bits === 16) {
+        view.setInt16(0, fits ? value : -0x8000, true);
+      } else if (bits === 32) {
+        view.setInt32(0, fits ? value : -0x80000000, true);
+      } else {
+        view.setBigInt64(0, fits ? BigInt(value) : -(2n ** 63n), true);
       }
-      this.writeTag(i, X87.TAG_EMPTY);
     });
-
-    // Clear flags
-    this.flags = 0;
-
-    // Set control word to default
-    this.control = 0x37f;
   }
+
+  /* ---- decoding ---- */
 
   decode(instruction) {
     instruction.opcode = this.cpu.read8(this.cpu.cs, this.cpu.ip);
     this.cpu.ip++;
-
-    switch (instruction.opcode) {
-      case 0x9b: // FWAIT prefix
-        instruction = this.decode(instruction);
-        instruction.fwait = true;
-        return instruction;
-
-      case 0xd8:
-      // FADD m32fp / FADD ST(0), ST(i)
-      // FMUL m32fp / FMUL ST(0), ST(i)
-      // FCOM m32fp / FCOM ST(i)
-      // FCOMP m32fp / FCOMP ST(i)
-      // FSUB m32fp / FSUB ST(0), ST(i)
-      // FSUBR m32fp / FSUBR ST(0), ST(i)
-      // FDIV m32fp / FDIV ST(0), ST(i)
-      // FDIVR m32fp / FDIVR ST(0), ST(i)
-
-      case 0xd9:
-      // FLD m32fp / FLD ST(i)
-      // -- / FXCH ST(0), ST(i)
-      // FST m32fp / FNOP (0xd0)
-      // FSTP m32fp / --
-      // FLDENV m14/28byte / -- (0xe7) / -- (0xe6)
-      //                   / FXAM (0xe5) / FTST (0xe4)
-      //                   / -- (0xe3) / -- (0xe2)
-      //                   / FABS (0xe1) / FCHS (0xe0)
-      // FLDCW m2byte / -- (0xef) / FLDZ (0xee)
-      //              / FLDLN2 (0xed) / FLDLG2 (0xec)
-      //              / FLDPI (0xeb) / FLDL2E (0xea)
-      //              / FLDL2T (0xe9) / FLD1 (0xe8)
-      // FSTENV m14/28byte / FINCSTP (0xf7) / FDECSTP (0xf6)
-      //                   / FPREM1 (0xf5) / -- (0xf3)
-      //                   / FPATAN (0xf3) / FPTAN (0xf2)
-      //                   / FYL2X (0xf1) / F2XM1 (0xf0)
-      // FSTCW m2byte / FCOS (0xff) / FSIN (0xfe)
-      //              / FSCALE (0xfd) / FRNDINT (0xfc)
-      //              / FSINCOS (0xfb) / FSQRT (0xfa)
-      //              / FYL2XP1 (0xf9) / FPREM (0xf8)
-
-      case 0xda:
-      // FIADD m32int / --
-      // FIMUL m32int / --
-      // FICOM m32int / --
-      // FICOMP m32int / --
-      // FISUB m32int / --
-      // FISUBR m32int / FUCOMPP
-      // FIDIV m32int / --
-      // FIDIVR m32int / --
-
-      case 0xdb:
-      // FILD m32int / --
-      // FISTTP m32int / --
-      // FIST m32int / --
-      // FISTP m32int / --
-      // -- / FCLEX (0xe2) / FINIT (0xe3)
-      // FLD m80fp / FUCOMI ST(0), ST(i)
-      // -- / FCOMI ST(0), ST(i)
-      // FSTP m80fp / --
-
-      case 0xdc:
-      // FADD m64fp / FADD ST(i), ST(0)
-      // FMUL m64fp / FMUL ST(i), ST(0)
-      // FCOM f64fp / --
-      // FCOMP m64fp / --
-      // FSUB m64fp / FSUBR ST(i), ST(0)
-      // FSUBR m64fp / FSUB ST(i), ST(0)
-      // FDIV m64fp / FDIVR ST(i), ST(0)
-      // FDIVR m64fp / FDIV ST(i), ST(0)
-
-      case 0xdd:
-      // FLD m64fp / FFREE ST(i)
-      // FISTTP m64int / --
-      // FST m64fp / FST ST(i)
-      // FSTP m64fp / FSTP ST(i)
-      // FRSTOR m94/108byte / FUCOM ST(i)
-      // -- / FUCOMP ST(i)
-      // FSAVE m94/108byte / --
-      // FSTSW m2byte / --
-
-      case 0xde:
-      // FIADD m16int / FADD ST(i), ST(0)
-      // FIMUL m16int / FMUL ST(i), ST(0)
-      // FICOM m16int / --
-      // FICOMP m16int / FCOMPP (0xd9)
-      // FISUB m16int / FSUBR ST(i), ST(0)
-      // FISUBR m16int / FSUB ST(i), ST(0)
-      // FIDIV m16int / FDIVR ST(i), ST(0)
-      // FIDIVR m16int / FDIV ST(i), ST(0)
-
-      case 0xdf:
-        // FILD m16int / --
-        // FISTTP m16int / --
-        // FIST m16int / --
-        // FISTP m16int / --
-        // FBLD m80bcd / FNSTSW AX
-        // FILD m64int / FUCOMIP ST(0), ST(i)
-        // FBSTP m80bcd / FCOMIP ST(0), ST(i)
-        // FISTP m64int / --
-        this.cpu.readModRM(instruction);
-        break;
-    }
+    this.cpu.readModRM(instruction);
 
     return instruction;
   }
 
   execute(instruction) {
+    const reg = instruction.modifier;
+    const rm = instruction.operandRegister;
+    const memory = rm === undefined;
+
     switch (instruction.opcode) {
       case 0xd8:
-        switch (instruction.modifier) {
-          case 0: // FADD m32fp / FADD ST(0), ST(i)
-            this.fadd(0, this.readOperandF32(instruction));
-            break;
-
-          case 1: // FMUL m32fp / FMUL ST(0), ST(i)
-            this.fmul(0, this.readOperandF32(instruction));
-            break;
-
-          case 2: // FCOM m32fp / FCOM ST(i)
-            this.fcom(0, this.readOperandF32(instruction));
-            break;
-
-          case 3: // FCOMP m32fp / FCOMP ST(i)
-            this.fcom(0, this.readOperandF32(instruction));
-            this.fpop();
-            break;
-
-          case 4: // FSUB m32fp / FSUB ST(0), ST(i)
-            this.fsub(0, this.readOperandF32(instruction));
-            break;
-
-          case 5: // FSUBR m32fp / FSUBR ST(0), ST(i)
-            this.fsubr(0, this.readOperandF32(instruction));
-            break;
-
-          case 6: // FDIV m32fp / FDIV ST(0), ST(i)
-            this.fdiv(0, this.readOperandF32(instruction));
-            break;
-
-          case 7: // FDIVR m32fp / FDIVR ST(0), ST(i)
-            this.fdivr(0, this.readOperandF32(instruction));
-            break;
-        }
+        this.#arithmetic(reg, 0, memory ? this.readF32(instruction) : this.st(rm), false);
         break;
 
-      case 0xd9:
-        switch (instruction.modifier) {
-          case 0: // FLD m32fp / FLD ST(i)
-            const index = this.readOperandF32(instruction);
-            this.fpush(this._registers[index]);
-            break;
-
-          case 1: // -- / FXCH ST(0), ST(i)
-            if (instruction.operandRegister !== undefined) {
-              this.fxch(0, instruction.operandRegister);
-            } else {
-              // Invalid
-              throw 'Invalid d9/1';
-            }
-            break;
-
-          case 2: // FST m32fp / FNOP (0xd0)
-            if (instruction.operandRegister !== undefined) {
-              // FNOP only when the mod/rm byte is 0xd0
-              // Therefore, when operand register is 0x0
-            } else {
-              this.fst32(instruction.segment, instruction.offset);
-            }
-            break;
-
-          case 3: // FSTP m32fp / --
-            if (instruction.operandRegister !== undefined) {
-              // Invalid
-              throw 'Invalid d9/3';
-            } else {
-              this.fst32(instruction.segment, instruction.offset);
-              this.fpop();
-            }
-            break;
-
-          case 4: // FLDENV m14/28byte / -- (0xe7) / -- (0xe6)
-            //                   / FXAM (0xe5) / FTST (0xe4)
-            //                   / -- (0xe3) / -- (0xe2)
-            //                   / FABS (0xe1) / FCHS (0xe0)
-            throw 'Invalid d9/4';
-            break;
-
-          case 5: // FLDCW m2byte / -- (0xef) / FLDZ (0xee)
-            //              / FLDLN2 (0xed) / FLDLG2 (0xec)
-            //              / FLDPI (0xeb) / FLDL2E (0xea)
-            //              / FLDL2T (0xe9) / FLD1 (0xe8)
-            throw 'Invalid d9/5';
-            break;
-
-          case 6: // FSTENV m14/28byte / FINCSTP (0xf7) / FDECSTP (0xf6)
-            //                   / FPREM1 (0xf5) / -- (0xf3)
-            //                   / FPATAN (0xf3) / FPTAN (0xf2)
-            //                   / FYL2X (0xf1) / F2XM1 (0xf0)
-            throw 'Invalid d9/6';
-            break;
-
-          case 7: // FSTCW m2byte / FCOS (0xff) / FSIN (0xfe)
-            //              / FSCALE (0xfd) / FRNDINT (0xfc)
-            //              / FSINCOS (0xfb) / FSQRT (0xfa)
-            //              / FYL2XP1 (0xf9) / FPREM (0xf8)
-            throw 'Invalid d9/7';
-            break;
+      case 0xdc:
+        if (memory) {
+          this.#arithmetic(reg, 0, this.readF64(instruction), false);
+        } else if (reg === 2 || reg === 3) {
+          /* FCOM and FCOMP ST(i) again, by other names. */
+          this.#arithmetic(reg, 0, this.st(rm), false);
+        } else {
+          /* ST(i) as the destination, and the subtraction and division with
+           * their senses swapped, as the encoding has them. */
+          this.#arithmetic(reg, rm, this.st(0), true);
         }
         break;
 
       case 0xda:
-        switch (instruction.modifier) {
-          case 0: // FIADD m32int / --
-            if (instruction.operandRegister !== undefined) {
-              throw 'Invalid da/0';
-            } else {
-              this._registers[8] = this.cpu.readOperand32(instruction);
-              this.fadd(0, 8);
-            }
-            break;
-
-          case 1: // FIMUL m32int / --
-            if (instruction.operandRegister !== undefined) {
-              throw 'Invalid da/1';
-            } else {
-              this._registers[8] = this.cpu.readOperand32(instruction);
-              this.fmul(0, 8);
-            }
-            break;
-
-          case 2: // FICOM m32int / --
-            if (instruction.operandRegister !== undefined) {
-              throw 'Invalid da/2';
-            } else {
-              this._registers[8] = this.cpu.readOperand32(instruction);
-              this.fcom(0, 8);
-            }
-            break;
-
-          case 3: // FICOMP m32int / --
-            if (instruction.operandRegister !== undefined) {
-              throw 'Invalid da/3';
-            } else {
-              this._registers[8] = this.cpu.readOperand32(instruction);
-              this.fcom(0, 8);
-              this.fpop();
-            }
-            break;
-
-          case 4: // FISUB m32int / --
-            if (instruction.operandRegister !== undefined) {
-              throw 'Invalid da/4';
-            } else {
-              this._registers[8] = this.cpu.readOperand32(instruction);
-              this.fsub(0, 8);
-            }
-            break;
-
-          case 5: // FISUBR m32int / FUCOMPP
-            if (instruction.operandRegister !== undefined) {
-              throw 'Invalid da/5';
-            } else {
-              this._registers[8] = this.cpu.readOperand32(instruction);
-              this.fsubr(0, 8);
-            }
-            break;
-
-          case 6: // FIDIV m32int / --
-            if (instruction.operandRegister !== undefined) {
-              throw 'Invalid da/6';
-            } else {
-              this._registers[8] = this.cpu.readOperand32(instruction);
-              this.fdiv(0, 8);
-            }
-            break;
-
-          case 7: // FIDIVR m32int / --
-            if (instruction.operandRegister !== undefined) {
-              throw 'Invalid da/7';
-            } else {
-              this._registers[8] = this.cpu.readOperand32(instruction);
-              this.fdivr(0, 8);
-            }
-            break;
-        }
-        break;
-
-      case 0xdb:
-        switch (instruction.modifier) {
-          case 0: // FILD m32int / --
-            if (instruction.operandRegister !== undefined) {
-              throw 'Invalid db/0';
-            } else {
-              this.fpush(this.cpu.readOperand32(instruction));
-            }
-            break;
-
-          case 1: // FISTTP m32int / --
-            // TODO
-            throw 'Invalid db/1';
-            break;
-
-          case 2: // FIST m32int / --
-            // TODO
-            throw 'Invalid db/2';
-            break;
-
-          case 3: // FISTP m32int / --
-            // TODO
-            throw 'Invalid db/3';
-            break;
-
-          case 4: // -- / FCLEX (0xe2) / FINIT (0xe3)
-            if (instruction.operandRegister !== undefined) {
-              if (instruction.operandRegister == 0x2) {
-                // FCLEX
-                this.fclex();
-              } else if (instruction.operandRegister == 0x3) {
-                // FINIT
-                this.reset(false);
-              } else {
-                throw 'Invalid db/4r';
-              }
-            } else {
-              throw 'Invalid db/4m';
-            }
-            break;
-
-          case 5: // FLD m80fp / FUCOMI ST(0), ST(i)
-            if (instruction.operandRegister !== undefined) {
-            } else {
-              this.fld80(instruction.segment, instruction.offset, 8);
-              this.fpush(this._registers[8]);
-            }
-            break;
-
-          case 6: // -- / FCOMI ST(0), ST(i)
-            if (instruction.operandRegister !== undefined) {
-              // TODO
-              throw 'Invalid db/6';
-            } else {
-              throw 'Invalid db/6m';
-            }
-            break;
-
-          case 7: // FSTP m80fp / --
-            throw 'Invalid db/7';
-            break;
-        }
-        break;
-
-      case 0xdc:
-        switch (instruction.modifier) {
-          case 0: // FADD m64fp / FADD ST(i), ST(0)
-            this.fadd(0, this.readOperandF64(instruction));
-            break;
-
-          case 1: // FMUL m64fp / FMUL ST(i), ST(0)
-            this.fmul(0, this.readOperandF64(instruction));
-            break;
-
-          case 2: // FCOM f64fp / --
-            throw 'Invalid dc/2';
-            break;
-
-          case 3: // FCOMP m64fp / --
-            throw 'Invalid dc/3';
-            break;
-
-          case 4: // FSUB m64fp / FSUBR ST(i), ST(0)
-            if (instruction.operandRegister !== undefined) {
-              this.fsubr(0, this.readOperandF64(instruction));
-            } else {
-              this.fsub(0, this.readOperandF64(instruction));
-            }
-            break;
-
-          case 5: // FSUBR m64fp / FSUB ST(i), ST(0)
-            if (instruction.operandRegister !== undefined) {
-              this.fsub(0, this.readOperandF64(instruction));
-            } else {
-              this.fsubr(0, this.readOperandF64(instruction));
-            }
-            break;
-
-          case 6: // FDIV m64fp / FDIVR ST(i), ST(0)
-            if (instruction.operandRegister !== undefined) {
-              this.fdivr(0, this.readOperandF64(instruction));
-            } else {
-              this.fdiv(0, this.readOperandF64(instruction));
-            }
-            break;
-
-          case 7: // FDIVR m64fp / FDIV ST(i), ST(0)
-            if (instruction.operandRegister !== undefined) {
-              this.fdiv(0, this.readOperandF64(instruction));
-            } else {
-              this.fdivr(0, this.readOperandF64(instruction));
-            }
-            break;
-        }
-        break;
-
-      case 0xdd:
-        switch (instruction.modifier) {
-          case 0: // FLD m64fp / FFREE ST(i)
-            if (instruction.operandRegister !== undefined) {
-              // TODO FFREE
-              throw 'Invalid dd/0';
-            } else {
-              const index = this.readOperandF64(instruction);
-              this.fpush(this._registers[index]);
-            }
-            break;
-
-          case 1: // FISTTP m64int / --
-            // TODO
-            throw 'Invalid dd/1';
-            break;
-
-          case 2: // FST m64fp / FST ST(i)
-            // TODO
-            throw 'Invalid dd/2';
-            break;
-
-          case 3: // FSTP m64fp / FSTP ST(i)
-            if (instruction.operandRegister !== undefined) {
-              this.writeRegister64(instruction.operandRegister, this.readRegister64(0));
-            } else {
-              this.fst64(instruction.segment, instruction.offset);
-            }
-            this.fpop();
-            break;
-
-          case 4: // FRSTOR m94/108byte / FUCOM ST(i)
-            if (instruction.operandRegister !== undefined) {
-              this.fucom(0, instruction.operandRegister);
-            } else {
-              this.frstor(
-                instruction.operandOverride ? 32 : 16,
-                instruction.segment,
-                instruction.offset
-              );
-            }
-            break;
-
-          case 5: // -- / FUCOMP ST(i)
-            if (instruction.operandRegister !== undefined) {
-              this.fucom(0, instruction.operandRegister);
-              this.fpop();
-            } else {
-              throw 'Invalid dd/5m';
-            }
-            break;
-
-          case 6: // FSAVE m94/108byte / --
-            if (instruction.operandRegister !== undefined) {
-              throw 'Invalid dd/6';
-            } else {
-              this.fsave(
-                instruction.operandOverride ? 32 : 16,
-                instruction.segment,
-                instruction.offset
-              );
-            }
-            break;
-
-          case 7: // FSTSW m2byte / --
-            // TODO
-            throw 'Invalid dd/7';
-            break;
+        if (memory) {
+          this.#arithmetic(reg, 0, this.#read(instruction, 4).getInt32(0, true), false);
+        } else if (reg === 5 && rm === 1) {
+          this.#compare(this.st(0), this.st(1), true); // FUCOMPP
+          this.pop();
+          this.pop();
+        } else {
+          this.#undefined(instruction);
         }
         break;
 
       case 0xde:
-        switch (instruction.modifier) {
-          case 0: // FIADD m16int / FADDP ST(i), ST(0)
-            if (instruction.operandRegister !== undefined) {
-              this.fadd(instruction.operandRegister, 0);
-              this.fpop();
-            } else {
-              this._registers[8] = this.cpu.readOperand16(instruction);
-              this.fadd(0, 8);
-            }
+        if (memory) {
+          this.#arithmetic(reg, 0, this.#read(instruction, 2).getInt16(0, true), false);
+        } else if (reg === 3) {
+          if (rm !== 1) {
+            this.#undefined(instruction);
             break;
+          }
 
-          case 1: // FIMUL m16int / FMULP ST(i), ST(0)
-            if (instruction.operandRegister !== undefined) {
-              this.fmul(instruction.operandRegister, 0);
-              this.fpop();
-            } else {
-              this._registers[8] = this.cpu.readOperand16(instruction);
-              this.fmul(0, 8);
-            }
-            break;
-
-          case 2: // FICOM m16int / --
-            if (instruction.operandRegister !== undefined) {
-              throw 'Invalid de/2';
-            } else {
-              this._registers[8] = this.cpu.readOperand16(instruction);
-              this.fcom(0, 8);
-            }
-            break;
-
-          case 3: // FICOMP m16int / FCOMPP (0xd9)
-            if (instruction.operandRegister !== undefined) {
-              if (instruction.operandRegister == 0x1) {
-                // FCOMPP
-                this.fcom(0, 1);
-                this.fpop();
-              } else {
-                throw 'Invalid de/3';
-              }
-            } else {
-              this._registers[8] = this.cpu.readOperand16(instruction);
-              this.fcom(0, 8);
-            }
-            this.fpop();
-            break;
-
-          case 4: // FISUB m16int / FSUBRP ST(i), ST(0)
-            if (instruction.operandRegister !== undefined) {
-              this.fsubr(instruction.operandRegister, 0);
-              this.fpop();
-            } else {
-              this._registers[8] = this.cpu.readOperand16(instruction);
-              this.fsub(0, 8);
-            }
-            break;
-
-          case 5: // FISUBR m16int / FSUBP ST(i), ST(0)
-            if (instruction.operandRegister !== undefined) {
-              this.fsub(instruction.operandRegister, 0);
-              this.fpop();
-            } else {
-              this._registers[8] = this.cpu.readOperand16(instruction);
-              this.fsubr(0, 8);
-            }
-            break;
-
-          case 6: // FIDIV m16int / FDIVRP ST(i), ST(0)
-            if (instruction.operandRegister !== undefined) {
-              this.fdivr(instruction.operandRegister, 0);
-              this.fpop();
-            } else {
-              this._registers[8] = this.cpu.readOperand16(instruction);
-              this.fdiv(0, 8);
-            }
-            break;
-
-          case 7: // FIDIVR m16int / FDIVP ST(i), ST(0)
-            if (instruction.operandRegister !== undefined) {
-              this.fdiv(instruction.operandRegister, 0);
-              this.fpop();
-            } else {
-              this._registers[8] = this.cpu.readOperand16(instruction);
-              this.fdivr(0, 8);
-            }
-            break;
+          this.#compare(this.st(0), this.st(1), false); // FCOMPP
+          this.pop();
+          this.pop();
+        } else {
+          this.#arithmetic(reg, rm, this.st(0), true);
+          this.pop();
         }
+        break;
+
+      case 0xd9:
+        this.#d9(instruction, reg, rm, memory);
+        break;
+
+      case 0xdb:
+        this.#db(instruction, reg, rm, memory);
+        break;
+
+      case 0xdd:
+        this.#dd(instruction, reg, rm, memory);
         break;
 
       case 0xdf:
-        switch (instruction.modifier) {
-          case 0: // FILD m16int / --
-            this.fpush(this.cpu.readOperand16(instruction));
-            break;
+        this.#df(instruction, reg, rm, memory);
+        break;
 
-          case 1: // FISTTP m16int / --
-            throw 'Invalid df/1';
-            break;
+      default:
+        this.#undefined(instruction);
+    }
+  }
 
-          case 2: // FIST m16int / --
-            throw 'Invalid df/2';
-            break;
+  #undefined(instruction) {
+    throw new Error(
+      `x87: no instruction ${instruction.opcode.toString(16)} /${instruction.modifier}` +
+        (instruction.operandRegister !== undefined ? ` ST(${instruction.operandRegister})` : '')
+    );
+  }
 
-          case 3: // FISTP m16int / --
-            throw 'Invalid df/3';
-            break;
+  /**
+   * The eight arithmetic operations and two comparisons of `D8`, `DC`, `DA`
+   * and `DE`: `destination op= source` for add, multiply, subtract, reversed
+   * subtract, divide and reversed divide, and `FCOM`/`FCOMP` against ST(0).
+   * With `reversedEncoding` -- ST(i) as the destination -- the encoding's
+   * subtraction and division come with their senses swapped.
+   */
+  #arithmetic(reg: number, destination: number, source: number, reversedEncoding: boolean) {
+    const target = this.st(destination);
 
-          case 4: // FBLD m80bcd / FNSTSW AX
-            throw 'Invalid df/4';
-            break;
+    switch (reg) {
+      case 0:
+        this.setSt(destination, target + source);
+        break;
+      case 1:
+        this.setSt(destination, target * source);
+        break;
+      case 2:
+        this.#compare(this.st(0), source, false);
+        break;
+      case 3:
+        this.#compare(this.st(0), source, false);
+        this.pop();
+        break;
+      case 4:
+        this.setSt(destination, reversedEncoding ? source - target : target - source);
+        break;
+      case 5:
+        this.setSt(destination, reversedEncoding ? target - source : source - target);
+        break;
+      case 6:
+        this.#divide(
+          destination,
+          reversedEncoding ? source : target,
+          reversedEncoding ? target : source
+        );
+        break;
+      case 7:
+        this.#divide(
+          destination,
+          reversedEncoding ? target : source,
+          reversedEncoding ? source : target
+        );
+        break;
+    }
+  }
 
-          case 5: // FILD m64int / FUCOMIP ST(0), ST(i)
-            throw 'Invalid df/5';
-            break;
+  #divide(destination: number, dividend: number, divisor: number) {
+    if (divisor === 0 && Number.isFinite(dividend) && dividend !== 0) {
+      this.status |= ZE;
+    }
 
-          case 6: // FBSTP m80bcd / FCOMIP ST(0), ST(i)
-            throw 'Invalid df/6';
-            break;
+    this.setSt(destination, dividend / divisor);
+  }
 
-          case 7: // FISTP m64int / --
-            throw 'Invalid df/7';
-            break;
+  /**
+   * A comparison: `C3 C2 C0` 000 above, 001 below, 100 equal, 111 unordered.
+   * `FCOM` finds any NaN invalid; `FUCOM` only a signalling one, which a
+   * double cannot tell apart, so it never does.
+   */
+  #compare(a: number, b: number, unordered: boolean) {
+    if (Number.isNaN(a) || Number.isNaN(b)) {
+      if (!unordered) {
+        this.status |= IE;
+      }
+
+      this.#codes(true, true, true);
+    } else if (a > b) {
+      this.#codes(false, false, false);
+    } else if (a < b) {
+      this.#codes(false, false, true);
+    } else {
+      this.#codes(true, false, false);
+    }
+
+    this.#flag(C1, false);
+  }
+
+  #d9(instruction, reg: number, rm: number, memory: boolean) {
+    if (memory) {
+      switch (reg) {
+        case 0:
+          this.push(this.readF32(instruction)); // FLD m32
+          return;
+        case 2:
+          this.#writeView(instruction, 4, (view) => view.setFloat32(0, this.st(0), true)); // FST m32
+          return;
+        case 3:
+          this.#writeView(instruction, 4, (view) => view.setFloat32(0, this.st(0), true)); // FSTP m32
+          this.pop();
+          return;
+        case 4:
+          this.#loadEnvironment(instruction); // FLDENV
+          return;
+        case 5:
+          this.control = this.#read(instruction, 2).getUint16(0, true); // FLDCW
+          return;
+        case 6:
+          this.#storeEnvironment(instruction); // FNSTENV
+          return;
+        case 7:
+          this.#writeView(instruction, 2, (view) => view.setUint16(0, this.control, true)); // FNSTCW
+          return;
+      }
+
+      this.#undefined(instruction);
+    }
+
+    switch (reg) {
+      case 0: {
+        const value = this.st(rm); // FLD ST(i)
+
+        this.push(value);
+        return;
+      }
+
+      case 1: {
+        const a = this.#physical(0);
+        const b = this.#physical(rm); // FXCH
+
+        [this.registers[a], this.registers[b]] = [this.registers[b], this.registers[a]];
+        [this.empty[a], this.empty[b]] = [this.empty[b], this.empty[a]];
+        this.#flag(C1, false);
+        return;
+      }
+
+      case 2:
+        if (rm === 0) {
+          return; // FNOP
         }
         break;
 
-      default:
-        // Unknown
-        throw 'HELLO FPU ERROR';
+      case 3:
+        this.setSt(rm, this.st(0)); // FSTP1, an alias of FSTP ST(i)
+        this.pop();
+        return;
+
+      case 4:
+        switch (rm) {
+          case 0:
+            this.setSt(0, -this.st(0)); // FCHS
+            return;
+          case 1:
+            this.setSt(0, Math.abs(this.st(0))); // FABS
+            return;
+          case 4:
+            this.#compare(this.st(0), 0, false); // FTST
+            return;
+          case 5:
+            this.#examine(); // FXAM
+            return;
+        }
+        break;
+
+      case 5: {
+        const constants = [1, Math.log2(10), Math.LOG2E, Math.PI, Math.log10(2), Math.LN2, 0];
+
+        if (rm < 7) {
+          this.push(constants[rm]); // FLD1 FLDL2T FLDL2E FLDPI FLDLG2 FLDLN2 FLDZ
+          return;
+        }
+        break;
+      }
+
+      case 6:
+        switch (rm) {
+          case 0:
+            this.setSt(0, 2 ** this.st(0) - 1); // F2XM1
+            return;
+          case 1:
+            this.setSt(1, this.st(1) * Math.log2(this.st(0))); // FYL2X
+            this.pop();
+            return;
+          case 2:
+            this.#trigonometric(() => {
+              this.setSt(0, Math.tan(this.st(0))); // FPTAN
+              this.push(1);
+            });
+            return;
+          case 3:
+            this.setSt(1, Math.atan2(this.st(1), this.st(0))); // FPATAN
+            this.pop();
+            return;
+          case 4:
+            this.#extract(); // FXTRACT
+            return;
+          case 5:
+            this.#remainder(true); // FPREM1
+            return;
+          case 6:
+            this.top = this.top - 1; // FDECSTP
+            return;
+          case 7:
+            this.top = this.top + 1; // FINCSTP
+            return;
+        }
+        break;
+
+      case 7:
+        switch (rm) {
+          case 0:
+            this.#remainder(false); // FPREM
+            return;
+          case 1:
+            this.setSt(1, this.st(1) * Math.log2(this.st(0) + 1)); // FYL2XP1
+            this.pop();
+            return;
+          case 2: {
+            const value = this.st(0); // FSQRT
+
+            if (value < 0) {
+              this.status |= IE;
+            }
+
+            this.setSt(0, Math.sqrt(value));
+            return;
+          }
+          case 3:
+            this.#trigonometric(() => {
+              const value = this.st(0); // FSINCOS
+
+              this.setSt(0, Math.sin(value));
+              this.push(Math.cos(value));
+            });
+            return;
+          case 4:
+            this.setSt(0, this.roundInteger(this.st(0))); // FRNDINT
+            return;
+          case 5:
+            this.setSt(0, this.st(0) * 2 ** Math.trunc(this.st(1))); // FSCALE
+            return;
+          case 6:
+            this.#trigonometric(() => this.setSt(0, Math.sin(this.st(0)))); // FSIN
+            return;
+          case 7:
+            this.#trigonometric(() => this.setSt(0, Math.cos(this.st(0)))); // FCOS
+            return;
+        }
         break;
     }
 
-    // Reset prefix flags
-    instruction.fwait = false;
+    this.#undefined(instruction);
   }
 
-  int32ToFloat32(value) {
-    this._view.setUint32(0, value);
-    return this._view.getFloat32(0);
-  }
-
-  float32ToInt32(value) {
-    this._view.setFloat32(0, value);
-    return this._view.getUint32(0);
-  }
-
-  int64ToFloat64(value) {
-    this._view.setBigInt64(0, value);
-    return this._view.getFloat64(0);
-  }
-
-  float64ToInt64(value) {
-    this._view.setFloat64(0, value);
-    return this._view.getBigInt64(0);
-  }
-
-  fpush(value) {
-    this.top--;
-    if (this.readTag(this.top) != X87.TAG_EMPTY) {
-      // Stack overflow
-      console.log('x87: Stack Overflow');
+  /** The 387's sine, cosine and tangent: an operand of 2^63 or more is left as it is, with `C2` set. */
+  #trigonometric(operation: () => void) {
+    if (Math.abs(this.st(0)) >= 2 ** 63) {
+      this.#flag(C2, true);
+      return;
     }
-    this.writeTag(this.top, X87.TAG_VALID); // Valid
-    this.writeRegister64(0, value);
+
+    this.#flag(C2, false);
+    operation();
   }
 
-  fpop() {
-    this.writeTag(this.top, X87.TAG_EMPTY); // Empty
-    this.top++;
-  }
+  /** `FXAM`: the kind of value in ST(0) in `C3 C2 C0`, its sign in `C1`. */
+  #examine() {
+    const at = this.#physical(0);
+    const value = this.registers[at];
 
-  fld32(segment, offset, index) {
-    const addr = this.cpu.translateAddress(segment, offset);
-    const int32 = this.cpu.memory.read32(addr);
-    this._registers[index] = this.int32ToFloat32(int32);
-  }
+    this.#flag(C1, Object.is(value, -0) || value < 0);
 
-  fld64(segment, offset, index) {
-    const addr = this.cpu.translateAddress(segment, offset);
-    const int64 = this.cpu.memory.read64(addr);
-    this._registers[index] = this.int64ToFloat64(int64);
-  }
-
-  fld80(segment, offset, index) {
-    // We convert an 80-bit IEEE 754 value to a 64-bit one.
-    // We do not implement a true 80-bit FPU (same as DOSBox)
-
-    const addr = this.cpu.translateAddress(segment, offset);
-    const mantissa80 = this.cpu.memory.read64(addr);
-    const extra = this.cpu.memory.read16(addr + 8);
-
-    // Convert the 80-bit bias to 64-bit bias
-    const exp80 = extra & 0x7fff;
-    let exp64 = exp80 - X87.BIAS80;
-
-    // Truncate the bias to 10-bit 2's complement
-    if (exp64 < 0) {
-      exp64 = -(-exp64 & 0x3ff);
+    if (this.empty[at]) {
+      this.#codes(true, false, true);
+    } else if (Number.isNaN(value)) {
+      this.#codes(false, false, true);
+    } else if (!Number.isFinite(value)) {
+      this.#codes(false, true, true);
+    } else if (value === 0) {
+      this.#codes(true, false, false);
     } else {
-      exp64 = exp64 & 0x3ff;
+      this.#codes(false, true, false);
+    }
+  }
+
+  /** `FXTRACT`: ST(0) split into its exponent, left in ST(1), and its significand, pushed. */
+  #extract() {
+    const value = this.st(0);
+
+    if (value === 0) {
+      this.status |= ZE;
+      this.setSt(0, -Infinity);
+      this.push(value);
+      return;
     }
 
-    // Add the bias to get the final 11-bit exponent
-    exp64 += X87.BIAS64;
+    const exponent = Math.floor(Math.log2(Math.abs(value)));
+    let significand = value / 2 ** exponent;
 
-    // Now, we get the 52-bit mantissa from the 63-bit mantissa
-    // We truncate the most-significant bit of the mantissa since that
-    // is the normalized integer representing 1.0 which is implied in
-    // 64-bit and 32-bit IEEE 754 representations.
-    let mantissa64 = (mantissa80 >> 11n) & 0xfffffffffffffn;
-    const sign = extra & 0x8000 ? 0x8000000000000000n : 0n;
-
-    // INF is when the exp80 is the maximum value and mantissa is 0
-    // The top bit of the mantissa is the normalized integer '1'
-    // This needs to exist, otherwise the number is denormalized
-    if (mantissa80 == 0x8000000000000000n && (extra & 0x7fff) == 0x7fff) {
-      exp64 = 0x3ff;
-      mantissa64 = 0x0n;
+    /* log2 can be a hair out at a power of two. */
+    if (Math.abs(significand) >= 2) {
+      significand /= 2;
+      this.setSt(0, exponent + 1);
+    } else if (Math.abs(significand) < 1) {
+      significand *= 2;
+      this.setSt(0, exponent - 1);
+    } else {
+      this.setSt(0, exponent);
     }
 
-    // Combine to form a 64-bit IEEE 754 representation.
-    // SIGN:1 | EXP:11 | MANTISSA:52
-    const value = sign | (BigInt(exp64) << 52n) | mantissa64;
-
-    // Convert to the actual float.
-    this._registers[index] = this.int64ToFloat64(value);
+    this.push(significand);
   }
 
-  fldi16(segment, offset, index) {
-    this._registers[index] = this.cpu.read16(segment, offset);
+  /**
+   * `FPREM` and `FPREM1`: ST(0) less a multiple of ST(1) -- the quotient
+   * truncated, or rounded to nearest -- with the quotient's three low bits in
+   * `C0`, `C3` and `C1`, and `C2` clear for a remainder that is complete.
+   */
+  #remainder(ieee: boolean) {
+    const dividend = this.st(0);
+    const divisor = this.st(1);
+
+    if (divisor === 0 || !Number.isFinite(dividend)) {
+      this.status |= IE;
+      this.setSt(0, INDEFINITE);
+      return;
+    }
+
+    const quotient = ieee ? roundEven(dividend / divisor) : Math.trunc(dividend / divisor);
+    const remainder = ieee ? dividend - quotient * divisor : dividend % divisor;
+    const q = Math.abs(quotient);
+
+    this.setSt(0, remainder);
+    this.#flag(C0, (q & 4) !== 0);
+    this.#flag(C3, (q & 2) !== 0);
+    this.#flag(C1, (q & 1) !== 0);
+    this.#flag(C2, false);
   }
 
-  fldi32(segment, offset, index) {
-    this._registers[index] = this.cpu.read32(segment, offset);
+  #db(instruction, reg: number, rm: number, memory: boolean) {
+    if (memory) {
+      switch (reg) {
+        case 0:
+          this.push(this.#read(instruction, 4).getInt32(0, true)); // FILD m32
+          return;
+        case 2:
+          this.#storeInteger(instruction, 32); // FIST m32
+          return;
+        case 3:
+          this.#storeInteger(instruction, 32); // FISTP m32
+          this.pop();
+          return;
+        case 5:
+          this.push(this.readF80(instruction)); // FLD m80
+          return;
+        case 7:
+          this.writeF80(instruction, this.st(0)); // FSTP m80
+          this.pop();
+          return;
+      }
+
+      this.#undefined(instruction);
+    }
+
+    if (reg === 4) {
+      switch (rm) {
+        case 0: // FENI, the 8087's; nothing on a 287 or 387
+        case 1: // FDISI, likewise
+        case 4: // FSETPM, the 287's; nothing on a 387
+          return;
+        case 2:
+          this.status &= ~(0x00ff | B); // FNCLEX
+          return;
+        case 3:
+          this.reset(); // FNINIT
+          return;
+      }
+    }
+
+    this.#undefined(instruction);
   }
 
-  fldi64(segment, offset, index) {
-    const addr = this.cpu.translateAddress(segment, offset);
-    this._registers[index] = this.cpu.memory.read64(addr);
+  #dd(instruction, reg: number, rm: number, memory: boolean) {
+    if (memory) {
+      switch (reg) {
+        case 0:
+          this.push(this.readF64(instruction)); // FLD m64
+          return;
+        case 2:
+          this.#writeView(instruction, 8, (view) => view.setFloat64(0, this.st(0), true)); // FST m64
+          return;
+        case 3:
+          this.#writeView(instruction, 8, (view) => view.setFloat64(0, this.st(0), true)); // FSTP m64
+          this.pop();
+          return;
+        case 4:
+          this.#restore(instruction); // FRSTOR
+          return;
+        case 6:
+          this.#save(instruction); // FNSAVE
+          return;
+        case 7:
+          this.#writeView(instruction, 2, (view) => view.setUint16(0, this.status, true)); // FNSTSW m16
+          return;
+      }
+
+      this.#undefined(instruction);
+    }
+
+    switch (reg) {
+      case 0:
+        this.empty[this.#physical(rm)] = true; // FFREE
+        return;
+      case 1: {
+        const a = this.#physical(0);
+        const b = this.#physical(rm); // FXCH4, an alias
+
+        [this.registers[a], this.registers[b]] = [this.registers[b], this.registers[a]];
+        [this.empty[a], this.empty[b]] = [this.empty[b], this.empty[a]];
+        return;
+      }
+      case 2:
+        this.setSt(rm, this.st(0)); // FST ST(i)
+        return;
+      case 3:
+        this.setSt(rm, this.st(0)); // FSTP ST(i)
+        this.pop();
+        return;
+      case 4:
+        this.#compare(this.st(0), this.st(rm), true); // FUCOM
+        return;
+      case 5:
+        this.#compare(this.st(0), this.st(rm), true); // FUCOMP
+        this.pop();
+        return;
+    }
+
+    this.#undefined(instruction);
   }
 
-  fbld(segment, offset, index) {
+  #df(instruction, reg: number, rm: number, memory: boolean) {
+    if (memory) {
+      switch (reg) {
+        case 0:
+          this.push(this.#read(instruction, 2).getInt16(0, true)); // FILD m16
+          return;
+        case 2:
+          this.#storeInteger(instruction, 16); // FIST m16
+          return;
+        case 3:
+          this.#storeInteger(instruction, 16); // FISTP m16
+          this.pop();
+          return;
+        case 4:
+          this.push(this.#loadBcd(instruction)); // FBLD
+          return;
+        case 5:
+          this.push(Number(this.#read(instruction, 8).getBigInt64(0, true))); // FILD m64
+          return;
+        case 6:
+          this.#storeBcd(instruction); // FBSTP
+          this.pop();
+          return;
+        case 7:
+          this.#storeInteger(instruction, 64); // FISTP m64
+          this.pop();
+          return;
+      }
+
+      this.#undefined(instruction);
+    }
+
+    switch (reg) {
+      case 0:
+        this.empty[this.#physical(rm)] = true; // FFREEP, undocumented
+        this.pop();
+        return;
+      case 4:
+        if (rm === 0) {
+          this.cpu.ax = this.status; // FNSTSW AX
+          return;
+        }
+        break;
+    }
+
+    this.#undefined(instruction);
+  }
+
+  /** Eighteen packed decimal digits, the low byte first, and a sign byte. */
+  #loadBcd(instruction) {
+    const view = this.#read(instruction, 10);
     let value = 0;
-    let base = 1;
 
-    for (let i = 0; i < 9; i++) {
-      const b = this.cpu.read8(segment, offset);
-      offset++;
-      value += (b & 0xf) * base;
-      base *= 10;
-      value += ((b >> 4) & 0xf) * base;
-      base *= 10;
+    for (let at = 8; at >= 0; at--) {
+      const byte = view.getUint8(at);
+
+      value = value * 100 + (byte >> 4) * 10 + (byte & 0xf);
     }
 
-    // Interpret last byte
-    const b = this.cpu.read8(segment, offset);
-    value += (b & 0xf) * base;
-    if (b & 0x80) {
-      value *= -1.0;
-    }
-
-    // Write
-    this._registers[index] = value;
+    return view.getUint8(9) & 0x80 ? -value : value;
   }
 
-  fst32(segment, offset) {
-    const ST0 = this.readRegister64(0);
-    const value = this.float32ToInt32(ST0);
-    this.cpu.memory.write32(this.cpu.translateAddress(segment, offset), value);
-  }
+  #storeBcd(instruction) {
+    const value = this.roundInteger(this.st(0));
+    const bytes = new Uint8Array(10);
 
-  fst64(segment, offset) {
-    const ST0 = this.readRegister64(0);
-    const value = this.float64ToInt64(ST0);
-    this.cpu.memory.write64(this.cpu.translateAddress(segment, offset), value);
-  }
-
-  fst80(segment, offset, value) {
-    const int64 = this.float64ToInt64(value);
-
-    const sign64 = Number(int64 >> 63n);
-    const exp64 = Number(int64 >> 52n) & 0x7ff;
-    const mantissa64 = int64 & 0xfffffffffffffn;
-
-    // Convert the 52-bit mantissa to a 63-bit mantissa
-    let mantissa80 = mantissa64 << 11n;
-    let exp80 = exp64;
-
-    // Convert the 64-bit exponent to an 80-bit exponent
-    if (value != 0) {
-      // If it is not representing 0.0, add the 1.0 integer part
-      mantissa80 |= 0x8000000000000000n;
-
-      // Subtract the 64-bit bias and add back the 80-bit bias
-      exp80 += X87.BIAS80 - X87.BIAS64;
-    }
-
-    const extra = (sign64 << 15) | exp80;
-
-    const addr = this.cpu.translateAddress(segment, offset);
-    this.cpu.memory.write64(addr, mantissa80);
-    this.cpu.memory.write16(addr + 8, extra);
-  }
-
-  fsti16(segment, offset) {
-    const value = this.fround(this.readRegister64(0));
-    this.cpu.memory.write16(this.cpu.translateAddress(segment, offset), value);
-  }
-
-  fsti32(segment, offset) {
-    const value = this.fround(this.readRegister64(0));
-    this.cpu.memory.write32(this.cpu.translateAddress(segment, offset), value);
-  }
-
-  fsti64(segment, offset) {
-    const value = this.fround(this.readRegister64(0));
-    this.cpu.memory.write64(this.cpu.translateAddress(segment, offset), value);
-  }
-
-  fbst(segment, offset) {
-    // TODO
-    throw 'fbst not implemented';
-  }
-
-  fadd(a, b) {
-    this._registers[a] += this._registers[b];
-  }
-
-  fsin() {
-    this.writeRegister64(0, Math.sin(this.readRegister64(0)));
-    this.c2 = 0;
-  }
-
-  fsincos() {
-    const ST0 = this.readRegister64(0);
-    this.writeRegister64(0, Math.sin(ST0));
-    this.fpush(Math.cos(ST0));
-    this.c2 = 0;
-  }
-
-  fcos() {
-    this.writeRegister64(0, Math.cos(this.readRegister64(0)));
-    this.c2 = 0;
-  }
-
-  fsqrt() {
-    this.writeRegister64(0, Math.sqrt(this.readRegister64(0)));
-  }
-
-  fpatan() {
-    const ST0 = this.readRegister64(0);
-    const ST1 = this.readRegister64(1);
-    this.writeRegister64(1, Math.atan2(ST1, ST0));
-    this.fpop();
-  }
-
-  fptan() {
-    this.writeRegister64(0, Math.tan(this.readRegister64(0)));
-    this.fpush(1.0);
-    this.c2 = 0;
-  }
-
-  fdiv(a, b) {
-    this._registers[a] /= this._registers[b];
-  }
-
-  fdivr(a, b) {
-    this._registers[a] = this._registers[b] / this._registers[a];
-  }
-
-  fmul(a, b) {
-    this._registers[a] *= this._registers[b];
-  }
-
-  fsub(a, b) {
-    this._registers[a] = this._registers[a] - this._registers[b];
-  }
-
-  fsubr(a, b) {
-    this._registers[a] = this._registers[b] - this._registers[a];
-  }
-
-  fxch(a, b) {
-    const tag = this.readTag(a);
-    const reg = this._registers[a];
-    this.writeTag(a, this.readTag(b));
-    this._registers[a] = this._registers[b];
-    this.writeTag(b, tag);
-    this._registers[b] = reg;
-  }
-
-  fst(a, b) {
-    this.writeTag(b, this.readTag(a));
-    this._registers[b] = this._registers[a];
-  }
-
-  fcom(a, b) {
-    if (
-      (this.readTag(a) != X87.TAG_VALID && this.readTag(a) != X87.TAG_ZERO) ||
-      (this.readTag(b) != X87.TAG_VALID && this.readTag(b) != X87.TAG_ZERO)
-    ) {
-      // Invalid
-      this.c3 = 1;
-      this.c2 = 1;
-      this.c0 = 1;
-    } else if (this._registers[a] == this._registers[b]) {
-      // ST[A} == ST[B]
-      this.c3 = 1;
-      this.c2 = 0;
-      this.c0 = 0;
-    } else if (this._registers[a] < this._registers[b]) {
-      // ST[A} < ST[B]
-      this.c3 = 0;
-      this.c2 = 0;
-      this.c0 = 1;
+    if (!Number.isFinite(value) || Math.abs(value) >= 1e18) {
+      /* The packed decimal indefinite. */
+      this.status |= IE;
+      bytes.set([0, 0, 0, 0, 0, 0, 0, 0xc0, 0xff, 0xff]);
     } else {
-      // ST[A} > ST[B]
-      this.c3 = 0;
-      this.c2 = 0;
-      this.c0 = 0;
+      let digits = BigInt(Math.abs(value));
+
+      for (let at = 0; at < 9; at++) {
+        const low = Number(digits % 10n);
+
+        digits /= 10n;
+        const high = Number(digits % 10n);
+
+        digits /= 10n;
+        bytes[at] = (high << 4) | low;
+      }
+
+      bytes[9] = value < 0 || Object.is(value, -0) ? 0x80 : 0;
+    }
+
+    this.#write(instruction, bytes);
+  }
+
+  /** The tag word: two bits a physical register -- valid, zero, special or empty. */
+  tagWord() {
+    let word = 0;
+
+    for (let at = 0; at < 8; at++) {
+      const value = this.registers[at];
+      const tag = this.empty[at]
+        ? TAG_EMPTY
+        : value === 0
+          ? TAG_ZERO
+          : !Number.isFinite(value) || isDenormal(value)
+            ? TAG_SPECIAL
+            : TAG_VALID;
+
+      word |= tag << (2 * at);
+    }
+
+    return word;
+  }
+
+  /**
+   * The environment, in the sixteen-bit form: the control, status and tag
+   * words, then where the last instruction and its operand were, which are
+   * not kept and are written as zeros. Fourteen bytes.
+   */
+  #storeEnvironment(instruction) {
+    this.#writeView(instruction, 14, (view) => {
+      view.setUint16(0, this.control, true);
+      view.setUint16(2, this.status, true);
+      view.setUint16(4, this.tagWord(), true);
+    });
+  }
+
+  #loadEnvironment(instruction) {
+    const view = this.#read(instruction, 6);
+    const tags = view.getUint16(4, true);
+
+    this.control = view.getUint16(0, true);
+    this.status = view.getUint16(2, true);
+
+    for (let at = 0; at < 8; at++) {
+      this.empty[at] = ((tags >> (2 * at)) & 3) === TAG_EMPTY;
     }
   }
 
-  fucom(a, b) {
-    // The same as fcom (just as DOSBox does)
-    this.fcom(a, b);
-  }
+  /** `FNSAVE`: the environment, then ST(0) to ST(7) as ten bytes each; and then `FNINIT`. */
+  #save(instruction) {
+    this.#storeEnvironment(instruction);
 
-  frndint() {
-    this.writeRegister64(0, this.fround(this.readRegister64(0)));
-  }
-
-  fclex() {
-    this.control &= 0x7f00;
-  }
-
-  fround(value) {
-    switch (this.round) {
-      case X87.ROUND_NEAREST:
-        value = Math.round(value);
-        break;
-
-      case X87.ROUND_DOWN:
-        value = Math.floor(value);
-        break;
-
-      case X87.ROUND_UP:
-        value = Math.ceil(value);
-        break;
-
-      case X87.ROUND_CHOP:
-      default:
-        // TODO: more accurate magnitude check?
-        value = Math.round(value);
-        break;
-    }
-
-    return value;
-  }
-
-  fprem() {
-    // Q <- Math.floor(ST(0) / ST(1))
-    // rem <- ST(0) - (Q * ST(1))
-    // TODO: can this handle integers greater than 32 bits?
-    const ST0 = this.readRegister64(0);
-    const ST1 = this.readRegister64(1);
-    const Q = Math.floor(ST0 / ST1);
-    const rem = ST0 - Q * ST1;
-    this.writeRegister64(0, rem);
-
-    this.c0 = Q & 0x4;
-    this.c3 = Q & 0x2;
-    this.c1 = Q & 0x1;
-    this.c2 = 0;
-  }
-
-  fprem1() {
-    // Q <- Math.round(ST(0) / ST(1))
-    // rem <- ST(0) - (Q * ST(1))
-    // TODO: can this handle integers greater than 32 bits?
-    const ST0 = this.readRegister64(0);
-    const ST1 = this.readRegister64(1);
-    const Q = Math.round(ST0 / ST1);
-    const rem = ST0 - Q * ST1;
-    this.writeRegister64(0, rem);
-
-    this.c0 = Q & 0x4;
-    this.c3 = Q & 0x2;
-    this.c1 = Q & 0x1;
-    this.c2 = 0;
-  }
-
-  fxam() {
-    // Determine the size value
-    const ST0 = this.readRegister64(0);
-    const intValue = this.float64ToInt64(ST0);
-    if (intValue & 0x8000000000000000n) {
-      this.c1 = 1;
-    } else {
-      this.c1 = 0;
-    }
-
-    // Determine if it is empty
-    if (this.readTag(this.top) == 0x11) {
-      this.c3 = 1;
-      this.c2 = 0;
-      this.c0 = 1;
-    }
-
-    // Determine if it is zero / normalized
-    if (ST0 == 0.0) {
-      // Zero
-      this.c3 = 1;
-      this.c2 = 0;
-      this.c0 = 0;
-    } else {
-      // Normal finite number
-      this.c3 = 0;
-      this.c2 = 1;
-      this.c0 = 0;
-    }
-
-    if (isNaN(ST0)) {
-      this.c3 = 0;
-      this.c2 = 0;
-      this.c0 = 1;
-    }
-
-    if (isNaN(ST0)) {
-      this.c3 = 0;
-      this.c2 = 0;
-      this.c0 = 1;
-    } else if (!isFinite(ST0)) {
-      this.c3 = 0;
-      this.c2 = 1;
-      this.c0 = 1;
-    }
-  }
-
-  f2xm1() {
-    const ST0 = this.readRegister64(0);
-    const value = Math.pow(2.0, ST0 - 1);
-    this.writeRegister64(0, value);
-  }
-
-  fyl2x() {
-    const ST0 = this.readRegister64(0);
-    const ST1 = this.readRegister64(1);
-    const value = ST1 * (Math.log(ST0) / Math.log(2.0));
-    this.writeRegister64(1, value);
-    this.fpop();
-  }
-
-  fyl2xp1() {
-    const ST0 = this.readRegister64(0);
-    const ST1 = this.readRegister64(1);
-    const value = ST1 * (Math.log(ST0 + 1.0) / Math.log(2.0));
-    this.writeRegister64(1, value);
-    this.fpop();
-  }
-
-  fscale() {
-    let ST0 = this.readRegister64(0);
-    const ST1 = this.readRegister64(1);
-    ST0 *= Math.pow(2.0, Math.round(ST1));
-    this.writeRegister(0, ST0);
-  }
-
-  fstenv(size, segment, offset) {
-    if (size == 16) {
-      this.cpu.write16(segment, offset, this.control);
-      this.cpu.write16(segment, offset + 2, this.flags);
-      this.cpu.write16(segment, offset + 4, this.tags);
-    } else {
-      this.cpu.write32(segment, offset, this.control);
-      this.cpu.write32(segment, offset + 4, this.flags);
-      this.cpu.write32(segment, offset + 8, this.tags);
-    }
-  }
-
-  fldenv(size, segment, offset) {
-    if (size == 16) {
-      this.control = this.cpu.read16(segment, offset);
-      this.flags = this.cpu.read16(segment, offset + 2);
-      this.tags = this.cpu.read16(segment, offset + 4);
-    } else {
-      this.control = this.cpu.read32(segment, offset) & 0xffff;
-      this.flags = this.cpu.read32(segment, offset + 4) & 0xffff;
-      this.tags = this.cpu.read32(segment, offset + 8) & 0xffff;
-    }
-  }
-
-  fsave(size, segment, offset) {
-    this.fstenv(size, segment, offset);
-    offset += size == 16 ? 14 : 28;
     for (let i = 0; i < 8; i++) {
-      this.fst80(segment, offset, this.readRegister64(i));
-      offset += 10;
+      this.writeF80(instruction, this.registers[this.#physical(i)], 14 + i * 10);
     }
-    this.reset(false);
+
+    this.reset();
   }
 
-  frstor(size, segment, offset) {
-    this.fldenv(size, segment, offset);
-    offset += size == 16 ? 14 : 28;
+  #restore(instruction) {
+    this.#loadEnvironment(instruction);
+
     for (let i = 0; i < 8; i++) {
-      this.fld80(segment, offset, i);
-      offset += 10;
+      this.registers[this.#physical(i)] = this.readF80(instruction, 14 + i * 10);
     }
-  }
-
-  fxtract() {
-    const ST0 = this.readRegister64(0);
-    const int64 = this.float64ToInt64(ST0);
-    const exp64 = int64 & BigInt(0x7ff0000000000000n);
-    const exp80 = Number(exp64 >> 52n) - X87.BIAS64;
-
-    const mantissa = ST0 / Math.pow(2.0, exp80);
-
-    this.writeRegister64(0, exp80);
-    this.fpush(mantissa);
-  }
-
-  fchs() {
-    this.writeRegister64(0, -1.0 * this.readRegister64(0));
-  }
-
-  fabs() {
-    this.writeRegister64(0, Math.abs(this.readRegister64(0)));
-  }
-
-  ftst() {
-    this._registers[8] = 0.0;
-    this.fcom(this.top, 8);
-  }
-
-  fld1() {
-    this.fpush(1.0);
-  }
-
-  fldl2t() {
-    this.fpush(X87.L2T);
-  }
-
-  fldl2e() {
-    this.fpush(X87.L2E);
-  }
-
-  fldpi() {
-    this.fpush(Math.PI);
-  }
-
-  fldlg2() {
-    this.fpush(X87.LG2);
-  }
-
-  fldln2() {
-    this.fpush(X87.LN2);
-  }
-
-  fldz() {
-    this.fpush(0.0);
-    this.writeTag(this.top, X87.TAG_ZERO);
   }
 }
 
-X87.TAG_VALID = 0x0;
-X87.TAG_ZERO = 0x1;
-X87.TAG_WEIRD = 0x2;
-X87.TAG_EMPTY = 0x3;
+/** Rounded to the nearest integer, a half to the even one. */
+export function roundEven(value: number) {
+  const rounded = Math.round(value);
 
-X87.ROUND_NEAREST = 0x0;
-X87.ROUND_DOWN = 0x1;
-X87.ROUND_UP = 0x2;
-X87.ROUND_CHOP = 0x3;
+  return Math.abs(value % 1) === 0.5 ? 2 * Math.round(value / 2) : rounded;
+}
 
-X87.L2E = 1.4426950408889634;
-X87.L2T = 3.321928094887362;
-X87.LN2 = 0.6931471805599453;
-X87.LG2 = 0.3010299956639812;
+function isDenormal(value: number) {
+  return value !== 0 && Math.abs(value) < 2 ** -1022;
+}
 
-X87.BIAS80 = 16383;
-X87.BIAS64 = 1023;
+/**
+ * A double as the unit's eighty-bit extended format: a sixty-four-bit
+ * significand with its integer bit explicit, and a sign and fifteen-bit
+ * exponent biased by 16383.
+ */
+export function toExtended(value: number) {
+  const sign = value < 0 || Object.is(value, -0) ? 0x8000 : 0;
+
+  if (Number.isNaN(value)) {
+    return { mantissa: 0xc000000000000000n, signExponent: 0xffff };
+  }
+
+  if (!Number.isFinite(value)) {
+    return { mantissa: 0x8000000000000000n, signExponent: sign | 0x7fff };
+  }
+
+  if (value === 0) {
+    return { mantissa: 0n, signExponent: sign };
+  }
+
+  const view = new DataView(new ArrayBuffer(8));
+
+  view.setFloat64(0, Math.abs(value));
+
+  const bits = view.getBigUint64(0);
+  let exponent = Number(bits >> 52n);
+  let significand = bits & 0xfffffffffffffn;
+
+  if (exponent === 0) {
+    /* A denormal double is normal in the extended format. */
+    exponent = 1;
+
+    while (!(significand & 0x10000000000000n)) {
+      significand <<= 1n;
+      exponent--;
+    }
+  } else {
+    significand |= 0x10000000000000n;
+  }
+
+  return {
+    mantissa: significand << 11n,
+    signExponent: sign | (exponent - 1023 + 16383),
+  };
+}
+
+/** The extended format as a double, rounded to nearest where it has more precision. */
+export function fromExtended(mantissa: bigint, signExponent: number) {
+  const sign = signExponent & 0x8000 ? -1 : 1;
+  const exponent = signExponent & 0x7fff;
+
+  if (exponent === 0x7fff) {
+    return (mantissa & 0x7fffffffffffffffn) === 0n ? sign * Infinity : NaN;
+  }
+
+  if (mantissa === 0n) {
+    return sign * 0;
+  }
+
+  /* The significand as a number -- rounded to 53 bits -- scaled in two steps,
+   * so that neither overflows on its own. */
+  const power = exponent - 16383 - 63;
+  const half = Math.trunc(power / 2);
+
+  return sign * Number(mantissa) * 2 ** half * 2 ** (power - half);
+}

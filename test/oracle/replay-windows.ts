@@ -1188,3 +1188,41 @@ async function captureDlgColor(system: any) {
 
   return records;
 }
+
+/* ---- dlgclamp ---- */
+
+/** The `dlgclamp` probe: an empty dialog with no owner at a place, and where its window went. */
+export async function dialogPlace(system: any, x: number, y: number) {
+  void system.rasterDesktop;
+
+  const core = system.machine.cpu.core;
+  const memory = GlobalAlloc.call(system, 0x42, 64);
+  const far = GlobalLock.call(system, memory);
+  const style = (0x80000000 | 0x00c00000 | 0x00080000 | 0x80 | 0x10000000) >>> 0;
+  const word = (value: number) => [value & 0xff, (value >> 8) & 0xff];
+  const bytes = [
+    ...word(style & 0xffff),
+    ...word(style >>> 16),
+    0,
+    ...word(x),
+    ...word(y),
+    ...word(100),
+    ...word(50),
+    0,
+    0,
+    0x44,
+    0,
+  ];
+
+  bytes.forEach((value, at) => core.write8((far >>> 16) & 0xffff, (far & 0xffff) + at, value));
+
+  const dialog = await CreateDialogIndirect.call(system, 0, far, 0, (_: number, message: number) =>
+    message === User.WM_INITDIALOG ? 1 : 0
+  );
+  const window: any = new RECT();
+
+  GetWindowRect.call(system, dialog, window);
+  await DestroyWindow.call(system, dialog);
+
+  return `window=${window.left}:${window.top}:${window.right}:${window.bottom}`;
+}

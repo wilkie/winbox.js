@@ -17,6 +17,7 @@ import {
   chromeCapture,
   driverOf,
   iconsCapture,
+  dialogPlace,
   dialogsCapture,
   dlgColorCapture,
   menusCapture,
@@ -1884,6 +1885,13 @@ const ADAPTERS: Record<
 
   async modal(context, [what]) {
     return (await dialogsCapture(context)).records.get(`modal:${what}`) ?? '';
+  },
+
+  /** `dlgclamp`: an empty dialog at a place, partly off the screen or not. */
+  async place(context, args) {
+    const [x, y] = args.map((arg) => Number(String(arg).split('=')[1]));
+
+    return dialogPlace(context, x, y);
   },
 
   /** `winhelp`: `HELP_QUIT` with Help not running. */

@@ -1,0 +1,49 @@
+{
+  "probe": "dlgclamp",
+  "display": "svga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "svga",
+    "displayDescription": "Super VGA, 800x600, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "place",
+      "args": "x=20,y=20",
+      "result": "window=32:16:242:145"
+    },
+    {
+      "function": "place",
+      "args": "x=300,y=20",
+      "result": "window=584:16:794:145"
+    },
+    {
+      "function": "place",
+      "args": "x=20,y=250",
+      "result": "window=32:467:242:596"
+    },
+    {
+      "function": "place",
+      "args": "x=300,y=250",
+      "result": "window=584:467:794:596"
+    },
+    {
+      "function": "place",
+      "args": "x=-30,y=20",
+      "result": "window=0:16:210:145"
+    },
+    {
+      "function": "place",
+      "args": "x=20,y=-30",
+      "result": "window=32:0:242:129"
+    },
+    {
+      "function": "place",
+      "args": "x=400,y=400",
+      "result": "window=584:467:794:596"
+    }
+  ]
+}

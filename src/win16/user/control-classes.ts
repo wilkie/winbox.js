@@ -63,9 +63,13 @@ export function controlState(className: string, style: number, text: string): Co
 }
 
 /** A string a message carries: given as one, or as a far pointer to one in the program's memory. */
-function stringAt(system: any, value: any) {
+export function stringAt(system: any, value: any) {
   if (typeof value === 'string' || value instanceof String) {
     return String(value);
+  }
+
+  if (!value) {
+    return '';
   }
 
   const far = value >>> 0;
@@ -120,6 +124,12 @@ async function controlProc(
       window.window.title = control.text;
       invalidate();
       return 1;
+
+    case User.WM_GETTEXT:
+      return copyText(system, control.text, lParam, wParam);
+
+    case User.WM_GETTEXTLENGTH:
+      return control.text.length;
   }
 
   if (kind === 'BUTTON') {
@@ -255,4 +265,28 @@ export async function clickControl(system: any, hwnd: number) {
       );
     }
   }
+}
+
+/**
+ * Text copied into a program's buffer, as `WM_GETTEXT` copies it: as much as
+ * fits with its zero -- `LoadString`'s rule, which the `loadstr` probe
+ * measured -- answering how many characters it copied.
+ */
+export function copyText(system: any, text: string, far: number, size: number) {
+  if (!far || size <= 0) {
+    return 0;
+  }
+
+  const core = system.machine.cpu.core;
+  const segment = (far >>> 16) & 0xffff;
+  const offset = far & 0xffff;
+  const count = Math.min(text.length, size - 1);
+
+  for (let at = 0; at < count; at++) {
+    core.write8(segment, offset + at, text.charCodeAt(at) & 0xff);
+  }
+
+  core.write8(segment, offset + count, 0);
+
+  return count;
 }

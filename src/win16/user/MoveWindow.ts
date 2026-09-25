@@ -2,6 +2,9 @@
 
 import { User, MSG, WINDOWPOS } from '../user.js';
 
+import { RasterWindow } from './raster-window.js';
+import { positionRaster } from './window-state.js';
+
 import { TRUE, FALSE, NULL } from '../consts.js';
 
 import { BOOL } from '../types.js';
@@ -9,6 +12,12 @@ import { BOOL } from '../types.js';
 export async function MoveWindow(hwnd, nLeft, nTop, nWidth, nHeight, fRepaint) {
   // Get the window itself
   const dialog = this.handles.resolve(hwnd);
+
+  /* On the raster desktop, `SetWindowPos` with the place and size, and no
+   * change to the order. */
+  if (dialog instanceof RasterWindow) {
+    return positionRaster(this, hwnd, dialog, 0, nLeft, nTop, nWidth, nHeight, 0x0004 | 0x0010);
+  }
 
   // Get the window/class for the handle
   const windowClass = this.handles.retrieve(dialog.options.windowClass);

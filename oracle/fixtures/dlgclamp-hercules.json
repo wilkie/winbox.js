@@ -1,0 +1,49 @@
+{
+  "probe": "dlgclamp",
+  "display": "hercules",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "hercules",
+    "displayDescription": "Hercules, 720x348, monochrome"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "place",
+      "args": "x=20,y=20",
+      "result": "window=32:8:242:110"
+    },
+    {
+      "function": "place",
+      "args": "x=300,y=20",
+      "result": "window=504:8:714:110"
+    },
+    {
+      "function": "place",
+      "args": "x=20,y=250",
+      "result": "window=32:242:242:344"
+    },
+    {
+      "function": "place",
+      "args": "x=300,y=250",
+      "result": "window=504:242:714:344"
+    },
+    {
+      "function": "place",
+      "args": "x=-30,y=20",
+      "result": "window=0:8:210:110"
+    },
+    {
+      "function": "place",
+      "args": "x=20,y=-30",
+      "result": "window=32:0:242:102"
+    },
+    {
+      "function": "place",
+      "args": "x=400,y=400",
+      "result": "window=504:242:714:344"
+    }
+  ]
+}

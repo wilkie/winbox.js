@@ -5,6 +5,7 @@ import { NULL } from '../consts.js';
 import { User, MDICREATESTRUCT } from '../user.js';
 
 import { CreateWindow } from './CreateWindow.js';
+import { copyText, stringAt } from './control-classes.js';
 import { DestroyWindow } from './DestroyWindow.js';
 import {
   SC_CLOSE,
@@ -329,6 +330,17 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
     case User.WM_CLOSE:
       await DestroyWindow.call(system, hwnd);
       return 0;
+
+    /* The window's text: its caption, redrawn when it changes. */
+    case User.WM_SETTEXT:
+      dialog.caption = stringAt(system, lParam);
+      return 1;
+
+    case User.WM_GETTEXT:
+      return copyText(system, dialog.caption ?? '', lParam, wParam);
+
+    case User.WM_GETTEXTLENGTH:
+      return String(dialog.caption ?? '').length;
   }
 
   return undefined;

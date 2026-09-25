@@ -94,7 +94,19 @@ import {
   IsDialogMessage,
   MapDialogRect,
 } from './user/dialogs.js';
+import {
+  CheckDlgButton,
+  CheckRadioButton,
+  GetDlgItemInt,
+  GetDlgItemText,
+  GetWindowText,
+  GetWindowTextLength,
+  IsDlgButtonChecked,
+  SetDlgItemInt,
+  SetDlgItemText,
+} from './user/dialog-items.js';
 import { GetDC } from './user/GetDC.js';
+import { SetWindowPos } from './user/window-state.js';
 import { WinHelp } from './user/WinHelp.js';
 import {
   CallWindowProc,
@@ -575,9 +587,9 @@ export class User extends Module {
       [GetClientRect, 'GetClientRect', 6, [HWND, [RECT]]],
       [EnableWindow, 'EnableWindow', 4, [HWND, BOOL], BOOL],
       [IsWindowEnabled, 'IsWindowEnabled', 2, [HWND], BOOL],
-      [User.stub, 'GetWindowText', 8],
+      [GetWindowText, 'GetWindowText', 8, [HWND, FARPTR, INT], INT],
       [SetWindowText, 'SetWindowText', 6, [HWND, LPCSTR]],
-      [User.stub, 'GetWindowTextLength', 2],
+      [GetWindowTextLength, 'GetWindowTextLength', 2, [HWND], INT],
       [BeginPaint, 'BeginPaint', 6, [HWND, [PAINTSTRUCT]], HDC],
       // 40 //
       [EndPaint, 'EndPaint', 6, [HWND, [PAINTSTRUCT]]],
@@ -643,13 +655,13 @@ export class User extends Module {
       // 90 //
       [IsDialogMessage, 'IsDialogMessage', 6, [HWND, [MSG]], BOOL],
       [GetDlgItem, 'GetDlgItem', 4, [HWND, INT], HWND],
-      [User.stub, 'SetDlgItemText', 8],
-      [User.stub, 'GetDlgItemText', 10],
-      [User.stub, 'SetDlgItemInt', 8],
-      [User.stub, 'GetDlgItemInt', 10],
-      [User.stub, 'CheckRadioButton', 8],
-      [User.stub, 'CheckDlgButton', 6],
-      [User.stub, 'IsDlgButtonChecked', 4],
+      [SetDlgItemText, 'SetDlgItemText', 8, [HWND, INT, LPCSTR]],
+      [GetDlgItemText, 'GetDlgItemText', 10, [HWND, INT, FARPTR, INT], INT],
+      [SetDlgItemInt, 'SetDlgItemInt', 8, [HWND, INT, UINT, BOOL]],
+      [GetDlgItemInt, 'GetDlgItemInt', 10, [HWND, INT, FARPTR, BOOL], UINT],
+      [CheckRadioButton, 'CheckRadioButton', 8, [HWND, INT, INT, INT]],
+      [CheckDlgButton, 'CheckDlgButton', 6, [HWND, INT, UINT]],
+      [IsDlgButtonChecked, 'IsDlgButtonChecked', 4, [HWND, INT], UINT],
       [User.stub, 'DlgDirSelect', 8],
       // 100 //
       [User.stub, 'DlgDirList', 12],
@@ -797,7 +809,7 @@ export class User extends Module {
       // 230 //
       [User.stub, 'GetNextWindow', 4],
       [User.stub, 'GetSystemDebugState', 0],
-      [User.stub, 'SetWindowPos', 14],
+      [SetWindowPos, 'SetWindowPos', 14, [HWND, HWND, INT, INT, INT, INT, UINT], BOOL],
       [User.stub, 'SetParent', 4],
       [User.stub, 'UnhookWindowsHook', 6],
       [User.stub, 'DefHookProc', 12],

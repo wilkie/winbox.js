@@ -43,7 +43,8 @@ import { GetWindowLong } from './window-words.js';
  * * The dialog's client area is the template's place from its owner's client
  *   area, or from the screen without one. Its window's left edge is then put
  *   on the nearest multiple of eight -- 36 goes to 40, 35 to 32 -- as the
- *   dialog class aligns its windows; its top is not moved.
+ *   dialog class aligns its windows; its top is not moved. A dialog that
+ *   would leave the screen is brought back onto it; see `dlgclamp`.
  * * After `WM_INITDIALOG` answers TRUE the first control with `WS_TABSTOP`
  *   has the focus; Tab moves to the next, in the template's order, wrapping.
  *   Enter is the default button's command, Escape `IDCANCEL`'s.
@@ -52,6 +53,7 @@ import { GetWindowLong } from './window-words.js';
  */
 
 const DS_MODALFRAME = 0x80;
+const SM_CYDLGFRAME = 8;
 const DS_SETFONT = 0x40;
 const WS_TABSTOP = 0x00010000;
 const WS_GROUP = 0x00020000;
@@ -232,11 +234,38 @@ export async function createDialog(
   const insets = desktop.frameInsets(style, modalFrame, template.menu !== null);
   const className = template.className ?? DIALOG_CLASS;
 
-  /* The dialog class keeps its windows' left edges on multiples of eight. */
-  let left = client.x - insets.left;
+  const width = client.width + insets.left + insets.right;
+  const height = client.height + insets.top + insets.bottom;
 
-  if (className === DIALOG_CLASS) {
+  /* The dialog class keeps its windows' left edges on multiples of eight. */
+  const aligned = className === DIALOG_CLASS;
+  let left = client.x - insets.left;
+  let top = client.y - insets.top;
+
+  if (aligned) {
     left = (left + 4) & ~7;
+  }
+
+  /* Kept on the screen, measured by the `dlgclamp` probe on four displays: a
+   * dialog past the right edge is moved to end at it -- and then down to a
+   * multiple of eight, which keeps it on -- and one past the bottom to end
+   * four pixels above it; nothing is left above or left of the screen. The
+   * four is `SM_CYDLGFRAME` here; `SM_CYFRAME` is four on every display too,
+   * and a constant cannot be told from either. */
+  if (!(style & WS_CHILD)) {
+    const right = desktop.screen.width;
+    const bottom = desktop.screen.height - desktop.environment.metric(SM_CYDLGFRAME);
+
+    if (left + width > right) {
+      left = aligned ? (right - width) & ~7 : right - width;
+    }
+
+    if (top + height > bottom) {
+      top = bottom - height;
+    }
+
+    left = Math.max(0, left);
+    top = Math.max(0, top);
   }
 
   const hwnd = await CreateWindow.call(
@@ -245,9 +274,9 @@ export async function createDialog(
     template.caption,
     style,
     left,
-    client.y - insets.top,
-    client.width + insets.left + insets.right,
-    client.height + insets.top + insets.bottom,
+    top,
+    width,
+    height,
     hwndOwner,
     0,
     hinst,
