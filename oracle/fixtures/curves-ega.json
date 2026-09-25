@@ -1,0 +1,824 @@
+{
+  "probe": "curves",
+  "display": "ega",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "egahires",
+    "displayDescription": "EGA, 640x350, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "shape",
+      "args": "0",
+      "result": "ellipse,4:4:5:5,corner=0:0,pen=1,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "1",
+      "result": "ellipse,10:4:12:6,corner=0:0,pen=1,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "2",
+      "result": "ellipse,16:4:19:7,corner=0:0,pen=1,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "3",
+      "result": "ellipse,24:4:28:8,corner=0:0,pen=1,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "4",
+      "result": "ellipse,32:4:37:9,corner=0:0,pen=1,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "5",
+      "result": "ellipse,42:4:48:10,corner=0:0,pen=1,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "6",
+      "result": "ellipse,52:4:59:11,corner=0:0,pen=1,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "7",
+      "result": "ellipse,64:4:72:12,corner=0:0,pen=1,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "8",
+      "result": "ellipse,4:16:44:40,corner=0:0,pen=1,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "9",
+      "result": "ellipse,50:16:77:49,corner=0:0,pen=1,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "10",
+      "result": "ellipse,84:16:114:36,corner=0:0,pen=0,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "11",
+      "result": "ellipse,120:16:150:40,corner=0:0,pen=3,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "12",
+      "result": "ellipse,156:16:186:40,corner=0:0,pen=1,brush=0"
+    },
+    {
+      "function": "shape",
+      "args": "13",
+      "result": "ellipse,192:16:228:18,corner=0:0,pen=1,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "14",
+      "result": "roundrect,4:56:40:76,corner=8:8,pen=1,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "15",
+      "result": "roundrect,46:56:86:80,corner=12:6,pen=1,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "16",
+      "result": "roundrect,92:56:122:86,corner=30:30,pen=1,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "17",
+      "result": "roundrect,128:56:168:74,corner=4:4,pen=1,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "18",
+      "result": "roundrect,174:56:214:86,corner=0:0,pen=1,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "19",
+      "result": "roundrect,4:92:44:122,corner=7:9,pen=1,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "20",
+      "result": "roundrect,50:92:80:112,corner=10:10,pen=0,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "21",
+      "result": "roundrect,86:92:106:102,corner=40:40,pen=1,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "22",
+      "result": "roundrect,112:92:152:122,corner=16:16,pen=3,brush=1"
+    },
+    {
+      "function": "shape",
+      "args": "23",
+      "result": "roundrect,158:92:198:122,corner=16:16,pen=1,brush=0"
+    },
+    {
+      "function": "shape",
+      "args": "24",
+      "result": "roundrect,204:92:236:110,corner=5:5,pen=1,brush=1"
+    },
+    {
+      "function": "area",
+      "args": "curves",
+      "result": "0:0:240:136"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=4",
+      "result": "ffffffffff00fffff0fffffff00ffffff000fffffff0000fffffff000fffffffff0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=5",
+      "result": "ffffffffff00ffff080fffff08f0ffff08f80fffff08f8f0fffff0f8f0fffffff0f8f80fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=6",
+      "result": "fffffffffffffffff0ffffff0f80ffff0f8f0fffff0f8f80ffff0f8f8f0fffff0f8f8f80ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=7",
+      "result": "fffffffffffffffffffffffff00fffff08f80fffff08f8f0ffff08f8f80fffff08f8f8f0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=8",
+      "result": "fffffffffffffffffffffffffffffffff000ffffff0f8f80ffff0f8f8f0fffff0f8f8f80ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=9",
+      "result": "fffffffffffffffffffffffffffffffffffffffffff0000ffffff0f8f0ffffff08f8f8f0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=10",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffff000ffffffff08f8f0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=11",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=12",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=13",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=14",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=15",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=16",
+      "result": "ffffffffffffffffff000000000000ffffffffffffffffffffffffffffff0000000fffffffffffffffffffffffffff8f8f8f8f8fffffffffffffffffffffffff00000000000000ffffffffffffffffffffffff0000000000ffffffffffffffff000000000000000000000000000000000000ffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=17",
+      "result": "ffffffffffffff0000f8f8f8f8f8f80000ffffffffffffffffffffffff00f8f8f8f00ffffffffffffffffffffff8f8f8f8f8f8f8f8ffffffffffffffffffff000008f8f8f8f00000fffffffffffffffffff000ffffffffff000fffffffffffff000000000000000000000000000000000000ffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=18",
+      "result": "fffffffffff0008f8f8f8f8f8f8f8f8f8f000ffffffffffffffffffff08f8f8f8f8f80ffffffffffffffffffff8f8f8f8f8f8f8f8f8fffffffffffffffff00000f8f8f8f8f8f800000ffffffffffffffff0ffffffffffffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=19",
+      "result": "ffffffffff08f8f8f8f8f8f8f8f8f8f8f8f8f0fffffffffffffffff008f8f8f8f8f8f800fffffffffffffff8f8f8f8f8f8f8f8f8f8f8f8fffffffffffff00008f8f8f8f8f8f8f8f0000fffffffffffff00ffffffffffffffffff00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=20",
+      "result": "ffffffff008f8f8f8f8f8f8f8f8f8f8f8f8f8f00ffffffffffffff0f8f8f8f8f8f8f8f8f0fffffffffffff8f8f8f8f8f8f8f8f8f8f8f8f8fffffffffff00008f8f8f8f8f8f8f8f8f0000fffffffffff0ffffffffffffffffffffff0fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=21",
+      "result": "fffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80fffffffffffff08f8f8f8f8f8f8f8f80ffffffffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8fffffffff00008f8f8f8f8f8f8f8f8f8f0000fffffffff0ffffffffffffffffffffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=22",
+      "result": "ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80fffffffffff08f8f8f8f8f8f8f8f8f80ffffffffffff8f8f8f8f8f8f8f8f8f8f8f8f8fffffffff00008f8f8f8f8f8f8f8f8f8f8f0000ffffffff0ffffffffffffffffffffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=23",
+      "result": "fffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80fffffffff08f8f8f8f8f8f8f8f8f8f80ffffffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8ffffffff0008f8f8f8f8f8f8f8f8f8f8f8f000fffffff0ffffffffffffffffffffffffff0fffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=24",
+      "result": "fffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffffff0f8f8f8f8f8f8f8f8f8f8f0fffffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8f8fffffff000f8f8f8f8f8f8f8f8f8f8f8f8000fffffff0ffffffffffffffffffffffffff0fffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=25",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffff0f8f8f8f8f8f8f8f8f8f8f8f0fffffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8fffffff000f8f8f8f8f8f8f8f8f8f8f8f8f8000fffff0ffffffffffffffffffffffffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=26",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80fffffff08f8f8f8f8f8f8f8f8f8f8f80ffffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8f8ffffff0008f8f8f8f8f8f8f8f8f8f8f8f8f000fffff0ffffffffffffffffffffffffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=27",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffff0f8f8f8f8f8f8f8f8f8f8f8f0fffffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8fffffff000f8f8f8f8f8f8f8f8f8f8f8f8f8000fffff0ffffffffffffffffffffffffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=28",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f0fffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8f8ffffff0008f8f8f8f8f8f8f8f8f8f8f8f8f000fffff0ffffffffffffffffffffffffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=29",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f80ffffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8fffffff000f8f8f8f8f8f8f8f8f8f8f8f8f8000fffff0ffffffffffffffffffffffffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=30",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f0fffffffff8f8f8f8f8f8f8f8f8f8f8f8f8ffffffff0008f8f8f8f8f8f8f8f8f8f8f8f8f000fffff0ffffffffffffffffffffffffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=31",
+      "result": "fffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80fffffff08f8f8f8f8f8f8f8f8f8f8f8f80ffffffffff8f8f8f8f8f8f8f8f8f8f8f8ffffffffff0008f8f8f8f8f8f8f8f8f8f8f8f000fffffff0ffffffffffffffffffffffffff0fffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=32",
+      "result": "fffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffff0f8f8f8f8f8f8f8f8f8f8f8f8f0fffffffffff8f8f8f8f8f8f8f8f8f8f8fffffffffff000f8f8f8f8f8f8f8f8f8f8f8f8000fffffff0ffffffffffffffffffffffffff0fffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=33",
+      "result": "ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffffff08f8f8f8f8f8f8f8f8f8f8f8f80ffffffffffffff8f8f8f8f8f8f8f8ffffffffffffff0000f8f8f8f8f8f8f8f8f8f8f80000ffffffff0ffffffffffffffffffffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=34",
+      "result": "fffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffffff0f8f8f8f8f8f8f8f8f8f8f8f8f0fffffffffffffffff8f8f8f8f8ffffffffffffffffff0000f8f8f8f8f8f8f8f8f8f80000fffffffff0ffffffffffffffffffffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=35",
+      "result": "ffffffff00f8f8f8f8f8f8f8f8f8f8f8f8f8f800ffffffffff08f8f8f8f8f8f8f8f8f8f8f8f80fffffffffffffffffffffffffffffffffffffffffffff0000f8f8f8f8f8f8f8f8f80000fffffffffff0ffffffffffffffffffffff0fffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=36",
+      "result": "ffffffffff0f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffffffff0f8f8f8f8f8f8f8f8f8f8f8f8f0ffffffffffffffffffffffffffffffffffffffffffffff000008f8f8f8f8f8f8f00000fffffffffffff00ffffffffffffffffff00ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=37",
+      "result": "fffffffffff000f8f8f8f8f8f8f8f8f8f8000ffffffffffffff0f8f8f8f8f8f8f8f8f8f8f8f0fffffffffffffffffffffffffffffffffffffffffffffffff00000f8f8f8f8f800000fffffffffffffffff0ffffffffffffffff0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=38",
+      "result": "ffffffffffffff00008f8f8f8f8f8f0000fffffffffffffffff08f8f8f8f8f8f8f8f8f8f8f80fffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000ffffffffffffffffffff000ffffffffff000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=39",
+      "result": "ffffffffffffffffff000000000000fffffffffffffffffffff0f8f8f8f8f8f8f8f8f8f8f8f0ffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000ffffffffffffffffffffffffff0000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=40",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffff0f8f8f8f8f8f8f8f8f8f8f0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=41",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffff08f8f8f8f8f8f8f8f8f8f80fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=42",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffff08f8f8f8f8f8f8f8f8f80ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=43",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffff08f8f8f8f8f8f8f8f80fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=44",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffff0f8f8f8f8f8f8f8f8f0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=45",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffff008f8f8f8f8f8f800ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=46",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffff08f8f8f8f8f80ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=47",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00f8f8f8f00fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=48",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=49",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=50",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=51",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=52",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=53",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=54",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=55",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=56",
+      "result": "fffffff000000000000000000000000000000ffffffffffff0000000000000000000000000000000000ffffffffffffffffffff00000000ffffffffffffffffff00000000000000000000000000000000000000fffffff0000000000000000000000000000000000000000ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=57",
+      "result": "ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffffff008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f00fffffffffffffff0008f8f8f8f000ffffffffffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=58",
+      "result": "fffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80fffffffffffff08f8f8f8f8f8f8f0fffffffffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=59",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffffffff008f8f8f8f8f8f8f8f00fffffffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=60",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffffff0f8f8f8f8f8f8f8f8f8f80ffffffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=61",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffffff0f8f8f8f8f8f8f8f8f8f8f80fffffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=62",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80fffffffff08f8f8f8f8f8f8f8f8f8f8f0fffffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=63",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffffff08f8f8f8f8f8f8f8f8f8f8f8f0ffffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=64",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80fffffff08f8f8f8f8f8f8f8f8f8f8f8f8f0fffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=65",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffff0f8f8f8f8f8f8f8f8f8f8f8f8f80fffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=66",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80fffffff08f8f8f8f8f8f8f8f8f8f8f8f8f0fffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=67",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=68",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=69",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=70",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=71",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=72",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=73",
+      "result": "fffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80fffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffff00000000000000000000000000000000000000fffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=74",
+      "result": "ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffffffffffffffffffffffffffffffffffffffffffffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=75",
+      "result": "fffffff000000000000000000000000000000fffffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffff0f8f8f8f8f8f8f8f8f8f8f8f8f80fffffffffffffffffffffffffffffffffffffffffffffffffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=76",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80fffffff08f8f8f8f8f8f8f8f8f8f8f8f8f0fffffffffffffffffffffffffffffffffffffffffffffffffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=77",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffff0f8f8f8f8f8f8f8f8f8f8f8f8f80fffffffffffffffffffffffffffffffffffffffffffffffffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=78",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffff00f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f800fffffffff0f8f8f8f8f8f8f8f8f8f8f8f80ffffffffffffffffffffffffffffffffffffffffffffffffffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=79",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000ffffffffffff0f8f8f8f8f8f8f8f8f8f8f80fffffffffffffffffffffffffffffffffffffffffffffffffffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=80",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff08f8f8f8f8f8f8f8f8f8f8f0fffffffffffffffffffffffffffffffffffffffffffffffffffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=81",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff08f8f8f8f8f8f8f8f8f8f0ffffffffffffffffffffffffffffffffffffffffffffffffffffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=82",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00f8f8f8f8f8f8f8f800fffffffffffffffffffffffffffffffffffffffffffffffffffffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=83",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0f8f8f8f8f8f8f80fffffffffffffffffffffffffffffffffffffffffffffffffffffffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=84",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000f8f8f8f8000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=85",
+      "result": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000000000ffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=86",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=87",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=88",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=89",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=90",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=91",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=92",
+      "result": "ffffff000000000000000000000000000000000000ffffffffffff8f8f8f8f8f8f8f8f8f8f8ffffffffffffffff0000000000fffffffffffffff00000000000000000000000000000000ffffffffffffffff0000000000000000000000000000fffffffffffff000000000000000000000000000000fffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=93",
+      "result": "fffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffffff8f8f8f8f8f8f8f8f8f8f8f8ffffffffffff0008f8f8f8f8f000ffffffffff0000f8f8f8f8f8f8f8f8f8f8f8f8f8f80000ffffffffffff00ffffffffffffffffffffffffffff00ffffffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=94",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffff8f8f8f8f8f8f8f8f8f8f8f8f8ffffffffff08f8f8f8f8f8f8f8f0ffffffff0000f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80000ffffffffff0ffffffffffffffffffffffffffffffff0fffffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=95",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8ffffffff08f8f8f8f8f8f8f8f8f0fffffff000f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8000fffffffff0ffffffffffffffffffffffffffffffffff0ffffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=96",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8f8fffffff0f8f8f8f8f8f8f8f8f80ffffff000f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8000fffffff0ffffffffffffffffffffffffffffffffffff0fffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=97",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8ffffffff08f8f8f8f8f8f8f8f8f0ffffff0008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f000fffffff0ffffffffffffffffffffffffffffffffffff0fffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=98",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8f8fffffff0f8f8f8f8f8f8f8f8f80fffff0008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f000fffff0ffffffffffffffffffffffffffffffffffffff0ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=99",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8fffffffff0f8f8f8f8f8f8f8f80ffffff000f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8000fffff0ffffffffffffffffffffffffffffffffffffff0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=100",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8f8fffffffff000f8f8f8f8f8000fffffff0008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f000fffff0ffffffffffffffffffffffffffffffffffffff0ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=101",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8fffffffffffff0000000000ffffffffff000f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8000fffff0ffffffffffffffffffffffffffffffffffffff0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=102",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8f8ffffffffffffffffffffffffffffffff0008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f000fffff0ffffffffffffffffffffffffffffffffffffff0ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=103",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8fffffffffffffffffffffffffffffffff000f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8000fffff0ffffffffffffffffffffffffffffffffffffff0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=104",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8f8ffffffffffffffffffffffffffffffff0008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f000fffff0ffffffffffffffffffffffffffffffffffffff0ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=105",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8fffffffffffffffffffffffffffffffff000f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8000fffff0ffffffffffffffffffffffffffffffffffffff0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=106",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8f8ffffffffffffffffffffffffffffffff0008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f000fffff0ffffffffffffffffffffffffffffffffffffff0ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=107",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8fffffffffffffffffffffffffffffffff000f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8000fffff0ffffffffffffffffffffffffffffffffffffff0ffffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=108",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8f8ffffffffffffffffffffffffffffffff0008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f000fffff0ffffffffffffffffffffffffffffffffffffff0ffffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=109",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffff8f8f8f8f8f8f8f8f8f8f8f8f8f8fffffffffffffffffffffffffffffffff000f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8000fffff0ffffffffffffffffffffffffffffffffffffff0fffffff000000000000000000000000000000fffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=110",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffff8f8f8f8f8f8f8f8f8f8f8f8f8ffffffffffffffffffffffffffffffffff0008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f000fffff0ffffffffffffffffffffffffffffffffffffff0ffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=111",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8000fffff0ffffffffffffffffffffffffffffffffffffff0ffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=112",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f000fffff0ffffffffffffffffffffffffffffffffffffff0ffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=113",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8000fffff0ffffffffffffffffffffffffffffffffffffff0ffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=114",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f000fffff0ffffffffffffffffffffffffffffffffffffff0ffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=115",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8000fffff0ffffffffffffffffffffffffffffffffffffff0ffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=116",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8000fffffff0ffffffffffffffffffffffffffffffffffff0fffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=117",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f000fffffff0ffffffffffffffffffffffffffffffffffff0fffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=118",
+      "result": "ffff0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f80fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f000fffffffff0ffffffffffffffffffffffffffffffffff0ffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=119",
+      "result": "ffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0000ffffffffff0ffffffffffffffffffffffffffffffff0fffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=120",
+      "result": "fffff08f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff0000000000000000000000000000000000fffffffffffff00ffffffffffffffffffffffffffff00ffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=121",
+      "result": "ffffff000000000000000000000000000000000000fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff000000000000000000000000000000fffffffffffffffff0000000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=122",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=123",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=124",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=125",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=126",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=127",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=128",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=129",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=130",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=131",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=132",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=133",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=134",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    },
+    {
+      "function": "screen",
+      "args": "curves,y=135",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    }
+  ]
+}

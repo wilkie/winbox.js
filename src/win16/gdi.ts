@@ -66,6 +66,8 @@ import { Polygon } from './gdi/Polygon.js';
 import { MoveTo } from './gdi/MoveTo.js';
 import { PatBlt } from './gdi/PatBlt.js';
 import { Rectangle } from './gdi/Rectangle.js';
+import { RoundRect } from './gdi/RoundRect.js';
+import { Ellipse } from './gdi/Ellipse.js';
 import { SelectObject } from './gdi/SelectObject.js';
 import { SetBitmapBits } from './gdi/SetBitmapBits.js';
 import { SetBkColor } from './gdi/SetBkColor.js';
@@ -185,11 +187,11 @@ export class Gdi extends Module {
       [Gdi.stub, 'ExcludeClipRect', 10],
       [Gdi.stub, 'IntersectClipRect', 10],
       [Gdi.stub, 'Arc', 18],
-      [Gdi.stub, 'Ellipse', 10],
+      [Ellipse, 'Ellipse', 10, [HDC, INT, INT, INT, INT], BOOL],
       [Gdi.stub, 'FloodFill', 10],
       [Gdi.stub, 'Pie', 18],
       [Rectangle, 'Rectangle', 10, [HDC, INT, INT, INT, INT], BOOL],
-      [Gdi.stub, 'RoundRect', 14],
+      [RoundRect, 'RoundRect', 14, [HDC, INT, INT, INT, INT, INT, INT], BOOL],
       [PatBlt, 'PatBlt', 14, [HDC, INT, INT, INT, INT, DWORD], BOOL],
       // 30 //
       [Gdi.stub, 'SaveDC', 2],

@@ -65,6 +65,9 @@ import { GetPrivateProfileString } from '../../src/win16/kernel/GetPrivateProfil
 import { LineTo } from '../../src/win16/gdi/LineTo.js';
 import { MoveTo } from '../../src/win16/gdi/MoveTo.js';
 import { Polygon } from '../../src/win16/gdi/Polygon.js';
+import { Ellipse } from '../../src/win16/gdi/Ellipse.js';
+import { RoundRect } from '../../src/win16/gdi/RoundRect.js';
+import { CreatePen } from '../../src/win16/gdi/CreatePen.js';
 import { TextOut } from '../../src/win16/gdi/TextOut.js';
 import { CreateCompatibleBitmap } from '../../src/win16/gdi/CreateCompatibleBitmap.js';
 import { GetPixel } from '../../src/win16/gdi/GetPixel.js';
@@ -468,6 +471,41 @@ function turnedBox(hex: string) {
 }
 
 /** Thrown by an adapter that cannot run without the drive image. */
+/**
+ * `curves`'s shapes, as `oracle/probes/curves.c` lists them: the kind (0
+ * `Ellipse`, 1 `RoundRect`), the rectangle, the corner, the pen's width (0
+ * for none) and whether the light grey brush is selected.
+ */
+const CURVES: number[][] = [
+  [0, 4, 4, 5, 5, 0, 0, 1, 1],
+  [0, 10, 4, 12, 6, 0, 0, 1, 1],
+  [0, 16, 4, 19, 7, 0, 0, 1, 1],
+  [0, 24, 4, 28, 8, 0, 0, 1, 1],
+  [0, 32, 4, 37, 9, 0, 0, 1, 1],
+  [0, 42, 4, 48, 10, 0, 0, 1, 1],
+  [0, 52, 4, 59, 11, 0, 0, 1, 1],
+  [0, 64, 4, 72, 12, 0, 0, 1, 1],
+  [0, 4, 16, 44, 40, 0, 0, 1, 1],
+  [0, 50, 16, 77, 49, 0, 0, 1, 1],
+  [0, 84, 16, 114, 36, 0, 0, 0, 1],
+  [0, 120, 16, 150, 40, 0, 0, 3, 1],
+  [0, 156, 16, 186, 40, 0, 0, 1, 0],
+  [0, 192, 16, 228, 18, 0, 0, 1, 1],
+  [1, 4, 56, 40, 76, 8, 8, 1, 1],
+  [1, 46, 56, 86, 80, 12, 6, 1, 1],
+  [1, 92, 56, 122, 86, 30, 30, 1, 1],
+  [1, 128, 56, 168, 74, 4, 4, 1, 1],
+  [1, 174, 56, 214, 86, 0, 0, 1, 1],
+  [1, 4, 92, 44, 122, 7, 9, 1, 1],
+  [1, 50, 92, 80, 112, 10, 10, 0, 1],
+  [1, 86, 92, 106, 102, 40, 40, 1, 1],
+  [1, 112, 92, 152, 122, 16, 16, 3, 1],
+  [1, 158, 92, 198, 122, 16, 16, 1, 0],
+  [1, 204, 92, 236, 110, 5, 5, 1, 1],
+];
+
+const curvesCaptures = new Map<string, string[]>();
+
 export class NeedsDrive extends Error {}
 
 /** Where in guest memory the harness builds its arguments. */
@@ -1373,6 +1411,65 @@ export class Context {
     return rows.join('/');
   }
 
+  /**
+   * `curves`: its shapes drawn through `Ellipse` and `RoundRect` on a bitmap
+   * compatible with the screen, over white, and read back a row at a time
+   * with `GetPixel` as palette digits. Drawn once for each display.
+   */
+  curvesCapture(): string[] {
+    const key = this.display.name;
+    const cached = curvesCaptures.get(key);
+
+    if (cached) {
+      return cached;
+    }
+
+    const PALETTE = [
+      0x000000, 0x000080, 0x008000, 0x008080, 0x800000, 0x800080, 0x808000, 0xc0c0c0, 0x808080,
+      0x0000ff, 0x00ff00, 0x00ffff, 0xff0000, 0xff00ff, 0xffff00, 0xffffff,
+    ];
+    const screen = this.handles.allocate(Surface.offscreen(1, 1));
+    const hdc = CreateCompatibleDC.call(this, screen);
+    const pens: Record<number, number> = {
+      0: GetStockObject.call(this, Gdi.NULL_PEN),
+      1: CreatePen.call(this, 0, 1, 0),
+      3: CreatePen.call(this, 0, 3, 0),
+    };
+
+    SelectObject.call(this, hdc, CreateCompatibleBitmap.call(this, screen, 240, 136));
+    PatBlt.call(this, hdc, 0, 0, 240, 136, Gdi.WHITENESS);
+
+    for (const shape of CURVES) {
+      const [kind, left, top, right, bottom, width, height, pen, brush] = shape;
+
+      SelectObject.call(this, hdc, pens[pen]);
+      SelectObject.call(this, hdc, GetStockObject.call(this, brush ? Gdi.LTGRAY_BRUSH : Gdi.NULL_BRUSH));
+
+      if (kind) {
+        RoundRect.call(this, hdc, left, top, right, bottom, width, height);
+      } else {
+        Ellipse.call(this, hdc, left, top, right, bottom);
+      }
+    }
+
+    const rows: string[] = [];
+
+    for (let y = 0; y < 136; y++) {
+      let row = '';
+
+      for (let x = 0; x < 240; x++) {
+        const index = PALETTE.indexOf(GetPixel.call(this, hdc, x, y) & 0xffffff);
+
+        row += index < 0 ? '?' : index.toString(16);
+      }
+
+      rows.push(row);
+    }
+
+    curvesCaptures.set(key, rows);
+    return rows;
+  }
+
   /** `dither`'s brush into a monochrome bitmap of sixteen, read with `GetBitmapBits`. */
   ditherMono(colour: string | number) {
     const surface: any = this.memoryCell(16, 16);
@@ -2137,6 +2234,10 @@ const ADAPTERS: Record<
 
     const [name, row] = args;
 
+    if (context.probe === 'curves') {
+      return context.curvesCapture()[Number(String(row).replace('y=', ''))] ?? '';
+    }
+
     if (context.probe === 'sizing' || context.probe === 'icons') {
       const capture =
         context.probe === 'sizing' ? await sizingCapture(context) : await iconsCapture(context);
@@ -2154,8 +2255,19 @@ const ADAPTERS: Record<
     return rows[Number(String(row).replace('y=', ''))] ?? '';
   },
 
-  /* `sizing` and `icons`: where each captured area was. */
+  /* `curves`: each shape as the probe describes it, from its own table. */
+  shape(context, [index]) {
+    const [kind, left, top, right, bottom, width, height, pen, brush] = CURVES[Number(index)];
+
+    return `${kind ? 'roundrect' : 'ellipse'},${left}:${top}:${right}:${bottom},corner=${width}:${height},pen=${pen},brush=${brush}`;
+  },
+
+  /* `sizing`, `icons` and `curves`: where each captured area was. */
   async area(context, [name]) {
+    if (context.probe === 'curves') {
+      return '0:0:240:136';
+    }
+
     const capture =
       context.probe === 'sizing' ? await sizingCapture(context) : await iconsCapture(context);
 
