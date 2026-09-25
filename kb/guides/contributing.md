@@ -38,7 +38,7 @@ npx jest test/oracle/conformance -t "<name> against"
 
 A disagreement that cannot be fixed yet goes into `KNOWN_GAPS` in the same file. Its key is `probe:function`, or `probe-display:function` for one display. Its value says what is wrong and by how many records. The test then expects that function to fail, and it fails the suite once the function starts agreeing, so the entry must come out when the fix lands. A function with an open gap cannot be marked exact.
 
-The full suite, `npx jest`, must pass before anything is committed. When it replays every fixture, it rewrites `kb/data/conformance.json`, the report the site's counts and badges come from. Commit that file with the fixture.
+The full suite, `npx jest`, must pass before anything is committed. When it replays every fixture, it rewrites `kb/data/conformance.json`, the report the site's counts and badges come from. Commit that file with the fixture. Only fixtures git tracks are counted, so stage a new fixture before the run. A page that cites a new probe fails the knowledge base test in that first run, because the report gains the probe only when the run ends. The second full run is the one that must pass.
 
 ## Writing a page
 
