@@ -3592,15 +3592,6 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
-  /* `chrome`'s last window holds the standard controls -- buttons, a check
-   * box, a radio button, static text, an edit box, a list box and a scroll
-   * bar -- and USER's raster desktop draws no controls yet, so its capture is
-   * not replayed: one `rects` record and 190 `pixels` records on each
-   * display. Every other window the probe made, seven of them, is replayed
-   * through the exports and agrees, 847 records on each display. */
-  'chrome:rects': 'the controls window: 1 record on each display, no controls drawn yet',
-  'chrome:pixels': 'the controls window: 190 records on each display, no controls drawn yet',
-
   /* The styled files at cells of two hundred and seventy-four to two hundred
    * and eighty-two, where the size chosen is one pixel per em out.
    *

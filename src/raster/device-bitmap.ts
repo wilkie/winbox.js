@@ -38,13 +38,6 @@ export class DeviceBitmap extends Bitmap {
   }
 
   /**
-   * Where this bitmap's pixel (0, 0) is on the bitmap it is a view of, if it
-   * is one; a brush's pattern is anchored there, to the screen. See `view`.
-   */
-  originX = 0;
-  originY = 0;
-
-  /**
    * A view of `parent`'s pixels: `width` by `height` from `left, top`, drawn
    * only where `clip` allows. Nothing is copied; what is drawn through the
    * view is drawn on the parent, and marked there. This is a window's client
@@ -73,8 +66,6 @@ export class DeviceBitmap extends Bitmap {
     context.owner = parent.context;
     context.ownerX = left;
     context.ownerY = top;
-    view.originX = parent.originX + left;
-    view.originY = parent.originY + top;
 
     return view;
   }

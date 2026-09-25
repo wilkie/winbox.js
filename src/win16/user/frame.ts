@@ -1,7 +1,7 @@
 'use strict';
 
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
-import { ditherTile } from '../../raster/dither.js';
+import { Painter, type PaintEnvironment } from './painter.js';
 
 /**
  * What USER draws around a window: its border or sizing frame, its caption,
@@ -53,18 +53,11 @@ export const WS_MAXIMIZEBOX = 0x00010000;
 export const OBM_CLOSE = 32754;
 export const OBM_REDUCE = 32749;
 export const OBM_ZOOM = 32748;
-export const OBM_LFARROW = 32750;
-export const OBM_RGARROW = 32751;
-export const OBM_DNARROW = 32752;
-export const OBM_UPARROW = 32753;
+export { OBM_DNARROW, OBM_LFARROW, OBM_RGARROW, OBM_UPARROW } from './painter.js';
 
 const SM_CXVSCROLL = 2;
 const SM_CYHSCROLL = 3;
-const SM_CYVTHUMB = 9;
-const SM_CXHTHUMB = 10;
 const SM_CYMENU = 15;
-const SM_CYVSCROLL = 20;
-const SM_CXHSCROLL = 21;
 const SM_CXSIZE = 30;
 const SM_CYSIZE = 31;
 const SM_CXFRAME = 32;
@@ -89,24 +82,9 @@ const COLOR_MENUTEXT = 7;
 const COLOR_CAPTIONTEXT = 9;
 const COLOR_ACTIVEBORDER = 10;
 const COLOR_INACTIVEBORDER = 11;
-const COLOR_BTNFACE = 15;
-const COLOR_BTNSHADOW = 16;
 const COLOR_INACTIVECAPTIONTEXT = 19;
-const COLOR_BTNHIGHLIGHT = 20;
 
-export interface FrameEnvironment {
-  /** The display mode, whose driver patterns the brushes. */
-  display: any;
-
-  /** `GetSystemMetrics`, for the display the window is on. */
-  metric(index: number): number;
-
-  /** `GetSysColor`, as a `COLORREF`. */
-  sysColor(index: number): number;
-
-  /** The display driver's OEM bitmaps, by id, at the screen's depth. */
-  oem: Map<number, DeviceBitmap>;
-
+export interface FrameEnvironment extends PaintEnvironment {
   /**
    * Draws the title in the caption: the text, the colour as a `COLORREF`, and
    * the rectangle to centre it in, left, top, right and bottom.
@@ -146,61 +124,11 @@ export function paintFrame(
   frame: Frame,
   environment: FrameEnvironment
 ) {
-  const palette = screen.devicePalette;
-
-  /* A brush of a system colour: an index, or a pattern by screen pixel. */
-  type Paint = number | Uint8Array;
-
-  const colour = (system: number): Paint => {
-    const colorref = environment.sysColor(system);
-    const [red, green, blue] = [colorref & 0xff, (colorref >> 8) & 0xff, (colorref >> 16) & 0xff];
-
-    return (
-      ditherTile(environment.display, palette, red, green, blue) ?? palette.index(red, green, blue)
-    );
-  };
-
-  const fill = (x0: number, y0: number, x1: number, y1: number, paint: Paint) => {
-    for (let y = Math.max(y0, 0); y < Math.min(y1, height); y++) {
-      for (let x = Math.max(x0, 0); x < Math.min(x1, width); x++) {
-        const sx = left + x;
-        const sy = top + y;
-
-        screen.put(
-          sx,
-          sy,
-          typeof paint === 'number'
-            ? paint
-            : paint[(((sy + screen.originY) & 7) << 3) | ((sx + screen.originX) & 7)]
-        );
-      }
-    }
-  };
-
-  const outline = (x0: number, y0: number, x1: number, y1: number, value: Paint) => {
-    fill(x0, y0, x1, y0 + 1, value);
-    fill(x0, y1 - 1, x1, y1, value);
-    fill(x0, y0, x0 + 1, y1, value);
-    fill(x1 - 1, y0, x1, y1, value);
-  };
-
-  const blit = (bitmap: DeviceBitmap | undefined, x: number, y: number, w: number, sx = 0) => {
-    if (!bitmap) {
-      return;
-    }
-
-    for (let row = 0; row < bitmap.height; row++) {
-      for (let column = 0; column < w; column++) {
-        fill(
-          x + column,
-          y + row,
-          x + column + 1,
-          y + row + 1,
-          bitmap.indices[row * bitmap.width + sx + column]
-        );
-      }
-    }
-  };
+  const painter = new Painter(screen, left, top, width, height, environment);
+  const colour = (system: number) => painter.colour(system);
+  const fill = painter.fill.bind(painter);
+  const outline = painter.outline.bind(painter);
+  const blit = painter.blit.bind(painter);
 
   const style = frame.style >>> 0;
   const line = colour(COLOR_WINDOWFRAME);
@@ -388,31 +316,23 @@ export function paintFrame(
     }
 
     if (vertical) {
-      const x0 = client.right;
-      const x1 = x0 + environment.metric(SM_CXVSCROLL);
-      const y0 = client.top - 1;
-      const y1 = client.bottom + 1;
-      const arrow = environment.metric(SM_CYVSCROLL);
-
-      fill(x0, y0, x1, y1, trough);
-      outline(x0, y0, x1, y1, line);
-      blit(environment.oem.get(OBM_UPARROW), x0, y0, x1 - x0);
-      blit(environment.oem.get(OBM_DNARROW), x0, y1 - arrow, x1 - x0);
-      thumb(x0, y0 + arrow - 1, x1, y0 + arrow - 1 + environment.metric(SM_CYVTHUMB));
+      painter.scrollBar(
+        client.right,
+        client.top - 1,
+        client.right + environment.metric(SM_CXVSCROLL),
+        client.bottom + 1,
+        true
+      );
     }
 
     if (horizontal) {
-      const x0 = client.left - 1;
-      const x1 = client.right + 1;
-      const y0 = client.bottom;
-      const y1 = y0 + environment.metric(SM_CYHSCROLL);
-      const arrow = environment.metric(SM_CXHSCROLL);
-
-      fill(x0, y0, x1, y1, trough);
-      outline(x0, y0, x1, y1, line);
-      blit(environment.oem.get(OBM_LFARROW), x0, y0, arrow);
-      blit(environment.oem.get(OBM_RGARROW), x1 - arrow, y0, arrow);
-      thumb(x0 + arrow - 1, y0, x0 + arrow - 1 + environment.metric(SM_CXHTHUMB), y1);
+      painter.scrollBar(
+        client.left - 1,
+        client.bottom,
+        client.right + 1,
+        client.bottom + environment.metric(SM_CYHSCROLL),
+        false
+      );
     }
 
     if (vertical && horizontal) {
@@ -424,23 +344,5 @@ export function paintFrame(
         trough
       );
     }
-  }
-
-  /**
-   * The thumb: a raised box in the button face, outlined, lit one pixel
-   * along the top and left and shadowed two along the bottom and right.
-   */
-  function thumb(x0: number, y0: number, x1: number, y1: number) {
-    const shadow = colour(COLOR_BTNSHADOW);
-    const light = colour(COLOR_BTNHIGHLIGHT);
-
-    fill(x0, y0, x1, y1, colour(COLOR_BTNFACE));
-    fill(x0 + 1, y0 + 1, x1 - 2, y0 + 2, light);
-    fill(x0 + 1, y0 + 1, x0 + 2, y1 - 2, light);
-    fill(x1 - 2, y0 + 1, x1 - 1, y1 - 1, shadow);
-    fill(x0 + 1, y1 - 2, x1 - 1, y1 - 1, shadow);
-    fill(x1 - 3, y0 + 2, x1 - 2, y1 - 2, shadow);
-    fill(x0 + 2, y1 - 3, x1 - 2, y1 - 2, shadow);
-    outline(x0, y0, x1, y1, line);
   }
 }

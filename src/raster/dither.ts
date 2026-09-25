@@ -8,8 +8,10 @@ import { DevicePalette } from './device-palette.js';
  * the `dither` probe's recordings, which it reproduces on the VGA, the Super
  * VGA, the EGA and the Hercules, every pixel of every fill.
  *
- * Every pattern is eight pixels square and anchored to the device's pixels,
- * not to the rectangle filled, and every one orders its pixels by the same
+ * Every pattern is eight pixels square and anchored to the device context's
+ * origin, not to the rectangle filled -- the screen's corner for the screen,
+ * a window's client area for the window's own device context, as a window's
+ * controls show -- and every one orders its pixels by the same
  * table, `ORDER`: a pixel lower in it takes the darker part of the mixture.
  *
  * **The colour displays.** A colour the palette holds is solid. Any other is

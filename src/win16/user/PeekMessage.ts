@@ -84,6 +84,24 @@ import { User } from '../user.js';
 export async function PeekMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax, fuRemove) {
   let msg = this.scheduler.task.peek();
 
+  /* With nothing queued, a window due to be painted is: `WM_PAINT` is made
+   * when it is asked for, and stays until the window is painted. */
+  if (!msg) {
+    const unpainted = this.rasterDesktop?.unpainted;
+
+    if (unpainted) {
+      lpmsg.hwnd = unpainted.hwnd;
+      lpmsg.message = User.WM_PAINT;
+      lpmsg.wParam = 0;
+      lpmsg.lParam = 0;
+      lpmsg.time = 0;
+      lpmsg.pt.x = 0;
+      lpmsg.pt.y = 0;
+
+      return TRUE;
+    }
+  }
+
   /* Only a message that is there is taken: `pull` waits for one, and
    * `PeekMessage` never waits. */
   if (msg && fuRemove & User.PM_REMOVE) {

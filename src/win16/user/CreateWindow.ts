@@ -9,6 +9,8 @@ import { User, MSG, MINMAXINFO, CREATESTRUCT, WNDCLASS } from '../user.js';
 
 import { attachWindowBitmap } from './window-bitmap.js';
 import { MenuData } from './menu-data.js';
+import { controlState, systemClass } from './control-classes.js';
+import { CONTROL_CLASSES, controlRect } from './controls.js';
 import { RasterWindow } from './raster-window.js';
 import { Window } from '../../window.js';
 import { FixedWindow } from '../../windows/fixed-window.js';
@@ -59,17 +61,41 @@ export async function CreateWindow(
   let dialog: any;
 
   if (raster) {
-    const menu = this.handles.resolve(hmenu);
+    const child = (dwStyle & User.WS_CHILD) !== 0 && parentWindow instanceof RasterWindow;
+    const parent = child ? parentWindow.window : null;
+    const className = String(lpszClassName);
+    const control = CONTROL_CLASSES.has(className.toUpperCase());
+
+    /* A child's place is in its parent's client area; a control's rectangle
+     * may be its own. A child's `hmenu` is its identifier, not a menu. */
+    const rect = control
+      ? controlRect(className.toUpperCase(), dwStyle, x, y, nWidth, nHeight)
+      : { x, y, width: nWidth, height: nHeight };
+    const menu = child ? null : this.handles.resolve(hmenu);
     const shown = raster.create(
-      x == User.CW_USEDEFAULT ? 0 : x,
-      y == User.CW_USEDEFAULT ? 0 : y,
-      nWidth == User.CW_USEDEFAULT ? 0 : nWidth,
-      nHeight == User.CW_USEDEFAULT ? 0 : nHeight,
+      rect.x == User.CW_USEDEFAULT ? 0 : rect.x + (parent ? parent.left + parent.client.left : 0),
+      rect.y == User.CW_USEDEFAULT ? 0 : rect.y + (parent ? parent.top + parent.client.top : 0),
+      rect.width == User.CW_USEDEFAULT ? 0 : rect.width,
+      rect.height == User.CW_USEDEFAULT ? 0 : rect.height,
       dwStyle,
       lpszWindowName ? String(lpszWindowName) : '',
       menu instanceof MenuData ? menu.labels : undefined,
-      null
+      null,
+      parent
     );
+
+    if (control) {
+      systemClass(this, className);
+      shown.control = controlState(
+        className,
+        dwStyle,
+        lpszWindowName ? String(lpszWindowName) : ''
+      );
+    }
+
+    if (child) {
+      shown.controlId = hmenu & 0xffff;
+    }
 
     dialog = new RasterWindow(raster, shown, {
       caption: lpszWindowName,
@@ -78,7 +104,7 @@ export async function CreateWindow(
     });
 
     /* Not measured: where a window asked for no place or size goes. */
-    if (x == User.CW_USEDEFAULT || nWidth == User.CW_USEDEFAULT) {
+    if (!child && (x == User.CW_USEDEFAULT || nWidth == User.CW_USEDEFAULT)) {
       if (nWidth == User.CW_USEDEFAULT) {
         dialog.resize(400, 300);
       }
@@ -123,6 +149,10 @@ export async function CreateWindow(
 
   const hWnd = this.handles.allocate(dialog);
   console.log('CREATED WINDOW', hWnd);
+
+  if (dialog instanceof RasterWindow) {
+    dialog.window.hwnd = hWnd;
+  }
 
   const taskHandle = this.scheduler.active;
   const task = this.handles.resolve(taskHandle);
@@ -181,6 +211,11 @@ export async function CreateWindow(
       User.WM_CREATE,
       notifyParam
     );
+  }
+
+  /* A window made visible shows at once, a top-level one active. */
+  if (dialog instanceof RasterWindow && dwStyle & User.WS_VISIBLE) {
+    dialog.show();
   }
 
   console.log('FINISING UP CREATEWINDOW', hWnd);

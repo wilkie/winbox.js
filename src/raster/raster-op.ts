@@ -185,12 +185,9 @@ export function rasterOp(
   const own = to.depth === 1 || to.palette === DevicePalette.forDisplay(display);
   const tile =
     own && brush ? ditherTile(display, to.palette, brush.red, brush.green, brush.blue) : null;
-  /* Anchored to the device: a window's pixels are the screen's, from its origin. */
-  const ox = dest.bitmap?.originX ?? 0;
-  const oy = dest.bitmap?.originY ?? 0;
-  const pattern = tile
-    ? (px: number, py: number) => tile[(((py + oy) & 7) << 3) | ((px + ox) & 7)]
-    : () => solid;
+  /* Anchored to the device context's origin: the screen's for the screen,
+   * a window's client area for a window. See `ditherTile`. */
+  const pattern = tile ? (px: number, py: number) => tile[((py & 7) << 3) | (px & 7)] : () => solid;
 
   /* A source pixel, carried into the destination's terms. */
   let carry: (index: number) => number = (index) => index;

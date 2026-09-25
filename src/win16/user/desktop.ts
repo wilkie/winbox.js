@@ -5,6 +5,7 @@ import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { ditherTile } from '../../raster/dither.js';
 import { Surface } from '../../raster/surface.js';
 
+import { paintControl, type ControlState } from './controls.js';
 import { paintFrame, type FrameEnvironment } from './frame.js';
 
 /**
@@ -26,8 +27,9 @@ import { paintFrame, type FrameEnvironment } from './frame.js';
  * * The frame is painted by `paintFrame`, clipped the same way; the client
  *   area is erased with the class's brush when it is painted.
  *
- * Only top-level windows so far: a child window's place inside its parent
- * and its clipping by its siblings are not here yet.
+ * A child window lies on its parent's client area, clipped to it, and above
+ * it; a newer child is below the older ones, as a dialog's controls are in
+ * the order they were made. A child is never the active window.
  */
 
 export const COLOR_BACKGROUND = 1;
@@ -66,6 +68,18 @@ export class DesktopWindow {
   /** Whether the client area is to be erased and painted, and whether it has asked. */
   needsErase = false;
   needsPaint = false;
+
+  /** The window it is a child of, if it is one; its place is in the parent's client area. */
+  parent: DesktopWindow | null = null;
+
+  /** What a standard control keeps, if the window is one. */
+  control: ControlState | null = null;
+
+  /** The handle the system gave it, for asking it to paint. */
+  hwnd = 0;
+
+  /** A child's identifier, what `CreateWindow` was given as its menu. */
+  controlId = 0;
 
   constructor(
     id: number,
@@ -172,7 +186,8 @@ export class Desktop {
     style: number,
     title: string,
     menu: string[] | undefined,
-    background: Background
+    background: Background,
+    parent: DesktopWindow | null = null
   ) {
     const window = new DesktopWindow(
       this.#next++,
@@ -186,7 +201,15 @@ export class Desktop {
       background
     );
 
-    this.windows.unshift(window);
+    window.parent = parent;
+
+    /* Above its parent, below its older siblings. */
+    if (parent) {
+      this.windows.splice(this.windows.indexOf(parent), 0, window);
+    } else {
+      this.windows.unshift(window);
+    }
+
     this.#layout(window);
 
     return window;
@@ -197,10 +220,25 @@ export class Desktop {
    * and its client area left to be erased and painted when it is asked.
    */
   show(window: DesktopWindow) {
+    if (window.parent) {
+      window.visible = true;
+      this.#own();
+      this.paintFrame(window);
+      window.needsErase = true;
+      window.needsPaint = true;
+      return;
+    }
+
     const was = this.active;
 
-    this.windows.splice(this.windows.indexOf(window), 1);
-    this.windows.unshift(window);
+    /* To the top, and its children with it, as they were. */
+    const family = this.windows.filter((other) => this.#within(other, window));
+
+    for (const member of family) {
+      this.windows.splice(this.windows.indexOf(member), 1);
+    }
+
+    this.windows.unshift(...family);
 
     window.visible = true;
     window.active = true;
@@ -230,6 +268,12 @@ export class Desktop {
 
     if (index < 0) {
       return;
+    }
+
+    /* Its children go first, with nothing to paint again: it covers them. */
+    for (const child of this.windows.filter((other) => other.parent === window)) {
+      this.windows.splice(this.windows.indexOf(child), 1);
+      child.visible = false;
     }
 
     this.windows.splice(index, 1);
@@ -303,7 +347,7 @@ export class Desktop {
 
   /** Paints a window's frame, where the window shows. */
   paintFrame(window: DesktopWindow) {
-    if (!window.visible) {
+    if (!this.#showing(window)) {
       return;
     }
 
@@ -324,7 +368,7 @@ export class Desktop {
   erase(window: DesktopWindow, colorref = window.background?.colorref) {
     window.needsErase = false;
 
-    if (!window.visible || colorref === undefined) {
+    if (!this.#showing(window) || colorref === undefined) {
       return;
     }
 
@@ -404,22 +448,92 @@ export class Desktop {
     for (let at = this.windows.length - 1; at >= 0; at--) {
       const window = this.windows[at];
 
-      if (!window.visible) {
+      if (!this.#showing(window)) {
         continue;
       }
 
-      for (
-        let y = Math.max(window.top, 0);
-        y < Math.min(window.top + window.height, this.screen.height);
-        y++
-      ) {
-        this.owners.fill(
-          window.id,
-          y * stride + Math.max(window.left, 0),
-          y * stride + Math.min(window.left + window.width, stride)
-        );
+      /* The window, cut to each ancestor's client area. */
+      let [left, top, right, bottom] = [
+        Math.max(window.left, 0),
+        Math.max(window.top, 0),
+        Math.min(window.left + window.width, stride),
+        Math.min(window.top + window.height, this.screen.height),
+      ];
+
+      for (let parent = window.parent; parent; parent = parent.parent) {
+        left = Math.max(left, parent.left + parent.client.left);
+        top = Math.max(top, parent.top + parent.client.top);
+        right = Math.min(right, parent.left + parent.client.right);
+        bottom = Math.min(bottom, parent.top + parent.client.bottom);
+      }
+
+      for (let y = top; y < bottom; y++) {
+        if (right > left) {
+          this.owners.fill(window.id, y * stride + left, y * stride + right);
+        }
       }
     }
+  }
+
+  /**
+   * The window a `WM_PAINT` is due to next, if any: the lowest first, so a
+   * parent is painted before its children.
+   */
+  get unpainted() {
+    for (let at = this.windows.length - 1; at >= 0; at--) {
+      const window = this.windows[at];
+
+      if (window.hwnd && window.needsPaint && this.#showing(window)) {
+        return window;
+      }
+    }
+
+    return null;
+  }
+
+  /** Whether a window shows: it and every window it is a child of are visible. */
+  #showing(window: DesktopWindow) {
+    for (let at: DesktopWindow | null = window; at; at = at.parent) {
+      if (!at.visible) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /** Whether a window is `ancestor` or one of its children, however deep. */
+  #within(window: DesktopWindow, ancestor: DesktopWindow) {
+    for (let at: DesktopWindow | null = window; at; at = at.parent) {
+      if (at === ancestor) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Paints a standard control's client area, where it shows, and marks it
+   * painted: what the control's own window procedure does with `WM_PAINT`.
+   */
+  paintControl(window: DesktopWindow) {
+    window.needsErase = false;
+    window.needsPaint = false;
+
+    if (!window.control || !this.#showing(window)) {
+      return;
+    }
+
+    const bitmap = window.surface.bitmap as DeviceBitmap;
+
+    paintControl(
+      bitmap,
+      window.clientWidth,
+      window.clientHeight,
+      window.control,
+      this.#frameEnvironment(bitmap)
+    );
   }
 
   /** Paints again what a window no longer covers. */
@@ -451,11 +565,7 @@ export class Desktop {
 
     for (let y = top; y < top + height; y++) {
       for (let x = left; x < left + width; x++) {
-        bitmap.put(
-          x,
-          y,
-          tile ? tile[(((y + bitmap.originY) & 7) << 3) | ((x + bitmap.originX) & 7)] : solid
-        );
+        bitmap.put(x, y, tile ? tile[((y & 7) << 3) | (x & 7)] : solid);
       }
     }
 

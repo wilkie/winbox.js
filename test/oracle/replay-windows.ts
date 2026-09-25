@@ -22,6 +22,7 @@ import { GetClientRect } from '../../src/win16/user/GetClientRect.js';
 import { GetDC } from '../../src/win16/user/GetDC.js';
 import { GetWindowRect } from '../../src/win16/user/GetWindowRect.js';
 import { RegisterClass } from '../../src/win16/user/RegisterClass.js';
+import { SendDlgItemMessage } from '../../src/win16/user/SendDlgItemMessage.js';
 import { ReleaseDC } from '../../src/win16/user/ReleaseDC.js';
 import { ShowWindow } from '../../src/win16/user/ShowWindow.js';
 import { UpdateWindow } from '../../src/win16/user/UpdateWindow.js';
@@ -83,7 +84,25 @@ const CHROME: Record<string, { style: number; menu?: boolean; width?: number; he
   popup: { style: 0x80800000 },
   menu: { style: 0x00cf0000, menu: true },
   inactive: { style: 0x00cf0000 },
+  controls: { style: 0x00cf0000, width: 260, height: 190 },
 };
+
+/** The controls `chrome` put in its last window: class, text, style, place, identifier. */
+const CONTROLS: [string, string, number, number, number, number, number, number][] = [
+  ['BUTTON', 'Push', 0x0, 8, 8, 64, 24, 10],
+  ['BUTTON', 'Default', 0x1, 80, 8, 72, 24, 11],
+  ['BUTTON', 'Check', 0x2, 8, 40, 72, 16, 12],
+  ['BUTTON', 'Radio', 0x4, 88, 40, 72, 16, 13],
+  ['STATIC', 'Static text', 0x0, 168, 40, 80, 16, 14],
+  ['EDIT', 'Edit', 0x00800000, 8, 64, 100, 22, 15],
+  ['LISTBOX', '', 0x00800001, 120, 64, 100, 48, 16],
+  ['SCROLLBAR', '', 0x0, 8, 124, 200, 16, 17],
+];
+
+const WS_CHILD = 0x40000000;
+const WS_VISIBLE = 0x10000000;
+const BM_SETCHECK = 0x0401;
+const LB_ADDSTRING = 0x0401;
 
 /** The sixteen colours of the palette, as `chrome` writes them: a digit each. */
 const PALETTE = [
@@ -105,6 +124,24 @@ export function chromeCapture(context: any, name: string) {
   }
 
   return captures.get(key)!;
+}
+
+/**
+ * The probe's `pump`: every message it would have taken off its queue,
+ * dispatched. Nothing is queued here, so what is left is what `PeekMessage`
+ * makes when a queue is empty: `WM_PAINT`, for each window due one.
+ */
+async function pump(system: any) {
+  for (
+    let window = system.rasterDesktop.unpainted;
+    window;
+    window = system.rasterDesktop.unpainted
+  ) {
+    const handle = system.handles.resolve(window.hwnd);
+    const windowClass = system.handles.retrieve(handle.options.windowClass);
+
+    await system.scheduler.callWndProc(windowClass, window.hwnd, User.WM_PAINT, 0, 0);
+  }
 }
 
 async function capture(system: any, name: string) {
@@ -175,13 +212,38 @@ async function capture(system: any, name: string) {
     AppendMenu.call(system, menu, 0, 3, '&Help');
   }
 
-  const hwnd = await make(made.style, menu, 40, 40, 200, 120);
+  const hwnd = await make(made.style, menu, 40, 40, made.width ?? 200, made.height ?? 120);
+
+  if (name === 'controls') {
+    for (const [type, text, style, x, y, w, h, id] of CONTROLS) {
+      await CreateWindow.call(
+        system,
+        type,
+        text,
+        WS_CHILD | WS_VISIBLE | style,
+        x,
+        y,
+        w,
+        h,
+        hwnd,
+        id,
+        0,
+        0
+      );
+    }
+
+    await SendDlgItemMessage.call(system, hwnd, 12, BM_SETCHECK, 1, 0);
+    await SendDlgItemMessage.call(system, hwnd, 13, BM_SETCHECK, 1, 0);
+    await SendDlgItemMessage.call(system, hwnd, 16, LB_ADDSTRING, 0, 'First');
+    await SendDlgItemMessage.call(system, hwnd, 16, LB_ADDSTRING, 0, 'Second');
+  }
 
   if (name === 'inactive') {
     await make(0x00cf0000, 0, 400, 300, 160, 100, 'Other');
   }
 
   await UpdateWindow.call(system, hwnd);
+  await pump(system);
 
   const window: any = new RECT();
   const client: any = new RECT();

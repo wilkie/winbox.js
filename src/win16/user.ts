@@ -49,6 +49,8 @@ import { CreateWindow } from './user/CreateWindow.js';
 import { CreateMenu } from './user/CreateMenu.js';
 import { AppendMenu } from './user/AppendMenu.js';
 import { ClientToScreen } from './user/ClientToScreen.js';
+import { GetDlgItem } from './user/GetDlgItem.js';
+import { SendDlgItemMessage } from './user/SendDlgItemMessage.js';
 import { DefWindowProc } from './user/DefWindowProc.js';
 import { DestroyWindow } from './user/DestroyWindow.js';
 import { DialogBox } from './user/DialogBox.js';
@@ -571,7 +573,7 @@ export class User extends Module {
       [User.stub, 'CreateDialog', 12],
       // 90 //
       [User.stub, 'IsDialogMessage', 6],
-      [User.stub, 'GetDlgItem', 4],
+      [GetDlgItem, 'GetDlgItem', 4, [HWND, INT], HWND],
       [User.stub, 'SetDlgItemText', 8],
       [User.stub, 'GetDlgItemText', 10],
       [User.stub, 'SetDlgItemInt', 8],
@@ -582,7 +584,7 @@ export class User extends Module {
       [User.stub, 'DlgDirSelect', 8],
       // 100 //
       [User.stub, 'DlgDirList', 12],
-      [User.stub, 'SendDlgItemMessage', 12],
+      [SendDlgItemMessage, 'SendDlgItemMessage', 12, [HWND, INT, UINT, WPARAM, LPARAM], LRESULT],
       [User.stub, 'AdjustWindowRect', 10],
       [User.stub, 'MapDialogRect', 6],
       [User.stub, 'MessageBeep', 2],

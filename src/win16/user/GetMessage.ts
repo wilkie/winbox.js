@@ -62,8 +62,20 @@ import { TRUE, FALSE } from '../consts.js';
  *                      message is retrieved.
  */
 export async function GetMessage(lpmsg, hwnd, uMsgFilterMin, uMsgFilterMax) {
+  /* With nothing queued, a window due to be painted is. See `PeekMessage`. */
+  const unpainted = this.scheduler.task.peek() ? null : this.rasterDesktop?.unpainted;
+
   // Wait until we have a message, and pull it
-  const msg = await this.scheduler.task.pull();
+  const msg = unpainted
+    ? {
+        hwnd: unpainted.hwnd,
+        message: User.WM_PAINT,
+        wParam: 0,
+        lParam: 0,
+        time: 0,
+        pt: { x: 0, y: 0 },
+      }
+    : await this.scheduler.task.pull();
 
   // Copy message to memory
   lpmsg.hwnd = msg.hwnd;

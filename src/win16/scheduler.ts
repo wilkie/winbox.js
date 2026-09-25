@@ -317,6 +317,11 @@ export class Scheduler {
    * message procedure.
    */
   async callWndProc(windowClass, hwnd, message, wParam, lParam) {
+    /* A class USER registers itself has its procedure here, not in a program. */
+    if (typeof windowClass?.lpfnWndProc === 'function') {
+      return await windowClass.lpfnWndProc(hwnd, message, wParam, lParam);
+    }
+
     // Get the function to call and craft that function call and return to the
     // current CS:IP
     const newCS = (windowClass.lpfnWndProc >> 16) & 0xffff;
