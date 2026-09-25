@@ -52,6 +52,7 @@ Every size below comes from [[fn:USER.GetSystemMetrics]] and every colour from [
 - [[documented]] Pressing on a window that is not active activates it. Keys go to the window with the focus, and `TranslateMessage` posts `WM_CHAR` for a key that typed a character.
 - [[documented]] `GetMessage` takes what was posted to a program before its mouse and keyboard input. So the `WM_CHAR` or `WM_SYSCHAR` that `TranslateMessage` posts for a key comes before that key's release, even though the release was already waiting. winbox.js once kept both in one line. Alt and F then reached `DefWindowProc` as Alt's release before the F, which opened the menu bar in place of the File menu.
 - [[documented]] Releasing Alt enters the menu bar only if no other key was pressed while Alt was down. Alt and a letter opens that letter's menu, and the release that follows does nothing.
+- [[documented]] Alt+F4 is the system menu's Close. `DefWindowProc` turns it into `SC_CLOSE`, as the menu's own label says.
 - [[documented]] `WM_PAINT` is never queued. `InvalidateRect` marks a window, and the window is painted when its program next asks for a message and none is waiting.
 - Not yet measured: no probe records the input queue. winbox.js answers `WM_NCHITTEST`, `WM_MOUSEACTIVATE` and `WM_SETCURSOR` as `DefWindowProc` does, without asking the window. Menus are in [[topic:menus]], and the caption boxes, moving and sizing are in [[topic:window-states]].
 
