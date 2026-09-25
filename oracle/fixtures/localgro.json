@@ -1,0 +1,99 @@
+{
+  "probe": "localgro",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "dataseg",
+      "args": "start",
+      "result": "12160"
+    },
+    {
+      "function": "grow",
+      "args": "1000,0",
+      "result": "block=2bc0,size=1000,segment=13728"
+    },
+    {
+      "function": "grow",
+      "args": "1000,1",
+      "result": "block=2fac,size=1000,segment=13728"
+    },
+    {
+      "function": "grow",
+      "args": "1000,2",
+      "result": "block=3398,size=1000,segment=15296"
+    },
+    {
+      "function": "grow",
+      "args": "3072",
+      "result": "block=3784,size=3072,segment=18912"
+    },
+    {
+      "function": "grow",
+      "args": "4096,0",
+      "result": "block=4388,size=4096,segment=23552"
+    },
+    {
+      "function": "grow",
+      "args": "4096,1",
+      "result": "block=538c,size=4096,segment=28192"
+    },
+    {
+      "function": "grow",
+      "args": "4096,2",
+      "result": "block=6390,size=4096,segment=32832"
+    },
+    {
+      "function": "grow",
+      "args": "4096,3",
+      "result": "block=7394,size=4096,segment=37472"
+    },
+    {
+      "function": "grow",
+      "args": "4096,4",
+      "result": "block=8398,size=4096,segment=42112"
+    },
+    {
+      "function": "grow",
+      "args": "4096,5",
+      "result": "block=939c,size=4096,segment=42112"
+    },
+    {
+      "function": "grow",
+      "args": "4096,6",
+      "result": "block=a3a0,size=4096,segment=46752"
+    },
+    {
+      "function": "grow",
+      "args": "4096,7",
+      "result": "block=b3a4,size=4096,segment=51392"
+    },
+    {
+      "function": "grow",
+      "args": "4096,8",
+      "result": "block=c3a8,size=4096,segment=56032"
+    },
+    {
+      "function": "grow",
+      "args": "4096,9",
+      "result": "block=d3ac,size=4096,segment=60672"
+    },
+    {
+      "function": "grow",
+      "args": "4096,10",
+      "result": "block=e3b0,size=4096,segment=65312"
+    },
+    {
+      "function": "grow",
+      "args": "4096,11",
+      "result": "block=0000,size=0,segment=65312"
+    }
+  ]
+}

@@ -102,6 +102,7 @@ import { RedrawWindow } from './user/RedrawWindow.js';
 import { ReleaseDC } from './user/ReleaseDC.js';
 import { SendMessage } from './user/SendMessage.js';
 import { SetFocus } from './user/SetFocus.js';
+import { RegisterWindowMessage } from './user/RegisterWindowMessage.js';
 import { KillTimer, SetTimer } from './user/SetTimer.js';
 import { PostMessage } from './user/PostMessage.js';
 import { SetRect } from './user/SetRect.js';
@@ -618,7 +619,7 @@ export class User extends Module {
       [User.stub, 'ReplyMessage', 4],
       [User.stub, 'PostAppMessage', 10],
       [User.stub, 'Unknown'],
-      [User.stub, 'RegisterWindowMessage', 4],
+      [RegisterWindowMessage, 'RegisterWindowMessage', 4, [LPCSTR], UINT],
       [User.stub, 'GetMessagePos', 0],
       // 120 //
       [User.stub, 'GetMessageTime', 0],

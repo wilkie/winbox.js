@@ -20,6 +20,7 @@ import {
   menusCapture,
   sizingCapture,
 } from './replay-windows.js';
+import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
 import { SystemParametersInfo } from '../../src/win16/user/SystemParametersInfo.js';
 import { Brush } from '../../src/raster/brush.js';
 import { Pen } from '../../src/raster/pen.js';
@@ -183,10 +184,7 @@ const SUBJECT_PROFILE = [
  * running this up to its point. Mirrors `profile.c` as `SUBJECT_PROFILE` does.
  */
 type ProfileStep =
-  | ['write', string, string, string | null]
-  | ['flush']
-  | ['windows']
-  | ['at', string];
+  ['write', string, string, string | null] | ['flush'] | ['windows'] | ['at', string];
 
 const PROFILE_SCRIPT: ProfileStep[] = [
   ['at', 'before any write'],
@@ -385,7 +383,8 @@ const ROTATE_SPECIMEN = 'AB';
 function inkRows(hex: string, size: number) {
   const bytes = Buffer.from(hex, 'hex');
   const stride = size / 8;
-  const ink = (column: number, row: number) => !(bytes[row * stride + (column >> 3)] & (0x80 >> (column & 7)));
+  const ink = (column: number, row: number) =>
+    !(bytes[row * stride + (column >> 3)] & (0x80 >> (column & 7)));
   let left = size;
   let top = size;
   let right = -1;
@@ -522,7 +521,13 @@ export class Context {
         return this.messages.shift() ?? null;
       },
     },
-    callWndProc: async (windowClass: any, hwnd: number, message: number, wParam: number, lParam: number) =>
+    callWndProc: async (
+      windowClass: any,
+      hwnd: number,
+      message: number,
+      wParam: number,
+      lParam: number
+    ) =>
       typeof windowClass?.lpfnWndProc === 'function'
         ? windowClass.lpfnWndProc(hwnd, message, wParam, lParam)
         : 0,
@@ -956,7 +961,9 @@ export class Context {
       throw new Unimplemented('no font mapped');
     }
 
-    const [penX, penY] = String(fields.pen ?? '32:32').split(':').map(Number);
+    const [penX, penY] = String(fields.pen ?? '32:32')
+      .split(':')
+      .map(Number);
     const surface: any = this.memoryCell(64, 64);
 
     surface.font = this.handles.resolve(handle);
@@ -1188,7 +1195,10 @@ export class Context {
     let hex = '';
 
     for (let index = 0; index < size; index++) {
-      hex += core.read8(buffer.segment, buffer.offset + index).toString(16).padStart(2, '0');
+      hex += core
+        .read8(buffer.segment, buffer.offset + index)
+        .toString(16)
+        .padStart(2, '0');
     }
 
     return hex;
@@ -1266,7 +1276,10 @@ export class Context {
       GetBitmapBits.call(this, bitmap, 4, buffer.far);
 
       return Array.from({ length: 4 }, (_, index) =>
-        core.read8(buffer.segment, buffer.offset + index).toString(16).padStart(2, '0')
+        core
+          .read8(buffer.segment, buffer.offset + index)
+          .toString(16)
+          .padStart(2, '0')
       ).join('');
     };
 
@@ -1732,6 +1745,26 @@ const ADAPTERS: Record<
     }
 
     return String(GlobalSize.call(context, handle));
+  },
+
+  /**
+   * `regmsg`: four strings registered in order, and what the numbers say of
+   * each other. Each record replays the four from a fresh table.
+   */
+  register(context, [which]) {
+    const strings = [
+      'commdlg_FindReplace',
+      'commdlg_FindReplace',
+      'COMMDLG_FINDREPLACE',
+      'winbox_probe_message',
+    ];
+    const messages = strings.map((text) => RegisterWindowMessage.call(context, text));
+
+    if (which === 'first') {
+      return `first=${messages[0].toString(16).padStart(4, '0')},range=${messages[0] >= 0xc000 ? 1 : 0}`;
+    }
+
+    return `again=${messages[1] === messages[0] ? 1 : 0},case=${messages[2] === messages[0] ? 1 : 0},other=${messages[3] !== messages[0] ? 1 : 0},next=${messages[3] - messages[0]}`;
   },
 
   'LocalAlloc+LocalSize'(context, [flags, request]) {
@@ -2282,7 +2315,10 @@ const ADAPTERS: Record<
   'to colour'(context, args) {
     const [name] = args as string[];
     const blt = context.bitblt();
-    const ground = parseInt(String(args.find((one) => String(one).startsWith('ground='))).slice(7), 16);
+    const ground = parseInt(
+      String(args.find((one) => String(one).startsWith('ground='))).slice(7),
+      16
+    );
     const source = blt.mono([0xf0, 0x0f, 0x0f, 0xf0]);
     const colour = blt.colour(ground);
 
@@ -2362,7 +2398,10 @@ const ADAPTERS: Record<
     let hex = '';
 
     for (let index = 0; index < 128; index++) {
-      hex += core.read8(buffer.segment, buffer.offset + index).toString(16).padStart(2, '0');
+      hex += core
+        .read8(buffer.segment, buffer.offset + index)
+        .toString(16)
+        .padStart(2, '0');
     }
 
     return `${count},${hex}`;
@@ -2632,7 +2671,9 @@ const ADAPTERS: Record<
 
     /* `smearrun` draws upright on a canvas 48 high with the pen's row fixed;
      * `smearmod` names both halves of the pen and turns, on a square one. */
-    const [penX, penY] = String(fields.pen).includes(':') ? String(fields.pen).split(':').map(Number) : [Number(fields.pen), 4];
+    const [penX, penY] = String(fields.pen).includes(':')
+      ? String(fields.pen).split(':').map(Number)
+      : [Number(fields.pen), 4];
     const height = fields.mode === undefined ? 48 : 128;
     const surface: any = context.memoryCell(128, height);
 
@@ -2646,7 +2687,8 @@ const ADAPTERS: Record<
     context.textOut(surface, penX, penY, text);
 
     const bytes = Buffer.from(context.readCell(surface, 128, height), 'hex');
-    const ink = (column: number, row: number) => !(bytes[row * 16 + (column >> 3)] & (0x80 >> (column & 7)));
+    const ink = (column: number, row: number) =>
+      !(bytes[row * 16 + (column >> 3)] & (0x80 >> (column & 7)));
     let left = 128;
     let top = height;
     let right = -1;
@@ -2823,7 +2865,8 @@ const ADAPTERS: Record<
     context.textOut(surface, 80, 80, String(fields.text ?? 'A').replace(/^"|"$/g, ''));
 
     const bytes = Buffer.from(context.readCell(surface, 160, 160), 'hex');
-    const ink = (column: number, row: number) => !(bytes[row * 20 + (column >> 3)] & (0x80 >> (column & 7)));
+    const ink = (column: number, row: number) =>
+      !(bytes[row * 20 + (column >> 3)] & (0x80 >> (column & 7)));
 
     let left = 160;
     let top = 160;
@@ -2894,13 +2937,7 @@ const ADAPTERS: Record<
     const character = String(args[2]).replace(/^'|'$/g, '');
 
     const fields = [args[0], args[1], 'w=0', 'weight=400', 'italic=0'];
-    const mapped = context.mappedFont([
-      ...fields,
-      'under=0',
-      'strike=0',
-      'charset=0',
-      'pitch=0',
-    ]);
+    const mapped = context.mappedFont([...fields, 'under=0', 'strike=0', 'charset=0', 'pitch=0']);
     const tm = mapped.metrics;
 
     const extent = GetTextExtent.call(
@@ -3072,14 +3109,7 @@ const ADAPTERS: Record<
    * glyph adds nothing and the rectangle is all that comes back. 8o.
    */
   ground(context, args) {
-    return ADAPTERS.glyph(context, [
-      args[0],
-      args[1],
-      'back=1',
-      'opaque=1',
-      'cell=64',
-      args[2],
-    ]);
+    return ADAPTERS.glyph(context, [args[0], args[1], 'back=1', 'opaque=1', 'cell=64', args[2]]);
   },
 
   /* `strikout` draws a full stop with the strikeout off and on, over every
@@ -3201,9 +3231,28 @@ const ADAPTERS: Record<
       'ori=' + String(args.find((field) => /^esc=/.test(String(field))) ?? 'esc=0').slice(4),
     ]);
     const metrics: any = {};
-    const identity = { eM11fract: 0, eM11value: 1, eM12fract: 0, eM12value: 0, eM21fract: 0, eM21value: 0, eM22fract: 0, eM22value: 1 };
+    const identity = {
+      eM11fract: 0,
+      eM11value: 1,
+      eM12fract: 0,
+      eM12value: 0,
+      eM21fract: 0,
+      eM21value: 0,
+      eM22fract: 0,
+      eM22value: 1,
+    };
     const buffer = context.place('', 1024);
-    const size = GetGlyphOutline.call(context, hdc, character.charCodeAt(0), 1, metrics, 1024, buffer.far, identity) >>> 0;
+    const size =
+      GetGlyphOutline.call(
+        context,
+        hdc,
+        character.charCodeAt(0),
+        1,
+        metrics,
+        1024,
+        buffer.far,
+        identity
+      ) >>> 0;
 
     if (size === 0xffffffff) {
       return 'failed';
@@ -3213,7 +3262,10 @@ const ADAPTERS: Record<
     let bits = '';
 
     for (let at = 0; at < Math.min(size, 1024); at++) {
-      bits += core.read8(buffer.segment, buffer.offset + at).toString(16).padStart(2, '0');
+      bits += core
+        .read8(buffer.segment, buffer.offset + at)
+        .toString(16)
+        .padStart(2, '0');
     }
 
     return `box=${metrics.gmBlackBoxX}:${metrics.gmBlackBoxY},origin=${metrics.gmptGlyphOriginX}:${metrics.gmptGlyphOriginY},inc=${metrics.gmCellIncX}:${metrics.gmCellIncY},size=${size},bits=${bits}`;
@@ -3223,7 +3275,10 @@ const ADAPTERS: Record<
    * strings upright and turned; the request is all in the arguments. */
   'sim extent'(context, args) {
     const fields = args.slice(0, -1).filter((field) => !/^text=/.test(String(field)));
-    const text = String(args.find((field) => /^text=/.test(String(field)))).replace(/^text="|"$/g, '');
+    const text = String(args.find((field) => /^text=/.test(String(field)))).replace(
+      /^text="|"$/g,
+      ''
+    );
     const { hdc } = context.mappedFont(fields);
     const extent = GetTextExtent.call(context, hdc, context.lpcstr(text), text.length);
 
@@ -3231,13 +3286,7 @@ const ADAPTERS: Record<
   },
 
   'symbol extent'(context, args) {
-    const { hdc } = context.mappedFont([
-      'Symbol',
-      ...args,
-      'w=0',
-      'weight=400',
-      'italic=0',
-    ]);
+    const { hdc } = context.mappedFont(['Symbol', ...args, 'w=0', 'weight=400', 'italic=0']);
 
     const extent = GetTextExtent.call(
       context,
@@ -3703,6 +3752,15 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* The numbers `RegisterWindowMessage` gives. Everything that relates them
+   * agrees -- at least 0xC000, the same for a string in any case, another for
+   * another string -- but Windows' first was 0xC40E, after whatever was
+   * registered before the probe ran, and its next eight more, which follows
+   * from how USER lays out its table. Neither is modelled; these count up
+   * from 0xC000 by one. */
+  'regmsg:register':
+    'message numbers count from 0xC000 by one; Windows gave 0xC40E, then eight more',
+
   /* The styled files at cells of two hundred and seventy-four to two hundred
    * and eighty-two, where the size chosen is one pixel per em out.
    *
@@ -3832,8 +3890,6 @@ export const KNOWN_GAPS: Record<string, string> = {
    * realised font is held to a segment and both multiples come down until it
    * fits. `FONTS.md` section 3 has the arithmetic and the readings refused.
    */
-
-
 
   /* `lines` is closed, on all four displays, 2,478 records each.
    *

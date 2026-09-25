@@ -75,7 +75,7 @@ export class SyscallManager {
         setInterruptVector,
         [
           [I286.REGISTER_AL, 1, Number],
-          [[I286.REGISTER_DS, I286.REGISTER_DX], 2, Number],
+          [[I286.REGISTER_DS, I286.REGISTER_DX], 2, Array],
         ],
         [],
         false,
@@ -357,6 +357,14 @@ export class SyscallManager {
           } else if (arg[1] == 4) {
             offset = this._machine.cpu.core.readRegister32(arg[0][1]);
           }
+          /* `Array` is the pair itself -- an interrupt vector is a far
+           * pointer to store, not memory to read, and its segment need not
+           * be one this task could address. */
+          if (type === Array) {
+            args.push(segment, offset);
+            return;
+          }
+
           value = this._machine.cpu.core.translateAddress(segment, offset);
         } else {
           if (arg[1] == 1) {
@@ -390,11 +398,11 @@ export class SyscallManager {
           let value = ret[position];
 
           if (returnType[0] instanceof Array) {
-            // segment:offset pair
+            // segment:offset pair: the segment register, then the offset's
             this._machine.cpu.core.writeSegmentRegister(returnType[0][0], value);
             position++;
             value = ret[position];
-            this._machine.cpu.core.writeRegister8(returnType[0][0], value);
+            this._machine.cpu.core.writeRegister16(returnType[0][1], value);
           } else if (returnType[1] == 1) {
             this._machine.cpu.core.writeRegister8(returnType[0], value);
           } else {

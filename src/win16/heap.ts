@@ -130,10 +130,10 @@ export class Heap {
     // Find a place to allocate within the heap.
     // We want 2 more bytes to write the size
     const searchSize = size + 2;
-    let address = this.find(searchSize);
+    let address = this.find(searchSize) || this.grow(size, searchSize);
     if (address == 0) {
-      console.log('Local heap: out of memory attempting to allocate', searchSize);
-      throw 'Out of Memory';
+      // `LocalAlloc` fails with NULL; it never throws.
+      return null;
     }
 
     view.heap = this;
@@ -318,6 +318,56 @@ export class Heap {
     // Could not fit!
     return 0;
   }
+
+  /**
+   * Grows a heap that is out of room, as a moveable data segment's does.
+   *
+   * Measured by the `localgro` probe: a request that does not fit grows the
+   * segment by the request and 544 more, rounded up to 32 -- 1,568 for 1,000
+   * bytes, 3,616 for 3,072 and 4,640 for 4,096 -- whatever room there was
+   * already. A growth that would pass 64K grows to 64K instead, if the block
+   * then fits; if it still does not, nothing grows and the request fails.
+   * Refused, because the 1,000-byte request disproves both: the block, its
+   * header and 540 (1,544), and the same with 512 rounded up to 32 (1,536),
+   * which each fit the other two sizes.
+   *
+   * @param {number} request - The bytes the caller asked for.
+   * @param {number} needed - The bytes the block takes in this heap.
+   * @returns {number} Where the block goes, or 0 if the heap cannot grow to it.
+   */
+  grow(request, needed) {
+    if (!this.growable) {
+      return 0;
+    }
+
+    const limit = 0x10000 - this._offset;
+    const size = Math.min(this._size + (((request + 544 + 31) >> 5) << 5), limit);
+
+    if (size <= this._size) {
+      return 0;
+    }
+
+    const previous = this._size;
+
+    this._size = size;
+
+    const address = this.find(needed);
+
+    if (address == 0) {
+      this._size = previous;
+      return 0;
+    }
+
+    const view = new DataView(new Uint8Array(size).buffer);
+
+    new Uint8Array(view.buffer).set(new Uint8Array(this._view.buffer));
+    this._view = view;
+
+    return address;
+  }
+
+  /** Whether the heap may grow: the local heap of a moveable data segment. */
+  declare growable: boolean;
 
   /**
    * Moves movable sections of memory to create free space.

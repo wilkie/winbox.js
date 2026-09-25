@@ -1,5 +1,7 @@
 'use strict';
 
+import { RasterWindow } from './raster-window.js';
+
 /**
  * The **SetWindowText** function sets the given window's title to the specified
  * text.
@@ -30,7 +32,16 @@ export function SetWindowText(hwnd, lpsz) {
   // Get window
   const dialog = this.handles.resolve(hwnd);
 
+  if (!dialog) {
+    return;
+  }
+
   const options = dialog.options;
   options.caption = lpsz;
   dialog.options = options;
+
+  /* On the raster desktop the caption is drawn by USER, and redrawn now. */
+  if (dialog instanceof RasterWindow) {
+    dialog.caption = lpsz === null || lpsz === undefined ? '' : String(lpsz);
+  }
 }

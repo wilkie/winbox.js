@@ -35,6 +35,9 @@ import { WinG } from './win16/wing.js';
 import { Sound } from './win16/sound.js';
 import { Win87EM } from './win16/win87em.js';
 import { CommDlg } from './win16/commdlg.js';
+import { Keyboard } from './win16/keyboard.js';
+import { taskEnvironment } from './win16/task-environment.js';
+import { Shell } from './win16/shell.js';
 
 // Other useful types
 import { Types, Struct, VARIADIC, HWND, WPARAM, LPARAM, UINT } from './win16/types.js';
@@ -135,6 +138,10 @@ export class Win16 {
     this._modules.register(WinG, handle);
     handle = this._handles.allocate(CommDlg);
     this._modules.register(CommDlg, handle);
+    handle = this._handles.allocate(Shell);
+    this._modules.register(Shell, handle);
+    handle = this._handles.allocate(Keyboard);
+    this._modules.register(Keyboard, handle);
 
     this._classes = {};
 
@@ -453,6 +460,14 @@ export class Win16 {
     const heapEnd = heapStart + executable.neHeader.initialLocalHeapSize;
     LocalInit.bind(this)(loader.ds, heapStart, heapEnd);
 
+    /* A moveable data segment's heap grows when a request does not fit; see
+     * `Heap.grow`. */
+    const heap = this.allocator.heapOf(loader.ds);
+
+    if (heap) {
+      heap.growable = !!dataSegment.movable;
+    }
+
     const handle = this.handles.allocate(task);
     return handle;
   }
@@ -499,10 +514,11 @@ export class Win16 {
     const programSegmentBytes = new Uint8Array(256);
     this._globalAllocator.map(programSegment, new DataView(programSegmentBytes.buffer));
 
-    // Environment variables
-    // The environment is a null-terminated series of keys and values.
+    /* The task's environment; see `task-environment.ts`. */
     const environmentSegment = this._globalAllocator.find();
     const environmentSegmentBytes = new Uint8Array(256);
+
+    environmentSegmentBytes.set(taskEnvironment('C:\\WINDOWS'));
     this._globalAllocator.map(environmentSegment, new DataView(environmentSegmentBytes.buffer));
 
     // Allocate a stack
@@ -521,7 +537,11 @@ export class Win16 {
     this._machine.cpu.core.write8(segmentSelector(programSegment), 0x1, 0x20);
 
     // Write environment segment
-    this._machine.cpu.core.write16(segmentSelector(programSegment), 0x2c, environmentSegment);
+    this._machine.cpu.core.write16(
+      segmentSelector(programSegment),
+      0x2c,
+      segmentSelector(environmentSegment)
+    );
 
     // Write command line arguments
     const commandLineLength = 0;

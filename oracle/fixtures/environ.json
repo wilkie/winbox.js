@@ -1,0 +1,54 @@
+{
+  "probe": "environ",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "pdb",
+      "args": "",
+      "result": "psp=02d7,environment=02d7,offset=0000"
+    },
+    {
+      "function": "variable",
+      "args": "0",
+      "result": "PATH=Z:\\"
+    },
+    {
+      "function": "variable",
+      "args": "1",
+      "result": "COMSPEC=Z:\\COMMAND.COM"
+    },
+    {
+      "function": "variable",
+      "args": "2",
+      "result": "BLASTER=A220 I7 D1 H5 T6"
+    },
+    {
+      "function": "variable",
+      "args": "3",
+      "result": "windir=C:\\WINDOWS"
+    },
+    {
+      "function": "count",
+      "args": "",
+      "result": "at=75,value=1"
+    },
+    {
+      "function": "path",
+      "args": "",
+      "result": "C:\\WINDOWS\\SYSTEM\\KRNL386.EXE"
+    },
+    {
+      "function": "module",
+      "args": "",
+      "result": "C:\\WINDOWS\\ENVIRON.EXE"
+    }
+  ]
+}
