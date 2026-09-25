@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Run Windows 3.1 programs</title>
+  </head>
+  <body>
+    <header class="bar">
+      <h1>Run Windows 3.1 programs</h1>
+      <p id="status" role="status" aria-live="polite">Loading…</p>
+    </header>
+
+    <main class="layout">
+      <aside class="side" aria-label="Programs and files">
+        <label id="drop" class="drop">
+          <input id="picker" type="file" accept=".zip" multiple />
+          <strong>Drop zip archives here</strong>
+          <span>or choose them. Nothing leaves this browser.</span>
+        </label>
+
+        <section>
+          <h2>Windows installation</h2>
+          <p id="windows"></p>
+          <button id="forget" type="button" hidden>Forget it</button>
+        </section>
+
+        <section>
+          <h2><label for="display">Display</label></h2>
+          <select id="display"></select>
+        </section>
+
+        <section>
+          <h2>Programs</h2>
+          <ul id="programs" class="programs"></ul>
+        </section>
+
+        <details>
+          <summary>Files on C:</summary>
+          <ul id="files" class="files"></ul>
+        </details>
+      </aside>
+
+      <section id="desktop" class="desktop" aria-label="Desktop"></section>
+
+      <aside class="trace" aria-label="API trace">
+        <h2>Functions called</h2>
+        <ul id="counts" class="counts"></ul>
+        <h2>Most recent calls</h2>
+        <pre id="recent"></pre>
+      </aside>
+    </main>
+
+    <script type="module" src="/src/run/main.ts"></script>
+  </body>
+</html>

@@ -696,6 +696,9 @@ export class Win16 {
       ordinal: ip,
       args,
       caller: { segment: callerCS, offset: callerIP - 5 },
+      /* Whether the call reaches no implementation: what a program needs
+       * that is not there yet. */
+      stub: implementation === module.instance.stub,
     });
 
     this.debug('Calling', module.instance.name, called, args);

@@ -37,6 +37,15 @@ serves the demo page in `index.html` with hot module replacement:
 pnpm dev
 ```
 
+To run real Windows 3.1 programs, open `/run.html` on the same server and drop
+zip archives on it. Their files go onto a C: drive, a FAT16 volume made in
+memory with 8.3 names, and every Windows program on it gets a Run button. A zip
+of your own Windows 3.1 directory gives the programs Windows' fonts: it is
+recognised by its `SYSTEM` directory, placed at `C:\WINDOWS`, and remembered in
+the browser so it is dropped once. Nothing is uploaded. As a program runs, the
+page lists every API function it called, marking the ones that reach no
+implementation yet, and its most recent calls with their arguments.
+
 ## Building
 
 To build a web bundle:
