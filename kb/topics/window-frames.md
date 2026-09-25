@@ -46,6 +46,13 @@ Every size below comes from [[fn:USER.GetSystemMetrics]] and every colour from [
 - [[measured]] The client area is erased with the class's background brush when the window is painted. `COLOR_WINDOW + 1`, which the probe's class gives, stands for the colour itself and is not a brush handle.
 - Not yet measured: where `CW_USEDEFAULT` puts a window and how big it makes it, child windows and their clipping, the desktop's wallpaper and pattern, and moving and sizing.
 
+## The mouse and the keyboard
+
+- [[documented]] A mouse message goes to the window under the pointer, or to the window that called `SetCapture`. Over a client area it is `WM_MOUSEMOVE` or a button message, in client coordinates. Elsewhere on a window it is the `WM_NC` form, carrying the part of the window it is over, in screen coordinates. A second press is a double click only for a class with `CS_DBLCLKS`.
+- [[documented]] Pressing on a window that is not active activates it. Keys go to the window with the focus, and `TranslateMessage` posts `WM_CHAR` for a key that typed a character.
+- [[documented]] `WM_PAINT` is never queued. `InvalidateRect` marks a window, and the window is painted when its program next asks for a message and none is waiting.
+- Not yet measured: no probe records the input queue. winbox.js answers `WM_NCHITTEST`, `WM_MOUSEACTIVATE` and `WM_SETCURSOR` as `DefWindowProc` does, without asking the window. Moving and sizing windows, the system menu, the minimize and maximize boxes, and pulling down menus are not done yet.
+
 ## Implementation
 
 `paintFrame` in `src/win16/user/frame.ts` paints a window's non-client area and returns the client rectangle. `test/raster/frame_test.ts` holds it to all 28 captures.

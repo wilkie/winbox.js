@@ -619,7 +619,10 @@ export class Struct {
             return null;
           }
 
-          value = memory.readCString(((hi >> 3) << 16) + lo);
+          /* A segment of 0 is `MAKEINTRESOURCE`: a resource's number, not a
+           * string -- a class's menu named by its identifier. The arguments
+           * of a call are read the same way. */
+          value = hi == 0 ? lo : memory.readCString(((hi >> 3) << 16) + lo);
         } else {
           value = (hi << 16) | (lo & 0xffff);
         }

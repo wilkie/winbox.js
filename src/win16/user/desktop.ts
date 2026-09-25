@@ -120,6 +120,9 @@ export class Desktop {
   /** Every window, the topmost first. */
   readonly windows: DesktopWindow[] = [];
 
+  /** The window keys go to: the active window, or one of its children. */
+  focus: DesktopWindow | null = null;
+
   /** Which window each pixel of the screen shows, by id; 0 for the desktop. */
   readonly owners: Uint16Array;
 
@@ -247,6 +250,11 @@ export class Desktop {
       was.active = false;
     }
 
+    /* Activating a window gives it the focus, unless one of its own has it. */
+    if (!this.focus || !this.#within(this.focus, window)) {
+      this.focus = window;
+    }
+
     this.#own();
 
     if (was && was !== window) {
@@ -268,6 +276,10 @@ export class Desktop {
 
     if (index < 0) {
       return;
+    }
+
+    if (this.focus && this.#within(this.focus, window)) {
+      this.focus = null;
     }
 
     /* Its children go first, with nothing to paint again: it covers them. */
@@ -295,6 +307,7 @@ export class Desktop {
 
       if (next) {
         next.active = true;
+        this.focus = next;
         this.paintFrame(next);
       }
     }

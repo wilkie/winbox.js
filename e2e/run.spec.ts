@@ -134,7 +134,13 @@ test("draws a real program's windows on the raster screen, from the installation
     buffer: archive([{ path: 'CHROME.EXE', data: new Uint8Array(readFileSync(CHROME)) }]),
   });
 
-  await expect(page.getByRole('img', { name: 'The Windows screen' })).toBeVisible();
+  const screen = page.getByRole('img', { name: 'The Windows screen' });
+
+  await expect(screen).toBeVisible();
+
+  /* The screen takes the keyboard when it is pressed, as Windows' input. */
+  await screen.click({ position: { x: 10, y: 10 } });
+  await expect(screen).toBeFocused();
 
   await page.getByRole('button', { name: 'Run C:\\PROBES\\CHROME.EXE' }).click();
 

@@ -2,7 +2,7 @@
 
 import { TRUE, FALSE } from '../consts.js';
 
-import { User } from '../user.js';
+import { MSG, User } from '../user.js';
 
 /**
  * The **TranslateMessage** function translates virtual-key messages into
@@ -53,12 +53,25 @@ export function TranslateMessage(lpmsg) {
   if (
     lpmsg.message === User.WM_KEYDOWN ||
     lpmsg.message === User.WM_KEYUP ||
-    lpmsg.message === User.WM_SYSKEYUP ||
+    lpmsg.message === User.WM_SYSKEYDOWN ||
     lpmsg.message === User.WM_SYSKEYUP
   ) {
-    // TODO: Potentially translate the key
-    // We potentially push a new message
-    //this.task.push(msg)
+    /* On the raster desktop, a key that typed a character posts it, as
+     * `WM_CHAR`, after the key that typed it. Elsewhere nothing is known of
+     * what a key typed. */
+    const typed = this.rasterInput?.typed.get(lpmsg.wParam);
+
+    if (lpmsg.message === User.WM_KEYDOWN && typed !== undefined) {
+      const msg: any = new MSG();
+
+      msg.hwnd = lpmsg.hwnd;
+      msg.message = User.WM_CHAR;
+      msg.wParam = typed;
+      msg.lParam = lpmsg.lParam;
+      msg.time = lpmsg.time;
+      msg.pt = { x: lpmsg.pt?.x ?? 0, y: lpmsg.pt?.y ?? 0 };
+      this.scheduler.task.push(msg);
+    }
 
     return TRUE;
   }

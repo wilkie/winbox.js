@@ -4,8 +4,7 @@ import { NULL } from '../consts.js';
 
 import { Executable } from '../../executable.js';
 
-import { FixedWindow } from '../../windows/fixed-window.js';
-import { SubMenu, Menu } from '../../controls/menu.js';
+import { MenuData } from './menu-data.js';
 
 /**
  * The **LoadMenu** function loads the specified menu resource from the
@@ -49,13 +48,7 @@ export async function LoadMenu(hinst, lpszMenuName) {
     id = lpszMenuName;
   }
 
-  const cpu = this.machine.cpu.core;
-
   const executable = module.executable;
-
-  let ret = NULL;
-
-  console.log('finding menu', id);
 
   // Find the menu resource
   let resourceInfo = null;
@@ -64,9 +57,11 @@ export async function LoadMenu(hinst, lpszMenuName) {
     if (resourceType.id == Executable.RESOURCES.Menu) {
       for (let j = 0; j < resourceType.entries.length; j++) {
         const resource = resourceType.entries[j];
-        console.log(resource);
-        if (resource.id == id || resource.name === name) {
-          console.log('found menu');
+        /* A named resource's name may be kept as its `id`. */
+        if (
+          resource.id == id ||
+          (name !== null && (resource.name === name || String(resource.id).toUpperCase() === name))
+        ) {
           resourceInfo = resource;
           break;
         }
@@ -74,117 +69,62 @@ export async function LoadMenu(hinst, lpszMenuName) {
     }
   }
 
-  // Parse the menu resource
-  if (resourceInfo) {
-    const data = new Uint8Array(await executable.readResource(resourceInfo));
-    console.log('found menu', data);
-    const view = new DataView(data.buffer);
+  if (!resourceInfo) {
+    return NULL;
+  }
 
-    // Read version
-    // Should be version 0 most of the time for Win16.
-    const version = view.getUint16(0, true);
+  const data = new Uint8Array(await executable.readResource(resourceInfo));
 
-    // Read the offset to the menu data (likely 0 as well)
-    const offset = view.getUint16(2, true);
+  return this.handles.allocate(parseMenu(data, resourceInfo.length));
+}
 
-    let position = 4 + offset;
+const MF_POPUP = 0x0010;
+const MF_END = 0x0080;
 
-    // Read each entry
-    const menuStack = [];
-    const ended = [];
-    const menu = new Menu({
-      font: this.fonts.lookup('System'),
-      size: 8,
-      width: 800,
-    });
-    menuStack.push(menu);
-    ended.push(false);
+/**
+ * A menu resource as a menu: a header of two words, the version and the
+ * offset to the items, then each item's flags, its identifier unless it opens
+ * a pop-up, and its text. A pop-up's items follow it, and the last item of
+ * any menu has `MF_END`.
+ */
+export function parseMenu(data: Uint8Array, length = data.length) {
+  const view = new DataView(data.buffer, data.byteOffset, data.byteLength);
+  const root = new MenuData();
+  const stack: MenuData[] = [root];
+  let position = 4 + view.getUint16(2, true);
 
-    ret = this.handles.allocate(menu);
+  while (position + 3 < length && stack.length) {
+    const flags = view.getUint16(position, true);
+    position += 2;
 
-    while (position + 3 < resourceInfo.length) {
-      // Read flags
-      const flags = view.getUint16(position, true);
+    let id = 0;
+
+    if (!(flags & MF_POPUP)) {
+      id = view.getUint16(position, true);
       position += 2;
+    }
 
-      // Read id, if needed
-      let id = 0;
-      if (!(flags & 0x10)) {
-        // Menu Item
-        id = view.getUint16(position, true);
-        position += 2;
-      } else {
-        // Submenu
-      }
+    let text = '';
 
-      // Read text
-      let title = '';
-      for (; position < resourceInfo.length; position++) {
-        const b = view.getUint8(position);
-        if (b == 0) {
-          break;
-        }
-        title += String.fromCharCode(b);
-      }
-      position++;
+    for (; position < length && data[position] !== 0; position++) {
+      text += String.fromCharCode(data[position]);
+    }
 
-      title = title || '-';
+    position++;
 
-      const menu = new Menu({ caption: title });
-      menu.data = { id: id };
+    const menu = stack[stack.length - 1];
+    const popup = flags & MF_POPUP ? new MenuData() : undefined;
 
-      if (flags & 0x1) {
-        menu.disabled = true;
-      }
+    menu.items.push({ flags: flags & ~MF_END, id, text, popup });
 
-      menu.on('click', (e) => {
-        console.log('WHY IS THE ID', id, menu.caption);
-        let dialog = menu.parent;
-        while (dialog.parent && !(dialog instanceof FixedWindow)) {
-          dialog = dialog.parent;
-        }
+    if (flags & MF_END) {
+      stack.pop();
+    }
 
-        if (dialog && dialog.data.hWnd && id) {
-          // We need to send the WM_COMMAND message with the id
-          const task = this.handles.resolve(dialog.data.hInstance);
-          this.windows.createMessage(dialog.data.hInstance, task, dialog.data.hWnd, 'command', {
-            id: menu.data.id,
-          });
-          console.log('menu clicked', dialog.data.hInstance, dialog.data.hWnd, menu.data.id);
-        }
-      });
-
-      console.log(
-        'menu item',
-        flags,
-        id,
-        title,
-        'appending to',
-        menuStack[menuStack.length - 1].caption
-      );
-
-      // Append to the current window
-      menuStack[menuStack.length - 1].append(menu);
-
-      if (flags & 0x80) {
-        ended[menuStack.length - 1] = true;
-      }
-
-      if (flags & 0x10) {
-        // Submenu... we want to push to the stack
-        menuStack.push(menu);
-        ended.push(false);
-      } else {
-        // React to whether or not the last item was ended
-        while (ended[menuStack.length - 1] && menuStack.length > 1) {
-          console.log('---');
-          menuStack.pop();
-          ended.pop();
-        }
-      }
+    if (popup) {
+      stack.push(popup);
     }
   }
 
-  // If we could not find the string, ret remains 0.
-  return ret;
+  return root;
 }

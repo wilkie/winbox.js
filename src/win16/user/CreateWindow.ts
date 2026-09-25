@@ -9,6 +9,7 @@ import { User, MSG, MINMAXINFO, CREATESTRUCT, WNDCLASS } from '../user.js';
 
 import { attachWindowBitmap } from './window-bitmap.js';
 import { MenuData } from './menu-data.js';
+import { htmlMenu } from './html-menu.js';
 import { controlState, systemClass } from './control-classes.js';
 import { CONTROL_CLASSES, controlRect } from './controls.js';
 import { RasterWindow } from './raster-window.js';
@@ -71,12 +72,16 @@ export async function CreateWindow(
     const rect = control
       ? controlRect(className.toUpperCase(), dwStyle, x, y, nWidth, nHeight)
       : { x, y, width: nWidth, height: nHeight };
-    const menu = child ? null : this.handles.resolve(hmenu);
+    /* A top-level window's menu is the one it was given, or its class's. */
+    const menuHandle = child
+      ? 0
+      : hmenu || (this.handles.retrieve(lpszClassName)?._menuHandle ?? 0);
+    const menu = menuHandle ? this.handles.resolve(menuHandle) : null;
     const shown = raster.create(
-      rect.x == User.CW_USEDEFAULT ? 0 : rect.x + (parent ? parent.left + parent.client.left : 0),
-      rect.y == User.CW_USEDEFAULT ? 0 : rect.y + (parent ? parent.top + parent.client.top : 0),
-      rect.width == User.CW_USEDEFAULT ? 0 : rect.width,
-      rect.height == User.CW_USEDEFAULT ? 0 : rect.height,
+      unset(rect.x) ? 0 : rect.x + (parent ? parent.left + parent.client.left : 0),
+      unset(rect.x) ? 0 : rect.y + (parent ? parent.top + parent.client.top : 0),
+      unset(rect.width) ? 0 : rect.width,
+      unset(rect.width) ? 0 : rect.height,
       dwStyle,
       lpszWindowName ? String(lpszWindowName) : '',
       menu instanceof MenuData ? menu.labels : undefined,
@@ -98,14 +103,15 @@ export async function CreateWindow(
     }
 
     dialog = new RasterWindow(raster, shown, {
+      menu: menu instanceof MenuData ? menuHandle : 0,
       caption: lpszWindowName,
       timesShown: 0,
       windowClass: lpszClassName,
     });
 
     /* Not measured: where a window asked for no place or size goes. */
-    if (!child && (x == User.CW_USEDEFAULT || nWidth == User.CW_USEDEFAULT)) {
-      if (nWidth == User.CW_USEDEFAULT) {
+    if (!child && (unset(x) || unset(nWidth))) {
+      if (unset(nWidth)) {
         dialog.resize(400, 300);
       }
 
@@ -161,7 +167,10 @@ export async function CreateWindow(
 
   if (!raster && windowClass && windowClass._menuHandle) {
     const menu = this.handles.resolve(windowClass._menuHandle);
-    dialog.append(menu);
+
+    if (menu instanceof MenuData) {
+      dialog.append(htmlMenu(this, menu));
+    }
   }
 
   // TODO: GETMINMAXINFO structure
@@ -220,6 +229,15 @@ export async function CreateWindow(
 
   console.log('FINISING UP CREATEWINDOW', hWnd);
   return hWnd;
+}
+
+/**
+ * Whether a place or size is `CW_USEDEFAULT`, however it arrived: an `INT`
+ * reads it as -32768. For `x` it also makes `y` unused, and for the width the
+ * height.
+ */
+function unset(value: number) {
+  return (value & 0xffff) === 0x8000;
 }
 
 /** A window as one of the page's own components, where there is no raster desktop. */

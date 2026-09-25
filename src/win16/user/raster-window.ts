@@ -125,10 +125,19 @@ export class RasterWindow {
   }
 
   /* Nothing here yet: sizing states, and events from the page, come with input. */
+  /** Whether keys go to this window. */
+  get focused() {
+    return this.desktop.focus === this.window;
+  }
+
+  /** Gives this window the keys. */
+  focus() {
+    this.desktop.focus = this.window;
+  }
+
   restore() {}
   maximize() {}
   minimize() {}
-  focus() {}
   on() {}
   append() {}
 }

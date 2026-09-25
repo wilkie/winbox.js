@@ -4,6 +4,8 @@ import { NULL } from '../consts.js';
 
 import { Menu } from '../../controls/menu.js';
 
+import { RasterWindow } from './raster-window.js';
+
 /**
  * The **GetMenu** function retrieves the handle of the menu associated with the
  * given window.
@@ -28,6 +30,15 @@ export function GetMenu(hwnd) {
 
   // Get the window
   const dialog = this.handles.resolve(hwnd);
+
+  /* On the raster desktop a window keeps the handle of its menu. */
+  if (dialog instanceof RasterWindow) {
+    return dialog.options.menu || NULL;
+  }
+
+  if (!dialog?.items) {
+    return NULL;
+  }
 
   // Get the menu
   let menu = null;

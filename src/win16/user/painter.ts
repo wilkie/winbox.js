@@ -90,6 +90,9 @@ export class Painter {
   fill(x0: number, y0: number, x1: number, y1: number, paint: Paint) {
     const screen = this.screen;
 
+    /* Marked, so the screen's presenter shows it. */
+    screen.context.markRect(this.left + x0, this.top + y0, this.left + x1, this.top + y1);
+
     for (let y = Math.max(y0, 0); y < Math.min(y1, this.height); y++) {
       for (let x = Math.max(x0, 0); x < Math.min(x1, this.width); x++) {
         const sx = this.left + x;

@@ -13,6 +13,7 @@ import { Allocator } from './win16/allocator.js';
 import { Loader } from './win16/loader.js';
 import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
 import { rasterDesktop } from './win16/user/raster-desktop.js';
+import { RasterInput } from './win16/user/raster-input.js';
 import { BitmapContext } from './raster/bitmap-context.js';
 import { Linker } from './win16/linker.js';
 import { Scheduler } from './win16/scheduler.js';
@@ -63,6 +64,7 @@ export class Win16 {
   declare _display: any;
   declare _screen: any;
   declare _rasterDesktop: any;
+  declare _rasterInput: any;
   declare _onCall: any;
   declare _options: any;
   declare _startTime: any;
@@ -193,9 +195,7 @@ export class Win16 {
      */
     const profile = async (name) => {
       const windows = await this.files.list('C:\\WINDOWS');
-      const file: any = windows.find(
-        (one: any) => String(one.name ?? '').toUpperCase() === name
-      );
+      const file: any = windows.find((one: any) => String(one.name ?? '').toUpperCase() === name);
 
       if (!file) {
         return null;
@@ -209,7 +209,11 @@ export class Win16 {
     const order = fontDirectoryOrder(await profile('SYSTEM.INI'), await profile('WIN.INI'));
 
     const fonts = inDirectoryOrder(
-      files.filter((file: any) => String(file.name ?? '').toUpperCase().endsWith('.FON')),
+      files.filter((file: any) =>
+        String(file.name ?? '')
+          .toUpperCase()
+          .endsWith('.FON')
+      ),
       order,
       (file: any) => String(file.name ?? '')
     );
@@ -250,6 +254,17 @@ export class Win16 {
     this._rasterDesktop ??= rasterDesktop(this, raster.oem ?? new Map());
 
     return this._rasterDesktop;
+  }
+
+  /** The mouse and keyboard on the raster desktop, when there is one. See `raster-input.ts`. */
+  get rasterInput() {
+    if (!this.rasterDesktop) {
+      return null;
+    }
+
+    this._rasterInput ??= new RasterInput(this);
+
+    return this._rasterInput;
   }
 
   get display() {

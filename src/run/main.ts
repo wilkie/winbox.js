@@ -144,7 +144,10 @@ async function rebuild() {
   const win16: any = new Win16(new DOS(machine), machine, space, {
     display: elements.display.value,
     onCall: trace,
-    onError: (error: any) => status(`Stopped: ${error?.message ?? error}`, 'error'),
+    onError: (error: any) => {
+      console.error(error);
+      status(`Stopped: ${error?.message ?? error}`, 'error');
+    },
     ...(oem ? { raster: { oem } } : {}),
   });
 
@@ -163,6 +166,7 @@ async function rebuild() {
     canvas.setAttribute('aria-label', 'The Windows screen');
     elements.desktop.replaceChildren(canvas);
     new Presenter(screen, canvas);
+    attachInput(canvas, win16.rasterInput);
   }
 
   session = { machine, win16, drive };
@@ -191,6 +195,47 @@ async function run(program: Program) {
   } catch (error: any) {
     status(`${program.path} stopped: ${error?.message ?? error}`, 'error');
   }
+}
+
+/**
+ * The screen's canvas as Windows' mouse and keyboard: a pointer's place, in
+ * the screen's pixels however large the canvas is drawn, and each key, handed
+ * to the raster desktop's input. The canvas takes the keyboard when it is
+ * clicked, and keeps the keys it is given from the page.
+ */
+function attachInput(canvas: HTMLCanvasElement, input: any) {
+  canvas.tabIndex = 0;
+
+  const at = (event: MouseEvent) => {
+    const box = canvas.getBoundingClientRect();
+
+    return {
+      x: Math.floor(((event.clientX - box.left) * canvas.width) / box.width),
+      y: Math.floor(((event.clientY - box.top) * canvas.height) / box.height),
+      button: event.button,
+      buttons: event.buttons,
+      double: event.detail === 2,
+      shift: event.shiftKey,
+      control: event.ctrlKey,
+    };
+  };
+
+  canvas.addEventListener('mousedown', (event) => {
+    canvas.focus();
+    event.preventDefault();
+    input.pointer('down', at(event));
+  });
+  canvas.addEventListener('mouseup', (event) => input.pointer('up', at(event)));
+  canvas.addEventListener('mousemove', (event) => input.pointer('move', at(event)));
+  canvas.addEventListener('contextmenu', (event) => event.preventDefault());
+
+  const key = (kind: 'down' | 'up') => (event: KeyboardEvent) => {
+    event.preventDefault();
+    input.key(kind, { code: event.code, key: event.key, repeat: event.repeat });
+  };
+
+  canvas.addEventListener('keydown', key('down'));
+  canvas.addEventListener('keyup', key('up'));
 }
 
 /**

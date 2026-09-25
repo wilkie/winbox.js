@@ -73,6 +73,7 @@ import { SetTextAlign } from './gdi/SetTextAlign.js';
 import { SetTextCharacterExtra } from './gdi/SetTextCharacterExtra.js';
 import { SetPixel } from './gdi/SetPixel.js';
 import { GetPixel } from './gdi/GetPixel.js';
+import { MulDiv } from './gdi/MulDiv.js';
 import { GetNearestColor } from './gdi/GetNearestColor.js';
 import { SetTextColor } from './gdi/SetTextColor.js';
 import { TextOut } from './gdi/TextOut.js';
@@ -303,7 +304,7 @@ export class Gdi extends Module {
       [Gdi.stub, 'CreateMetafile', 4],
       [Gdi.stub, 'CloseMetafile', 2],
       [Gdi.stub, 'DeleteMetafile', 2],
-      [Gdi.stub, 'MulDiv', 6],
+      [MulDiv, 'MulDiv', 6, [INT, INT, INT], INT],
       [Gdi.stub, 'SaveVisRgn', 2],
       // 130 //
       [Gdi.stub, 'RestoreVisRgn', 2],

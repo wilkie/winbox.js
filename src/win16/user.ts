@@ -50,6 +50,8 @@ import { CreateMenu } from './user/CreateMenu.js';
 import { AppendMenu } from './user/AppendMenu.js';
 import { ClientToScreen } from './user/ClientToScreen.js';
 import { GetDlgItem } from './user/GetDlgItem.js';
+import { GetFocus } from './user/GetFocus.js';
+import { ReleaseCapture, SetCapture } from './user/SetCapture.js';
 import { SendDlgItemMessage } from './user/SendDlgItemMessage.js';
 import { DefWindowProc } from './user/DefWindowProc.js';
 import { DestroyWindow } from './user/DestroyWindow.js';
@@ -486,13 +488,13 @@ export class User extends Module {
       [User.stub, 'GetCurrentTime', 0],
       [User.stub, 'ClipCursor', 4],
       [User.stub, 'GetCursorPos', 4],
-      [User.stub, 'SetCapture', 2],
-      [User.stub, 'ReleaseCapture', 0],
+      [SetCapture, 'SetCapture', 2, [HWND], HWND],
+      [ReleaseCapture, 'ReleaseCapture', 0, []],
       // 20 //
       [User.stub, 'SetDoubleClickTime', 0],
       [User.stub, 'GetDoubleClickTime', 0],
       [SetFocus, 'SetFocus', 2, [HWND], HWND],
-      [User.stub, 'GetFocus', 0],
+      [GetFocus, 'GetFocus', 0, [], HWND],
       [User.stub, 'RemoveProp', 6],
       [User.stub, 'GetProp', 6],
       [User.stub, 'SetProp', 8],
