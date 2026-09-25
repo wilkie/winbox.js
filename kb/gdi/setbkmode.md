@@ -5,7 +5,7 @@ name: SetBkMode
 ordinal: 2
 summary: Sets whether text and hatched brushes paint the background colour behind themselves.
 versions:
-  '3.1': stub
+  '3.1': exact
 probes: [textbk, smeargnd]
 topics: [text-ground-and-rules]
 ---
@@ -16,4 +16,4 @@ topics: [text-ground-and-rules]
 
 ## Implementation
 
-winbox.js implements the mode, and the recordings of it agree, but its implementation sits at ordinal 487 of its GDI table, an ordinal Windows 3.1 does not export: it was appended to the table when the mode was added (see [[fonts:8o]]), and a program imports by ordinal. A program calling `SetBkMode` therefore reaches this ordinal, 2, which is a stub. Moving the implementation here would make it Exact.
+The replays of [[probe:textbk]] and [[probe:smeargnd]] set the mode through this call, as the probes did, and every record agrees. Until this was written, winbox.js had the implementation at ordinal 487 of its GDI table, which Windows 3.1 does not export, and a stub at 2, so a program calling `SetBkMode` reached the stub. It now sits at 2. The previous mode it returns is not recorded.

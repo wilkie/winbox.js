@@ -5,7 +5,7 @@ name: SetTextAlign
 ordinal: 346
 summary: Sets which point of a string's box the coordinates of TextOut and ExtTextOut name.
 versions:
-  '3.1': unrecorded
+  '3.1': exact
 probes: [textalin, rotstyle]
 topics: [turned-text]
 ---
@@ -17,4 +17,4 @@ topics: [turned-text]
 
 ## Implementation
 
-The alignment's effect is recorded, through the field this sets; the call itself — and the previous alignment it returns — is not.
+The replays of [[probe:textalin]] and [[probe:rotstyle]] set the alignment through this call, as the probes did, and every record agrees. The previous alignment it returns is not recorded.

@@ -5,7 +5,7 @@ name: SetTextCharacterExtra
 ordinal: 8
 summary: Sets the extra space added after every character a device context draws or measures.
 versions:
-  '3.1': unrecorded
+  '3.1': exact
 probes: [textxtra]
 ---
 
@@ -17,4 +17,4 @@ probes: [textxtra]
 
 ## Implementation
 
-The spacing's effect is recorded, through the field this sets; the call itself — and the previous spacing it returns — is not.
+The replay of [[probe:textxtra]] sets the spacing through this call, as the probe did, and every record agrees. The previous spacing it returns is not recorded.
