@@ -9,6 +9,10 @@ import { Machine } from '../../src/emulator/machine.js';
 import { FontManager } from '../../src/win16/font-manager.js';
 import { HandleManager } from '../../src/win16/handle-manager.js';
 import { Surface } from '../../src/raster/surface.js';
+import { DeviceBitmap } from '../../src/raster/device-bitmap.js';
+import { DevicePalette } from '../../src/raster/device-palette.js';
+import { rasterDesktop } from '../../src/win16/user/raster-desktop.js';
+import { NoDrive, chromeCapture, oemBitmaps } from './replay-windows.js';
 import { Brush } from '../../src/raster/brush.js';
 import { Pen } from '../../src/raster/pen.js';
 import { Color } from '../../src/raster/color.js';
@@ -479,8 +483,27 @@ export class Context {
   handles: any;
   fonts: any;
   display: any;
+  displayName: string;
   private next: number;
   private _dos: any = null;
+  private _screen: any = null;
+  private _rasterDesktop: any = null;
+
+  /**
+   * What stands in for the scheduler: the window procedures a replay gives
+   * its classes are functions here, and are called directly. See
+   * `replay-windows.ts`.
+   */
+  scheduler = {
+    active: 0,
+    callWndProc: async (windowClass: any, hwnd: number, message: number, wParam: number, lParam: number) =>
+      typeof windowClass?.lpfnWndProc === 'function'
+        ? windowClass.lpfnWndProc(hwnd, message, wParam, lParam)
+        : 0,
+  };
+
+  /** And for the window manager: there is no input to route. */
+  windows = { register: () => {} };
 
   constructor(display = 'vga') {
     this.machine = new Machine();
@@ -490,6 +513,7 @@ export class Context {
      * without it, so the fixture names its display and the context adopts it.
      */
     this.display = displayMode(display);
+    this.displayName = display;
 
     /* The memory functions reach their heaps through `this.allocator`, built
      * here the way `Win16` builds it so that the allocator under test is the
@@ -502,6 +526,42 @@ export class Context {
     /* The display's own installation, because the raster fonts differ between
      * them. See `prepareFonts`. */
     this.fonts = byDisplay[display] ?? fonts;
+  }
+
+  /** The screen, the display's size, as `Win16` keeps it. */
+  get screen() {
+    if (!this._screen) {
+      this._screen = Surface.memory();
+      this._screen.bitmap = new DeviceBitmap(
+        this.display.width,
+        this.display.height,
+        DevicePalette.depthOf(this.display),
+        undefined,
+        DevicePalette.forDisplay(this.display)
+      );
+    }
+
+    return this._screen;
+  }
+
+  /**
+   * USER's raster desktop on that screen, with the display driver's own OEM
+   * bitmaps from the oracle's installation of the display.
+   */
+  get rasterDesktop() {
+    if (!this._rasterDesktop) {
+      try {
+        this._rasterDesktop = rasterDesktop(this, oemBitmaps(this.displayName));
+      } catch (error) {
+        if (error instanceof NoDrive) {
+          throw new NeedsDrive(error.message);
+        }
+
+        throw error;
+      }
+    }
+
+    return this._rasterDesktop;
   }
 
   /**
@@ -1820,6 +1880,28 @@ const ADAPTERS: Record<
 
   metric(context, [index]) {
     return String(GetSystemMetrics.call(context, Number(index)));
+  },
+
+  /* `chrome`: a window made and read back through the exports, on USER's
+   * raster desktop. See `replay-windows.ts`. */
+  async rects(context, [name]) {
+    const captured = await chromeCapture(context, String(name));
+
+    if (!captured) {
+      throw new Unimplemented(`no replay for the ${name} window`);
+    }
+
+    return captured.rects;
+  },
+
+  async pixels(context, [name, row]) {
+    const captured = await chromeCapture(context, String(name));
+
+    if (!captured) {
+      throw new Unimplemented(`no replay for the ${name} window`);
+    }
+
+    return captured.rows[Number(String(row).replace('y=', ''))] ?? '';
   },
 
   /* `dither`: a solid brush filled over a square of the display, every pixel
@@ -3510,6 +3592,15 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* `chrome`'s last window holds the standard controls -- buttons, a check
+   * box, a radio button, static text, an edit box, a list box and a scroll
+   * bar -- and USER's raster desktop draws no controls yet, so its capture is
+   * not replayed: one `rects` record and 190 `pixels` records on each
+   * display. Every other window the probe made, seven of them, is replayed
+   * through the exports and agrees, 847 records on each display. */
+  'chrome:rects': 'the controls window: 1 record on each display, no controls drawn yet',
+  'chrome:pixels': 'the controls window: 190 records on each display, no controls drawn yet',
+
   /* The styled files at cells of two hundred and seventy-four to two hundred
    * and eighty-two, where the size chosen is one pixel per em out.
    *

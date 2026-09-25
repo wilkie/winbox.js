@@ -1,5 +1,9 @@
 'use strict';
 
+import { User } from '../user.js';
+
+import { RasterWindow } from './raster-window.js';
+
 /**
  * The **UpdateWindow** function updates the client area of the given window by
  * sending a `WM_PAINT` message to the window if the update region for the
@@ -20,6 +24,15 @@
  *
  * @param {Types.HWND} hwnd - Identifies the window to be updated.
  */
-export function UpdateWindow(hwnd) {
-  // TODO: implement
+export async function UpdateWindow(hwnd) {
+  const dialog = this.handles.resolve(hwnd);
+
+  /* Only the raster desktop keeps what is due to be painted. */
+  if (!(dialog instanceof RasterWindow) || !dialog.window.needsPaint || !dialog.visible) {
+    return;
+  }
+
+  const windowClass = this.handles.retrieve(dialog.options.windowClass);
+
+  await this.scheduler.callWndProc(windowClass, hwnd, User.WM_PAINT, 0, 0);
 }

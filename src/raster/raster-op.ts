@@ -80,10 +80,8 @@ function sideOf(
       palette: bitmap.devicePalette,
       width: bitmap.width,
       height: bitmap.height,
-      read: (px, py) => bitmap.indices[py * bitmap.width + px],
-      write: (px, py, index) => {
-        bitmap.indices[py * bitmap.width + px] = index;
-      },
+      read: (px, py) => bitmap.indexAt(px, py) ?? 0,
+      write: (px, py, index) => bitmap.put(px, py, index),
       finish: () => bitmap.context.markRect(x, y, x + width, y + height),
     };
   }
@@ -187,7 +185,12 @@ export function rasterOp(
   const own = to.depth === 1 || to.palette === DevicePalette.forDisplay(display);
   const tile =
     own && brush ? ditherTile(display, to.palette, brush.red, brush.green, brush.blue) : null;
-  const pattern = tile ? (px: number, py: number) => tile[((py & 7) << 3) | (px & 7)] : () => solid;
+  /* Anchored to the device: a window's pixels are the screen's, from its origin. */
+  const ox = dest.bitmap?.originX ?? 0;
+  const oy = dest.bitmap?.originY ?? 0;
+  const pattern = tile
+    ? (px: number, py: number) => tile[(((py + oy) & 7) << 3) | ((px + ox) & 7)]
+    : () => solid;
 
   /* A source pixel, carried into the destination's terms. */
   let carry: (index: number) => number = (index) => index;

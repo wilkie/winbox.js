@@ -1274,16 +1274,23 @@ export class Surface {
      * bytes, not a round trip through colours, which a whole window would pay
      * on every clipped draw. */
     if (this.context instanceof IndexedContext) {
-      const indices = this.context.indices;
-      const kept = indices.slice();
+      const context = this.context;
+      const indices = context.indices;
       const width = this.width;
+      const kept = new Uint8Array(width * this.height);
+
+      for (let row = 0; row < this.height; row++) {
+        const from = context.base + row * context.stride;
+
+        kept.set(indices.subarray(from, from + width), row * width);
+      }
 
       draw();
 
       for (let row = 0; row < this.height; row++) {
         for (let column = 0; column < width; column++) {
           if (column < rect.left || column >= rect.right || row < rect.top || row >= rect.bottom) {
-            indices[row * width + column] = kept[row * width + column];
+            indices[context.base + row * context.stride + column] = kept[row * width + column];
           }
         }
       }

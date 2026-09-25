@@ -8,6 +8,8 @@ import { HWND } from '../types.js';
 import { User, MSG, MINMAXINFO, CREATESTRUCT, WNDCLASS } from '../user.js';
 
 import { attachWindowBitmap } from './window-bitmap.js';
+import { MenuData } from './menu-data.js';
+import { RasterWindow } from './raster-window.js';
 import { Window } from '../../window.js';
 import { FixedWindow } from '../../windows/fixed-window.js';
 import { SizableWindow } from '../../windows/sizable-window.js';
@@ -52,62 +54,50 @@ export async function CreateWindow(
     }
   }
 
-  let windowClassType = Window;
+  /* On the raster desktop, a window is USER's own, drawn on the screen. */
+  const raster = this.rasterDesktop;
+  let dialog: any;
 
-  if (dwStyle & User.WS_THICKFRAME) {
-    windowClassType = SizableWindow;
-  } else if (dwStyle & User.WS_OVERLAPPED) {
-    windowClassType = FixedWindow;
-  } else if (dwStyle & User.WS_DLGFRAME) {
-    // TODO: This is a fixed window with a single pixel black border
-    windowClassType = FixedWindow;
+  if (raster) {
+    const menu = this.handles.resolve(hmenu);
+    const shown = raster.create(
+      x == User.CW_USEDEFAULT ? 0 : x,
+      y == User.CW_USEDEFAULT ? 0 : y,
+      nWidth == User.CW_USEDEFAULT ? 0 : nWidth,
+      nHeight == User.CW_USEDEFAULT ? 0 : nHeight,
+      dwStyle,
+      lpszWindowName ? String(lpszWindowName) : '',
+      menu instanceof MenuData ? menu.labels : undefined,
+      null
+    );
+
+    dialog = new RasterWindow(raster, shown, {
+      caption: lpszWindowName,
+      timesShown: 0,
+      windowClass: lpszClassName,
+    });
+
+    /* Not measured: where a window asked for no place or size goes. */
+    if (x == User.CW_USEDEFAULT || nWidth == User.CW_USEDEFAULT) {
+      if (nWidth == User.CW_USEDEFAULT) {
+        dialog.resize(400, 300);
+      }
+
+      dialog.center();
+    }
+  } else {
+    dialog = htmlWindow(
+      parentWindow,
+      lpszClassName,
+      lpszWindowName,
+      dwStyle,
+      x,
+      y,
+      nWidth,
+      nHeight,
+      this
+    );
   }
-
-  // Create a window inside the given parent
-  const dialog = new windowClassType({
-    caption: lpszWindowName,
-    timesShown: 0,
-    windowClass: lpszClassName,
-    font: this.fonts.lookup('System'),
-    size: 8,
-    width: 800,
-  });
-
-  /* No font goes on the surface here. `lookup` answers with every entry a face
-   * has -- an array, not a font -- so what landed here was something nothing
-   * could measure or draw with, and it sat in front of the real default:
-   * `GetDC` puts the system font in a context that has none, and could not,
-   * because this had already filled the slot.
-   *
-   * A font belongs to a device context rather than to a window in any case.
-   */
-
-  dialog.show();
-  dialog.resize(400, 300);
-
-  parentWindow.append(dialog);
-
-  /*
-    x = User.CW_USEDEFAULT;
-    y = User.CW_USEDEFAULT;
-    nWidth = 500;
-    nHeight = 500;
-    //*/
-
-  if (nWidth != User.CW_USEDEFAULT && nHeight != User.CW_USEDEFAULT) {
-    dialog.resize(nWidth, nHeight);
-  }
-
-  dialog.center();
-
-  if (x != User.CW_USEDEFAULT && y != User.CW_USEDEFAULT) {
-    dialog.move(x, y);
-  }
-
-  // The pixels the window draws into, shown on its canvas once a frame.
-  attachWindowBitmap(this, dialog);
-
-  dialog.hide();
 
   let windowClass = this.handles.retrieve(lpszClassName);
   if (!windowClass) {
@@ -139,7 +129,7 @@ export async function CreateWindow(
 
   this.windows.register(taskHandle, task, hWnd, dialog);
 
-  if (windowClass && windowClass._menuHandle) {
+  if (!raster && windowClass && windowClass._menuHandle) {
     const menu = this.handles.resolve(windowClass._menuHandle);
     dialog.append(menu);
   }
@@ -195,4 +185,76 @@ export async function CreateWindow(
 
   console.log('FINISING UP CREATEWINDOW', hWnd);
   return hWnd;
+}
+
+/** A window as one of the page's own components, where there is no raster desktop. */
+function htmlWindow(
+  parentWindow,
+  lpszClassName,
+  lpszWindowName,
+  dwStyle,
+  x,
+  y,
+  nWidth,
+  nHeight,
+  system
+) {
+  let windowClassType: any = Window;
+
+  if (dwStyle & User.WS_THICKFRAME) {
+    windowClassType = SizableWindow;
+  } else if (dwStyle & User.WS_OVERLAPPED) {
+    windowClassType = FixedWindow;
+  } else if (dwStyle & User.WS_DLGFRAME) {
+    // TODO: This is a fixed window with a single pixel black border
+    windowClassType = FixedWindow;
+  }
+
+  // Create a window inside the given parent
+  const dialog = new windowClassType({
+    caption: lpszWindowName,
+    timesShown: 0,
+    windowClass: lpszClassName,
+    font: system.fonts.lookup('System'),
+    size: 8,
+    width: 800,
+  });
+
+  /* No font goes on the surface here. `lookup` answers with every entry a face
+   * has -- an array, not a font -- so what landed here was something nothing
+   * could measure or draw with, and it sat in front of the real default:
+   * `GetDC` puts the system font in a context that has none, and could not,
+   * because this had already filled the slot.
+   *
+   * A font belongs to a device context rather than to a window in any case.
+   */
+
+  dialog.show();
+  dialog.resize(400, 300);
+
+  parentWindow.append(dialog);
+
+  /*
+    x = User.CW_USEDEFAULT;
+    y = User.CW_USEDEFAULT;
+    nWidth = 500;
+    nHeight = 500;
+    //*/
+
+  if (nWidth != User.CW_USEDEFAULT && nHeight != User.CW_USEDEFAULT) {
+    dialog.resize(nWidth, nHeight);
+  }
+
+  dialog.center();
+
+  if (x != User.CW_USEDEFAULT && y != User.CW_USEDEFAULT) {
+    dialog.move(x, y);
+  }
+
+  // The pixels the window draws into, shown on its canvas once a frame.
+  attachWindowBitmap(system, dialog);
+
+  dialog.hide();
+
+  return dialog;
 }

@@ -46,6 +46,9 @@ import { AnsiUpper } from './user/AnsiUpper.js';
 import { BeginPaint } from './user/BeginPaint.js';
 import { CopyRect } from './user/CopyRect.js';
 import { CreateWindow } from './user/CreateWindow.js';
+import { CreateMenu } from './user/CreateMenu.js';
+import { AppendMenu } from './user/AppendMenu.js';
+import { ClientToScreen } from './user/ClientToScreen.js';
 import { DefWindowProc } from './user/DefWindowProc.js';
 import { DestroyWindow } from './user/DestroyWindow.js';
 import { DialogBox } from './user/DialogBox.js';
@@ -492,7 +495,7 @@ export class User extends Module {
       [User.stub, 'GetProp', 6],
       [User.stub, 'SetProp', 8],
       [User.stub, 'EnumProps', 6],
-      [User.stub, 'ClientToScreen', 6],
+      [ClientToScreen, 'ClientToScreen', 6, [HWND, [POINT]]],
       [User.stub, 'ScreenToClient', 6],
       // 30 //
       [User.stub, 'WindowFromPoint', 4],
@@ -634,7 +637,7 @@ export class User extends Module {
       [User.stub, 'ChangeClipboardChain', 4],
       // 150 //
       [LoadMenu, 'LoadMenu', 6, [HINSTANCE, LPCSTR], HMENU],
-      [User.stub, 'CreateMenu', 0],
+      [CreateMenu, 'CreateMenu', 0, [], HMENU],
       [User.stub, 'DestroyMenu', 2],
       [User.stub, 'ChangeMenu', 12],
       [User.stub, 'CheckMenuItem', 6],
@@ -920,7 +923,7 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       // 410 //
       [User.stub, 'InsertMenu', 12],
-      [User.stub, 'AppendMenu', 10],
+      [AppendMenu, 'AppendMenu', 10, [HMENU, UINT, UINT, LPCSTR], BOOL],
       [User.stub, 'RemoveMenu', 6],
       [User.stub, 'DeleteMenu', 6],
       [User.stub, 'ModifyMenu', 12],

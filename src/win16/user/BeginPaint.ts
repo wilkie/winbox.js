@@ -4,6 +4,8 @@ import { NULL } from '../consts.js';
 
 import { User } from '../user.js';
 
+import { RasterWindow } from './raster-window.js';
+
 /**
  * The **BeginPaint** function prepares the specified window for painting and
  * fills a **PAINTSTRUCT** structure with information about the painting.
@@ -61,8 +63,19 @@ export async function BeginPaint(hwnd, lpps) {
   // Allocate a DC
   const dc = this.handles.allocate(surface);
 
-  // TODO: erase bkgnd message and paint
-  if (dialog.data.erase) {
+  /* On the raster desktop, the window is validated: it is being painted, and
+   * its background is erased first if it is due to be, by whatever the window
+   * procedure does with `WM_ERASEBKGND`. */
+  if (dialog instanceof RasterWindow) {
+    const erase = dialog.window.needsErase;
+
+    dialog.window.needsErase = false;
+    dialog.window.needsPaint = false;
+
+    if (erase) {
+      await this.scheduler.callWndProc(windowClass, hwnd, User.WM_ERASEBKGND, dc, 0);
+    }
+  } else if (dialog.data.erase) {
     dialog.data.erase = false;
 
     await this.scheduler.callWndProc(windowClass, hwnd, User.WM_ERASEBKGND, 0, 0);

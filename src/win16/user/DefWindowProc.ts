@@ -5,6 +5,8 @@ import { NULL } from '../consts.js';
 import { User, MDICREATESTRUCT } from '../user.js';
 
 import { CreateWindow } from './CreateWindow.js';
+import { backgroundOf } from './raster-desktop.js';
+import { RasterWindow } from './raster-window.js';
 
 /**
  * The **DefWindowProc** function calls the default window procedure. The
@@ -66,7 +68,35 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
 
   // Perform default actions
   switch (uMsg) {
+    case User.WM_PAINT:
+      /* What `BeginPaint` and `EndPaint` would do: the window is painted, its
+       * background erased if it was due to be. */
+      if (dialog instanceof RasterWindow) {
+        const erase = dialog.window.needsErase;
+
+        dialog.window.needsErase = false;
+        dialog.window.needsPaint = false;
+
+        if (erase) {
+          await this.scheduler.callWndProc(windowClass, hwnd, User.WM_ERASEBKGND, 0, 0);
+        }
+      }
+
+      return 0;
+
     case User.WM_ERASEBKGND:
+      /* On the raster desktop: the class's brush, a system colour's or its
+       * own, over what shows of the client area. */
+      if (dialog instanceof RasterWindow) {
+        const background = backgroundOf(this, windowClass.hbrBackground);
+
+        if (background) {
+          dialog.desktop.erase(dialog.window, background.colorref);
+        }
+
+        return 1;
+      }
+
       // Paint the update region with the window class' brush
       const brush = this.handles.resolve(windowClass.hbrBackground);
       if (brush) {

@@ -37,6 +37,62 @@ export class DeviceBitmap extends Bitmap {
     this.context = new IndexedContext(width, height, this.indices, this.devicePalette);
   }
 
+  /**
+   * Where this bitmap's pixel (0, 0) is on the bitmap it is a view of, if it
+   * is one; a brush's pattern is anchored there, to the screen. See `view`.
+   */
+  originX = 0;
+  originY = 0;
+
+  /**
+   * A view of `parent`'s pixels: `width` by `height` from `left, top`, drawn
+   * only where `clip` allows. Nothing is copied; what is drawn through the
+   * view is drawn on the parent, and marked there. This is a window's client
+   * area on the screen.
+   */
+  static view(
+    parent: DeviceBitmap,
+    left: number,
+    top: number,
+    width: number,
+    height: number,
+    clip: ((x: number, y: number) => boolean) | null = null
+  ) {
+    const view = new DeviceBitmap(
+      width,
+      height,
+      parent.depth,
+      parent.indices,
+      parent.devicePalette
+    );
+    const context = view.context;
+
+    context.base = top * parent.width + left;
+    context.stride = parent.width;
+    context.clip = clip;
+    context.owner = parent.context;
+    context.ownerX = left;
+    context.ownerY = top;
+    view.originX = parent.originX + left;
+    view.originY = parent.originY + top;
+
+    return view;
+  }
+
+  /** Whether this bitmap's pixels are another's. */
+  get isView() {
+    return this.context.owner !== null;
+  }
+
+  /** Writes an index at a pixel, where the pixel exists and may be written. */
+  put(x: number, y: number, index: number) {
+    const at = this.context.address(x, y);
+
+    if (at >= 0 && (!this.context.clip || this.context.clip(x, y))) {
+      this.indices[at] = index;
+    }
+  }
+
   /* A device bitmap's size is its own, whatever surface it is selected into. */
   get width() {
     return this._width;
@@ -52,10 +108,8 @@ export class DeviceBitmap extends Bitmap {
 
   /** The index at a pixel, or `null` outside the bitmap. */
   indexAt(x: number, y: number) {
-    if (x < 0 || y < 0 || x >= this._width || y >= this._height) {
-      return null;
-    }
+    const at = this.context.address(x, y);
 
-    return this.indices[y * this._width + x];
+    return at < 0 ? null : this.indices[at];
   }
 }

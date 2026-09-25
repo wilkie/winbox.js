@@ -12,6 +12,7 @@ import { GlobalAllocator } from './win16/global-allocator.js';
 import { Allocator } from './win16/allocator.js';
 import { Loader } from './win16/loader.js';
 import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
+import { rasterDesktop } from './win16/user/raster-desktop.js';
 import { BitmapContext } from './raster/bitmap-context.js';
 import { Linker } from './win16/linker.js';
 import { Scheduler } from './win16/scheduler.js';
@@ -61,6 +62,7 @@ export class Win16 {
   declare _scheduler: any;
   declare _display: any;
   declare _screen: any;
+  declare _rasterDesktop: any;
   declare _onCall: any;
   declare _options: any;
   declare _startTime: any;
@@ -232,6 +234,24 @@ export class Win16 {
   /**
    * The display driver being emulated.
    */
+  /**
+   * USER's raster desktop, when the page asked for one: every window drawn on
+   * `screen`, by USER, from the display driver's OEM bitmaps given as
+   * `options.raster.oem`. Without it, windows are the page's own components.
+   * See `win16/user/desktop.ts`.
+   */
+  get rasterDesktop() {
+    const raster = (this._options as any).raster;
+
+    if (!raster) {
+      return null;
+    }
+
+    this._rasterDesktop ??= rasterDesktop(this, raster.oem ?? new Map());
+
+    return this._rasterDesktop;
+  }
+
   get display() {
     return this._display;
   }

@@ -166,10 +166,13 @@ export function paintFrame(
         const sx = left + x;
         const sy = top + y;
 
-        if (sx >= 0 && sy >= 0 && sx < screen.width && sy < screen.height) {
-          screen.indices[sy * screen.width + sx] =
-            typeof paint === 'number' ? paint : paint[((sy & 7) << 3) | (sx & 7)];
-        }
+        screen.put(
+          sx,
+          sy,
+          typeof paint === 'number'
+            ? paint
+            : paint[(((sy + screen.originY) & 7) << 3) | ((sx + screen.originX) & 7)]
+        );
       }
     }
   };

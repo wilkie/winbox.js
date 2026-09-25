@@ -13,6 +13,12 @@ import { type DevicePalette } from './device-palette.js';
  * `pixels` and `getImageData` still hand back RGBA bytes, built from the
  * indices when asked, so anything that reads a context as colours reads this
  * one the same way.
+ *
+ * The store may be another's: a window's context draws into the screen's
+ * pixels, from where the window's client area starts (`base`) a screen row at
+ * a time (`stride`), and only where `clip` says the window is what shows --
+ * which is how a window covered by another cannot draw over it. What such a
+ * context writes is marked on the screen's context, where it is shown from.
  */
 export class IndexedContext extends BitmapContext {
   readonly indices: Uint8Array;
@@ -34,10 +40,32 @@ export class IndexedContext extends BitmapContext {
   #lastColour = -1;
   #lastIndex = 0;
 
+  /** Where pixel (0, 0) is in `indices`, and how far apart two rows are. */
+  base = 0;
+  stride: number;
+
+  /** Whether a pixel may be written, or `null` for all of them. */
+  clip: ((x: number, y: number) => boolean) | null = null;
+
+  /** The context whose pixels these are, and where this one's start in it. */
+  owner: IndexedContext | null = null;
+  ownerX = 0;
+  ownerY = 0;
+
   constructor(width: number, height: number, indices: Uint8Array, palette: DevicePalette) {
     super(width, height, new Uint8Array(0));
     this.indices = indices;
     this.palette = palette;
+    this.stride = width;
+  }
+
+  /** Where a pixel is in `indices`, or -1 outside the context. */
+  address(x: number, y: number) {
+    if (x < 0 || y < 0 || x >= this.width || y >= this.height) {
+      return -1;
+    }
+
+    return this.base + y * this.stride + x;
   }
 
   /** The index for a colour given as RGBA bytes. */
@@ -57,12 +85,26 @@ export class IndexedContext extends BitmapContext {
       return;
     }
 
-    this.indices[y * this.width + x] = this.indexOf(colour);
+    if (this.clip && !this.clip(x, y)) {
+      return;
+    }
+
+    this.indices[this.base + y * this.stride + x] = this.indexOf(colour);
     this.markRect(x, y, x + 1, y + 1);
   }
 
   /** Records that a rectangle was written, the right and bottom edges outside it. */
   markRect(left: number, top: number, right: number, bottom: number) {
+    if (this.owner) {
+      this.owner.markRect(
+        left + this.ownerX,
+        top + this.ownerY,
+        right + this.ownerX,
+        bottom + this.ownerY
+      );
+      return;
+    }
+
     const clean = this.#right <= this.#left;
 
     if (left < this.#left) this.#left = left;
@@ -92,13 +134,18 @@ export class IndexedContext extends BitmapContext {
   get pixels() {
     const rgba = new Uint8Array(this.width * this.height * 4);
 
-    for (let at = 0; at < this.indices.length; at++) {
-      const [red, green, blue] = this.palette.colours[this.indices[at]] ?? [0, 0, 0];
+    for (let y = 0; y < this.height; y++) {
+      for (let x = 0; x < this.width; x++) {
+        const at = y * this.width + x;
+        const [red, green, blue] = this.palette.colours[
+          this.indices[this.base + y * this.stride + x]
+        ] ?? [0, 0, 0];
 
-      rgba[at * 4] = red;
-      rgba[at * 4 + 1] = green;
-      rgba[at * 4 + 2] = blue;
-      rgba[at * 4 + 3] = 0xff;
+        rgba[at * 4] = red;
+        rgba[at * 4 + 1] = green;
+        rgba[at * 4 + 2] = blue;
+        rgba[at * 4 + 3] = 0xff;
+      }
     }
 
     return rgba;
@@ -116,9 +163,9 @@ export class IndexedContext extends BitmapContext {
           continue;
         }
 
-        const [red, green, blue] = this.palette.colours[this.indices[sy * this.width + sx]] ?? [
-          0, 0, 0,
-        ];
+        const [red, green, blue] = this.palette.colours[
+          this.indices[this.base + sy * this.stride + sx]
+        ] ?? [0, 0, 0];
         const to = (row * width + column) * 4;
 
         data[to] = red;
