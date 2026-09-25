@@ -5,8 +5,8 @@ name: BitBlt
 ordinal: 34
 summary: Copies a rectangle of pixels from one device context to another, combining source, destination and brush under a raster operation.
 versions:
-  '3.1': partial
-probes: [bitblt]
+  '3.1': exact
+probes: [bitblt, bitbits]
 source: src/win16/gdi/BitBlt.ts
 topics: [display-drivers]
 ---
@@ -26,4 +26,6 @@ topics: [display-drivers]
 
 ## Implementation
 
-winbox.js implements `SRCCOPY`, `NOTSRCCOPY`, `SRCPAINT` and `SRCAND`, on the bitmaps' own bits, with a monochrome source coloured by the destination's text and background colours. The other named operations draw nothing, and colours are combined as red, green and blue, not as indices. None of the [[probe:bitblt]] records are replayed yet. They need one store for a bitmap's pixels: a bitmap loaded from a program's resources holds them in its own bits, while anything drawn into a memory device context lands on the surface, and today's `BitBlt` reads only the first.
+A memory device context draws straight into the device-dependent bitmap selected into it, one palette index a pixel (`src/raster/device-bitmap.ts`), so text, lines, fills and `BitBlt` all work on one store. `BitBlt` and [[fn:GDI.PatBlt]] share one engine (`src/raster/raster-op.ts`): any of the 256 raster operations, read from the truth table in its code and applied bit by bit to the indices, with the conversions between monochrome and colour above. The sixteen-colour palette is in the recorded index order. Every record of [[probe:bitblt]] is replayed through this call, built as the probe built it, and all 70 agree.
+
+A window's pixels are still a browser canvas: `BitBlt` onto one turns indices into colours, and reads the canvas back only for an operation that reads the destination. Not yet handled: stretching, a source overlapping the destination, and the 256-colour index order, which is not recorded.
