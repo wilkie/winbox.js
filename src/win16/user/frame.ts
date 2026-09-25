@@ -5,8 +5,8 @@ import { ditherTile } from '../../raster/dither.js';
 
 /**
  * What USER draws around a window: its border or sizing frame, its caption,
- * and the system menu, minimize and maximize boxes -- the non-client area --
- * into the screen's pixels.
+ * the system menu, minimize and maximize boxes, its menu bar and its scroll
+ * bars -- the non-client area -- into the screen's pixels.
  *
  * Every rule here is read off the `chrome` probe's captures, and a test holds
  * this to them pixel for pixel on each display:
@@ -24,6 +24,13 @@ import { ditherTile } from '../../raster/dither.js';
  *   what is left.
  * * Active and inactive windows differ only in colours: the caption, the
  *   caption text and the border.
+ * * A menu bar is `SM_CYMENU` of the menu colour under the caption, then a
+ *   line; each item is its text with eight pixels either side, its mnemonic
+ *   underlined a row below the font's ascent.
+ * * A scroll bar is `SM_CXVSCROLL` or `SM_CYHSCROLL` of the scroll bar colour,
+ *   outlined, sharing its edge lines with what is next to it: the driver's
+ *   arrow bitmaps at its ends, and a raised thumb overlapping the first. Both
+ *   bars fill the box between them.
  * * Every area is filled with a brush of its colour, so a colour the display
  *   lacks is patterned as the driver patterns a brush -- the Hercules's grey
  *   border is a checkerboard. See `ditheredIndex`.
@@ -46,7 +53,18 @@ export const WS_MAXIMIZEBOX = 0x00010000;
 export const OBM_CLOSE = 32754;
 export const OBM_REDUCE = 32749;
 export const OBM_ZOOM = 32748;
+export const OBM_LFARROW = 32750;
+export const OBM_RGARROW = 32751;
+export const OBM_DNARROW = 32752;
+export const OBM_UPARROW = 32753;
 
+const SM_CXVSCROLL = 2;
+const SM_CYHSCROLL = 3;
+const SM_CYVTHUMB = 9;
+const SM_CXHTHUMB = 10;
+const SM_CYMENU = 15;
+const SM_CYVSCROLL = 20;
+const SM_CXHSCROLL = 21;
 const SM_CXSIZE = 30;
 const SM_CYSIZE = 31;
 const SM_CXFRAME = 32;
@@ -55,13 +73,26 @@ const SM_CYCAPTION = 4;
 const SM_CXDLGFRAME = 7;
 const SM_CYDLGFRAME = 8;
 
+const COLOR_SCROLLBAR = 0;
+
+/**
+ * The space either side of a menu bar item's text. The captures fix it at
+ * eight on every display, but every display's System font averages seven
+ * pixels a character, so whether it follows the font is not measured.
+ */
+const MENU_GAP = 8;
 const COLOR_ACTIVECAPTION = 2;
 const COLOR_INACTIVECAPTION = 3;
+const COLOR_MENU = 4;
 const COLOR_WINDOWFRAME = 6;
+const COLOR_MENUTEXT = 7;
 const COLOR_CAPTIONTEXT = 9;
 const COLOR_ACTIVEBORDER = 10;
 const COLOR_INACTIVEBORDER = 11;
+const COLOR_BTNFACE = 15;
+const COLOR_BTNSHADOW = 16;
 const COLOR_INACTIVECAPTIONTEXT = 19;
+const COLOR_BTNHIGHLIGHT = 20;
 
 export interface FrameEnvironment {
   /** The display mode, whose driver patterns the brushes. */
@@ -81,12 +112,24 @@ export interface FrameEnvironment {
    * the rectangle to centre it in, left, top, right and bottom.
    */
   title(text: string, colour: number, box: [number, number, number, number]): void;
+
+  /** The width of a line of text in the System font. */
+  measure(text: string): number;
+
+  /** The System font's height and ascent, as `GetTextMetrics` gives them. */
+  font: { height: number; ascent: number };
+
+  /** Draws a line of text in the System font, its cell's top left at `x, y`. */
+  text(text: string, colour: number, x: number, y: number): void;
 }
 
 export interface Frame {
   style: number;
   active: boolean;
   title: string;
+
+  /** The menu bar's items, as `AppendMenu` was given them, `&` and all. */
+  menu?: string[];
 }
 
 /**
@@ -214,61 +257,187 @@ export function paintFrame(
 
   const client = { left: inset, top: insetY, right: width - inset, bottom: height - insetY };
 
-  if (!hasCaption) {
-    return client;
+  if (hasCaption) {
+    client.top = paintCaption();
   }
 
-  /* The caption: its top row is the frame's inner line, or the border. */
-  const captionTop = thick ? insetY - 1 : 0;
-  const captionHeight = environment.metric(SM_CYCAPTION);
-  const rowTop = captionTop + 1;
-  const rowBottom = captionTop + captionHeight - 1;
-
-  fill(inset, captionTop + captionHeight - 1, width - inset, captionTop + captionHeight, line);
-
-  let barLeft = inset;
-  let barRight = width - inset;
-
-  if (style & WS_SYSMENU) {
-    const close = environment.oem.get(OBM_CLOSE);
-    const size = close ? close.width / 2 : environment.metric(SM_CXSIZE);
-
-    blit(close, inset, rowTop, size);
-    fill(inset + size, rowTop, inset + size + 1, rowBottom, line);
-    barLeft = inset + size + 1;
+  if (frame.menu) {
+    client.top = paintMenu(client.top);
   }
 
-  if (style & WS_MAXIMIZEBOX) {
-    const zoom = environment.oem.get(OBM_ZOOM);
-    const size = zoom?.width ?? environment.metric(SM_CXSIZE) + 1;
-
-    barRight -= size;
-    blit(zoom, barRight, rowTop, size);
-  }
-
-  if (style & WS_MINIMIZEBOX) {
-    const reduce = environment.oem.get(OBM_REDUCE);
-    const size = reduce?.width ?? environment.metric(SM_CXSIZE) + 1;
-
-    barRight -= size;
-    blit(reduce, barRight, rowTop, size);
-  }
-
-  fill(
-    barLeft,
-    rowTop,
-    barRight,
-    rowBottom,
-    colour(frame.active ? COLOR_ACTIVECAPTION : COLOR_INACTIVECAPTION)
-  );
-
-  environment.title(
-    frame.title,
-    environment.sysColor(frame.active ? COLOR_CAPTIONTEXT : COLOR_INACTIVECAPTIONTEXT),
-    [left + barLeft, top + rowTop, left + barRight, top + rowBottom]
-  );
-
-  client.top = captionTop + captionHeight;
+  paintScrollBars();
 
   return client;
+
+  /** The caption and its boxes; returns where the client area would start. */
+  function paintCaption() {
+    /* The caption: its top row is the frame's inner line, or the border. */
+    const captionTop = thick ? insetY - 1 : 0;
+    const captionHeight = environment.metric(SM_CYCAPTION);
+    const rowTop = captionTop + 1;
+    const rowBottom = captionTop + captionHeight - 1;
+
+    fill(inset, captionTop + captionHeight - 1, width - inset, captionTop + captionHeight, line);
+
+    let barLeft = inset;
+    let barRight = width - inset;
+
+    if (style & WS_SYSMENU) {
+      const close = environment.oem.get(OBM_CLOSE);
+      const size = close ? close.width / 2 : environment.metric(SM_CXSIZE);
+
+      blit(close, inset, rowTop, size);
+      fill(inset + size, rowTop, inset + size + 1, rowBottom, line);
+      barLeft = inset + size + 1;
+    }
+
+    if (style & WS_MAXIMIZEBOX) {
+      const zoom = environment.oem.get(OBM_ZOOM);
+      const size = zoom?.width ?? environment.metric(SM_CXSIZE) + 1;
+
+      barRight -= size;
+      blit(zoom, barRight, rowTop, size);
+    }
+
+    if (style & WS_MINIMIZEBOX) {
+      const reduce = environment.oem.get(OBM_REDUCE);
+      const size = reduce?.width ?? environment.metric(SM_CXSIZE) + 1;
+
+      barRight -= size;
+      blit(reduce, barRight, rowTop, size);
+    }
+
+    fill(
+      barLeft,
+      rowTop,
+      barRight,
+      rowBottom,
+      colour(frame.active ? COLOR_ACTIVECAPTION : COLOR_INACTIVECAPTION)
+    );
+
+    environment.title(
+      frame.title,
+      environment.sysColor(frame.active ? COLOR_CAPTIONTEXT : COLOR_INACTIVECAPTIONTEXT),
+      [left + barLeft, top + rowTop, left + barRight, top + rowBottom]
+    );
+
+    return captionTop + captionHeight;
+  }
+
+  /** The menu bar, from `from`; returns where the client area starts below it. */
+  function paintMenu(from: number) {
+    const bar = environment.metric(SM_CYMENU);
+    const ink = colour(COLOR_MENUTEXT);
+    let x = inset;
+
+    /* The text's cell, one pixel less than centred in the bar: 0 in the
+     * VGA's 18 for a font of 16, 1 in the EGA's 16 for a font of 12. Half the
+     * difference less one, or a quarter of it, or centred in the bar less one
+     * pixel -- the four displays have only these two, and all three fit. */
+    const cell = ((bar - environment.font.height) >> 1) - 1;
+    const underline = cell + environment.font.ascent + 1;
+
+    fill(inset, from, width - inset, from + bar, colour(COLOR_MENU));
+    fill(inset, from + bar, width - inset, from + bar + 1, line);
+
+    for (const item of frame.menu!) {
+      const at = item.indexOf('&');
+      const text = item.replace('&', '');
+
+      environment.text(
+        text,
+        environment.sysColor(COLOR_MENUTEXT),
+        left + x + MENU_GAP,
+        top + from + cell
+      );
+
+      /* The mnemonic, underlined. */
+      if (at >= 0 && at < text.length) {
+        const under = x + MENU_GAP + environment.measure(text.slice(0, at));
+
+        fill(
+          under,
+          from + underline,
+          under + environment.measure(text[at]),
+          from + underline + 1,
+          ink
+        );
+      }
+
+      x += environment.measure(text) + 2 * MENU_GAP;
+    }
+
+    return from + bar + 1;
+  }
+
+  /** The scroll bars, and the box between them. */
+  function paintScrollBars() {
+    const vertical = (style & WS_VSCROLL) !== 0;
+    const horizontal = (style & WS_HSCROLL) !== 0;
+    const trough = colour(COLOR_SCROLLBAR);
+
+    if (vertical) {
+      client.right -= environment.metric(SM_CXVSCROLL) - 1;
+    }
+
+    if (horizontal) {
+      client.bottom -= environment.metric(SM_CYHSCROLL) - 1;
+    }
+
+    if (vertical) {
+      const x0 = client.right;
+      const x1 = x0 + environment.metric(SM_CXVSCROLL);
+      const y0 = client.top - 1;
+      const y1 = client.bottom + 1;
+      const arrow = environment.metric(SM_CYVSCROLL);
+
+      fill(x0, y0, x1, y1, trough);
+      outline(x0, y0, x1, y1, line);
+      blit(environment.oem.get(OBM_UPARROW), x0, y0, x1 - x0);
+      blit(environment.oem.get(OBM_DNARROW), x0, y1 - arrow, x1 - x0);
+      thumb(x0, y0 + arrow - 1, x1, y0 + arrow - 1 + environment.metric(SM_CYVTHUMB));
+    }
+
+    if (horizontal) {
+      const x0 = client.left - 1;
+      const x1 = client.right + 1;
+      const y0 = client.bottom;
+      const y1 = y0 + environment.metric(SM_CYHSCROLL);
+      const arrow = environment.metric(SM_CXHSCROLL);
+
+      fill(x0, y0, x1, y1, trough);
+      outline(x0, y0, x1, y1, line);
+      blit(environment.oem.get(OBM_LFARROW), x0, y0, arrow);
+      blit(environment.oem.get(OBM_RGARROW), x1 - arrow, y0, arrow);
+      thumb(x0 + arrow - 1, y0, x0 + arrow - 1 + environment.metric(SM_CXHTHUMB), y1);
+    }
+
+    if (vertical && horizontal) {
+      fill(
+        client.right + 1,
+        client.bottom + 1,
+        client.right + environment.metric(SM_CXVSCROLL) - 1,
+        client.bottom + environment.metric(SM_CYHSCROLL) - 1,
+        trough
+      );
+    }
+  }
+
+  /**
+   * The thumb: a raised box in the button face, outlined, lit one pixel
+   * along the top and left and shadowed two along the bottom and right.
+   */
+  function thumb(x0: number, y0: number, x1: number, y1: number) {
+    const shadow = colour(COLOR_BTNSHADOW);
+    const light = colour(COLOR_BTNHIGHLIGHT);
+
+    fill(x0, y0, x1, y1, colour(COLOR_BTNFACE));
+    fill(x0 + 1, y0 + 1, x1 - 2, y0 + 2, light);
+    fill(x0 + 1, y0 + 1, x0 + 2, y1 - 2, light);
+    fill(x1 - 2, y0 + 1, x1 - 1, y1 - 1, shadow);
+    fill(x0 + 1, y1 - 2, x1 - 1, y1 - 1, shadow);
+    fill(x1 - 3, y0 + 2, x1 - 2, y1 - 2, shadow);
+    fill(x0 + 2, y1 - 3, x1 - 2, y1 - 2, shadow);
+    outline(x0, y0, x1, y1, line);
+  }
 }

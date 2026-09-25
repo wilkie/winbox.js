@@ -9,6 +9,7 @@ import { DevicePalette } from '../../src/raster/device-palette.js';
 import { decodeDib, dibToDevice } from '../../src/raster/dib.js';
 import { Surface } from '../../src/raster/surface.js';
 import { Gdi } from '../../src/win16/gdi.js';
+import { GetTextMetrics } from '../../src/win16/gdi/GetTextMetrics.js';
 import { displayMode } from '../../src/win16/display-modes.js';
 import { resourcesOf, RT_BITMAP } from '../../src/win16/ne-resources.js';
 import { GetSysColor } from '../../src/win16/user/GetSysColor.js';
@@ -34,12 +35,14 @@ const DRIVES: Record<string, string> = {
 };
 
 /* The window styles the probe made, as it made them. */
-const STYLES: Record<string, { style: number; active: boolean }> = {
+const STYLES: Record<string, { style: number; active: boolean; menu?: string[] }> = {
   overlapped: { style: 0x00cf0000, active: true },
   inactive: { style: 0x00cf0000, active: false },
   caption: { style: 0x00c80000, active: true },
   dialog: { style: 0x80400000, active: true },
   popup: { style: 0x80800000, active: true },
+  scroll: { style: 0x00cf0000 | 0x00200000 | 0x00100000, active: true },
+  menu: { style: 0x00cf0000, active: true, menu: ['&File', '&Edit', '&Help'] },
 };
 
 /**
@@ -106,10 +109,17 @@ for (const [display, drive] of Object.entries(DRIVES)) {
 
         screen.indices.fill(white);
 
+        const metrics: any = {};
+
+        GetTextMetrics.call(context, context.withStockFont(Gdi.SYSTEM_FONT), metrics);
+
         const surface: any = Surface.memory();
         surface.bitmap = screen;
         surface.font = context.handles.resolve(context.withStockFont(Gdi.SYSTEM_FONT)).font;
         surface.backMode = 1;
+
+        const ink = (colour: number) =>
+          new Color(colour & 0xff, (colour >> 8) & 0xff, (colour >> 16) & 0xff);
 
         const client = paintFrame(
           screen,
@@ -128,16 +138,18 @@ for (const [display, drive] of Object.entries(DRIVES)) {
               const style = surface.font.style ?? {};
               const cell = (style.ascent ?? 0) + (style.descent ?? 0) || measured.height;
 
-              surface.textColor = new Color(
-                colour & 0xff,
-                (colour >> 8) & 0xff,
-                (colour >> 16) & 0xff
-              );
+              surface.textColor = ink(colour);
               surface.fillText(
                 left + Math.floor((right - left - measured.width) / 2),
                 top + Math.floor((bottom - top - cell) / 2),
                 text
               );
+            },
+            measure: (text) => surface.measureText(text).width,
+            font: { height: metrics.tmHeight, ascent: metrics.tmAscent },
+            text: (text, colour, x, y) => {
+              surface.textColor = ink(colour);
+              surface.fillText(x, y, text);
             },
           }
         );
