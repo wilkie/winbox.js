@@ -306,6 +306,14 @@ describe('the knowledge base', () => {
       );
     });
 
+    it('can reach every numbered section of FONTS.md, because no number is used twice', () => {
+      const numbers = [
+        ...readFileSync('FONTS.md', 'utf8').matchAll(/^#{2,3} (\d+[a-z]?)\. /gm),
+      ].map((match) => match[1]);
+
+      expect(numbers.filter((number, index) => numbers.indexOf(number) !== index)).toEqual([]);
+    });
+
     it('link FONTS.md sections at the anchors GitHub gives them', () => {
       expect(
         headingSlug('8u. `lfEscapement`, which was thrown away with a comment saying so')

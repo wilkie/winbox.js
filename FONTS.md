@@ -19601,7 +19601,7 @@ from square: eleven by sixteen against thirty-eight by forty-eight. Beside them
 sit Courier New's italic `g` at twelve and, on the Hercules only, five plotter
 cells.
 
-## 8b. What the display driver decides, and what it does not
+## 8v. What the display driver decides, and what it does not
 
 Four displays have been recorded now -- a VGA, a Super VGA, an EGA and a
 Hercules -- and the reason to keep adding them is that a rule pinned on one

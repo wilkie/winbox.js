@@ -173,7 +173,7 @@ Ship a small, complete slice first, fonts and text in GDI, because that is where
 | 2. Evidence       | Conformance suite writes a JSON report; probe and fixture pages; status badges and scores from the report                                          | Each badge matches the suite, and the build fails on a mismatch                                |
 | 3. Fonts and text | FONTS.md split into topic pages; the 12 fully recorded GDI functions written out; `.FOT`, FNT/FON and NE format pages                              | Those pages cite only existing probes and offsets, checked by the build                        |
 | 4. Public release | Search, cross-links, a contribution guide for adding a probe and a page                                                                            | A reader can reproduce any Measured claim from the site alone                                  |
-| 5. Widen          | KERNEL and USER pages as their behaviour is recorded; FONTS.md stops growing and new findings land directly in `kb/`                               | Ongoing                                                                                        |
+| 5. Widen          | KERNEL and USER pages as their behaviour is recorded; a font finding lands in its `kb/` page and in FONTS.md, kept in step                         | Ongoing                                                                                        |
 
 Phase 1 is built: `npm run kb` writes 1,633 pages for 17 modules to `dist/kb/` — every export of the 16 surveyed Windows 3.1 libraries, plus WinG from our table — and `test/kb/knowledge_base_test.ts` checks the pages against the survey and the tables.
 
@@ -189,7 +189,9 @@ Phase 4 is built:
 - Each probe page shows its C source and links each of its recordings, and its steps name the file each recording is written to. It also lists the recordings made against fabricated fonts.
 - `.github/workflows/kb.yml` checks the pages, builds the site and deploys it to GitHub Pages from `develop`. It links sources at the commit built. It runs once the repository is on GitHub, with Pages set to deploy from Actions.
 
-From phase 3 on, the working rule for new findings changes: a rule measured or read out goes straight into its `kb/` page, with its counts and refused alternatives, instead of into FONTS.md.
+Phase 5 has begun, with the functions outside GDI's text whose behaviour was already recorded: KERNEL's string, memory and profile calls, USER's string calls and `GetSystemMetrics`, and GDI's `GetDeviceCaps` — 24 function pages, all exact, and topics on string collation, global and local memory, profile files and display drivers. Writing them found that `WritePrivateProfileString` trims the caller's own string in place, writes values unquoted and serves a written value from memory until a flush. The `profile` probe now records each of those, and winbox.js does all three.
+
+From phase 3 on, a rule measured or read out goes into its `kb/` page, with its counts and refused alternatives. A font finding also goes into FONTS.md, which keeps the long derivation and stays in step with the pages, as the Decisions below settle.
 
 ## Decisions
 
