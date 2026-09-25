@@ -109,6 +109,20 @@ function windowsRoot(entries: ZipEntry[]) {
  * names as `display.drv`, from its `SYSTEM` directory. Its OEM bitmaps are
  * what USER draws window frames with.
  */
+export function systemFileOf(windows: Archive, name: string) {
+  const root = windowsRoot(windows.entries);
+
+  if (root === null) {
+    return null;
+  }
+
+  return (
+    windows.entries.find(
+      (entry) => entry.path.toUpperCase() === `${root}SYSTEM/${name}`.toUpperCase()
+    )?.data ?? null
+  );
+}
+
 export function displayDriverOf(windows: Archive) {
   const root = windowsRoot(windows.entries);
 

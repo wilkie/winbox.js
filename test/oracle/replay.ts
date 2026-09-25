@@ -12,7 +12,15 @@ import { Surface } from '../../src/raster/surface.js';
 import { DeviceBitmap } from '../../src/raster/device-bitmap.js';
 import { DevicePalette } from '../../src/raster/device-palette.js';
 import { rasterDesktop } from '../../src/win16/user/raster-desktop.js';
-import { NoDrive, chromeCapture, menusCapture, oemBitmaps } from './replay-windows.js';
+import {
+  NoDrive,
+  chromeCapture,
+  driverOf,
+  iconsCapture,
+  menusCapture,
+  sizingCapture,
+} from './replay-windows.js';
+import { SystemParametersInfo } from '../../src/win16/user/SystemParametersInfo.js';
 import { Brush } from '../../src/raster/brush.js';
 import { Pen } from '../../src/raster/pen.js';
 import { Color } from '../../src/raster/color.js';
@@ -484,6 +492,9 @@ export class Context {
   fonts: any;
   display: any;
   displayName: string;
+
+  /** The probe whose record is being replayed, for adapters several probes share. */
+  probe = '';
   private next: number;
   private _dos: any = null;
   private _screen: any = null;
@@ -569,7 +580,7 @@ export class Context {
   get rasterDesktop() {
     if (!this._rasterDesktop) {
       try {
-        this._rasterDesktop = rasterDesktop(this, oemBitmaps(this.displayName));
+        this._rasterDesktop = rasterDesktop(this, driverOf(this.displayName));
       } catch (error) {
         if (error instanceof NoDrive) {
           throw new NeedsDrive(error.message);
@@ -1903,6 +1914,10 @@ const ADAPTERS: Record<
   /* `chrome`: a window made and read back through the exports, on USER's
    * raster desktop. See `replay-windows.ts`. */
   async rects(context, [name]) {
+    if (context.probe === 'sizing') {
+      return (await sizingCapture(context)).rects.get(String(name)) ?? '';
+    }
+
     const captured = await chromeCapture(context, String(name));
 
     if (!captured) {
@@ -1920,6 +1935,14 @@ const ADAPTERS: Record<
     }
 
     const [name, row] = args;
+
+    if (context.probe === 'sizing' || context.probe === 'icons') {
+      const capture =
+        context.probe === 'sizing' ? await sizingCapture(context) : await iconsCapture(context);
+
+      return capture.areas.get(String(name))?.rows[Number(String(row).replace('y=', ''))] ?? '';
+    }
+
     const captured = await menusCapture(context);
     const rows = captured.get(String(name));
 
@@ -1928,6 +1951,62 @@ const ADAPTERS: Record<
     }
 
     return rows[Number(String(row).replace('y=', ''))] ?? '';
+  },
+
+  /* `sizing` and `icons`: where each captured area was. */
+  async area(context, [name]) {
+    const capture =
+      context.probe === 'sizing' ? await sizingCapture(context) : await iconsCapture(context);
+
+    return capture.areas.get(String(name))?.bounds ?? '';
+  },
+
+  /* `icons`: whether each standard icon loaded. */
+  async loaded(context, [name]) {
+    return (await iconsCapture(context)).loaded.get(String(name)) ?? '';
+  },
+
+  /* `sizing`: an icon's metrics, as `GetSystemMetrics` and `SystemParametersInfo` answer. */
+  iconmetric(context, [name]) {
+    const metrics: Record<string, number> = {
+      SM_CXICON: 11,
+      SM_CYICON: 12,
+      SM_CXICONSPACING: 38,
+      SM_CYICONSPACING: 39,
+    };
+    const spi: Record<string, number> = {
+      SPI_ICONHORIZONTALSPACING: 13,
+      SPI_ICONVERTICALSPACING: 24,
+      SPI_GETICONTITLEWRAP: 25,
+      SPI_GETICONTITLELOGFONT: 31,
+    };
+    const key = String(name);
+
+    if (key in metrics) {
+      return String(GetSystemMetrics.call(context, metrics[key]));
+    }
+
+    const buffer = context.place('', 64);
+
+    SystemParametersInfo.call(context, spi[key], 0, buffer.far, 0);
+
+    if (key !== 'SPI_GETICONTITLELOGFONT') {
+      return String((context.machine.cpu.core.read16(buffer.segment, buffer.offset) << 16) >> 16);
+    }
+
+    const core = context.machine.cpu.core;
+    const word = (at: number) => (core.read16(buffer.segment, buffer.offset + at) << 16) >> 16;
+    let face = '';
+
+    for (let at = 18; core.read8(buffer.segment, buffer.offset + at); at++) {
+      face += String.fromCharCode(core.read8(buffer.segment, buffer.offset + at));
+    }
+
+    return (
+      `height=${word(0)},width=${word(2)},weight=${word(8)},` +
+      `italic=${core.read8(buffer.segment, buffer.offset + 10)},` +
+      `charset=${core.read8(buffer.segment, buffer.offset + 13)},face=${face}`
+    );
   },
 
   async pixels(context, [name, row]) {
@@ -3827,7 +3906,8 @@ const STUBBED = new Set<string>([]);
  */
 export async function replayRecord(
   record: Fixture['records'][number],
-  display = 'vga'
+  display = 'vga',
+  probe = ''
 ): Promise<Replayed> {
   const base = { function: record.function, args: record.args, expected: record.result };
 
@@ -3846,7 +3926,10 @@ export async function replayRecord(
   let actual: string;
 
   try {
-    actual = await adapter(new Context(display), parseArgs(record.args));
+    const context = new Context(display);
+
+    context.probe = probe;
+    actual = await adapter(context, parseArgs(record.args));
   } catch (error) {
     if (error instanceof Unimplemented) {
       return { ...base, actual: null, outcome: 'unimplemented' };
@@ -3887,7 +3970,7 @@ export async function replayFixture(fixture: Fixture) {
   const replayed: Replayed[] = [];
 
   for (const record of fixture.records) {
-    replayed.push(await replayRecord(record, fixture.display ?? 'vga'));
+    replayed.push(await replayRecord(record, fixture.display ?? 'vga', fixture.probe));
   }
 
   const byFunction = new Map<string, { total: number; agreed: number; outcome: Outcome }>();

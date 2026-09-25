@@ -3,12 +3,9 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { DeviceBitmap } from '../../src/raster/device-bitmap.js';
-import { DevicePalette } from '../../src/raster/device-palette.js';
-import { decodeDib, dibToDevice } from '../../src/raster/dib.js';
 import { GetPixel } from '../../src/win16/gdi/GetPixel.js';
 import { displayMode } from '../../src/win16/display-modes.js';
-import { resourcesOf, RT_BITMAP } from '../../src/win16/ne-resources.js';
+import { driverResources } from '../../src/win16/user/driver-resources.js';
 import { MSG, User, PAINTSTRUCT, POINT, RECT, WNDCLASS } from '../../src/win16/user.js';
 import { CreatePopupMenu } from '../../src/win16/user/CreateMenu.js';
 import { DispatchMessage } from '../../src/win16/user/DispatchMessage.js';
@@ -18,6 +15,9 @@ import { SendMessage } from '../../src/win16/user/SendMessage.js';
 import { KillTimer, SetTimer } from '../../src/win16/user/SetTimer.js';
 import { TrackPopupMenu } from '../../src/win16/user/TrackPopupMenu.js';
 import { TranslateMessage } from '../../src/win16/user/TranslateMessage.js';
+import { DrawIcon, IsIconic, IsZoomed, LoadIcon } from '../../src/win16/user/icon-api.js';
+import { PatBlt } from '../../src/win16/gdi/PatBlt.js';
+import { Gdi } from '../../src/win16/gdi.js';
 import { AppendMenu } from '../../src/win16/user/AppendMenu.js';
 import { BeginPaint } from '../../src/win16/user/BeginPaint.js';
 import { ClientToScreen } from '../../src/win16/user/ClientToScreen.js';
@@ -61,8 +61,8 @@ const DRIVES: Record<string, string> = {
 
 export class NoDrive extends Error {}
 
-/** The display driver's OEM bitmaps, from the oracle's installation of that display. */
-export function oemBitmaps(display: string) {
+/** The display driver's bitmaps and icons, from the oracle's installation of that display. */
+export function driverOf(display: string) {
   const root = join(__dirname, '..', '..', 'oracle', 'build', DRIVES[display] ?? '');
   const ini = join(root, 'WINDOWS', 'SYSTEM.INI');
 
@@ -72,15 +72,10 @@ export function oemBitmaps(display: string) {
 
   const name = /^display\.drv\s*=\s*(\S+)/im.exec(readFileSync(ini, 'latin1'))?.[1] ?? 'VGA.DRV';
   const driver = new Uint8Array(readFileSync(join(root, 'WINDOWS', 'SYSTEM', name.toUpperCase())));
-  const mode = displayMode(display);
-  const depth = DevicePalette.depthOf(mode);
-  const palette = DevicePalette.forDisplay(mode);
 
-  return new Map<number, DeviceBitmap>(
-    resourcesOf(driver)
-      .filter((resource) => resource.type === RT_BITMAP && resource.id !== null)
-      .map((resource) => [resource.id!, dibToDevice(decodeDib(resource.data), depth, palette)])
-  );
+  const user = new Uint8Array(readFileSync(join(root, 'WINDOWS', 'SYSTEM', 'USER.EXE')));
+
+  return driverResources(driver, displayMode(display), user);
 }
 
 /** What `chrome` made each window as. */
@@ -460,3 +455,262 @@ async function captureMenus(system: any) {
 
   return captured;
 }
+
+/* ---- sizing and icons ---- */
+
+/** Every pixel of a rectangle of the screen, a row a string, as the probes write them. */
+function readArea(system: any, left: number, top: number, right: number, bottom: number) {
+  const screen = GetDC.call(system, 0);
+  const rows: string[] = [];
+
+  for (let y = top; y < bottom; y++) {
+    let row = '';
+
+    for (let x = left; x < right; x++) {
+      const index = PALETTE.indexOf(GetPixel.call(system, screen, x, y) & 0xffffff);
+
+      row += index < 0 ? '?' : index.toString(16);
+    }
+
+    rows.push(row);
+  }
+
+  ReleaseDC.call(system, 0, screen);
+
+  return rows;
+}
+
+/** What a probe that captures areas recorded: each area's bounds and rows, and rectangles. */
+export interface Captured {
+  areas: Map<string, { bounds: string; rows: string[] }>;
+  rects: Map<string, string>;
+  loaded: Map<string, string>;
+}
+
+const sizingCaptures = new Map<string, Promise<Captured>>();
+const iconCaptures = new Map<string, Promise<Captured>>();
+
+/** The `sizing` probe, replayed through the exports once per display. */
+export function sizingCapture(context: any) {
+  const key = context.display.name;
+
+  if (!sizingCaptures.has(key)) {
+    sizingCaptures.set(key, captureSizing(context));
+  }
+
+  return sizingCaptures.get(key)!;
+}
+
+/** The `icons` probe, replayed through the exports once per display. */
+export function iconsCapture(context: any) {
+  const key = context.display.name;
+
+  if (!iconCaptures.has(key)) {
+    iconCaptures.set(key, captureIcons(context));
+  }
+
+  return iconCaptures.get(key)!;
+}
+
+/** A class whose procedure paints only what `DefWindowProc` would. */
+async function probeClass(system: any, name: string, icon: number) {
+  async function ProbeProc(hwnd: number, message: number, wParam: number, lParam: number) {
+    if (message === User.WM_PAINT) {
+      const paint = new PAINTSTRUCT();
+
+      await BeginPaint.call(system, hwnd, paint);
+      EndPaint.call(system, hwnd, paint);
+      return 0;
+    }
+
+    return DefWindowProc.call(system, hwnd, message, wParam, lParam);
+  }
+
+  const kind: any = new WNDCLASS();
+
+  kind.style = 0x0003;
+  kind.lpfnWndProc = ProbeProc;
+  kind.hIcon = icon;
+  kind.hbrBackground = 5 + 1;
+  kind.lpszClassName = name;
+  await RegisterClass.call(system, kind);
+}
+
+async function pumpAll(system: any) {
+  const msg: any = new MSG();
+
+  while (await PeekMessage.call(system, msg, 0, 0, 0, User.PM_REMOVE)) {
+    TranslateMessage.call(system, msg);
+    await DispatchMessage.call(system, msg);
+  }
+}
+
+async function captureSizing(system: any): Promise<Captured> {
+  const captured: Captured = { areas: new Map(), rects: new Map(), loaded: new Map() };
+  const width = system.display.width;
+  const height = system.display.height;
+
+  await probeClass(system, 'ProbeSizing', await LoadIcon.call(system, 0, 32512));
+
+  const frame = await CreateWindow.call(
+    system,
+    'ProbeSizing',
+    'Probe',
+    0x00cf0000,
+    40,
+    40,
+    200,
+    120,
+    0,
+    0,
+    0,
+    0
+  );
+
+  const rects = (name: string) => {
+    const window: any = new RECT();
+    const client: any = new RECT();
+    const corner: any = new POINT();
+
+    GetWindowRect.call(system, frame, window);
+    GetClientRect.call(system, frame, client);
+    ClientToScreen.call(system, frame, corner);
+
+    captured.rects.set(
+      name,
+      `window=${window.left}:${window.top}:${window.right}:${window.bottom},` +
+        `client=${corner.x}:${corner.y}:${corner.x + client.right}:${corner.y + client.bottom},` +
+        `iconic=${IsIconic.call(system, frame)},zoomed=${IsZoomed.call(system, frame)}`
+    );
+  };
+
+  const area = (name: string, left: number, top: number, right: number, bottom: number) =>
+    captured.areas.set(name, {
+      bounds: `${left}:${top}:${right}:${bottom}`,
+      rows: readArea(system, left, top, right, bottom),
+    });
+
+  const show = async (how: number) => {
+    await ShowWindow.call(system, frame, how);
+    await UpdateWindow.call(system, frame);
+    await pumpAll(system);
+  };
+
+  await show(User.SW_SHOWNORMAL);
+  rects('normal');
+
+  await show(User.SW_SHOWMAXIMIZED);
+  rects('maximized');
+  area('maximized', 0, 0, width, 24);
+  await show(User.SW_RESTORE);
+  rects('restored');
+
+  await show(User.SW_SHOWMINIMIZED);
+  rects('minimized');
+
+  const icon: any = new RECT();
+
+  GetWindowRect.call(system, frame, icon);
+  area(
+    'minimized',
+    icon.left > 48 ? icon.left - 48 : 0,
+    icon.top - 4,
+    icon.right + 48 < width ? icon.right + 48 : width,
+    height
+  );
+  await show(User.SW_RESTORE);
+  rects('unminimized');
+
+  const track = async (command: number) => {
+    for (let step = 0; step < 3; step++) PostMessage.call(system, frame, WM_KEYDOWN, VK_RIGHT, 0);
+    for (let step = 0; step < 2; step++) PostMessage.call(system, frame, WM_KEYDOWN, VK_DOWN, 0);
+    PostMessage.call(system, frame, WM_KEYDOWN, VK_RETURN, 0);
+    await SendMessage.call(system, frame, WM_SYSCOMMAND, command, 0);
+    await pumpAll(system);
+    await UpdateWindow.call(system, frame);
+    await pumpAll(system);
+  };
+
+  await track(SC_MOVE);
+  rects('moved');
+  await track(SC_SIZE);
+  rects('sized');
+
+  DestroyWindow.call(system, frame);
+
+  return captured;
+}
+
+async function captureIcons(system: any): Promise<Captured> {
+  const captured: Captured = { areas: new Map(), rects: new Map(), loaded: new Map() };
+  const names: [string, number][] = [
+    ['IDI_APPLICATION', 32512],
+    ['IDI_HAND', 32513],
+    ['IDI_QUESTION', 32514],
+    ['IDI_EXCLAMATION', 32515],
+    ['IDI_ASTERISK', 32516],
+  ];
+  const width = system.display.width;
+  const height = system.display.height;
+
+  /* The desktop is there before any program runs. */
+  void system.rasterDesktop;
+
+  const screen = GetDC.call(system, 0);
+
+  PatBlt.call(system, screen, 0, 0, 240, 56, Gdi.WHITENESS);
+
+  for (const [index, [label, id]] of names.entries()) {
+    const handle = await LoadIcon.call(system, 0, id);
+
+    captured.loaded.set(label, handle ? '1' : '0');
+
+    if (handle) {
+      DrawIcon.call(system, screen, 8 + index * 44, 8, handle);
+    }
+  }
+
+  ReleaseDC.call(system, 0, screen);
+  captured.areas.set('drawn', { bounds: '0:0:240:56', rows: readArea(system, 0, 0, 240, 56) });
+
+  await probeClass(system, 'ProbeBare', 0);
+
+  const bare = await CreateWindow.call(
+    system,
+    'ProbeBare',
+    'Bare',
+    0x00cf0000,
+    40,
+    40,
+    200,
+    120,
+    0,
+    0,
+    0,
+    0
+  );
+
+  await ShowWindow.call(system, bare, User.SW_SHOWMINIMIZED);
+  await UpdateWindow.call(system, bare);
+  await pumpAll(system);
+
+  const icon: any = new RECT();
+
+  GetWindowRect.call(system, bare, icon);
+
+  const left = icon.left > 48 ? icon.left - 48 : 0;
+  const right = icon.right + 48 < width ? icon.right + 48 : width;
+
+  captured.areas.set('bare', {
+    bounds: `${left}:${icon.top - 4}:${right}:${height}`,
+    rows: readArea(system, left, icon.top - 4, right, height),
+  });
+  DestroyWindow.call(system, bare);
+
+  return captured;
+}
+
+const VK_RETURN = 0x0d;
+const VK_RIGHT = 0x27;
+const SC_MOVE = 0xf010;
+const SC_SIZE = 0xf000;

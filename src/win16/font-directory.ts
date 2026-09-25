@@ -22,9 +22,10 @@
 
 /** A `[section]` of a profile, as key and value pairs in the order written. */
 export function profileSection(text: string | null, name: string): [string, string][] {
-  const match = new RegExp(`^\\[${name}\\][ \\t]*\\r?\\n([\\s\\S]*?)(?=^\\[|$(?![\\r\\n]))`, 'mi').exec(
-    text ?? ''
-  );
+  const match = new RegExp(
+    `^\\[${name}\\][ \\t]*\\r?\\n([\\s\\S]*?)(?=^\\[|$(?![\\r\\n]))`,
+    'mi'
+  ).exec(text ?? '');
 
   return (match?.[1] ?? '')
     .split(/\r?\n/)
@@ -64,16 +65,27 @@ export function fontDirectoryOrder(
 }
 
 /**
+ * The TrueType file a `.FOT` stub stands for: the stub is a font resource
+ * whose one face names its `.TTF` by file name. `WIN.INI` `[fonts]` lists the
+ * stub, and GDI loads the stub -- where the face's pitch and family come from
+ * -- and then the outlines it names. See `font-resource.ts`.
+ */
+export function trueTypeFileOf(stub: Uint8Array, stubName: string): string {
+  const text = Array.from(stub, (byte) => String.fromCharCode(byte)).join('');
+
+  return (
+    /[A-Z0-9_]+\.TTF/i.exec(text)?.[0].toUpperCase() ??
+    stubName.toUpperCase().replace(/\.FOT$/, '.TTF')
+  );
+}
+
+/**
  * Sorts font files into the order GDI's directory would hold them.
  *
  * Stable, so files the profiles do not name keep the order they arrived in and
  * sit after the ones they do.
  */
-export function inDirectoryOrder<T>(
-  files: T[],
-  order: string[],
-  nameOf: (file: T) => string
-): T[] {
+export function inDirectoryOrder<T>(files: T[], order: string[], nameOf: (file: T) => string): T[] {
   const rank = (file: T) => {
     const at = order.indexOf(nameOf(file).toUpperCase());
 

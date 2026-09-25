@@ -113,7 +113,8 @@ const EGA_METRICS = { ...VGA_METRICS, captionHeight: 18, menuHeight: 16 };
  * Every system metric the `chrome` probe recorded, by `SM_` index, apart from
  * the screen and full-screen sizes, which follow the display's size: the
  * scroll bars, borders, frames, icons, cursor, menu, sizing boxes and the
- * smallest a window may be tracked to. The Super VGA's are the VGA's; the two
+ * smallest a window may be tracked to -- and the icon spacings the `sizing`
+ * probe recorded. The Super VGA's are the VGA's; the two
  * 256-colour modes are not recorded and take the VGA's.
  */
 const VGA_BY_INDEX = {
@@ -145,6 +146,8 @@ const VGA_BY_INDEX = {
   33: 4,
   34: 102,
   35: 26,
+  38: 75,
+  39: 72,
 };
 
 const EGA_BY_INDEX = {
@@ -176,6 +179,8 @@ const EGA_BY_INDEX = {
   33: 4,
   34: 102,
   35: 24,
+  38: 75,
+  39: 66,
 };
 
 const HERCULES_BY_INDEX = {
@@ -207,6 +212,8 @@ const HERCULES_BY_INDEX = {
   33: 4,
   34: 105,
   35: 24,
+  38: 75,
+  39: 66,
 };
 
 /**

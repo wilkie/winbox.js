@@ -1177,9 +1177,10 @@ export function fill(contours, options) {
    * scanline and rounding that to a pixel -- is kept because it is the thing
    * every rule in `FONTS.md` was measured against, and because the two disagree
    * on 187 pixels of the fixture where one of them is always right. Set
-   * `WB_ANALYTIC` to draw with it instead.
+   * `WB_ANALYTIC` to draw with it instead -- in Node; a browser has no
+   * environment to set, and draws with the walk.
    */
-  if (process.env.WB_ANALYTIC !== '1') {
+  if ((globalThis as any).process?.env?.WB_ANALYTIC !== '1') {
     return fillWalked(contours, options);
   }
 

@@ -1,0 +1,812 @@
+{
+  "probe": "icons",
+  "display": "hercules",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "hercules",
+    "displayDescription": "Hercules, 720x348, monochrome"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "loaded",
+      "args": "IDI_APPLICATION",
+      "result": "1",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "loaded",
+      "args": "IDI_HAND",
+      "result": "1",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "loaded",
+      "args": "IDI_QUESTION",
+      "result": "1",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "loaded",
+      "args": "IDI_EXCLAMATION",
+      "result": "1",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "loaded",
+      "args": "IDI_ASTERISK",
+      "result": "1",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "area",
+      "args": "drawn",
+      "result": "0:0:240:56",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=0",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=1",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=2",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=3",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=4",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=5",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=6",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=7",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=8",
+      "result": "ffffffff00000000000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000ffffffffffffffffffffffffffffffffffff00000000ffffffffffffffffffffffffffffffffffff00000000ffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=9",
+      "result": "ffffffff00000000000000000000000000000000fffffffffffffffffffff00000000000000ffffffffffffffffffffffffffffff000ffffffff000ffffffffffffffffffffffffffffff000ffffffff000ffffffffffffffffffffffffffffff000ffffffff000fffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=10",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00ffffffffffffffffffff0000000000000000fffffffffffffffffffffffffff00ffffffffffffff00ffffffffffffffffffffffffff00ffffffffffffff00ffffffffffffffffffffffffff00fffff0000fffff00fffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=11",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffffffffff000000000000000000fffffffffffffffffffffffff0ffffff000000ffffff0ffffffffffffffffffffffff0fffff00000000fffff0ffffffffffffffffffffffff0ffffff000000ffffff0ffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=12",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00ffffffffffffffffff00000000000000000000fffffffffffffffffffffff0fffff0000000000fffff0ffffffffffffffffffffff0ffffff00000000ffffff0ffffffffffffffffffffff0ffffff00000000ffffff0fffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=13",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffffffff0000000000000000000000fffffffffffffffffffff0fffff000000000000fffff0ffffffffffffffffffff0fffffff00000000fffffff0ffffffffffffffffffff0fffffff00000000fffffff0ffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=14",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00ffffffffffffffff000000000000000000000000fffffffffffffffffff0ffffff000000000000ffffff0ffffffffffffffffff0ffffffff00000000ffffffff0ffffffffffffffffff0ffffffff00000000ffffffff0fffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=15",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffffff00000000000000000000000000fffffffffffffffff0ffffff00000000000000ffffff0ffffffffffffffff0fffffffff00000000fffffffff0ffffffffffffffff0ffffffffff000000ffffffffff0ffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=16",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00ffffffffffffff0000000000000000000000000000ffffffffffffffff0ffffff00000000000000ffffff0ffffffffffffffff0fffffffff00000000fffffffff0ffffffffffffffff0fffffffffff0000fffffffffff0ffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=17",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffff000000000000000000000000000000ffffffffffffff0fffffff000000ff000000fffffff0ffffffffffffff0ffffffffff00000000ffffffffff0ffffffffffffff0ffffffffffffffffffffffffffff0fffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=18",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffff000000ff00fffff00ff000fff00000ffffffffffffff0fffffff000000ff000000fffffff0ffffffffffffff0ffffffffff00000000ffffffffff0ffffffffffffff0ffffffffffffffffffffffffffff0fffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=19",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffff00000f00f000f000f00f00f00f0000ffffffffffffff0fffffff000000ff000000fffffff0ffffffffffffff0ffffffffff00000000ffffffffff0ffffffffffffff0fffffffff000000000ffffffffff0fffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=20",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffff00000f00f000f000f00f00f00f0000fffffffffffff0fffffffffffffff000000fffffffff0ffffffffffff0fffffffffff00000000fffffffffff0ffffffffffff0ffffffffff000000000fffffffffff0ffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=21",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffff00000f000000f000f00f00f00f0000fffffffffffff0fffffffffffffff000000fffffffff0ffffffffffff0fffffffffff00000000fffffffffff0ffffffffffff0fffffffffffff000000fffffffffff0ffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=22",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffff00000f000000f000f00f00f00f0000fffffffffffff0ffffffffffffff000000ffffffffff0ffffffffffff0fffffffffff00000000fffffffffff0ffffffffffff0fffffffffffff000000fffffffffff0ffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=23",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffff000000ff0000f000f00f00fff00000fffffffffffff0ffffffffffffff000000ffffffffff0ffffffffffff0fffffffffff00000000fffffffffff0ffffffffffff0fffffffffffff000000fffffffffff0ffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=24",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffff00000000f000f000f00f00f0000000fffffffffffff0fffffffffffff000000fffffffffff0ffffffffffff0fffffffffff00000000fffffffffff0ffffffffffff0fffffffffffff000000fffffffffff0ffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=25",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffff00000000f000f000f00f00f0000000fffffffffffff0fffffffffffff000000fffffffffff0ffffffffffff0fffffffffff00000000fffffffffff0ffffffffffff0fffffffffffff000000fffffffffff0ffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=26",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffff00000f00f000f000f00f00f0000000fffffffffffff0ffffffffffff000000ffffffffffff0ffffffffffff0fffffffffff00000000fffffffffff0ffffffffffff0fffffffffffff000000fffffffffff0ffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=27",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffff00000f00f000f000f00f00f0000000fffffffffffff0ffffffffffff000000ffffffffffff0ffffffffffff0fffffffffff00000000fffffffffff0ffffffffffff0fffffffffffff000000fffffffffff0ffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=28",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffff00000f00f000f000f00f00f0000000ffffffffffffff0fffffffffff000000fffffffffff0ffffffffffffff0ffffffffff00000000ffffffffff0ffffffffffffff0ffffffffffff000000ffffffffff0fffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=29",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffff000000ff0000f0000ff000f0000000ffffffffffffff0ffffffffffffffffffffffffffff0ffffffffffffff0ffffffffffffffffffffffffffff0ffffffffffffff0ffffffffffff000000ffffffffff0fffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=30",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffff000000000000000000000000000000ffffffffffffff0fffffffffffff00fffffffffffff0ffffffffffffff0fffffffffffff00fffffffffffff0ffffffffffffff0ffffffffffff000000ffffffffff0fffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=31",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00ffffffffffffff0000000000000000000000000000ffffffffffffffff0ffffffffff000000ffffffffff0ffffffffffffffff0ffffffffff000000ffffffffff0ffffffffffffffff0fffffffffff000000fffffffff0ffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=32",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffffff00000000000000000000000000fffffffffffffffff0ffffffffff000000ffffffffff0ffffffffffffffff0ffffffffff000000ffffffffff0ffffffffffffffff0fffffffffff000000fffffffff0ffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=33",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00ffffffffffffffff000000000000000000000000fffffffffffffffffff0ffffffff00000000ffffffff0ffffffffffffffffff0ffffffff00000000ffffffff0ffffffffffffffffff0fffffff000000000000fffff0fffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=34",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffffffff0000000000000000000000fffffffffffffffffffff0fffffff00000000fffffff0ffffffffffffffffffff0fffffff00000000fffffff0ffffffffffffffffffff0ffffff000000000000ffff0ffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=35",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00ffffffffffffffffff00000000000000000000fffffffffffffffffffffff0fffffff000000fffffff0ffffffffffffffffffffff0fffffff000000fffffff0ffffffffffffffffffffff0fffff000000000000fff0fffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=36",
+      "result": "ffffffff00ffffffffffffffffffffffffffff00fffffffffffffffffff000000000000000000fffffffffffffffffffffffff0ffffff000000ffffff0ffffffffffffffffffffffff0ffffff000000ffffff0ffffffffffffffffffffffff0ffffffffffffffffff0ffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=37",
+      "result": "ffffffff00000000000000000000000000000000ffffffffffffffffffff0000000000000000fffffffffffffffffffffffffff00ffffff00ffffff00ffffffffffffffffffffffffff00ffffff00ffffff00ffffffffffffffffffffffffff00ffffffffffffff00fffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=38",
+      "result": "ffffffff00000000000000000000000000000000fffffffffffffffffffff00000000000000ffffffffffffffffffffffffffffff000ffffffff000ffffffffffffffffffffffffffffff000ffffffff000ffffffffffffffffffffffffffffff000ffffffff000fffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=39",
+      "result": "ffffffff00000000000000000000000000000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff00000000ffffffffffffffffffffffffffffffffffff00000000ffffffffffffffffffffffffffffffffffff00000000ffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=40",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=41",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=42",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=43",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=44",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=45",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=46",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=47",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=48",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=49",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=50",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=51",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=52",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=53",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=54",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "screen",
+      "args": "drawn,y=55",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "each standard icon, loaded and drawn in a row"
+    },
+    {
+      "function": "area",
+      "args": "bare",
+      "result": "0:278:105:348",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=0",
+      "result": "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=1",
+      "result": "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=2",
+      "result": "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=3",
+      "result": "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=4",
+      "result": "f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=5",
+      "result": "0f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=6",
+      "result": "f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=7",
+      "result": "0f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=8",
+      "result": "f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=9",
+      "result": "0f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=10",
+      "result": "f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=11",
+      "result": "0f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=12",
+      "result": "f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=13",
+      "result": "0f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=14",
+      "result": "f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=15",
+      "result": "0f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=16",
+      "result": "f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=17",
+      "result": "0f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=18",
+      "result": "f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=19",
+      "result": "0f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=20",
+      "result": "f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=21",
+      "result": "0f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=22",
+      "result": "f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=23",
+      "result": "0f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=24",
+      "result": "f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=25",
+      "result": "0f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=26",
+      "result": "f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=27",
+      "result": "0f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=28",
+      "result": "f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=29",
+      "result": "0f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=30",
+      "result": "f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=31",
+      "result": "0f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=32",
+      "result": "f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=33",
+      "result": "0f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=34",
+      "result": "f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=35",
+      "result": "0f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=36",
+      "result": "f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=37",
+      "result": "0f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=38",
+      "result": "f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=39",
+      "result": "0f0f0f0f0f0f0f0f0f0f0fffffffffffffffffffffffffffffffffffff0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=40",
+      "result": "f0f0f0f0f0f0f0f0f0f0f0f0f000000000000000000000000000f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=41",
+      "result": "0f0f0f0f0f0f0f0f0f0f0f0f0f000000000000000000000000000f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=42",
+      "result": "f0f0f0f0f0f0f0f0f0f0f0f0f000ffff00000000000000000000f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=43",
+      "result": "0f0f0f0f0f0f0f0f0f0f0f0f0f00f000f00000000000000000000f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=44",
+      "result": "f0f0f0f0f0f0f0f0f0f0f0f0f000f000f000fff00ff00fff0000f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=45",
+      "result": "0f0f0f0f0f0f0f0f0f0f0f0f0f00ffff0000000f0f00f000f0000f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=46",
+      "result": "f0f0f0f0f0f0f0f0f0f0f0f0f000f000f000ffff0f00fffff000f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=47",
+      "result": "0f0f0f0f0f0f0f0f0f0f0f0f0f00f000f00f000f0f00f00000000f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=48",
+      "result": "f0f0f0f0f0f0f0f0f0f0f0f0f000ffff0000ffff0f000fff0000f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=49",
+      "result": "0f0f0f0f0f0f0f0f0f0f0f0f0f000000000000000000000000000f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=50",
+      "result": "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=51",
+      "result": "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=52",
+      "result": "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=53",
+      "result": "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=54",
+      "result": "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=55",
+      "result": "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=56",
+      "result": "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=57",
+      "result": "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=58",
+      "result": "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=59",
+      "result": "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=60",
+      "result": "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=61",
+      "result": "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=62",
+      "result": "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=63",
+      "result": "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=64",
+      "result": "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=65",
+      "result": "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=66",
+      "result": "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=67",
+      "result": "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=68",
+      "result": "f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f",
+      "section": "a window whose class names no icon, minimized"
+    },
+    {
+      "function": "screen",
+      "args": "bare,y=69",
+      "result": "0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0f0",
+      "section": "a window whose class names no icon, minimized"
+    }
+  ]
+}

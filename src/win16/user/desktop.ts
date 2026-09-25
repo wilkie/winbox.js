@@ -3,6 +3,7 @@
 import { Color } from '../../raster/color.js';
 import { DeviceBitmap } from '../../raster/device-bitmap.js';
 import { ditherTile } from '../../raster/dither.js';
+import { type IconData } from '../../raster/icon.js';
 import { Surface } from '../../raster/surface.js';
 
 import { paintControl, type ControlState } from './controls.js';
@@ -35,6 +36,26 @@ import { paintPopup, popupLayout, type MenuEnvironment } from './menus.js';
  */
 
 export const COLOR_BACKGROUND = 1;
+const COLOR_ACTIVECAPTION = 2;
+const COLOR_WINDOWTEXT = 8;
+const COLOR_CAPTIONTEXT = 9;
+
+const IDI_APPLICATION = 32512;
+
+const SM_CXICON = 11;
+const SM_CYICON = 12;
+const SM_CXFRAME = 32;
+const SM_CYFRAME = 33;
+const SM_CXICONSPACING = 38;
+const SM_CYICONSPACING = 39;
+
+/**
+ * An icon's title's box is its text's width and two pixels either side; the
+ * text starts one pixel in. Measured on the `sizing` probe's "Probe" on four
+ * displays; a title that wraps is not measured.
+ */
+const ICON_TITLE_PAD = 2;
+const ICON_TITLE_TEXT = 1;
 
 const SM_CYMENU = 15;
 
@@ -51,6 +72,16 @@ const GRAY_PHASE = 1;
 /** What the desktop needs of the display: the frame's needs, and the System font to draw text in. */
 export type DesktopEnvironment = Omit<FrameEnvironment, 'title' | 'text' | 'measure'> & {
   systemFont: any;
+
+  /** The display driver's standard icons, by `IDI_` identifier. */
+  icons?: Map<number, IconData>;
+
+  /** What a minimized window whose class's icon is `IDI_APPLICATION` shows. See `driverResources`. */
+  applicationIcon?: IconData;
+
+  /** The font icon titles are in, and its height and ascent. */
+  titleFont?: any;
+  titleMetrics?: { height: number; ascent: number };
 };
 
 /** A window's background: a brush's colour, or none. */
@@ -107,6 +138,19 @@ export class DesktopWindow {
   /** The window's own system menu, once a program or a menu asked for it. */
   systemMenu: MenuData | null = null;
 
+  /** Whether the window is as it was made, maximized, or minimized to an icon. */
+  state: 'normal' | 'maximized' | 'minimized' = 'normal';
+
+  /** Where a maximized or minimized window goes back to. */
+  restoreRect: { left: number; top: number; width: number; height: number } | null = null;
+
+  /** A minimized window's icon, and the window its title is shown in. */
+  icon: IconData | null = null;
+  iconTitle: DesktopWindow | null = null;
+
+  /** For an icon's title window: the window whose title it shows. */
+  titleOf: DesktopWindow | null = null;
+
   constructor(
     id: number,
     left: number,
@@ -160,12 +204,16 @@ export class Desktop {
   /** Draws and measures text in the System font. */
   readonly #text: any = Surface.memory();
 
+  /** Draws and measures in the icon title's font. */
+  readonly #title: any = Surface.memory();
+
   constructor(screen: DeviceBitmap, environment: DesktopEnvironment) {
     this.screen = screen;
     this.environment = environment;
     this.owners = new Uint16Array(screen.width * screen.height);
     this.#text.font = environment.systemFont;
     this.#text.backMode = 1;
+    this.#title.backMode = 1;
   }
 
   /** The frame's environment, with the desktop's text drawn on `bitmap`. */
@@ -442,8 +490,19 @@ export class Desktop {
     }
 
     this.paintFrame(window);
-    window.needsErase = true;
-    window.needsPaint = true;
+
+    /* An icon's title shows with it. */
+    if (window.iconTitle && !window.iconTitle.visible) {
+      window.iconTitle.visible = true;
+      this.#own();
+      this.paintFrame(window.iconTitle);
+    }
+
+    /* An icon USER draws itself; anything else is erased and painted. */
+    const drawn = window.state === 'minimized' && window.icon !== null;
+
+    window.needsErase = !drawn;
+    window.needsPaint = !drawn;
   }
 
   /**
@@ -544,6 +603,22 @@ export class Desktop {
       return;
     }
 
+    if (window.state === 'minimized') {
+      this.#paintIcon(window);
+
+      /* Its title's colours follow its activation. */
+      if (window.iconTitle?.visible) {
+        this.#paintIconTitle(window.iconTitle);
+      }
+
+      return;
+    }
+
+    if (window.titleOf) {
+      this.#paintIconTitle(window);
+      return;
+    }
+
     const whole = this.#view(window, 0, 0, window.width, window.height);
 
     paintFrame(
@@ -559,6 +634,7 @@ export class Desktop {
         menu: window.menu,
         menuSelected: window.menuSelected,
         systemMenuOpen: window.systemMenuOpen,
+        zoomed: window.state === 'maximized',
       },
       this.#frameEnvironment(whole)
     );
@@ -600,22 +676,27 @@ export class Desktop {
   #layout(window: DesktopWindow) {
     const nowhere = new DeviceBitmap(0, 0, this.screen.depth, undefined, this.screen.devicePalette);
 
-    window.client = paintFrame(
-      nowhere,
-      0,
-      0,
-      window.width,
-      window.height,
-      {
-        style: window.style,
-        active: window.active,
-        title: window.title,
-        menu: window.menu,
-        menuSelected: window.menuSelected,
-        systemMenuOpen: window.systemMenuOpen,
-      },
-      this.#frameEnvironment(null)
-    );
+    /* An icon, or an icon's title, is all client area. */
+    window.client =
+      window.state === 'minimized' || window.titleOf
+        ? { left: 0, top: 0, right: window.width, bottom: window.height }
+        : paintFrame(
+            nowhere,
+            0,
+            0,
+            window.width,
+            window.height,
+            {
+              style: window.style,
+              active: window.active,
+              title: window.title,
+              menu: window.menu,
+              menuSelected: window.menuSelected,
+              systemMenuOpen: window.systemMenuOpen,
+              zoomed: window.state === 'maximized',
+            },
+            this.#frameEnvironment(null)
+          );
 
     window.surface.bitmap = this.#view(
       window,
@@ -711,6 +792,214 @@ export class Desktop {
     return null;
   }
 
+  /**
+   * Maximizes a window: its frame just off the screen's edges, its client
+   * area the screen below its caption and menu. Recorded by the `sizing`
+   * probe on four displays.
+   */
+  maximize(window: DesktopWindow) {
+    this.#leaveIcon(window);
+
+    if (window.state === 'normal') {
+      window.restoreRect = {
+        left: window.left,
+        top: window.top,
+        width: window.width,
+        height: window.height,
+      };
+    }
+
+    window.state = 'maximized';
+
+    const cx = this.environment.metric(SM_CXFRAME);
+    const cy = this.environment.metric(SM_CYFRAME);
+
+    this.place(window, -cx, -cy, this.screen.width + 2 * cx, this.screen.height + 2 * cy);
+  }
+
+  /** Puts a maximized or minimized window back where it was. */
+  restore(window: DesktopWindow) {
+    if (window.state === 'normal' || !window.restoreRect) {
+      return;
+    }
+
+    this.#leaveIcon(window);
+    window.state = 'normal';
+
+    const { left, top, width, height } = window.restoreRect;
+
+    this.place(window, left, top, width, height);
+  }
+
+  /**
+   * Minimizes a window to its icon: `SM_CXICON` and four square, at the
+   * bottom left of the screen -- `(SM_CXICONSPACING - SM_CXICON) / 2` in and
+   * `SM_CYICONSPACING` up, then along -- with its title in a window of its
+   * own below it. Recorded by the `sizing` probe on four displays: (21, 408)
+   * on the VGA, (21, 284) on the EGA. Where the second icon goes, and the
+   * rest of arranging, is not measured.
+   */
+  minimize(window: DesktopWindow) {
+    if (window.state === 'minimized') {
+      return;
+    }
+
+    if (window.state === 'normal') {
+      window.restoreRect = {
+        left: window.left,
+        top: window.top,
+        width: window.width,
+        height: window.height,
+      };
+    }
+
+    window.state = 'minimized';
+
+    const cxIcon = this.environment.metric(SM_CXICON);
+    const cyIcon = this.environment.metric(SM_CYICON);
+    const cxSpacing = this.environment.metric(SM_CXICONSPACING);
+    const cySpacing = this.environment.metric(SM_CYICONSPACING);
+    const taken = this.windows.filter((other) => other !== window && other.state === 'minimized');
+    let slot = 0;
+
+    while (taken.some((other) => other.left === this.#slotLeft(slot, cxSpacing, cxIcon))) {
+      slot++;
+    }
+
+    this.place(
+      window,
+      this.#slotLeft(slot, cxSpacing, cxIcon),
+      this.screen.height - cySpacing,
+      cxIcon + 4,
+      cyIcon + 4
+    );
+
+    const title = new DesktopWindow(
+      this.#next++,
+      0,
+      0,
+      0,
+      0,
+      0x80000000,
+      window.title,
+      undefined,
+      null
+    );
+
+    title.titleOf = window;
+    window.iconTitle = title;
+    this.windows.splice(this.windows.indexOf(window), 0, title);
+    this.#placeTitle(window);
+
+    /* With an icon, USER draws it; without one, the window is erased and
+     * painted like any other -- the `icons` probe's bare window shows its
+     * class's white. */
+    window.needsErase = !window.icon;
+    window.needsPaint = !window.icon;
+  }
+
+  #slotLeft(slot: number, cxSpacing: number, cxIcon: number) {
+    return slot * cxSpacing + ((cxSpacing - cxIcon) >> 1);
+  }
+
+  /** An icon's title under it, as wide as its text and a little more, centred. */
+  #placeTitle(window: DesktopWindow) {
+    const title = window.iconTitle;
+
+    if (!title) {
+      return;
+    }
+
+    const text = this.#titleText;
+    const width = text.measureText(window.title).width + 2 * ICON_TITLE_PAD;
+    const height = this.environment.titleMetrics?.height ?? this.environment.font.height;
+
+    title.title = window.title;
+    title.visible = window.visible;
+    this.place(
+      title,
+      window.left + (window.width >> 1) - (width >> 1),
+      window.top + window.height,
+      width,
+      height
+    );
+  }
+
+  /** Takes a window's icon title away, as it stops being an icon. */
+  #leaveIcon(window: DesktopWindow) {
+    if (window.iconTitle) {
+      this.destroy(window.iconTitle);
+      window.iconTitle = null;
+    }
+  }
+
+  /** An icon: the desktop beneath, the icon drawn over it through its mask. */
+  #paintIcon(window: DesktopWindow) {
+    const whole = this.#view(window, 0, 0, window.width, window.height);
+
+    this.#fill(
+      whole,
+      0,
+      0,
+      window.width,
+      window.height,
+      this.environment.sysColor(COLOR_BACKGROUND),
+      window.left,
+      window.top
+    );
+
+    /* `IDI_APPLICATION` is shown as USER's Windows flag. */
+    const icon =
+      window.icon && window.icon === this.environment.icons?.get(IDI_APPLICATION)
+        ? (this.environment.applicationIcon ?? window.icon)
+        : window.icon;
+
+    if (!icon) {
+      return;
+    }
+
+    for (let y = 0; y < icon.height; y++) {
+      for (let x = 0; x < icon.width; x++) {
+        const at = y * icon.width + x;
+        const beneath = whole.indexAt(2 + x, 2 + y) ?? 0;
+
+        whole.put(2 + x, 2 + y, (icon.and[at] ? beneath : 0) ^ icon.xor[at]);
+      }
+    }
+  }
+
+  /** An icon's title: the caption's colours while its window is active. */
+  #paintIconTitle(title: DesktopWindow) {
+    const window = title.titleOf!;
+    const whole = this.#view(title, 0, 0, title.width, title.height);
+    const active = window.active;
+    const text = this.#titleText;
+
+    this.#fill(
+      whole,
+      0,
+      0,
+      title.width,
+      title.height,
+      this.environment.sysColor(active ? COLOR_ACTIVECAPTION : COLOR_BACKGROUND),
+      title.left,
+      title.top
+    );
+
+    text.bitmap = whole;
+    text.textColor = colourOf(
+      this.environment.sysColor(active ? COLOR_CAPTIONTEXT : COLOR_WINDOWTEXT)
+    );
+    text.fillText(ICON_TITLE_TEXT, 0, window.title);
+  }
+
+  /** Draws and measures in the icon title's font. */
+  get #titleText() {
+    this.#title.font = this.environment.titleFont ?? this.environment.systemFont;
+
+    return this.#title;
+  }
+
   /** Whether a window shows: it and every window it is a child of are visible. */
   #showing(window: DesktopWindow) {
     for (let at: DesktopWindow | null = window; at; at = at.parent) {
@@ -776,8 +1065,13 @@ export class Desktop {
     top: number,
     width: number,
     height: number,
-    colorref: number
+    colorref: number,
+    originX = 0,
+    originY = 0
   ) {
+    /* The pattern starts at the corner of what it is drawn through, or at
+     * `originX, originY` before it -- the screen's corner, for the desktop's
+     * own pattern seen through an icon. */
     const palette = bitmap.devicePalette;
     const [red, green, blue] = [colorref & 0xff, (colorref >> 8) & 0xff, (colorref >> 16) & 0xff];
     const tile = ditherTile(this.environment.display, palette, red, green, blue);
@@ -785,7 +1079,7 @@ export class Desktop {
 
     for (let y = top; y < top + height; y++) {
       for (let x = left; x < left + width; x++) {
-        bitmap.put(x, y, tile ? tile[((y & 7) << 3) | (x & 7)] : solid);
+        bitmap.put(x, y, tile ? tile[(((y + originY) & 7) << 3) | ((x + originX) & 7)] : solid);
       }
     }
 

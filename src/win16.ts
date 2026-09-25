@@ -13,6 +13,7 @@ import { Allocator } from './win16/allocator.js';
 import { Loader } from './win16/loader.js';
 import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
 import { rasterDesktop } from './win16/user/raster-desktop.js';
+import { driverResources } from './win16/user/driver-resources.js';
 import { RasterInput } from './win16/user/raster-input.js';
 import { BitmapContext } from './raster/bitmap-context.js';
 import { Linker } from './win16/linker.js';
@@ -23,7 +24,7 @@ import { ModuleManager } from './win16/module-manager.js';
 import { HandleManager } from './win16/handle-manager.js';
 import { WindowManager } from './win16/window-manager.js';
 import { FontManager } from './win16/font-manager.js';
-import { fontDirectoryOrder, inDirectoryOrder } from './win16/font-directory.js';
+import { fontDirectoryOrder, inDirectoryOrder, trueTypeFileOf } from './win16/font-directory.js';
 
 // The various OS modules
 import { Kernel } from './win16/kernel.js';
@@ -208,17 +209,41 @@ export class Win16 {
 
     const order = fontDirectoryOrder(await profile('SYSTEM.INI'), await profile('WIN.INI'));
 
-    const fonts = inDirectoryOrder(
-      files.filter((file: any) =>
-        String(file.name ?? '')
-          .toUpperCase()
-          .endsWith('.FON')
-      ),
+    const nameOf = (file: any) => String(file.name ?? '').toUpperCase();
+    const byName = new Map(files.map((file: any) => [nameOf(file), file]));
+    const loaded = new Set<string>();
+
+    const load = async (name: string) => {
+      const file = byName.get(name);
+
+      if (!file || loaded.has(name)) {
+        return null;
+      }
+
+      loaded.add(name);
+      await this._fonts.load(file);
+
+      return file;
+    };
+
+    /* A TrueType face is installed as a `.FOT` stub, which goes to the
+     * manager first -- its pitch and family are read from it -- and then the
+     * `.TTF` it names. The replays install fonts the same way. */
+    for (const name of order) {
+      const file: any = await load(name);
+
+      if (file && name.endsWith('.FOT')) {
+        await load(trueTypeFileOf(new Uint8Array(await file.read(0, file.size)), name));
+      }
+    }
+
+    const rest = inDirectoryOrder(
+      files.filter((file: any) => nameOf(file).endsWith('.FON') && !loaded.has(nameOf(file))),
       order,
-      (file: any) => String(file.name ?? '')
+      nameOf
     );
 
-    for (const file of fonts) {
+    for (const file of rest) {
       await this._fonts.load(file);
     }
   }
@@ -241,7 +266,8 @@ export class Win16 {
   /**
    * USER's raster desktop, when the page asked for one: every window drawn on
    * `screen`, by USER, from the display driver's OEM bitmaps given as
-   * `options.raster.oem`. Without it, windows are the page's own components.
+   * `options.raster.driver`, the display driver's bytes. Without it, windows
+   * are the page's own components.
    * See `win16/user/desktop.ts`.
    */
   get rasterDesktop() {
@@ -251,7 +277,12 @@ export class Win16 {
       return null;
     }
 
-    this._rasterDesktop ??= rasterDesktop(this, raster.oem ?? new Map());
+    this._rasterDesktop ??= rasterDesktop(
+      this,
+      raster.driver
+        ? driverResources(raster.driver, this._display, raster.user)
+        : { oem: raster.oem ?? new Map(), icons: new Map() }
+    );
 
     return this._rasterDesktop;
   }

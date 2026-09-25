@@ -1,15 +1,14 @@
 'use strict';
 
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 
 import { DeviceBitmap } from '../../src/raster/device-bitmap.js';
 import { DevicePalette } from '../../src/raster/device-palette.js';
-import { decodeDib, dibToDevice } from '../../src/raster/dib.js';
-import { Gdi } from '../../src/win16/gdi.js';
-import { GetTextMetrics } from '../../src/win16/gdi/GetTextMetrics.js';
 import { displayMode } from '../../src/win16/display-modes.js';
-import { resourcesOf, RT_BITMAP } from '../../src/win16/ne-resources.js';
+import { SYSTEM_FONT, stockFontHandle } from '../../src/win16/gdi/stock-fonts.js';
+import { driverResources } from '../../src/win16/user/driver-resources.js';
+import { fontOf, iconTitleFont } from '../../src/win16/user/raster-desktop.js';
 import { GetSysColor } from '../../src/win16/user/GetSysColor.js';
 import { GetSystemMetrics } from '../../src/win16/user/GetSystemMetrics.js';
 import { Context, prepareFonts } from '../oracle/replay.js';
@@ -119,16 +118,14 @@ export async function displayEnvironment(display: string) {
   const mode = displayMode(display);
   const depth = DevicePalette.depthOf(mode);
   const palette = DevicePalette.forDisplay(mode);
-  const driver = new Uint8Array(readFileSync(driverOf(DRIVES[display])));
-  const oem = new Map<number, DeviceBitmap>(
-    resourcesOf(driver)
-      .filter((resource) => resource.type === RT_BITMAP && resource.id !== null)
-      .map((resource) => [resource.id!, dibToDevice(decodeDib(resource.data), depth, palette)])
+  const driver = driverOf(DRIVES[display]);
+  const { oem, icons, applicationIcon } = driverResources(
+    new Uint8Array(readFileSync(driver)),
+    mode,
+    new Uint8Array(readFileSync(join(dirname(driver), 'USER.EXE')))
   );
-  const metrics: any = {};
-  const systemFont = context.handles.resolve(context.withStockFont(Gdi.SYSTEM_FONT)).font;
-
-  GetTextMetrics.call(context, context.withStockFont(Gdi.SYSTEM_FONT), metrics);
+  const system = fontOf(context, stockFontHandle(context, SYSTEM_FONT));
+  const title = fontOf(context, iconTitleFont(context));
 
   return {
     context,
@@ -140,8 +137,12 @@ export async function displayEnvironment(display: string) {
       metric: (index: number) => GetSystemMetrics.call(context, index),
       sysColor: (index: number) => GetSysColor.call(context, index),
       oem,
-      font: { height: metrics.tmHeight, ascent: metrics.tmAscent },
-      systemFont,
+      icons,
+      applicationIcon,
+      font: system.metrics,
+      systemFont: system.font,
+      titleFont: title.font,
+      titleMetrics: title.metrics,
     },
   };
 }

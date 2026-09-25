@@ -1,44 +1,84 @@
 'use strict';
 
-import { type DeviceBitmap } from '../../raster/device-bitmap.js';
 import { Surface } from '../../raster/surface.js';
+import { CreateFont } from '../gdi/CreateFont.js';
+import { SelectObject } from '../gdi/SelectObject.js';
 import { SYSTEM_FONT, stockFontHandle } from '../gdi/stock-fonts.js';
 import { GetTextMetrics } from '../gdi/GetTextMetrics.js';
 
 import { Desktop } from './desktop.js';
+import { type DriverResources } from './driver-resources.js';
 import { GetSysColor } from './GetSysColor.js';
 import { GetSystemMetrics } from './GetSystemMetrics.js';
 
 /**
  * The raster desktop of a running system -- `Win16`, or anything standing in
  * for it -- on its screen: the display's metrics and colours as the system
- * answers them, the System font it hands out, and the display driver's OEM
- * bitmaps, which come from the person's own installation.
+ * answers them, the System font it hands out, the icon title's font, and the
+ * display driver's bitmaps and icons, which come from the person's own
+ * installation.
  */
-export function rasterDesktop(system: any, oem: Map<number, DeviceBitmap>) {
-  const font = system.handles.resolve(stockFontHandle(system, SYSTEM_FONT));
-  const probe: any = Surface.memory();
-
-  probe.font = font;
-
-  const hdc = system.handles.allocate(probe);
-  const metrics: any = {};
-
-  GetTextMetrics.call(system, hdc, metrics);
-  system.handles.free?.(hdc);
+export function rasterDesktop(system: any, resources: DriverResources) {
+  const system_ = fontOf(system, stockFontHandle(system, SYSTEM_FONT));
+  const title = fontOf(system, iconTitleFont(system));
 
   const desktop = new Desktop(system.screen.bitmap, {
     display: system.display,
     metric: (index: number) => GetSystemMetrics.call(system, index),
     sysColor: (index: number) => GetSysColor.call(system, index),
-    oem,
-    font: { height: metrics.tmHeight, ascent: metrics.tmAscent },
-    systemFont: font,
+    oem: resources.oem,
+    icons: resources.icons,
+    applicationIcon: resources.applicationIcon,
+    font: system_.metrics,
+    systemFont: system_.font,
+    titleFont: title.font,
+    titleMetrics: title.metrics,
   });
 
   desktop.paintBackground();
 
   return desktop;
+}
+
+/**
+ * The font an icon's title is in: MS Sans Serif, eight points on the
+ * display's vertical resolution, normal weight. Recorded by the `sizing`
+ * probe, from `SPI_GETICONTITLELOGFONT`: -11 on the VGA and Super VGA, -8 on
+ * the EGA and Hercules, 400.
+ */
+export function iconTitleFont(system: any) {
+  const logical = system.display?.logicalPixelsY ?? 96;
+
+  return CreateFont.call(
+    system,
+    -Math.round((8 * logical) / 72),
+    0,
+    0,
+    0,
+    400,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    'MS Sans Serif'
+  );
+}
+
+/** A font, realized in a device context, and its height and ascent. */
+export function fontOf(system: any, handle: number) {
+  const surface: any = Surface.memory();
+  const hdc = system.handles.allocate(surface);
+  const metrics: any = {};
+
+  SelectObject.call(system, hdc, handle);
+  GetTextMetrics.call(system, hdc, metrics);
+  system.handles.free?.(hdc);
+
+  return { font: surface.font, metrics: { height: metrics.tmHeight, ascent: metrics.tmAscent } };
 }
 
 /**

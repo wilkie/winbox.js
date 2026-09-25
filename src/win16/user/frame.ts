@@ -53,6 +53,7 @@ export const WS_MAXIMIZEBOX = 0x00010000;
 export const OBM_CLOSE = 32754;
 export const OBM_REDUCE = 32749;
 export const OBM_ZOOM = 32748;
+export const OBM_RESTORE = 32747;
 export { OBM_DNARROW, OBM_LFARROW, OBM_RGARROW, OBM_UPARROW } from './painter.js';
 
 const SM_CXVSCROLL = 2;
@@ -116,6 +117,9 @@ export interface Frame {
 
   /** Whether the system menu is open, which shows its box inverted. */
   systemMenuOpen?: boolean;
+
+  /** Whether the window is maximized: its maximize box is then a restore box. */
+  zoomed?: boolean;
 }
 
 /**
@@ -235,7 +239,7 @@ export function paintFrame(
     }
 
     if (style & WS_MAXIMIZEBOX) {
-      const zoom = environment.oem.get(OBM_ZOOM);
+      const zoom = environment.oem.get(frame.zoomed ? OBM_RESTORE : OBM_ZOOM);
       const size = zoom?.width ?? environment.metric(SM_CXSIZE) + 1;
 
       barRight -= size;

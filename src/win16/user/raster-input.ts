@@ -28,11 +28,20 @@ export const HTHSCROLL = 6;
 export const HTVSCROLL = 7;
 export const HTMINBUTTON = 8;
 export const HTMAXBUTTON = 9;
+export const HTLEFT = 10;
+export const HTRIGHT = 11;
+export const HTTOP = 12;
+export const HTTOPLEFT = 13;
+export const HTTOPRIGHT = 14;
+export const HTBOTTOM = 15;
+export const HTBOTTOMLEFT = 16;
+export const HTBOTTOMRIGHT = 17;
 export const HTBORDER = 18;
 
 const CS_DBLCLKS = 0x0008;
 
 const WS_CAPTION = 0x00c00000;
+const WS_THICKFRAME = 0x00040000;
 const WS_SYSMENU = 0x00080000;
 const WS_MINIMIZEBOX = 0x00020000;
 const WS_MAXIMIZEBOX = 0x00010000;
@@ -44,6 +53,9 @@ const SM_CYHSCROLL = 3;
 const SM_CYCAPTION = 4;
 const SM_CYMENU = 15;
 const SM_CXSIZE = 30;
+const SM_CYSIZE = 31;
+const SM_CXFRAME = 32;
+const SM_CYFRAME = 33;
 
 export interface Pointer {
   /** Where, on the screen. */
@@ -134,7 +146,12 @@ export class RasterInput {
     if (kind === 'move') {
       message = client ? User.WM_MOUSEMOVE : User.WM_NCMOUSEMOVE;
     } else {
-      const double = pointer.double && kind === 'down' && this.#classStyle(target) & CS_DBLCLKS;
+      /* A double click is one in a client area only for a class that asks
+       * for them; on the frame and caption, it always is. */
+      const double =
+        pointer.double &&
+        kind === 'down' &&
+        (hit !== HTCLIENT || this.#classStyle(target) & CS_DBLCLKS);
       const base = [
         [User.WM_LBUTTONDOWN, User.WM_LBUTTONUP, User.WM_LBUTTONDBLCLK],
         [User.WM_MBUTTONDOWN, User.WM_MBUTTONUP, User.WM_MBUTTONDBLCLK],
@@ -299,11 +316,41 @@ export function hitTest(desktop: Desktop, window: DesktopWindow, x: number, y: n
     return HTNOWHERE;
   }
 
+  /* An icon is all caption: pressed, it moves; twice, it restores. */
+  if (window.state === 'minimized') {
+    return HTCAPTION;
+  }
+
   if (wx >= left && wx < right && wy >= top && wy < bottom) {
     return HTCLIENT;
   }
 
   const style = window.style >>> 0;
+
+  /* A sizing frame: its edges, and its corners as far as the notches. */
+  if (style & WS_THICKFRAME && window.state === 'normal') {
+    const frame = metric(SM_CXFRAME);
+    const frameY = metric(SM_CYFRAME);
+    const corner = frame + metric(SM_CXSIZE);
+    const cornerY = frameY + metric(SM_CYSIZE);
+    const onLeft = wx < frame;
+    const onRight = wx >= window.width - frame;
+    const onTop = wy < frameY;
+    const onBottom = wy >= window.height - frameY;
+    const nearLeft = wx < corner;
+    const nearRight = wx >= window.width - corner;
+    const nearTop = wy < cornerY;
+    const nearBottom = wy >= window.height - cornerY;
+
+    if ((onTop && nearLeft) || (onLeft && nearTop)) return HTTOPLEFT;
+    if ((onTop && nearRight) || (onRight && nearTop)) return HTTOPRIGHT;
+    if ((onBottom && nearLeft) || (onLeft && nearBottom)) return HTBOTTOMLEFT;
+    if ((onBottom && nearRight) || (onRight && nearBottom)) return HTBOTTOMRIGHT;
+    if (onLeft) return HTLEFT;
+    if (onRight) return HTRIGHT;
+    if (onTop) return HTTOP;
+    if (onBottom) return HTBOTTOM;
+  }
 
   /* The scroll bars run from a pixel outside the client area, sharing its lines. */
   if (

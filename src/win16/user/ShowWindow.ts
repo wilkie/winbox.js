@@ -6,6 +6,8 @@ import { BOOL } from '../types.js';
 
 import { SetFocus } from './SetFocus.js';
 import { RedrawWindow } from './RedrawWindow.js';
+import { RasterWindow } from './raster-window.js';
+import { showRaster } from './window-state.js';
 
 import { User, MSG, WINDOWPOS } from '../user.js';
 
@@ -56,6 +58,11 @@ import { User, MSG, WINDOWPOS } from '../user.js';
 export async function ShowWindow(hwnd, nCmdShow) {
   // Get the window itself
   const dialog = this.handles.resolve(hwnd);
+
+  /* On the raster desktop, USER's own. See `window-state.ts`. */
+  if (dialog instanceof RasterWindow) {
+    return showRaster(this, hwnd, dialog, nCmdShow);
+  }
 
   // Get the window/class for the handle
   const windowClass = this.handles.retrieve(dialog.options.windowClass);
@@ -152,4 +159,14 @@ export async function ShowWindow(hwnd, nCmdShow) {
   console.log('SHOWWINDOW DONE', ret);
 
   return ret;
+}
+
+/** The **OpenIcon** function restores a minimized window, and activates it. */
+export async function OpenIcon(hwnd) {
+  return ShowWindow.call(this, hwnd, User.SW_SHOWNORMAL);
+}
+
+/** The **CloseWindow** function minimizes a window; despite its name, it is not destroyed. */
+export async function CloseWindow(hwnd) {
+  await ShowWindow.call(this, hwnd, User.SW_MINIMIZE);
 }

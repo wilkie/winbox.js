@@ -57,6 +57,9 @@ import {
   SetMenu,
 } from './user/menu-api.js';
 import { TrackPopupMenu } from './user/TrackPopupMenu.js';
+import { SystemParametersInfo } from './user/SystemParametersInfo.js';
+import { DrawIcon, IsIconic, IsZoomed, LoadIcon } from './user/icon-api.js';
+import { CloseWindow, OpenIcon } from './user/ShowWindow.js';
 import { AppendMenu } from './user/AppendMenu.js';
 import { ClientToScreen } from './user/ClientToScreen.js';
 import { GetDlgItem } from './user/GetDlgItem.js';
@@ -514,7 +517,7 @@ export class User extends Module {
       [User.stub, 'ScreenToClient', 6],
       // 30 //
       [User.stub, 'WindowFromPoint', 4],
-      [User.stub, 'IsIconic', 0],
+      [IsIconic, 'IsIconic', 2, [HWND], BOOL],
       [GetWindowRect, 'GetWindowRect', 6, [HWND, [RECT]]],
       [GetClientRect, 'GetClientRect', 6, [HWND, [RECT]]],
       [User.stub, 'EnableWindow', 4],
@@ -533,8 +536,8 @@ export class User extends Module {
         HWND,
       ],
       [ShowWindow, 'ShowWindow', 4, [HWND, INT], BOOL],
-      [User.stub, 'CloseWindow', 2],
-      [User.stub, 'OpenIcon', 2],
+      [CloseWindow, 'CloseWindow', 2, [HWND]],
+      [OpenIcon, 'OpenIcon', 2, [HWND], BOOL],
       [User.stub, 'BringWindowToTop', 2],
       [User.stub, 'GetParent', 2],
       [User.stub, 'IsWindow', 0],
@@ -578,7 +581,7 @@ export class User extends Module {
       [FillRect, 'FillRect', 8, [HDC, [RECT], HBRUSH], INT],
       [User.stub, 'InvertRect', 6],
       [FrameRect, 'FrameRect', 8, [HDC, [RECT], HBRUSH], INT],
-      [User.stub, 'DrawIcon', 8],
+      [DrawIcon, 'DrawIcon', 8, [HDC, INT, INT, HICON], BOOL],
       [User.stub, 'DrawText', 14],
       [User.stub, 'Bear86', 0],
       [DialogBox, 'DialogBox', 12, [HINSTANCE, LPCSTR, HWND, FARPTR], INT],
@@ -677,7 +680,7 @@ export class User extends Module {
       [User.stub, 'WinHelp', 12],
       [User.stub, 'SwitchToThisWindow', 4],
       [User.stub, 'LoadCursor', 6],
-      [User.stub, 'LoadIcon', 6],
+      [LoadIcon, 'LoadIcon', 6, [HINSTANCE, LPCSTR], HICON],
       [LoadBitmap, 'LoadBitmap', 6, [HINSTANCE, DWORD], HBITMAP],
       [LoadString, 'LoadString', 10, [HINSTANCE, UINT, FARPTR, INT], INT],
       [User.stub, 'LoadAccelerators', 6],
@@ -785,7 +788,7 @@ export class User extends Module {
       // 270 //
       [User.stub, 'GlobalFindAtom', 4],
       [User.stub, 'GlobalGetAtomName', 8],
-      [User.stub, 'IsZoomed', 0],
+      [IsZoomed, 'IsZoomed', 2, [HWND], BOOL],
       [User.stub, 'ControlPanelInfo', 8],
       [User.stub, 'GetNextQueueWindow', 4],
       [User.stub, 'RepaintScreen', 0],
@@ -1017,7 +1020,7 @@ export class User extends Module {
       [User.stub, 'GetUserLocalObjType', 2],
       [User.stub, 'Hardware_Event', 0],
       [User.stub, 'EnableScrollBar', 6],
-      [User.stub, 'SystemParametersInfo', 10],
+      [SystemParametersInfo, 'SystemParametersInfo', 10, [UINT, UINT, FARPTR, UINT], BOOL],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],

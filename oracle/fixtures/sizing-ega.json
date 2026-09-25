@@ -1,0 +1,680 @@
+{
+  "probe": "sizing",
+  "display": "ega",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "egahires",
+    "displayDescription": "EGA, 640x350, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "iconmetric",
+      "args": "SM_CXICON",
+      "result": "32",
+      "section": "what places and labels an icon"
+    },
+    {
+      "function": "iconmetric",
+      "args": "SM_CYICON",
+      "result": "32",
+      "section": "what places and labels an icon"
+    },
+    {
+      "function": "iconmetric",
+      "args": "SM_CXICONSPACING",
+      "result": "75",
+      "section": "what places and labels an icon"
+    },
+    {
+      "function": "iconmetric",
+      "args": "SM_CYICONSPACING",
+      "result": "66",
+      "section": "what places and labels an icon"
+    },
+    {
+      "function": "iconmetric",
+      "args": "SPI_ICONHORIZONTALSPACING",
+      "result": "75",
+      "section": "what places and labels an icon"
+    },
+    {
+      "function": "iconmetric",
+      "args": "SPI_ICONVERTICALSPACING",
+      "result": "66",
+      "section": "what places and labels an icon"
+    },
+    {
+      "function": "iconmetric",
+      "args": "SPI_GETICONTITLEWRAP",
+      "result": "1",
+      "section": "what places and labels an icon"
+    },
+    {
+      "function": "iconmetric",
+      "args": "SPI_GETICONTITLELOGFONT",
+      "result": "height=-8,width=0,weight=400,italic=0,charset=0,face=MS Sans Serif",
+      "section": "what places and labels an icon"
+    },
+    {
+      "function": "rects",
+      "args": "normal",
+      "result": "window=40:40:240:160,client=44:61:236:156,iconic=0,zoomed=0",
+      "section": "what places and labels an icon"
+    },
+    {
+      "function": "rects",
+      "args": "maximized",
+      "result": "window=-4:-4:644:354,client=0:17:640:350,iconic=0,zoomed=1",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "area",
+      "args": "maximized",
+      "result": "0:0:640:24",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=0",
+      "result": "ffffffffffffffffff044444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444440fffffffffffffffff80fffffffffffffffff8",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=1",
+      "result": "ffffffffffffffffff044444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444440ffffffffffffffff880ffffffffffffffff88",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=2",
+      "result": "ffffffffffffffffff044444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444440ffffffffffffffff880ffffffffffffffff88",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=3",
+      "result": "ffffffffffffffffff044444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444440ffffffffffffffff880ffffffff0fffffff88",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=4",
+      "result": "ffffffffffffffffff0444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444fffffff444444444444444ff44444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444440ffffffffffffffff880fffffff000ffffff88",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=5",
+      "result": "ffffffffffffffffff0444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444ff4444ff44444444444444ff44444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444440ffffffffffffffff880ffffff00000fffff88",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=6",
+      "result": "ff00000000000000ff0444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444ff4444ff4ffff44ffff444fffff4444ffff444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444440fffff0000000ffff880fffff0000000ffff88",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=7",
+      "result": "ff0ffffffffffff08f0444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444ff4444ff4fff44ff44ff44ff44ff44ff44ff44444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444440ffffff00000fffff880ffffffffffffffff88",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=8",
+      "result": "ff000000000000008f0444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444fffffff44ff444ff44ff44ff44ff44ffffff44444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444440fffffff000ffffff880ffffffffffffffff88",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=9",
+      "result": "fff88888888888888f0444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444ff4444444ff444ff44ff44ff44ff44ff444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444440ffffffff0fffffff880fffff0000000ffff88",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=10",
+      "result": "ffffffffffffffffff0444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444ff4444444ff444ff44ff44ff44ff44ff44ff44444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444440ffffffffffffffff880ffffff00000fffff88",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=11",
+      "result": "ffffffffffffffffff0444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444ff4444444ff4444ffff444fffff4444ffff444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444440ffffffffffffffff880fffffff000ffffff88",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=12",
+      "result": "ffffffffffffffffff044444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444440ffffffffffffffff880ffffffff0fffffff88",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=13",
+      "result": "ffffffffffffffffff044444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444440ffffffffffffffff880ffffffffffffffff88",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=14",
+      "result": "ffffffffffffffffff044444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444440f888888888888888880f88888888888888888",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=15",
+      "result": "ffffffffffffffffff0444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444408888888888888888880888888888888888888",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=16",
+      "result": "0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=17",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=18",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=19",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=20",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=21",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=22",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "screen",
+      "args": "maximized,y=23",
+      "result": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "rects",
+      "args": "restored",
+      "result": "window=40:40:240:160,client=44:61:236:156,iconic=0,zoomed=0",
+      "section": "maximized, and restored"
+    },
+    {
+      "function": "rects",
+      "args": "minimized",
+      "result": "window=21:284:57:320,client=21:284:57:320,iconic=1,zoomed=0",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "area",
+      "args": "minimized",
+      "result": "0:280:105:350",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=0",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=1",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=2",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=3",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=4",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=5",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=6",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=7",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f808f8f8f8f8f8f8f000000008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=8",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f0f808f8f8f0f8000000000000f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=9",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f800f808000800000000000000f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=10",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f0f800f000f000199002240008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=11",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f898f8f0f808f800999900222200f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=12",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f9f898f8f8f9f009999002222008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=13",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f899f898999800999900222200f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=14",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f9f899f999f009999002222008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=15",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f808f8f9f898f800910000004200f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=16",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f0f808f8f8f0f000000000000008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=17",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f800f80800080004cc00bb3000f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=18",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f0f800f000f00cccc00bbbb008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=19",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8c8f8f0f808f800cccc00bbbb00f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=20",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8fcf8c8f8f8fcf00cccc00bbbb008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=21",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f8ccf8c8ccc800cccc00bbbb00f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=22",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8fcf8ccfcccf00c40000003b008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=23",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f808f8fcf8c8f800000000000000f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=24",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f0f808f8f8f0f000000000000008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=25",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f800f80800080000f8f8f80000f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=26",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f0f800f000f008f8f8f8f8f008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=27",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f0f808f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=28",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=29",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f808080808f008f00800f008000008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=30",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f000f008f0f0f0f0f0f0f0f0f808f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=31",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8080800f800f80808f0080800f0f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=32",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f0f0f0f000f0f008f00808f0f808f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=33",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=34",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f0f0f0f0f80800f8f008f0f0f008f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=35",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f808080800f0f0f0f0f808080808f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=36",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f000f0f0f008080808f0f000f808f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=37",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f808080808f0f008f800f8080800f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=38",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=39",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=40",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f844444444444444444444444444444444f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=41",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f444444444444444444444444444444448f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=42",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f844fffff44444444444f4444444444444f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=43",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f44f4444f4444444444f44444444444448f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=44",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f844f4444f4ff44fff44ffff444fff4444f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=45",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f44fffff44f44f444f4f444f4f444f4448f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=46",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f844f444444f44f444f4f444f4fffff444f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=47",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f44f444444f44f444f4f444f4f44444448f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=48",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f844f444444f444fff44ffff444fff4444f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=49",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f444444444444444444444444444444448f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=50",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=51",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=52",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=53",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=54",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=55",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=56",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=57",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=58",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=59",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=60",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=61",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=62",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=63",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=64",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=65",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=66",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=67",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=68",
+      "result": "8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "screen",
+      "args": "minimized,y=69",
+      "result": "f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f8f",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "rects",
+      "args": "unminimized",
+      "result": "window=40:40:240:160,client=44:61:236:156,iconic=0,zoomed=0",
+      "section": "minimized: the icon and its title"
+    },
+    {
+      "function": "rects",
+      "args": "moved",
+      "result": "window=67:56:267:176,client=71:77:263:172,iconic=0,zoomed=0",
+      "section": "moved and sized from the keyboard, three right and two down"
+    },
+    {
+      "function": "rects",
+      "args": "sized",
+      "result": "window=67:56:285:184,client=71:77:281:180,iconic=0,zoomed=0",
+      "section": "moved and sized from the keyboard, three right and two down"
+    }
+  ]
+}

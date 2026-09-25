@@ -17,13 +17,17 @@ import { Executable } from '../executable.js';
 import { Machine } from '../emulator/machine.js';
 import { Space } from '../space.js';
 import { Win16 } from '../win16.js';
-import { DISPLAY_MODES, displayMode } from '../win16/display-modes.js';
-import { DevicePalette } from '../raster/device-palette.js';
-import { decodeDib, dibToDevice } from '../raster/dib.js';
+import { DISPLAY_MODES } from '../win16/display-modes.js';
 import { Presenter } from '../raster/presenter.js';
-import { resourcesOf, RT_BITMAP } from '../win16/ne-resources.js';
 import { readZip } from '../zip.js';
-import { type Archive, buildDrive, displayDriverOf, type Drive, type Program } from './drive.js';
+import {
+  type Archive,
+  buildDrive,
+  displayDriverOf,
+  type Drive,
+  type Program,
+  systemFileOf,
+} from './drive.js';
 import { forgetWindows, recallWindows, rememberWindows } from './store.js';
 import '../../css/main.scss';
 import './run.css';
@@ -136,10 +140,7 @@ async function rebuild() {
   /* With the installation's display driver, windows are USER's own, drawn on
    * one screen from the driver's bitmaps; without it, the page's components
    * stand in. */
-  const oem =
-    state.windows && elements.raster.checked
-      ? oemBitmaps(state.windows, elements.display.value)
-      : null;
+  const driver = state.windows && elements.raster.checked ? displayDriverOf(state.windows) : null;
 
   const win16: any = new Win16(new DOS(machine), machine, space, {
     display: elements.display.value,
@@ -148,14 +149,14 @@ async function rebuild() {
       console.error(error);
       status(`Stopped: ${error?.message ?? error}`, 'error');
     },
-    ...(oem ? { raster: { oem } } : {}),
+    ...(driver ? { raster: { driver, user: systemFileOf(state.windows!, 'USER.EXE') } } : {}),
   });
 
   if (drive.windows) {
     await win16.boot();
   }
 
-  if (oem && drive.windows) {
+  if (driver && drive.windows) {
     const screen = win16.rasterDesktop.screen;
     const canvas = document.createElement('canvas');
 
@@ -241,32 +242,6 @@ function attachInput(canvas: HTMLCanvasElement, input: any) {
 
   canvas.addEventListener('keydown', key('down'));
   canvas.addEventListener('keyup', key('up'));
-}
-
-/**
- * The OEM bitmaps of an installation's display driver, at the chosen
- * display's depth, or `null` without one.
- */
-function oemBitmaps(windows: Archive, display: string) {
-  const driver = displayDriverOf(windows);
-
-  if (!driver) {
-    return null;
-  }
-
-  const mode = displayMode(display);
-  const depth = DevicePalette.depthOf(mode);
-  const palette = DevicePalette.forDisplay(mode);
-
-  try {
-    return new Map(
-      resourcesOf(driver)
-        .filter((resource) => resource.type === RT_BITMAP && resource.id !== null)
-        .map((resource) => [resource.id!, dibToDevice(decodeDib(resource.data), depth, palette)])
-    );
-  } catch {
-    return null;
-  }
 }
 
 /* ---- the page ---- */

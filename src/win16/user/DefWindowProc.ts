@@ -6,7 +6,18 @@ import { User, MDICREATESTRUCT } from '../user.js';
 
 import { CreateWindow } from './CreateWindow.js';
 import { DestroyWindow } from './DestroyWindow.js';
-import { SC_CLOSE, SC_KEYMENU, trackMenu } from './menu-loop.js';
+import {
+  SC_CLOSE,
+  SC_KEYMENU,
+  SC_MAXIMIZE,
+  SC_MINIMIZE,
+  SC_MOVE,
+  SC_RESTORE,
+  SC_SIZE,
+  trackMenu,
+} from './menu-loop.js';
+import { ShowWindow } from './ShowWindow.js';
+import { HTBOTTOMRIGHT, HTLEFT, trackWindow } from './track-loop.js';
 import { backgroundOf } from './raster-desktop.js';
 import { RasterWindow } from './raster-window.js';
 
@@ -124,7 +135,10 @@ export async function DefWindowProc(hwnd, uMsg, wParam, lParam) {
   return 0;
 }
 
+const HTCAPTION = 2;
 const HTSYSMENU = 3;
+const HTMINBUTTON = 8;
+const HTMAXBUTTON = 9;
 const HTMENU = 5;
 const VK_MENU = 0x12;
 const VK_F10 = 0x79;
@@ -158,8 +172,57 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
         return 0;
       }
 
+      const x = (lParam << 16) >> 16;
+      const y = lParam >> 16;
+
+      /* The caption moves the window; the frame's edges and corners size it. */
+      if (wParam === HTCAPTION && dialog.window.state !== 'maximized') {
+        await trackWindow(system, hwnd, { mode: 'move', keyboard: false, x, y });
+        return 0;
+      }
+
+      if (wParam >= HTLEFT && wParam <= HTBOTTOMRIGHT && dialog.window.state === 'normal') {
+        await trackWindow(system, hwnd, { mode: 'size', keyboard: false, x, y, hit: wParam });
+        return 0;
+      }
+
+      /* Not measured: Windows shows the box pressed until the button is
+       * released over it; here, the press is enough. */
+      if (wParam === HTMINBUTTON) {
+        return rasterDefault(system, dialog, hwnd, User.WM_SYSCOMMAND, SC_MINIMIZE, 0);
+      }
+
+      if (wParam === HTMAXBUTTON) {
+        return rasterDefault(
+          system,
+          dialog,
+          hwnd,
+          User.WM_SYSCOMMAND,
+          dialog.window.state === 'maximized' ? SC_RESTORE : SC_MAXIMIZE,
+          0
+        );
+      }
+
       return undefined;
     }
+
+    case User.WM_NCLBUTTONDBLCLK:
+      /* A double click on the caption maximizes the window, or restores it;
+       * on an icon, it restores it. */
+      if (wParam === HTCAPTION) {
+        const state = dialog.window.state;
+
+        return rasterDefault(
+          system,
+          dialog,
+          hwnd,
+          User.WM_SYSCOMMAND,
+          state === 'normal' ? SC_MAXIMIZE : SC_RESTORE,
+          0
+        );
+      }
+
+      return undefined;
 
     case User.WM_SYSCOMMAND:
       switch (wParam & 0xfff0) {
@@ -196,6 +259,26 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
 
           return 0;
         }
+
+        case SC_MOVE:
+          await trackWindow(system, hwnd, { mode: 'move', keyboard: true });
+          return 0;
+
+        case SC_SIZE:
+          await trackWindow(system, hwnd, { mode: 'size', keyboard: true });
+          return 0;
+
+        case SC_MINIMIZE:
+          await ShowWindow.call(system, hwnd, User.SW_MINIMIZE);
+          return 0;
+
+        case SC_MAXIMIZE:
+          await ShowWindow.call(system, hwnd, User.SW_SHOWMAXIMIZED);
+          return 0;
+
+        case SC_RESTORE:
+          await ShowWindow.call(system, hwnd, User.SW_RESTORE);
+          return 0;
 
         case SC_CLOSE: {
           const windowClass = system.handles.retrieve(dialog.options.windowClass);

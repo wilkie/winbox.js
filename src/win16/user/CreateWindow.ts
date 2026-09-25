@@ -158,6 +158,11 @@ export async function CreateWindow(
 
   if (dialog instanceof RasterWindow) {
     dialog.window.hwnd = hWnd;
+
+    /* The class's icon is what the window shows minimized. */
+    const icon = windowClass?.hIcon ? this.handles.resolve(windowClass.hIcon) : null;
+
+    dialog.window.icon = icon?.xor ? icon : null;
   }
 
   const taskHandle = this.scheduler.active;
