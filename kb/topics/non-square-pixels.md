@@ -31,6 +31,10 @@ On a device whose horizontal and vertical resolutions differ, Windows 3.1 turns 
 
 [[read out]] Where GDI draws the bold itself, its `count + 1` is added after that scaling, not before. See [[topic:synthetic-bold]].
 
+## Pens
+
+[[read out]] A pen wider than a pixel is made as tall as its width through `MulDiv` by the display's `ASPECTX` over its `ASPECTY` (`GDI.EXE` seg1 `2751`), so it is the same thickness on the glass either way. [[measured]] A three-pixel pen draws an ellipse's outline two pixels tall on the EGA and the Hercules. See [[topic:ellipses]].
+
 ## The recordings
 
 [[probe:rotherc]] draws single glyphs and pairs in three faces at two cells and seven angles on a Hercules and, as the square control, on a VGA: 252 of 252 on each. [[probe:rotstyle]] on a Hercules — ground, rules, bold, alignments, `ExtTextOut` and the made-up slant — is 190 of 190. The derivation is at the end of [[fonts:8u]].
