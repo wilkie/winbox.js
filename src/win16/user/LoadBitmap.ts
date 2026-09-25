@@ -5,6 +5,8 @@ import { Executable } from '../../executable.js';
 
 import { Palette } from '../../raster/palette.js';
 import { Bitmap } from '../../raster/bitmap.js';
+import { DeviceBitmap } from '../../raster/device-bitmap.js';
+import { DevicePalette } from '../../raster/device-palette.js';
 
 import { NULL } from '../consts.js';
 
@@ -227,7 +229,7 @@ export async function LoadBitmap(hinst, lpszBitmap) {
             bitmapView = new DataView(bitmapRealData.buffer);
 
             // Create the Bitmap object
-            let bitmap = new Bitmap(
+            const bitmap = new Bitmap(
               bitmapHeader.biWidth,
               bitmapHeader.biHeight,
               bitmapHeader.biBitCount,
@@ -236,12 +238,28 @@ export async function LoadBitmap(hinst, lpszBitmap) {
               bitmapPalette
             );
 
-            const start = new Date().getTime();
-            // Convert to our screen color depth
-            bitmap = bitmap.convert(8, Palette.PALETTEWIN256);
+            /* Into a device-dependent bitmap at the display's depth, each colour
+             * matched to the display's palette, as the bitmap will be drawn
+             * with. A two-colour resource becomes a monochrome bitmap, which
+             * keeps a mask a mask. Inferred, not recorded. See `DeviceBitmap`. */
+            const depth = bitmapHeader.biBitCount === 1 ? 1 : DevicePalette.depthOf(this.display);
+            const colours = bitmap.convert(32);
+            const device = new DeviceBitmap(bitmap.width, bitmap.height, depth);
+            const stride = colours.widthBytes;
 
-            // Allocate a handle to it
-            ret = this.handles.allocate(bitmap);
+            for (let y = 0; y < device.height; y++) {
+              for (let x = 0; x < device.width; x++) {
+                const at = y * stride + x * 4;
+
+                device.indices[y * device.width + x] = device.devicePalette.index(
+                  colours.view.getUint8(at),
+                  colours.view.getUint8(at + 1),
+                  colours.view.getUint8(at + 2)
+                );
+              }
+            }
+
+            ret = this.handles.allocate(device);
           }
         }
       }

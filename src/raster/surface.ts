@@ -6,6 +6,7 @@ import { Color } from './color.js';
 import { Ditherer } from './ditherer.js';
 import { BitmapFont } from './bitmap-font.js';
 import { BitmapContext } from './bitmap-context.js';
+import { DeviceBitmap } from './device-bitmap.js';
 import { LogicalFont } from './logical-font.js';
 import { fill } from './glyph-raster.js';
 
@@ -181,10 +182,18 @@ export class Surface {
   }
 
   get width() {
+    if (this._bitmap instanceof DeviceBitmap) {
+      return this._bitmap.width;
+    }
+
     return parseInt(this._canvas.getAttribute('width'));
   }
 
   get height() {
+    if (this._bitmap instanceof DeviceBitmap) {
+      return this._bitmap.height;
+    }
+
     return parseInt(this._canvas.getAttribute('height'));
   }
 
@@ -193,6 +202,19 @@ export class Surface {
   }
 
   get context() {
+    /* A memory device context draws straight into the bitmap selected into
+     * it: the bitmap's pixels are the only store. See `DeviceBitmap`. */
+    if (this._bitmap instanceof DeviceBitmap) {
+      return this._bitmap.context;
+    }
+
+    /* A memory device context before its bitmap is selected: the constructor
+     * sets the pen and brush, and there is nothing yet to draw on. */
+    if (!this._canvas) {
+      this._context ??= new BitmapContext(0, 0);
+      return this._context;
+    }
+
     if (!this._context) {
       this._context = this.canvas.getContext('2d');
     }
@@ -224,6 +246,19 @@ export class Surface {
    * @param {number} height - Height in pixels.
    * @returns {Surface} A surface backed by a `BitmapContext`.
    */
+  /**
+   * A memory device context: no canvas, and the one-by-one monochrome bitmap
+   * Windows selects into every new memory device context, until the program
+   * selects its own.
+   */
+  static memory() {
+    const surface = new Surface(null);
+
+    surface.bitmap = new DeviceBitmap(1, 1, 1);
+
+    return surface;
+  }
+
   static offscreen(width, height) {
     const context = new BitmapContext(width, height);
 
@@ -288,6 +323,11 @@ export class Surface {
 
   set bitmap(value) {
     this._bitmap = value;
+
+    if (value instanceof DeviceBitmap) {
+      value.surface = this;
+      return;
+    }
 
     // This defines the canvas size
     this._canvas.setAttribute('width', value.width);

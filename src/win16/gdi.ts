@@ -72,6 +72,7 @@ import { SetBkMode } from './gdi/SetBkMode.js';
 import { SetTextAlign } from './gdi/SetTextAlign.js';
 import { SetTextCharacterExtra } from './gdi/SetTextCharacterExtra.js';
 import { SetPixel } from './gdi/SetPixel.js';
+import { GetPixel } from './gdi/GetPixel.js';
 import { SetTextColor } from './gdi/SetTextColor.js';
 import { TextOut } from './gdi/TextOut.js';
 import { ExtTextOut } from './gdi/ExtTextOut.js';
@@ -252,7 +253,7 @@ export class Gdi extends Module {
       [GetDeviceCaps, 'GetDeviceCaps', 4, [HDC, INT], INT],
       [Gdi.stub, 'GetMapMode', 2],
       [GetObject, 'GetObject', 8, [HGDIOBJ, INT, FARPTR], INT],
-      [Gdi.stub, 'GetPixel', 6],
+      [GetPixel, 'GetPixel', 6, [HDC, INT, INT], COLORREF],
       [Gdi.stub, 'GetPolyfillMode', 2],
       [Gdi.stub, 'GetRop2', 2],
       [Gdi.stub, 'GetRelAbs', 2],

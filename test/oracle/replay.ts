@@ -36,6 +36,13 @@ import { LineTo } from '../../src/win16/gdi/LineTo.js';
 import { MoveTo } from '../../src/win16/gdi/MoveTo.js';
 import { Polygon } from '../../src/win16/gdi/Polygon.js';
 import { TextOut } from '../../src/win16/gdi/TextOut.js';
+import { CreateCompatibleBitmap } from '../../src/win16/gdi/CreateCompatibleBitmap.js';
+import { GetPixel } from '../../src/win16/gdi/GetPixel.js';
+import { BitBlt } from '../../src/win16/gdi/BitBlt.js';
+import { SetPixel } from '../../src/win16/gdi/SetPixel.js';
+import { SetBitmapBits } from '../../src/win16/gdi/SetBitmapBits.js';
+import { CreateSolidBrush } from '../../src/win16/gdi/CreateSolidBrush.js';
+import { CreateCompatibleDC } from '../../src/win16/gdi/CreateCompatibleDC.js';
 import { GetBitmapBits } from '../../src/win16/gdi/GetBitmapBits.js';
 import { PatBlt } from '../../src/win16/gdi/PatBlt.js';
 import { CreateBitmap } from '../../src/win16/gdi/CreateBitmap.js';
@@ -701,7 +708,7 @@ export class Context {
   }
 
   drawGlyph(font: any, character: string, cell = 32, ground: any = {}) {
-    const surface: any = Surface.offscreen(cell, cell);
+    const surface: any = this.memoryCell(cell, cell);
 
     surface.font = font;
 
@@ -752,7 +759,7 @@ export class Context {
    * has to hand them on.
    */
   drawExt(font: any, call: any) {
-    const surface: any = Surface.offscreen(call.width ?? 64, call.height ?? 48);
+    const surface: any = this.memoryCell(call.width ?? 64, call.height ?? 48);
 
     surface.font = font;
     this.textState(surface, { dark: call.dark, mode: call.mode, extra: call.extra ?? 0 });
@@ -859,7 +866,7 @@ export class Context {
     }
 
     const [penX, penY] = String(fields.pen ?? '32:32').split(':').map(Number);
-    const surface: any = Surface.offscreen(64, 64);
+    const surface: any = this.memoryCell(64, 64);
 
     surface.font = this.handles.resolve(handle);
     this.textState(surface, { mode: 1 });
@@ -876,7 +883,7 @@ export class Context {
   }
 
   drawTurned(font: any) {
-    const surface: any = Surface.offscreen(64, 64);
+    const surface: any = this.memoryCell(64, 64);
 
     surface.font = font;
     this.textState(surface, { mode: 1 });
@@ -985,7 +992,7 @@ export class Context {
       .slice(4)
       .split(':')
       .map(Number);
-    const surface: any = Surface.offscreen(128, 128);
+    const surface: any = this.memoryCell(128, 128);
 
     surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
     surface.fillRect(0, 0, 128, 128);
@@ -1010,7 +1017,7 @@ export class Context {
    * context, so the records measure what a program reaches.
    */
   drawPath(points: number[][]) {
-    const surface: any = Surface.offscreen(32, 32);
+    const surface: any = this.memoryCell(32, 32);
 
     surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
     surface.fillRect(0, 0, 32, 32);
@@ -1041,7 +1048,7 @@ export class Context {
    * row it occupies, so a break shows as one `ff` between two equal values.
    */
   drawTall(font: any, character: string) {
-    const surface: any = Surface.offscreen(64, 200);
+    const surface: any = this.memoryCell(64, 200);
 
     surface.font = font;
     surface.context.lineTie = this.display.lineTie;
@@ -1076,20 +1083,16 @@ export class Context {
 
   /** The cell as the probes write it: one bit a pixel, white set. */
   /**
-   * The cell as the probe read it: a monochrome bitmap selected into the
-   * surface, and `GetBitmapBits`, so every recording of pixels checks that call
-   * as well. A set bit is white, which is what the probe's background was.
+   * The cell as the probe read it: `GetBitmapBits` on the bitmap selected into
+   * the cell, so every recording of pixels checks that call as well. A set bit
+   * is white, which is what the probe's background was.
    */
   readCell(surface: any, cell = 32, rows = cell) {
     const core = this.machine.cpu.core;
     const size = (cell / 8) * rows;
-    const bitmap = CreateBitmap.call(this, cell, rows, 1, 1, 0);
-
-    SelectObject.call(this, this.handles.allocate(surface), bitmap);
-
     const buffer = this.place('', size);
 
-    GetBitmapBits.call(this, bitmap, size, buffer.far);
+    GetBitmapBits.call(this, this.handles.lookup(surface.bitmap), size, buffer.far);
 
     let hex = '';
 
@@ -1098,6 +1101,116 @@ export class Context {
     }
 
     return hex;
+  }
+
+  /**
+   * The pieces `bitblt` builds its cases from, all through the exported calls:
+   * monochrome bitmaps from known bits, colour bitmaps compatible with the
+   * screen, a ground painted with a solid brush, and the two sources of colour
+   * the probe sets pixel by pixel.
+   */
+  bitblt() {
+    const core = this.machine.cpu.core;
+    const screen = this.handles.allocate(Surface.offscreen(1, 1));
+    const PALETTE = [
+      0x000000, 0x000080, 0x008000, 0x008080, 0x800000, 0x800080, 0x808000, 0xc0c0c0, 0x808080,
+      0x0000ff, 0x00ff00, 0x00ffff, 0xff0000, 0xff00ff, 0xffff00, 0xffffff,
+    ];
+    const FIVE = [0x0000ff, 0x00ff00, 0xff0000, 0xffffff, 0x000000];
+
+    const withBitmap = (bitmap: number) => {
+      const hdc = CreateCompatibleDC.call(this, 0);
+
+      SelectObject.call(this, hdc, bitmap);
+
+      return { hdc, bitmap };
+    };
+
+    const mono = (bytes: number[]) => {
+      const at = this.place('', bytes.length);
+
+      bytes.forEach((byte, index) => core.write8(at.segment, at.offset + index, byte));
+
+      return withBitmap(CreateBitmap.call(this, 16, 2, 1, 1, at.far));
+    };
+
+    const colour = (ground: number | null = null) => {
+      const made = withBitmap(CreateCompatibleBitmap.call(this, screen, 16, 2));
+
+      if (ground !== null) {
+        const brush = CreateSolidBrush.call(this, ground);
+
+        SelectObject.call(this, made.hdc, brush);
+        PatBlt.call(this, made.hdc, 0, 0, 16, 2, Gdi.PATCOPY);
+      }
+
+      return made;
+    };
+
+    const setEach = (made: { hdc: number }, pick: (x: number, y: number) => number) => {
+      for (let y = 0; y < 2; y++) {
+        for (let x = 0; x < 16; x++) {
+          SetPixel.call(this, made.hdc, x, y, pick(x, y));
+        }
+      }
+
+      return made;
+    };
+
+    const pixels = (hdc: number) => {
+      const out: string[] = [];
+
+      for (let y = 0; y < 2; y++) {
+        for (let x = 0; x < 16; x++) {
+          out.push((GetPixel.call(this, hdc, x, y) & 0xffffff).toString(16).padStart(6, '0'));
+        }
+      }
+
+      return out.join('/');
+    };
+
+    const bits = (bitmap: number) => {
+      const buffer = this.place('', 4);
+
+      GetBitmapBits.call(this, bitmap, 4, buffer.far);
+
+      return Array.from({ length: 4 }, (_, index) =>
+        core.read8(buffer.segment, buffer.offset + index).toString(16).padStart(2, '0')
+      ).join('');
+    };
+
+    const palette = () => setEach(colour(), (x) => PALETTE[x]);
+
+    return {
+      mono,
+      colour,
+      pixels,
+      bits,
+      palette,
+      fivePattern: () => setEach(colour(), (x, y) => FIVE[(x + y) % 5]),
+      onto: (ground: string, rop: number) => {
+        const target = colour(parseInt(ground.slice(7), 16));
+
+        BitBlt.call(this, target.hdc, 0, 0, 16, 2, palette().hdc, 0, 0, rop);
+
+        return pixels(target.hdc);
+      },
+    };
+  }
+
+  /**
+   * A cell to draw into, as every probe makes one: a memory device context
+   * with a monochrome bitmap of the cell's size selected into it, through
+   * `CreateCompatibleDC`, `CreateBitmap` and `SelectObject`. What is drawn
+   * lands in the bitmap, and `readCell` reads it back with `GetBitmapBits`.
+   */
+  memoryCell(width: number, height: number) {
+    const hdc = CreateCompatibleDC.call(this, 0);
+    const bitmap = CreateBitmap.call(this, width, height, 1, 1, 0);
+
+    SelectObject.call(this, hdc, bitmap);
+
+    return this.handles.resolve(hdc);
   }
 
   /**
@@ -1854,6 +1967,69 @@ const ADAPTERS: Record<
     return `${ok},${quoted(context.fetch(buffer.far))}`;
   },
 
+  /* `bitblt`: every case rebuilt from nothing through the calls the probe
+   * made, in memory device contexts, and read back with `GetBitmapBits` for a
+   * monochrome bitmap and `GetPixel` for a colour one. */
+  mono(context, [name, , brush]) {
+    const blt = context.bitblt();
+    const source = blt.mono([0x33, 0x33, 0x33, 0x33]);
+    const dest = blt.mono([0x55, 0x55, 0x55, 0x55]);
+
+    SelectObject.call(
+      context,
+      dest.hdc,
+      GetStockObject.call(context, brush === 'brush=white' ? Gdi.WHITE_BRUSH : Gdi.BLACK_BRUSH)
+    );
+    BitBlt.call(context, dest.hdc, 0, 0, 16, 2, source.hdc, 0, 0, Gdi[name as string]);
+
+    return blt.bits(dest.bitmap);
+  },
+
+  'to colour'(context, args) {
+    const [name] = args as string[];
+    const blt = context.bitblt();
+    const ground = parseInt(String(args.find((one) => String(one).startsWith('ground='))).slice(7), 16);
+    const source = blt.mono([0xf0, 0x0f, 0x0f, 0xf0]);
+    const colour = blt.colour(ground);
+
+    SetTextColor.call(context, colour.hdc, 0x0000ff);
+    SetBkColor.call(context, colour.hdc, 0x00ff00);
+    BitBlt.call(context, colour.hdc, 0, 0, 16, 2, source.hdc, 0, 0, Gdi[name]);
+
+    return blt.pixels(colour.hdc);
+  },
+
+  'colour source'(context) {
+    const blt = context.bitblt();
+
+    return blt.pixels(blt.fivePattern().hdc);
+  },
+
+  'to mono'(context, [back]) {
+    const blt = context.bitblt();
+    const colour = blt.fivePattern();
+    const dest = blt.mono([0x55, 0x55, 0x55, 0x55]);
+
+    SetBkColor.call(context, colour.hdc, back === 'back=green' ? 0x00ff00 : 0x0000ff);
+    BitBlt.call(context, dest.hdc, 0, 0, 16, 2, colour.hdc, 0, 0, Gdi.SRCCOPY);
+
+    return blt.bits(dest.bitmap);
+  },
+
+  'palette source'(context) {
+    const blt = context.bitblt();
+
+    return blt.pixels(blt.palette().hdc);
+  },
+
+  xor(context, [ground]) {
+    return context.bitblt().onto(String(ground), Gdi.SRCINVERT);
+  },
+
+  and(context, [ground]) {
+    return context.bitblt().onto(String(ground), Gdi.SRCAND);
+  },
+
   /* `bitbits`: a bitmap made from known bits or drawn into, read back through
    * `GetBitmapBits` into a buffer of 128 bytes filled with `0xAA`. The record
    * is the count and every byte of the buffer. */
@@ -1878,7 +2054,7 @@ const ADAPTERS: Record<
     const bitmap = CreateBitmap.call(context, width, height, 1, 1, source.far);
 
     if (!created) {
-      const surface: any = Surface.offscreen(width, height);
+      const surface: any = Surface.memory();
       const hdc = context.handles.allocate(surface);
       const [left, top, right, bottom] = field('rect').split(':').map(Number);
 
@@ -2164,7 +2340,7 @@ const ADAPTERS: Record<
      * `smearmod` names both halves of the pen and turns, on a square one. */
     const [penX, penY] = String(fields.pen).includes(':') ? String(fields.pen).split(':').map(Number) : [Number(fields.pen), 4];
     const height = fields.mode === undefined ? 48 : 128;
-    const surface: any = Surface.offscreen(128, height);
+    const surface: any = context.memoryCell(128, height);
 
     surface.font = context.handles.resolve(handle);
     context.textState(surface, { mode: Number(fields.mode ?? 1) });
@@ -2276,7 +2452,7 @@ const ADAPTERS: Record<
     }
 
     const opaque = Number(fields.mode) === 2;
-    const surface: any = Surface.offscreen(128, 128);
+    const surface: any = context.memoryCell(128, 128);
 
     surface.font = context.handles.resolve(handle);
     const state = context.textState(surface, {
@@ -2341,7 +2517,7 @@ const ADAPTERS: Record<
     }
 
     const font = context.handles.resolve(handle);
-    const surface: any = Surface.offscreen(160, 160);
+    const surface: any = context.memoryCell(160, 160);
 
     surface.font = font;
     context.textState(surface, { mode: 1 });

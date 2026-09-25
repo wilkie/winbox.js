@@ -23,52 +23,52 @@
   "functions": {
    "and": {
     "total": 16,
-    "agreed": 0,
+    "agreed": 16,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 16
+    "unsupported": 0
    },
    "colour source": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "mono": {
     "total": 30,
-    "agreed": 0,
+    "agreed": 30,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 30
+    "unsupported": 0
    },
    "palette source": {
     "total": 1,
-    "agreed": 0,
+    "agreed": 1,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 1
+    "unsupported": 0
    },
    "to colour": {
     "total": 4,
-    "agreed": 0,
+    "agreed": 4,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 4
+    "unsupported": 0
    },
    "to mono": {
     "total": 2,
-    "agreed": 0,
+    "agreed": 2,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 2
+    "unsupported": 0
    },
    "xor": {
     "total": 16,
-    "agreed": 0,
+    "agreed": 16,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 16
+    "unsupported": 0
    }
   },
   "gaps": {}

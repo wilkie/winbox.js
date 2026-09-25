@@ -4,33 +4,21 @@ import { Surface } from '../../raster/surface.js';
 
 import { NULL } from '../consts.js';
 
+/**
+ * Makes a memory device context: pixels winbox.js owns, with no canvas, and the
+ * one-by-one monochrome bitmap every new memory device context starts with
+ * until the program selects its own. Drawing goes straight into whatever
+ * bitmap is selected; see `DeviceBitmap`.
+ *
+ * @param {Types.HDC} hdc - The device context to be compatible with, or null
+ *                          for the screen.
+ *
+ * @returns {Types.HDC} The new device context, or null.
+ */
 export function CreateCompatibleDC(hdc) {
-  // Gather the surface we are 'emulating'
-  // (Although it does not really matter much at the moment)
-  let surface = null;
-  if (hdc == NULL) {
-    // The screen device
-    surface = this._desktop.surface;
-  } else {
-    surface = this.handles.resolve(hdc);
-  }
-
-  // Error out if we don't understand the given hdc.
-  if (!surface) {
+  if (hdc != NULL && !this.handles.resolve(hdc)) {
     return NULL;
   }
 
-  // Create an offscreen surface for this device
-  const canvas = document.createElement('canvas');
-  canvas.setAttribute('width', String(0));
-  canvas.setAttribute('height', String(0));
-
-  // Create the surface
-  const newSurface = new Surface(canvas);
-
-  // Technically, the surface is dimension-less and needs a bitmap created.
-  // But, what can you do, we have the canvas there already.
-  const handle = this.handles.allocate(newSurface);
-
-  return handle;
+  return this.handles.allocate(Surface.memory());
 }
