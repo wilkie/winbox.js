@@ -9,13 +9,12 @@ Windows 3.1 installs about 25 Windows programs, from Clock and Notepad to File M
 
 ## Programs that open their windows
 
-Clock, Notepad, Control Panel, Program Manager, File Manager, Print Manager, the Clipboard Viewer, Windows Help, the Windows Tutorial, Terminal, Character Map, Media Player, Task Manager, About Windows, and Dr. Watson, which starts minimized. Character Map, Task Manager and About Windows are dialog boxes ([[topic:dialog-boxes]]). Character Map's font list is a combo box, which is not done yet, so it opens without it. File Manager and Program Manager are MDI programs, whose document windows live inside a frame. They open their frames, but the MDI functions, `DefFrameProc` and `DefMDIChildProc`, are not done yet.
+Clock, Notepad, Control Panel, Program Manager, File Manager, Print Manager, the Clipboard Viewer, Windows Help, the Windows Tutorial, Terminal, Character Map, Media Player, Task Manager, About Windows, Calculator, and Dr. Watson, which starts minimized. Character Map, Task Manager and About Windows are dialog boxes ([[topic:dialog-boxes]]). Character Map's font list is a combo box, which is not done yet, so it opens without it. Calculator's buttons are drawn with `RoundRect`, which is not done yet either. File Manager and Program Manager are MDI programs, whose document windows live inside a frame. They open their frames, but the MDI functions, `DefFrameProc` and `DefMDIChildProc`, are not done yet.
 
 ## What stops the rest
 
 | Program | What it stops at |
 | --- | --- |
-| Calculator | The floating-point unit: its dialog runs until the first x87 instruction the CPU does not have, `FNSTSW`. |
 | Sound Recorder | Not yet examined, now that its dialog is made. |
 | Registration Editor | Not yet examined: it closes itself after making its dialog. |
 | Write, Calendar, Cardfile | A temporary file, from `GetTempFileName`, which needs a drive that can be written to. Calendar says "Cannot create the temporary change file", and Cardfile "Cannot create temporary file". |
@@ -32,6 +31,7 @@ A program that imports a library winbox.js does not have jumps to `0000:FFFF` at
 - [[measured]] [[fn:USER.LoadString]] never writes past the buffer it's given. winbox.js's did, and the Clipboard Viewer lost its instance handle to it.
 - [[measured]] [[fn:USER.WinHelp]] with `HELP_QUIT` succeeds when Help is not running. Notepad makes that call as it closes, and stays open if it fails.
 - [[read out]] [[fn:USER.GetKeyState]] answers the key's byte from USER's key-state table, sign-extended.
+- Calculator needed the floating-point unit ([[topic:floating-point]]), and its dialog brought onto the screen.
 - File Manager scans every drive letter before it opens. It needed three things:
   - `Dos3Call`, KERNEL's way for a program to make a DOS call;
   - `GetDriveType`;

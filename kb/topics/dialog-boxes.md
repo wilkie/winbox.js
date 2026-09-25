@@ -2,7 +2,7 @@
 kind: topic
 name: Dialog boxes
 summary: How Windows 3.1 turns a dialog template into a window — dialog units, the dialog font, where the dialog goes, its modal frame — and how the keyboard and a modal loop drive it, measured on four displays and replayed through the exports.
-probes: [dialogs, dlgcolor]
+probes: [dialogs, dlgcolor, dlgclamp]
 ---
 
 A dialog box is a window made from a template. The template gives the dialog's style, caption and font, and each control's class, text, identifier and style. Every place and size in it is in **dialog units**. [[measured]] [[probe:dialogs]] builds its templates in memory and gives them to `CreateDialogIndirect` and `DialogBoxIndirect`, so no resource compiler is involved. It records where everything lands, every pixel of each dialog, where the keyboard focus goes, and how a modal dialog runs. It was recorded on the VGA, Super VGA, EGA and Hercules, and every record agrees with winbox.js except the rows showing the edit control's caret.
@@ -19,6 +19,13 @@ A dialog box is a window made from a template. The template gives the dialog's s
 
 - [[measured]] The template's place is where the dialog's client area goes, measured from its owner's client area. Without an owner, it's measured from the screen.
 - [[measured]] The window's left edge is then moved to the nearest multiple of eight. [[probe:dialogs]] placed an empty dialog at each of 0 to 9 units across. Its windows started at 16, then 24 four times, 32 four times, and 40. Rounding down and rounding up each fail at least one of the ten. The top is not moved.
+- [[measured]] A dialog is kept on the screen. [[probe:dlgclamp]] placed an empty dialog with no owner partly off each edge, on four displays:
+  - Past the right edge, the dialog moves to end at the edge, then down to a multiple of eight, so it stays on. It ends at 634 on the 640-wide screens, 794 on the Super VGA and 714 on the Hercules.
+  - Past the bottom, it ends four pixels above the bottom: 476 on the VGA, 346 on the EGA, 596 on the Super VGA and 344 on the Hercules.
+  - A negative place becomes 0 on either axis.
+
+  Calculator's own template puts it 620 pixels across, and this is what brings it onto the screen.
+- [[refused]] The four pixels are `SM_CYDLGFRAME` in winbox.js. `SM_CYFRAME` is also four on every display recorded, and so is a plain constant; nothing recorded tells them apart.
 - [[inferred]] That is the dialog class's byte alignment, which lets a display driver move the window's pixels whole bytes at a time.
 
 ## The modal frame
