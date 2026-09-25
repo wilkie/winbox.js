@@ -76,14 +76,7 @@ describe('the knowledge base', () => {
    * ordinal, so each is a call that reaches the wrong function or none. The
    * list may only shrink: fix one, and take it off. */
   it('knows every place the export tables disagree with Windows 3.1', () => {
-    expect(discrepancies(assemble(survey, tables, readPages()))).toEqual([
-      'KERNEL.27: winbox.js declares SetSwapHook, Windows exports nothing there',
-      'KERNEL.39: winbox.js declares SetTaskSwitchProc, Windows exports nothing there',
-      'KERNEL.40: winbox.js declares SetTaskInterchange, Windows exports nothing there',
-      'KERNEL.43: winbox.js declares IsScreenGrab, Windows exports nothing there',
-      'KERNEL.44: winbox.js declares BuildPDB, Windows exports nothing there',
-      'MMSYSTEM.102: Windows exports JOYGETDEVCAPS, winbox.js declares joyGetNumCaps',
-    ]);
+    expect(discrepancies(assemble(survey, tables, readPages()))).toEqual([]);
   });
 
   it('agrees with the pages written in kb/', () => {

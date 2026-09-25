@@ -188,7 +188,7 @@ export class Kernel extends Module {
       [UnlockSegment, 'UnlockSegment', 2, [UINT]],
       [Kernel.stub, 'GlobalCompact', 4],
       [Kernel.stub, 'GlobalFreeAll', 2],
-      [Kernel.stub, 'SetSwapHook'],
+      null, // was SetSwapHook; Windows 3.1 exports nothing at this ordinal
       [Kernel.stub, 'GlobalMasterHandle', 0],
       [Kernel.stub, 'Yield', 0, []],
       // 30 //
@@ -201,13 +201,13 @@ export class Kernel extends Module {
       [Kernel.stub, 'GetCurrentTask', 0, [], HANDLE],
       [Kernel.stub, 'GetCurrentPDB', 0, [], UINT],
       [Kernel.stub, 'SetTaskSignalProc', 6],
-      [Kernel.stub, 'SetTaskSwitchProc'],
+      null, // was SetTaskSwitchProc; Windows 3.1 exports nothing at this ordinal
       // 40 //
-      [Kernel.stub, 'SetTaskInterchange'],
+      null, // was SetTaskInterchange; Windows 3.1 exports nothing at this ordinal
       [Kernel.stub, 'EnableDos', 0],
       [Kernel.stub, 'DisableDos', 0],
-      [Kernel.stub, 'IsScreenGrab'],
-      [Kernel.stub, 'BuildPDB'],
+      null, // was IsScreenGrab; Windows 3.1 exports nothing at this ordinal
+      null, // was BuildPDB; Windows 3.1 exports nothing at this ordinal
       [Kernel.stub, 'LoadModule', 8, [LPCSTR, FARPTR], HINSTANCE],
       [Kernel.stub, 'FreeModule', 2, [HINSTANCE], BOOL],
       [Kernel.stub, 'GetModuleHandle', 4, [LPCSTR], HANDLE],

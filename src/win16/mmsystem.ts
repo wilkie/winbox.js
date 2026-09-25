@@ -180,7 +180,7 @@ export class MMSystem extends Module {
       // 100 //
       [MMSystem.stub, 'unknown'],
       [MMSystem.stub, 'joyGetNumDevs'],
-      [MMSystem.stub, 'joyGetNumCaps'],
+      [MMSystem.stub, 'joyGetDevCaps'],
       [MMSystem.stub, 'joyGetPos'],
       [MMSystem.stub, 'joyGetThreshold'],
       [MMSystem.stub, 'joyReleaseCapture'],
