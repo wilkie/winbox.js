@@ -6,7 +6,7 @@ ordinal: 179
 summary: Returns one of the sizes USER lays windows out with, such as the screen, a caption bar, a menu bar, a border or an icon, in device pixels.
 versions:
   '3.1': exact
-probes: [devcaps]
+probes: [devcaps, chrome]
 topics: [display-drivers]
 ---
 
@@ -31,8 +31,11 @@ topics: [display-drivers]
 - [[measured]] The caption and menu bars are two pixels shorter on the two displays that report 72 dots to the inch down (EGA and Hercules). The two displays that report 96 have the taller bars. The size of the screen does not decide it: the Super VGA's bars match the VGA's at 800x600.
 - [[inferred]] The bars follow the height of the system font at the display's vertical resolution. The font is realised from the driver's resolution, so a shorter font gives a shorter bar. [[probe:devcaps]] does not record the system font's height, so the fixtures do not show this.
 - [[measured]] Borders, frames and icons are the same size in pixels on all four displays. On the EGA and the Hercules, their pixels are taller than they are wide. See [[topic:non-square-pixels]].
-- Not yet measured: every index the probe does not ask, including the scroll bar, cursor and double-click sizes, `SM_CXMIN` and `SM_CYMIN`, `SM_CYFULLSCREEN`, `SM_MOUSEPRESENT` and `SM_DEBUG`.
+- [[measured]] [[probe:chrome]] asks 32 indices on each display: the scroll bars, the dialog frame, the icon and cursor, the sizing and minimize boxes, the smallest a window may be tracked to, and the rest that size a window's frame. On a VGA the scroll bar is 17 pixels each way, the dialog frame and sizing frame 4, and the smallest window 102 by 26. The EGA's horizontal scroll bar is 14 high; the Hercules's scroll bars are 15 wide and 11 high, and its smallest window 105 by 24.
+- [[measured]] `SM_CYFULLSCREEN` is the screen's height less the caption's on all four displays: 460, 332, 580 and 330. `SM_CXFULLSCREEN` is the screen's width.
+- [[measured]] `SM_MOUSEPRESENT` is 1 and `SM_DEBUG`, `SM_SWAPBUTTON` and `SM_CYKANJIWINDOW` are 0, as the oracle's installations are set up.
+- Not yet measured: the double-click sizes and anything past index 35.
 
 ## Implementation
 
-Each display mode has its own table of these metrics in `src/win16/display-modes.ts`. The VGA and the Super VGA use one table. The EGA and the Hercules use a copy with the caption and menu two pixels shorter. An index the table does not name returns 0. See [[topic:display-drivers]].
+Each display mode carries the metrics [[probe:chrome]] recorded for it, by index, in `src/win16/display-modes.ts`: the VGA's, which the Super VGA shares, the EGA's and the Hercules's. The screen and full-screen sizes follow the display's own size. The two 256-colour modes take the VGA's, which is not recorded. An index nothing recorded returns 0. See [[topic:display-drivers]].
