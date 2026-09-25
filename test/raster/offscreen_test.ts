@@ -81,14 +81,14 @@ describe('drawing offscreen', () => {
 
     const context = surface.context;
 
-    /* A diagonal of eleven pixels, both ends included -- a driver of this era
-     * chose pixels rather than sampling a mathematical line, and which pixels
-     * is the whole question.
+    /* A diagonal of ten pixels: the start is drawn and the end is not, as
+     * `LineTo` draws a line -- recorded by `lines`, 9,912 lines across four
+     * displays, every one leaving out the point it stops on.
      */
     expect(pixelAt(context, 0, 0)).toEqual([0, 0xff, 0]);
     expect(pixelAt(context, 5, 5)).toEqual([0, 0xff, 0]);
-    expect(pixelAt(context, 10, 10)).toEqual([0, 0xff, 0]);
-    expect(marked(context)).toEqual(11);
+    expect(pixelAt(context, 9, 9)).toEqual([0, 0xff, 0]);
+    expect(marked(context)).toEqual(10);
   });
 
   it('refuses a colour it cannot interpret rather than drawing black', function () {

@@ -10,6 +10,7 @@ import { FontManager } from '../../src/win16/font-manager.js';
 import { HandleManager } from '../../src/win16/handle-manager.js';
 import { Surface } from '../../src/raster/surface.js';
 import { Brush } from '../../src/raster/brush.js';
+import { Pen } from '../../src/raster/pen.js';
 import { Color } from '../../src/raster/color.js';
 import { GetStockObject } from '../../src/win16/gdi/GetStockObject.js';
 import { SelectObject } from '../../src/win16/gdi/SelectObject.js';
@@ -31,6 +32,9 @@ import { lstrlen } from '../../src/win16/kernel/lstrlen.js';
 import { CreateFontIndirect } from '../../src/win16/gdi/CreateFontIndirect.js';
 import { GetPrivateProfileInt } from '../../src/win16/kernel/GetPrivateProfileInt.js';
 import { GetPrivateProfileString } from '../../src/win16/kernel/GetPrivateProfileString.js';
+import { LineTo } from '../../src/win16/gdi/LineTo.js';
+import { MoveTo } from '../../src/win16/gdi/MoveTo.js';
+import { Polygon } from '../../src/win16/gdi/Polygon.js';
 import { GetProfileString } from '../../src/win16/kernel/GetProfileString.js';
 import { WritePrivateProfileString } from '../../src/win16/kernel/WritePrivateProfileString.js';
 import { lstrcpy } from '../../src/win16/kernel/lstrcpy.js';
@@ -680,25 +684,10 @@ export class Context {
    * the probe asks: nothing about fonts, one pen a pixel wide, and the ink.
    */
   drawLine(dx: number, dy: number, fromX = 16, fromY = 16) {
-    const surface: any = Surface.offscreen(32, 32);
-
-    surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
-    surface.fillRect(0, 0, 32, 32);
-
-    surface.context.strokeStyle = 'black';
-    surface.context.beginPath();
-    surface.context.excludeLast = true;
-
-    /* A line is the driver's to draw, and the drivers do not agree -- and one
-     * that leaves the cell is GDI's, on the driver that cannot clip. */
-    surface.context.lineTie = this.display.lineTie;
-    surface.context.clipCaps = this.display.clipCaps;
-
-    surface.context.moveTo(fromX, fromY);
-    surface.context.lineTo(fromX + dx, fromY + dy);
-    surface.context.stroke();
-
-    return this.readCell(surface);
+    return this.drawPath([
+      [fromX, fromY],
+      [fromX + dx, fromY + dy],
+    ]);
   }
 
   drawGlyph(font: any, character: string, cell = 32, ground: any = {}) {
@@ -901,25 +890,58 @@ export class Context {
    * `poly` records exist to say that a stroke glyph's run through the same
    * points is not the same ink. See `BitmapContext.stroke`.
    */
+  /**
+   * `Polygon` on the corners a `polyfill` record names, through the exported
+   * call: the points placed in guest memory, the pen and brush selected, on a
+   * white cell. A null pen is `null`.
+   */
+  drawPolygon(args: (string | number)[], pen: any, brush: any) {
+    const pts = String(args.find((field) => String(field).startsWith('pts=')))
+      .slice(4)
+      .split(':')
+      .map(Number);
+    const surface: any = Surface.offscreen(128, 128);
+
+    surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
+    surface.fillRect(0, 0, 128, 128);
+    surface.context.lineTie = this.display.lineTie;
+    surface.context.clipCaps = this.display.clipCaps;
+    surface.pen = pen ?? new Pen(new Color(0, 0, 0, 0));
+    surface.brush = brush;
+
+    const core = this.machine.cpu.core;
+    const at = this.place('', pts.length * 2);
+
+    pts.forEach((value, index) => core.write16(at.segment, at.offset + index * 2, value & 0xffff));
+
+    Polygon.call(this, this.handles.allocate(surface), at.far, pts.length / 2);
+
+    return inkRows(this.readCell(surface, 128, 128), 128);
+  }
+
+  /**
+   * Lines drawn the way the probe drew them: `MoveTo` to the first point and
+   * `LineTo` to each of the rest, through the exported calls on a device
+   * context, so the records measure what a program reaches.
+   */
   drawPath(points: number[][]) {
     const surface: any = Surface.offscreen(32, 32);
 
     surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
     surface.fillRect(0, 0, 32, 32);
 
-    surface.context.strokeStyle = 'black';
-    surface.context.beginPath();
-    surface.context.excludeLast = true;
+    /* A line is the driver's to draw, and the drivers do not agree -- and one
+     * that leaves the cell is GDI's, on the driver that cannot clip. */
     surface.context.lineTie = this.display.lineTie;
     surface.context.clipCaps = this.display.clipCaps;
 
-    surface.context.moveTo(points[0][0], points[0][1]);
+    const hdc = this.handles.allocate(surface);
+
+    MoveTo.call(this, hdc, points[0][0], points[0][1]);
 
     for (const [x, y] of points.slice(1)) {
-      surface.context.lineTo(x, y);
+      LineTo.call(this, hdc, x, y);
     }
-
-    surface.context.stroke();
 
     return this.readCell(surface);
   }
@@ -2074,25 +2096,20 @@ const ADAPTERS: Record<
    * winding rule -- is not asked. 8u.
    */
   'polygon ink'(context, args) {
-    const pts = String(args.find((field) => String(field).startsWith('pts=')))
-      .slice(4)
-      .split(':')
-      .map(Number);
-    const surface: any = Surface.offscreen(128, 128);
+    return context.drawPolygon(args, null, new Brush(new Color(0, 0, 0)));
+  },
 
-    surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
-    surface.fillRect(0, 0, 128, 128);
-    surface.fillPolygon(
-      [
-        [pts[0], pts[1]],
-        [pts[2], pts[3]],
-        [pts[4], pts[5]],
-        [pts[6], pts[7]],
-      ],
-      new Color(0, 0, 0)
+  /* With a black pen: the null brush for the outline alone, the black brush
+   * for the outline over the fill. */
+  'polygon outlined'(context, args) {
+    const brush = args.find((field) => String(field).startsWith('brush='));
+    const black = new Color(0, 0, 0);
+
+    return context.drawPolygon(
+      args,
+      new Pen(black),
+      brush === 'brush=black' ? new Brush(black) : new Brush(new Color(0, 0, 0, 0))
     );
-
-    return inkRows(context.readCell(surface, 128, 128), 128);
   },
 
   /* `rotstyle` draws "AB" turned, one variation at a time: the opaque ground,

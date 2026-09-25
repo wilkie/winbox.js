@@ -61,6 +61,7 @@ import { GetTextFace } from './gdi/GetTextFace.js';
 import { GetTextMetrics } from './gdi/GetTextMetrics.js';
 import { GetStockObject } from './gdi/GetStockObject.js';
 import { LineTo } from './gdi/LineTo.js';
+import { Polygon } from './gdi/Polygon.js';
 import { MoveTo } from './gdi/MoveTo.js';
 import { PatBlt } from './gdi/PatBlt.js';
 import { Rectangle } from './gdi/Rectangle.js';
@@ -193,7 +194,7 @@ export class Gdi extends Module {
       [TextOut, 'TextOut', 12, [HDC, INT, INT, LPCSTR, INT], BOOL],
       [BitBlt, 'BitBlt', 20, [HDC, INT, INT, INT, INT, HDC, INT, INT, DWORD], BOOL],
       [Gdi.stub, 'StretchBlt', 24],
-      [Gdi.stub, 'Polygon', 8],
+      [Polygon, 'Polygon', 8, [HDC, FARPTR, INT], BOOL],
       [Gdi.stub, 'Polyline', 8],
       [Gdi.stub, 'Escape', 14],
       [Gdi.stub, 'RestoreDC', 4],

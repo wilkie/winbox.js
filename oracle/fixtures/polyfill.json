@@ -1413,6 +1413,1410 @@
       "args": "\"band 27x3\",esc=850,mode=2,pts=64:64:66:37:69:37:67:64",
       "result": "box=64:37:68:63,rows=38/38/38/38/38/38/38/70/70/70/70/70/70/70/70/70/70/70/70/70/70/e0/e0/e0/e0/e0/e0",
       "section": "Polygon with a null pen on turned-text corners and turned rectangles"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Arial 16\",esc=300,brush=null,pts=64:64:80:55:88:69:72:78",
+      "result": "box=64:55:88:78,rows=0000800/0003400/000c400/0030200/00c0200/0100100/0600100/1800080/6000040/8000040/4000020/4000020/2000010/2000010/1000008/1000030/08000c0/0400300/0400c00/0201000/0206000/0118000/0160000/0080000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Arial 16\",esc=300,brush=black,pts=64:64:80:55:88:69:72:78",
+      "result": "box=64:55:88:78,rows=0000800/0003c00/000fc00/003fe00/00ffe00/01fff00/07fff00/1ffff80/7ffffc0/fffffc0/7ffffe0/7ffffe0/3fffff0/3fffff0/1fffff8/1fffff0/0ffffc0/07fff00/07ffc00/03ff000/03fe000/01f8000/01e0000/0080000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Arial 16\",esc=450,brush=null,pts=64:64:77:51:88:62:75:75",
+      "result": "box=64:51:88:75,rows=0004000/000a000/0011000/0020800/0040400/0080200/0100100/0200080/0400040/0800020/1000010/2000008/4000010/8000020/4000040/2000080/1000100/0800200/0400400/0200800/0101000/0082000/0044000/0028000/0010000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Arial 16\",esc=450,brush=black,pts=64:64:77:51:88:62:75:75",
+      "result": "box=64:51:88:75,rows=0004000/000e000/001f000/003f800/007fc00/00ffe00/01fff00/03fff80/07fffc0/0ffffe0/1fffff0/3fffff8/7fffff0/fffffe0/7ffffc0/3ffff80/1ffff00/0fffe00/07ffc00/03ff800/01ff000/00fe000/007c000/0038000/0010000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Arial 16\",esc=900,brush=null,pts=64:64:64:46:80:46:80:64",
+      "result": "box=64:46:80:64,rows=ffff8/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/ffff8",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Arial 16\",esc=900,brush=black,pts=64:64:64:46:80:46:80:64",
+      "result": "box=64:46:80:64,rows=ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Arial 16\",esc=1800,brush=null,pts=64:64:46:64:46:48:64:48",
+      "result": "box=46:48:64:64,rows=ffffe/80002/80002/80002/80002/80002/80002/80002/80002/80002/80002/80002/80002/80002/80002/80002/ffffe",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Arial 16\",esc=1800,brush=black,pts=64:64:46:64:46:48:64:48",
+      "result": "box=46:48:64:64,rows=ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Arial 24\",esc=300,brush=null,pts=64:64:87:50:99:70:76:84",
+      "result": "box=64:50:99:84,rows=000001000/000006800/000018800/000020400/0000c0400/000300200/000400100/001800100/002000080/00c000080/030000040/040000020/180000020/600000010/800000010/400000008/400000004/200000004/200000002/100000002/080000001/080000006/040000018/040000020/0200000c0/010000300/010000400/008001800/008002000/00400c000/002030000/002040000/001180000/001600000/000800000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Arial 24\",esc=300,brush=black,pts=64:64:87:50:99:70:76:84",
+      "result": "box=64:50:99:84,rows=000001000/000007800/00001f800/00003fc00/0000ffc00/0003ffe00/0007fff00/001ffff00/003ffff80/00fffff80/03fffffc0/07fffffe0/1ffffffe0/7fffffff0/ffffffff0/7fffffff8/7fffffffc/3fffffffc/3fffffffe/1fffffffe/0ffffffff/0fffffffe/07ffffff8/07fffffe0/03fffffc0/01fffff00/01ffffc00/00ffff800/00fffe000/007ffc000/003ff0000/003fc0000/001f80000/001e00000/000800000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Arial 24\",esc=450,brush=null,pts=64:64:83:45:99:61:80:80",
+      "result": "box=64:45:99:80,rows=000010000/000028000/000044000/000082000/000101000/000200800/000400400/000800200/001000100/002000080/004000040/008000020/010000010/020000008/040000004/080000002/100000001/200000002/400000004/800000008/400000010/200000020/100000040/080000080/040000100/020000200/010000400/008000800/004001000/002002000/001004000/000808000/000410000/000220000/000140000/000080000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Arial 24\",esc=450,brush=black,pts=64:64:83:45:99:61:80:80",
+      "result": "box=64:45:99:80,rows=000010000/000038000/00007c000/0000fe000/0001ff000/0003ff800/0007ffc00/000fffe00/001ffff00/003ffff80/007ffffc0/00fffffe0/01ffffff0/03ffffff8/07ffffffc/0fffffffe/1ffffffff/3fffffffe/7fffffffc/ffffffff8/7fffffff0/3ffffffe0/1ffffffc0/0ffffff80/07fffff00/03ffffe00/01ffffc00/00ffff800/007fff000/003ffe000/001ffc000/000ff8000/0007f0000/0003e0000/0001c0000/000080000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Arial 24\",esc=900,brush=null,pts=64:64:64:37:87:37:87:64",
+      "result": "box=64:37:87:64,rows=ffffff/800001/800001/800001/800001/800001/800001/800001/800001/800001/800001/800001/800001/800001/800001/800001/800001/800001/800001/800001/800001/800001/800001/800001/800001/800001/800001/ffffff",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Arial 24\",esc=900,brush=black,pts=64:64:64:37:87:37:87:64",
+      "result": "box=64:37:87:64,rows=ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff/ffffff",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Arial 24\",esc=1800,brush=null,pts=64:64:37:64:37:41:64:41",
+      "result": "box=37:41:64:64,rows=fffffff/8000001/8000001/8000001/8000001/8000001/8000001/8000001/8000001/8000001/8000001/8000001/8000001/8000001/8000001/8000001/8000001/8000001/8000001/8000001/8000001/8000001/8000001/fffffff",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Arial 24\",esc=1800,brush=black,pts=64:64:37:64:37:41:64:41",
+      "result": "box=37:41:64:64,rows=fffffff/fffffff/fffffff/fffffff/fffffff/fffffff/fffffff/fffffff/fffffff/fffffff/fffffff/fffffff/fffffff/fffffff/fffffff/fffffff/fffffff/fffffff/fffffff/fffffff/fffffff/fffffff/fffffff/fffffff",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Courier New 16\",esc=300,brush=null,pts=64:64:78:56:86:70:72:78",
+      "result": "box=64:56:86:78,rows=000200/000d00/003100/00c080/010080/060040/180040/600020/800010/400010/400008/200008/200004/100004/100002/08000c/040030/0400c0/020100/020600/011800/016000/008000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Courier New 16\",esc=300,brush=black,pts=64:64:78:56:86:70:72:78",
+      "result": "box=64:56:86:78,rows=000200/000f00/003f00/00ff80/01ff80/07ffc0/1fffc0/7fffe0/fffff0/7ffff0/7ffff8/3ffff8/3ffffc/1ffffc/1ffffe/0ffffc/07fff0/07ffc0/03ff00/03fe00/01f800/01e000/008000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Courier New 16\",esc=450,brush=null,pts=64:64:75:53:86:64:75:75",
+      "result": "box=64:53:86:75,rows=001000/002800/004400/008200/010100/020080/040040/080020/100010/200008/400004/800002/400004/200008/100010/080020/040040/020080/010100/008200/004400/002800/001000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Courier New 16\",esc=450,brush=black,pts=64:64:75:53:86:64:75:75",
+      "result": "box=64:53:86:75,rows=001000/003800/007c00/00fe00/01ff00/03ff80/07ffc0/0fffe0/1ffff0/3ffff8/7ffffc/fffffe/7ffffc/3ffff8/1ffff0/0fffe0/07ffc0/03ff80/01ff00/00fe00/007c00/003800/001000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Courier New 16\",esc=900,brush=null,pts=64:64:64:48:80:48:80:64",
+      "result": "box=64:48:80:64,rows=ffff8/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/ffff8",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Courier New 16\",esc=900,brush=black,pts=64:64:64:48:80:48:80:64",
+      "result": "box=64:48:80:64,rows=ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Courier New 16\",esc=1800,brush=null,pts=64:64:48:64:48:48:64:48",
+      "result": "box=48:48:64:64,rows=ffff8/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/ffff8",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"ground Courier New 16\",esc=1800,brush=black,pts=64:64:48:64:48:48:64:48",
+      "result": "box=48:48:64:64,rows=ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=50,brush=null,pts=64:64:82:62:83:78:65:80",
+      "result": "box=64:62:83:80,rows=0003e/07fc2/f8002/80002/80002/80002/80002/80002/80002/80001/80001/40001/40001/40001/40001/40001/4001f/43fe0/7c000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=50,brush=black,pts=64:64:82:62:83:78:65:80",
+      "result": "box=64:62:83:80,rows=0003e/07ffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/fffff/fffff/7ffff/7ffff/7ffff/7ffff/7ffff/7ffff/7ffe0/7c000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=100,brush=null,pts=64:64:82:61:85:77:67:80",
+      "result": "box=64:61:85:80,rows=0001e0/007e20/1f8020/e00010/800010/800010/400010/400010/400010/400008/400008/400008/200008/200008/200004/200004/20003c/100fc0/13f000/1c0000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=100,brush=black,pts=64:64:82:61:85:77:67:80",
+      "result": "box=64:61:85:80,rows=0001e0/007fe0/1fffe0/fffff0/fffff0/fffff0/7ffff0/7ffff0/7ffff0/7ffff8/7ffff8/7ffff8/3ffff8/3ffff8/3ffffc/3ffffc/3ffffc/1fffc0/1ff000/1c0000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=150,brush=null,pts=64:64:81:59:85:74:68:79",
+      "result": "box=64:59:85:79,rows=0000c0/000f40/007020/038020/3c0020/c00020/800010/400010/400010/400010/400008/200008/200008/200008/200004/10000c/1000f0/100700/103800/0bc000/0c0000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=150,brush=black,pts=64:64:81:59:85:74:68:79",
+      "result": "box=64:59:85:79,rows=0000c0/000fc0/007fe0/03ffe0/3fffe0/ffffe0/fffff0/7ffff0/7ffff0/7ffff0/7ffff8/3ffff8/3ffff8/3ffff8/3ffffc/1ffffc/1ffff0/1fff00/1ff800/0fc000/0c0000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=200,brush=null,pts=64:64:81:58:86:73:69:79",
+      "result": "box=64:58:86:79,rows=0000c0/000740/003820/00c020/070020/380010/c00010/800010/400008/400008/400008/200004/200004/200004/100002/100006/100038/0801c0/080600/083800/05c000/060000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=200,brush=black,pts=64:64:81:58:86:73:69:79",
+      "result": "box=64:58:86:79,rows=0000c0/0007c0/003fe0/00ffe0/07ffe0/3ffff0/fffff0/fffff0/7ffff8/7ffff8/7ffff8/3ffffc/3ffffc/3ffffc/1ffffe/1ffffe/1ffff8/0fffc0/0ffe00/0ff800/07c000/060000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=250,brush=null,pts=64:64:80:56:87:71:71:79",
+      "result": "box=64:56:87:79,rows=000180/000680/001840/006040/018020/060020/180010/600010/800008/800008/400004/400004/200002/200002/100001/100003/08000c/080030/0400c0/040300/020c00/023000/01c000/010000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=250,brush=black,pts=64:64:80:56:87:71:71:79",
+      "result": "box=64:56:87:79,rows=000180/000780/001fc0/007fc0/01ffe0/07ffe0/1ffff0/7ffff0/fffff8/fffff8/7ffffc/7ffffc/3ffffe/3ffffe/1fffff/1fffff/0ffffc/0ffff0/07ffc0/07ff00/03fc00/03f000/01c000/010000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=300,brush=null,pts=64:64:80:55:88:69:72:78",
+      "result": "box=64:55:88:78,rows=0000800/0003400/000c400/0030200/00c0200/0100100/0600100/1800080/6000040/8000040/4000020/4000020/2000010/2000010/1000008/1000030/08000c0/0400300/0400c00/0201000/0206000/0118000/0160000/0080000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=300,brush=black,pts=64:64:80:55:88:69:72:78",
+      "result": "box=64:55:88:78,rows=0000800/0003c00/000fc00/003fe00/00ffe00/01fff00/07fff00/1ffff80/7ffffc0/fffffc0/7ffffe0/7ffffe0/3fffff0/3fffff0/1fffff8/1fffff0/0ffffc0/07fff00/07ffc00/03ff000/03fe000/01f8000/01e0000/0080000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=350,brush=null,pts=64:64:79:54:88:67:73:77",
+      "result": "box=64:54:88:77,rows=0001000/0006800/0008800/0030400/0040200/0180200/0200100/0c00080/1000040/6000040/8000020/4000010/4000010/2000008/1000030/1000040/0800180/0400200/0200c00/0201000/0106000/0088000/00b0000/0040000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=350,brush=black,pts=64:64:79:54:88:67:73:77",
+      "result": "box=64:54:88:77,rows=0001000/0007800/000f800/003fc00/007fe00/01ffe00/03fff00/0ffff80/1ffffc0/7ffffc0/fffffe0/7fffff0/7fffff0/3fffff8/1fffff0/1ffffc0/0ffff80/07ffe00/03ffc00/03ff000/01fe000/00f8000/00f0000/0040000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=400,brush=null,pts=64:64:78:52:88:64:74:76",
+      "result": "box=64:52:88:76,rows=0002000/0005000/0008800/0030800/0040400/0080200/0100100/0200080/0400040/1800040/2000020/4000010/8000008/4000010/2000020/20000c0/1000100/0800200/0400400/0200800/0101000/0106000/0088000/0050000/0020000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=400,brush=black,pts=64:64:78:52:88:64:74:76",
+      "result": "box=64:52:88:76,rows=0002000/0007000/000f800/003f800/007fc00/00ffe00/01fff00/03fff80/07fffc0/1ffffc0/3ffffe0/7fffff0/ffffff8/7fffff0/3ffffe0/3ffffc0/1ffff00/0fffe00/07ffc00/03ff800/01ff000/01fe000/00f8000/0070000/0020000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=450,brush=null,pts=64:64:77:51:88:62:75:75",
+      "result": "box=64:51:88:75,rows=0004000/000a000/0011000/0020800/0040400/0080200/0100100/0200080/0400040/0800020/1000010/2000008/4000010/8000020/4000040/2000080/1000100/0800200/0400400/0200800/0101000/0082000/0044000/0028000/0010000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=450,brush=black,pts=64:64:77:51:88:62:75:75",
+      "result": "box=64:51:88:75,rows=0004000/000e000/001f000/003f800/007fc00/00ffe00/01fff00/03fff80/07fffc0/0ffffe0/1fffff0/3fffff8/7fffff0/fffffe0/7ffffc0/3ffff80/1ffff00/0fffe00/07ffc00/03ff800/01ff000/00fe000/007c000/0038000/0010000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=500,brush=null,pts=64:64:76:50:88:60:76:74",
+      "result": "box=64:50:88:74,rows=0008000/0014000/0023000/0040800/0040400/0080200/0100100/02000c0/0400020/0800010/1000008/1000010/2000020/4000040/8000040/4000080/3000100/0800200/0400400/0200800/0101000/00c1000/0022000/0014000/0008000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=500,brush=black,pts=64:64:76:50:88:60:76:74",
+      "result": "box=64:50:88:74,rows=0008000/001c000/003f000/007f800/007fc00/00ffe00/01fff00/03fffc0/07fffe0/0fffff0/1fffff8/1fffff0/3ffffe0/7ffffc0/fffffc0/7ffff80/3ffff00/0fffe00/07ffc00/03ff800/01ff000/00ff000/003e000/001c000/0008000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=550,brush=null,pts=64:64:74:49:87:58:77:73",
+      "result": "box=64:49:87:73,rows=002000/005800/004400/008300/010080/010040/020030/040008/040006/080001/100002/100002/200004/400008/400008/800010/600020/100020/0c0040/020080/010080/00c100/002200/001a00/000400",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=550,brush=black,pts=64:64:74:49:87:58:77:73",
+      "result": "box=64:49:87:73,rows=002000/007800/007c00/00ff00/01ff80/01ffc0/03fff0/07fff8/07fffe/0fffff/1ffffe/1ffffe/3ffffc/7ffff8/7ffff8/fffff0/7fffe0/1fffe0/0fffc0/03ff80/01ff80/00ff00/003e00/001e00/000400",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=600,brush=null,pts=64:64:73:48:87:56:78:72",
+      "result": "box=64:48:87:72,rows=004000/00b000/008c00/010300/010080/020060/020018/040006/040001/080002/100002/100004/200004/200008/400008/400010/800010/600020/180040/060040/010080/00c080/003100/000d00/000200",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=600,brush=black,pts=64:64:73:48:87:56:78:72",
+      "result": "box=64:48:87:72,rows=004000/00f000/00fc00/01ff00/01ff80/03ffe0/03fff8/07fffe/07ffff/0ffffe/1ffffe/1ffffc/3ffffc/3ffff8/7ffff8/7ffff0/fffff0/7fffe0/1fffc0/07ffc0/01ff80/00ff80/003f00/000f00/000200",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=650,brush=null,pts=64:64:72:48:87:55:79:71",
+      "result": "box=64:48:87:71,rows=00c000/00b000/010c00/010300/0200c0/020030/04000c/040003/080001/080002/100002/100004/200004/200008/400008/400010/c00010/300020/0c0020/030040/00c040/003080/000c80/000300",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=650,brush=black,pts=64:64:72:48:87:55:79:71",
+      "result": "box=64:48:87:71,rows=00c000/00f000/01fc00/01ff00/03ffc0/03fff0/07fffc/07ffff/0fffff/0ffffe/1ffffe/1ffffc/3ffffc/3ffff8/7ffff8/7ffff0/fffff0/3fffe0/0fffe0/03ffc0/00ffc0/003f80/000f80/000300",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=700,brush=null,pts=64:64:70:47:85:52:79:69",
+      "result": "box=64:47:85:69,rows=030000/02e000/041c00/040380/040070/08000c/080004/080008/100008/100008/200010/200010/200010/400020/400020/400040/800040/c00040/380080/070080/00e080/001d00/000300",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=700,brush=black,pts=64:64:70:47:85:52:79:69",
+      "result": "box=64:47:85:69,rows=030000/03e000/07fc00/07ff80/07fff0/0ffffc/0ffffc/0ffff8/1ffff8/1ffff8/3ffff0/3ffff0/3ffff0/7fffe0/7fffe0/7fffc0/ffffc0/ffffc0/3fff80/07ff80/00ff80/001f00/000300",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=750,brush=null,pts=64:64:69:47:84:51:79:68",
+      "result": "box=64:47:84:68,rows=060000/05e000/081e00/0801e0/080018/080008/100010/100010/100010/200010/200020/200020/400020/400040/400040/400040/800080/c00080/3c0080/03c080/003d00/000300",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=750,brush=black,pts=64:64:69:47:84:51:79:68",
+      "result": "box=64:47:84:68,rows=060000/07e000/0ffe00/0fffe0/0ffff8/0ffff8/1ffff0/1ffff0/1ffff0/3ffff0/3fffe0/3fffe0/7fffe0/7fffc0/7fffc0/7fffc0/ffff80/ffff80/3fff80/03ff80/003f00/000300",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=800,brush=null,pts=64:64:67:46:83:49:80:67",
+      "result": "box=64:46:83:67,rows=1c000/13f00/100f8/10007/20001/20001/20001/20002/20002/20002/40002/40002/40002/40004/40004/40004/80004/80004/e0004/1f808/007c8/00038",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=800,brush=black,pts=64:64:67:46:83:49:80:67",
+      "result": "box=64:46:83:67,rows=1c000/1ff00/1fff8/1ffff/3ffff/3ffff/3ffff/3fffe/3fffe/3fffe/7fffe/7fffe/7fffe/7fffc/7fffc/7fffc/ffffc/ffffc/ffffc/1fff8/007f8/00038",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=850,brush=null,pts=64:64:66:46:82:47:80:65",
+      "result": "box=64:46:82:65,rows=3fe00/201fe/20002/20002/20002/40002/40004/40004/40004/40004/40004/40004/40004/40004/80004/80008/80008/80008/ff808/007f8",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=850,brush=black,pts=64:64:66:46:82:47:80:65",
+      "result": "box=64:46:82:65,rows=3fe00/3fffe/3fffe/3fffe/3fffe/7fffe/7fffc/7fffc/7fffc/7fffc/7fffc/7fffc/7fffc/7fffc/ffffc/ffff8/ffff8/ffff8/ffff8/007f8",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=900,brush=null,pts=64:64:64:46:80:46:80:64",
+      "result": "box=64:46:80:64,rows=ffff8/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/ffff8",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=900,brush=black,pts=64:64:64:46:80:46:80:64",
+      "result": "box=64:46:80:64,rows=ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=950,brush=null,pts=64:64:62:46:78:45:80:63",
+      "result": "box=62:45:80:64,rows=00ff8/ff008/80008/80008/80008/80004/40004/40004/40004/40004/40004/40004/40004/40004/40002/20002/20002/20002/203fe/3fc00",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=950,brush=black,pts=64:64:62:46:78:45:80:63",
+      "result": "box=62:45:80:64,rows=00ff8/ffff8/ffff8/ffff8/ffff8/ffffc/7fffc/7fffc/7fffc/7fffc/7fffc/7fffc/7fffc/7fffc/7fffe/3fffe/3fffe/3fffe/3fffe/3fc00",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1000,brush=null,pts=64:64:61:46:77:43:80:61",
+      "result": "box=61:43:80:64,rows=00038/00fc8/1f008/e0008/80004/80004/80004/40004/40004/40004/40002/40002/40002/20002/20002/20002/20001/20001/20007/101f8/13e00/1c000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1000,brush=black,pts=64:64:61:46:77:43:80:61",
+      "result": "box=61:43:80:64,rows=00038/00ff8/1fff8/ffff8/ffffc/ffffc/ffffc/7fffc/7fffc/7fffc/7fffe/7fffe/7fffe/3fffe/3fffe/3fffe/3ffff/3ffff/3ffff/1fff8/1fe00/1c000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1050,brush=null,pts=64:64:59:47:74:43:79:60",
+      "result": "box=59:43:79:64,rows=000300/003d00/03c080/3c0080/c00080/800080/400040/400040/400040/400020/200020/200020/200010/100010/100010/100010/080008/080018/0801e0/081e00/05e000/060000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1050,brush=black,pts=64:64:59:47:74:43:79:60",
+      "result": "box=59:43:79:64,rows=000300/003f00/03ff80/3fff80/ffff80/ffff80/7fffc0/7fffc0/7fffc0/7fffe0/3fffe0/3fffe0/3ffff0/1ffff0/1ffff0/1ffff0/0ffff8/0ffff8/0fffe0/0ffe00/07e000/060000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1100,brush=null,pts=64:64:58:47:73:42:79:59",
+      "result": "box=58:42:79:64,rows=000300/001d00/00e080/070080/380080/c00040/800040/400040/400020/400020/200010/200010/200010/100008/100008/080008/080004/08000c/040070/040380/041c00/02e000/030000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1100,brush=black,pts=64:64:58:47:73:42:79:59",
+      "result": "box=58:42:79:64,rows=000300/001f00/00ff80/07ff80/3fff80/ffffc0/ffffc0/7fffc0/7fffe0/7fffe0/3ffff0/3ffff0/3ffff0/1ffff8/1ffff8/0ffff8/0ffffc/0ffffc/07fff0/07ff80/07fc00/03e000/030000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1150,brush=null,pts=64:64:56:48:71:41:79:57",
+      "result": "box=56:41:79:64,rows=000300/000d00/003080/00c080/030040/0c0040/300020/c00020/800010/400010/400008/200008/200004/100004/100002/080002/080003/04000c/040030/0200c0/020300/010c00/013000/00c000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1150,brush=black,pts=64:64:56:48:71:41:79:57",
+      "result": "box=56:41:79:64,rows=000300/000f00/003f80/00ff80/03ffc0/0fffc0/3fffe0/ffffe0/fffff0/7ffff0/7ffff8/3ffff8/3ffffc/1ffffc/1ffffe/0ffffe/0fffff/07fffc/07fff0/03ffc0/03ff00/01fc00/01f000/00c000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1200,brush=null,pts=64:64:55:48:69:40:78:56",
+      "result": "box=55:40:78:64,rows=000200/000d00/003100/00c080/010080/060040/180040/600020/800020/400010/400008/200008/200004/100004/100002/080002/080001/040006/020018/020060/010080/010300/008c00/00b000/004000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1200,brush=black,pts=64:64:55:48:69:40:78:56",
+      "result": "box=55:40:78:64,rows=000200/000f00/003f00/00ff80/01ff80/07ffc0/1fffc0/7fffe0/ffffe0/7ffff0/7ffff8/3ffff8/3ffffc/1ffffc/1ffffe/0ffffe/0fffff/07fffe/03fff8/03ffe0/01ff80/01ff00/00fc00/00f000/004000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1250,brush=null,pts=64:64:54:49:67:40:77:55",
+      "result": "box=54:40:77:64,rows=000400/001a00/002200/00c100/010080/020080/0c0040/100020/600020/800010/400008/400008/200004/100002/100002/080001/040006/040008/020030/010040/010080/008300/004400/005800/002000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1250,brush=black,pts=64:64:54:49:67:40:77:55",
+      "result": "box=54:40:77:64,rows=000400/001e00/003e00/00ff00/01ff80/03ff80/0fffc0/1fffe0/7fffe0/fffff0/7ffff8/7ffff8/3ffffc/1ffffe/1ffffe/0fffff/07fffe/07fff8/03fff0/01ffc0/01ff80/00ff00/007c00/007800/002000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1300,brush=null,pts=64:64:52:50:64:40:76:54",
+      "result": "box=52:40:76:64,rows=0008000/0014000/0062000/0081000/0101000/0200800/0400400/1800200/2000100/4000080/8000040/4000040/2000020/1000010/1000008/0800010/0400060/0200080/0100100/0080200/0040400/0041800/0022000/0014000/0008000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1300,brush=black,pts=64:64:52:50:64:40:76:54",
+      "result": "box=52:40:76:64,rows=0008000/001c000/007e000/00ff000/01ff000/03ff800/07ffc00/1fffe00/3ffff00/7ffff80/fffffc0/7ffffc0/3ffffe0/1fffff0/1fffff8/0fffff0/07fffe0/03fff80/01fff00/00ffe00/007fc00/007f800/003e000/001c000/0008000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1350,brush=null,pts=64:64:51:51:62:40:75:53",
+      "result": "box=51:40:75:64,rows=0010000/0028000/0044000/0082000/0101000/0200800/0400400/0800200/1000100/2000080/4000040/8000020/4000010/2000008/1000010/0800020/0400040/0200080/0100100/0080200/0040400/0020800/0011000/000a000/0004000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1350,brush=black,pts=64:64:51:51:62:40:75:53",
+      "result": "box=51:40:75:64,rows=0010000/0038000/007c000/00fe000/01ff000/03ff800/07ffc00/0fffe00/1ffff00/3ffff80/7ffffc0/fffffe0/7fffff0/3fffff8/1fffff0/0ffffe0/07fffc0/03fff80/01fff00/00ffe00/007fc00/003f800/001f000/000e000/0004000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1400,brush=null,pts=64:64:50:52:60:40:74:52",
+      "result": "box=50:40:74:64,rows=0020000/0050000/0088000/0086000/0101000/0200800/0400400/0800200/1000100/10000c0/2000020/4000010/8000008/4000010/2000020/1800020/0400040/0200080/0100100/0080200/0040400/0030400/0008800/0005000/0002000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1400,brush=black,pts=64:64:50:52:60:40:74:52",
+      "result": "box=50:40:74:64,rows=0020000/0070000/00f8000/00fe000/01ff000/03ff800/07ffc00/0fffe00/1ffff00/1ffffc0/3ffffe0/7fffff0/ffffff8/7fffff0/3ffffe0/1ffffe0/07fffc0/03fff80/01fff00/00ffe00/007fc00/003fc00/000f800/0007000/0002000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1450,brush=null,pts=64:64:49:54:58:41:73:51",
+      "result": "box=49:41:73:64,rows=0040000/00b0000/0088000/0106000/0201000/0200c00/0400200/0800180/1000040/1000030/2000008/4000010/4000010/8000020/6000040/1000040/0c00080/0200100/0180200/0040200/0030400/0008800/0006800/0001000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1450,brush=black,pts=64:64:49:54:58:41:73:51",
+      "result": "box=49:41:73:64,rows=0040000/00f0000/00f8000/01fe000/03ff000/03ffc00/07ffe00/0ffff80/1ffffc0/1fffff0/3fffff8/7fffff0/7fffff0/fffffe0/7ffffc0/1ffffc0/0ffff80/03fff00/01ffe00/007fe00/003fc00/000f800/0007800/0001000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1500,brush=null,pts=64:64:48:55:56:41:72:50",
+      "result": "box=48:41:72:64,rows=0080000/0160000/0118000/0206000/0201800/0400400/0400300/08000c0/1000030/1000008/2000010/2000010/4000020/4000020/8000040/6000040/1800080/0600100/0180100/0040200/0030200/000c400/0003400/0000800",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1500,brush=black,pts=64:64:48:55:56:41:72:50",
+      "result": "box=48:41:72:64,rows=0080000/01e0000/01f8000/03fe000/03ff800/07ffc00/07fff00/0ffffc0/1fffff0/1fffff8/3fffff0/3fffff0/7ffffe0/7ffffe0/fffffc0/7ffffc0/1ffff80/07fff00/01fff00/007fe00/003fe00/000fc00/0003c00/0000800",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1550,brush=null,pts=64:64:48:56:55:41:71:49",
+      "result": "box=48:41:71:64,rows=018000/016000/021800/020600/040180/040060/080018/080006/100001/100001/200002/200002/400004/400004/800008/c00008/300010/0c0010/030020/00c020/003040/000c40/000380/000080",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1550,brush=black,pts=64:64:48:56:55:41:71:49",
+      "result": "box=48:41:71:64,rows=018000/01e000/03f800/03fe00/07ff80/07ffe0/0ffff8/0ffffe/1fffff/1fffff/3ffffe/3ffffe/7ffffc/7ffffc/fffff8/fffff8/3ffff0/0ffff0/03ffe0/00ffe0/003fc0/000fc0/000380/000080",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1600,brush=null,pts=64:64:47:58:52:43:69:49",
+      "result": "box=47:43:69:64,rows=060000/05c000/083800/080600/0801c0/100038/100006/100002/200004/200004/200004/400008/400008/400008/800010/c00010/380010/070020/00c020/003820/000740/0000c0",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1600,brush=black,pts=64:64:47:58:52:43:69:49",
+      "result": "box=47:43:69:64,rows=060000/07c000/0ff800/0ffe00/0fffc0/1ffff8/1ffffe/1ffffe/3ffffc/3ffffc/3ffffc/7ffff8/7ffff8/7ffff8/fffff0/fffff0/3ffff0/07ffe0/00ffe0/003fe0/0007c0/0000c0",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1650,brush=null,pts=64:64:47:59:51:44:68:49",
+      "result": "box=47:44:68:64,rows=0c0000/0bc000/103800/100700/1000f0/10000c/200004/200008/200008/200008/400008/400010/400010/400010/800010/c00020/3c0020/038020/007020/000f40/0000c0",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1650,brush=black,pts=64:64:47:59:51:44:68:49",
+      "result": "box=47:44:68:64,rows=0c0000/0fc000/1ff800/1fff00/1ffff0/1ffffc/3ffffc/3ffff8/3ffff8/3ffff8/7ffff8/7ffff0/7ffff0/7ffff0/fffff0/ffffe0/3fffe0/03ffe0/007fe0/000fc0/0000c0",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1700,brush=null,pts=64:64:46:61:49:45:67:48",
+      "result": "box=46:45:67:64,rows=1e0000/11f800/1007e0/20001c/200004/200004/200008/200008/200008/400008/400008/400008/400010/400010/800010/800010/f00010/0fc020/003f20/0000e0",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1700,brush=black,pts=64:64:46:61:49:45:67:48",
+      "result": "box=46:45:67:64,rows=1e0000/1ff800/1fffe0/3ffffc/3ffffc/3ffffc/3ffff8/3ffff8/3ffff8/7ffff8/7ffff8/7ffff8/7ffff0/7ffff0/fffff0/fffff0/fffff0/0fffe0/003fe0/0000e0",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1750,brush=null,pts=64:64:46:62:47:46:65:48",
+      "result": "box=46:46:65:64,rows=7c000/43fe0/4001f/40001/40001/40001/40001/40001/40001/80001/80001/80002/80002/80002/80002/80002/f8002/07fc2/0003e",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1750,brush=black,pts=64:64:46:62:47:46:65:48",
+      "result": "box=46:46:65:64,rows=7c000/7ffe0/7ffff/7ffff/7ffff/7ffff/7ffff/7ffff/7ffff/fffff/fffff/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/07ffe/0003e",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1800,brush=null,pts=64:64:46:64:46:48:64:48",
+      "result": "box=46:48:64:64,rows=ffffe/80002/80002/80002/80002/80002/80002/80002/80002/80002/80002/80002/80002/80002/80002/80002/ffffe",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1800,brush=black,pts=64:64:46:64:46:48:64:48",
+      "result": "box=46:48:64:64,rows=ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1850,brush=null,pts=64:64:46:66:45:50:63:48",
+      "result": "box=45:48:64:66,rows=0003e/07fc2/f8002/80002/80002/80002/80002/80002/80002/80001/80001/40001/40001/40001/40001/40001/4001f/43fe0/7c000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1850,brush=black,pts=64:64:46:66:45:50:63:48",
+      "result": "box=45:48:64:66,rows=0003e/07ffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/fffff/fffff/7ffff/7ffff/7ffff/7ffff/7ffff/7ffff/7ffe0/7c000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1900,brush=null,pts=64:64:46:67:43:51:61:48",
+      "result": "box=43:48:64:67,rows=0001e0/007e20/1f8020/e00010/800010/800010/400010/400010/400010/400008/400008/400008/200008/200008/200004/200004/20003c/100fc0/13f000/1c0000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1900,brush=black,pts=64:64:46:67:43:51:61:48",
+      "result": "box=43:48:64:67,rows=0001e0/007fe0/1fffe0/fffff0/fffff0/fffff0/7ffff0/7ffff0/7ffff0/7ffff8/7ffff8/7ffff8/3ffff8/3ffff8/3ffffc/3ffffc/3ffffc/1fffc0/1ff000/1c0000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1950,brush=null,pts=64:64:47:69:43:54:60:49",
+      "result": "box=43:49:64:69,rows=0000c0/000f40/007020/038020/3c0020/c00020/800010/400010/400010/400010/400008/200008/200008/200008/200004/10000c/1000f0/100700/103800/0bc000/0c0000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=1950,brush=black,pts=64:64:47:69:43:54:60:49",
+      "result": "box=43:49:64:69,rows=0000c0/000fc0/007fe0/03ffe0/3fffe0/ffffe0/fffff0/7ffff0/7ffff0/7ffff0/7ffff8/3ffff8/3ffff8/3ffff8/3ffffc/1ffffc/1ffff0/1fff00/1ff800/0fc000/0c0000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2000,brush=null,pts=64:64:47:70:42:55:59:49",
+      "result": "box=42:49:64:70,rows=0000c0/000740/003820/00c020/070020/380010/c00010/800010/400008/400008/400008/200004/200004/200004/100002/100006/100038/0801c0/080600/083800/05c000/060000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2000,brush=black,pts=64:64:47:70:42:55:59:49",
+      "result": "box=42:49:64:70,rows=0000c0/0007c0/003fe0/00ffe0/07ffe0/3ffff0/fffff0/fffff0/7ffff8/7ffff8/7ffff8/3ffffc/3ffffc/3ffffc/1ffffe/1ffffe/1ffff8/0fffc0/0ffe00/0ff800/07c000/060000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2050,brush=null,pts=64:64:48:72:41:57:57:49",
+      "result": "box=41:49:64:72,rows=000180/000680/001840/006040/018020/060020/180010/600010/800008/800008/400004/400004/200002/200002/100001/100003/08000c/080030/0400c0/040300/020c00/023000/01c000/010000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2050,brush=black,pts=64:64:48:72:41:57:57:49",
+      "result": "box=41:49:64:72,rows=000180/000780/001fc0/007fc0/01ffe0/07ffe0/1ffff0/7ffff0/fffff8/fffff8/7ffffc/7ffffc/3ffffe/3ffffe/1fffff/1fffff/0ffffc/0ffff0/07ffc0/07ff00/03fc00/03f000/01c000/010000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2100,brush=null,pts=64:64:48:73:40:59:56:50",
+      "result": "box=40:50:64:73,rows=0000800/0003400/000c400/0030200/00c0200/0100100/0600100/1800080/6000040/8000040/4000020/4000020/2000010/2000010/1000008/1000030/08000c0/0400300/0400c00/0201000/0206000/0118000/0160000/0080000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2100,brush=black,pts=64:64:48:73:40:59:56:50",
+      "result": "box=40:50:64:73,rows=0000800/0003c00/000fc00/003fe00/00ffe00/01fff00/07fff00/1ffff80/7ffffc0/fffffc0/7ffffe0/7ffffe0/3fffff0/3fffff0/1fffff8/1fffff0/0ffffc0/07fff00/07ffc00/03ff000/03fe000/01f8000/01e0000/0080000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2150,brush=null,pts=64:64:49:74:40:61:55:51",
+      "result": "box=40:51:64:74,rows=0001000/0006800/0008800/0030400/0040200/0180200/0200100/0c00080/1000040/6000040/8000020/4000010/4000010/2000008/1000030/1000040/0800180/0400200/0200c00/0201000/0106000/0088000/00b0000/0040000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2150,brush=black,pts=64:64:49:74:40:61:55:51",
+      "result": "box=40:51:64:74,rows=0001000/0007800/000f800/003fc00/007fe00/01ffe00/03fff00/0ffff80/1ffffc0/7ffffc0/fffffe0/7fffff0/7fffff0/3fffff8/1fffff0/1ffffc0/0ffff80/07ffe00/03ffc00/03ff000/01fe000/00f8000/00f0000/0040000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2200,brush=null,pts=64:64:50:76:40:64:54:52",
+      "result": "box=40:52:64:76,rows=0002000/0005000/0008800/0030800/0040400/0080200/0100100/0200080/0400040/1800040/2000020/4000010/8000008/4000010/2000020/20000c0/1000100/0800200/0400400/0200800/0101000/0106000/0088000/0050000/0020000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2200,brush=black,pts=64:64:50:76:40:64:54:52",
+      "result": "box=40:52:64:76,rows=0002000/0007000/000f800/003f800/007fc00/00ffe00/01fff00/03fff80/07fffc0/1ffffc0/3ffffe0/7fffff0/ffffff8/7fffff0/3ffffe0/3ffffc0/1ffff00/0fffe00/07ffc00/03ff800/01ff000/01fe000/00f8000/0070000/0020000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2250,brush=null,pts=64:64:51:77:40:66:53:53",
+      "result": "box=40:53:64:77,rows=0004000/000a000/0011000/0020800/0040400/0080200/0100100/0200080/0400040/0800020/1000010/2000008/4000010/8000020/4000040/2000080/1000100/0800200/0400400/0200800/0101000/0082000/0044000/0028000/0010000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2250,brush=black,pts=64:64:51:77:40:66:53:53",
+      "result": "box=40:53:64:77,rows=0004000/000e000/001f000/003f800/007fc00/00ffe00/01fff00/03fff80/07fffc0/0ffffe0/1fffff0/3fffff8/7fffff0/fffffe0/7ffffc0/3ffff80/1ffff00/0fffe00/07ffc00/03ff800/01ff000/00fe000/007c000/0038000/0010000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2300,brush=null,pts=64:64:52:78:40:68:52:54",
+      "result": "box=40:54:64:78,rows=0008000/0014000/0023000/0040800/0040400/0080200/0100100/02000c0/0400020/0800010/1000008/1000010/2000020/4000040/8000040/4000080/3000100/0800200/0400400/0200800/0101000/00c1000/0022000/0014000/0008000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2300,brush=black,pts=64:64:52:78:40:68:52:54",
+      "result": "box=40:54:64:78,rows=0008000/001c000/003f000/007f800/007fc00/00ffe00/01fff00/03fffc0/07fffe0/0fffff0/1fffff8/1fffff0/3ffffe0/7ffffc0/fffffc0/7ffff80/3ffff00/0fffe00/07ffc00/03ff800/01ff000/00ff000/003e000/001c000/0008000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2350,brush=null,pts=64:64:54:79:41:70:51:55",
+      "result": "box=41:55:64:79,rows=002000/005800/004400/008300/010080/010040/020030/040008/040006/080001/100002/100002/200004/400008/400008/800010/600020/100020/0c0040/020080/010080/00c100/002200/001a00/000400",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2350,brush=black,pts=64:64:54:79:41:70:51:55",
+      "result": "box=41:55:64:79,rows=002000/007800/007c00/00ff00/01ff80/01ffc0/03fff0/07fff8/07fffe/0fffff/1ffffe/1ffffe/3ffffc/7ffff8/7ffff8/fffff0/7fffe0/1fffe0/0fffc0/03ff80/01ff80/00ff00/003e00/001e00/000400",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2400,brush=null,pts=64:64:55:80:41:72:50:56",
+      "result": "box=41:56:64:80,rows=004000/00b000/008c00/010300/010080/020060/020018/040006/040001/080002/100002/100004/200004/200008/400008/400010/800010/600020/180040/060040/010080/00c080/003100/000d00/000200",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2400,brush=black,pts=64:64:55:80:41:72:50:56",
+      "result": "box=41:56:64:80,rows=004000/00f000/00fc00/01ff00/01ff80/03ffe0/03fff8/07fffe/07ffff/0ffffe/1ffffe/1ffffc/3ffffc/3ffff8/7ffff8/7ffff0/fffff0/7fffe0/1fffc0/07ffc0/01ff80/00ff80/003f00/000f00/000200",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2450,brush=null,pts=64:64:56:80:41:73:49:57",
+      "result": "box=41:57:64:80,rows=00c000/00b000/010c00/010300/0200c0/020030/04000c/040003/080001/080002/100002/100004/200004/200008/400008/400010/c00010/300020/0c0020/030040/00c040/003080/000c80/000300",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2450,brush=black,pts=64:64:56:80:41:73:49:57",
+      "result": "box=41:57:64:80,rows=00c000/00f000/01fc00/01ff00/03ffc0/03fff0/07fffc/07ffff/0fffff/0ffffe/1ffffe/1ffffc/3ffffc/3ffff8/7ffff8/7ffff0/fffff0/3fffe0/0fffe0/03ffc0/00ffc0/003f80/000f80/000300",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2500,brush=null,pts=64:64:58:81:43:76:49:59",
+      "result": "box=43:59:64:81,rows=030000/02e000/041c00/040380/040070/08000c/080004/080008/100008/100008/200010/200010/200010/400020/400020/400040/800040/c00040/380080/070080/00e080/001d00/000300",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2500,brush=black,pts=64:64:58:81:43:76:49:59",
+      "result": "box=43:59:64:81,rows=030000/03e000/07fc00/07ff80/07fff0/0ffffc/0ffffc/0ffff8/1ffff8/1ffff8/3ffff0/3ffff0/3ffff0/7fffe0/7fffe0/7fffc0/ffffc0/ffffc0/3fff80/07ff80/00ff80/001f00/000300",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2550,brush=null,pts=64:64:59:81:44:77:49:60",
+      "result": "box=44:60:64:81,rows=060000/05e000/081e00/0801e0/080018/080008/100010/100010/100010/200010/200020/200020/400020/400040/400040/400040/800080/c00080/3c0080/03c080/003d00/000300",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2550,brush=black,pts=64:64:59:81:44:77:49:60",
+      "result": "box=44:60:64:81,rows=060000/07e000/0ffe00/0fffe0/0ffff8/0ffff8/1ffff0/1ffff0/1ffff0/3ffff0/3fffe0/3fffe0/7fffe0/7fffc0/7fffc0/7fffc0/ffff80/ffff80/3fff80/03ff80/003f00/000300",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2600,brush=null,pts=64:64:61:82:45:79:48:61",
+      "result": "box=45:61:64:82,rows=1c000/13f00/100f8/10007/20001/20001/20001/20002/20002/20002/40002/40002/40002/40004/40004/40004/80004/80004/e0004/1f808/007c8/00038",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2600,brush=black,pts=64:64:61:82:45:79:48:61",
+      "result": "box=45:61:64:82,rows=1c000/1ff00/1fff8/1ffff/3ffff/3ffff/3ffff/3fffe/3fffe/3fffe/7fffe/7fffe/7fffe/7fffc/7fffc/7fffc/ffffc/ffffc/ffffc/1fff8/007f8/00038",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2650,brush=null,pts=64:64:62:82:46:81:48:63",
+      "result": "box=46:63:64:82,rows=3fe00/201fe/20002/20002/20002/40002/40004/40004/40004/40004/40004/40004/40004/40004/80004/80008/80008/80008/ff808/007f8",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2650,brush=black,pts=64:64:62:82:46:81:48:63",
+      "result": "box=46:63:64:82,rows=3fe00/3fffe/3fffe/3fffe/3fffe/7fffe/7fffc/7fffc/7fffc/7fffc/7fffc/7fffc/7fffc/7fffc/ffffc/ffff8/ffff8/ffff8/ffff8/007f8",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2700,brush=null,pts=64:64:64:82:48:82:48:64",
+      "result": "box=48:64:64:82,rows=ffff8/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/80008/ffff8",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2700,brush=black,pts=64:64:64:82:48:82:48:64",
+      "result": "box=48:64:64:82,rows=ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8/ffff8",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2750,brush=null,pts=64:64:66:82:50:83:48:65",
+      "result": "box=48:64:66:83,rows=00ff8/ff008/80008/80008/80008/80004/40004/40004/40004/40004/40004/40004/40004/40004/40002/20002/20002/20002/203fe/3fc00",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2750,brush=black,pts=64:64:66:82:50:83:48:65",
+      "result": "box=48:64:66:83,rows=00ff8/ffff8/ffff8/ffff8/ffff8/ffffc/7fffc/7fffc/7fffc/7fffc/7fffc/7fffc/7fffc/7fffc/7fffe/3fffe/3fffe/3fffe/3fffe/3fc00",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2800,brush=null,pts=64:64:67:82:51:85:48:67",
+      "result": "box=48:64:67:85,rows=00038/00fc8/1f008/e0008/80004/80004/80004/40004/40004/40004/40002/40002/40002/20002/20002/20002/20001/20001/20007/101f8/13e00/1c000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2800,brush=black,pts=64:64:67:82:51:85:48:67",
+      "result": "box=48:64:67:85,rows=00038/00ff8/1fff8/ffff8/ffffc/ffffc/ffffc/7fffc/7fffc/7fffc/7fffe/7fffe/7fffe/3fffe/3fffe/3fffe/3ffff/3ffff/3ffff/1fff8/1fe00/1c000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2850,brush=null,pts=64:64:69:81:54:85:49:68",
+      "result": "box=49:64:69:85,rows=000300/003d00/03c080/3c0080/c00080/800080/400040/400040/400040/400020/200020/200020/200010/100010/100010/100010/080008/080018/0801e0/081e00/05e000/060000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2850,brush=black,pts=64:64:69:81:54:85:49:68",
+      "result": "box=49:64:69:85,rows=000300/003f00/03ff80/3fff80/ffff80/ffff80/7fffc0/7fffc0/7fffc0/7fffe0/3fffe0/3fffe0/3ffff0/1ffff0/1ffff0/1ffff0/0ffff8/0ffff8/0fffe0/0ffe00/07e000/060000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2900,brush=null,pts=64:64:70:81:55:86:49:69",
+      "result": "box=49:64:70:86,rows=000300/001d00/00e080/070080/380080/c00040/800040/400040/400020/400020/200010/200010/200010/100008/100008/080008/080004/08000c/040070/040380/041c00/02e000/030000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2900,brush=black,pts=64:64:70:81:55:86:49:69",
+      "result": "box=49:64:70:86,rows=000300/001f00/00ff80/07ff80/3fff80/ffffc0/ffffc0/7fffc0/7fffe0/7fffe0/3ffff0/3ffff0/3ffff0/1ffff8/1ffff8/0ffff8/0ffffc/0ffffc/07fff0/07ff80/07fc00/03e000/030000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2950,brush=null,pts=64:64:72:80:57:87:49:71",
+      "result": "box=49:64:72:87,rows=000300/000d00/003080/00c080/030040/0c0040/300020/c00020/800010/400010/400008/200008/200004/100004/100002/080002/080003/04000c/040030/0200c0/020300/010c00/013000/00c000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=2950,brush=black,pts=64:64:72:80:57:87:49:71",
+      "result": "box=49:64:72:87,rows=000300/000f00/003f80/00ff80/03ffc0/0fffc0/3fffe0/ffffe0/fffff0/7ffff0/7ffff8/3ffff8/3ffffc/1ffffc/1ffffe/0ffffe/0fffff/07fffc/07fff0/03ffc0/03ff00/01fc00/01f000/00c000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3000,brush=null,pts=64:64:73:80:59:88:50:72",
+      "result": "box=50:64:73:88,rows=000200/000d00/003100/00c080/010080/060040/180040/600020/800020/400010/400008/200008/200004/100004/100002/080002/080001/040006/020018/020060/010080/010300/008c00/00b000/004000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3000,brush=black,pts=64:64:73:80:59:88:50:72",
+      "result": "box=50:64:73:88,rows=000200/000f00/003f00/00ff80/01ff80/07ffc0/1fffc0/7fffe0/ffffe0/7ffff0/7ffff8/3ffff8/3ffffc/1ffffc/1ffffe/0ffffe/0fffff/07fffe/03fff8/03ffe0/01ff80/01ff00/00fc00/00f000/004000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3050,brush=null,pts=64:64:74:79:61:88:51:73",
+      "result": "box=51:64:74:88,rows=000400/001a00/002200/00c100/010080/020080/0c0040/100020/600020/800010/400008/400008/200004/100002/100002/080001/040006/040008/020030/010040/010080/008300/004400/005800/002000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3050,brush=black,pts=64:64:74:79:61:88:51:73",
+      "result": "box=51:64:74:88,rows=000400/001e00/003e00/00ff00/01ff80/03ff80/0fffc0/1fffe0/7fffe0/fffff0/7ffff8/7ffff8/3ffffc/1ffffe/1ffffe/0fffff/07fffe/07fff8/03fff0/01ffc0/01ff80/00ff00/007c00/007800/002000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3100,brush=null,pts=64:64:76:78:64:88:52:74",
+      "result": "box=52:64:76:88,rows=0008000/0014000/0062000/0081000/0101000/0200800/0400400/1800200/2000100/4000080/8000040/4000040/2000020/1000010/1000008/0800010/0400060/0200080/0100100/0080200/0040400/0041800/0022000/0014000/0008000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3100,brush=black,pts=64:64:76:78:64:88:52:74",
+      "result": "box=52:64:76:88,rows=0008000/001c000/007e000/00ff000/01ff000/03ff800/07ffc00/1fffe00/3ffff00/7ffff80/fffffc0/7ffffc0/3ffffe0/1fffff0/1fffff8/0fffff0/07fffe0/03fff80/01fff00/00ffe00/007fc00/007f800/003e000/001c000/0008000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3150,brush=null,pts=64:64:77:77:66:88:53:75",
+      "result": "box=53:64:77:88,rows=0010000/0028000/0044000/0082000/0101000/0200800/0400400/0800200/1000100/2000080/4000040/8000020/4000010/2000008/1000010/0800020/0400040/0200080/0100100/0080200/0040400/0020800/0011000/000a000/0004000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3150,brush=black,pts=64:64:77:77:66:88:53:75",
+      "result": "box=53:64:77:88,rows=0010000/0038000/007c000/00fe000/01ff000/03ff800/07ffc00/0fffe00/1ffff00/3ffff80/7ffffc0/fffffe0/7fffff0/3fffff8/1fffff0/0ffffe0/07fffc0/03fff80/01fff00/00ffe00/007fc00/003f800/001f000/000e000/0004000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3200,brush=null,pts=64:64:78:76:68:88:54:76",
+      "result": "box=54:64:78:88,rows=0020000/0050000/0088000/0086000/0101000/0200800/0400400/0800200/1000100/10000c0/2000020/4000010/8000008/4000010/2000020/1800020/0400040/0200080/0100100/0080200/0040400/0030400/0008800/0005000/0002000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3200,brush=black,pts=64:64:78:76:68:88:54:76",
+      "result": "box=54:64:78:88,rows=0020000/0070000/00f8000/00fe000/01ff000/03ff800/07ffc00/0fffe00/1ffff00/1ffffc0/3ffffe0/7fffff0/ffffff8/7fffff0/3ffffe0/1ffffe0/07fffc0/03fff80/01fff00/00ffe00/007fc00/003fc00/000f800/0007000/0002000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3250,brush=null,pts=64:64:79:74:70:87:55:77",
+      "result": "box=55:64:79:87,rows=0040000/00b0000/0088000/0106000/0201000/0200c00/0400200/0800180/1000040/1000030/2000008/4000010/4000010/8000020/6000040/1000040/0c00080/0200100/0180200/0040200/0030400/0008800/0006800/0001000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3250,brush=black,pts=64:64:79:74:70:87:55:77",
+      "result": "box=55:64:79:87,rows=0040000/00f0000/00f8000/01fe000/03ff000/03ffc00/07ffe00/0ffff80/1ffffc0/1fffff0/3fffff8/7fffff0/7fffff0/fffffe0/7ffffc0/1ffffc0/0ffff80/03fff00/01ffe00/007fe00/003fc00/000f800/0007800/0001000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3300,brush=null,pts=64:64:80:73:72:87:56:78",
+      "result": "box=56:64:80:87,rows=0080000/0160000/0118000/0206000/0201800/0400400/0400300/08000c0/1000030/1000008/2000010/2000010/4000020/4000020/8000040/6000040/1800080/0600100/0180100/0040200/0030200/000c400/0003400/0000800",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3300,brush=black,pts=64:64:80:73:72:87:56:78",
+      "result": "box=56:64:80:87,rows=0080000/01e0000/01f8000/03fe000/03ff800/07ffc00/07fff00/0ffffc0/1fffff0/1fffff8/3fffff0/3fffff0/7ffffe0/7ffffe0/fffffc0/7ffffc0/1ffff80/07fff00/01fff00/007fe00/003fe00/000fc00/0003c00/0000800",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3350,brush=null,pts=64:64:80:72:73:87:57:79",
+      "result": "box=57:64:80:87,rows=018000/016000/021800/020600/040180/040060/080018/080006/100001/100001/200002/200002/400004/400004/800008/c00008/300010/0c0010/030020/00c020/003040/000c40/000380/000080",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3350,brush=black,pts=64:64:80:72:73:87:57:79",
+      "result": "box=57:64:80:87,rows=018000/01e000/03f800/03fe00/07ff80/07ffe0/0ffff8/0ffffe/1fffff/1fffff/3ffffe/3ffffe/7ffffc/7ffffc/fffff8/fffff8/3ffff0/0ffff0/03ffe0/00ffe0/003fc0/000fc0/000380/000080",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3400,brush=null,pts=64:64:81:70:76:85:59:79",
+      "result": "box=59:64:81:85,rows=060000/05c000/083800/080600/0801c0/100038/100006/100002/200004/200004/200004/400008/400008/400008/800010/c00010/380010/070020/00c020/003820/000740/0000c0",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3400,brush=black,pts=64:64:81:70:76:85:59:79",
+      "result": "box=59:64:81:85,rows=060000/07c000/0ff800/0ffe00/0fffc0/1ffff8/1ffffe/1ffffe/3ffffc/3ffffc/3ffffc/7ffff8/7ffff8/7ffff8/fffff0/fffff0/3ffff0/07ffe0/00ffe0/003fe0/0007c0/0000c0",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3450,brush=null,pts=64:64:81:69:77:84:60:79",
+      "result": "box=60:64:81:84,rows=0c0000/0bc000/103800/100700/1000f0/10000c/200004/200008/200008/200008/400008/400010/400010/400010/800010/c00020/3c0020/038020/007020/000f40/0000c0",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3450,brush=black,pts=64:64:81:69:77:84:60:79",
+      "result": "box=60:64:81:84,rows=0c0000/0fc000/1ff800/1fff00/1ffff0/1ffffc/3ffffc/3ffff8/3ffff8/3ffff8/7ffff8/7ffff0/7ffff0/7ffff0/fffff0/ffffe0/3fffe0/03ffe0/007fe0/000fc0/0000c0",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3500,brush=null,pts=64:64:82:67:79:83:61:80",
+      "result": "box=61:64:82:83,rows=1e0000/11f800/1007e0/20001c/200004/200004/200008/200008/200008/400008/400008/400008/400010/400010/800010/800010/f00010/0fc020/003f20/0000e0",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3500,brush=black,pts=64:64:82:67:79:83:61:80",
+      "result": "box=61:64:82:83,rows=1e0000/1ff800/1fffe0/3ffffc/3ffffc/3ffffc/3ffff8/3ffff8/3ffff8/7ffff8/7ffff8/7ffff8/7ffff0/7ffff0/fffff0/fffff0/fffff0/0fffe0/003fe0/0000e0",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3550,brush=null,pts=64:64:82:66:81:82:63:80",
+      "result": "box=63:64:82:82,rows=7c000/43fe0/4001f/40001/40001/40001/40001/40001/40001/80001/80001/80002/80002/80002/80002/80002/f8002/07fc2/0003e",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"rect 18x16\",esc=3550,brush=black,pts=64:64:82:66:81:82:63:80",
+      "result": "box=63:64:82:82,rows=7c000/7ffe0/7ffff/7ffff/7ffff/7ffff/7ffff/7ffff/7ffff/fffff/fffff/ffffe/ffffe/ffffe/ffffe/ffffe/ffffe/07ffe/0003e",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=50,brush=null,pts=64:64:91:62:91:64:64:66",
+      "result": "box=64:62:91:66,rows=000007f/01fff81/fe0007f/81fff80/fe00000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=50,brush=black,pts=64:64:91:62:91:64:64:66",
+      "result": "box=64:62:91:66,rows=000007f/01fffff/fffffff/fffff80/fe00000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=50,brush=null,pts=64:64:91:62:91:65:64:67",
+      "result": "box=64:62:91:67,rows=000007f/01fff81/fe00001/800007f/81fff80/fe00000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=50,brush=black,pts=64:64:91:62:91:65:64:67",
+      "result": "box=64:62:91:67,rows=000007f/01fffff/fffffff/fffffff/fffff80/fe00000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=100,brush=null,pts=64:64:91:59:91:61:64:66",
+      "result": "box=64:59:91:66,rows=0000007/00001f9/0003e07/007c1f8/1f83e00/e07c000/9f80000/e000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=100,brush=black,pts=64:64:91:59:91:61:64:66",
+      "result": "box=64:59:91:66,rows=0000007/00001ff/0003fff/007fff8/1fffe00/fffc000/ff80000/e000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=100,brush=null,pts=64:64:91:59:92:62:65:67",
+      "result": "box=64:59:92:67,rows=00000070/00001f90/0003e008/007c0038/1f800fc0/e001f000/803e0000/4fc00000/70000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=100,brush=black,pts=64:64:91:59:92:62:65:67",
+      "result": "box=64:59:92:67,rows=00000070/00001ff0/0003fff8/007ffff8/1fffffc0/fffff000/fffe0000/7fc00000/70000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=150,brush=null,pts=64:64:90:57:91:59:65:66",
+      "result": "box=64:57:91:66,rows=0000006/000007a/0000783/000783c/00383c0/03c3c00/3c1c000/c1e0000/9e00000/6000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=150,brush=black,pts=64:64:90:57:91:59:65:66",
+      "result": "box=64:57:91:66,rows=0000006/000007e/00007ff/0007ffc/003ffc0/03ffc00/3ffc000/ffe0000/fe00000/6000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=150,brush=null,pts=64:64:90:57:91:60:65:67",
+      "result": "box=64:57:91:67,rows=0000006/000007a/0000781/0007803/003803c/03c03c0/3c03c00/c01c000/81e0000/5e00000/6000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=150,brush=black,pts=64:64:90:57:91:60:65:67",
+      "result": "box=64:57:91:67,rows=0000006/000007e/00007ff/0007fff/003fffc/03fffc0/3fffc00/fffc000/ffe0000/7e00000/6000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=200,brush=null,pts=64:64:89:55:90:57:65:66",
+      "result": "box=64:55:90:66,rows=000000c/0000074/0000186/0000e38/00070c0/0038700/01c3800/061c000/38e0000/c300000/9c00000/6000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=200,brush=black,pts=64:64:89:55:90:57:65:66",
+      "result": "box=64:55:90:66,rows=000000c/000007c/00001fe/0000ff8/0007fc0/003ff00/01ff800/07fc000/3fe0000/ff00000/fc00000/6000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=200,brush=null,pts=64:64:89:55:90:58:65:67",
+      "result": "box=64:55:90:67,rows=000000c/0000074/0000182/0000e06/0007038/00380c0/01c0700/0603800/381c000/c0e0000/8300000/5c00000/6000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=200,brush=black,pts=64:64:89:55:90:58:65:67",
+      "result": "box=64:55:90:67,rows=000000c/000007c/00001fe/0000ffe/0007ff8/003ffc0/01fff00/07ff800/3ffc000/ffe0000/ff00000/7c00000/6000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=250,brush=null,pts=64:64:88:53:89:55:65:66",
+      "result": "box=64:53:89:66,rows=0000018/0000068/000018c/0000630/00018c0/000e300/0030c00/00c7000/0318000/0c60000/3180000/c600000/9800000/6000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=250,brush=black,pts=64:64:88:53:89:55:65:66",
+      "result": "box=64:53:89:66,rows=0000018/0000078/00001fc/00007f0/0001fc0/000ff00/003fc00/00ff000/03f8000/0fe0000/3f80000/fe00000/f800000/6000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=250,brush=null,pts=64:64:88:53:89:56:65:67",
+      "result": "box=64:53:89:67,rows=0000018/0000068/0000184/000060c/0001830/000e0c0/0030300/00c0c00/0307000/0c18000/3060000/c180000/8600000/5800000/6000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=250,brush=black,pts=64:64:88:53:89:56:65:67",
+      "result": "box=64:53:89:67,rows=0000018/0000078/00001fc/00007fc/0001ff0/000ffc0/003ff00/00ffc00/03ff000/0ff8000/3fe0000/ff80000/fe00000/7800000/6000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=300,brush=null,pts=64:64:87:50:88:52:65:66",
+      "result": "box=64:50:88:66,rows=0000010/0000070/0000188/0000230/0000cc0/0003100/0004600/0019800/0022000/00cc000/0310000/0460000/1980000/6200000/8c00000/b000000/4000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=300,brush=black,pts=64:64:87:50:88:52:65:66",
+      "result": "box=64:50:88:66,rows=0000010/0000070/00001f8/00003f0/0000fc0/0003f00/0007e00/001f800/003e000/00fc000/03f0000/07e0000/1f80000/7e00000/fc00000/f000000/4000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=300,brush=null,pts=64:64:87:50:89:53:66:67",
+      "result": "box=64:50:89:67,rows=0000010/0000068/0000188/0000204/0000c18/0003060/0004080/0018300/0020c00/00c1000/0306000/0408000/1830000/60c0000/8100000/4600000/5800000/2000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=300,brush=black,pts=64:64:87:50:89:53:66:67",
+      "result": "box=64:50:89:67,rows=0000010/0000078/00001f8/00003fc/0000ff8/0003fe0/0007f80/001ff00/003fc00/00ff000/03fe000/07f8000/1ff0000/7fc0000/ff00000/7e00000/7800000/2000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=350,brush=null,pts=64:64:86:49:87:51:65:66",
+      "result": "box=64:49:87:66,rows=000002/00000e/000011/000066/000088/000330/000440/001980/002200/004c00/019000/022000/0cc000/110000/660000/880000/b00000/400000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=350,brush=black,pts=64:64:86:49:87:51:65:66",
+      "result": "box=64:49:87:66,rows=000002/00000e/00001f/00007e/0000f8/0003f0/0007c0/001f80/003e00/007c00/01f000/03e000/0fc000/1f0000/7e0000/f80000/f00000/400000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=350,brush=null,pts=64:64:86:49:88:51:66:66",
+      "result": "box=64:49:88:66,rows=0000020/00000d0/0000108/0000630/0000840/0003180/0004200/0018c00/0021000/0046000/0188000/0210000/0c60000/1080000/6300000/8400000/5800000/2000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=350,brush=black,pts=64:64:86:49:88:51:66:66",
+      "result": "box=64:49:88:66,rows=0000020/00000f0/00001f8/00007f0/0000fc0/0003f80/0007e00/001fc00/003f000/007e000/01f8000/03f0000/0fe0000/1f80000/7f00000/fc00000/7800000/2000000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=400,brush=null,pts=64:64:85:47:86:49:65:66",
+      "result": "box=64:47:86:66,rows=000004/00000c/000032/000044/000098/000120/000640/000880/001300/002400/004800/019000/022000/04c000/090000/320000/440000/980000/a00000/400000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=400,brush=black,pts=64:64:85:47:86:49:65:66",
+      "result": "box=64:47:86:66,rows=000004/00000c/00003e/00007c/0000f8/0001e0/0007c0/000f80/001f00/003c00/007800/01f000/03e000/07c000/0f0000/3e0000/7c0000/f80000/e00000/400000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=400,brush=null,pts=64:64:85:47:87:49:66:66",
+      "result": "box=64:47:87:66,rows=000004/00000a/000031/000042/00008c/000110/000620/000840/001180/002200/004400/018800/021000/046000/088000/310000/420000/8c0000/500000/200000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=400,brush=black,pts=64:64:85:47:87:49:66:66",
+      "result": "box=64:47:87:66,rows=000004/00000e/00003f/00007e/0000fc/0001f0/0007e0/000fc0/001f80/003e00/007c00/01f800/03f000/07e000/0f8000/3f0000/7e0000/fc0000/700000/200000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=450,brush=null,pts=64:64:83:45:84:46:65:65",
+      "result": "box=64:45:84:65,rows=000010/000028/000050/0000a0/000140/000280/000500/000a00/001400/002800/005000/00a000/014000/028000/050000/0a0000/140000/280000/500000/a00000/400000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=450,brush=black,pts=64:64:83:45:84:46:65:65",
+      "result": "box=64:45:84:65,rows=000010/000038/000070/0000e0/0001c0/000380/000700/000e00/001c00/003800/007000/00e000/01c000/038000/070000/0e0000/1c0000/380000/700000/e00000/400000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=450,brush=null,pts=64:64:83:45:85:47:66:66",
+      "result": "box=64:45:85:66,rows=000010/000028/000044/000088/000110/000220/000440/000880/001100/002200/004400/008800/011000/022000/044000/088000/110000/220000/440000/880000/500000/200000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=450,brush=black,pts=64:64:83:45:85:47:66:66",
+      "result": "box=64:45:85:66,rows=000010/000038/00007c/0000f8/0001f0/0003e0/0007c0/000f80/001f00/003e00/007c00/00f800/01f000/03e000/07c000/0f8000/1f0000/3e0000/7c0000/f80000/700000/200000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=500,brush=null,pts=64:64:81:43:83:44:66:65",
+      "result": "box=64:43:83:65,rows=00006/00009/00012/00014/00024/00048/00090/00120/00140/00240/00480/00900/01200/02400/02800/04800/09000/12000/24000/28000/48000/d0000/20000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=500,brush=black,pts=64:64:81:43:83:44:66:65",
+      "result": "box=64:43:83:65,rows=00006/0000f/0001e/0001c/0003c/00078/000f0/001e0/001c0/003c0/00780/00f00/01e00/03c00/03800/07800/0f000/1e000/3c000/38000/78000/f0000/20000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=500,brush=null,pts=64:64:81:43:83:45:66:66",
+      "result": "box=64:43:83:66,rows=00004/0000a/00011/00012/00024/00044/00088/00110/00120/00240/00440/00880/01100/02200/02400/04800/08800/11000/22000/24000/48000/88000/50000/20000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=500,brush=black,pts=64:64:81:43:83:45:66:66",
+      "result": "box=64:43:83:66,rows=00004/0000e/0001f/0001e/0003c/0007c/000f8/001f0/001e0/003c0/007c0/00f80/01f00/03e00/03c00/07800/0f800/1f000/3e000/3c000/78000/f8000/70000/20000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=550,brush=null,pts=64:64:79:42:81:43:66:65",
+      "result": "box=64:42:81:65,rows=00018/00024/00028/00048/00090/000a0/00120/00240/00280/00480/00900/00a00/01200/02400/04800/05000/09000/12000/14000/24000/48000/50000/d0000/20000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=550,brush=black,pts=64:64:79:42:81:43:66:65",
+      "result": "box=64:42:81:65,rows=00018/0003c/00038/00078/000f0/000e0/001e0/003c0/00380/00780/00f00/00e00/01e00/03c00/07800/07000/0f000/1e000/1c000/3c000/78000/70000/f0000/20000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=550,brush=null,pts=64:64:79:42:81:44:66:66",
+      "result": "box=64:42:81:66,rows=00010/00028/00024/00048/00088/00090/00120/00220/00240/00480/00880/00900/01200/02200/04400/04800/09000/11000/12000/24000/44000/48000/90000/50000/20000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=550,brush=black,pts=64:64:79:42:81:44:66:66",
+      "result": "box=64:42:81:66,rows=00010/00038/0003c/00078/000f8/000f0/001e0/003e0/003c0/00780/00f80/00f00/01e00/03e00/07c00/07800/0f000/1f000/1e000/3c000/7c000/78000/f0000/70000/20000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=600,brush=null,pts=64:64:78:41:80:42:66:65",
+      "result": "box=64:41:80:65,rows=00030/00048/00050/00090/000a0/00120/00240/00280/00480/00500/00900/01200/01400/02400/04800/05000/09000/0a000/12000/24000/28000/48000/50000/d0000/20000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=600,brush=black,pts=64:64:78:41:80:42:66:65",
+      "result": "box=64:41:80:65,rows=00030/00078/00070/000f0/000e0/001e0/003c0/00380/00780/00700/00f00/01e00/01c00/03c00/07800/07000/0f000/0e000/1e000/3c000/38000/78000/70000/f0000/20000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=600,brush=null,pts=64:64:78:41:81:43:67:66",
+      "result": "box=64:41:81:66,rows=00020/00058/00044/00088/00088/00110/00210/00220/00440/00440/00880/01080/01100/02200/04200/04400/08800/08800/11000/21000/22000/44000/44000/88000/68000/10000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=600,brush=black,pts=64:64:78:41:81:43:67:66",
+      "result": "box=64:41:81:66,rows=00020/00078/0007c/000f8/000f8/001f0/003f0/003e0/007c0/007c0/00f80/01f80/01f00/03e00/07e00/07c00/0f800/0f800/1f000/3f000/3e000/7c000/7c000/f8000/78000/10000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=650,brush=null,pts=64:64:75:40:77:41:66:65",
+      "result": "box=64:40:77:65,rows=0018/0014/0024/0028/0048/0050/0090/00a0/0120/0140/0240/0280/0280/0480/0500/0900/0a00/1200/1400/2400/2800/4800/5000/9000/e000/2000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=650,brush=black,pts=64:64:75:40:77:41:66:65",
+      "result": "box=64:40:77:65,rows=0018/001c/003c/0038/0078/0070/00f0/00e0/01e0/01c0/03c0/0380/0380/0780/0700/0f00/0e00/1e00/1c00/3c00/3800/7800/7000/f000/e000/2000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=650,brush=null,pts=64:64:75:40:78:41:67:65",
+      "result": "box=64:40:78:65,rows=0018/0016/0022/0024/0044/0048/0088/0090/0110/0120/0220/0240/0240/0440/0480/0880/0900/1100/1200/2200/2400/4400/4800/8800/d000/3000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=650,brush=black,pts=64:64:75:40:78:41:67:65",
+      "result": "box=64:40:78:65,rows=0018/001e/003e/003c/007c/0078/00f8/00f0/01f0/01e0/03e0/03c0/03c0/07c0/0780/0f80/0f00/1f00/1e00/3e00/3c00/7c00/7800/f800/f000/3000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=700,brush=null,pts=64:64:73:39:75:40:66:65",
+      "result": "box=64:39:75:65,rows=006/005/009/00a/00a/012/014/024/028/028/048/050/050/090/0a0/0a0/120/140/140/240/280/480/500/500/900/e00/200",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=700,brush=black,pts=64:64:73:39:75:40:66:65",
+      "result": "box=64:39:75:65,rows=006/007/00f/00e/00e/01e/01c/03c/038/038/078/070/070/0f0/0e0/0e0/1e0/1c0/1c0/3c0/380/780/700/700/f00/e00/200",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=700,brush=null,pts=64:64:73:39:76:40:67:65",
+      "result": "box=64:39:76:65,rows=0060/0058/0088/0090/0090/0110/0120/0220/0240/0240/0440/0480/0480/0880/0900/0900/1100/1200/1200/2200/2400/4400/4800/4800/8800/d000/3000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=700,brush=black,pts=64:64:73:39:76:40:67:65",
+      "result": "box=64:39:76:65,rows=0060/0078/00f8/00f0/00f0/01f0/01e0/03e0/03c0/03c0/07c0/0780/0780/0f80/0f00/0f00/1f00/1e00/1e00/3e00/3c00/7c00/7800/7800/f800/f000/3000",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=750,brush=null,pts=64:64:71:38:73:39:66:65",
+      "result": "box=64:38:73:65,rows=018/014/024/028/028/028/048/050/050/050/090/0a0/0a0/0a0/120/140/140/240/280/280/280/480/500/500/500/900/e00/200",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=750,brush=black,pts=64:64:71:38:73:39:66:65",
+      "result": "box=64:38:73:65,rows=018/01c/03c/038/038/038/078/070/070/070/0f0/0e0/0e0/0e0/1e0/1c0/1c0/3c0/380/380/380/780/700/700/700/f00/e00/200",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=750,brush=null,pts=64:64:71:38:74:39:67:65",
+      "result": "box=64:38:74:65,rows=018/016/022/024/024/024/044/048/048/048/088/090/090/090/110/120/120/220/240/240/240/440/480/480/480/880/d00/300",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=750,brush=black,pts=64:64:71:38:74:39:67:65",
+      "result": "box=64:38:74:65,rows=018/01e/03e/03c/03c/03c/07c/078/078/078/0f8/0f0/0f0/0f0/1f0/1e0/1e0/3e0/3c0/3c0/3c0/7c0/780/780/780/f80/f00/300",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=800,brush=null,pts=64:64:69:37:71:37:66:64",
+      "result": "box=64:37:71:64,rows=07/05/05/0a/0a/0a/0a/0a/0a/14/14/14/14/14/28/28/28/28/28/50/50/50/50/50/50/a0/a0/e0",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=800,brush=black,pts=64:64:69:37:71:37:66:64",
+      "result": "box=64:37:71:64,rows=07/07/07/0e/0e/0e/0e/0e/0e/1c/1c/1c/1c/1c/38/38/38/38/38/70/70/70/70/70/70/e0/e0/e0",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=800,brush=null,pts=64:64:69:37:72:38:67:65",
+      "result": "box=64:37:72:65,rows=060/058/048/088/090/090/090/090/090/110/120/120/120/120/220/240/240/240/240/440/480/480/480/480/480/880/900/d00/300",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=800,brush=black,pts=64:64:69:37:72:38:67:65",
+      "result": "box=64:37:72:65,rows=060/078/078/0f8/0f0/0f0/0f0/0f0/0f0/1f0/1e0/1e0/1e0/1e0/3e0/3c0/3c0/3c0/3c0/7c0/780/780/780/780/780/f80/f00/f00/300",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=850,brush=null,pts=64:64:66:37:68:37:66:64",
+      "result": "box=64:37:68:64,rows=38/28/28/28/28/28/28/50/50/50/50/50/50/50/50/50/50/50/50/50/50/a0/a0/a0/a0/a0/a0/e0",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x2\",esc=850,brush=black,pts=64:64:66:37:68:37:66:64",
+      "result": "box=64:37:68:64,rows=38/38/38/38/38/38/38/70/70/70/70/70/70/70/70/70/70/70/70/70/70/e0/e0/e0/e0/e0/e0/e0",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=850,brush=null,pts=64:64:66:37:69:37:67:64",
+      "result": "box=64:37:69:64,rows=3c/24/24/24/24/24/24/48/48/48/48/48/48/48/48/48/48/48/48/48/48/90/90/90/90/90/90/f0",
+      "section": "Polygon with a black pen, alone and over the fill"
+    },
+    {
+      "function": "polygon outlined",
+      "args": "\"band 27x3\",esc=850,brush=black,pts=64:64:66:37:69:37:67:64",
+      "result": "box=64:37:69:64,rows=3c/3c/3c/3c/3c/3c/3c/78/78/78/78/78/78/78/78/78/78/78/78/78/78/f0/f0/f0/f0/f0/f0/f0",
+      "section": "Polygon with a black pen, alone and over the fill"
     }
   ]
 }

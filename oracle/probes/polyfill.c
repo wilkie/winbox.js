@@ -13,6 +13,8 @@
  * thick rule's, each under both fill modes.
  *
  * The pen is `NULL_PEN`, so only the fill is drawn, and the brush is black.
+ * Then each quadrilateral again with a black pen: with the null brush for the
+ * outline alone, and with the black brush for the two together.
  */
 
 #include "probe.h"
@@ -254,6 +256,32 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
                      QUADS[index].pts[3].x, QUADS[index].pts[3].y);
             writeInk();
             probe("polygon ink", probeArgs, probeResult);
+        }
+    }
+
+    /* The outline, which the null pen above leaves out. A black pen with the
+     * null brush gives the outline alone; with the black brush, the outline
+     * and the fill together, which says whether the two cover the same edge.
+     */
+    probeNote("Polygon with a black pen, alone and over the fill");
+    SetPolyFillMode(memory, ALTERNATE);
+    SelectObject(memory, GetStockObject(BLACK_PEN));
+
+    for (index = 0; index < (int)(sizeof(QUADS) / sizeof(QUADS[0])); index++) {
+        for (mode = 0; mode < 2; mode++) {
+            PatBlt(memory, 0, 0, CELL, CELL, WHITENESS);
+            SelectObject(memory, GetStockObject(mode ? BLACK_BRUSH : NULL_BRUSH));
+            Polygon(memory, QUADS[index].pts, 4);
+            GetBitmapBits(canvas, (LONG)sizeof(bits), bits);
+
+            wsprintf(probeArgs, "\"%s\",esc=%d,brush=%s,pts=%d:%d:%d:%d:%d:%d:%d:%d",
+                     QUADS[index].tag, QUADS[index].esc, mode ? (LPSTR)"black" : (LPSTR)"null",
+                     QUADS[index].pts[0].x, QUADS[index].pts[0].y,
+                     QUADS[index].pts[1].x, QUADS[index].pts[1].y,
+                     QUADS[index].pts[2].x, QUADS[index].pts[2].y,
+                     QUADS[index].pts[3].x, QUADS[index].pts[3].y);
+            writeInk();
+            probe("polygon outlined", probeArgs, probeResult);
         }
     }
 

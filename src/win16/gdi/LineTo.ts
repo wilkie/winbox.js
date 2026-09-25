@@ -3,27 +3,18 @@
 import { TRUE, FALSE } from '../consts.js';
 
 /**
- * The **LineTo** function moves the current position to the specified
- * coordinates.
+ * Draws a line from the current position to a point, and moves the current
+ * position there.
  *
- * **See also**:
- * {@link Gdi.GetCurrentPosition GetCurrentPosition}
- * {@link Gdi.LineTo LineTo}
+ * The line is `Surface.drawLine`'s: on pixels winbox.js owns, the recorded
+ * walk, which leaves out the pixel the line stops on. See
+ * `kb/gdi/lineto.md` for what `lines` recorded.
  *
- * @static
- * @function MoveTo
- * @memberof Gdi
+ * @param {Types.HDC} hdc - The device context to draw on.
+ * @param {Types.INT} x - Where the line ends, across.
+ * @param {Types.INT} y - Where the line ends, down.
  *
- * @param {Types.HDC} hdc - Identifies the device context.
- * @param {Types.INT} x - Specifies the logical x-coordinate of the new
- *                        position.
- * @param {Types.INT} y - Specifies the logical y-coordinate of the new
- *                        position.
- *
- * @returns {Types.DWORD} The low-order word of the return value contains the
- *                        logical x-coordinate of the previous position, if the
- *                        function is successful; the high-order word contains
- *                        the logical y-coordinate.
+ * @returns {Types.BOOL} Whether there was a device context to draw on.
  */
 export function LineTo(hdc, x, y) {
   const surface = this.handles.resolve(hdc);
