@@ -50,6 +50,15 @@ export function setTimer(system: any, hwnd: number, id: number, interval: number
   return id || 1;
 }
 
+/** Stops every timer a window has, as destroying it does. */
+export function killTimersOf(system: any, hwnd: number) {
+  for (const [key, timer] of timersOf(system)) {
+    if (timer.hwnd === hwnd) {
+      timersOf(system).delete(key);
+    }
+  }
+}
+
 /** Stops a timer; whether there was one. */
 export function killTimer(system: any, hwnd: number, id: number) {
   return timersOf(system).delete(`${hwnd}:${id}`);
@@ -90,6 +99,24 @@ function message_(system: any, hwnd: number, message: number, wParam: number, lP
   return msg;
 }
 
+/**
+ * `PostQuitMessage`: not a message in the queue but a flag on it, with the
+ * exit code, as USER keeps it.
+ *
+ * Measured by the `quitord` probe: `WM_QUIT` comes after every message
+ * posted -- one posted after the quit as well as one before -- and before the
+ * paint and the timer that were also waiting, and it comes once. Not
+ * measured: where it falls among the mouse's and the keyboard's input, which a
+ * probe cannot make; it is taken after them here.
+ */
+export function postQuit(system: any, code: number) {
+  const task = system.scheduler.task;
+
+  if (task) {
+    task.quitCode = code & 0xffff;
+  }
+}
+
 /** The timer that is due first, if one is due now; `remove` sets it going again. */
 function dueTimer(system: any, remove: boolean) {
   let earliest: Timer | null = null;
@@ -124,6 +151,18 @@ export async function nextMessage(
   for (;;) {
     if (task?.peek()) {
       return remove ? await task.pull() : task.peek();
+    }
+
+    /* The quit, once, after everything posted and before a paint or a timer.
+     * See `postQuit`. */
+    if (task && task.quitCode !== undefined && task.quitCode !== null) {
+      const code = task.quitCode;
+
+      if (remove) {
+        task.quitCode = null;
+      }
+
+      return message_(system, 0, User.WM_QUIT, code, 0);
     }
 
     const unpainted = system.rasterDesktop?.unpainted;

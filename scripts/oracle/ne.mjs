@@ -37,11 +37,14 @@ export function readNE(path) {
     const sector = view.getUint16(e, true);
     const length = view.getUint16(e + 2, true);
     const flags = view.getUint16(e + 4, true);
+    const minimum = view.getUint16(e + 6, true);
 
     segments.push({
       number: i + 1,
       at: sector * unit,
       length,
+      // What the loader allocates: the bytes in the file, zero-filled up to this.
+      minimum: minimum || 0x10000,
       flags,
       data: flags & 1 ? 'data' : 'code',
       relocated: Boolean(flags & 0x0100),

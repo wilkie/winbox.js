@@ -1,10 +1,11 @@
 'use strict';
 
-import { TRUE, FALSE, NULL } from '../consts.js';
+import { TRUE, FALSE } from '../consts.js';
 
-import { BOOL } from '../types.js';
+import { User } from '../user.js';
 
-import { User, MSG } from '../user.js';
+import { killTimersOf } from './queue.js';
+import { RasterWindow } from './raster-window.js';
 
 /**
  * The **DestroyWindow** function destroys the specified window. The function
@@ -43,18 +44,74 @@ import { User, MSG } from '../user.js';
  * @return {Types.BOOL} The return value is nonzero if the function is
  *                      successful. Otherwise it is zero.
  */
-export function DestroyWindow(hwnd) {
-  // Get the window itself
+export async function DestroyWindow(hwnd) {
   const dialog = this.handles.resolve(hwnd);
 
-  // Get the window/class for the handle
-  const windowClass = this.handles.retrieve(dialog.options.windowClass);
+  if (!dialog) {
+    return FALSE;
+  }
 
-  // Destroy the window
-  dialog.destroy();
+  const send = (target: number, message: number, wParam = 0, lParam = 0) => {
+    const window = this.handles.resolve(target);
+    const windowClass = window && this.handles.retrieve(window.options.windowClass);
 
-  // TODO: Handle children
+    return windowClass
+      ? this.scheduler.callWndProc(windowClass, target, message, wParam, lParam)
+      : Promise.resolve(0);
+  };
 
-  // Send the WM_DESTROY message
-  return [['callWndProc', windowClass, hwnd, User.WM_DESTROY, 0, 0, () => {}]];
+  if (!(dialog instanceof RasterWindow)) {
+    dialog.destroy();
+    await send(hwnd, User.WM_DESTROY);
+    return TRUE;
+  }
+
+  const desktop = dialog.desktop;
+  const window = dialog.window;
+
+  /* The window and everything under it, the window first. */
+  const tree: number[] = [];
+  const gather = (of: any) => {
+    tree.push(of.hwnd);
+
+    for (const child of desktop.windows.filter((other: any) => other.parent === of && other.hwnd)) {
+      gather(child);
+    }
+  };
+
+  gather(window);
+
+  /* A child tells its parent it is going. */
+  if (window.parent?.hwnd) {
+    await send(window.parent.hwnd, User.WM_PARENTNOTIFY, User.WM_DESTROY, hwnd & 0xffff);
+  }
+
+  /* Off the screen first, which makes another window the active one. */
+  desktop.hide(window);
+
+  if (this.rasterInput?.capture && tree.includes(this.rasterInput.capture.hwnd)) {
+    this.rasterInput.capture = null;
+  }
+
+  /* WM_DESTROY to the window, then to what is under it; WM_NCDESTROY the
+   * other way, the window last. */
+  for (const each of tree) {
+    await send(each, User.WM_DESTROY);
+  }
+
+  for (const each of [...tree].reverse()) {
+    await send(each, User.WM_NCDESTROY);
+    killTimersOf(this, each);
+
+    const gone = this.handles.resolve(each);
+
+    if (gone instanceof RasterWindow) {
+      gone.window.visible = false;
+      desktop.destroy(gone.window);
+    }
+
+    this.handles.free(each);
+  }
+
+  return TRUE;
 }

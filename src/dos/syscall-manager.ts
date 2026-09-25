@@ -266,7 +266,7 @@ export class SyscallManager {
       // 0x4b: load or execute (exec)
 
       // Exit
-      0x4c: [exit, [], [], false],
+      0x4c: [exit, [[I286.REGISTER_AL, 1, Number]], [], false],
 
       // 0x4d: get exit code of subprogram (wait)
       // 0x4e: find first asciz (find first)

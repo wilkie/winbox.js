@@ -11,6 +11,9 @@ import { CreatePopupMenu } from '../../src/win16/user/CreateMenu.js';
 import { DispatchMessage } from '../../src/win16/user/DispatchMessage.js';
 import { PeekMessage } from '../../src/win16/user/PeekMessage.js';
 import { PostMessage } from '../../src/win16/user/PostMessage.js';
+import { PostQuitMessage } from '../../src/win16/user/PostQuitMessage.js';
+import { InvalidateRect } from '../../src/win16/user/InvalidateRect.js';
+import { ValidateRect } from '../../src/win16/user/ValidateRect.js';
 import { SendMessage } from '../../src/win16/user/SendMessage.js';
 import { KillTimer, SetTimer } from '../../src/win16/user/SetTimer.js';
 import { TrackPopupMenu } from '../../src/win16/user/TrackPopupMenu.js';
@@ -714,3 +717,59 @@ const VK_RETURN = 0x0d;
 const VK_RIGHT = 0x27;
 const SC_MOVE = 0xf010;
 const SC_SIZE = 0xf000;
+
+/**
+ * The `quitord` probe, replayed through the exports: two messages posted
+ * around a quit, a paint and a timer due, and what `PeekMessage` takes, in
+ * turn, as the probe writes it.
+ */
+export async function quitOrder(system: any) {
+  await probeClass(system, 'ProbeQuit', 0);
+
+  const window = await CreateWindow.call(
+    system,
+    'ProbeQuit',
+    'Quit',
+    0x00cf0000,
+    40,
+    40,
+    200,
+    120,
+    0,
+    0,
+    0,
+    0
+  );
+
+  await ShowWindow.call(system, window, User.SW_SHOWNORMAL);
+  await UpdateWindow.call(system, window);
+  await pumpAll(system);
+
+  PostMessage.call(system, window, 0x400, 1, 0);
+  PostQuitMessage.call(system, 7);
+  PostMessage.call(system, window, 0x400, 2, 0);
+  await InvalidateRect.call(system, window, null, 1);
+  SetTimer.call(system, window, 1, 55, 0);
+
+  const order: string[] = [];
+  const msg: any = new MSG();
+  let quits = 0;
+
+  for (
+    let index = 0;
+    index < 12 && (await PeekMessage.call(system, msg, 0, 0, 0, User.PM_REMOVE));
+    index++
+  ) {
+    order.push(`message=${msg.message.toString(16).padStart(4, '0')},wParam=${msg.wParam}`);
+
+    if (msg.message === User.WM_QUIT) {
+      quits++;
+    } else if (msg.message === User.WM_PAINT) {
+      ValidateRect.call(system, window);
+    } else if (msg.message === User.WM_TIMER) {
+      KillTimer.call(system, window, 1);
+    }
+  }
+
+  return { order, quits };
+}

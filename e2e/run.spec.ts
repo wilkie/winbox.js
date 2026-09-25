@@ -234,4 +234,65 @@ test('mirrors Notepad for a screen reader, its menu opened from the keyboard', a
 
   await expect(first).toHaveAttribute('aria-label', 'New');
   await expect(desktop).toHaveAttribute('aria-activedescendant', (await first.getAttribute('id'))!);
+
+  /* Exit, from the menu: Notepad closes its window, its message loop ends,
+   * and it returns to DOS -- its window gone, and the page told. */
+  await page.keyboard.press('x');
+  await expect(page.locator('#status')).toHaveText('The program has ended, with exit code 0.', {
+    timeout: 20000,
+  });
+  await expect(window).toHaveCount(0);
+});
+
+/* Clock, closed with Alt+F4: its timer stopped, its window gone, and the
+ * program ended through DOS. */
+const CLOCK = join(DRIVE_C, 'CLOCK.EXE');
+
+test('closes Clock with Alt+F4, and the program ends', async ({ page }) => {
+  test.skip(!existsSync(CLOCK), 'the oracle pipeline has not run here');
+
+  const system = join(DRIVE_C, 'SYSTEM');
+  const files = [
+    { path: 'WINDOWS/SYSTEM.INI', data: new Uint8Array(readFileSync(join(DRIVE_C, 'SYSTEM.INI'))) },
+    { path: 'WINDOWS/WIN.INI', data: new Uint8Array(readFileSync(join(DRIVE_C, 'WIN.INI'))) },
+    ...readdirSync(system)
+      .filter((name: string) => /\.(FON|DRV)$|^USER\.EXE$/i.test(name))
+      .map((name: string) => ({
+        path: `WINDOWS/SYSTEM/${name}`,
+        data: new Uint8Array(readFileSync(join(system, name))),
+      })),
+  ];
+
+  await page.goto('/run.html');
+  await expect(page.locator('#status')).toHaveText('Ready.');
+  await page.locator('#picker').setInputFiles({
+    name: 'win31.zip',
+    mimeType: 'application/zip',
+    buffer: archive(files),
+  });
+  await page.locator('#picker').setInputFiles({
+    name: 'apps.zip',
+    mimeType: 'application/zip',
+    buffer: archive([{ path: 'CLOCK.EXE', data: new Uint8Array(readFileSync(CLOCK)) }]),
+  });
+  await page.getByRole('button', { name: 'Run C:\\APPS\\CLOCK.EXE' }).click();
+
+  const window = page.getByRole('group', { name: 'Clock' });
+
+  await expect(window).toHaveCount(1, { timeout: 20000 });
+
+  const screen = page.getByRole('img', { name: 'The Windows screen' });
+  const box = (await screen.boundingBox())!;
+
+  /* On Clock's caption, which Windows put in the middle of the screen. */
+  await screen.click({ position: { x: box.width / 2, y: (140 * box.height) / 480 } });
+  await page.keyboard.press('Alt+F4');
+
+  await expect(page.locator('#status')).toHaveText(/^The program has ended/, { timeout: 20000 });
+  await expect(window).toHaveCount(0);
+
+  /* And it runs again, as after any program that ended properly. */
+  await page.getByRole('button', { name: 'Run C:\\APPS\\CLOCK.EXE' }).click();
+  await expect(window).toHaveCount(1, { timeout: 20000 });
+  await expect(page.locator('#status')).toHaveText('C:\\APPS\\CLOCK.EXE is running.');
 });

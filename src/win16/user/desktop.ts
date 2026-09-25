@@ -511,6 +511,16 @@ export class Desktop {
    * left to be erased and painted.
    */
   destroy(window: DesktopWindow) {
+    /* A minimized window's title goes with it. */
+    if (window.iconTitle) {
+      this.destroy(window.iconTitle);
+      window.iconTitle = null;
+    }
+
+    if (this.menuOwner === window) {
+      this.menuOwner = null;
+    }
+
     const index = this.windows.indexOf(window);
 
     if (index < 0) {

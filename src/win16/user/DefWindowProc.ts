@@ -141,6 +141,7 @@ const HTMINBUTTON = 8;
 const HTMAXBUTTON = 9;
 const HTMENU = 5;
 const VK_MENU = 0x12;
+const VK_F4 = 0x73;
 const VK_F10 = 0x79;
 
 /**
@@ -295,6 +296,12 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
     case User.WM_SYSKEYDOWN:
     case User.WM_KEYDOWN:
       system._altAlone = uMsg === User.WM_SYSKEYDOWN && wParam === VK_MENU;
+
+      /* Alt+F4 is the system menu's Close, as the menu itself says. */
+      if (uMsg === User.WM_SYSKEYDOWN && wParam === VK_F4) {
+        return rasterDefault(system, dialog, hwnd, User.WM_SYSCOMMAND, SC_CLOSE, 0);
+      }
+
       return undefined;
 
     /* Alt released alone, or F10: into the menu bar from the keyboard. */

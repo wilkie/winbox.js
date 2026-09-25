@@ -119,7 +119,7 @@ export async function ShowWindow(hwnd, nCmdShow) {
       case User.SW_MAXIMIZE:
         dialog.maximize();
         break;
-      case User.WM_MINIMIZE:
+      case User.SW_MINIMIZE:
         dialog.minimize();
         break;
     }

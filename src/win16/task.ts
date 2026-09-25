@@ -16,6 +16,9 @@ export class Task {
   declare _messageLock: any;
   declare _messages: any;
   declare _input: any;
+
+  /** The exit code `PostQuitMessage` left, until `WM_QUIT` is taken; see `postQuit`. */
+  declare quitCode: number | null | undefined;
   declare _pendingStack: any;
   declare _programSegment: any;
   declare _ended: any;

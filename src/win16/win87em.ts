@@ -23,7 +23,7 @@ export class Win87EM extends Module {
       // 0 // "Microsoft Windows 3.1 Coprocessor/Emulator Library 7.00.00"
       null,
       [Win87EM.stub, '__FPMATH', 0],
-      [Win87EM.stub, 'WEP', 0],
+      [Win87EM.stub, 'WEP', 2],
       [Win87EM.stub, '__WIN87EMINFO', 6],
       [Win87EM.stub, '__WIN87EMRESTORE', 6],
       [Win87EM.stub, '__WIN87EMSAVE', 6],

@@ -147,6 +147,9 @@ async function rebuild() {
   const win16: any = new Win16(new DOS(machine), machine, space, {
     display: elements.display.value,
     onCall: trace,
+    onExit: (_handle: number, code: number) => {
+      status(`The program has ended, with exit code ${code}.`);
+    },
     onError: (error: any) => {
       console.error(error);
       status(`Stopped: ${error?.message ?? error}`, 'error');

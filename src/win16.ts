@@ -15,6 +15,8 @@ import { DEFAULT_DISPLAY_MODE, displayMode } from './win16/display-modes.js';
 import { rasterDesktop } from './win16/user/raster-desktop.js';
 import { driverResources } from './win16/user/driver-resources.js';
 import { RasterInput } from './win16/user/raster-input.js';
+import { RasterWindow } from './win16/user/raster-window.js';
+import { killTimersOf } from './win16/user/queue.js';
 import { BitmapContext } from './raster/bitmap-context.js';
 import { Linker } from './win16/linker.js';
 import { Scheduler } from './win16/scheduler.js';
@@ -82,6 +84,9 @@ export class Win16 {
   constructor(dos, machine, desktop, options = {}) {
     // Retain the DOS instance
     this._dos = dos;
+
+    // A program that ends through DOS ends its task.
+    dos.onExit = (code) => this.exitTask(code);
 
     // Retain the deskop environment
     this._desktop = desktop;
@@ -292,6 +297,45 @@ export class Win16 {
     );
 
     return this._rasterDesktop;
+  }
+
+  /**
+   * The running task, ended: what the kernel does when a program ends by
+   * INT 21h function 4Ch. The task is never resumed; whatever windows it left
+   * are taken off the screen with their timers, and the page is told through
+   * `options.onExit`.
+   *
+   * Its windows go without messages to it. Windows 3.1 destroys a finished
+   * task's windows as it ends it; whether their procedures are called then is
+   * not recorded, and here there is no program left to call.
+   */
+  exitTask(code: number) {
+    const handle = this.scheduler.active;
+    const task = this.handles.resolve(handle);
+
+    if (!task) {
+      return;
+    }
+
+    task.quitCode = null;
+
+    const desktop = (this._options as any).raster ? this.rasterDesktop : null;
+
+    if (desktop) {
+      for (const window of [...desktop.windows]) {
+        const owner = window.hwnd ? this.handles.resolve(window.hwnd) : null;
+
+        if (owner instanceof RasterWindow && owner.data?.hInstance === handle) {
+          killTimersOf(this, window.hwnd);
+          window.visible = window.parent ? false : window.visible;
+          desktop.destroy(window);
+          this.handles.free(window.hwnd);
+        }
+      }
+    }
+
+    task.end();
+    (this._options as any).onExit?.(handle, code);
   }
 
   /** The mouse and keyboard on the raster desktop, when there is one. See `raster-input.ts`. */

@@ -102,7 +102,9 @@ import { RedrawWindow } from './user/RedrawWindow.js';
 import { ReleaseDC } from './user/ReleaseDC.js';
 import { SendMessage } from './user/SendMessage.js';
 import { SetFocus } from './user/SetFocus.js';
+import { PostQuitMessage } from './user/PostQuitMessage.js';
 import { RegisterWindowMessage } from './user/RegisterWindowMessage.js';
+import { ValidateRect } from './user/ValidateRect.js';
 import { KillTimer, SetTimer } from './user/SetTimer.js';
 import { PostMessage } from './user/PostMessage.js';
 import { SetRect } from './user/SetRect.js';
@@ -391,7 +393,6 @@ export class User extends Module {
   declare static WM_MEASUREITEM: any;
   declare static WM_MENUCHAR: any;
   declare static WM_MENUSELECT: any;
-  declare static WM_MINIMIZE: any;
   declare static WM_MOUSEACTIVATE: any;
   declare static WM_MOUSEMOVE: any;
   declare static WM_MOVE: any;
@@ -490,9 +491,9 @@ export class User extends Module {
       [User.stub, 'EnableOEMLayer', 0],
       [User.stub, 'DisableOEMLayer', 0],
       [InitApp, 'InitApp', 2, [HANDLE], BOOL],
-      [User.stub, 'PostQuitMessage', 0],
+      [PostQuitMessage, 'PostQuitMessage', 2, [INT]],
       [ExitWindows, 'ExitWindows', 6, [DWORD, UINT], BOOL],
-      [User.stub, 'Unknown'],
+      [User.stub, 'Unknown', 2],
       [User.stub, 'Unknown'],
       // 10 //
       [SetTimer, 'SetTimer', 10, [HWND, UINT, UINT, FARPTR], UINT],
@@ -506,7 +507,7 @@ export class User extends Module {
       [SetCapture, 'SetCapture', 2, [HWND], HWND],
       [ReleaseCapture, 'ReleaseCapture', 0, []],
       // 20 //
-      [User.stub, 'SetDoubleClickTime', 0],
+      [User.stub, 'SetDoubleClickTime', 2],
       [User.stub, 'GetDoubleClickTime', 0],
       [SetFocus, 'SetFocus', 2, [HWND], HWND],
       [GetFocus, 'GetFocus', 0, [], HWND],
@@ -522,7 +523,7 @@ export class User extends Module {
       [GetWindowRect, 'GetWindowRect', 6, [HWND, [RECT]]],
       [GetClientRect, 'GetClientRect', 6, [HWND, [RECT]]],
       [User.stub, 'EnableWindow', 4],
-      [User.stub, 'IsWindowEnabled', 0],
+      [User.stub, 'IsWindowEnabled', 2],
       [User.stub, 'GetWindowText', 8],
       [SetWindowText, 'SetWindowText', 6, [HWND, LPCSTR]],
       [User.stub, 'GetWindowTextLength', 2],
@@ -541,9 +542,9 @@ export class User extends Module {
       [OpenIcon, 'OpenIcon', 2, [HWND], BOOL],
       [User.stub, 'BringWindowToTop', 2],
       [User.stub, 'GetParent', 2],
-      [User.stub, 'IsWindow', 0],
-      [User.stub, 'IsChild', 0],
-      [User.stub, 'IsWindowVisible', 0],
+      [User.stub, 'IsWindow', 2],
+      [User.stub, 'IsChild', 4],
+      [User.stub, 'IsWindowVisible', 2],
       // 50 //
       [FindWindow, 'FindWindow', 8, [LPCSTR, LPCSTR], HWND],
       [User.stub, 'Bear51', 2],
@@ -567,12 +568,12 @@ export class User extends Module {
       [ReleaseDC, 'ReleaseDC', 4, [HWND, HDC], INT],
       [User.stub, 'SetCursor', 2],
       // 70 //
-      [User.stub, 'SetCursorPos', 0],
+      [User.stub, 'SetCursorPos', 4],
       [User.stub, 'ShowCursor', 2],
       [SetRect, 'SetRect', 12, [[RECT], INT, INT, INT, INT]],
-      [User.stub, 'SetRectEmpty', 0],
+      [User.stub, 'SetRectEmpty', 4],
       [CopyRect, 'CopyRect', 8, [[RECT], [RECT]]],
-      [User.stub, 'IsRectEmpty', 0],
+      [User.stub, 'IsRectEmpty', 4],
       [PtInRect, 'PtInRect', 8, [[RECT], [POINT]], BOOL],
       [User.stub, 'OffsetRect', 8],
       [User.stub, 'InflateRect', 8],
@@ -606,7 +607,7 @@ export class User extends Module {
       [User.stub, 'MapDialogRect', 6],
       [User.stub, 'MessageBeep', 2],
       [User.stub, 'FlashWindow', 4],
-      [User.stub, 'GetKeyState', 0],
+      [User.stub, 'GetKeyState', 2],
       [DefWindowProc, 'DefWindowProc', 10, [HWND, UINT, WPARAM, LPARAM], LONG],
       [GetMessage, 'GetMessage', 10, [[MSG], HWND, UINT, UINT], BOOL],
       [PeekMessage, 'PeekMessage', 12, [[MSG], HWND, UINT, UINT, UINT], BOOL],
@@ -629,7 +630,7 @@ export class User extends Module {
       [UpdateWindow, 'UpdateWindow', 2, [HWND]],
       [InvalidateRect, 'InvalidateRect', 8, [HWND, [RECT], BOOL]],
       [User.stub, 'InvalidateRgn', 6],
-      [User.stub, 'ValidateRect', 6],
+      [ValidateRect, 'ValidateRect', 6, [HWND, FARPTR]],
       [User.stub, 'ValidateRgn', 4],
       [User.stub, 'GetClassWord', 4],
       // 130 //
@@ -694,7 +695,7 @@ export class User extends Module {
       [User.stub, 'GetCaretPos', 4],
       [User.stub, 'QuerySendMessage', 10],
       [User.stub, 'GrayString', 22],
-      [User.stub, 'SwapMouseButton', 0],
+      [User.stub, 'SwapMouseButton', 2],
       [User.stub, 'EndMenu', 0],
       [User.stub, 'SetSysModalWindow', 2],
       [User.stub, 'GetSysModalWindow', 0],
@@ -763,7 +764,7 @@ export class User extends Module {
       [User.stub, 'ExitWindowsExec', 8],
       [User.stub, 'GetCursor', 0],
       [User.stub, 'GetOpenClipboardWindow', 0],
-      [User.stub, 'GetAsyncKeyState', 0],
+      [User.stub, 'GetAsyncKeyState', 2],
       // 250 //
       [User.stub, 'GetMenuState', 6],
       [User.stub, 'SendDriverMessage', 12],
@@ -844,7 +845,7 @@ export class User extends Module {
       // 320 //
       [User.stub, 'SysErrorBox', 14],
       [User.stub, 'SetEventHook', 4],
-      [User.stub, 'WinOldAppHackomatic', 10],
+      [User.stub, 'WinOldAppHackomatic', 4],
       [User.stub, 'GetMessage2', 14],
       [User.stub, 'FillWindow', 8],
       [User.stub, 'PaintRect', 12],
@@ -854,10 +855,10 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       // 330 //
       [User.stub, 'Unknown'],
-      [User.stub, 'EnableHardwareInput', 0],
+      [User.stub, 'EnableHardwareInput', 2],
       [User.stub, 'UserYield', 0],
       [User.stub, 'IsUserIdle', 0],
-      [User.stub, 'GetQueueStatus', 0],
+      [User.stub, 'GetQueueStatus', 2],
       [User.stub, 'GetInputState', 0],
       [User.stub, 'LoadCursorIconHandler', 6],
       [User.stub, 'GetMouseEventProc', 0],
@@ -883,7 +884,7 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       [User.stub, 'LoadDibCursorHandler', 6],
       [User.stub, 'LoadDibIconHandler', 6],
-      [User.stub, 'IsMenu', 0],
+      [User.stub, 'IsMenu', 2],
       [User.stub, 'GetDCEx', 8],
       // 360 //
       [User.stub, 'Unknown'],
@@ -1022,7 +1023,7 @@ export class User extends Module {
       [User.stub, 'Hardware_Event', 0],
       [User.stub, 'EnableScrollBar', 6],
       [SystemParametersInfo, 'SystemParametersInfo', 10, [UINT, UINT, FARPTR, UINT], BOOL],
-      [User.stub, 'Unknown'],
+      [User.stub, 'Unknown', 0],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
@@ -1298,6 +1299,7 @@ User.BS_LEFTTEXT = 0x00000020;
 // Button Control Messages
 // -----------------------
 
+User.WM_USER = 0x0400;
 User.BM_GETCHECK = User.WM_USER + 0;
 User.BM_SETCHECK = User.WM_USER + 1;
 User.BM_GETSTATE = User.WM_USER + 2;
@@ -1331,6 +1333,8 @@ User.WM_GETTEXT = 0x000d;
 User.WM_GETTEXTLENGTH = 0x000e;
 User.WM_PAINT = 0x000f;
 User.WM_CLOSE = 0x0010;
+User.WM_QUIT = 0x0012;
+User.WM_INITDIALOG = 0x0110;
 User.WM_QUERYOPEN = 0x0013;
 User.WM_ERASEBKGND = 0x0014;
 User.WM_SHOWWINDOW = 0x0018;
@@ -1445,6 +1449,7 @@ User.SW_NORMAL = 0x0001;
 User.SW_SHOWMINIMIZED = 0x0002;
 User.SW_SHOWMAXIMIZED = 0x0003;
 User.SW_MAXIMIZED = 0x0003;
+User.SW_MAXIMIZE = 0x0003;
 User.SW_SHOWNOACTIVATE = 0x0004;
 User.SW_SHOW = 0x0005;
 User.SW_MINIMIZE = 0x0006;

@@ -18,6 +18,7 @@ import {
   driverOf,
   iconsCapture,
   menusCapture,
+  quitOrder,
   sizingCapture,
 } from './replay-windows.js';
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
@@ -1745,6 +1746,18 @@ const ADAPTERS: Record<
     }
 
     return String(GlobalSize.call(context, handle));
+  },
+
+  /** `quitord`: the message `PeekMessage` took at a place in the order. */
+  async order(context, [index]) {
+    const { order } = await quitOrder(context);
+
+    return order[Number(index)] ?? 'none';
+  },
+
+  /** `quitord`: how many times the quit came out. */
+  async again(context) {
+    return String((await quitOrder(context)).quits);
   },
 
   /**

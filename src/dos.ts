@@ -10,6 +10,9 @@ export class DOS {
   declare _dpmi: any;
   declare _files: any;
   declare _machine: any;
+
+  /** Told when a program ends by INT 21h function 4Ch, with its return code. */
+  onExit?: (code: number) => void;
   declare _memory: any;
   declare _syscalls: any;
   /**
