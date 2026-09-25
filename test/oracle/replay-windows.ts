@@ -4,6 +4,24 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { GetPixel } from '../../src/win16/gdi/GetPixel.js';
+import { GlobalAlloc } from '../../src/win16/kernel/GlobalAlloc.js';
+import { GlobalLock } from '../../src/win16/kernel/GlobalLock.js';
+import { GetTextExtent } from '../../src/win16/gdi/GetTextExtent.js';
+import { GetTextMetrics } from '../../src/win16/gdi/GetTextMetrics.js';
+import { SelectObject } from '../../src/win16/gdi/SelectObject.js';
+import {
+  CreateDialogIndirect,
+  DialogBoxIndirect,
+  EndDialog,
+  GetDialogBaseUnits,
+  GetDlgCtrlID,
+  IsDialogMessage,
+} from '../../src/win16/user/dialogs.js';
+import { GetDlgItem } from '../../src/win16/user/GetDlgItem.js';
+import { GetSysColor, SetSysColors } from '../../src/win16/user/GetSysColor.js';
+import { RedrawWindow } from '../../src/win16/user/RedrawWindow.js';
+import { GetFocus } from '../../src/win16/user/GetFocus.js';
+import { IsWindowEnabled } from '../../src/win16/user/window-queries.js';
 import { displayMode } from '../../src/win16/display-modes.js';
 import { driverResources } from '../../src/win16/user/driver-resources.js';
 import { MSG, User, PAINTSTRUCT, POINT, RECT, WNDCLASS } from '../../src/win16/user.js';
@@ -772,4 +790,401 @@ export async function quitOrder(system: any) {
   }
 
   return { order, quits };
+}
+
+/* ---- dialogs ---- */
+
+export interface DialogCaptured {
+  records: Map<string, string>;
+  rows: Map<string, string[]>;
+}
+
+const dialogCaptures = new Map<string, Promise<DialogCaptured>>();
+
+/** The `dialogs` probe, replayed through the exports once per display. */
+export function dialogsCapture(context: any) {
+  const key = context.display.name;
+
+  if (!dialogCaptures.has(key)) {
+    dialogCaptures.set(key, captureDialogs(context));
+  }
+
+  return dialogCaptures.get(key)!;
+}
+
+/** The probe's dialog template, as its `build` makes it. */
+function dialogTemplate(
+  font: boolean,
+  x = 10,
+  controls = true,
+  caption = 'Probe Dialog',
+  style?: number
+) {
+  const bytes: number[] = [];
+  const word = (value: number) => bytes.push(value & 0xff, (value >> 8) & 0xff);
+  const text = (value: string) => {
+    for (const c of value) bytes.push(c.charCodeAt(0));
+    bytes.push(0);
+  };
+  const WS_VISIBLE = 0x10000000;
+  const base = style ?? 0x80000000 | 0x00c00000 | 0x00080000 | 0x80 | WS_VISIBLE;
+  const dialogStyle = (font ? base | 0x40 : base) >>> 0;
+  const items: [number, number, number, number, number, number, number, string][] = controls
+    ? [
+        [6, 8, 30, 8, 100, 0x0, 0x82, '&Name:'],
+        [40, 6, 110, 12, 101, 0x0 | 0x00800000 | 0x00010000, 0x81, ''],
+        [6, 26, 60, 10, 102, 0x3 | 0x00010000, 0x80, '&Check'],
+        [6, 40, 60, 10, 103, 0x9 | 0x00020000 | 0x00010000, 0x80, 'Radio &1'],
+        [6, 52, 60, 10, 104, 0x9, 0x80, 'Radio &2'],
+        [30, 70, 40, 14, 1, 0x1 | 0x00020000 | 0x00010000, 0x80, 'OK'],
+        [90, 70, 40, 14, 2, 0x0 | 0x00010000, 0x80, 'Cancel'],
+      ]
+    : [];
+
+  word(dialogStyle & 0xffff);
+  word(dialogStyle >>> 16);
+  bytes.push(items.length);
+  word(x);
+  word(10);
+  word(160);
+  word(90);
+  bytes.push(0, 0);
+  text(caption);
+
+  if (font) {
+    word(8);
+    text('MS Sans Serif');
+  }
+
+  for (const [ix, iy, cx, cy, id, itemStyle, kind, label] of items) {
+    const full = (itemStyle | 0x40000000 | WS_VISIBLE) >>> 0;
+
+    word(ix);
+    word(iy);
+    word(cx);
+    word(cy);
+    word(id);
+    word(full & 0xffff);
+    word(full >>> 16);
+    bytes.push(kind);
+    text(label);
+    bytes.push(0);
+  }
+
+  return bytes;
+}
+
+async function captureDialogs(system: any): Promise<DialogCaptured> {
+  const records = new Map<string, string>();
+  const rows = new Map<string, string[]>();
+  const core = system.machine.cpu.core;
+
+  /* Somewhere in the program's memory to build each template. */
+  const memory = GlobalAlloc.call(system, 0x42, 512);
+  const far = GlobalLock.call(system, memory);
+  const place = (bytes: number[]) => {
+    bytes.forEach((value, at) => core.write8((far >>> 16) & 0xffff, (far & 0xffff) + at, value));
+  };
+
+  /* The desktop exists before the program does. */
+  void system.rasterDesktop;
+
+  await probeClass(system, 'ProbeOwner', 0);
+  const owner = await CreateWindow.call(
+    system,
+    'ProbeOwner',
+    'Owner',
+    0x00cf0000,
+    20,
+    20,
+    400,
+    300,
+    0,
+    0,
+    0,
+    0
+  );
+
+  await ShowWindow.call(system, owner, User.SW_SHOWNORMAL);
+  await UpdateWindow.call(system, owner);
+  await pumpAll(system);
+
+  const units = GetDialogBaseUnits.call(system);
+
+  records.set('units:', `x=${units & 0xffff},y=${units >>> 16}`);
+
+  let phase = '';
+
+  const dialogProc = (hwnd: number, message: number, wParam: number) => {
+    if (message === User.WM_INITDIALOG) {
+      return 1;
+    }
+
+    if (message === User.WM_COMMAND && (wParam === 1 || wParam === 2)) {
+      records.set(`command:${phase}`, `id=${wParam}`);
+      return 1;
+    }
+
+    return 0;
+  };
+
+  const pumpDialog = async (dialog: number) => {
+    const msg: any = new MSG();
+
+    while (await PeekMessage.call(system, msg, 0, 0, 0, User.PM_REMOVE)) {
+      if (!(await IsDialogMessage.call(system, dialog, msg))) {
+        TranslateMessage.call(system, msg);
+        await DispatchMessage.call(system, msg);
+      }
+    }
+  };
+
+  const focusId = () => {
+    const focus = GetFocus.call(system);
+
+    return focus ? GetDlgCtrlID.call(system, focus) : -1;
+  };
+
+  const rectOf = (hwnd: number) => {
+    const rect: any = new RECT();
+
+    GetWindowRect.call(system, hwnd, rect);
+    return rect;
+  };
+
+  for (const name of ['system', 'font']) {
+    place(dialogTemplate(name === 'font'));
+    const dialog = await CreateDialogIndirect.call(system, 0, far, owner, dialogProc);
+
+    await pumpDialog(dialog);
+
+    const window = rectOf(dialog);
+    const client: any = new RECT();
+    const corner: any = new POINT();
+
+    GetClientRect.call(system, dialog, client);
+    ClientToScreen.call(system, dialog, corner);
+    records.set(
+      `rects:${name}`,
+      `window=${window.left}:${window.top}:${window.right}:${window.bottom},` +
+        `client=${corner.x}:${corner.y}:${corner.x + client.right}:${corner.y + client.bottom}`
+    );
+
+    for (const id of [100, 101, 102, 103, 104, 1, 2]) {
+      const rect = rectOf(GetDlgItem.call(system, dialog, id));
+
+      records.set(
+        `control:${name},id=${id}`,
+        `${rect.left - corner.x}:${rect.top - corner.y}:${rect.right - corner.x}:${rect.bottom - corner.y}`
+      );
+    }
+
+    /* The dialog's font, and the letters in it. */
+    const font = await SendMessage.call(system, dialog, User.WM_GETFONT, 0, 0);
+    const logfont = font ? system.handles.resolve(font)?.logfont : null;
+
+    records.set(
+      `dialogfont:${name}`,
+      logfont ? `height=${logfont.height},weight=${logfont.weight},face=${logfont.face}` : 'none'
+    );
+
+    const dc = GetDC.call(system, dialog);
+    const old = font ? SelectObject.call(system, dc, font) : 0;
+    const metrics: any = {};
+
+    GetTextMetrics.call(system, dc, metrics);
+    const letters =
+      GetTextExtent.call(system, dc, 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 52) &
+      0xffff;
+
+    records.set(
+      `measure:${name}`,
+      `letters=${letters},average=${metrics.tmAveCharWidth},height=${metrics.tmHeight}`
+    );
+
+    if (old) {
+      SelectObject.call(system, dc, old);
+    }
+
+    ReleaseDC.call(system, dialog, dc);
+    rows.set(name, readArea(system, window.left, window.top, window.right, window.bottom));
+
+    records.set(`focus:${name},created`, String(focusId()));
+
+    for (let press = 1; press <= 6; press++) {
+      PostMessage.call(system, GetFocus.call(system), User.WM_KEYDOWN, 0x09, 0);
+      await pumpDialog(dialog);
+      records.set(`focus:${name},tab=${press}`, String(focusId()));
+    }
+
+    phase = `${name},enter`;
+    PostMessage.call(system, GetFocus.call(system), User.WM_KEYDOWN, 0x0d, 0);
+    await pumpDialog(dialog);
+    phase = `${name},escape`;
+    PostMessage.call(system, GetFocus.call(system), User.WM_KEYDOWN, 0x1b, 0);
+    await pumpDialog(dialog);
+
+    await DestroyWindow.call(system, dialog);
+    await pumpAll(system);
+  }
+
+  for (let index = 0; index < 10; index++) {
+    place(
+      dialogTemplate(false, index, false, 'Place', 0x80000000 | 0x00c00000 | 0x80 | 0x10000000)
+    );
+    const dialog = await CreateDialogIndirect.call(system, 0, far, owner, dialogProc);
+
+    await pumpDialog(dialog);
+
+    const window = rectOf(dialog);
+    const corner: any = new POINT();
+
+    ClientToScreen.call(system, dialog, corner);
+    records.set(
+      `placement:x=${index}`,
+      `window=${window.left}:${window.top},client=${corner.x}:${corner.y}`
+    );
+    await DestroyWindow.call(system, dialog);
+    await pumpAll(system);
+  }
+
+  /* Modal: a timer ends it, and the owner is asked about while it runs. */
+  place(dialogTemplate(false));
+  const modalProc = (hwnd: number, message: number) => {
+    if (message === User.WM_INITDIALOG) {
+      SetTimer.call(system, hwnd, 1, 55, 0);
+      return 1;
+    }
+
+    if (message === User.WM_TIMER) {
+      KillTimer.call(system, hwnd, 1);
+      records.set('modal:owner-enabled-during', String(IsWindowEnabled.call(system, owner)));
+      EndDialog.call(system, hwnd, 42);
+      return 1;
+    }
+
+    return 0;
+  };
+
+  const answer = await DialogBoxIndirect.call(system, 0, memory, owner, modalProc);
+
+  records.set('modal:answer', String(answer));
+  records.set('modal:owner-enabled-after', String(IsWindowEnabled.call(system, owner)));
+
+  await DestroyWindow.call(system, owner);
+
+  return { records, rows };
+}
+
+/* ---- dlgcolor ---- */
+
+const dlgColorCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `dlgcolor` probe, replayed through the exports once per display. */
+export function dlgColorCapture(context: any) {
+  const key = context.display.name;
+
+  if (!dlgColorCaptures.has(key)) {
+    dlgColorCaptures.set(key, captureDlgColor(context));
+  }
+
+  return dlgColorCaptures.get(key)!;
+}
+
+async function captureDlgColor(system: any) {
+  const records = new Map<string, string>();
+  const core = system.machine.cpu.core;
+  const memory = GlobalAlloc.call(system, 0x42, 256);
+  const far = GlobalLock.call(system, memory);
+  const segment = (far >>> 16) & 0xffff;
+  const write = (at: number, bytes: number[]) =>
+    bytes.forEach((value, index) => core.write8(segment, at + index, value));
+
+  void system.rasterDesktop;
+
+  /* The probe's dialog: a caption, a system menu, a modal frame, no controls. */
+  const style = (0x80000000 | 0x00c00000 | 0x00080000 | 0x80 | 0x10000000) >>> 0;
+
+  write(0, [
+    style & 0xff,
+    (style >>> 8) & 0xff,
+    (style >>> 16) & 0xff,
+    style >>> 24,
+    0,
+    20,
+    0,
+    20,
+    0,
+    100,
+    0,
+    50,
+    0,
+    0,
+    0,
+    0x44,
+    0,
+  ]);
+
+  const dialog = await CreateDialogIndirect.call(system, 0, far, 0, (_: number, message: number) =>
+    message === User.WM_INITDIALOG ? 1 : 0
+  );
+
+  await pumpAll(system);
+
+  const colours: [string, number][] = [
+    ['inactivecaption', 3],
+    ['menu', 4],
+    ['window', 5],
+    ['captiontext', 9],
+    ['highlighttext', 14],
+    ['btnhighlight', 20],
+    ['activecaption', 2],
+    ['windowframe', 6],
+    ['btnface', 15],
+  ];
+
+  const digit = (x: number, y: number) => {
+    const screen = GetDC.call(system, 0);
+    const index = PALETTE.indexOf(GetPixel.call(system, screen, x, y) & 0xffffff);
+
+    ReleaseDC.call(system, 0, screen);
+    return index < 0 ? '?' : index.toString(16);
+  };
+
+  for (const [name, index] of colours) {
+    const was = GetSysColor.call(system, index);
+
+    const set = async (colour: number) => {
+      write(100, [
+        index & 0xff,
+        index >> 8,
+        colour & 0xff,
+        (colour >> 8) & 0xff,
+        (colour >> 16) & 0xff,
+        0,
+      ]);
+      await SetSysColors.call(system, 1, far + 100, far + 102);
+    };
+
+    await set(0x0000ff);
+    await RedrawWindow.call(system, dialog, null, 0, 0x0400 | 0x0001 | 0x0004 | 0x0100);
+    await pumpAll(system);
+
+    const window: any = new RECT();
+
+    GetWindowRect.call(system, dialog, window);
+    records.set(
+      name,
+      `top=${digit(window.left + 30, window.top + 4)},side=${digit(window.left + 5, window.top + 30)},` +
+        `ring=${digit(window.left + 2, window.top + 30)},outline=${digit(window.left, window.top + 30)},` +
+        `client=${digit(window.left + 30, window.top + 40)}`
+    );
+
+    await set(was);
+    await pumpAll(system);
+  }
+
+  await DestroyWindow.call(system, dialog);
+
+  return records;
 }

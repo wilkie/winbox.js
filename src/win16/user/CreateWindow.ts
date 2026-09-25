@@ -67,6 +67,14 @@ export async function CreateWindow(
     const className = String(lpszClassName);
     const control = CONTROL_CLASSES.has(className.toUpperCase());
 
+    /* A class nobody registered makes no window, as Windows answers: the
+     * combo box is one of USER's own not done yet. A window made anyway had
+     * no procedure to paint it, and was due to be painted for ever. */
+    if (!control && !this.handles.retrieve(lpszClassName)) {
+      console.log('CANNOT FIND WINDOW CLASS', className);
+      return NULL;
+    }
+
     /* A child's place is in its parent's client area; a control's rectangle
      * may be its own. A child's `hmenu` is its identifier, not a menu. */
     const rect = control

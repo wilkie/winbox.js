@@ -4,6 +4,16 @@ import { TRUE, FALSE } from '../consts.js';
 
 import { User, MSG } from '../user.js';
 
+import { RasterWindow } from './raster-window.js';
+import { UpdateWindow } from './UpdateWindow.js';
+
+const RDW_INVALIDATE = 0x0001;
+const RDW_ERASE = 0x0004;
+const RDW_VALIDATE = 0x0008;
+const RDW_ALLCHILDREN = 0x0080;
+const RDW_UPDATENOW = 0x0100;
+const RDW_FRAME = 0x0400;
+
 /**
  * The **RedrawWindow** function updates the specified rectangle or region in
  * the given window's client area.
@@ -96,11 +106,57 @@ import { User, MSG } from '../user.js';
  * @return {Types.BOOL} The return value is nonzero if the function is
  *                      successful. Otherwise, it is zero.
  */
-export function RedrawWindow(hwnd, lprcUpdate, hrgnUpdate, fuRedraw) {
+export async function RedrawWindow(hwnd, lprcUpdate, hrgnUpdate, fuRedraw) {
   const dialog = this.handles.resolve(hwnd);
 
   if (!dialog) {
     return 0;
+  }
+
+  /* On the raster desktop the flags are followed: the frame drawn again, the
+   * window -- and with `RDW_ALLCHILDREN` its children -- marked to be erased
+   * and painted, and painted at once with `RDW_UPDATENOW`. The whole of each
+   * window; the rectangle and region are not kept. */
+  if (dialog instanceof RasterWindow) {
+    const desktop = dialog.desktop;
+    const windows = [dialog.window];
+
+    if (fuRedraw & RDW_ALLCHILDREN) {
+      for (const other of desktop.windows) {
+        for (let at = other.parent; at; at = at.parent) {
+          if (at === dialog.window) {
+            windows.push(other);
+            break;
+          }
+        }
+      }
+    }
+
+    for (const window of windows) {
+      if (fuRedraw & RDW_INVALIDATE) {
+        if (fuRedraw & RDW_FRAME) {
+          desktop.paintFrame(window);
+        }
+
+        window.needsPaint = true;
+        window.needsErase ||= (fuRedraw & RDW_ERASE) !== 0;
+      }
+
+      if (fuRedraw & RDW_VALIDATE) {
+        window.needsPaint = false;
+        window.needsErase = false;
+      }
+    }
+
+    if (fuRedraw & RDW_UPDATENOW) {
+      for (const window of windows) {
+        if (window.hwnd) {
+          await UpdateWindow.call(this, window.hwnd);
+        }
+      }
+    }
+
+    return TRUE;
   }
 
   // Post a WM_PAINT and WM_ERASEBKGND message, as indicated

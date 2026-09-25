@@ -11,6 +11,7 @@ import {
   type ControlState,
 } from './controls.js';
 import { DefWindowProc } from './DefWindowProc.js';
+import { fontOf } from './raster-desktop.js';
 import { RasterWindow } from './raster-window.js';
 
 /**
@@ -99,6 +100,26 @@ async function controlProc(
     case User.WM_ERASEBKGND:
       /* A control paints all of itself. */
       return 1;
+
+    case User.WM_SETFONT:
+      control.font = wParam ? { handle: wParam, ...fontOf(system, wParam) } : undefined;
+
+      if (lParam) {
+        invalidate();
+      }
+      return 0;
+
+    case User.WM_GETFONT:
+      return control.font?.handle ?? 0;
+
+    case WM_GETDLGCODE:
+      return dialogCode(control);
+
+    case User.WM_SETTEXT:
+      control.text = stringAt(system, lParam);
+      window.window.title = control.text;
+      invalidate();
+      return 1;
   }
 
   if (kind === 'BUTTON') {
@@ -126,4 +147,112 @@ async function controlProc(
   }
 
   return DefWindowProc.call(system, hwnd, message, wParam, lParam);
+}
+
+const WM_GETDLGCODE = 0x0087;
+
+/**
+ * What a control wants of the keyboard in a dialog, as `WM_GETDLGCODE`
+ * answers: an edit control its characters and arrows, a multi-line one every
+ * key; a button that it is one, and which kind; static text nothing.
+ */
+function dialogCode(control: ControlState) {
+  const kind = control.style & 0x0f;
+
+  switch (control.className) {
+    case 'EDIT':
+      return 0x0080 | 0x0008 | 0x0001 | (control.style & 0x0004 ? 0x0004 : 0);
+    case 'LISTBOX':
+      return 0x0080 | 0x0001;
+    case 'STATIC':
+      return 0x0100;
+    case 'BUTTON':
+      if (kind === 1) {
+        return 0x2000 | 0x0010;
+      }
+
+      if (kind === 0) {
+        return 0x2000 | 0x0020;
+      }
+
+      if (kind === 4 || kind === 9) {
+        return 0x2000 | 0x0040;
+      }
+
+      return 0x2000;
+  }
+
+  return 0;
+}
+
+/**
+ * A button pressed, as a click or its mnemonic presses it: an automatic check
+ * box toggles, an automatic radio button is checked and the others in its
+ * group cleared, and the parent is told with `BN_CLICKED`.
+ */
+export async function clickControl(system: any, hwnd: number) {
+  const window = system.handles.resolve(hwnd);
+
+  if (!(window instanceof RasterWindow) || window.window.control?.className !== 'BUTTON') {
+    return;
+  }
+
+  const control = window.window.control;
+  const kind = control.style & 0x0f;
+
+  if (kind === 3) {
+    control.checked = control.checked ? 0 : 1;
+  } else if (kind === 6) {
+    control.checked = (control.checked + 1) % 3;
+  } else if (kind === 9) {
+    control.checked = 1;
+
+    /* The rest of its group: the radio buttons around it back to one with
+     * `WS_GROUP`, and up to the next. */
+    const siblings = window.desktop.windows.filter(
+      (other: any) => other.parent === window.window.parent && other.hwnd
+    );
+    const at = siblings.indexOf(window.window);
+    let start = at;
+
+    while (start > 0 && !(siblings[start].style & 0x00020000)) {
+      start--;
+    }
+
+    for (let index = start; index < siblings.length; index++) {
+      const other = siblings[index];
+
+      if (index > start && other.style & 0x00020000) {
+        break;
+      }
+
+      if (
+        other !== window.window &&
+        other.control?.className === 'BUTTON' &&
+        (other.style & 0x0f) === 9
+      ) {
+        other.control.checked = 0;
+        other.needsPaint = true;
+      }
+    }
+  }
+
+  window.window.needsPaint = true;
+
+  const parent = window.window.parent;
+
+  if (parent?.hwnd) {
+    const owner = system.handles.resolve(parent.hwnd);
+    const windowClass = owner && system.handles.retrieve(owner.options.windowClass);
+
+    if (windowClass) {
+      await system.scheduler.callWndProc(
+        windowClass,
+        parent.hwnd,
+        User.WM_COMMAND,
+        window.window.controlId,
+        (hwnd & 0xffff) >>> 0
+      );
+    }
+  }
 }

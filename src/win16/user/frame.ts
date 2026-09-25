@@ -78,6 +78,7 @@ const MENU_GAP = 8;
 const COLOR_ACTIVECAPTION = 2;
 const COLOR_INACTIVECAPTION = 3;
 const COLOR_MENU = 4;
+const COLOR_WINDOW = 5;
 const COLOR_WINDOWFRAME = 6;
 const COLOR_MENUTEXT = 7;
 const COLOR_HIGHLIGHT = 13;
@@ -120,6 +121,9 @@ export interface Frame {
 
   /** Whether the window is maximized: its maximize box is then a restore box. */
   zoomed?: boolean;
+
+  /** A dialog's modal frame, `DS_MODALFRAME`: a dialog frame around a caption. */
+  modal?: boolean;
 }
 
 /**
@@ -146,7 +150,8 @@ export function paintFrame(
   const line = colour(COLOR_WINDOWFRAME);
   const hasCaption = (style & WS_CAPTION) === WS_CAPTION;
   const thick = (style & WS_THICKFRAME) !== 0;
-  const dialog = !hasCaption && (style & WS_DLGFRAME) !== 0;
+  const modal = !!frame.modal && !thick;
+  const dialog = modal || (!hasCaption && (style & WS_DLGFRAME) !== 0);
   const bordered = hasCaption || (style & WS_BORDER) !== 0;
 
   /* The edges, and where inside them the window's own area starts. */
@@ -214,28 +219,42 @@ export function paintFrame(
 
   /** The caption and its boxes; returns where the client area would start. */
   function paintCaption() {
-    /* The caption: its top row is the frame's inner line, or the border. */
-    const captionTop = thick ? insetY - 1 : 0;
+    /* The caption: its top row is the frame's inner line, or the border.
+     *
+     * In a modal frame it is the ring's inner row, and the caption's top row
+     * and its two sides are the window colour: measured by the `dialogs`
+     * probe, and which colour by `dlgcolor`, which turned each of the white
+     * system colours red in turn. What is in the caption starts a pixel in. */
+    const captionTop = thick || modal ? insetY - 1 : 0;
     const captionHeight = environment.metric(SM_CYCAPTION);
     const rowTop = captionTop + 1;
     const rowBottom = captionTop + captionHeight - 1;
+    const edge = modal ? inset + 1 : inset;
 
-    fill(inset, captionTop + captionHeight - 1, width - inset, captionTop + captionHeight, line);
+    if (modal) {
+      const window = colour(COLOR_WINDOW);
 
-    let barLeft = inset;
-    let barRight = width - inset;
+      fill(inset, captionTop, width - inset, captionTop + 1, window);
+      fill(inset, captionTop, edge, captionTop + captionHeight, window);
+      fill(width - edge, captionTop, width - inset, captionTop + captionHeight, window);
+    }
+
+    fill(edge, captionTop + captionHeight - 1, width - edge, captionTop + captionHeight, line);
+
+    let barLeft = edge;
+    let barRight = width - edge;
 
     if (style & WS_SYSMENU) {
       const close = environment.oem.get(OBM_CLOSE);
       const size = close ? close.width / 2 : environment.metric(SM_CXSIZE);
 
-      blit(close, inset, rowTop, size);
-      fill(inset + size, rowTop, inset + size + 1, rowBottom, line);
+      blit(close, edge, rowTop, size);
+      fill(edge + size, rowTop, edge + size + 1, rowBottom, line);
 
       if (frame.systemMenuOpen) {
-        painter.invert(inset, rowTop, inset + size, rowBottom);
+        painter.invert(edge, rowTop, edge + size, rowBottom);
       }
-      barLeft = inset + size + 1;
+      barLeft = edge + size + 1;
     }
 
     if (style & WS_MAXIMIZEBOX) {

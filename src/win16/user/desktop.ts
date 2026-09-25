@@ -151,6 +151,9 @@ export class DesktopWindow {
   icon: IconData | null = null;
   iconTitle: DesktopWindow | null = null;
 
+  /** A dialog's modal frame, from `DS_MODALFRAME` in its template. */
+  modalFrame = false;
+
   /** For an icon's title window: the window whose title it shows. */
   titleOf: DesktopWindow | null = null;
 
@@ -494,6 +497,16 @@ export class Desktop {
 
     this.paintFrame(window);
 
+    /* Its children show with it: a child made while its parent was hidden --
+     * a dialog's controls are -- had nothing to draw its frame on. */
+    for (const child of family) {
+      if (child !== window && this.#showing(child)) {
+        this.paintFrame(child);
+        child.needsErase = true;
+        child.needsPaint = true;
+      }
+    }
+
     /* An icon's title shows with it. */
     if (window.iconTitle && !window.iconTitle.visible) {
       window.iconTitle.visible = true;
@@ -648,6 +661,7 @@ export class Desktop {
         menuSelected: window.menuSelected,
         systemMenuOpen: window.systemMenuOpen,
         zoomed: window.state === 'maximized',
+        modal: window.modalFrame,
       },
       this.#frameEnvironment(whole)
     );
@@ -665,6 +679,19 @@ export class Desktop {
   }
 
   /** The desktop itself, where no window shows, in `COLOR_BACKGROUND`. */
+  /** Everything drawn again, as after the system colours change: the desktop, and every window marked. */
+  repaintAll() {
+    this.paintBackground();
+
+    for (const window of [...this.windows].reverse()) {
+      if (this.#showing(window)) {
+        this.paintFrame(window);
+        window.needsErase = true;
+        window.needsPaint = true;
+      }
+    }
+  }
+
   paintBackground(left = 0, top = 0, right = this.screen.width, bottom = this.screen.height) {
     const desktop = DeviceBitmap.view(
       this.screen,
@@ -707,6 +734,7 @@ export class Desktop {
               menuSelected: window.menuSelected,
               systemMenuOpen: window.systemMenuOpen,
               zoomed: window.state === 'maximized',
+              modal: window.modalFrame,
             },
             this.#frameEnvironment(null)
           );
@@ -1051,6 +1079,7 @@ export class Desktop {
   /**
    * Paints a standard control's client area, where it shows, and marks it
    * painted: what the control's own window procedure does with `WM_PAINT`.
+   * In its own font, when it has been given one.
    */
   paintControl(window: DesktopWindow) {
     window.needsErase = false;
@@ -1061,14 +1090,49 @@ export class Desktop {
     }
 
     const bitmap = window.surface.bitmap as DeviceBitmap;
+    const environment = this.#frameEnvironment(bitmap);
+    const own = window.control.font;
 
-    paintControl(
-      bitmap,
-      window.clientWidth,
-      window.clientHeight,
-      window.control,
-      this.#frameEnvironment(bitmap)
+    if (own) {
+      const text: any = Surface.memory();
+
+      text.font = own.font;
+      text.backMode = 1;
+      environment.font = own.metrics;
+      environment.measure = (line: string) => text.measureText(line).width;
+      environment.text = (line: string, colour: number, x: number, y: number) => {
+        text.bitmap = bitmap;
+        text.textColor = colourOf(colour);
+        text.fillText(x, y, line);
+      };
+    }
+
+    paintControl(bitmap, window.clientWidth, window.clientHeight, window.control, environment);
+  }
+
+  /**
+   * How far in a window's client area starts from each edge, for a style: what
+   * `AdjustWindowRect` works out, from the frame as this desktop draws it.
+   */
+  frameInsets(style: number, modal: boolean, menu: boolean) {
+    const nowhere = new DeviceBitmap(0, 0, this.screen.depth, undefined, this.screen.devicePalette);
+    const size = 1000;
+    const client = paintFrame(
+      nowhere,
+      0,
+      0,
+      size,
+      size,
+      { style, active: true, title: '', menu: menu ? [''] : undefined, modal },
+      this.#frameEnvironment(null)
     );
+
+    return {
+      left: client.left,
+      top: client.top,
+      right: size - client.right,
+      bottom: size - client.bottom,
+    };
   }
 
   /** Paints again what a window no longer covers. */

@@ -1,5 +1,8 @@
 'use strict';
 
+import { setFocus } from './dialogs.js';
+import { RasterWindow } from './raster-window.js';
+
 import { HWND } from '../types.js';
 
 import { NULL } from '../consts.js';
@@ -11,6 +14,12 @@ import { FixedWindow } from '../../windows/fixed-window.js';
 export async function SetFocus(hwnd) {
   // Get the window itself
   const dialog = this.handles.resolve(hwnd);
+
+  /* On the raster desktop: `WM_KILLFOCUS` to the window losing the focus,
+   * `WM_SETFOCUS` to this one, and the answer is the one that had it. */
+  if (dialog instanceof RasterWindow) {
+    return setFocus(this, hwnd);
+  }
 
   // Cannot find the dialog; bail.
   if (!dialog) {

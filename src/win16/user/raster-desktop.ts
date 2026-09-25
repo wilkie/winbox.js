@@ -79,7 +79,10 @@ export function fontOf(system: any, handle: number) {
   GetTextMetrics.call(system, hdc, metrics);
   system.handles.free?.(hdc);
 
-  return { font: surface.font, metrics: { height: metrics.tmHeight, ascent: metrics.tmAscent } };
+  return {
+    font: surface.font,
+    metrics: { height: metrics.tmHeight, ascent: metrics.tmAscent, overhang: metrics.tmOverhang ?? 0 },
+  };
 }
 
 /**

@@ -38,6 +38,47 @@ export function GetObject(hgdiobj, cbBuffer, lpvObject) {
     return 14;
   }
 
+  /* A font: the `LOGFONT` it was made from, as much of its fifty bytes as
+   * there is room for. */
+  const logfont = (item as any).logfont;
+
+  if (logfont && cbBuffer > 0) {
+    const bytes = new Uint8Array(50);
+    const view = new DataView(bytes.buffer);
+
+    view.setInt16(0, logfont.height, true);
+    view.setInt16(2, logfont.width, true);
+    view.setInt16(4, logfont.escapement, true);
+    view.setInt16(6, logfont.orientation, true);
+    view.setInt16(8, logfont.weight, true);
+    bytes.set(
+      [
+        logfont.italic,
+        logfont.underline,
+        logfont.strikeout,
+        logfont.charset,
+        logfont.outPrecision,
+        logfont.clipPrecision,
+        logfont.quality,
+        logfont.pitchAndFamily,
+      ],
+      10
+    );
+
+    for (let at = 0; at < Math.min(logfont.face.length, 31); at++) {
+      bytes[18 + at] = logfont.face.charCodeAt(at) & 0xff;
+    }
+
+    const size = Math.min(cbBuffer, 50);
+    const core = this.machine.cpu.core;
+
+    for (let at = 0; at < size; at++) {
+      core.write8((lpvObject >>> 16) & 0xffff, (lpvObject & 0xffff) + at, bytes[at]);
+    }
+
+    return size;
+  }
+
   // Error out if we don't understand the object
   return 0;
 }

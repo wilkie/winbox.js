@@ -433,7 +433,11 @@ export class Scheduler {
           stackOffset
         );
         value.loadFromMemory(this._machine.memory, this._machine.cpu.core.ss >> 3, stackOffset);
-        arg[0] = ((this._machine.cpu.core.ss >> 3) << 16) | stackOffset;
+        /* The program is handed a far pointer: the stack's selector, not the
+         * descriptor index the memory is written through. Handed the index, a
+         * program that read the structure -- Character Map reads its
+         * `CREATESTRUCT` -- loaded a selector that names nothing and faulted. */
+        arg[0] = ((this._machine.cpu.core.ss << 16) | stackOffset) >>> 0;
       }
     });
 

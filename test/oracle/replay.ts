@@ -17,6 +17,8 @@ import {
   chromeCapture,
   driverOf,
   iconsCapture,
+  dialogsCapture,
+  dlgColorCapture,
   menusCapture,
   quitOrder,
   sizingCapture,
@@ -544,6 +546,15 @@ export class Context {
       typeof windowClass?.lpfnWndProc === 'function'
         ? windowClass.lpfnWndProc(hwnd, message, wParam, lParam)
         : 0,
+
+    /* A procedure called directly: a dialog's, which the replay gives as a function. */
+    callWindowProc: async (
+      proc: any,
+      hwnd: number,
+      message: number,
+      wParam: number,
+      lParam: number
+    ) => (typeof proc === 'function' ? proc(hwnd, message, wParam, lParam) : 0),
   };
 
   /** And for the window manager: there is no input to route. */
@@ -1842,6 +1853,39 @@ const ADAPTERS: Record<
     return rectResult(EqualRect(rect(1, 1, 1, 1), rect(2, 2, 2, 2)), rect(1, 1, 1, 1));
   },
 
+  /* `dialogs`: each record from the probe replayed through the exports. See `replay-windows.ts`. */
+  async units(context) {
+    return (await dialogsCapture(context)).records.get('units:') ?? '';
+  },
+
+  async control(context, args) {
+    return (await dialogsCapture(context)).records.get(`control:${args.join(',')}`) ?? '';
+  },
+
+  async dialogfont(context, [name]) {
+    return (await dialogsCapture(context)).records.get(`dialogfont:${name}`) ?? '';
+  },
+
+  async measure(context, [name]) {
+    return (await dialogsCapture(context)).records.get(`measure:${name}`) ?? '';
+  },
+
+  async focus(context, args) {
+    return (await dialogsCapture(context)).records.get(`focus:${args.join(',')}`) ?? '';
+  },
+
+  async command(context, args) {
+    return (await dialogsCapture(context)).records.get(`command:${args.join(',')}`) ?? '';
+  },
+
+  async placement(context, args) {
+    return (await dialogsCapture(context)).records.get(`placement:${args.join(',')}`) ?? '';
+  },
+
+  async modal(context, [what]) {
+    return (await dialogsCapture(context)).records.get(`modal:${what}`) ?? '';
+  },
+
   /** `winhelp`: `HELP_QUIT` with Help not running. */
   quit(context, [file]) {
     return String(WinHelp.call(context, 0, file, 2, 0));
@@ -2059,6 +2103,10 @@ const ADAPTERS: Record<
   /* `chrome`: a window made and read back through the exports, on USER's
    * raster desktop. See `replay-windows.ts`. */
   async rects(context, [name]) {
+    if (context.probe === 'dialogs') {
+      return (await dialogsCapture(context)).records.get(`rects:${name}`) ?? '';
+    }
+
     if (context.probe === 'sizing') {
       return (await sizingCapture(context)).rects.get(String(name)) ?? '';
     }
@@ -2155,6 +2203,12 @@ const ADAPTERS: Record<
   },
 
   async pixels(context, [name, row]) {
+    if (context.probe === 'dialogs') {
+      const rows = (await dialogsCapture(context)).rows.get(String(name)) ?? [];
+
+      return rows[Number(String(row).replace('y=', ''))] ?? '';
+    }
+
     const captured = await chromeCapture(context, String(name));
 
     if (!captured) {
@@ -3706,7 +3760,12 @@ const ADAPTERS: Record<
   },
 
   /* One line, from the middle of the cell to an offset given as two numbers. */
-  line(context, args) {
+  async line(context, args) {
+    /* `dlgcolor` records a modal frame's pixels under each system colour made red. */
+    if (context.probe === 'dlgcolor') {
+      return (await dlgColorCapture(context)).get(String(args[0])) ?? '';
+    }
+
     return context.drawLine(Number(args[0]), Number(args[1]));
   },
 
@@ -3919,6 +3978,13 @@ export class Unimplemented extends Error {}
  * the count reaches zero.
  */
 export const KNOWN_GAPS: Record<string, string> = {
+  /* The edit control's caret. Each dialog's edit has the focus, and Windows
+   * shows its caret: two pixels wide, three in, in the System font; one
+   * wide, one in, in MS Sans Serif -- a pixel taller than the font either
+   * way. No caret is drawn here yet, and where it goes is for the edit
+   * control's own probe to settle; every other row of every dialog agrees. */
+  'dialogs:pixels': "the edit control's caret is not drawn yet; every other row agrees",
+
   /* The numbers `RegisterWindowMessage` gives. Everything that relates them
    * agrees -- at least 0xC000, the same for a string in any case, another for
    * another string -- but Windows' first was 0xC40E, after whatever was

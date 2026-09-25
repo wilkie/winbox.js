@@ -501,7 +501,13 @@ export class Win16 {
     const dataSegment = loader.segments[loader.ds - 1];
 
     // Allocate a heap to the data segment (after data and before stack)
-    const heapStart = dataSegment.length + executable.neHeader.initialStackSize;
+    /* The stack and the heap follow the data at a word boundary. A data
+     * segment of an odd length -- Character Map's is 1,303 bytes -- would
+     * otherwise put the stack on an odd address, and a program that runs on
+     * Windows never has one there. Whether Windows rounds to a word or to a
+     * paragraph is not recorded: every probe's data segment is a multiple of
+     * sixteen. */
+    const heapStart = dataTop(dataSegment) + executable.neHeader.initialStackSize;
     const heapEnd = heapStart + executable.neHeader.initialLocalHeapSize;
     LocalInit.bind(this)(loader.ds, heapStart, heapEnd);
 
@@ -570,7 +576,7 @@ export class Win16 {
     const stackBytes = new Uint8Array(task.executable.neHeader.initialStackSize);
     const stackView = new DataView(stackBytes.buffer);
     this._memory.write(
-      this._machine.cpu.core.translateAddress(segmentSelector(task.loader.ds), dataSegment.length),
+      this._machine.cpu.core.translateAddress(segmentSelector(task.loader.ds), dataTop(dataSegment)),
       stackView
     );
 
@@ -597,7 +603,7 @@ export class Win16 {
 
     this._machine.cpu.core.ds = segmentSelector(task.loader.ds);
     this._machine.cpu.core.ss = segmentSelector(task.loader.ss);
-    this._machine.cpu.core.sp = dataSegment.length + task.executable.neHeader.initialStackSize;
+    this._machine.cpu.core.sp = dataTop(dataSegment) + task.executable.neHeader.initialStackSize;
     this._machine.cpu.core.cs = segmentSelector(task.loader.cs);
     this._machine.cpu.core.ip = task.loader.ip;
     this._machine.cpu.core.bx = task.executable.neHeader.initialStackSize;
@@ -633,7 +639,7 @@ export class Win16 {
     this._machine.cpu.core.ds = segmentSelector(loader.ds);
     this._machine.cpu.core.bx = 0x81; // Offset to the command line in the PSP
     this._machine.cpu.core.es = segmentSelector(task.programSegment);
-    this._machine.cpu.core.cx = dataSegment.length; // The limit for the stack.
+    this._machine.cpu.core.cx = dataTop(dataSegment); // The limit for the stack.
     this._machine.cpu.core.di = taskHandle; // the HINSTANCE
     this._machine.cpu.core.dx = User.SW_SHOWNORMAL; // Show the main window
 
@@ -882,6 +888,11 @@ export class Win16 {
   syscallCallbackReturn() {
     this.scheduler.callReturn();
   }
+}
+
+/** Where a task's data ends and its stack begins: the data segment's length, on a word boundary. */
+function dataTop(dataSegment: any) {
+  return (dataSegment.length + 1) & ~1;
 }
 
 export default Win16;

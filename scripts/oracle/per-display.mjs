@@ -16,6 +16,7 @@ export const PER_DISPLAY = new Set([
   'menus',
   'sizing',
   'icons',
+  'dialogs',
   'maxwidth',
   'charscal',
   'glyphs',

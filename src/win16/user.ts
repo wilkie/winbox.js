@@ -69,15 +69,31 @@ import { ReleaseCapture, SetCapture } from './user/SetCapture.js';
 import { SendDlgItemMessage } from './user/SendDlgItemMessage.js';
 import { DefWindowProc } from './user/DefWindowProc.js';
 import { DestroyWindow } from './user/DestroyWindow.js';
-import { DialogBox } from './user/DialogBox.js';
 import { DispatchMessage } from './user/DispatchMessage.js';
-import { EndDialog } from './user/EndDialog.js';
 import { ExitWindows } from './user/ExitWindows.js';
 import { EndPaint } from './user/EndPaint.js';
 import { FillRect } from './user/FillRect.js';
 import { FindWindow } from './user/FindWindow.js';
 import { FrameRect } from './user/FrameRect.js';
 import { GetCursor, LoadCursor, SetCursor } from './user/cursor-api.js';
+import {
+  CreateDialog,
+  CreateDialogIndirect,
+  CreateDialogIndirectParam,
+  CreateDialogParam,
+  DefDlgProc,
+  DialogBox,
+  DialogBoxIndirect,
+  DialogBoxIndirectParam,
+  DialogBoxParam,
+  EndDialog,
+  GetDialogBaseUnits,
+  GetDlgCtrlID,
+  GetNextDlgGroupItem,
+  GetNextDlgTabItem,
+  IsDialogMessage,
+  MapDialogRect,
+} from './user/dialogs.js';
 import { GetDC } from './user/GetDC.js';
 import { WinHelp } from './user/WinHelp.js';
 import {
@@ -103,7 +119,7 @@ import { GetWindowDC } from './user/GetWindowDC.js';
 import { GetDesktopWindow } from './user/GetDesktopWindow.js';
 import { GetMessage } from './user/GetMessage.js';
 import { GetSystemMetrics } from './user/GetSystemMetrics.js';
-import { GetSysColor } from './user/GetSysColor.js';
+import { GetSysColor, SetSysColors } from './user/GetSysColor.js';
 import { GetTickCount } from './user/GetTickCount.js';
 import { GetClientRect } from './user/GetClientRect.js';
 import { GetMenu } from './user/GetMenu.js';
@@ -449,6 +465,9 @@ export class User extends Module {
   declare static WM_PARENTNOTIFY: any;
   declare static WM_PASTE: any;
   declare static WM_QUERYDRAGICON: any;
+  declare static WM_CHARTOITEM: any;
+  declare static WM_VKEYTOITEM: any;
+  declare static WM_CTLCOLOR: any;
   declare static WM_QUERYNEWPALETTE: any;
   declare static WM_QUERYOPEN: any;
   declare static WM_QUIT: any;
@@ -620,9 +639,9 @@ export class User extends Module {
       [User.stub, 'Bear86', 0],
       [DialogBox, 'DialogBox', 12, [HINSTANCE, LPCSTR, HWND, FARPTR], INT],
       [EndDialog, 'EndDialog', 4, [HWND, INT]],
-      [User.stub, 'CreateDialog', 12],
+      [CreateDialog, 'CreateDialog', 12, [HINSTANCE, LPCSTR, HWND, FARPTR], HWND],
       // 90 //
-      [User.stub, 'IsDialogMessage', 6],
+      [IsDialogMessage, 'IsDialogMessage', 6, [HWND, [MSG]], BOOL],
       [GetDlgItem, 'GetDlgItem', 4, [HWND, INT], HWND],
       [User.stub, 'SetDlgItemText', 8],
       [User.stub, 'GetDlgItemText', 10],
@@ -636,7 +655,7 @@ export class User extends Module {
       [User.stub, 'DlgDirList', 12],
       [SendDlgItemMessage, 'SendDlgItemMessage', 12, [HWND, INT, UINT, WPARAM, LPARAM], LRESULT],
       [User.stub, 'AdjustWindowRect', 10],
-      [User.stub, 'MapDialogRect', 6],
+      [MapDialogRect, 'MapDialogRect', 6, [HWND, [RECT]]],
       [User.stub, 'MessageBeep', 2],
       [User.stub, 'FlashWindow', 4],
       [GetKeyState, 'GetKeyState', 2, [INT], INT],
@@ -722,7 +741,7 @@ export class User extends Module {
       [GetSystemMetrics, 'GetSystemMetrics', 2, [INT], INT],
       // 180 //
       [GetSysColor, 'GetSysColor', 2, [INT], COLORREF],
-      [User.stub, 'SetSysColors', 10],
+      [SetSysColors, 'SetSysColors', 10, [INT, FARPTR, FARPTR]],
       [User.stub, 'Bear182', 4],
       [User.stub, 'GetCaretPos', 4],
       [User.stub, 'QuerySendMessage', 10],
@@ -762,8 +781,8 @@ export class User extends Module {
       [User.stub, 'FlushComm', 4],
       [User.stub, 'UserSeeUserDo', 8],
       [User.stub, 'LookupMenuHandle', 4],
-      [User.stub, 'DialogBoxIndirect', 10],
-      [User.stub, 'CreateDialogIndirect', 12],
+      [DialogBoxIndirect, 'DialogBoxIndirect', 10, [HINSTANCE, HGLOBAL, HWND, FARPTR], INT],
+      [CreateDialogIndirect, 'CreateDialogIndirect', 12, [HINSTANCE, FARPTR, HWND, FARPTR], HWND],
       // 220 //
       [User.stub, 'LoadMenuIndirect', 4],
       [User.stub, 'ScrollDC', 20],
@@ -772,8 +791,8 @@ export class User extends Module {
       [User.stub, 'GetWindowTask', 2],
       [User.stub, 'EnumTaskWindows', 10],
       [User.stub, 'LockInput', 6],
-      [User.stub, 'GetNextDlgGroupItem', 6],
-      [User.stub, 'GetNextDlgTabItem', 6],
+      [GetNextDlgGroupItem, 'GetNextDlgGroupItem', 6, [HWND, HWND, BOOL], HWND],
+      [GetNextDlgTabItem, 'GetNextDlgTabItem', 6, [HWND, HWND, BOOL], HWND],
       [User.stub, 'GetTopWindow', 2],
       // 230 //
       [User.stub, 'GetNextWindow', 4],
@@ -785,12 +804,24 @@ export class User extends Module {
       [User.stub, 'GetCapture', 0],
       [User.stub, 'GetUpdateRgn', 6],
       [User.stub, 'ExcludeUpdateRgn', 4],
-      [User.stub, 'DialogBoxParam', 16],
+      [DialogBoxParam, 'DialogBoxParam', 16, [HINSTANCE, LPCSTR, HWND, FARPTR, LPARAM], INT],
       // 240 //
-      [User.stub, 'DialogBoxIndirectParam', 14],
-      [User.stub, 'CreateDialogParam', 16],
-      [User.stub, 'CreateDialogIndirectParam', 16],
-      [User.stub, 'GetDialogBaseUnits', 0],
+      [
+        DialogBoxIndirectParam,
+        'DialogBoxIndirectParam',
+        14,
+        [HINSTANCE, HGLOBAL, HWND, FARPTR, LPARAM],
+        INT,
+      ],
+      [CreateDialogParam, 'CreateDialogParam', 16, [HINSTANCE, LPCSTR, HWND, FARPTR, LPARAM], HWND],
+      [
+        CreateDialogIndirectParam,
+        'CreateDialogIndirectParam',
+        16,
+        [HINSTANCE, FARPTR, HWND, FARPTR, LPARAM],
+        HWND,
+      ],
+      [GetDialogBaseUnits, 'GetDialogBaseUnits', 0, [], DWORD],
       [EqualRect, 'EqualRect', 8, [[RECT], [RECT]], BOOL],
       [User.stub, 'EnableCommNotification', 8],
       [User.stub, 'ExitWindowsExec', 8],
@@ -827,7 +858,7 @@ export class User extends Module {
       [User.stub, 'GetNextQueueWindow', 4],
       [User.stub, 'RepaintScreen', 0],
       [User.stub, 'LockMyTask', 2],
-      [User.stub, 'GetDlgCtrlId', 2],
+      [GetDlgCtrlID, 'GetDlgCtrlId', 2, [HWND], INT],
       [User.stub, 'GetDesktopHWnd', 0],
       [User.stub, 'OldSetDeskPattern', 0],
       // 280 //
@@ -861,7 +892,7 @@ export class User extends Module {
       [User.stub, 'Unknown'],
       [User.stub, 'Bear306', 10],
       [User.stub, 'Unknown'],
-      [User.stub, 'DefDlgProc', 10],
+      [DefDlgProc, 'DefDlgProc', 10, [HWND, UINT, WPARAM, LPARAM], LRESULT],
       [User.stub, 'GetClipCursor', 4],
       // 310 //
       [User.stub, 'Unknown'],
@@ -1386,6 +1417,9 @@ User.WM_DELETEITEM = 0x002d;
 User.WM_SETFONT = 0x0030;
 User.WM_GETFONT = 0x0031;
 User.WM_QUERYDRAGICON = 0x0037;
+User.WM_CTLCOLOR = 0x0019;
+User.WM_VKEYTOITEM = 0x002e;
+User.WM_CHARTOITEM = 0x002f;
 User.WM_COMPAREITEM = 0x0039;
 User.WM_WINDOWPOSCHANGING = 0x0046;
 User.WM_WINDOWPOSCHANGED = 0x0047;

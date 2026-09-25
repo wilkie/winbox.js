@@ -26,6 +26,7 @@ export const BS_AUTO3STATE = 0x6;
 export const BS_AUTORADIOBUTTON = 0x9;
 
 export const SBS_VERT = 0x1;
+export const SS_NOPREFIX = 0x80;
 
 export const WM_USER = 0x400;
 export const BM_GETCHECK = WM_USER;
@@ -73,6 +74,9 @@ export interface ControlState {
   text: string;
   checked: number;
   items: string[];
+
+  /** The font `WM_SETFONT` gave it, and that font's height and ascent; the System font without one. */
+  font?: { handle: number; font: any; metrics: { height: number; ascent: number } };
 }
 
 /** What painting a control asks of the display, beyond painting. */
@@ -80,8 +84,8 @@ export interface ControlEnvironment extends PaintEnvironment {
   /** The width of a line of text in the System font. */
   measure(text: string): number;
 
-  /** The System font's metrics, as `GetTextMetrics` gives them. */
-  font: { height: number; ascent: number };
+  /** The font's metrics, as `GetTextMetrics` gives them: the System font's, or the control's own. */
+  font: { height: number; ascent: number; overhang?: number };
 
   /** Draws a line of text in the System font, its cell's top left at `x, y`. */
   text(text: string, colour: number, x: number, y: number): void;
@@ -119,7 +123,15 @@ export function paintControl(
 
     case 'STATIC':
       painter.fill(0, 0, width, height, painter.colour(COLOR_WINDOW));
-      environment.text(control.text, environment.sysColor(COLOR_WINDOWTEXT), 0, 0);
+      label(
+        painter,
+        environment,
+        control.text,
+        COLOR_WINDOWTEXT,
+        0,
+        0,
+        !(control.style & SS_NOPREFIX)
+      );
       break;
 
     case 'EDIT':
@@ -197,11 +209,20 @@ function pushButton(
     painter.fill(a + 1 + i, d - 2 - i, b - 1, d - 1 - i, shadow);
   }
 
-  environment.text(
+  /* Centred down by the font's ascent, not its height: half of what the
+   * button leaves beside the ascent, less one. It fits every push button
+   * recorded -- `chrome`'s, 24 high in the System font on four displays, and
+   * `dialogs`' in the System font and bold MS Sans Serif. Refused: half of
+   * what the height leaves, which is a row low on the EGA's 18-high buttons
+   * in MS Sans Serif, and the height less its internal leading, likewise. */
+  label(
+    painter,
+    environment,
     control.text,
-    environment.sysColor(COLOR_BTNTEXT),
-    Math.floor((width - environment.measure(control.text)) / 2) - 1,
-    Math.floor((height - environment.font.height) / 2)
+    COLOR_BTNTEXT,
+    Math.floor((width - environment.measure(plain(control.text))) / 2) - 1,
+    Math.floor((height - environment.font.ascent) / 2) - 1,
+    true
   );
 }
 
@@ -244,10 +265,63 @@ function checkBox(
     row * cellHeight
   );
 
-  environment.text(
+  label(
+    painter,
+    environment,
     control.text,
-    environment.sysColor(COLOR_WINDOWTEXT),
+    COLOR_WINDOWTEXT,
     boxWidth + CHECK_TEXT_GAP,
-    Math.floor((height - environment.font.height) / 2) + 1
+    Math.floor((height - environment.font.height) / 2) + 1,
+    true
   );
+}
+
+/** A control's text as it shows: `&&` is an ampersand, and a lone `&` is dropped. */
+function plain(text: string) {
+  return text.replace(/&(.?)/g, '$1');
+}
+
+/**
+ * A control's text, its mnemonic underlined: the character after a lone `&`,
+ * a line under it a row below the font's ascent -- the menu bar's rule, which
+ * the `menus` probe measured and `dialogs` shows controls keep. `&&` is one
+ * ampersand. Static text with `SS_NOPREFIX` shows its ampersands as they are.
+ */
+function label(
+  painter: Painter,
+  environment: ControlEnvironment,
+  text: string,
+  colour: number,
+  x: number,
+  y: number,
+  prefix: boolean
+) {
+  if (!prefix) {
+    environment.text(text, environment.sysColor(colour), x, y);
+    return;
+  }
+
+  const shown = plain(text);
+
+  environment.text(shown, environment.sysColor(colour), x, y);
+
+  const match = /&([^&])/.exec(text.replace(/&&/g, '\u0000\u0000'));
+
+  /* Measured by the `dialogs` probe: under an emboldened font, whose text
+   * measures a pixel wider than it draws, the line starts that overhang to
+   * the left -- the extents with the overhang taken off, as `DrawText` works
+   * them out. With the System font there is none. */
+  if (match) {
+    const before = plain(text.slice(0, match.index));
+    const under = x + environment.measure(before) - (environment.font.overhang ?? 0);
+    const row = y + environment.font.ascent + 1;
+
+    painter.fill(
+      under,
+      row,
+      under + environment.measure(match[1]),
+      row + 1,
+      painter.colour(colour)
+    );
+  }
 }

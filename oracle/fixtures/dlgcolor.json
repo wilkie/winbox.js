@@ -1,0 +1,59 @@
+{
+  "probe": "dlgcolor",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "line",
+      "args": "inactivecaption",
+      "result": "top=f,side=f,ring=4,outline=0,client=f"
+    },
+    {
+      "function": "line",
+      "args": "menu",
+      "result": "top=f,side=f,ring=4,outline=0,client=f"
+    },
+    {
+      "function": "line",
+      "args": "window",
+      "result": "top=9,side=9,ring=4,outline=0,client=9"
+    },
+    {
+      "function": "line",
+      "args": "captiontext",
+      "result": "top=f,side=f,ring=4,outline=0,client=f"
+    },
+    {
+      "function": "line",
+      "args": "highlighttext",
+      "result": "top=f,side=f,ring=4,outline=0,client=f"
+    },
+    {
+      "function": "line",
+      "args": "btnhighlight",
+      "result": "top=f,side=f,ring=4,outline=0,client=f"
+    },
+    {
+      "function": "line",
+      "args": "activecaption",
+      "result": "top=f,side=f,ring=9,outline=0,client=f"
+    },
+    {
+      "function": "line",
+      "args": "windowframe",
+      "result": "top=f,side=f,ring=4,outline=9,client=f"
+    },
+    {
+      "function": "line",
+      "args": "btnface",
+      "result": "top=f,side=f,ring=4,outline=0,client=f"
+    }
+  ]
+}

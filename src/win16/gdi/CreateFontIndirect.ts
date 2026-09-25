@@ -195,6 +195,24 @@ export function CreateFontIndirect(lplf) {
     escapement: (((request.escapement ?? 0) % 3600) + 3600) % 3600,
   });
 
+  /* The request as it was given, which `GetObject` hands back. */
+  (font as any).logfont = {
+    height: lplf.lfHeight ?? 0,
+    width: lplf.lfWidth ?? 0,
+    escapement: lplf.lfEscapement ?? 0,
+    orientation: lplf.lfOrientation ?? 0,
+    weight: lplf.lfWeight ?? 0,
+    italic: lplf.lfItalic ?? 0,
+    underline: lplf.lfUnderline ?? 0,
+    strikeout: lplf.lfStrikeOut ?? 0,
+    charset: lplf.lfCharSet ?? 0,
+    outPrecision: lplf.lfOutPrecision ?? 0,
+    clipPrecision: lplf.lfClipPrecision ?? 0,
+    quality: lplf.lfQuality ?? 0,
+    pitchAndFamily: lplf.lfPitchAndFamily ?? 0,
+    face: String(lplf.lfFaceName ?? ''),
+  };
+
   this.debug('CreateFontIndirect', request.face, request.height, found.scale);
 
   return this.handles.allocate(font);
