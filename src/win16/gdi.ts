@@ -157,7 +157,7 @@ export class Gdi extends Module {
       // 0 //
       null,
       [SetBkColor, 'SetBkColor', 6, [HDC, COLORREF], COLORREF],
-      [Gdi.stub, 'SetBkMode', 4],
+      [SetBkMode, 'SetBkMode', 4, [HDC, INT], INT],
       [Gdi.stub, 'SetMapMode', 4],
       [Gdi.stub, 'SetRop2', 4],
       [Gdi.stub, 'SetRelAbs', 6],
@@ -696,16 +696,6 @@ export class Gdi extends Module {
       [Gdi.stub, 'ScaleViewportExtEx', 14],
       [Gdi.stub, 'ScaleWindowExtEx', 14],
       [Gdi.stub, 'GetAspectRatioFilterEx', 6],
-
-      /* After the last checkpoint on purpose.
-       *
-       * The `// n //` markers through this table count the entries before them
-       * and `dump-exports` refuses a table that disagrees with them, so adding
-       * a row anywhere else means renumbering every marker after it. The third
-       * field is the parameter size in bytes, not an ordinal: `HDC` and `INT`
-       * are two apiece.
-       */
-      [SetBkMode, 'SetBkMode', 4, [HDC, INT], INT],
     ];
   }
 

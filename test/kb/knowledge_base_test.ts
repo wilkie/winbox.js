@@ -82,7 +82,6 @@ describe('the knowledge base', () => {
       'KERNEL.40: winbox.js declares SetTaskInterchange, Windows exports nothing there',
       'KERNEL.43: winbox.js declares IsScreenGrab, Windows exports nothing there',
       'KERNEL.44: winbox.js declares BuildPDB, Windows exports nothing there',
-      'GDI.487: winbox.js declares SetBkMode, Windows exports nothing there',
       'MMSYSTEM.102: Windows exports JOYGETDEVCAPS, winbox.js declares joyGetNumCaps',
     ]);
   });

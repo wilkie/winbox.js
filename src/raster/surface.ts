@@ -99,8 +99,8 @@ export class Surface {
 
   /* The colour outline text is drawn in, where something has said: `null`
    * draws black, which is what every probe before `rotstyle` asked for.
-   * `SetTextColor` does not reach this yet -- it sets `forecolor`, which a
-   * fresh surface starts white for reasons of its own. */
+   * `SetTextColor` sets this and `forecolor` both; a fresh surface starts
+   * `forecolor` white for reasons of its own. */
   textColor: any = null;
 
   /* The gap added after every character, which starts at none -- the one value

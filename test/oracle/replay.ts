@@ -35,6 +35,12 @@ import { GetPrivateProfileString } from '../../src/win16/kernel/GetPrivateProfil
 import { LineTo } from '../../src/win16/gdi/LineTo.js';
 import { MoveTo } from '../../src/win16/gdi/MoveTo.js';
 import { Polygon } from '../../src/win16/gdi/Polygon.js';
+import { TextOut } from '../../src/win16/gdi/TextOut.js';
+import { SetTextCharacterExtra } from '../../src/win16/gdi/SetTextCharacterExtra.js';
+import { SetTextAlign } from '../../src/win16/gdi/SetTextAlign.js';
+import { SetBkMode } from '../../src/win16/gdi/SetBkMode.js';
+import { SetBkColor } from '../../src/win16/gdi/SetBkColor.js';
+import { SetTextColor } from '../../src/win16/gdi/SetTextColor.js';
 import { GetProfileString } from '../../src/win16/kernel/GetProfileString.js';
 import { WritePrivateProfileString } from '../../src/win16/kernel/WritePrivateProfileString.js';
 import { lstrcpy } from '../../src/win16/kernel/lstrcpy.js';
@@ -695,16 +701,19 @@ export class Context {
 
     surface.font = font;
 
-    /* What the probe told the device context about the ground behind the text.
-     * Only `textbk` sets either; everything else leaves a fresh context's
-     * white and `OPAQUE`, which is what these default to. */
+    /* What the probe told the device context about the ground behind the text,
+     * through the calls it made. Only `textbk` sets the colour or the mode;
+     * everything else leaves a fresh context's white and `OPAQUE`, which is
+     * what these default to. */
+    const hdc = this.handles.allocate(surface);
+
     if (ground.back) {
-      surface.backcolor = new Color(0x00, 0x00, 0x00);
+      SetBkColor.call(this, hdc, 0x000000);
     }
 
-    surface.backMode = ground.opaque === 0 ? 1 : 2;
-    surface.textAlign = ground.align ?? 0;
-    surface.charExtra = ground.extra ?? 0;
+    SetBkMode.call(this, hdc, ground.opaque === 0 ? 1 : 2);
+    SetTextAlign.call(this, hdc, ground.align ?? 0);
+    SetTextCharacterExtra.call(this, hdc, ground.extra ?? 0);
 
     /* The plotter faces are drawn as lines, and a line is the driver's -- and
      * a line that leaves the cell is GDI's, on the driver that cannot clip. */
@@ -716,11 +725,17 @@ export class Context {
     surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
     surface.fillRect(0, 0, cell, cell);
 
+    /* The brush the probe selected: the white stock brush, unless `textbk`
+     * selected the black one to ask whether `TextOut` uses it. */
+    if (ground.brush) {
+      surface.brush = new Brush(new Color(0, 0, 0));
+    }
+
     /* The corner unless the record says otherwise: `textalin` draws in the
      * middle of the cell so an alignment has somewhere to move the text to. */
     const at = ground.at ?? null;
 
-    surface.fillText(at ?? 2, at ?? 0, character);
+    this.textOut(surface, at ?? 2, at ?? 0, character);
 
     return this.readCell(surface, cell);
   }
@@ -736,9 +751,7 @@ export class Context {
     const surface: any = Surface.offscreen(call.width ?? 64, call.height ?? 48);
 
     surface.font = font;
-    surface.backcolor = call.dark ? new Color(0x00, 0x00, 0x00) : new Color(0xff, 0xff, 0xff);
-    surface.backMode = call.mode;
-    surface.charExtra = call.extra ?? 0;
+    this.textState(surface, { dark: call.dark, mode: call.mode, extra: call.extra ?? 0 });
     surface.context.lineTie = this.display.lineTie;
     surface.context.clipCaps = this.display.clipCaps;
     surface.boldOverhang = this.display.boldOverhang;
@@ -750,7 +763,7 @@ export class Context {
     const pen = [8, 4];
 
     if (call.textout) {
-      surface.fillText(pen[0], pen[1], text);
+      this.textOut(surface, pen[0], pen[1], text);
     } else {
       const rect = call.use ? call.rect : null;
       let ink = false;
@@ -850,8 +863,7 @@ export class Context {
     const surface: any = Surface.offscreen(64, 64);
 
     surface.font = this.handles.resolve(handle);
-    surface.backcolor = new Color(0xff, 0xff, 0xff);
-    surface.backMode = 1;
+    this.textState(surface, { mode: 1 });
     surface.context.lineTie = this.display.lineTie;
     surface.context.clipCaps = this.display.clipCaps;
     surface.boldOverhang = this.display.boldOverhang;
@@ -859,7 +871,7 @@ export class Context {
     surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
     surface.fillRect(0, 0, 64, 64);
 
-    surface.fillText(penX, penY, String(fields.text ?? 'A').replace(/^"|"$/g, ''));
+    this.textOut(surface, penX, penY, String(fields.text ?? 'A').replace(/^"|"$/g, ''));
 
     return this.readCell(surface, 64, 64);
   }
@@ -868,8 +880,7 @@ export class Context {
     const surface: any = Surface.offscreen(64, 64);
 
     surface.font = font;
-    surface.backcolor = new Color(0xff, 0xff, 0xff);
-    surface.backMode = 1;
+    this.textState(surface, { mode: 1 });
     surface.context.lineTie = this.display.lineTie;
     surface.context.clipCaps = this.display.clipCaps;
     surface.boldOverhang = this.display.boldOverhang;
@@ -877,7 +888,7 @@ export class Context {
     surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
     surface.fillRect(0, 0, 64, 64);
 
-    surface.fillText(32, 32, ROTATE_SPECIMEN);
+    this.textOut(surface, 32, 32, ROTATE_SPECIMEN);
 
     return this.readCell(surface, 64, 64);
   }
@@ -890,6 +901,42 @@ export class Context {
    * `poly` records exist to say that a stroke glyph's run through the same
    * points is not the same ink. See `BitmapContext.stroke`.
    */
+  /**
+   * The text state a probe set on its context, set through the same calls:
+   * the background colour, white unless `dark`; the background mode, 1 for
+   * `TRANSPARENT` and 2 for `OPAQUE`; and the alignment and character extra
+   * where the probe set them. Returns the device context.
+   */
+  textState(
+    surface: any,
+    state: { dark?: boolean; mode?: number; align?: number; extra?: number }
+  ) {
+    const hdc = this.handles.allocate(surface);
+
+    SetBkColor.call(this, hdc, state.dark ? 0x000000 : 0xffffff);
+    SetBkMode.call(this, hdc, state.mode ?? 2);
+
+    if (state.align !== undefined) {
+      SetTextAlign.call(this, hdc, state.align);
+    }
+
+    if (state.extra !== undefined) {
+      SetTextCharacterExtra.call(this, hdc, state.extra);
+    }
+
+    return hdc;
+  }
+
+  /**
+   * Text drawn the way a probe draws it: `TextOut` on a device context, so the
+   * records measure the export a program calls rather than the surface under
+   * it. The surface's font, colours, modes and alignment are set by the
+   * caller, as the probe set them on its context.
+   */
+  textOut(surface: any, x: number, y: number, text: string) {
+    TextOut.call(this, this.handles.allocate(surface), x, y, this.lpcstr(text), text.length);
+  }
+
   /**
    * `Polygon` on the corners a `polyfill` record names, through the exported
    * call: the points placed in guest memory, the pen and brush selected, on a
@@ -966,7 +1013,7 @@ export class Context {
     surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
     surface.fillRect(0, 0, 64, 200);
 
-    surface.fillText(2, 0, character);
+    this.textOut(surface, 2, 0, character);
 
     const pixels = surface.context.pixels;
 
@@ -2038,14 +2085,13 @@ const ADAPTERS: Record<
     const surface: any = Surface.offscreen(128, height);
 
     surface.font = context.handles.resolve(handle);
-    surface.backcolor = new Color(0xff, 0xff, 0xff);
-    surface.backMode = Number(fields.mode ?? 1);
+    context.textState(surface, { mode: Number(fields.mode ?? 1) });
     surface.context.lineTie = context.display.lineTie;
     surface.context.clipCaps = context.display.clipCaps;
     surface.boldOverhang = context.display.boldOverhang;
     surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
     surface.fillRect(0, 0, 128, height);
-    surface.fillText(penX, penY, text);
+    context.textOut(surface, penX, penY, text);
 
     const bytes = Buffer.from(context.readCell(surface, 128, height), 'hex');
     const ink = (column: number, row: number) => !(bytes[row * 16 + (column >> 3)] & (0x80 >> (column & 7)));
@@ -2151,10 +2197,17 @@ const ADAPTERS: Record<
     const surface: any = Surface.offscreen(128, 128);
 
     surface.font = context.handles.resolve(handle);
-    surface.backcolor = opaque ? new Color(0, 0, 0) : new Color(0xff, 0xff, 0xff);
-    surface.textColor = opaque ? new Color(0xff, 0xff, 0xff) : null;
-    surface.backMode = Number(fields.mode);
-    surface.textAlign = Number(fields.align);
+    const state = context.textState(surface, {
+      dark: !!opaque,
+      mode: Number(fields.mode),
+      align: Number(fields.align),
+    });
+
+    if (opaque) {
+      SetTextColor.call(context, state, 0xffffff);
+    } else {
+      surface.textColor = null;
+    }
     surface.context.lineTie = context.display.lineTie;
     surface.context.clipCaps = context.display.clipCaps;
     surface.boldOverhang = context.display.boldOverhang;
@@ -2174,7 +2227,7 @@ const ADAPTERS: Record<
         surface.extText(64, 64, 'AB', null, (options & 0x0002) !== 0);
       });
     } else {
-      surface.fillText(64, 64, 'AB');
+      context.textOut(surface, 64, 64, 'AB');
     }
 
     return inkRows(context.readCell(surface, 128, 128), 128);
@@ -2217,14 +2270,13 @@ const ADAPTERS: Record<
     const surface: any = Surface.offscreen(160, 160);
 
     surface.font = font;
-    surface.backcolor = new Color(0xff, 0xff, 0xff);
-    surface.backMode = 1;
+    context.textState(surface, { mode: 1 });
     surface.context.lineTie = context.display.lineTie;
     surface.context.clipCaps = context.display.clipCaps;
     surface.boldOverhang = context.display.boldOverhang;
     surface.brush = new Brush(new Color(0xff, 0xff, 0xff));
     surface.fillRect(0, 0, 160, 160);
-    surface.fillText(80, 80, String(fields.text ?? 'A').replace(/^"|"$/g, ''));
+    context.textOut(surface, 80, 80, String(fields.text ?? 'A').replace(/^"|"$/g, ''));
 
     const bytes = Buffer.from(context.readCell(surface, 160, 160), 'hex');
     const ink = (column: number, row: number) => !(bytes[row * 20 + (column >> 3)] & (0x80 >> (column & 7)));
@@ -2926,6 +2978,7 @@ const ADAPTERS: Record<
               .slice(3)
           )
         : null,
+      brush: args.slice(1, -1).some((field) => String(field) === 'brush=1'),
       opaque: args.slice(1, -1).some((field) => String(field).startsWith('opaque='))
         ? Number(
             args

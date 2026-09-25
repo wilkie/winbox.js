@@ -36,9 +36,10 @@ static char bits[CELL_BYTES];
 
 static const char HEX[] = "0123456789abcdef";
 
-static void probeGlyph(LPCSTR name, HFONT font, char character, int mode, int dark)
+static void probeGlyph(LPCSTR name, HFONT font, char character, int mode, int dark, int brush)
 {
     HFONT previous;
+    HBRUSH before;
     LPSTR at;
     int index;
     char text[2];
@@ -54,6 +55,7 @@ static void probeGlyph(LPCSTR name, HFONT font, char character, int mode, int da
     SetTextColor(memory, RGB(0, 0, 0));
     SetBkColor(memory, dark ? RGB(0, 0, 0) : RGB(255, 255, 255));
     SetBkMode(memory, mode);
+    before = (HBRUSH)SelectObject(memory, GetStockObject(brush ? BLACK_BRUSH : WHITE_BRUSH));
 
     text[0] = character;
     text[1] = '\0';
@@ -76,7 +78,36 @@ static void probeGlyph(LPCSTR name, HFONT font, char character, int mode, int da
     wsprintf(probeArgs, "%s,'%c'", (LPSTR)name, character);
     probe("glyph", probeArgs, probeResult);
 
+    SelectObject(memory, before);
     SelectObject(memory, previous);
+}
+
+/*
+ * Whether `TextOut` uses the selected brush at all. Every cell above is drawn
+ * with the white stock brush on a white cell, where a fill with the brush
+ * could not be seen. Here the brush is black and the background white, in
+ * both modes: any ink beyond the glyph and its ground is the brush.
+ */
+static void probeBrush(LPCSTR face, int height)
+{
+    int mode;
+    char name[96];
+
+    for (mode = 0; mode <= 1; mode++) {
+        HFONT font = CreateFont(height, 0, 0, 0, FW_NORMAL, 0, 0, 0,
+                                ANSI_CHARSET, OUT_DEFAULT_PRECIS,
+                                CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY,
+                                DEFAULT_PITCH, face);
+
+        wsprintf(name, "\"%s\",h=%d,weight=400,italic=0,back=0,opaque=%d,cell=64,brush=1",
+                 (LPSTR)face, height, mode);
+
+        probeGlyph(name, font, 'A', mode ? OPAQUE : TRANSPARENT, 0, 1);
+
+        if (font) {
+            DeleteObject(font);
+        }
+    }
 }
 
 static void probeSize(LPCSTR face, int height)
@@ -95,7 +126,7 @@ static void probeSize(LPCSTR face, int height)
             wsprintf(name, "\"%s\",h=%d,weight=400,italic=0,back=%d,opaque=%d,cell=64",
                      (LPSTR)face, height, dark, mode);
 
-            probeGlyph(name, font, 'A', mode ? OPAQUE : TRANSPARENT, dark);
+            probeGlyph(name, font, 'A', mode ? OPAQUE : TRANSPARENT, dark, 0);
 
             if (font) {
                 DeleteObject(font);
@@ -133,6 +164,11 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
         probeSize("Courier New", SIZES[at]);
         probeSize("System", SIZES[at]);
     }
+
+    probeNote("the same, with a black brush selected");
+    probeBrush("MS Sans Serif", 16);
+    probeBrush("Arial", 16);
+    probeBrush("System", 16);
 
     DeleteObject(canvas);
     DeleteDC(memory);

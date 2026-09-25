@@ -2,53 +2,33 @@
 
 import { BitmapFont } from '../../raster/bitmap-font.js';
 
-import { TRUE } from '../consts.js';
+import { FALSE, TRUE } from '../consts.js';
 
 /**
- * The **TextOut** function writes a character string at the specified location,
- * using the currently selected font.
+ * Draws a string at a point in the selected font.
  *
- * Character origins are at the upper-left corner of the character cell.
+ * What is drawn is `Surface.fillText`'s: the ground behind the text under the
+ * background mode and colour, the glyphs, and the underline and strikeout,
+ * each as recorded (see `kb/gdi/textout.md`). The selected brush plays no
+ * part: `textbk` drew with the black stock brush selected, in both modes, and
+ * the cell came back as it would with the white one. An earlier version filled
+ * the string's measured box with the brush first.
  *
- * By default, the **TextOut** function does not use or update the current
- * position. If an application must update the current position when calling
- * **TextOut**, it can cell the {@link Gdi.SetTextAlign SetTextAlign} function
- * with the *`wFlags`* parameter set to `TA_UPDATECP`. When this flag is set,
- * the system ignores the *`nXStart`* and *`nYStart`* parameters on subsequent
- * calls to the **TextOut** function, using the current position instead.
+ * @param {Types.HDC} hdc - The device context to draw on.
+ * @param {Types.INT} nXStart - Where the string starts, across.
+ * @param {Types.INT} nYStart - Where the string starts, down.
+ * @param {Types.LPCSTR} lpszString - The string.
+ * @param {Types.INT} cbString - How many of its characters to draw.
  *
- * **See also**:
- * {@link Gdi.CreateBrushIndirect CreateBrushIndirect}
- * {@link Gdi.CreateDIBPatternBrush CreateDIBPatternBrush}
- * {@link Gdi.CreateHatchBrush CreateHatchBrush}
- * {@link Gdi.CreatePatternBrush CreatePatternBrush}
- * {@link Gdi.DeleteObject DeleteObject}
- *
- * @static
- * @function TextOut
- * @memberof Gdi
- *
- * @param {Types.HDC} hdc - Identifies the device context.
- * @param {Types.INT} nXStart - Specifies the logical x-coordinate of the
- *                              starting point of the string.
- * @param {Types.INT} nYStart - Specifies the logical y-coordinate of the
- *                              starting point of the string.
- * @param {Types.LPCSTR} lpszString - Points to the character string to be
- *                                    drawn.
- * @param {Types.INT} cbString - Specifies the number of bytes in the string.
- *
- * @return {Types.BOOL} The return value is nonzero if the function is
- *                      successful. Otherwise, it is zero.
+ * @returns {Types.BOOL} Whether there was a device context to draw on.
  */
 export function TextOut(hdc, nXStart, nYStart, lpszString, cbString) {
-  // Get the surface instance
   const surface = this.handles.resolve(hdc);
 
-  // Draw background around the text
-  const metrics = surface.measureText(lpszString.slice(0, cbString));
-  surface.fillRect(nXStart, nYStart, metrics.width, metrics.height);
+  if (!surface) {
+    return FALSE;
+  }
 
-  // Draw the text
   surface.fillText(nXStart, nYStart, lpszString.slice(0, cbString));
 
   return TRUE;

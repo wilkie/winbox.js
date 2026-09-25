@@ -50,6 +50,11 @@ export function SetTextColor(hdc, color) {
   const old = surface.forecolor;
   const realized = new Color(components.r, components.g, components.b);
   surface.forecolor = realized;
+
+  /* And the colour text is drawn in, which is a field of its own on the
+   * surface: `rotstyle` and `smeargnd` draw white text on a black ground
+   * through this call, and 126 of their records need it. */
+  surface.textColor = realized;
   // TODO: This is wrong... it needs to be in A8B8G8R8 format.
   return old.value;
 }
