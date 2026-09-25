@@ -79,3 +79,28 @@ export async function EnableWindow(this: any, hwnd: number, fEnable: number) {
 
   return was;
 }
+
+/** The window a child window is inside; 0 for a top-level one. */
+export function GetParent(this: any, hwnd: number) {
+  const dialog = this.handles.resolve(hwnd);
+
+  return dialog instanceof RasterWindow ? (dialog.window.parent?.hwnd ?? 0) : 0;
+}
+
+/** Whether a window is inside another, at any depth. */
+export function IsChild(this: any, hwndParent: number, hwnd: number) {
+  const dialog = this.handles.resolve(hwnd);
+  const parent = this.handles.resolve(hwndParent);
+
+  if (!(dialog instanceof RasterWindow) || !(parent instanceof RasterWindow)) {
+    return FALSE;
+  }
+
+  for (let at = dialog.window.parent; at; at = at.parent) {
+    if (at === parent.window) {
+      return TRUE;
+    }
+  }
+
+  return FALSE;
+}

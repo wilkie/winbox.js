@@ -45,6 +45,7 @@ import { AnsiPrev } from './user/AnsiPrev.js';
 import { AnsiUpper } from './user/AnsiUpper.js';
 import { BeginPaint } from './user/BeginPaint.js';
 import { CopyRect } from './user/CopyRect.js';
+import { CreateWindowEx } from './user/CreateWindowEx.js';
 import { CreateWindow } from './user/CreateWindow.js';
 import { CreateMenu, CreatePopupMenu } from './user/CreateMenu.js';
 import {
@@ -90,7 +91,14 @@ import {
   SetWindowLong,
   SetWindowWord,
 } from './user/window-words.js';
-import { EnableWindow, IsWindow, IsWindowEnabled, IsWindowVisible } from './user/window-queries.js';
+import {
+  EnableWindow,
+  GetParent,
+  IsChild,
+  IsWindow,
+  IsWindowEnabled,
+  IsWindowVisible,
+} from './user/window-queries.js';
 import { GetWindowDC } from './user/GetWindowDC.js';
 import { GetDesktopWindow } from './user/GetDesktopWindow.js';
 import { GetMessage } from './user/GetMessage.js';
@@ -111,6 +119,16 @@ import { MessageBox } from './user/MessageBox.js';
 import { MoveWindow } from './user/MoveWindow.js';
 import { PeekMessage } from './user/PeekMessage.js';
 import { PtInRect } from './user/PtInRect.js';
+import {
+  EqualRect,
+  InflateRect,
+  IntersectRect,
+  IsRectEmpty,
+  OffsetRect,
+  SetRectEmpty,
+  SubtractRect,
+  UnionRect,
+} from './user/rect-api.js';
 import { RegisterClass } from './user/RegisterClass.js';
 import { RedrawWindow } from './user/RedrawWindow.js';
 import { ReleaseDC } from './user/ReleaseDC.js';
@@ -555,9 +573,9 @@ export class User extends Module {
       [CloseWindow, 'CloseWindow', 2, [HWND]],
       [OpenIcon, 'OpenIcon', 2, [HWND], BOOL],
       [User.stub, 'BringWindowToTop', 2],
-      [User.stub, 'GetParent', 2],
+      [GetParent, 'GetParent', 2, [HWND], HWND],
       [IsWindow, 'IsWindow', 2, [HWND], BOOL],
-      [User.stub, 'IsChild', 4],
+      [IsChild, 'IsChild', 4, [HWND, HWND], BOOL],
       [IsWindowVisible, 'IsWindowVisible', 2, [HWND], BOOL],
       // 50 //
       [FindWindow, 'FindWindow', 8, [LPCSTR, LPCSTR], HWND],
@@ -585,15 +603,15 @@ export class User extends Module {
       [User.stub, 'SetCursorPos', 4],
       [User.stub, 'ShowCursor', 2],
       [SetRect, 'SetRect', 12, [[RECT], INT, INT, INT, INT]],
-      [User.stub, 'SetRectEmpty', 4],
+      [SetRectEmpty, 'SetRectEmpty', 4, [[RECT]]],
       [CopyRect, 'CopyRect', 8, [[RECT], [RECT]]],
-      [User.stub, 'IsRectEmpty', 4],
+      [IsRectEmpty, 'IsRectEmpty', 4, [[RECT]], BOOL],
       [PtInRect, 'PtInRect', 8, [[RECT], [POINT]], BOOL],
-      [User.stub, 'OffsetRect', 8],
-      [User.stub, 'InflateRect', 8],
-      [User.stub, 'IntersectRect', 12],
+      [OffsetRect, 'OffsetRect', 8, [[RECT], INT, INT]],
+      [InflateRect, 'InflateRect', 8, [[RECT], INT, INT]],
+      [IntersectRect, 'IntersectRect', 12, [[RECT], [RECT], [RECT]], BOOL],
       // 80 //
-      [User.stub, 'UnionRect', 12],
+      [UnionRect, 'UnionRect', 12, [[RECT], [RECT], [RECT]], BOOL],
       [FillRect, 'FillRect', 8, [HDC, [RECT], HBRUSH], INT],
       [User.stub, 'InvertRect', 6],
       [FrameRect, 'FrameRect', 8, [HDC, [RECT], HBRUSH], INT],
@@ -773,7 +791,7 @@ export class User extends Module {
       [User.stub, 'CreateDialogParam', 16],
       [User.stub, 'CreateDialogIndirectParam', 16],
       [User.stub, 'GetDialogBaseUnits', 0],
-      [User.stub, 'EqualRect', 8],
+      [EqualRect, 'EqualRect', 8, [[RECT], [RECT]], BOOL],
       [User.stub, 'EnableCommNotification', 8],
       [User.stub, 'ExitWindowsExec', 8],
       [GetCursor, 'GetCursor', 0, [], HCURSOR],
@@ -915,7 +933,7 @@ export class User extends Module {
       [User.stub, 'GetWindowPlacement', 6],
       [User.stub, 'SetWindowPlacement', 6],
       [User.stub, 'GetInternalIconHeader', 8],
-      [User.stub, 'SubtractRect', 12],
+      [SubtractRect, 'SubtractRect', 12, [[RECT], [RECT], [RECT]], BOOL],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
       [User.stub, 'Unknown'],
@@ -1002,7 +1020,13 @@ export class User extends Module {
       // 450 //
       [User.stub, 'Unknown'],
       [User.stub, 'TranslateMDISysAccel', 6],
-      [User.stub, 'CreateWindowEx', 34],
+      [
+        CreateWindowEx,
+        'CreateWindowEx',
+        34,
+        [DWORD, LPCSTR, LPCSTR, DWORD, INT, INT, INT, INT, HWND, HMENU, HINSTANCE, FARPTR],
+        HWND,
+      ],
       [User.stub, 'Unknown'],
       [User.stub, 'AdjustWindowRectEx', 14],
       [User.stub, 'GetIconID', 6],

@@ -42,6 +42,8 @@ import { GetPrivateProfileString } from './kernel/GetPrivateProfileString.js';
 import { GetProfileInt } from './kernel/GetProfileInt.js';
 import { GetProfileString } from './kernel/GetProfileString.js';
 import { WriteProfileString } from './kernel/WriteProfileString.js';
+import { Dos3Call } from './kernel/Dos3Call.js';
+import { GetDriveType } from './kernel/GetDriveType.js';
 import { GetModuleHandle } from './kernel/GetModuleHandle.js';
 import { GetProcAddress } from './kernel/GetProcAddress.js';
 import { GetVersion } from './kernel/GetVersion.js';
@@ -272,7 +274,7 @@ export class Kernel extends Module {
       // 100 //
       [Kernel.stub, 'ValidateCodeSegments', 0, []],
       [Kernel.stub, 'NoHookDosCall', 0],
-      [Kernel.stub, 'Dos3Call', 0],
+      [Dos3Call, 'Dos3Call', 0],
       [Kernel.stub, 'NetBiosCall', 0],
       [Kernel.stub, 'GetCodeInfo', 8, [FARPTR, FARPTR]],
       [Kernel.stub, 'GetExeVersion', 0],
@@ -321,7 +323,7 @@ export class Kernel extends Module {
       [Kernel.stub, 'GetExePtr', 2],
       [GetWindowsDirectory, 'GetWindowsDirectory', 6, [FARPTR, UINT], UINT],
       [Kernel.stub, 'GetSystemDirectory', 6, [FARPTR, UINT], UINT],
-      [Kernel.stub, 'GetDriveType', 2, [INT], UINT],
+      [GetDriveType, 'GetDriveType', 2, [INT], UINT],
       [FatalAppExit, 'FatalAppExit', 6, [UINT, LPCSTR]],
       [Kernel.stub, 'GetHeapSpaces', 2],
       [Kernel.stub, 'DoSignal', 0],

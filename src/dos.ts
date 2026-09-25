@@ -38,6 +38,14 @@ export class DOS {
     machine.interrupts.on(0x1a, this.clockInvoke.bind(this));
     machine.interrupts.on(0x21, this.syscallInvoke.bind(this));
     machine.interrupts.on(0x31, this.dpmiInvoke.bind(this));
+
+    /* The multiplex interrupt, where resident programs answer whether they
+     * are installed. None is here: DOS's own handler returns with the
+     * registers as they were, which to an installation check -- MSCDEX's,
+     * which File Manager makes for every drive -- is "not installed". Without
+     * one, the interrupt went through an empty vector into whatever was
+     * there. */
+    machine.interrupts.on(0x2f, () => true);
   }
 
   /**

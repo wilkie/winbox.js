@@ -1,0 +1,109 @@
+{
+  "probe": "rectops",
+  "display": "vga",
+  "source": {
+    "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+    "sha256": "1669bd0a505024ed1b852c1d77a71fcbcbd6dcf4fddd78163e780c7778225cd5",
+    "host": "dosbox, standard mode",
+    "display": "vga",
+    "displayDescription": "VGA, 640x480, 16 colours"
+  },
+  "font": null,
+  "records": [
+    {
+      "function": "intersect",
+      "args": "overlap",
+      "result": "1,5:5:10:10"
+    },
+    {
+      "function": "intersect",
+      "args": "touching",
+      "result": "0,0:0:0:0"
+    },
+    {
+      "function": "intersect",
+      "args": "apart",
+      "result": "0,0:0:0:0"
+    },
+    {
+      "function": "intersect",
+      "args": "empty",
+      "result": "0,0:0:0:0"
+    },
+    {
+      "function": "union",
+      "args": "apart",
+      "result": "1,0:0:30:30"
+    },
+    {
+      "function": "union",
+      "args": "empty",
+      "result": "1,0:0:10:10"
+    },
+    {
+      "function": "union",
+      "args": "both-empty",
+      "result": "0,40:40:30:50"
+    },
+    {
+      "function": "subtract",
+      "args": "width",
+      "result": "1,0:0:10:4"
+    },
+    {
+      "function": "subtract",
+      "args": "height",
+      "result": "1,0:0:4:10"
+    },
+    {
+      "function": "subtract",
+      "args": "middle",
+      "result": "1,0:0:10:10"
+    },
+    {
+      "function": "subtract",
+      "args": "all",
+      "result": "0,0:0:0:0"
+    },
+    {
+      "function": "empty",
+      "args": "ordinary",
+      "result": "0,0:0:10:10"
+    },
+    {
+      "function": "empty",
+      "args": "flat",
+      "result": "1,5:5:5:9"
+    },
+    {
+      "function": "empty",
+      "args": "inverted",
+      "result": "1,9:9:5:5"
+    },
+    {
+      "function": "inflate",
+      "args": "3,-2",
+      "result": "0,-3:2:13:8"
+    },
+    {
+      "function": "inflate",
+      "args": "-7,-7",
+      "result": "0,7:7:3:3"
+    },
+    {
+      "function": "offset",
+      "args": "-4,6",
+      "result": "0,-4:6:6:16"
+    },
+    {
+      "function": "equal",
+      "args": "same",
+      "result": "1,0:0:10:10"
+    },
+    {
+      "function": "equal",
+      "args": "empties",
+      "result": "0,1:1:1:1"
+    }
+  ]
+}

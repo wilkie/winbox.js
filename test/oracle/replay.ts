@@ -24,6 +24,15 @@ import {
 import { RegisterWindowMessage } from '../../src/win16/user/RegisterWindowMessage.js';
 import { LoadString } from '../../src/win16/user/LoadString.js';
 import { WinHelp } from '../../src/win16/user/WinHelp.js';
+import {
+  EqualRect,
+  InflateRect,
+  IntersectRect,
+  IsRectEmpty,
+  OffsetRect,
+  SubtractRect,
+  UnionRect,
+} from '../../src/win16/user/rect-api.js';
 import { resourcesOf } from '../../src/win16/ne-resources.js';
 import { SystemParametersInfo } from '../../src/win16/user/SystemParametersInfo.js';
 import { Brush } from '../../src/raster/brush.js';
@@ -1773,6 +1782,66 @@ const ADAPTERS: Record<
     return `answer=${answer},first=${String.fromCharCode(context.machine.cpu.core.read8(buffer.segment, buffer.offset))}`;
   },
 
+  /* `rectops`: each call as the probe made it, by its label. */
+  intersect(context, [label]) {
+    const b = {
+      overlap: [5, 5, 15, 15],
+      touching: [10, 0, 20, 10],
+      apart: [20, 20, 30, 30],
+      empty: [3, 3, 3, 8],
+    }[label as string]!;
+    const out = rect(7, 7, 7, 7);
+
+    return rectResult(IntersectRect(out, rect(0, 0, 10, 10), rect(b[0], b[1], b[2], b[3])), out);
+  },
+
+  union(context, [label]) {
+    const out = rect(7, 7, 7, 7);
+    const [first, second] = {
+      apart: [rect(0, 0, 10, 10), rect(20, 20, 30, 30)],
+      empty: [rect(0, 0, 10, 10), rect(50, 50, 50, 60)],
+      'both-empty': [rect(50, 50, 50, 60), rect(40, 40, 30, 50)],
+    }[label as string]!;
+
+    return rectResult(UnionRect(out, first, second), out);
+  },
+
+  subtract(context, [label]) {
+    const b = {
+      width: [-5, 4, 15, 20],
+      height: [4, -5, 20, 15],
+      middle: [3, 3, 6, 6],
+      all: [-1, -1, 11, 11],
+    }[label as string]!;
+    const out = rect(7, 7, 7, 7);
+
+    return rectResult(SubtractRect(out, rect(0, 0, 10, 10), rect(b[0], b[1], b[2], b[3])), out);
+  },
+
+  empty(context, [label]) {
+    const r = { ordinary: rect(0, 0, 10, 10), flat: rect(5, 5, 5, 9), inverted: rect(9, 9, 5, 5) }[
+      label as string
+    ]!;
+
+    return rectResult(IsRectEmpty(r), r);
+  },
+
+  inflate(context, [dx, dy]) {
+    const r = rect(0, 0, 10, 10);
+
+    InflateRect(r, Number(dx), Number(dy));
+
+    return rectResult(0, r);
+  },
+
+  equal(context, [label]) {
+    if (label === 'same') {
+      return rectResult(EqualRect(rect(0, 0, 10, 10), rect(0, 0, 10, 10)), rect(0, 0, 10, 10));
+    }
+
+    return rectResult(EqualRect(rect(1, 1, 1, 1), rect(2, 2, 2, 2)), rect(1, 1, 1, 1));
+  },
+
   /** `winhelp`: `HELP_QUIT` with Help not running. */
   quit(context, [file]) {
     return String(WinHelp.call(context, 0, file, 2, 0));
@@ -2099,6 +2168,15 @@ const ADAPTERS: Record<
    * read back as its place in the palette. The display is a bitmap compatible
    * with it, whose origin is the screen's. */
   offset(context, [colour, at]) {
+    /* `rectops` records `OffsetRect` under the same name, by the amounts it moved. */
+    if (context.probe === 'rectops') {
+      const r = rect(0, 0, 10, 10);
+
+      OffsetRect(r, Number(colour), Number(at));
+
+      return rectResult(0, r);
+    }
+
     return context.ditherSquare(colour, String(at));
   },
 
@@ -3763,6 +3841,19 @@ function userStrings(context: any) {
   };
 
   return context.handles.allocate({ executable });
+}
+
+/** A rectangle, as the rectangle calls take one. */
+function rect(left: number, top: number, right: number, bottom: number) {
+  return { left, top, right, bottom };
+}
+
+/** A rectangle call's answer and the rectangle it left, as `rectops` writes them. */
+function rectResult(
+  answer: number,
+  r: { left: number; top: number; right: number; bottom: number }
+) {
+  return `${answer},${r.left}:${r.top}:${r.right}:${r.bottom}`;
 }
 
 /** Thrown by an adapter for a function we have not implemented at all. */

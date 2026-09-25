@@ -105,6 +105,10 @@ export class SyscallManager {
 
       // 0x2b: set current date
 
+      // Get boot drive (DOS 4 and later), AX = 3305h
+      // DL <- the drive DOS started from, 1 for A:: here always C:
+      0x3305: [() => 3, [], [[I286.REGISTER_DL, 1]], false],
+
       // Get current time
       // CH <- hour
       // CL <- minute
@@ -414,6 +418,12 @@ export class SyscallManager {
       }
 
       const errorFlag = handler[3] || false;
+
+      /* A call that reports failure by the carry flag clears it when it
+       * succeeds; set, it would say the call failed whatever it did. */
+      if (errorFlag) {
+        this._machine.cpu.core.flags.carry = false;
+      }
 
       if (result instanceof Promise) {
         return new Promise((resolve) => {
