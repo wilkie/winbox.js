@@ -84,6 +84,24 @@
     },
     {
       "function": "GetPrivateProfileString",
+      "args": "\"Odd\",\"indented\",\"<default>\",128",
+      "result": "2,\"in\"",
+      "section": "whitespace on each side of the equals sign"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Odd\",\"one\",\"<default>\",128",
+      "result": "1,\"x\"",
+      "section": "whitespace on each side of the equals sign"
+    },
+    {
+      "function": "GetPrivateProfileString",
+      "args": "\"Odd\",NULL,128",
+      "result": "13,\"indented|one|\"",
+      "section": "whitespace on each side of the equals sign"
+    },
+    {
+      "function": "GetPrivateProfileString",
       "args": "\"Plain\",\"mixed\",\"<default>\",128",
       "result": "9,\"case test\"",
       "section": "case, on the entry and on the section"
@@ -227,9 +245,21 @@
       "section": "values read as numbers"
     },
     {
+      "function": "file bytes",
+      "args": "before any write",
+      "result": "5b506c61696e5d0d0a656e7472793d76616c75650d0a7370616365642020203d2020207061646465642076616c75652020200d0a71756f7465643d2220206b6570742020220d0a73696e676c653d272020616c736f2020270d0a656d7074793d0d0a4d695865443d6361736520746573740d0a6e756d6265723d34320d0a747261696c696e673d343074776f0d0a6e656761746976653d2d310d0a776f7264733d6e6f6e650d0a71756f7465646e756d6265723d2237220d0a3b206120636f6d6d656e74206c696e650d0a73656d69636f6c6f6e3d3b0d0a657175616c733d613d620d0a0d0a5b5365636f6e645d0d0a6f6e6c793d6f6e650d0a0d0a5b53706163696e675d0d0a61667465723d2020206166746572206f6e6c790d0a6265666f72652020203d6265666f7265206f6e6c790d0a61726f756e642020203d20202061726f756e6420626f74680d0a7461626265643d0961667465722061207461620d0a656e64733d2020626f746820656e647320200d0a0d0a5b4f64645d2020200d0a2020696e64656e74656420203d2020696e20200d0a62617265206c696e6520200d0a6f6e653d78200d0a",
+      "section": "writing, and reading back what was written"
+    },
+    {
       "function": "WritePrivateProfileString",
       "args": "\"Plain\",\"added\",\"new value\"",
       "result": "1,\"new value\"",
+      "section": "writing, and reading back what was written"
+    },
+    {
+      "function": "file bytes",
+      "args": "after added",
+      "result": "5b506c61696e5d0d0a656e7472793d76616c75650d0a7370616365643d7061646465642076616c75650d20200d0a71756f7465643d2220206b6570742020220d0a73696e676c653d272020616c736f2020270d0a656d7074793d0d0a4d695865443d6361736520746573740d0a6e756d6265723d34320d0a747261696c696e673d343074776f0d0a6e656761746976653d2d310d0a776f7264733d6e6f6e650d0a71756f7465646e756d6265723d2237220d0a3b206120636f6d6d656e74206c696e650d0a73656d69636f6c6f6e3d3b0d0a657175616c733d613d620d0a61646465643d6e65772076616c75650d0a0d0a5b5365636f6e645d0d0a6f6e6c793d6f6e650d0a0d0a5b53706163696e675d0d0a61667465723d6166746572206f6e6c790d0a6265666f72653d6265666f7265206f6e6c790d0a61726f756e643d61726f756e6420626f74680d0a7461626265643d61667465722061207461620d0a656e64733d626f746820656e64730d200d0a0d0a5b4f64645d2020200d0a696e64656e7465643d696e0d200d0a62617265206c696e6520200d0a6f6e653d780d0d0a",
       "section": "writing, and reading back what was written"
     },
     {
@@ -239,9 +269,21 @@
       "section": "writing, and reading back what was written"
     },
     {
+      "function": "file bytes",
+      "args": "after entry",
+      "result": "5b506c61696e5d0d0a656e7472793d7265706c616365640d0a7370616365643d7061646465642076616c75650d20200d0a71756f7465643d2220206b6570742020220d0a73696e676c653d272020616c736f2020270d0a656d7074793d0d0a4d695865443d6361736520746573740d0a6e756d6265723d34320d0a747261696c696e673d343074776f0d0a6e656761746976653d2d310d0a776f7264733d6e6f6e650d0a71756f7465646e756d6265723d2237220d0a3b206120636f6d6d656e74206c696e650d0a73656d69636f6c6f6e3d3b0d0a657175616c733d613d620d0a61646465643d6e65772076616c75650d0a0d0a5b5365636f6e645d0d0a6f6e6c793d6f6e650d0a0d0a5b53706163696e675d0d0a61667465723d6166746572206f6e6c790d0a6265666f72653d6265666f7265206f6e6c790d0a61726f756e643d61726f756e6420626f74680d0a7461626265643d61667465722061207461620d0a656e64733d626f746820656e64730d200d0a0d0a5b4f64645d2020200d0a696e64656e7465643d696e0d200d0a62617265206c696e6520200d0a6f6e653d780d0d0a",
+      "section": "writing, and reading back what was written"
+    },
+    {
       "function": "WritePrivateProfileString",
       "args": "\"Fresh\",\"first\",\"in a new section\"",
       "result": "1,\"in a new section\"",
+      "section": "writing, and reading back what was written"
+    },
+    {
+      "function": "file bytes",
+      "args": "after first",
+      "result": "5b506c61696e5d0d0a656e7472793d7265706c616365640d0a7370616365643d7061646465642076616c75650d20200d0a71756f7465643d2220206b6570742020220d0a73696e676c653d272020616c736f2020270d0a656d7074793d0d0a4d695865443d6361736520746573740d0a6e756d6265723d34320d0a747261696c696e673d343074776f0d0a6e656761746976653d2d310d0a776f7264733d6e6f6e650d0a71756f7465646e756d6265723d2237220d0a3b206120636f6d6d656e74206c696e650d0a73656d69636f6c6f6e3d3b0d0a657175616c733d613d620d0a61646465643d6e65772076616c75650d0a0d0a5b5365636f6e645d0d0a6f6e6c793d6f6e650d0a0d0a5b53706163696e675d0d0a61667465723d6166746572206f6e6c790d0a6265666f72653d6265666f7265206f6e6c790d0a61726f756e643d61726f756e6420626f74680d0a7461626265643d61667465722061207461620d0a656e64733d626f746820656e64730d200d0a0d0a5b4f64645d2020200d0a696e64656e7465643d696e0d200d0a62617265206c696e6520200d0a6f6e653d780d0d0d0a5b46726573685d0d0a66697273743d696e2061206e65772073656374696f6e0d0a0a",
       "section": "writing, and reading back what was written"
     },
     {
@@ -251,9 +293,21 @@
       "section": "writing, and reading back what was written"
     },
     {
+      "function": "file bytes",
+      "args": "after added removed",
+      "result": "5b506c61696e5d0d0a656e7472793d7265706c616365640d0a7370616365643d7061646465642076616c75650d20200d0a71756f7465643d2220206b6570742020220d0a73696e676c653d272020616c736f2020270d0a656d7074793d0d0a4d695865443d6361736520746573740d0a6e756d6265723d34320d0a747261696c696e673d343074776f0d0a6e656761746976653d2d310d0a776f7264733d6e6f6e650d0a71756f7465646e756d6265723d2237220d0a3b206120636f6d6d656e74206c696e650d0a73656d69636f6c6f6e3d3b0d0a657175616c733d613d620d0a0d0a5b5365636f6e645d0d0a6f6e6c793d6f6e650d0a0d0a5b53706163696e675d0d0a61667465723d6166746572206f6e6c790d0a6265666f72653d6265666f7265206f6e6c790d0a61726f756e643d61726f756e6420626f74680d0a7461626265643d61667465722061207461620d0a656e64733d626f746820656e64730d200d0a0d0a5b4f64645d2020200d0a696e64656e7465643d696e0d200d0a62617265206c696e6520200d0a6f6e653d780d0d0d0a5b46726573685d0d0a66697273743d696e2061206e65772073656374696f6e0d0a0a",
+      "section": "writing, and reading back what was written"
+    },
+    {
       "function": "WritePrivateProfileString",
       "args": "\"Plain\",\"spaced\",\"  untrimmed\"",
       "result": "1,\"  untrimmed\"",
+      "section": "writing, and reading back what was written"
+    },
+    {
+      "function": "file bytes",
+      "args": "after spaced",
+      "result": "5b506c61696e5d0d0a656e7472793d7265706c616365640d0a7370616365643d2020756e7472696d6d65640d0a200d0a71756f7465643d2220206b6570742020220d0a73696e676c653d272020616c736f2020270d0a656d7074793d0d0a4d695865443d6361736520746573740d0a6e756d6265723d34320d0a747261696c696e673d343074776f0d0a6e656761746976653d2d310d0a776f7264733d6e6f6e650d0a71756f7465646e756d6265723d2237220d0a3b206120636f6d6d656e74206c696e650d0a73656d69636f6c6f6e3d3b0d0a657175616c733d613d620d0a0d0a5b5365636f6e645d0d0a6f6e6c793d6f6e650d0a0d0a5b53706163696e675d0d0a61667465723d6166746572206f6e6c790d0a6265666f72653d6265666f7265206f6e6c790d0a61726f756e643d61726f756e6420626f74680d0a7461626265643d61667465722061207461620d0a656e64733d626f746820656e64730d200d0a0d0a5b4f64645d2020200d0a696e64656e7465643d696e0d200d0a62617265206c696e6520200d0a6f6e653d780d0d0d0a5b46726573685d0d0a66697273743d696e2061206e65772073656374696f6e0d0a0a",
       "section": "writing, and reading back what was written"
     },
     {
@@ -293,6 +347,120 @@
       "section": "what a write does to the string it was given"
     },
     {
+      "function": "file bytes",
+      "args": "after the in-place writes",
+      "result": "5b506c61696e5d0d0a656e7472793d7265706c616365640d0a7370616365643d2020756e7472696d6d65640d0a200d0a71756f7465643d2220206b6570742020220d0a73696e676c653d272020616c736f2020270d0a656d7074793d0d0a4d695865443d6361736520746573740d0a6e756d6265723d34320d0a747261696c696e673d747261696c696e67206f6e6c790d0a6e656761746976653d2d310d0a776f7264733d6e6f6e650d0a71756f7465646e756d6265723d2237220d0a3b206120636f6d6d656e74206c696e650d0a73656d69636f6c6f6e3d3b0d0a657175616c733d613d620d0a626f74683d2020626f746820656e64730d0a6c656164696e673d2020206c656164696e67206f6e6c790d0a626c616e6b3d0d0a7461626265643d7461620d0a0d0a5b5365636f6e645d0d0a6f6e6c793d6f6e650d0a0d0a5b53706163696e675d0d0a61667465723d6166746572206f6e6c790d0a6265666f72653d6265666f7265206f6e6c790d0a61726f756e643d61726f756e6420626f74680d0a7461626265643d61667465722061207461620d0a656e64733d626f746820656e64730d200d0a0d0a5b4f64645d2020200d0a696e64656e7465643d696e0d200d0a62617265206c696e6520200d0a6f6e653d780d0d0d0a5b46726573685d0d0a66697273743d696e2061206e65772073656374696f6e0d0a0a",
+      "section": "what a write does to the string it was given"
+    },
+    {
+      "function": "GetProfileString",
+      "args": "\"intl\",\"s1159\",\"<default>\"",
+      "result": "2,\"AM\"",
+      "section": "WIN.INI, which is what programs actually read"
+    },
+    {
+      "function": "GetProfileString",
+      "args": "\"intl\",\"s2359\",\"<default>\"",
+      "result": "2,\"PM\"",
+      "section": "WIN.INI, which is what programs actually read"
+    },
+    {
+      "function": "GetProfileString",
+      "args": "\"intl\",\"sTime\",\"<default>\"",
+      "result": "1,\":\"",
+      "section": "WIN.INI, which is what programs actually read"
+    },
+    {
+      "function": "GetProfileString",
+      "args": "\"intl\",\"sShortDate\",\"<default>\"",
+      "result": "6,\"M/d/yy\"",
+      "section": "WIN.INI, which is what programs actually read"
+    },
+    {
+      "function": "GetProfileString",
+      "args": "\"windows\",\"device\",\"<default>\"",
+      "result": "0,\"\"",
+      "section": "WIN.INI, which is what programs actually read"
+    },
+    {
+      "function": "GetProfileString",
+      "args": "\"Absent\",\"absent\",\"<default>\"",
+      "result": "9,\"<default>\"",
+      "section": "WIN.INI, which is what programs actually read"
+    },
+    {
+      "function": "WritePrivateProfileString flush",
+      "args": "NULL,NULL,NULL",
+      "result": "0",
+      "section": "the written values, read again after a flush"
+    },
+    {
+      "function": "GetPrivateProfileString after flush",
+      "args": "\"Plain\",\"spaced\"",
+      "result": "9,\"untrimmed\"",
+      "section": "the written values, read again after a flush"
+    },
+    {
+      "function": "GetPrivateProfileString after flush",
+      "args": "\"Plain\",\"both\"",
+      "result": "9,\"both ends\"",
+      "section": "the written values, read again after a flush"
+    },
+    {
+      "function": "GetPrivateProfileString after flush",
+      "args": "\"Plain\",\"leading\"",
+      "result": "12,\"leading only\"",
+      "section": "the written values, read again after a flush"
+    },
+    {
+      "function": "GetPrivateProfileString after flush",
+      "args": "\"Plain\",\"tabbed\"",
+      "result": "3,\"tab\"",
+      "section": "the written values, read again after a flush"
+    },
+    {
+      "function": "GetPrivateProfileString after flush",
+      "args": "\"Spacing\",\"after\"",
+      "result": "10,\"after only\"",
+      "section": "the written values, read again after a flush"
+    },
+    {
+      "function": "WritePrivateProfileString in place",
+      "args": "\"again\",\"  again  \"",
+      "result": "1,9,7,\"  again\",\"  again\"",
+      "section": "a written value, after another file is read"
+    },
+    {
+      "function": "GetPrivateProfileString after writing again",
+      "args": "\"Plain\",\"again\"",
+      "result": "7,\"  again\"",
+      "section": "a written value, after another file is read"
+    },
+    {
+      "function": "GetProfileString",
+      "args": "\"intl\",\"sTime\",\"<default>\"",
+      "result": "1,\":\"",
+      "section": "a written value, after another file is read"
+    },
+    {
+      "function": "GetPrivateProfileString after reading WIN.INI",
+      "args": "\"Plain\",\"again\"",
+      "result": "7,\"  again\"",
+      "section": "a written value, after another file is read"
+    },
+    {
+      "function": "WritePrivateProfileString",
+      "args": "\"Plain\",\"ENTRY\",\"recased\"",
+      "result": "1,\"recased\"",
+      "section": "replacing an entry under another spelling of its name"
+    },
+    {
+      "function": "file bytes",
+      "args": "at the end",
+      "result": "5b506c61696e5d0d0a656e7472793d726563617365640d0a7370616365643d756e7472696d6d65640d0a0d0a71756f7465643d2220206b6570742020220d0a73696e676c653d272020616c736f2020270d0a656d7074793d0d0a4d695865443d6361736520746573740d0a6e756d6265723d34320d0a747261696c696e673d747261696c696e67206f6e6c790d0a6e656761746976653d2d310d0a776f7264733d6e6f6e650d0a71756f7465646e756d6265723d2237220d0a3b206120636f6d6d656e74206c696e650d0a73656d69636f6c6f6e3d3b0d0a657175616c733d613d620d0a626f74683d626f746820656e64730d0a6c656164696e673d6c656164696e67206f6e6c790d0a626c616e6b3d0d0a7461626265643d7461620d0a616761696e3d2020616761696e0d0a0d0a5b5365636f6e645d0d0a6f6e6c793d6f6e650d0a0d0a5b53706163696e675d0d0a61667465723d6166746572206f6e6c790d0a6265666f72653d6265666f7265206f6e6c790d0a61726f756e643d61726f756e6420626f74680d0a7461626265643d61667465722061207461620d0a656e64733d626f746820656e64730d200d0a0d0a5b4f64645d2020200d0a696e64656e7465643d696e0d200d0a62617265206c696e6520200d0a6f6e653d780d0d0d0a5b46726573685d0d0a66697273743d696e2061206e65772073656374696f6e0d0a0a",
+      "section": "the file as the writes left it"
+    },
+    {
       "function": "file line",
       "args": "1",
       "result": "[Plain]",
@@ -301,19 +469,19 @@
     {
       "function": "file line",
       "args": "2",
-      "result": "entry=replaced",
+      "result": "entry=recased",
       "section": "the file as the writes left it"
     },
     {
       "function": "file line",
       "args": "3",
-      "result": "spaced=  untrimmed",
+      "result": "spaced=untrimmed",
       "section": "the file as the writes left it"
     },
     {
       "function": "file line",
       "args": "4",
-      "result": " ",
+      "result": "",
       "section": "the file as the writes left it"
     },
     {
@@ -391,13 +559,13 @@
     {
       "function": "file line",
       "args": "17",
-      "result": "both=  both ends",
+      "result": "both=both ends",
       "section": "the file as the writes left it"
     },
     {
       "function": "file line",
       "args": "18",
-      "result": "leading=   leading only",
+      "result": "leading=leading only",
       "section": "the file as the writes left it"
     },
     {
@@ -415,152 +583,116 @@
     {
       "function": "file line",
       "args": "21",
-      "result": "",
+      "result": "again=  again",
       "section": "the file as the writes left it"
     },
     {
       "function": "file line",
       "args": "22",
-      "result": "[Second]",
+      "result": "",
       "section": "the file as the writes left it"
     },
     {
       "function": "file line",
       "args": "23",
-      "result": "only=one",
+      "result": "[Second]",
       "section": "the file as the writes left it"
     },
     {
       "function": "file line",
       "args": "24",
-      "result": "",
+      "result": "only=one",
       "section": "the file as the writes left it"
     },
     {
       "function": "file line",
       "args": "25",
-      "result": "[Spacing]",
-      "section": "the file as the writes left it"
-    },
-    {
-      "function": "file line",
-      "args": "26",
-      "result": "after=after only",
-      "section": "the file as the writes left it"
-    },
-    {
-      "function": "file line",
-      "args": "27",
-      "result": "before=before only",
-      "section": "the file as the writes left it"
-    },
-    {
-      "function": "file line",
-      "args": "28",
-      "result": "around=around both",
-      "section": "the file as the writes left it"
-    },
-    {
-      "function": "file line",
-      "args": "29",
-      "result": "tabbed=after a tab",
-      "section": "the file as the writes left it"
-    },
-    {
-      "function": "file line",
-      "args": "30",
-      "result": "ends=both ends\r ",
-      "section": "the file as the writes left it"
-    },
-    {
-      "function": "file line",
-      "args": "31",
       "result": "",
       "section": "the file as the writes left it"
     },
     {
       "function": "file line",
+      "args": "26",
+      "result": "[Spacing]",
+      "section": "the file as the writes left it"
+    },
+    {
+      "function": "file line",
+      "args": "27",
+      "result": "after=after only",
+      "section": "the file as the writes left it"
+    },
+    {
+      "function": "file line",
+      "args": "28",
+      "result": "before=before only",
+      "section": "the file as the writes left it"
+    },
+    {
+      "function": "file line",
+      "args": "29",
+      "result": "around=around both",
+      "section": "the file as the writes left it"
+    },
+    {
+      "function": "file line",
+      "args": "30",
+      "result": "tabbed=after a tab",
+      "section": "the file as the writes left it"
+    },
+    {
+      "function": "file line",
+      "args": "31",
+      "result": "ends=both ends\r ",
+      "section": "the file as the writes left it"
+    },
+    {
+      "function": "file line",
       "args": "32",
-      "result": "[Fresh]",
+      "result": "",
       "section": "the file as the writes left it"
     },
     {
       "function": "file line",
       "args": "33",
+      "result": "[Odd]   ",
+      "section": "the file as the writes left it"
+    },
+    {
+      "function": "file line",
+      "args": "34",
+      "result": "indented=in\r ",
+      "section": "the file as the writes left it"
+    },
+    {
+      "function": "file line",
+      "args": "35",
+      "result": "bare line  ",
+      "section": "the file as the writes left it"
+    },
+    {
+      "function": "file line",
+      "args": "36",
+      "result": "one=x\r\r",
+      "section": "the file as the writes left it"
+    },
+    {
+      "function": "file line",
+      "args": "37",
+      "result": "[Fresh]",
+      "section": "the file as the writes left it"
+    },
+    {
+      "function": "file line",
+      "args": "38",
       "result": "first=in a new section",
       "section": "the file as the writes left it"
     },
     {
-      "function": "GetProfileString",
-      "args": "\"intl\",\"s1159\",\"<default>\"",
-      "result": "2,\"AM\"",
-      "section": "WIN.INI, which is what programs actually read"
-    },
-    {
-      "function": "GetProfileString",
-      "args": "\"intl\",\"s2359\",\"<default>\"",
-      "result": "2,\"PM\"",
-      "section": "WIN.INI, which is what programs actually read"
-    },
-    {
-      "function": "GetProfileString",
-      "args": "\"intl\",\"sTime\",\"<default>\"",
-      "result": "1,\":\"",
-      "section": "WIN.INI, which is what programs actually read"
-    },
-    {
-      "function": "GetProfileString",
-      "args": "\"intl\",\"sShortDate\",\"<default>\"",
-      "result": "6,\"M/d/yy\"",
-      "section": "WIN.INI, which is what programs actually read"
-    },
-    {
-      "function": "GetProfileString",
-      "args": "\"windows\",\"device\",\"<default>\"",
-      "result": "0,\"\"",
-      "section": "WIN.INI, which is what programs actually read"
-    },
-    {
-      "function": "GetProfileString",
-      "args": "\"Absent\",\"absent\",\"<default>\"",
-      "result": "9,\"<default>\"",
-      "section": "WIN.INI, which is what programs actually read"
-    },
-    {
-      "function": "WritePrivateProfileString flush",
-      "args": "NULL,NULL,NULL",
-      "result": "0",
-      "section": "the written values, read again after a flush"
-    },
-    {
-      "function": "GetPrivateProfileString after flush",
-      "args": "\"Plain\",\"spaced\"",
-      "result": "9,\"untrimmed\"",
-      "section": "the written values, read again after a flush"
-    },
-    {
-      "function": "GetPrivateProfileString after flush",
-      "args": "\"Plain\",\"both\"",
-      "result": "9,\"both ends\"",
-      "section": "the written values, read again after a flush"
-    },
-    {
-      "function": "GetPrivateProfileString after flush",
-      "args": "\"Plain\",\"leading\"",
-      "result": "12,\"leading only\"",
-      "section": "the written values, read again after a flush"
-    },
-    {
-      "function": "GetPrivateProfileString after flush",
-      "args": "\"Plain\",\"tabbed\"",
-      "result": "3,\"tab\"",
-      "section": "the written values, read again after a flush"
-    },
-    {
-      "function": "GetPrivateProfileString after flush",
-      "args": "\"Spacing\",\"after\"",
-      "result": "10,\"after only\"",
-      "section": "the written values, read again after a flush"
+      "function": "file line",
+      "args": "39",
+      "result": "",
+      "section": "the file as the writes left it"
     }
   ]
 }

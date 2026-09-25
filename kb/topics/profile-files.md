@@ -1,11 +1,11 @@
 ---
 kind: topic
 name: Profile files
-summary: How the Windows 3.1 profile calls read and write an INI file — matching, whitespace, quotes, comments, numbers, the section list, what a write does to the caller's string and to the file, and what it leaves in memory until a flush.
+summary: How the Windows 3.1 profile calls read and write an INI file — matching, whitespace, quotes, comments, numbers, the section list, how a loaded file is normalised in place, what a write does to the caller's string and to the file, and what stays in memory until a flush.
 probes: [profile]
 ---
 
-The profile calls share one reading of the file. [[probe:profile]] writes its own `PROBE.INI` before asking anything, so every case below is a line whose exact bytes are known; the `WIN.INI` cases are the exception. It also records the file, line by line, as the writes left it. Of 92 records, 59 are replayed and agree with winbox.js; the 33 lines of the file are not replayed yet.
+The profile calls share one reading of the file. [[probe:profile]] writes its own `PROBE.INI` before asking anything, so every case below is a line whose exact bytes are known; the `WIN.INI` cases are the exception. It also records the file's bytes after each write. All 114 records agree with winbox.js, the eight snapshots of the file byte for byte.
 
 ## Matching
 
@@ -28,15 +28,26 @@ The profile calls share one reading of the file. [[probe:profile]] writes its ow
 
 - [[measured]] A write changes the caller's own string: its trailing spaces are cut off in place. `"  both ends  "` is 13 characters before the write and 11 after it, and `"   "` becomes empty. Leading spaces stay, and so does a trailing tab — five records.
 - [[measured]] The value goes into the file as `name=value`, with no quotes: `both=  both ends`, `leading=   leading only`, `blank=`. A trailing tab does not reach the file: `tabbed=tab`.
-- [[measured]] A new entry goes at the end of its section, after the last entry, and a new section at the end of the file.
-- [[measured]] The whole file is rewritten, not only the line that changed. A section nothing wrote to comes back normalised: `after=   after only` becomes `after=after only`, and `before   =before only` becomes `before=before only`.
-- [[measured]] Rewriting a line whose value had trailing spaces left debris behind: a line holding a single space after `spaced=  untrimmed`, and `ends=both ends` followed by a carriage return and a space before its line ends. Not yet explained.
+- [[measured]] A replaced entry keeps the name as the file spells it: writing `ENTRY` over `entry` leaves `entry=recased`. A new entry goes after the section's last entry. A new section goes after the last complete line of the file, after a blank line even where the file already ends in one, and a final line with no carriage return stays after it.
+- [[measured]] The whole buffer is written back, not only the line that changed, so what loading did to every other line reaches the disk too.
+
+## How a loaded file is normalised
+
+Every rule here is from the eight snapshots of the file's bytes, and winbox.js reproduces each of them byte for byte.
+
+- [[measured]] A line ends at a carriage return, and the byte after the return is taken to be the line feed without being looked at.
+- [[measured]] Loading the file changes it in place. The whitespace at the start of every line is dropped, and on a line with an `=`, so is the whitespace before the `=` and after it: `after=   after only` becomes `after=after only` and `  indented  =  in  ` becomes `indented=in`, in sections nothing wrote to.
+- [[measured]] A value's trailing whitespace is not removed. A carriage return is written over the first of it, and that return is where the line now ends, so the rest of the whitespace and the old line ending are left behind as a short line of their own: `ends=  both ends  ` becomes `ends=both ends`, a return, a space, and then the old return and line feed. `one=x ` at the end of the file becomes `one=x`, a return, the old return, and a line feed that is now a final line with no return of its own.
+- [[measured]] Lines without an `=`, the section headers among them, keep the rest of their bytes: `[Odd]   ` and `bare line  ` are written back as they were, and `[Odd]   ` still opens `Odd`.
+- [[measured]] This happens once, when the file is loaded, and not again while the buffer is held: a value written with its leading spaces stays in the file with them until the file is loaded again, when it too is normalised.
+- [[inferred]] A line feed on its own is not a line ending to this reading, so a file whose lines end in line feeds alone would be one line to it. Not yet measured.
 
 ## What a write leaves in memory
 
 - [[measured]] Straight after a write, the value reads back as it was written, leading spaces and all: `"  both ends"`, though the file holds it unquoted and the reader trims those spaces from anything it parses.
 - [[measured]] After `WritePrivateProfileString(NULL, NULL, NULL, file)`, which returns 0, the same entries read back as the file parses: `both ends`, `leading only`, `untrimmed`, `tab` — five of five.
-- [[inferred]] So a write is kept in memory as written, and the reads see it there until the file is flushed. The recording read `WIN.INI` before flushing, so whether reading another file flushes it too is not separated.
+- [[measured]] Reading `WIN.INI` in between does not do that: a value written after the flush still read back with its leading spaces after `WIN.INI` was read.
+- [[inferred]] So the buffer a write leaves behind is what every read and write after it works on, until the flush loads the file again. Whether a read alone leaves a buffer behind, and whether reading a third file lets it go, are not yet measured.
 
 ## Numbers
 

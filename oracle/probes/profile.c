@@ -182,16 +182,56 @@ static void probeWriteInPlace(LPCSTR entry, LPCSTR value)
  * A value read again once the cache is flushed. Named apart from the first
  * reads because what it answers depends on every write before it.
  */
-static void probeReread(LPCSTR section, LPCSTR entry)
+static void probeReread(LPCSTR section, LPCSTR entry, LPCSTR when)
 {
     char buffer[128];
+    char name[64];
     int count;
 
     count = GetPrivateProfileString(section, entry, "<default>", buffer, sizeof(buffer), SUBJECT);
 
+    wsprintf(name, "GetPrivateProfileString %s", (LPSTR)when);
     wsprintf(probeArgs, "\"%s\",\"%s\"", (LPSTR)section, (LPSTR)entry);
     wsprintf(probeResult, "%d,\"%s\"", count, (LPSTR)buffer);
-    probe("GetPrivateProfileString after flush", probeArgs, probeResult);
+    probe(name, probeArgs, probeResult);
+}
+
+/*
+ * The file's bytes, in hex, so that what a line-by-line dump cannot show --
+ * a carriage return in the middle of a line, a stray byte after a value --
+ * is on the record exactly. Taken after each write, so that each write's
+ * own effect on the file can be told from the next one's.
+ */
+static void probeFileHex(LPCSTR label)
+{
+    static const char HEX[] = "0123456789abcdef";
+    static char text[1024];
+    static char hex[2049];
+    HFILE file;
+    int length;
+    int at;
+
+    file = _lopen(SUBJECT, OF_READ);
+
+    if (file == HFILE_ERROR) {
+        probe("file bytes", label, "open failed");
+        return;
+    }
+
+    length = _lread(file, text, sizeof(text));
+    _lclose(file);
+
+    if (length < 0) {
+        length = 0;
+    }
+
+    for (at = 0; at < length; at++) {
+        hex[at * 2] = HEX[(text[at] >> 4) & 0xf];
+        hex[at * 2 + 1] = HEX[text[at] & 0xf];
+    }
+
+    hex[length * 2] = '\0';
+    probe("file bytes", label, hex);
 }
 
 /*
@@ -285,7 +325,12 @@ static void writeSubject(void)
         "before   =before only\r\n"
         "around   =   around both\r\n"
         "tabbed=\tafter a tab\r\n"
-        "ends=  both ends  \r\n";
+        "ends=  both ends  \r\n"
+        "\r\n"
+        "[Odd]   \r\n"
+        "  indented  =  in  \r\n"
+        "bare line  \r\n"
+        "one=x \r\n";
 
     HFILE handle = _lcreat(SUBJECT, 0);
 
@@ -320,6 +365,9 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeString("Spacing", "around", "<default>", 128);
     probeString("Spacing", "tabbed", "<default>", 128);
     probeString("Spacing", "ends", "<default>", 128);
+    probeString("Odd", "indented", "<default>", 128);
+    probeString("Odd", "one", "<default>", 128);
+    probeSection("Odd", 128);
 
     probeNote("case, on the entry and on the section");
     probeString("Plain", "mixed", "<default>", 128);
@@ -356,11 +404,17 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeInt("Absent", "number", 99);
 
     probeNote("writing, and reading back what was written");
+    probeFileHex("before any write");
     probeWrite("Plain", "added", "new value");
+    probeFileHex("after added");
     probeWrite("Plain", "entry", "replaced");
+    probeFileHex("after entry");
     probeWrite("Fresh", "first", "in a new section");
+    probeFileHex("after first");
     probeWrite("Plain", "added", NULL);
+    probeFileHex("after added removed");
     probeWrite("Plain", "spaced", "  untrimmed  ");
+    probeFileHex("after spaced");
 
     /* The file as it now stands, which shows what the writes did to the order
      * of the entries and whether they disturbed anything around them.
@@ -374,8 +428,7 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeWriteInPlace("blank", "   ");
     probeWriteInPlace("tabbed", "tab\t");
 
-    probeNote("the file as the writes left it");
-    probeFile();
+    probeFileHex("after the in-place writes");
 
     probeNote("WIN.INI, which is what programs actually read");
     probeWindows("intl", "s1159", "<default>");
@@ -392,11 +445,27 @@ int PASCAL WinMain(HINSTANCE instance, HINSTANCE previous, LPSTR command, int sh
     probeNote("the written values, read again after a flush");
     wsprintf(probeResult, "%d", (int)WritePrivateProfileString(NULL, NULL, NULL, SUBJECT));
     probe("WritePrivateProfileString flush", "NULL,NULL,NULL", probeResult);
-    probeReread("Plain", "spaced");
-    probeReread("Plain", "both");
-    probeReread("Plain", "leading");
-    probeReread("Plain", "tabbed");
-    probeReread("Spacing", "after");
+    probeReread("Plain", "spaced", "after flush");
+    probeReread("Plain", "both", "after flush");
+    probeReread("Plain", "leading", "after flush");
+    probeReread("Plain", "tabbed", "after flush");
+    probeReread("Spacing", "after", "after flush");
+
+    /* Whether it is the flush that lets the written value go, or reading any
+     * other file: write again, read WIN.INI, and read the value back.
+     */
+    probeNote("a written value, after another file is read");
+    probeWriteInPlace("again", "  again  ");
+    probeReread("Plain", "again", "after writing again");
+    probeWindows("intl", "sTime", "<default>");
+    probeReread("Plain", "again", "after reading WIN.INI");
+
+    probeNote("replacing an entry under another spelling of its name");
+    probeWrite("Plain", "ENTRY", "recased");
+
+    probeNote("the file as the writes left it");
+    probeFileHex("at the end");
+    probeFile();
 
     probeFinish();
 

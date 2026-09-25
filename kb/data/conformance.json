@@ -1118,14 +1118,21 @@
   "probe": "profile",
   "display": "vga",
   "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
-  "records": 92,
+  "records": 114,
   "functions": {
-   "file line": {
-    "total": 33,
-    "agreed": 0,
+   "file bytes": {
+    "total": 8,
+    "agreed": 8,
     "disagreed": 0,
     "unimplemented": 0,
-    "unsupported": 33
+    "unsupported": 0
+   },
+   "file line": {
+    "total": 39,
+    "agreed": 39,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
    },
    "GetPrivateProfileInt": {
     "total": 8,
@@ -1135,8 +1142,8 @@
     "unsupported": 0
    },
    "GetPrivateProfileString": {
-    "total": 29,
-    "agreed": 29,
+    "total": 32,
+    "agreed": 32,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -1148,16 +1155,30 @@
     "unimplemented": 0,
     "unsupported": 0
    },
+   "GetPrivateProfileString after reading WIN.INI": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "GetPrivateProfileString after writing again": {
+    "total": 1,
+    "agreed": 1,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
    "GetProfileString": {
-    "total": 6,
-    "agreed": 6,
+    "total": 7,
+    "agreed": 7,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
    },
    "WritePrivateProfileString": {
-    "total": 5,
-    "agreed": 5,
+    "total": 6,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0
@@ -1170,8 +1191,8 @@
     "unsupported": 0
    },
    "WritePrivateProfileString in place": {
-    "total": 5,
-    "agreed": 5,
+    "total": 6,
+    "agreed": 6,
     "disagreed": 0,
     "unimplemented": 0,
     "unsupported": 0

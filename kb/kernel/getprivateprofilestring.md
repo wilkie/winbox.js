@@ -13,7 +13,7 @@ topics: [profile-files]
 
 ## Observed behaviour
 
-- [[measured]] All 34 of its records in [[probe:profile]] agree with Windows: 29 reads, and 5 read again after a flush.
+- [[measured]] All 39 of its records in [[probe:profile]] agree with Windows: 32 reads, 5 read again after a flush, and 2 after a further write and a read of `WIN.INI`.
 - [[measured]] The count returned is the length of what was written, without its null: `value` is 5, `padded value` 12, an empty value 0.
 - [[measured]] Lookups ignore case on the section and the entry, drop the whitespace around a value, and remove one pair of single or double quotes. See [[topic:profile-files]].
 - [[measured]] A missing entry or section copies the default: `<default>` gives 9 in both records.
@@ -24,9 +24,9 @@ topics: [profile-files]
 - [[measured]] With a NULL entry the buffer holds the section's entry names in file order, each null-terminated. `[Second]` gives `only` and a count of 5; `[Plain]` gives its 13 names and 100, leaving out its comment and blank lines; a missing section gives 0.
 - [[measured]] A truncated list is cut to the buffer less two: `[Second]` in 6 bytes gives `onl` and its null, count 4.
 - [[inferred]] The second byte held back is for the list's closing null; the record shows only the bytes the count covers.
-- [[measured]] A value written since the last flush reads back as written, not as the file would parse it: see [[fn:KERNEL.WritePrivateProfileString]].
+- [[measured]] A value written since the last flush reads back as written, not as the file would parse it: see [[fn:KERNEL.WritePrivateProfileString]]. What loading the file does to what it holds is under [[topic:profile-files]].
 - Not yet measured: a file that does not exist, an unterminated quote, the list form on a section with duplicate names.
 
 ## Implementation
 
-winbox.js reads the whole file through its `Profile` class (`src/win16/profile.ts`) on each call and copies out through `copyOut` and `copyOutList` in `src/win16/kernel/profiles.ts`.
+winbox.js loads the file through its `Profile` class (`src/win16/profile.ts`), which normalises it as Windows does, or reads the buffer a write left, and copies out through `copyOut` and `copyOutList` in `src/win16/kernel/profiles.ts`.

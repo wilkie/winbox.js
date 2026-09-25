@@ -132,24 +132,54 @@ const SUBJECT_PROFILE = [
   'around   =   around both',
   'tabbed=\tafter a tab',
   'ends=  both ends  ',
+  '',
+  '[Odd]   ',
+  '  indented  =  in  ',
+  'bare line  ',
+  'one=x ',
+  '',
 ].join('\r\n');
 
 /**
- * Every write the profile probe makes, in its order, so that a record which
- * depends on all of them -- a value read again after the flush -- can be
- * replayed from the same state. Mirrors `profile.c` as `SUBJECT_PROFILE` does.
+ * What the profile probe does to its file, in order: each write, the flush,
+ * each read of `WIN.INI`, and the points it recorded the file's bytes at or
+ * read a value back. A record that depends on the state of the file -- the
+ * bytes after a write, a value read again after the flush -- is replayed by
+ * running this up to its point. Mirrors `profile.c` as `SUBJECT_PROFILE` does.
  */
-const PROFILE_WRITES: [string, string, string | null][] = [
-  ['Plain', 'added', 'new value'],
-  ['Plain', 'entry', 'replaced'],
-  ['Fresh', 'first', 'in a new section'],
-  ['Plain', 'added', null],
-  ['Plain', 'spaced', '  untrimmed  '],
-  ['Plain', 'both', '  both ends  '],
-  ['Plain', 'trailing', 'trailing only   '],
-  ['Plain', 'leading', '   leading only'],
-  ['Plain', 'blank', '   '],
-  ['Plain', 'tabbed', 'tab\t'],
+type ProfileStep =
+  | ['write', string, string, string | null]
+  | ['flush']
+  | ['windows']
+  | ['at', string];
+
+const PROFILE_SCRIPT: ProfileStep[] = [
+  ['at', 'before any write'],
+  ['write', 'Plain', 'added', 'new value'],
+  ['at', 'after added'],
+  ['write', 'Plain', 'entry', 'replaced'],
+  ['at', 'after entry'],
+  ['write', 'Fresh', 'first', 'in a new section'],
+  ['at', 'after first'],
+  ['write', 'Plain', 'added', null],
+  ['at', 'after added removed'],
+  ['write', 'Plain', 'spaced', '  untrimmed  '],
+  ['at', 'after spaced'],
+  ['write', 'Plain', 'both', '  both ends  '],
+  ['write', 'Plain', 'trailing', 'trailing only   '],
+  ['write', 'Plain', 'leading', '   leading only'],
+  ['write', 'Plain', 'blank', '   '],
+  ['write', 'Plain', 'tabbed', 'tab\t'],
+  ['at', 'after the in-place writes'],
+  ['windows'],
+  ['flush'],
+  ['at', 'after flush'],
+  ['write', 'Plain', 'again', '  again  '],
+  ['at', 'after writing again'],
+  ['windows'],
+  ['at', 'after reading WIN.INI'],
+  ['write', 'Plain', 'ENTRY', 'recased'],
+  ['at', 'at the end'],
 ];
 
 /** Loads the installed fonts off the drive image, if it has been built. */
@@ -973,6 +1003,71 @@ export class Context {
   debug() {}
 
   /** Writes a C string into guest memory and returns where it went. */
+  /** Runs the profile probe's script on this context, up to the point named. */
+  async profileScriptTo(label: string) {
+    for (const step of PROFILE_SCRIPT) {
+      if (step[0] === 'at') {
+        if (step[1] === label) {
+          return;
+        }
+      } else if (step[0] === 'flush') {
+        await WritePrivateProfileString.call(this, null, null, null, this.lpcstr('PROBE.INI'));
+      } else if (step[0] === 'windows') {
+        const buffer = this.place('', 130);
+
+        await GetProfileString.call(
+          this,
+          this.lpcstr('intl'),
+          this.lpcstr('sTime'),
+          this.lpcstr('<default>'),
+          buffer.far,
+          128
+        );
+      } else {
+        const [, section, entry, value] = step;
+
+        await WritePrivateProfileString.call(
+          this,
+          this.lpcstr(section),
+          this.lpcstr(entry),
+          value === null ? null : this.lpcstr(value),
+          this.lpcstr('PROBE.INI')
+        );
+      }
+    }
+
+    throw new Error(`the profile script has no point called ${label}`);
+  }
+
+  /** A value read once the script has run to the point named. */
+  async profileReadAt(label: string, [section, entry]: (string | number)[]) {
+    await this.profileScriptTo(label);
+
+    const buffer = this.place('', 130);
+    const count = await GetPrivateProfileString.call(
+      this,
+      this.lpcstr(section as string),
+      this.lpcstr(entry as string),
+      this.lpcstr('<default>'),
+      buffer.far,
+      128,
+      this.lpcstr('PROBE.INI')
+    );
+
+    return `${count},${quoted(this.fetch(buffer.far))}`;
+  }
+
+  /** The probe's file as this context's file system holds it now. */
+  profileFile() {
+    const handle = this.dos.files.open('PROBE.INI');
+    const file = this.dos.files.resolve(handle);
+    const bytes = file.read(0, file.size);
+
+    this.dos.files.close(handle);
+
+    return Array.from(bytes as Uint8Array, (byte: number) => String.fromCharCode(byte)).join('');
+  }
+
   place(text: string, reserve = 0) {
     const core = this.machine.cpu.core;
     const offset = this.next;
@@ -1689,33 +1784,56 @@ const ADAPTERS: Record<
     );
   },
 
-  /* Read after every write the probe made and a flush, so the writes are made
-   * again on this context first. */
-  async 'GetPrivateProfileString after flush'(context, [section, entry]) {
-    for (const [writeSection, writeEntry, value] of PROFILE_WRITES) {
-      await WritePrivateProfileString.call(
-        context,
-        context.lpcstr(writeSection),
-        context.lpcstr(writeEntry),
-        value === null ? null : context.lpcstr(value),
-        context.lpcstr('PROBE.INI')
-      );
+  /* A value read at a point in the probe's script: after the flush, after a
+   * further write, after `WIN.INI` was read. The function's name says which. */
+  async 'GetPrivateProfileString after flush'(context, args) {
+    return context.profileReadAt('after flush', args);
+  },
+
+  async 'GetPrivateProfileString after writing again'(context, args) {
+    return context.profileReadAt('after writing again', args);
+  },
+
+  async 'GetPrivateProfileString after reading WIN.INI'(context, args) {
+    return context.profileReadAt('after reading WIN.INI', args);
+  },
+
+  /* The file's bytes at a point in the script, as hex. */
+  async 'file bytes'(context, [label]) {
+    await context.profileScriptTo(label as string);
+
+    return Array.from(context.profileFile(), (character) =>
+      character.charCodeAt(0).toString(16).padStart(2, '0')
+    ).join('');
+  },
+
+  /* One line of the file at the end of the script, cut the way the probe cut
+   * it: at each line feed, one carriage return before it dropped, and a last
+   * piece kept only if it holds something. */
+  async 'file line'(context, [number]) {
+    await context.profileScriptTo('at the end');
+
+    const text = context.profileFile();
+    const lines: string[] = [];
+    let start = 0;
+
+    for (let at = 0; at <= text.length; at++) {
+      if (at === text.length || text[at] === '\n') {
+        let end = at;
+
+        if (end > start && text[end - 1] === '\r') {
+          end--;
+        }
+
+        if (at < text.length || end > start) {
+          lines.push(text.substring(start, end));
+        }
+
+        start = at + 1;
+      }
     }
 
-    await WritePrivateProfileString.call(context, null, null, null, context.lpcstr('PROBE.INI'));
-
-    const buffer = context.place('', 130);
-    const count = await GetPrivateProfileString.call(
-      context,
-      context.lpcstr(section as string),
-      context.lpcstr(entry as string),
-      context.lpcstr('<default>'),
-      buffer.far,
-      128,
-      context.lpcstr('PROBE.INI')
-    );
-
-    return `${count},${quoted(context.fetch(buffer.far))}`;
+    return lines[Number(number) - 1] ?? '';
   },
 
   /*

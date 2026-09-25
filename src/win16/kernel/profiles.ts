@@ -15,72 +15,41 @@ import { Profile } from '../profile.js';
 export const WINDOWS_PROFILE = 'WIN.INI';
 
 /**
- * What each write leaves in memory, until the program flushes the file.
+ * The files Windows is holding in memory, by module and file.
  *
- * Windows does not read a value it has just written back out of the file.
- * Recorded by the `profile` probe: a value written with spaces at its start
- * reads back with them straight after the write, though the file holds it
- * unquoted and the reader trims those spaces from every value it parses; once
- * the program flushes the file, the same entry reads back without them. So a
- * write is kept as written, by file, section and entry, until the flush.
- * Whether reading another file flushes it as well is not separated by the
- * recording, which read `WIN.INI` before flushing.
+ * Windows does not go back to the disk for a file it has written: the buffer
+ * it wrote from stays, and every read and write after that works on it. The
+ * `profile` probe recorded a value written with spaces at its start reading
+ * back with them straight after the write, though the file holds it unquoted
+ * and loading the file trims those spaces; after reading `WIN.INI` it still
+ * did; and only after `WritePrivateProfileString(NULL, NULL, NULL, file)` did
+ * it read back trimmed, which is the file loaded again. Whether a read alone
+ * leaves the buffer behind is not measured, so only a write does here.
  */
-const written = new WeakMap<object, Map<string, string>>();
+const held = new WeakMap<object, Map<string, Profile>>();
 
-/** The key a write is kept under: the file's name, the section and the entry, without case. */
-const writtenKey = (name, section, entry) =>
-  [
-    String(name)
-      .split(/[\\/:]/)
-      .pop()!
-      .toUpperCase(),
-    section.toLowerCase(),
-    entry.toLowerCase(),
-  ].join('\0');
+/** The key a file is held under: its name without its path, in upper case. */
+const fileKey = (name) =>
+  String(name)
+    .split(/[\\/:]/)
+    .pop()!
+    .toUpperCase();
 
-/** The value a write left for this entry, if the file has not been flushed since. */
-export function writtenValue(kernel, name, section, entry) {
-  return written.get(kernel)?.get(writtenKey(name, section, entry)) ?? null;
+/** Keeps the buffer a write left, for the reads and writes that follow. */
+export function holdProfile(kernel, name, profile: Profile) {
+  let files = held.get(kernel);
+
+  if (!files) {
+    files = new Map();
+    held.set(kernel, files);
+  }
+
+  files.set(fileKey(name), profile);
 }
 
-/**
- * Keeps a write, or forgets one: `null` for the value forgets the entry, and
- * `null` for the entry forgets the section.
- */
-export function rememberWrite(kernel, name, section, entry, value) {
-  let values = written.get(kernel);
-
-  if (!values) {
-    values = new Map();
-    written.set(kernel, values);
-  }
-
-  if (entry === null) {
-    const prefix = writtenKey(name, section, '');
-
-    for (const key of [...values.keys()]) {
-      if (key.startsWith(prefix)) {
-        values.delete(key);
-      }
-    }
-  } else if (value === null) {
-    values.delete(writtenKey(name, section, entry));
-  } else {
-    values.set(writtenKey(name, section, entry), value);
-  }
-}
-
-/** Forgets every write to a file: what a flush does. */
-export function flushWrites(kernel, name) {
-  const prefix = writtenKey(name, '', '').split('\0')[0] + '\0';
-  const values = written.get(kernel);
-
-  for (const key of [...(values?.keys() ?? [])]) {
-    if (key.startsWith(prefix)) {
-      values!.delete(key);
-    }
-  }
+/** Lets a file's buffer go: what a flush does, so the next read is of the disk. */
+export function releaseProfile(kernel, name) {
+  held.get(kernel)?.delete(fileKey(name));
 }
 
 /**
@@ -94,6 +63,12 @@ export function flushWrites(kernel, name) {
  * @param {string} name - The file's name, as the program gave it.
  */
 export async function readProfile(kernel, name) {
+  const holding = held.get(kernel)?.get(fileKey(name));
+
+  if (holding) {
+    return holding;
+  }
+
   const handle = await kernel.dos.files.open(String(name));
 
   if (!handle) {

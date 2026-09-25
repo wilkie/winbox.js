@@ -1,6 +1,6 @@
 'use strict';
 
-import { flushWrites, readProfile, rememberWrite, writeProfile } from './profiles.js';
+import { holdProfile, readProfile, releaseProfile, writeProfile } from './profiles.js';
 /**
  * The **WritePrivateProfileString** function copies a character string into the
  * specified section of the specified initialization file.
@@ -72,7 +72,7 @@ export async function WritePrivateProfileString(lpszSection, lpszEntry, lpszStri
    * the next read is of the file. Windows returns 0 for it, as recorded.
    */
   if (lpszSection === null && lpszEntry === null && lpszString === null) {
-    flushWrites(this, lpszFilename);
+    releaseProfile(this, lpszFilename);
     return 0;
   }
 
@@ -107,15 +107,13 @@ export async function WritePrivateProfileString(lpszSection, lpszEntry, lpszStri
     profile.set(String(lpszSection), String(lpszEntry), value);
   }
 
-  rememberWrite(
-    this,
-    String(lpszFilename),
-    String(lpszSection),
-    lpszEntry === null ? null : String(lpszEntry),
-    value
-  );
-
   this.debug('WritePrivateProfileString', String(lpszSection), String(lpszEntry));
 
-  return (await writeProfile(this, lpszFilename, profile)) ? 1 : 0;
+  const ok = await writeProfile(this, lpszFilename, profile);
+
+  if (ok) {
+    holdProfile(this, lpszFilename, profile);
+  }
+
+  return ok ? 1 : 0;
 }

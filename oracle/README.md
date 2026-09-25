@@ -622,11 +622,28 @@ first looked like the writer quoting it. It does not: the probe now records the
 file line by line, and the line is `spaced=  untrimmed`, unquoted. The reader
 trims those spaces from every line it parses, wherever they are, and after
 `WritePrivateProfileString(NULL, NULL, NULL, file)` -- a flush, which returns
-0 -- the same entries read back without them. What a write leaves in memory is
-read before the file until the flush. The file itself is rewritten whole and
-normalised, `after=   after only` becoming `after=after only` in a section
-nothing wrote to, and a rewritten value that had trailing spaces leaves stray
-bytes behind; the file's lines are recorded but not yet replayed.
+0 -- the same entries read back without them. Reading `WIN.INI` in between
+changes nothing: the buffer a write leaves behind is what every read and write
+after it works on, until the flush.
+
+**The stray bytes are how Windows ends a value.** The probe records the file
+as hex after each write, and the bytes say what the line-by-line dump could
+not. Loading a file normalises it in place: the whitespace at the start of a
+line goes, and so does the whitespace on either side of an `=`, so
+`after=   after only` in a section nothing wrote to comes back as
+`after=after only`. A value's trailing whitespace is not removed. A carriage
+return is written over the first of it, and that return is where the line now
+ends -- the byte after a return is taken for the line feed without being
+looked at -- so the rest of the whitespace and the old line ending are left
+behind as a short line of their own: `ends=  both ends  ` becomes
+`ends=both ends\r \r\n`, and `one=x ` at the end of the file becomes
+`one=x\r\r\n`, whose stray `\n` is then a final line with no return, which a
+new section is appended _before_. The normalisation happens once, at the
+load; the buffer is kept as it is through every write after that, and a value
+written with leading spaces stays in the file with them until the file is
+loaded again. A replaced entry keeps the name as the file spells it, so
+writing `ENTRY` over `entry` leaves `entry=`. All eight snapshots and every
+line of the final file replay byte for byte.
 
 ### The font probe
 
