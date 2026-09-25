@@ -2,7 +2,7 @@
 kind: topic
 name: Display drivers
 summary: Which Windows 3.1 screen answers come from the installed display driver and which come from GDI, what four recorded drivers report, and why every display-dependent fixture is recorded once for each display.
-probes: [devcaps]
+probes: [devcaps, dither]
 ---
 
 A Windows 3.1 program finds out about its screen by asking GDI and USER, and much of what they answer is not theirs. The installed display driver fills in a table when Windows starts. [[fn:GDI.GetDeviceCaps]] reads that table back, and [[fn:USER.GetSystemMetrics]] sizes window parts from it. A program then decides things from those answers: how many colours to use, how many pixels a point is, and whether a circle has to be drawn as an ellipse to look round.
@@ -45,6 +45,11 @@ A Windows 3.1 program finds out about its screen by asking GDI and USER, and muc
 - [[inferred]] The caption and menu bars are USER's, sized from the system font, and that font's height follows the driver's vertical resolution. That would explain why both 72-dot displays have bars two pixels shorter.
 
 The long derivation of the driver's decisions, including the readings that were refused, is in [[fonts:8v]].
+
+## Colours
+
+- [[read out]] The EGA's sixteen colours are not the VGA's. `EGA.DRV` keeps its colour table where `VGA.DRV` keeps its own, and the two tables differ in one entry: index 8 is dark grey `404040` on the EGA and light grey `c0c0c0` on the VGA. [[measured]] [[probe:dither]]'s `GetNearestColor` and `GetPixel` answer `404040` on an EGA and never `c0c0c0`.
+- [[measured]] The driver chooses the pattern a brush of a colour it lacks is drawn as, and the one colour a pen gets. The three colour drivers share the patterns. The EGA uses its own order for monochrome bitmaps, and the Hercules weighs red, green and blue alike where the colour drivers count green twice. See [[topic:brush-dithering]].
 
 ## Why fixtures are recorded per display
 

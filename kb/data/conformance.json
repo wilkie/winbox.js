@@ -393,6 +393,238 @@
   },
   "gaps": {}
  },
+ "dither-ega": {
+  "probe": "dither",
+  "display": "ega",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 2393,
+  "functions": {
+   "grid": {
+    "total": 81,
+    "agreed": 81,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "mono": {
+    "total": 194,
+    "agreed": 194,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "monoramp": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "nearest": {
+    "total": 194,
+    "agreed": 194,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "offset": {
+    "total": 194,
+    "agreed": 194,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ramp": {
+    "total": 512,
+    "agreed": 512,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "screen": {
+    "total": 194,
+    "agreed": 194,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "dither-hercules": {
+  "probe": "dither",
+  "display": "hercules",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 2393,
+  "functions": {
+   "grid": {
+    "total": 81,
+    "agreed": 81,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "mono": {
+    "total": 194,
+    "agreed": 194,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "monoramp": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "nearest": {
+    "total": 194,
+    "agreed": 194,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "offset": {
+    "total": 194,
+    "agreed": 194,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ramp": {
+    "total": 512,
+    "agreed": 512,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "screen": {
+    "total": 194,
+    "agreed": 194,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "dither-svga": {
+  "probe": "dither",
+  "display": "svga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 2393,
+  "functions": {
+   "grid": {
+    "total": 81,
+    "agreed": 81,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "mono": {
+    "total": 194,
+    "agreed": 194,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "monoramp": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "nearest": {
+    "total": 194,
+    "agreed": 194,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "offset": {
+    "total": 194,
+    "agreed": 194,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ramp": {
+    "total": 512,
+    "agreed": 512,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "screen": {
+    "total": 194,
+    "agreed": 194,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
+ "dither-vga": {
+  "probe": "dither",
+  "display": "vga",
+  "windows": "Windows 3.1 (Retail) (3.5-1.44mb)",
+  "records": 2393,
+  "functions": {
+   "grid": {
+    "total": 81,
+    "agreed": 81,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "mono": {
+    "total": 194,
+    "agreed": 194,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "monoramp": {
+    "total": 1024,
+    "agreed": 1024,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "nearest": {
+    "total": 194,
+    "agreed": 194,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "offset": {
+    "total": 194,
+    "agreed": 194,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "ramp": {
+    "total": 512,
+    "agreed": 512,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   },
+   "screen": {
+    "total": 194,
+    "agreed": 194,
+    "disagreed": 0,
+    "unimplemented": 0,
+    "unsupported": 0
+   }
+  },
+  "gaps": {}
+ },
  "extout-vga": {
   "probe": "extout",
   "display": "vga",

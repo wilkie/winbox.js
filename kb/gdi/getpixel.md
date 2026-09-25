@@ -6,7 +6,7 @@ ordinal: 83
 summary: Returns the colour of one pixel of a device context as a COLORREF.
 versions:
   '3.1': exact
-probes: [bitblt]
+probes: [bitblt, dither]
 source: src/win16/gdi/GetPixel.ts
 ---
 
@@ -16,7 +16,8 @@ source: src/win16/gdi/GetPixel.ts
 
 ## Nuances
 
-- Not yet measured: a colour outside the palette, which a sixteen-colour display cannot hold, and a point outside the bitmap.
+- [[measured]] On an EGA, a pixel of the display's dark grey reads as `404040`, not `c0c0c0`. The EGA's colours are its driver's, which [[probe:dither]] shows. See [[topic:display-drivers]].
+- Not yet measured: a point outside the bitmap.
 
 ## Implementation
 
