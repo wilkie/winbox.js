@@ -24,6 +24,7 @@ import {
   comboboxCapture,
   listboxCapture,
   noscrollCapture,
+  sbtrackCapture,
   groupboxCapture,
   mlEditCapture,
   menusCapture,
@@ -525,6 +526,10 @@ function editRecords(context: any) {
 
   if (context.probe === 'noscroll') {
     return noscrollCapture(context);
+  }
+
+  if (context.probe === 'sbtrack') {
+    return sbtrackCapture(context);
   }
 
   return context.probe === 'mledit' ? mlEditCapture(context) : editCapture(context);

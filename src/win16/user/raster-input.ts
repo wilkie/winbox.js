@@ -94,6 +94,12 @@ export class RasterInput {
   /** Which buttons are down, as bits: left, right, middle. */
   buttons = 0;
 
+  /**
+   * Where the cursor is on the screen: what a message carries as its point
+   * when it is not the mouse's own -- a key, a timer, one posted.
+   */
+  cursor = { x: 0, y: 0 };
+
   /** The character each virtual key typed last, for `TranslateMessage`. */
   readonly typed = new Map<number, number>();
 
@@ -112,6 +118,7 @@ export class RasterInput {
    */
   pointer(kind: 'down' | 'up' | 'move', pointer: Pointer) {
     this.buttons = pointer.buttons;
+    this.cursor = { x: pointer.x, y: pointer.y };
     const desktop = this.desktop;
     const target = this.capture ?? desktop.windowAt(pointer.x, pointer.y);
 
@@ -262,7 +269,7 @@ export class RasterInput {
       msg.wParam = 0;
       msg.lParam = 0;
       msg.time = this.#time();
-      msg.pt = { x: 0, y: 0 };
+      msg.pt = { ...this.cursor };
       task.push(msg);
     }
   }
@@ -281,7 +288,7 @@ export class RasterInput {
     msg.wParam = wParam;
     msg.lParam = lParam;
     msg.time = this.#time();
-    msg.pt = { x: pointer?.x ?? 0, y: pointer?.y ?? 0 };
+    msg.pt = { x: pointer?.x ?? this.cursor.x, y: pointer?.y ?? this.cursor.y };
     task.push(msg, true);
   }
 

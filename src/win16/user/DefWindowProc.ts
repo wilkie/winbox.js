@@ -23,6 +23,7 @@ import { ShowWindow } from './ShowWindow.js';
 import { HTBOTTOMRIGHT, HTLEFT, trackWindow } from './track-loop.js';
 import { backgroundOf } from './raster-desktop.js';
 import { RasterWindow } from './raster-window.js';
+import { trackScrollBar } from './scroll-track.js';
 
 /**
  * The **DefWindowProc** function calls the default window procedure. The
@@ -146,6 +147,10 @@ const HTSYSMENU = 3;
 const HTMINBUTTON = 8;
 const HTMAXBUTTON = 9;
 const HTMENU = 5;
+const HTHSCROLL = 6;
+const HTVSCROLL = 7;
+const SC_VSCROLL = 0xf070;
+const SC_HSCROLL = 0xf080;
 const VK_MENU = 0x12;
 const VK_F4 = 0x73;
 const VK_F10 = 0x79;
@@ -155,6 +160,18 @@ const VK_F10 = 0x79;
  * nowhere else, or `undefined` for a message it leaves to the rest.
  */
 async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
+  /* A press on a scroll bar is a system command to the window, pressed once
+   * or twice alike (`USER.EXE` seg1 `01cb`, `0314`). */
+  if (
+    (uMsg === User.WM_NCLBUTTONDOWN || uMsg === User.WM_NCLBUTTONDBLCLK) &&
+    (wParam === HTVSCROLL || wParam === HTHSCROLL)
+  ) {
+    const command = (wParam === HTVSCROLL ? SC_VSCROLL : SC_HSCROLL) | wParam;
+
+    await SendMessage.call(system, hwnd, User.WM_SYSCOMMAND, command, lParam);
+    return 0;
+  }
+
   switch (uMsg) {
     case User.WM_NCLBUTTONDOWN: {
       /* A press on the menu bar opens that item's menu; on the box, the system menu. */
@@ -278,6 +295,16 @@ async function rasterDefault(system, dialog, hwnd, uMsg, wParam, lParam) {
 
           return 0;
         }
+
+        /* The scroll bar followed until let go, unless something has the
+         * mouse or the window is disabled (seg1 `037c`). */
+        case SC_VSCROLL:
+        case SC_HSCROLL:
+          if (!system.rasterInput?.capture && !(dialog.window.style & User.WS_DISABLED)) {
+            await trackScrollBar(system, hwnd, wParam & 0x0f, (lParam << 16) >> 16, lParam >> 16);
+          }
+
+          return 0;
 
         case SC_MOVE:
           await trackWindow(system, hwnd, { mode: 'move', keyboard: true });

@@ -63,6 +63,7 @@ import { DrawIcon, IsIconic, IsZoomed, LoadIcon } from './user/icon-api.js';
 import { CloseWindow, OpenIcon } from './user/ShowWindow.js';
 import { AppendMenu, InsertMenu } from './user/AppendMenu.js';
 import { ClientToScreen } from './user/ClientToScreen.js';
+import { GetCursorPos, SetCursorPos } from './user/cursor-pos.js';
 import { ScreenToClient } from './user/ScreenToClient.js';
 import {
   CreateCaret,
@@ -595,7 +596,7 @@ export class User extends Module {
       [User.stub, 'GetTimerResolution', 0],
       [User.stub, 'GetCurrentTime', 0],
       [User.stub, 'ClipCursor', 4],
-      [User.stub, 'GetCursorPos', 4],
+      [GetCursorPos, 'GetCursorPos', 4, [[POINT]]],
       [SetCapture, 'SetCapture', 2, [HWND], HWND],
       [ReleaseCapture, 'ReleaseCapture', 0, []],
       // 20 //
@@ -660,7 +661,7 @@ export class User extends Module {
       [ReleaseDC, 'ReleaseDC', 4, [HWND, HDC], INT],
       [SetCursor, 'SetCursor', 2, [HCURSOR], HCURSOR],
       // 70 //
-      [User.stub, 'SetCursorPos', 4],
+      [SetCursorPos, 'SetCursorPos', 4, [INT, INT]],
       [User.stub, 'ShowCursor', 2],
       [SetRect, 'SetRect', 12, [[RECT], INT, INT, INT, INT]],
       [SetRectEmpty, 'SetRectEmpty', 4, [[RECT]]],

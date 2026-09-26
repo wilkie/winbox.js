@@ -678,6 +678,32 @@ export class Desktop {
     return at >= 0 ? this.windows[at] : null;
   }
 
+  /**
+   * A window's own scroll bar's rectangle, relative to the window, as the
+   * frame lays it out: from its client area's edge, sharing a line with the
+   * window's edge when it has one (see `frame.ts`).
+   */
+  scrollBarRect(window: DesktopWindow, vertical: boolean) {
+    const { left, top, right, bottom } = window.client;
+    const overlap = left > 0 || top > 0 ? 1 : 0;
+
+    return vertical
+      ? { left: right, top: top - overlap, right: right + this.environment.metric(2), bottom: bottom + 1 }
+      : { left: left - overlap, top: bottom, right: right + 1, bottom: bottom + this.environment.metric(3) };
+  }
+
+  /** Draws on a window, frame and all, where it shows. */
+  windowPainter(window: DesktopWindow) {
+    return new Painter(
+      this.#view(window, 0, 0, window.width, window.height, false),
+      0,
+      0,
+      window.width,
+      window.height,
+      this.environment as any
+    );
+  }
+
   /** Paints a window's frame, where the window shows. */
   paintFrame(window: DesktopWindow) {
     if (!this.#showing(window)) {

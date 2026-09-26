@@ -23,6 +23,12 @@ export const OBM_RGARROWI = 32735;
 export const OBM_DNARROWI = 32736;
 export const OBM_UPARROWI = 32737;
 
+/* The arrows pressed (`USER.EXE` seg3). */
+export const OBM_LFARROWD = 32740;
+export const OBM_RGARROWD = 32741;
+export const OBM_DNARROWD = 32742;
+export const OBM_UPARROWD = 32743;
+
 const SM_CYVTHUMB = 9;
 const SM_CXHTHUMB = 10;
 const SM_CYVSCROLL = 20;
@@ -247,35 +253,25 @@ export class Painter {
     x1: number,
     y1: number,
     vertical: boolean,
-    place: {
-      min: number;
-      max: number;
-      pos: number;
-      flags?: number;
-      shaft?: number | null;
-    } = { min: 0, max: 100, pos: 0 }
+    place: ScrollPaint = { min: 0, max: 100, pos: 0 }
   ) {
     const oem = this.environment.oem;
-    const metric = (index: number) => this.environment.metric(index);
-    const border = 1;
     const length = vertical ? y1 - y0 : x1 - x0;
-    const half = (length >> 1) - border;
+    const geometry = scrollGeometry(this.environment, length, vertical, place);
 
-    if (half <= 0) {
+    if (!geometry) {
       return;
     }
 
-    const bitmap = metric(vertical ? SM_CYVSCROLL : SM_CXHSCROLL);
-    const arrow = Math.min(half, bitmap);
-    const thumb = metric(vertical ? SM_CYVTHUMB : SM_CXHTHUMB);
-    const room = length - 2 * arrow - thumb + 2 * border;
-    const span = place.max - place.min;
-    const offset = span ? Math.floor(((place.pos - place.min) * room + (span >> 1)) / span) : place.pos - place.min;
+    const { border, bitmap, arrow, thumb, thumbTop } = geometry;
     const flags = (place.flags ?? 0) & 3;
     const off = flags === 3;
-    const shows = length - 2 * arrow >= thumb && !off;
-    const pick = (bit: number, normal: number, grayed: number) =>
-      (flags & bit && oem.get(grayed)) || oem.get(normal);
+    const shows = geometry.shows && !off;
+    const track = place.track;
+    const pick = (bit: number, part: number, normal: number, grayed: number, pressed: number) =>
+      (track?.part === part && track.pressed && oem.get(pressed)) ||
+      (flags & bit && oem.get(grayed)) ||
+      oem.get(normal);
 
     this.fill(
       x0,
@@ -286,22 +282,18 @@ export class Painter {
     );
 
     if (vertical) {
-      this.stretch(pick(1, OBM_UPARROW, OBM_UPARROWI), x0, y0, x1 - x0, arrow);
-      this.stretch(pick(2, OBM_DNARROW, OBM_DNARROWI), x0, y1 - arrow, x1 - x0, arrow);
+      this.stretch(pick(1, 0, OBM_UPARROW, OBM_UPARROWI, OBM_UPARROWD), x0, y0, x1 - x0, arrow);
+      this.stretch(pick(2, 1, OBM_DNARROW, OBM_DNARROWI, OBM_DNARROWD), x0, y1 - arrow, x1 - x0, arrow);
 
       if (shows) {
-        const top = y0 + arrow - border + offset;
-
-        this.thumb(x0, top, x1, top + thumb);
+        this.thumb(x0, y0 + thumbTop, x1, y0 + thumbTop + thumb);
       }
     } else {
-      this.stretch(pick(1, OBM_LFARROW, OBM_LFARROWI), x0, y0, arrow, y1 - y0);
-      this.stretch(pick(2, OBM_RGARROW, OBM_RGARROWI), x1 - arrow, y0, arrow, y1 - y0);
+      this.stretch(pick(1, 0, OBM_LFARROW, OBM_LFARROWI, OBM_LFARROWD), x0, y0, arrow, y1 - y0);
+      this.stretch(pick(2, 1, OBM_RGARROW, OBM_RGARROWI, OBM_RGARROWD), x1 - arrow, y0, arrow, y1 - y0);
 
       if (shows) {
-        const left = x0 + arrow - border + offset;
-
-        this.thumb(left, y0, left + thumb, y1);
+        this.thumb(x0 + thumbTop, y0, x0 + thumbTop + thumb, y1);
       }
     }
 
@@ -316,7 +308,140 @@ export class Painter {
         this.outline(x0 + arrow - border, y0, x1, y1, this.colour(COLOR_WINDOWFRAME));
       }
     }
+
+    /* While a page is held: its part between the arrow and the thumb, cut
+     * back to the thumb when the thumb has come into it, inverted again --
+     * whether the pointer is in it or not (seg18 `042c`). */
+    if (track && (track.part === 2 || track.part === 3)) {
+      if (track.part === 2) {
+        track.end = Math.min(track.end, thumbTop);
+      } else {
+        track.start = Math.max(track.start, thumbTop + thumb);
+      }
+
+      this.invertAlong(x0, y0, x1, y1, vertical, track.start, track.end);
+    }
+
+    /* While the thumb is dragged: its outline, again (seg18 `0488`). */
+    if (track?.outline !== undefined) {
+      this.thumbOutline(x0, y0, x1, y1, vertical, track.outline, thumb);
+    }
   }
+
+  /** Inverts a bar's run from `start` to `end` along it, a border in across. */
+  invertAlong(x0: number, y0: number, x1: number, y1: number, vertical: boolean, start: number, end: number) {
+    if (end <= start) {
+      return;
+    }
+
+    if (vertical) {
+      this.invert(x0 + 1, y0 + start, x1 - 1, y0 + end);
+    } else {
+      this.invert(x0 + start, y0 + 1, x0 + end, y1 - 1);
+    }
+  }
+
+  /**
+   * The outline a dragged thumb leaves, a border wide, exclusive-ored with a
+   * brush of alternate pixels (seg18 `14e5`): drawn again, it goes.
+   */
+  thumbOutline(x0: number, y0: number, x1: number, y1: number, vertical: boolean, at: number, thumb: number) {
+    const [left, top, right, bottom] = vertical
+      ? [x0, y0 + at, x1, y0 + at + thumb]
+      : [x0 + at, y0, x0 + at + thumb, y1];
+    const screen = this.screen;
+    const mask = (1 << screen.depth) - 1;
+    const flip = (x: number, y: number) => {
+      if (x < 0 || y < 0 || x >= this.width || y >= this.height || !((x + y) & 1)) {
+        return;
+      }
+
+      const index = screen.indexAt(this.left + x, this.top + y);
+
+      if (index !== null) {
+        screen.put(this.left + x, this.top + y, index ^ mask);
+      }
+    };
+
+    screen.context.markRect(this.left + left, this.top + top, this.left + right, this.top + bottom);
+
+    for (let x = left; x < right; x++) {
+      flip(x, top);
+      flip(x, bottom - 1);
+    }
+
+    for (let y = top + 1; y < bottom - 1; y++) {
+      flip(left, y);
+      flip(right - 1, y);
+    }
+  }
+}
+
+/** What a scroll bar is drawn from: its range, its arrows turned off, and a press on it. */
+export interface ScrollPaint {
+  min: number;
+  max: number;
+  pos: number;
+  flags?: number;
+  shaft?: number | null;
+  track?: ScrollTrack;
+}
+
+/**
+ * A press being followed on a scroll bar: the part, 0 to 3 for the arrows
+ * and the pages as `SB_LINEUP` to `SB_PAGEDOWN` number them, or 4 for the
+ * thumb; where it runs along the bar; whether it shows pressed; and a
+ * dragged thumb's outline.
+ */
+export interface ScrollTrack {
+  part: number;
+  start: number;
+  end: number;
+  pressed: boolean;
+  outline?: number;
+}
+
+/**
+ * A scroll bar's parts along it, from its start (`USER.EXE` seg18 `073c`):
+ * each arrow as long as its bitmap, but no longer than half the bar less a
+ * border; the thumb a border back from the first arrow's inner edge, moved
+ * along what is left by the position, `(pos - min) * room / (max - min)`
+ * rounded half up. `null` for a bar with no room for its arrows.
+ */
+export function scrollGeometry(
+  environment: { metric(index: number): number },
+  length: number,
+  vertical: boolean,
+  place: { min: number; max: number; pos: number }
+) {
+  const metric = (index: number) => environment.metric(index);
+  const border = 1;
+  const half = (length >> 1) - border;
+
+  if (half <= 0) {
+    return null;
+  }
+
+  const bitmap = metric(vertical ? SM_CYVSCROLL : SM_CXHSCROLL);
+  const arrow = Math.min(half, bitmap);
+  const thumb = metric(vertical ? SM_CYVTHUMB : SM_CXHTHUMB);
+  const room = length - 2 * arrow - thumb + 2 * border;
+  const span = place.max - place.min;
+  const offset = span ? Math.floor(((place.pos - place.min) * room + (span >> 1)) / span) : place.pos - place.min;
+
+  return {
+    border,
+    bitmap,
+    arrow,
+    thumb,
+    room,
+    length,
+    arrowEnd: arrow,
+    downStart: length - arrow,
+    thumbTop: arrow - border + offset,
+    /** Whether the thumb shows: a track at least as long as it. */
+    shows: length - 2 * arrow >= thumb,
+  };
 }
 
 /**

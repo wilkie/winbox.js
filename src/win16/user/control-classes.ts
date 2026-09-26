@@ -11,7 +11,7 @@ import {
 } from './controls.js';
 import { DefWindowProc } from './DefWindowProc.js';
 import { HideCaret, ShowCaret, hideCaretFor } from './caret.js';
-import { editMessage, type EditHost } from './edit.js';
+import { editMessage, editState, type EditHost } from './edit.js';
 import {
   LB,
   LBS_DISABLENOSCROLL,
@@ -29,6 +29,7 @@ import {
 } from './listbox.js';
 import { enableScrollControl, scrollState, SetScrollPos } from './scroll-bars.js';
 import { freeEditBuffer } from './edit-buffer.js';
+import { trackScrollBar } from './scroll-track.js';
 import { SendMessage } from './SendMessage.js';
 import {
   CB,
@@ -159,6 +160,20 @@ async function controlProc(
     freeEditBuffer(system, control);
   }
 
+  /* Whether the text was changed since it was last set, for either kind of
+   * edit control: 0 or 1, and set by any nonzero `wParam` (seg26 `0e32`,
+   * `0e3e`). */
+  if (kind === 'EDIT' && (message === EM_GETMODIFY || message === EM_SETMODIFY)) {
+    const edit = editState(control);
+
+    if (message === EM_GETMODIFY) {
+      return edit.modified ? 1 : 0;
+    }
+
+    edit.modified = wParam !== 0;
+    return 0;
+  }
+
   if (kind === 'EDIT' && message !== User.WM_SETTEXT) {
     const answer =
       control.style & ES_MULTILINE
@@ -220,6 +235,9 @@ async function controlProc(
       invalidate();
 
       if (kind === 'EDIT') {
+        /* New text is not a change (seg29 `00c0`, seg31 `00b6`). */
+        editState(control).modified = false;
+
         if (control.style & ES_MULTILINE) {
           await mlEditMessage(system, control, linesHost(system, window), message, wParam, lParam);
         } else {
@@ -248,6 +266,19 @@ async function controlProc(
     }
   }
 
+  /* A press on a scroll bar control, once or twice alike: the focus, if it
+   * takes it, then the press followed (`USER.EXE` seg18 `0b63`). */
+  if (kind === 'SCROLLBAR' && (message === User.WM_LBUTTONDOWN || message === User.WM_LBUTTONDBLCLK)) {
+    if (window.window.style & User.WS_TABSTOP) {
+      await setFocus(system, hwnd);
+    }
+
+    const origin = window.clientOrigin;
+
+    await trackScrollBar(system, hwnd, 0, origin.x + ((lParam << 16) >> 16), origin.y + (lParam >> 16));
+    return 0;
+  }
+
   /* A scroll bar control's arrows go with its being enabled (`USER.EXE` seg18 `0a67`). */
   if (kind === 'SCROLLBAR' && message === User.WM_ENABLE) {
     enableScrollControl(system, hwnd, wParam !== 0);
@@ -274,6 +305,8 @@ const WM_GETDLGCODE = 0x0087;
  * kept out of the way.
  */
 const ES_MULTILINE = 0x0004;
+const EM_GETMODIFY = 0x0408;
+const EM_SETMODIFY = 0x0409;
 
 /** The messages whose `lParam` is a string for a list box that keeps strings. */
 const LIST_STRINGS = new Set([LB.ADDSTRING, LB.INSERTSTRING, LB.FINDSTRING, LB.FINDSTRINGEXACT, LB.SELECTSTRING]);

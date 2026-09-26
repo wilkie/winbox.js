@@ -1,5 +1,6 @@
 'use strict';
 
+import { cursorOf } from './cursor-pos.js';
 import { DWORD, HWND, UINT } from '../types.js';
 import { MSG, User } from '../user.js';
 
@@ -98,7 +99,7 @@ function message_(system: any, hwnd: number, message: number, wParam: number, lP
   msg.wParam = wParam;
   msg.lParam = lParam;
   msg.time = Date.now() - (system._startTime ?? 0);
-  msg.pt = { x: 0, y: 0 };
+  msg.pt = { ...cursorOf(system) };
 
   return msg;
 }

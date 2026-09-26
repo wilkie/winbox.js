@@ -545,6 +545,10 @@ async function remove(system: any, control: ControlState, host: LinesHost, from:
 
   control.text = control.text.slice(0, from) + control.text.slice(to);
   edit.anchor = edit.caret = from;
+
+  if (to > from) {
+    edit.modified = true;
+  }
   buildLines(control, layout, Math.max(startLine - 1, 0), from - to, false);
   state.caretLine = caretLineOf(control, from);
   await host.notify(EN_UPDATE);
@@ -566,6 +570,10 @@ async function insert(system: any, control: ControlState, host: LinesHost, text:
 
   control.text = control.text.slice(0, at) + text + control.text.slice(at);
   edit.anchor = edit.caret = at + text.length;
+
+  if (text.length) {
+    edit.modified = true;
+  }
   buildLines(control, layout, state.caretLine, text.length, typing);
   state.caretLine = caretLineOf(control, edit.caret);
   await host.notify(EN_UPDATE);
@@ -978,6 +986,7 @@ export async function mlEditMessage(
 
       if (text !== null) {
         control.text = text;
+        edit.modified = false;
         await restart(system, control, host);
       }
 

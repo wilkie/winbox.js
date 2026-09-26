@@ -58,6 +58,8 @@ export interface EditState {
   focused: boolean;
   /** Whether a press is being followed with the mouse captured. */
   tracking?: boolean;
+  /** Whether the text was changed since it was last set (`EM_GETMODIFY`). */
+  modified?: boolean;
 }
 
 export function editState(control: ControlState): EditState {
@@ -270,6 +272,11 @@ async function replace(control: ControlState, host: EditHost, text: string) {
 
   control.text = control.text.slice(0, start) + text + control.text.slice(end);
   edit.anchor = edit.caret = start + text.length;
+
+  /* Changed by anything put in or taken out (seg26 `05c4`, `0841`). */
+  if (text.length || end > start) {
+    edit.modified = true;
+  }
 
   return true;
 }

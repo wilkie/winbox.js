@@ -29,6 +29,9 @@ import { CreatePopupMenu } from '../../src/win16/user/CreateMenu.js';
 import { DispatchMessage } from '../../src/win16/user/DispatchMessage.js';
 import { PeekMessage } from '../../src/win16/user/PeekMessage.js';
 import { PostMessage } from '../../src/win16/user/PostMessage.js';
+import { ScreenToClient } from '../../src/win16/user/ScreenToClient.js';
+import { SetCursorPos } from '../../src/win16/user/cursor-pos.js';
+import { GetSystemMetrics } from '../../src/win16/user/GetSystemMetrics.js';
 import { PostQuitMessage } from '../../src/win16/user/PostQuitMessage.js';
 import { InvalidateRect } from '../../src/win16/user/InvalidateRect.js';
 import { ValidateRect } from '../../src/win16/user/ValidateRect.js';
@@ -2588,6 +2591,194 @@ async function captureNoScroll(system: any) {
   answer('w-both', await EnableScrollBar.call(system, own, 1, 3));
   await pumpAll(system);
   capture(own, 'w-both');
+
+  await DestroyWindow.call(system, host);
+  await pumpAll(system);
+
+  return records;
+}
+
+/* ---- sbtrack ---- */
+
+const sbTrackCaptures = new Map<string, Promise<Map<string, string>>>();
+
+/** The `sbtrack` probe, replayed through the exports once per display. */
+export function sbtrackCapture(context: any) {
+  const key = context.display.name;
+
+  if (!sbTrackCaptures.has(key)) {
+    sbTrackCaptures.set(key, captureSbTrack(context));
+  }
+
+  return sbTrackCaptures.get(key)!;
+}
+
+async function captureSbTrack(system: any) {
+  const records = new Map<string, string>();
+  const area = { left: 0, top: 0, right: 0, bottom: 0 };
+  let notes = '';
+  let step = '';
+  let captured = false;
+
+  void system.rasterDesktop;
+
+  const capture = (name: string) => {
+    const dc = GetDC.call(system, 0);
+
+    for (let y = area.top; y < area.bottom; y++) {
+      let row = '';
+
+      for (let x = area.left; x < area.right; x++) {
+        const index = PALETTE.indexOf(GetPixel.call(system, dc, x, y) & 0xffffff);
+
+        row += index < 0 ? '?' : index.toString(16);
+      }
+
+      records.set(`rows:${name},y=${y - area.top}`, row);
+    }
+
+    ReleaseDC.call(system, 0, dc);
+  };
+  const note = (text: string) => {
+    if (notes.length + text.length < 380) {
+      notes += (notes ? ',' : '') + text;
+    }
+  };
+
+  async function HostProc(hwnd: number, message: number, wParam: number, lParam: number) {
+    if (message === 0x0115) {
+      note(`v:${wParam}:${((lParam & 0xffff) << 16) >> 16}:${(lParam >>> 16) & 0xffff ? 1 : 0}`);
+
+      if (!captured) {
+        captured = true;
+        capture(`${step}-held`);
+      }
+
+      return 0;
+    }
+
+    if (message === User.WM_SYSCOMMAND) {
+      note(`s:${wParam.toString(16)}`);
+    }
+
+    if (message === User.WM_PAINT) {
+      const paint = new PAINTSTRUCT();
+
+      await BeginPaint.call(system, hwnd, paint);
+      EndPaint.call(system, hwnd, paint);
+      return 0;
+    }
+
+    return DefWindowProc.call(system, hwnd, message, wParam, lParam);
+  }
+
+  const kind: any = new WNDCLASS();
+
+  kind.style = 0;
+  kind.lpfnWndProc = HostProc;
+  kind.hbrBackground = 5 + 1;
+  kind.lpszClassName = 'SbTrack';
+  await RegisterClass.call(system, kind);
+
+  const host = await CreateWindow.call(system, 'SbTrack', 'Track', 0x00cf0000 | 0x00200000 | 0x10000000, 20, 20, 300, 200, 0, 0, 0, 0);
+  const control = await CreateWindow.call(system, 'SCROLLBAR', '', 0x40000000 | 0x10000000 | 0x0001, 20, 8, 16, 100, host, 101, 0, 0);
+
+  SetScrollRange.call(system, control, 2, 0, 10, 0);
+  SetScrollPos.call(system, control, 2, 3, 1);
+  SetScrollRange.call(system, host, 1, 0, 10, 0);
+  SetScrollPos.call(system, host, 1, 3, 1);
+  await UpdateWindow.call(system, host);
+  await pumpAll(system);
+
+  const onScreen = (hwnd: number, x: number, y: number) => {
+    const point: any = new POINT();
+
+    point.x = x;
+    point.y = y;
+    ClientToScreen.call(system, hwnd, point);
+
+    return { x: point.x, y: point.y };
+  };
+  const begin = (name: string) => {
+    step = name;
+    notes = '';
+    captured = false;
+  };
+  const finish = async (name: string) => {
+    await pumpAll(system);
+    records.set(`notes:${name}`, notes);
+    capture(`${name}-after`);
+  };
+  const lparam = (x: number, y: number) => ((x & 0xffff) | ((y & 0xffff) << 16)) >>> 0;
+
+  const pressControl = async (name: string, x: number, y: number, toY: number, moves: number) => {
+    const at = onScreen(control, x, y);
+
+    begin(name);
+
+    for (let index = 1; index <= moves; index++) {
+      const stepY = y + Math.trunc(((toY - y) * index) / moves);
+      const to = onScreen(control, x, stepY);
+
+      SetCursorPos.call(system, to.x, to.y);
+      PostMessage.call(system, control, 0x0200, 0x0001, lparam(x, stepY));
+    }
+
+    const to = onScreen(control, x, toY);
+
+    SetCursorPos.call(system, to.x, to.y);
+    PostMessage.call(system, control, 0x0202, 0, lparam(x, toY));
+    SetCursorPos.call(system, at.x, at.y);
+    await SendMessage.call(system, control, 0x0201, 0x0001, lparam(x, y));
+    await finish(name);
+  };
+
+  const pressOwn = async (name: string, at: { x: number; y: number }) => {
+    begin(name);
+
+    const client: any = new POINT();
+
+    client.x = at.x;
+    client.y = at.y;
+    ScreenToClient.call(system, host, client);
+    SetCursorPos.call(system, at.x, at.y);
+    PostMessage.call(system, host, 0x0202, 0, lparam(client.x, client.y));
+    SetCursorPos.call(system, at.x, at.y);
+    await SendMessage.call(system, host, 0x00a1, 7, lparam(at.x, at.y));
+    await finish(name);
+  };
+
+  const window: any = new RECT();
+
+  GetWindowRect.call(system, control, window);
+  Object.assign(area, { left: window.left, top: window.top, right: window.right, bottom: window.bottom });
+
+  await pressControl('c-up', 8, 5, 5, 0);
+  await pressControl('c-down', 8, 94, 94, 0);
+  await pressControl('c-pageup', 8, 22, 22, 0);
+  await pressControl('c-pagedown', 8, 70, 70, 0);
+  await pressControl('c-drag', 8, 38, 68, 3);
+  await pressControl('c-away', 8, 38, 68, 0);
+
+  await EnableScrollBar.call(system, control, 2, 1);
+  await pumpAll(system);
+  await pressControl('c-off', 8, 5, 5, 0);
+  await EnableScrollBar.call(system, control, 2, 0);
+  await pumpAll(system);
+
+  const client: any = new RECT();
+
+  GetClientRect.call(system, host, client);
+
+  const corner = onScreen(host, client.right, client.bottom);
+
+  area.left = corner.x;
+  area.right = corner.x + GetSystemMetrics.call(system, 2);
+  area.top = corner.y - client.bottom - 1;
+  area.bottom = corner.y + 1;
+
+  await pressOwn('w-down', { x: corner.x + 8, y: area.bottom - 6 });
+  await pressOwn('w-pagedown', { x: corner.x + 8, y: area.bottom - 40 });
 
   await DestroyWindow.call(system, host);
   await pumpAll(system);
